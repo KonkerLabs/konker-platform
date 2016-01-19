@@ -1,0 +1,14 @@
+#import(com.konkerlabs.platform.registry.model.Device)
+<%@ val device: Device %>
+
+<table class="table table-condensed">
+    <thead>
+        <tr>
+            <td>#</td>
+            <td>ID</td>
+            <td>Name</td>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
