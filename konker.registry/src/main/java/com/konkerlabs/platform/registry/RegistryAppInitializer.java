@@ -1,6 +1,6 @@
 package com.konkerlabs.platform.registry;
 
-import com.konkerlabs.platform.registry.config.DatabaseConfig;
+import com.konkerlabs.platform.registry.config.MongoConfig;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
@@ -8,7 +8,7 @@ public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherSe
 
     @Override
     protected Class<?>[] getRootConfigClasses() {
-        return new Class<?>[] { DatabaseConfig.class };
+        return new Class<?>[] { MongoConfig.class };
     }
 
     @Override
