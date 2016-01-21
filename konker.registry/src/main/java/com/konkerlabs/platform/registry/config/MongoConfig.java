@@ -1,7 +1,7 @@
 package com.konkerlabs.platform.registry.config;
 
-import com.konkerlabs.platform.registry.model.converters.EventReadConverter;
-import com.konkerlabs.platform.registry.model.converters.EventWriteConverter;
+import com.konkerlabs.platform.registry.business.model.converters.EventReadConverter;
+import com.konkerlabs.platform.registry.business.model.converters.EventWriteConverter;
 import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
 import org.springframework.context.annotation.Configuration;
@@ -14,7 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Configuration
-@EnableMongoRepositories(basePackages = "com.konkerlabs.platform.registry.repositories")
+@EnableMongoRepositories(basePackages = "com.konkerlabs.platform.registry.business.repositories")
 public class MongoConfig extends AbstractMongoConfiguration {
 
     public static final List<Converter<?,?>> converters = Arrays.asList(

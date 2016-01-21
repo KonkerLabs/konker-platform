@@ -8,6 +8,7 @@ import org.junit.Rule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
 import org.springframework.data.mongodb.core.convert.CustomConversions;
@@ -17,7 +18,7 @@ import org.springframework.test.context.ContextConfiguration;
 import static com.lordofthejars.nosqlunit.mongodb.MongoDbRule.MongoDbRuleBuilder.newMongoDbRule;
 
 @ContextConfiguration
-public class MongoIntegrationTestBase {
+public abstract class IntegrationTestBase {
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -26,7 +27,7 @@ public class MongoIntegrationTestBase {
     public MongoDbRule mongoDbRule = newMongoDbRule().defaultSpringMongoDb("registry-test");
 
     @Configuration
-    @EnableMongoRepositories(basePackages = "com.konkerlabs.platform.registry.repositories")
+    @EnableMongoRepositories(basePackages = "com.konkerlabs.platform.registry.business.repositories")
     static class MongoConfiguration extends AbstractMongoConfiguration {
 
         @Override
@@ -44,5 +45,11 @@ public class MongoIntegrationTestBase {
         public CustomConversions customConversions() {
             return new CustomConversions(MongoConfig.converters);
         }
+    }
+
+    @Configuration
+    @ComponentScan(basePackages = "com.konkerlabs.platform.registry.business")
+    static class BusinessLayerConfiguration {
+
     }
 }

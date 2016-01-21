@@ -1,4 +1,4 @@
-#import(com.konkerlabs.platform.registry.model.Device)
+#import(com.konkerlabs.platform.registry.business.model.Device)
 <%@ val device: Device %>
 
 <table class="table table-condensed">

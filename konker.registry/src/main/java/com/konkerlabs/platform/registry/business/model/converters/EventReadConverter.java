@@ -1,6 +1,6 @@
-package com.konkerlabs.platform.registry.model.converters;
+package com.konkerlabs.platform.registry.business.model.converters;
 
-import com.konkerlabs.platform.registry.model.Event;
+import com.konkerlabs.platform.registry.business.model.Event;
 import com.mongodb.DBObject;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;

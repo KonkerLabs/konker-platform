@@ -1,4 +1,4 @@
-package com.konkerlabs.platform.registry.model;
+package com.konkerlabs.platform.registry.business.model;
 
 import lombok.Builder;
 import lombok.Data;

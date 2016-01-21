@@ -41,6 +41,12 @@
             <version>4.2.4.RELEASE</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <version>1.10.19</version>
+            <scope>test</scope>
+        </dependency>
         <!-- Compile scope -->
         <dependency>
             <groupId>org.projectlombok</groupId>
