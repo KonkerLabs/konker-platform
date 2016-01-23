@@ -14,11 +14,12 @@ import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
 import org.springframework.data.mongodb.core.convert.CustomConversions;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 import static com.lordofthejars.nosqlunit.mongodb.MongoDbRule.MongoDbRuleBuilder.newMongoDbRule;
 
 @ContextConfiguration
-public abstract class IntegrationTestBase {
+public class BusinessIntegrationTestContext {
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -27,8 +28,7 @@ public abstract class IntegrationTestBase {
     public MongoDbRule mongoDbRule = newMongoDbRule().defaultSpringMongoDb("registry-test");
 
     @Configuration
-    @EnableMongoRepositories(basePackages = "com.konkerlabs.platform.registry.business.repositories")
-    static class MongoConfiguration extends AbstractMongoConfiguration {
+    static class MongoTestConfiguration extends MongoConfig {
 
         @Override
         protected String getDatabaseName() {
@@ -40,16 +40,10 @@ public abstract class IntegrationTestBase {
         public Mongo mongo() {
             return new Fongo("registry-test").getMongo();
         }
-
-        @Override
-        public CustomConversions customConversions() {
-            return new CustomConversions(MongoConfig.converters);
-        }
     }
 
     @Configuration
     @ComponentScan(basePackages = "com.konkerlabs.platform.registry.business")
     static class BusinessLayerConfiguration {
-
     }
 }

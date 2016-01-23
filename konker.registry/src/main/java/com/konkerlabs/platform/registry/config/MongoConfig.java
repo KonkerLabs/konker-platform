@@ -1,5 +1,7 @@
 package com.konkerlabs.platform.registry.config;
 
+import com.konkerlabs.platform.registry.business.model.converters.DeviceReadConverter;
+import com.konkerlabs.platform.registry.business.model.converters.DeviceWriteConverter;
 import com.konkerlabs.platform.registry.business.model.converters.EventReadConverter;
 import com.konkerlabs.platform.registry.business.model.converters.EventWriteConverter;
 import com.mongodb.Mongo;
@@ -20,7 +22,9 @@ public class MongoConfig extends AbstractMongoConfiguration {
     public static final List<Converter<?,?>> converters = Arrays.asList(
         new Converter[] {
             new EventWriteConverter(),
-            new EventReadConverter()
+            new EventReadConverter(),
+            new DeviceWriteConverter(),
+            new DeviceReadConverter()
         }
     );
 

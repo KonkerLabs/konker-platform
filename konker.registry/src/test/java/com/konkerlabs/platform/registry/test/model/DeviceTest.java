@@ -5,11 +5,12 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.*;
 
 public class DeviceTest {
 
@@ -80,7 +81,37 @@ public class DeviceTest {
         assertThat(device.applyValidations(),hasItem(expectedMessage));
     }
     @Test
+    public void shouldReturnAValidationMessageIfRegistrationDateIsNull() throws Exception {
+        device.setRegistrationDate(null);
+
+        String expectedMessage = "Registration date cannot be null";
+
+        assertThat(device.applyValidations(),hasItem(expectedMessage));
+    }
+    @Test
+    public void shouldReturnAValidationMessageIfRegistrationDateIsMoreThan1MinuteInTheFuture() throws Exception {
+        device.setRegistrationDate(Instant.now().plus(Duration.ofSeconds(61)));
+
+        device.onRegistration();
+
+        long intervalInSeconds = Duration.between(device.getRegistrationDate(),Instant.now()).abs().getSeconds();
+
+        assertThat(intervalInSeconds,not(greaterThan(60L)));
+    }
+    @Test
+    public void shouldReturnAValidationMessageIfRegistrationDateIsMoreThan1MinuteInThePast() throws Exception {
+        device.setRegistrationDate(Instant.now().minus(Duration.ofSeconds(61)));
+
+        device.onRegistration();
+
+        long intervalInSeconds = Duration.between(device.getRegistrationDate(),Instant.now()).abs().getSeconds();
+
+        assertThat(intervalInSeconds,not(greaterThan(60L)));
+    }
+    @Test
     public void shouldHaveNoValidationMessagesIfRecordIsValid() throws Exception {
+        device.onRegistration();
+
         assertThat(device.applyValidations(),nullValue());
     }
 }

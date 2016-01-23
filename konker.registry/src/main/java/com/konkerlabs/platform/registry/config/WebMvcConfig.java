@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 
 @Configuration
 @EnableWebMvc
-@ComponentScan(basePackages = "com.konkerlabs.platform.registry")
+@ComponentScan(basePackages = "com.konkerlabs.platform.registry.web")
 public class WebMvcConfig extends WebMvcConfigurerAdapter {
 
     @Override

@@ -7,26 +7,32 @@ import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.test.base.IntegrationTestBase;
+import com.konkerlabs.platform.registry.test.base.BusinessIntegrationTestContext;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.InOrder;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.springframework.aop.framework.Advised;
+import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-public class DeviceRegisterServiceTest extends IntegrationTestBase {
+public class DeviceRegisterServiceTest extends BusinessIntegrationTestContext {
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -42,7 +48,7 @@ public class DeviceRegisterServiceTest extends IntegrationTestBase {
     private Device device;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         device = spy(Device.builder()
             .deviceId("94c32b36cd2b43f1")
             .name("Device name")
@@ -84,6 +90,16 @@ public class DeviceRegisterServiceTest extends IntegrationTestBase {
         assertThat(response,notNullValue());
         assertThat(response.getStatus(),equalTo(ServiceResponse.Status.ERROR));
         assertThat(response.getResponseMessages(),equalTo(errorMessages));
+    }
+
+    @Test
+    public void shouldApplyOnRegistrationCallbackBeforeValidations() throws Exception {
+        deviceRegisterService.register(device);
+
+        InOrder inOrder = Mockito.inOrder(device);
+
+        inOrder.verify(device).onRegistration();
+        inOrder.verify(device).applyValidations();
     }
 
     @Test

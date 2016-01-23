@@ -26,6 +26,8 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         if (device == null)
             throw new BusinessException("Record cannot be null");
 
+        device.onRegistration();
+
         List<String> validations = device.applyValidations();
 
         if (validations != null)
@@ -34,7 +36,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                 .status(ServiceResponse.Status.ERROR)
                 .build();
 
-        if (tenantRepository.findOne(device.getTenant().getId()) == null)
+        if (!tenantRepository.exists(device.getTenant().getId()))
             return ServiceResponse.builder()
                     .responseMessages(Arrays.asList(new String[]{"Tenant does not exist"}))
                     .status(ServiceResponse.Status.ERROR)
@@ -43,5 +45,10 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         deviceRepository.save(device);
 
         return ServiceResponse.builder().status(ServiceResponse.Status.OK).build();
+    }
+
+    @Override
+    public List<Device> getAll() {
+        return null;
     }
 }

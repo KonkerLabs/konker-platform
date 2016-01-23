@@ -5,6 +5,7 @@ import lombok.Data;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +19,7 @@ public class Device {
     private String deviceId;
     private String name;
     private String description;
-    private String registrationDate;
+    private Instant registrationDate;
     private List<Event> events;
 
     public List<String> applyValidations() {
@@ -33,10 +34,16 @@ public class Device {
             validations.add("Device name cannot be null or empty");
         if (getTenant() == null)
             validations.add("Tenant cannot be null");
+        if (getRegistrationDate() == null)
+            validations.add("Registration date cannot be null");
 
         if (validations.isEmpty())
             return null;
         else
             return validations;
+    }
+
+    public void onRegistration() {
+        setRegistrationDate(Instant.now());
     }
 }

@@ -8,7 +8,7 @@ public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherSe
 
     @Override
     protected Class<?>[] getRootConfigClasses() {
-        return new Class<?>[] { MongoConfig.class };
+        return new Class<?>[0];
     }
 
     @Override

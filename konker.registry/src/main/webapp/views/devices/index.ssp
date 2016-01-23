@@ -1,6 +1,3 @@
-#import(com.konkerlabs.platform.registry.business.model.Device)
-<%@ val device: Device %>
-
 <table class="table table-condensed">
     <thead>
         <tr>
