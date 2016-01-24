@@ -8,6 +8,6 @@ import java.util.List;
 public interface DeviceRepository extends MongoRepository<Device,String> {
 
     @Query("{ 'deviceId' : ?0 }")
-    List<Device> findByDeviceId(String deviceId);
+    Device findByDeviceId(String deviceId);
 
 }

@@ -1,4 +1,38 @@
-<form action="/save" method="post">
-    <input type="text" name="name" >
-    <input type="submit" value="Salvar"/>
-</form>
+#import(java.util.Collections)
+#import(com.konkerlabs.platform.registry.web.forms.DeviceRegistrationForm)
+<%@ var errors : java.util.List[String] = Collections.emptyList() %>
+<%@ var device : DeviceRegistrationForm = new DeviceRegistrationForm %>
+<fieldset>
+    <legend>Devices</legend>
+    #if (!errors.isEmpty)
+        <div class="alert alert-danger" role="alert">
+            #for (error <- errors)
+                <li>${error}</li>
+            #end
+        </div>
+    #end
+    <form action="/registry/devices/save" method="post">
+        <div class="form-group">
+            <label for="deviceId">Device ID</label>
+            <input type="text" value="${device.getDeviceId}"
+                    class="form-control"
+                    id="deviceId"
+                    name="deviceId" placeholder="Type your device ID here...">
+        </div>
+        <div class="form-group">
+            <label for="name">Device Name</label>
+            <input type="text" value="${device.getName}"
+                    class="form-control"
+                    id="name" name="name" placeholder="Type your device name here...">
+        </div>
+        <div class="form-group">
+            <label for="description">Description</label>
+            <textarea id="description" class="form-control" name="description"
+                       placeholder="Type some about your device (optional)">
+                ${device.getDescription}
+            </textarea>
+        </div>
+        <button type="submit" class="btn btn-success">Save</button>
+        <a href="/registry/devices/" class="btn btn-default">Back</a>
+    </form>
+</fieldset>

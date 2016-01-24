@@ -20,6 +20,8 @@
 <!-- Custom styles for this template -->
 <link href="/resources/css/jumbotron.css" rel="stylesheet">
 
+<link href="/resources/css/konker.css" rel="stylesheet"/>
+
 <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
 <!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
@@ -47,17 +49,21 @@
 
 <!-- Main jumbotron for a primary marketing message or call to action -->
 <%--<div class="jumbotron">--%>
-<div class="container">
-    ${unescape(body)}
+<div id="wrap">
+    <div class="container">
+        ${unescape(body)}
+    </div>
 </div>
 <%--</div>--%>
 
-<div class="container">
-<hr>
-    <footer>
-        <p>&copy; 2016 Konker Labs, Inc.</p>
-    </footer>
-</div> <!-- /container -->
+<div id="footer">
+    <div class="container">
+    <hr>
+        <footer>
+            <p>&copy; 2016 Konker Labs, Inc.</p>
+        </footer>
+    </div>
+</div>
 
 
 <!-- Bootstrap core JavaScript

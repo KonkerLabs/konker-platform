@@ -11,23 +11,9 @@
       "deviceId" : "95c14b36ba2b43f1",
       "name" : "Test name",
       "description" : "Description",
+      "registrationDate" : 1453320973747,
       "events" : [
         { "timestamp" : 1453320973747, "payload" : "Payload one" }
-      ]
-    },
-    {
-      "_class" : "com.konkerlabs.platform.registry.model.Device",
-      "_id" : 2,
-      "tenant" : {
-        "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
-        "_class" : "com.konkerlabs.platform.registry.model.Tenant",
-        "name" : "Konker"
-      },
-      "deviceId" : "34c13b57ad3b43f9",
-      "name" : "Second test name",
-      "description" : "Second description",
-      "events" : [
-        { "timestamp" : 1453320973747, "payload" : "Payload two" }
       ]
     }
   ]

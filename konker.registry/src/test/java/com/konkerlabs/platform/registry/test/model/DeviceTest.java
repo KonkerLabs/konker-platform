@@ -36,7 +36,7 @@ public class DeviceTest {
     public void shouldReturnAValidationMessageIfDeviceIdIsNull() throws Exception {
         device.setDeviceId(null);
 
-        String expectedMessage = "Device id cannot be null or empty";
+        String expectedMessage = "Device ID cannot be null or empty";
 
         assertThat(device.applyValidations(),hasItem(expectedMessage));
     }
@@ -44,7 +44,7 @@ public class DeviceTest {
     public void shouldReturnAValidationMessageIfDeviceIdIsEmpty() throws Exception {
         device.setDeviceId("");
 
-        String expectedMessage = "Device id cannot be null or empty";
+        String expectedMessage = "Device ID cannot be null or empty";
 
         assertThat(device.applyValidations(),hasItem(expectedMessage));
     }
@@ -52,7 +52,7 @@ public class DeviceTest {
     public void shouldReturnAValidationMessageIfDeviceIdIsGreaterThan16Characters() throws Exception {
         device.setDeviceId("95c14b36ba2b43f1ac537");
 
-        String expectedMessage = "Device cannot be greater than 16 characters";
+        String expectedMessage = "Device ID cannot be greater than 16 characters";
 
         assertThat(device.applyValidations(),hasItem(expectedMessage));
     }

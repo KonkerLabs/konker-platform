@@ -10,6 +10,5 @@ import java.util.List;
 public interface TenantRepository extends MongoRepository<Tenant, String> {
 
     @Query("{ 'name' : ?0 }")
-    List<Device> findByName(String name);
-
+    Tenant findByName(String name);
 }

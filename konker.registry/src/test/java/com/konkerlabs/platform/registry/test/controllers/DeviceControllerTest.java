@@ -1,11 +1,13 @@
 package com.konkerlabs.platform.registry.test.controllers;
 
+import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.test.base.WebIntegrationTestContext;
 import com.konkerlabs.platform.registry.web.controllers.DeviceController;
+import com.konkerlabs.platform.registry.web.forms.DeviceRegistrationForm;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
@@ -26,14 +28,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
@@ -47,7 +47,7 @@ public class DeviceControllerTest extends WebIntegrationTestContext {
     private ServiceResponse response;
     MultiValueMap<String,String> deviceData;
     private Device device;
-    private DeviceController.DeviceRegistrationForm deviceForm;
+    private DeviceRegistrationForm deviceForm;
 
     @Before
     public void setUp() {
@@ -63,7 +63,7 @@ public class DeviceControllerTest extends WebIntegrationTestContext {
             .name(deviceData.getFirst("name"))
             .build();
 
-        deviceForm = new DeviceController.DeviceRegistrationForm();
+        deviceForm = new DeviceRegistrationForm();
         deviceForm.setDeviceId(device.getDeviceId());
         deviceForm.setName(device.getName());
         deviceForm.setDescription(device.getDescription());
@@ -86,7 +86,6 @@ public class DeviceControllerTest extends WebIntegrationTestContext {
     @Test
     public void shouldShowRegistrationForm() throws Exception {
         getMockMvc().perform(get("/devices/new"))
-            .andExpect(model().attribute("device", Matchers.isA(Device.class)))
             .andExpect(view().name("layout:devices/form"));
     }
 
@@ -108,6 +107,20 @@ public class DeviceControllerTest extends WebIntegrationTestContext {
     }
 
     @Test
+    public void shouldBindExceptionMessageWhenRegistrationFailsAndGoBackToRegistrationForm() throws Exception {
+        String exceptionMessage = "Some business exception message";
+
+        when(deviceRegisterService.register(eq(device))).thenThrow(new BusinessException(exceptionMessage));
+
+        getMockMvc().perform(
+                post("/devices/save").params(deviceData))
+                .andExpect(model().attribute("errors",equalTo(Arrays.asList(new String[] {exceptionMessage}))))
+                .andExpect(view().name("layout:devices/form"));
+
+        verify(deviceRegisterService).register(eq(device));
+    }
+
+    @Test
     public void shouldRedirectToListAfterRegistrationSucceed() throws Exception {
         response = ServiceResponse.builder()
                 .status(ServiceResponse.Status.OK).build();
@@ -116,8 +129,8 @@ public class DeviceControllerTest extends WebIntegrationTestContext {
 
         getMockMvc().perform(
                 post("/devices/save").params(deviceData))
-                .andExpect(model().attribute("message","Device registered successfully"))
-                .andExpect(view().name("layout:devices/index"));
+                .andExpect(flash().attribute("message","Device registered successfully"))
+                .andExpect(redirectedUrl("/registry/devices/"));
 
         verify(deviceRegisterService).register(eq(device));
     }

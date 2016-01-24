@@ -2,6 +2,7 @@ package com.konkerlabs.platform.registry.business.model;
 
 import lombok.Builder;
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -27,9 +28,9 @@ public class Device {
         List<String> validations = new ArrayList<>();
 
         if (getDeviceId() == null || getDeviceId().isEmpty())
-            validations.add("Device id cannot be null or empty");
+            validations.add("Device ID cannot be null or empty");
         if (getDeviceId() != null && getDeviceId().length() > 16)
-            validations.add("Device cannot be greater than 16 characters");
+            validations.add("Device ID cannot be greater than 16 characters");
         if (getName() == null || getName().isEmpty())
             validations.add("Device name cannot be null or empty");
         if (getTenant() == null)

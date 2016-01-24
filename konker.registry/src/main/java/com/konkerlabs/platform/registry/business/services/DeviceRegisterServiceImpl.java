@@ -28,6 +28,15 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
         device.onRegistration();
 
+        device.setTenant(tenantRepository.findByName("Konker"));
+
+        if (device.getTenant()==null) {
+            return ServiceResponse.builder()
+                    .responseMessages(Arrays.asList(new String[]{"Default tenant does not exist"}))
+                    .status(ServiceResponse.Status.ERROR)
+                    .build();
+        }
+
         List<String> validations = device.applyValidations();
 
         if (validations != null)
@@ -36,11 +45,12 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                 .status(ServiceResponse.Status.ERROR)
                 .build();
 
-        if (!tenantRepository.exists(device.getTenant().getId()))
+        if (deviceRepository.findByDeviceId(device.getDeviceId()) != null) {
             return ServiceResponse.builder()
-                    .responseMessages(Arrays.asList(new String[]{"Tenant does not exist"}))
+                    .responseMessages(Arrays.asList(new String[]{"Device ID already registered"}))
                     .status(ServiceResponse.Status.ERROR)
                     .build();
+        }
 
         deviceRepository.save(device);
 
@@ -49,6 +59,6 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
     @Override
     public List<Device> getAll() {
-        return null;
+        return deviceRepository.findAll();
     }
 }
