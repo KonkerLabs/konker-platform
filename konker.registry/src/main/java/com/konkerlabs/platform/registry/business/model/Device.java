@@ -8,7 +8,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Data
 @Builder
@@ -46,5 +48,14 @@ public class Device {
 
     public void onRegistration() {
         setRegistrationDate(Instant.now());
+    }
+
+    public Event getLastEvent() {
+        return Optional
+            .ofNullable(getEvents())
+            .orElse(Collections.emptyList())
+            .stream()
+            .sorted((eventA,eventB)-> eventB.getTimestamp().compareTo(eventA.getTimestamp()))
+            .findFirst().orElse(null);
     }
 }

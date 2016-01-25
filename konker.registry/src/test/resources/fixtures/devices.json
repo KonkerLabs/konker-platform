@@ -12,9 +12,7 @@
       "name" : "Test name",
       "description" : "Description",
       "registrationDate" : 1453320973747,
-      "events" : [
-        { "timestamp" : 1453320973747, "payload" : "Payload one" }
-      ]
+      "events" : [ { "timestamp" : 1453320973747, "payload" : "Payload one" } ]
     }
   ]
 }

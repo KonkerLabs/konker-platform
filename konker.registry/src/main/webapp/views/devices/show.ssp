@@ -1,0 +1,37 @@
+#import(com.konkerlabs.platform.registry.business.model.Device)
+<%@ var device : Device %>
+<fieldset disabled>
+    <legend>Devices</legend>
+    <div class="form-group">
+        <label for="deviceId">Device ID</label>
+        <input type="text" value="${device.getDeviceId}"
+            class="form-control"
+            id="deviceId"
+            name="deviceId"/>
+    </div>
+    <div class="form-group">
+        <label for="name">Device Name</label>
+        <input type="text" value="${device.getName}"
+                class="form-control"
+                id="name" name="name"/>
+    </div>
+    <div class="form-group">
+        <label for="description">Description</label>
+        <textarea id="description" class="form-control" name="description"
+            placeholder="Type some about your device (optional)">
+            ${device.getDescription}
+        </textarea>
+    </div>
+    <div class="form-group">
+        <label for="registrationDate">Registration Date and Time</label>
+        <input type="text" id="registrationDate" class="form-control" name="registrationDate"
+            value="${device.getRegistrationDate.toString}"/>
+    </div>
+    <div class="form-group">
+        <label for="lastUpdate">Last Update</label>
+        <input type="text" id="lastUpdate" class="form-control" name="lastUpdate"
+            value="<%= if (Option(device.getLastEvent).isDefined)
+                    device.getLastEvent.getTimestamp.toString else "No updates available" %>"/>
+    </div>
+</fieldset>
+<a href="/registry/devices" class="btn btn-default">Back</a>

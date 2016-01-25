@@ -12,13 +12,13 @@
             </button>
         </div>
     #end
-    <a href="/registry/devices/new/" class="pull-right btn btn-default">New</a>
+    <a href="/registry/devices/new/" class="pull-right btn btn-default action">New</a>
     <table class="table table-bordered">
         <thead>
             <tr>
                 <td class="col-md-1">ID</td>
                 <td class="col-md-4">Name</td>
-                <td class="col-md-2 text-center">Actions</td>
+                <td class="col-md-1 text-center">Actions</td>
             </tr>
         </thead>
         <tbody>
@@ -26,7 +26,11 @@
                 <tr>
                     <td>${device.getDeviceId}</td>
                     <td>${device.getName}</td>
-                    <td></td>
+                    <td class="text-center">
+                        <a href="/registry/devices/show?deviceId=${device.getDeviceId}" class="btn btn-default">
+                            Show
+                        </a>
+                    </td>
                 </tr>
             #end
         </tbody>

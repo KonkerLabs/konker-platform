@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface DeviceRegisterService {
     ServiceResponse register(Device device) throws BusinessException;
-
     List<Device> getAll();
+    Device findById(String deviceId);
 }

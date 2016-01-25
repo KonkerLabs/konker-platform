@@ -1,12 +1,15 @@
 package com.konkerlabs.platform.registry.test.model;
 
 import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -113,5 +116,30 @@ public class DeviceTest {
         device.onRegistration();
 
         assertThat(device.applyValidations(),nullValue());
+    }
+
+    @Test
+    public void shouldReturnItsLastEvent() throws Exception {
+        Event firtEvent = Event.builder()
+            .timestamp(Instant.now().minus(Duration.ofMinutes(2)))
+            .build();
+        Event lastEvent = Event.builder()
+            .timestamp(Instant.now())
+            .build();
+
+        device.setEvents(Arrays.asList(new Event[]{firtEvent,lastEvent}));
+
+        assertThat(device.getLastEvent(),equalTo(lastEvent));
+    }
+
+    @Test
+    public void shouldReturnNullIfThereIsNoEventsYet() throws Exception {
+        device.setEvents(null);
+
+        assertThat(device.getLastEvent(),nullValue());
+
+        device.setEvents(Collections.emptyList());
+
+        assertThat(device.getLastEvent(),nullValue());
     }
 }

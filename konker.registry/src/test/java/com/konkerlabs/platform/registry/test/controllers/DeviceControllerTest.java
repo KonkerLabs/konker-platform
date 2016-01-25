@@ -6,9 +6,7 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterServ
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.test.base.WebIntegrationTestContext;
-import com.konkerlabs.platform.registry.web.controllers.DeviceController;
 import com.konkerlabs.platform.registry.web.forms.DeviceRegistrationForm;
-import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,6 +21,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -57,10 +56,12 @@ public class DeviceControllerTest extends WebIntegrationTestContext {
         deviceData = new LinkedMultiValueMap<>();
         deviceData.add("name","Device name");
         deviceData.add("deviceId","95c14b36ba2b43f1");
+        deviceData.add("description","Some description");
 
         device = Device.builder()
             .deviceId(deviceData.getFirst("deviceId"))
             .name(deviceData.getFirst("name"))
+            .description(deviceData.getFirst("description"))
             .build();
 
         deviceForm = new DeviceRegistrationForm();
@@ -78,7 +79,7 @@ public class DeviceControllerTest extends WebIntegrationTestContext {
     public void shouldListAllRegisteredDevices() throws Exception {
         when(deviceRegisterService.getAll()).thenReturn(registeredDevices);
 
-        getMockMvc().perform(get("/devices/"))
+        getMockMvc().perform(get("/devices"))
             .andExpect(model().attribute("devices",equalTo(registeredDevices)))
             .andExpect(view().name("layout:devices/index"));
     }
@@ -133,6 +134,20 @@ public class DeviceControllerTest extends WebIntegrationTestContext {
                 .andExpect(redirectedUrl("/registry/devices/"));
 
         verify(deviceRegisterService).register(eq(device));
+    }
+
+    @Test
+    public void shouldShowDeviceDetails() throws Exception {
+        device.setRegistrationDate(Instant.now());
+
+        when(deviceRegisterService.findById(device.getDeviceId())).thenReturn(device);
+
+        getMockMvc().perform(
+            get("/devices/show").param("deviceId",device.getDeviceId())
+        ).andExpect(model().attribute("device",device)
+        ).andExpect(view().name("layout:devices/show"));
+
+        verify(deviceRegisterService).findById(device.getDeviceId());
     }
 
     @Configuration

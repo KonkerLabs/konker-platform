@@ -33,6 +33,6 @@
             </textarea>
         </div>
         <button type="submit" class="btn btn-success">Save</button>
-        <a href="/registry/devices/" class="btn btn-default">Back</a>
+        <a href="/registry/devices" class="btn btn-default">Back</a>
     </form>
 </fieldset>

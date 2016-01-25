@@ -10,6 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -26,7 +27,7 @@ public class DeviceController {
         this.deviceRegisterService = deviceRegisterService;
     }
 
-    @RequestMapping("/")
+    @RequestMapping
     public ModelAndView index() {
         return new ModelAndView("layout:devices/index","devices",deviceRegisterService.getAll());
     }
@@ -60,5 +61,10 @@ public class DeviceController {
             return new ModelAndView("layout:devices/form")
                 .addObject("errors",serviceResponse.getResponseMessages())
                 .addObject("device",deviceForm);
+    }
+
+    @RequestMapping("/show")
+    public ModelAndView show(@RequestParam("deviceId") String deviceId) {
+        return new ModelAndView("layout:devices/show","device",deviceRegisterService.findById(deviceId));
     }
 }

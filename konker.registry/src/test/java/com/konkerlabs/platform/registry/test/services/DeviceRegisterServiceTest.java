@@ -108,6 +108,7 @@ public class DeviceRegisterServiceTest extends BusinessIntegrationTestContext {
     }
 
     @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json"})
     public void shouldApplyOnRegistrationCallbackBeforeValidations() throws Exception {
         deviceRegisterService.register(device);
 
@@ -147,5 +148,17 @@ public class DeviceRegisterServiceTest extends BusinessIntegrationTestContext {
 
         assertThat(all,notNullValue());
         assertThat(all,hasSize(1));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/devices.json"})
+    public void shouldFindADeviceByItsId() throws Exception {
+        Device registeredDevice = deviceRepository.findByDeviceId("95c14b36ba2b43f1");
+        assertThat(registeredDevice,notNullValue());
+
+        Device found = deviceRegisterService.findById(registeredDevice.getDeviceId());
+
+        assertThat(found,notNullValue());
+        assertThat(found,equalTo(registeredDevice));
     }
 }

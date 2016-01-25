@@ -61,4 +61,9 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
     public List<Device> getAll() {
         return deviceRepository.findAll();
     }
+
+    @Override
+    public Device findById(String deviceId) {
+        return deviceRepository.findByDeviceId(deviceId);
+    }
 }
