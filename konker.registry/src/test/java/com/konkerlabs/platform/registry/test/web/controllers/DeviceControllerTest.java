@@ -1,11 +1,11 @@
-package com.konkerlabs.platform.registry.test.controllers;
+package com.konkerlabs.platform.registry.test.web.controllers;
 
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
-import com.konkerlabs.platform.registry.test.base.WebIntegrationTestContext;
+import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
 import com.konkerlabs.platform.registry.web.forms.DeviceRegistrationForm;
 import org.junit.After;
 import org.junit.Before;
@@ -37,7 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
 @ContextConfiguration(classes = {WebMvcConfig.class,DeviceControllerTest.DeviceTestContextConfig.class})
-public class DeviceControllerTest extends WebIntegrationTestContext {
+public class DeviceControllerTest extends WebLayerTestContext {
 
     @Autowired
     DeviceRegisterService deviceRegisterService;

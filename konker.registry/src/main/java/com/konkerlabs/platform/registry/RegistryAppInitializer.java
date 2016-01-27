@@ -2,6 +2,7 @@ package com.konkerlabs.platform.registry;
 
 import com.konkerlabs.platform.registry.config.BusinessConfig;
 import com.konkerlabs.platform.registry.config.MongoConfig;
+import com.konkerlabs.platform.registry.config.MqttConfig;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
@@ -11,7 +12,8 @@ public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherSe
     protected Class<?>[] getRootConfigClasses() {
         return new Class<?>[] {
             BusinessConfig.class,
-            MongoConfig.class
+            MongoConfig.class,
+            MqttConfig.class
         };
     }
 

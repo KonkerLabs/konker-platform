@@ -17,32 +17,11 @@ import org.springframework.test.context.ContextConfiguration;
 import static com.lordofthejars.nosqlunit.mongodb.InMemoryMongoDb.InMemoryMongoRuleBuilder.newInMemoryMongoDbRule;
 import static com.lordofthejars.nosqlunit.mongodb.MongoDbRule.MongoDbRuleBuilder.newMongoDbRule;
 
-@ContextConfiguration
-public class BusinessIntegrationTestContext {
+public class BusinessLayerTestSupport {
 
     @Autowired
     private ApplicationContext applicationContext;
 
     @Rule
     public MongoDbRule mongoDbRule = newMongoDbRule().defaultSpringMongoDb("registry-test");
-
-    @Configuration
-    static class MongoTestConfiguration extends MongoConfig {
-
-        @Override
-        protected String getDatabaseName() {
-            return "registry-test";
-        }
-
-        @Override
-        @Bean
-        public Mongo mongo() throws Exception {
-            return new Fongo("registry-test").getMongo();
-        }
-    }
-
-    @Configuration
-    @ComponentScan(basePackages = "com.konkerlabs.platform.registry.business")
-    static class BusinessLayerConfiguration {
-    }
 }

@@ -2,17 +2,21 @@ package com.konkerlabs.platform.registry.business.services;
 
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.List;
 
 @Service
+@Scope(BeanDefinition.SCOPE_PROTOTYPE)
 public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
     @Autowired
@@ -65,5 +69,10 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
     @Override
     public Device findById(String deviceId) {
         return deviceRepository.findByDeviceId(deviceId);
+    }
+
+    @Override
+    public Device logEvent(String deviceId, String payload) {
+        return null;
     }
 }

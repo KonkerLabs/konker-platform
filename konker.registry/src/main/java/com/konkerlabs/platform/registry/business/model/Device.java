@@ -3,6 +3,7 @@ package com.konkerlabs.platform.registry.business.model;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -19,6 +20,7 @@ public class Device {
 
     @DBRef
     private Tenant tenant;
+    @Id
     private String deviceId;
     private String name;
     private String description;
