@@ -34,4 +34,4 @@
                     device.getLastEvent.getTimestamp.toString else "No updates available" %>"/>
     </div>
 </fieldset>
-<a href="/registry/devices" class="btn btn-default">Back</a>
+<a href="${contextPath}/devices" class="btn btn-default">Back</a>

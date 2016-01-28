@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry.test.base;
 
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
+import com.konkerlabs.platform.registry.web.filters.ContextPathFilter;
 import org.junit.Before;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,6 @@ public class WebLayerTestContext {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        this.mockMvc = MockMvcBuilders.webAppContextSetup(this.wac).build();
+        this.mockMvc = MockMvcBuilders.webAppContextSetup(this.wac).addFilters(new ContextPathFilter()).build();
     }
 }

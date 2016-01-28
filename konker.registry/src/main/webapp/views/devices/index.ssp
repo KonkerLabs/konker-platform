@@ -12,7 +12,7 @@
             </button>
         </div>
     #end
-    <a href="/registry/devices/new/" class="pull-right btn btn-default action">New</a>
+    <a href="${contextPath}/devices/new/" class="pull-right btn btn-default action">New</a>
     <table class="table table-bordered">
         <thead>
             <tr>
@@ -27,10 +27,10 @@
                     <td>${device.getDeviceId}</td>
                     <td>${device.getName}</td>
                     <td class="text-center">
-                        <a href="/registry/devices/show?deviceId=${device.getDeviceId}" class="btn btn-default">
+                        <a href="${contextPath}/devices/show?deviceId=${device.getDeviceId}" class="btn btn-default">
                             Show
                         </a>
-                        <a href="/registry/devices/${device.getDeviceId}/events" class="btn btn-default">
+                        <a href="${contextPath}/devices/${device.getDeviceId}/events" class="btn btn-default">
                             Events
                         </a>
                     </td>

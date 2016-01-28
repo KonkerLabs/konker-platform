@@ -132,7 +132,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
         getMockMvc().perform(
                 post("/devices/save").params(deviceData))
                 .andExpect(flash().attribute("message","Device registered successfully"))
-                .andExpect(redirectedUrl("/registry/devices"));
+                .andExpect(redirectedUrl("/devices"));
 
         verify(deviceRegisterService).register(eq(device));
     }

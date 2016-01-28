@@ -11,7 +11,7 @@
             #end
         </div>
     #end
-    <form action="/registry/devices/save" method="post">
+    <form action="${contextPath}/devices/save" method="post">
         <div class="form-group">
             <label for="deviceId">Device ID</label>
             <input type="text" value="${device.getDeviceId}"
@@ -33,6 +33,6 @@
             </textarea>
         </div>
         <button type="submit" class="btn btn-success">Save</button>
-        <a href="/registry/devices" class="btn btn-default">Back</a>
+        <a href="${contextPath}/devices" class="btn btn-default">Back</a>
     </form>
 </fieldset>

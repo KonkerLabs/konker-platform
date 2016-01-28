@@ -33,4 +33,4 @@
         There is no events available
     <% }%>
 </fieldset>
-<a href="/registry/devices" class="btn btn-default">Back</a>
+<a href="${contextPath}/devices" class="btn btn-default">Back</a>

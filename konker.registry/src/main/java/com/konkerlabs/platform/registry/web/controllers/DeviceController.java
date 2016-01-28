@@ -53,7 +53,7 @@ public class DeviceController {
 
         if (serviceResponse.getStatus().equals(ServiceResponse.Status.OK)) {
             redirectAttributes.addFlashAttribute("message", "Device registered successfully");
-            return new ModelAndView("redirect:/registry/devices");
+            return new ModelAndView("redirect:/devices");
         } else
             return new ModelAndView("layout:devices/form")
                 .addObject("errors",serviceResponse.getResponseMessages())
