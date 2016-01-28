@@ -1,7 +1,9 @@
 package com.konkerlabs.platform.registry.test.integration.endpoints;
 
+import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.integration.endpoints.DeviceEventEndpoint;
+import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -24,7 +26,7 @@ public class DeviceEventEndpointTest {
 
     public DeviceEventEndpoint subject;
     private Message<String> message;
-    private DeviceEventService processor;
+    private DeviceEventProcessor processor;
 
     private String deviceId = "95c14b36ba2b43f1";
     private String payload = "message";
@@ -32,7 +34,7 @@ public class DeviceEventEndpointTest {
 
     @Before
     public void setUp() throws Exception {
-        processor = mock(DeviceEventService.class);
+        processor = mock(DeviceEventProcessor.class);
         subject = new DeviceEventEndpoint(processor);
 
         message = MessageBuilder.withPayload(payload).setHeader(MqttHeaders.TOPIC,topic).build();
@@ -56,21 +58,9 @@ public class DeviceEventEndpointTest {
         subject.onEvent(message);
     }
     @Test
-    public void shouldRaiseAnExceptionIfDeviceIdIsUnknown() throws Exception {
-        //Device ID is expected to be found on third level
-        topic = "konker/device";
-
-        message = MessageBuilder.withPayload(payload).setHeader(MqttHeaders.TOPIC,topic).build();
-
-        thrown.expect(MessagingException.class);
-        thrown.expectMessage("Device ID cannot be retrieved");
-
-        subject.onEvent(message);
-    }
-    @Test
     public void shouldDelegateEventToItsProcessor() throws Exception {
         subject.onEvent(message);
 
-        verify(processor).logEvent(payload,deviceId);
+        verify(processor).process(topic,payload);
     }
 }

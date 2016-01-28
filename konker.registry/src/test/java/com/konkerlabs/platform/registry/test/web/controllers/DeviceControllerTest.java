@@ -21,6 +21,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -131,7 +132,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
         getMockMvc().perform(
                 post("/devices/save").params(deviceData))
                 .andExpect(flash().attribute("message","Device registered successfully"))
-                .andExpect(redirectedUrl("/registry/devices/"));
+                .andExpect(redirectedUrl("/registry/devices"));
 
         verify(deviceRegisterService).register(eq(device));
     }
@@ -139,13 +140,25 @@ public class DeviceControllerTest extends WebLayerTestContext {
     @Test
     public void shouldShowDeviceDetails() throws Exception {
         device.setRegistrationDate(Instant.now());
-
         when(deviceRegisterService.findById(device.getDeviceId())).thenReturn(device);
 
         getMockMvc().perform(
             get("/devices/show").param("deviceId",device.getDeviceId())
         ).andExpect(model().attribute("device",device)
         ).andExpect(view().name("layout:devices/show"));
+
+        verify(deviceRegisterService).findById(device.getDeviceId());
+    }
+
+    @Test
+    public void shouldShowDeviceEventList() throws Exception {
+        device.setRegistrationDate(Instant.now());
+        when(deviceRegisterService.findById(device.getDeviceId())).thenReturn(device);
+
+        getMockMvc().perform(
+                get(MessageFormat.format("/devices/{0}/events",device.getDeviceId()))
+        ).andExpect(model().attribute("device",device)
+        ).andExpect(view().name("layout:devices/events"));
 
         verify(deviceRegisterService).findById(device.getDeviceId());
     }

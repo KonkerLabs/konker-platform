@@ -7,10 +7,7 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.web.forms.DeviceRegistrationForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -56,7 +53,7 @@ public class DeviceController {
 
         if (serviceResponse.getStatus().equals(ServiceResponse.Status.OK)) {
             redirectAttributes.addFlashAttribute("message", "Device registered successfully");
-            return new ModelAndView("redirect:/registry/devices/");
+            return new ModelAndView("redirect:/registry/devices");
         } else
             return new ModelAndView("layout:devices/form")
                 .addObject("errors",serviceResponse.getResponseMessages())
@@ -66,5 +63,10 @@ public class DeviceController {
     @RequestMapping("/show")
     public ModelAndView show(@RequestParam("deviceId") String deviceId) {
         return new ModelAndView("layout:devices/show","device",deviceRegisterService.findById(deviceId));
+    }
+
+    @RequestMapping("/{deviceId}/events")
+    public ModelAndView deviceEvents(@PathVariable String deviceId) {
+        return new ModelAndView("layout:devices/events","device",deviceRegisterService.findById(deviceId));
     }
 }

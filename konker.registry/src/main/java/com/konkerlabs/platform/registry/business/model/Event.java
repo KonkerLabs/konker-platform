@@ -10,6 +10,7 @@ import java.time.Instant;
 public class Event {
 
     private Instant timestamp;
+    private String channel;
     private String payload;
 
 }

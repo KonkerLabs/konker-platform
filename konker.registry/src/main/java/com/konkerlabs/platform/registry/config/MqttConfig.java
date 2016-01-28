@@ -1,6 +1,8 @@
 package com.konkerlabs.platform.registry.config;
 
-import com.konkerlabs.platform.registry.integration.MessageGateway;
+import com.konkerlabs.platform.registry.integration.gateways.MqttMessageGateway;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -10,7 +12,6 @@ import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.config.EnableIntegration;
 import org.springframework.integration.gateway.GatewayProxyFactoryBean;
 import org.springframework.integration.mqtt.core.DefaultMqttPahoClientFactory;
-import org.springframework.integration.mqtt.core.MqttPahoClientFactory;
 import org.springframework.integration.mqtt.inbound.AbstractMqttMessageDrivenChannelAdapter;
 import org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter;
 import org.springframework.integration.mqtt.outbound.MqttPahoMessageHandler;
@@ -21,8 +22,10 @@ import org.springframework.messaging.MessageHandler;
 @Configuration
 @EnableIntegration
 @ComponentScan(basePackages = "com.konkerlabs.platform.registry.integration")
-@IntegrationComponentScan(basePackageClasses = MessageGateway.class)
+@IntegrationComponentScan(basePackageClasses = MqttMessageGateway.class)
 public class MqttConfig {
+
+    private static final Config brokerConfig = ConfigFactory.load().getConfig("mqtt");
 
     @Bean(name = "konkerMqttInputChannel")
     public MessageChannel inputChannel() {
@@ -37,7 +40,9 @@ public class MqttConfig {
     @Bean
     public DefaultMqttPahoClientFactory mqttClientFactory() {
         DefaultMqttPahoClientFactory factory = new DefaultMqttPahoClientFactory();
-        factory.setServerURIs("tcp://dev-server:1883");
+        factory.setServerURIs(brokerConfig.getStringList("uris").toArray(new String[] {}));
+        factory.setUserName(brokerConfig.getString("username"));
+        factory.setPassword(brokerConfig.getString("password"));
         return factory;
     }
 

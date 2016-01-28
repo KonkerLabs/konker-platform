@@ -30,6 +30,9 @@
                         <a href="/registry/devices/show?deviceId=${device.getDeviceId}" class="btn btn-default">
                             Show
                         </a>
+                        <a href="/registry/devices/${device.getDeviceId}/events" class="btn btn-default">
+                            Events
+                        </a>
                     </td>
                 </tr>
             #end

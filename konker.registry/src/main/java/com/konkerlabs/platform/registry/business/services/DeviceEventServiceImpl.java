@@ -26,9 +26,13 @@ public class DeviceEventServiceImpl implements DeviceEventService {
     }
 
     @Override
-    public void logEvent(String payload, String deviceId) throws BusinessException {
-        if (payload == null || payload.isEmpty())
-            throw new BusinessException("Payload cannot be null or empty");
+    public void logEvent(Event event, String deviceId) throws BusinessException {
+        if (event == null)
+            throw new BusinessException("Event cannot be null");
+        if (event.getPayload() == null || event.getPayload().isEmpty())
+            throw new BusinessException("Event payload cannot be null or empty");
+        if (event.getTimestamp() != null)
+            throw new BusinessException("Event timestamp cannot be already set!");
 
         Device device = deviceRepository.findByDeviceId(deviceId);
 
@@ -38,11 +42,9 @@ public class DeviceEventServiceImpl implements DeviceEventService {
         if (device.getEvents() == null)
             device.setEvents(new ArrayList<>());
 
-        device.getEvents().add(Event.builder()
-            .payload(payload)
-            .timestamp(Instant.now())
-            .build()
-        );
+        event.setTimestamp(Instant.now());
+
+        device.getEvents().add(event);
 
         deviceRepository.save(device);
     }

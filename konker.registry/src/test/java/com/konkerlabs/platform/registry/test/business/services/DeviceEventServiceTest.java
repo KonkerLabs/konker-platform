@@ -9,6 +9,7 @@ import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -42,20 +43,47 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
 
     private String deviceId = "95c14b36ba2b43f1";
     private String payload = "payload";
+    private String channel = "konker/device/0000000000000004/data";
+    private Event event;
+
+    @Before
+    public void setUp() throws Exception {
+        event = Event.builder().channel(channel).payload(payload).build();
+    }
 
     @Test
-    public void shouldRaiseAnExceptionIfPayloadIsNull() throws Exception {
+    public void shouldRaiseAnExceptionIfEventIsNull() throws Exception {
         thrown.expect(BusinessException.class);
-        thrown.expectMessage("Payload cannot be null or empty");
+        thrown.expectMessage("Event cannot be null");
 
         deviceEventService.logEvent(null,deviceId);
     }
     @Test
-    public void shouldRaiseAnExceptionIfPayloadIsEmpty() throws Exception {
-        thrown.expect(BusinessException.class);
-        thrown.expectMessage("Payload cannot be null or empty");
+    public void shouldRaiseAnExceptionIfPayloadIsNull() throws Exception {
+        event.setPayload(null);
 
-        deviceEventService.logEvent("",deviceId);
+        thrown.expect(BusinessException.class);
+        thrown.expectMessage("Event payload cannot be null or empty");
+
+        deviceEventService.logEvent(event,deviceId);
+    }
+    @Test
+    public void shouldRaiseAnExceptionIfEventTimestampIsAlreadySet() throws Exception {
+        event.setTimestamp(Instant.now());
+
+        thrown.expect(BusinessException.class);
+        thrown.expectMessage("Event timestamp cannot be already set!");
+
+        deviceEventService.logEvent(event,deviceId);
+    }
+    @Test
+    public void shouldRaiseAnExceptionIfPayloadIsEmpty() throws Exception {
+        event.setPayload("");
+
+        thrown.expect(BusinessException.class);
+        thrown.expectMessage("Event payload cannot be null or empty");
+
+        deviceEventService.logEvent(event,deviceId);
     }
     @Test
     public void shouldRaiseAnExceptionIfDeviceDoesNotExist() throws Exception {
@@ -64,12 +92,12 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
         thrown.expect(BusinessException.class);
         thrown.expectMessage(MessageFormat.format("Device ID [{0}] does not exist",deviceId));
 
-        deviceEventService.logEvent(payload,deviceId);
+        deviceEventService.logEvent(event,deviceId);
     }
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json"})
-    public void shouldLogDeviceEvent() throws Exception {
-        deviceEventService.logEvent(payload,deviceId);
+    public void shouldLogFirstDeviceEvent() throws Exception {
+        deviceEventService.logEvent(event,deviceId);
 
         Device device = deviceRepository.findByDeviceId(deviceId);
 
