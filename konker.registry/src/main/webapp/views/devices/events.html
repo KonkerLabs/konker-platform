@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html layout:decorator="layouts/default">
+<head>
+</head>
+<body>
+    <div layout:fragment="content">
+        <fieldset disabled="">
+            <legend>Devices</legend>
+            <div class="form-group">
+                <label for="deviceId">Device ID</label>
+                <input type="text" th:value="${device.deviceId}"
+                        class="form-control"
+                        id="deviceId"
+                        name="deviceId"/>
+            </div>
+            <table class="table table-bordered" th:if="${device.events != null and !device.events.empty}">
+                <thead>
+                    <tr>
+                        <td class="col-md-1">Date and time</td>
+                        <td class="col-md-2">Channel</td>
+                        <td class="col-md-2">Payload</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="event : ${device.events}">
+                        <td th:text="${event.timestamp.toString()}"></td>
+                        <td th:text="${event.channel}"></td>
+                        <td th:text="${event.payload}"></td>
+                    </tr>
+                </tbody>
+            </table>
+            <span th:if="${device.events == null or device.events.empty}">There is no events available</span>
+        </fieldset>
+        <a th:href="@{/devices}" class="btn btn-default">Back</a>
+    </div>
+</body>
+</html>

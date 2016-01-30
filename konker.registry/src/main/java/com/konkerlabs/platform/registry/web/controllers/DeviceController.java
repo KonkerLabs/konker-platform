@@ -26,12 +26,12 @@ public class DeviceController {
 
     @RequestMapping
     public ModelAndView index() {
-        return new ModelAndView("layout:devices/index","devices",deviceRegisterService.getAll());
+        return new ModelAndView("devices/index","devices",deviceRegisterService.getAll());
     }
 
     @RequestMapping("/new")
     public ModelAndView newDevice() {
-        return new ModelAndView("layout:devices/form");
+        return new ModelAndView("devices/form","device",Device.builder().build());
     }
 
     @RequestMapping(path = "/save",method = RequestMethod.POST)
@@ -47,26 +47,27 @@ public class DeviceController {
                     .build()
             );
         } catch (BusinessException e) {
-            return new ModelAndView("layout:devices/form")
-                .addObject("errors", Arrays.asList(new String[] {e.getMessage()}));
+            return new ModelAndView("devices/form")
+                .addObject("errors", Arrays.asList(new String[] {e.getMessage()}))
+                .addObject("device",deviceForm);
         }
 
         if (serviceResponse.getStatus().equals(ServiceResponse.Status.OK)) {
             redirectAttributes.addFlashAttribute("message", "Device registered successfully");
             return new ModelAndView("redirect:/devices");
         } else
-            return new ModelAndView("layout:devices/form")
+            return new ModelAndView("devices/form")
                 .addObject("errors",serviceResponse.getResponseMessages())
                 .addObject("device",deviceForm);
     }
 
-    @RequestMapping("/show")
-    public ModelAndView show(@RequestParam("deviceId") String deviceId) {
-        return new ModelAndView("layout:devices/show","device",deviceRegisterService.findById(deviceId));
+    @RequestMapping("/{deviceId}/show")
+    public ModelAndView show(@PathVariable("deviceId") String deviceId) {
+        return new ModelAndView("devices/show","device",deviceRegisterService.findById(deviceId));
     }
 
     @RequestMapping("/{deviceId}/events")
     public ModelAndView deviceEvents(@PathVariable String deviceId) {
-        return new ModelAndView("layout:devices/events","device",deviceRegisterService.findById(deviceId));
+        return new ModelAndView("devices/events","device",deviceRegisterService.findById(deviceId));
     }
 }

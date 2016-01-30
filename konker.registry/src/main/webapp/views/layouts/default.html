@@ -1,27 +1,22 @@
-<%@ var body: String %>
-<%@ var contextPath : String %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
 <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-<meta name="description" content="">
-<meta name="author" content="">
+<meta name="description" content=""/>
+<meta name="author" content=""/>
 
 <title>Konker</title>
 
 <!-- Bootstrap core CSS -->
-<link href="${contextPath}/resources/css/bootstrap.min.css" rel="stylesheet">
-
-<!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-<link href="${contextPath}/resources/css/ie10-viewport-bug-workaround.css" rel="stylesheet">
+<link th:href="@{/resources/css/bootstrap.min.css}" rel="stylesheet"/>
 
 <!-- Custom styles for this template -->
-<link href="${contextPath}/resources/css/jumbotron.css" rel="stylesheet">
+<link th:href="@{/resources/css/jumbotron.css}" rel="stylesheet"/>
 
-<link href="${contextPath}/resources/css/konker.css" rel="stylesheet"/>
+<link th:href="@{/resources/css/konker.css}" rel="stylesheet"/>
 
 <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
 <!--[if lt IE 9]>
@@ -49,17 +44,14 @@
 </nav>
 
 <!-- Main jumbotron for a primary marketing message or call to action -->
-<%--<div class="jumbotron">--%>
 <div id="wrap">
-    <div class="container">
-        ${unescape(body)}
+    <div class="container" layout:fragment="content">
     </div>
 </div>
-<%--</div>--%>
 
 <div id="footer">
     <div class="container">
-    <hr>
+    <hr/>
         <footer>
             <p>&copy; 2016 Konker Labs, Inc.</p>
         </footer>
@@ -71,9 +63,11 @@
 ================================================== -->
 <!-- Placed at the end of the document so the pages load faster -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-<script>window.jQuery || document.write('<script src="/resources/js/vendor/jquery.min.js"><\/script>')</script>
-    <script src="${contextPath}/resources/js/bootstrap.min.js"></script>
-    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-    <script src="${contextPath}/resources/js/ie10-viewport-bug-workaround.js"></script>
+<script th:inline="javascript">
+/*<![CDATA[*/
+    window.jQuery || document.write('<script src="/resources/js/vendor/jquery.min.js"/>')
+/*]]>*/
+</script>
+    <script th:attr="src=@{/resources/js/bootstrap.min.js}"></script>
 </body>
 </html>

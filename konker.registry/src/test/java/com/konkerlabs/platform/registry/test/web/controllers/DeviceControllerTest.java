@@ -82,13 +82,13 @@ public class DeviceControllerTest extends WebLayerTestContext {
 
         getMockMvc().perform(get("/devices"))
             .andExpect(model().attribute("devices",equalTo(registeredDevices)))
-            .andExpect(view().name("layout:devices/index"));
+            .andExpect(view().name("devices/index"));
     }
 
     @Test
     public void shouldShowRegistrationForm() throws Exception {
         getMockMvc().perform(get("/devices/new"))
-            .andExpect(view().name("layout:devices/form"));
+            .andExpect(view().name("devices/form"));
     }
 
     @Test
@@ -103,7 +103,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
             post("/devices/save").params(deviceData))
             .andExpect(model().attribute("errors",equalTo(response.getResponseMessages())))
             .andExpect(model().attribute("device",equalTo(deviceForm)))
-            .andExpect(view().name("layout:devices/form"));
+            .andExpect(view().name("devices/form"));
 
         verify(deviceRegisterService).register(eq(device));
     }
@@ -117,7 +117,8 @@ public class DeviceControllerTest extends WebLayerTestContext {
         getMockMvc().perform(
                 post("/devices/save").params(deviceData))
                 .andExpect(model().attribute("errors",equalTo(Arrays.asList(new String[] {exceptionMessage}))))
-                .andExpect(view().name("layout:devices/form"));
+                .andExpect(model().attribute("device",equalTo(deviceForm)))
+                .andExpect(view().name("devices/form"));
 
         verify(deviceRegisterService).register(eq(device));
     }
@@ -143,9 +144,9 @@ public class DeviceControllerTest extends WebLayerTestContext {
         when(deviceRegisterService.findById(device.getDeviceId())).thenReturn(device);
 
         getMockMvc().perform(
-            get("/devices/show").param("deviceId",device.getDeviceId())
+            get(MessageFormat.format("/devices/{0}/show",device.getDeviceId()))
         ).andExpect(model().attribute("device",device)
-        ).andExpect(view().name("layout:devices/show"));
+        ).andExpect(view().name("devices/show"));
 
         verify(deviceRegisterService).findById(device.getDeviceId());
     }
@@ -158,7 +159,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
         getMockMvc().perform(
                 get(MessageFormat.format("/devices/{0}/events",device.getDeviceId()))
         ).andExpect(model().attribute("device",device)
-        ).andExpect(view().name("layout:devices/events"));
+        ).andExpect(view().name("devices/events"));
 
         verify(deviceRegisterService).findById(device.getDeviceId());
     }

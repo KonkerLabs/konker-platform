@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html layout:decorator="layouts/default">
+<head>
+</head>
+<body>
+    <div layout:fragment="content">
+        <fieldset disabled="">
+            <legend>Devices</legend>
+            <div class="form-group">
+                <label for="deviceId">Device ID</label>
+                <input type="text" th:value="${device.deviceId}"
+                    class="form-control"
+                    id="deviceId"
+                    name="deviceId"/>
+            </div>
+            <div class="form-group">
+                <label for="name">Device Name</label>
+                <input type="text" th:value="${device.name}"
+                        class="form-control"
+                        id="name" name="name"/>
+            </div>
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" class="form-control" name="description"
+                    th:text="${device.description}">
+                </textarea>
+            </div>
+            <div class="form-group">
+                <label for="registrationDate">Registration Date and Time</label>
+                <input type="text" id="registrationDate" class="form-control" name="registrationDate"
+                    th:value="${device.registrationDate.toString()}"/>
+            </div>
+            <div class="form-group">
+                <label for="lastUpdate">Last Update</label>
+                <input type="text" id="lastUpdate" class="form-control" name="lastUpdate"
+                    th:value="${device.lastEvent != null ? device.lastEvent.timestamp.toString() : 'No updates available'}"/>
+            </div>
+        </fieldset>
+        <a th:href="@{/devices}" class="btn btn-default">Back</a>
+    </div>
+</body>
+</html>
