@@ -13,7 +13,7 @@
                         id="deviceId"
                         name="deviceId"/>
             </div>
-            <table class="table table-bordered" th:if="${device.events != null and !device.events.empty}">
+            <table class="table table-bordered" th:if="${recentEvents != null and !recentEvents.empty}">
                 <thead>
                     <tr>
                         <td class="col-md-1">Date and time</td>
@@ -22,14 +22,14 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr th:each="event : ${device.events}">
+                    <tr th:each="event : ${recentEvents}">
                         <td th:text="${event.timestamp.toString()}"></td>
                         <td th:text="${event.channel}"></td>
                         <td th:text="${event.payload}"></td>
                     </tr>
                 </tbody>
             </table>
-            <span th:if="${device.events == null or device.events.empty}">There is no events available</span>
+            <span th:if="${recentEvents == null or recentEvents.empty}">There are no events available</span>
         </fieldset>
         <a th:href="@{/devices}" class="btn btn-default">Back</a>
     </div>
