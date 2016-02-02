@@ -6,6 +6,14 @@
     <div layout:fragment="content">
         <fieldset disabled="">
             <legend>Devices</legend>
+
+            <div class="alert alert-success" role="alert" th:if="${message != null}">
+                <span th:text="${message}"></span>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            
             <div class="form-group">
                 <label for="deviceId">Device ID</label>
                 <input type="text" th:value="${device.deviceId}"

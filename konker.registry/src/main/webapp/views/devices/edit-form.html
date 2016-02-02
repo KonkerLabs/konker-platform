@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html layout:decorator="layouts/default">
+<head>
+</head>
+<body>
+    <div layout:fragment="content">
+            <legend>Edit Device</legend>
+            <div class="alert alert-danger" role="alert" th:if="${errors != null and !errors.empty}">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <li th:each="error : ${errors}" th:text="${error}"></li>
+            </div>
+            <form th:action="@{/devices/{id}(id=${device.deviceId})}" th:object="${device}" method="post">
+		        <fieldset disabled="">
+		                <div class="form-group">
+		                    <label for="deviceId">Device ID</label>
+		                    <input type="text" th:field="*{deviceId}"
+		                           class="form-control"
+		                           id="deviceId"
+		                           enabled="false"
+		                           name="deviceId" placeholder="Type your device ID here..."/>
+		                </div>
+				</fieldset>
+				<fieldset>
+		                <div class="form-group">
+		                    <label for="name">Device Name</label>
+		                    <input type="text" th:field="*{name}"
+		                           class="form-control"
+		                           id="name" name="name" placeholder="Type your device name here..."/>
+		                </div>
+		                <div class="form-group">
+		                    <label for="description">Description</label>
+		                    <textarea id="description" class="form-control" name="description"
+		                              placeholder="Type some about your device (optional)" th:field="*{description}">
+		                    </textarea>
+		                </div>
+		                <button type="submit" class="btn btn-success">Save</button>
+		                <a th:href="@{/devices}" class="btn btn-default">Back</a>
+		        </fieldset>
+            </form>
+    </div>
+</body>
+</html>

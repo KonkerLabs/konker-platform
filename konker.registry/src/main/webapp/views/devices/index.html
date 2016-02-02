@@ -17,7 +17,7 @@
                 <thead>
                 <tr>
                     <td class="col-md-1">ID</td>
-                    <td class="col-md-4">Name</td>
+                    <td class="col-md-3">Name</td>
                     <td class="col-md-1 text-center">Actions</td>
                 </tr>
                 </thead>
@@ -26,8 +26,11 @@
                     <td th:text="${device.deviceId}"></td>
                     <td th:text="${device.name}"></td>
                     <td class="text-center">
-                        <a th:href="@{/devices/{id}/show(id=${device.deviceId})}" class="btn btn-default">
+                        <a th:href="@{/devices/{id}(id=${device.deviceId})}" class="btn btn-default">
                             Show
+                        </a>
+                        <a th:href="@{/devices/{id}/edit(id=${device.deviceId})}" class="btn btn-default">
+                            Edit
                         </a>
                         <a th:href="@{/devices/{id}/events(id=${device.deviceId})}" class="btn btn-default">
                             Events

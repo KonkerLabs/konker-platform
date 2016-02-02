@@ -7,6 +7,7 @@ import java.util.List;
 
 public interface DeviceRepository extends MongoRepository<Device,String> {
 
+    // FIXME: deviceID should be unique within tenant, not globally
     @Query("{ 'deviceId' : ?0 }")
     Device findByDeviceId(String deviceId);
 

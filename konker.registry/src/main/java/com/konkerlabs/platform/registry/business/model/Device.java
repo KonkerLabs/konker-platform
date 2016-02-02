@@ -21,6 +21,8 @@ public class Device {
 
 	@DBRef
 	private Tenant tenant;
+
+	//FIXME: deviceId should be unique within a tenant, not globally
 	@Id
 	private String deviceId;
 	private String name;
