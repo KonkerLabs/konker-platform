@@ -11,12 +11,12 @@
 <title>Konker</title>
 
 <!-- Bootstrap core CSS -->
-<link th:href="@{/resources/css/bootstrap.min.css}" rel="stylesheet"/>
+<link th:href="@{/resources/bootstrap/css/bootstrap.min.css}" rel="stylesheet"/>
 
 <!-- Custom styles for this template -->
-<link th:href="@{/resources/css/jumbotron.css}" rel="stylesheet"/>
+<link th:href="@{/resources/bootstrap/css/jumbotron.css}" rel="stylesheet"/>
 
-<link th:href="@{/resources/css/konker.css}" rel="stylesheet"/>
+<link th:href="@{/resources/bootstrap/css/konker.css}" rel="stylesheet"/>
 
 <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
 <!--[if lt IE 9]>
@@ -39,6 +39,7 @@
 <a class="navbar-brand" href="#">Konker - IoE Platform</a>
 </div>
 <div id="navbar" class="navbar-collapse collapse">
+    <a th:href="@{/logout}" class="btn btn-default pull-right">Logout</a>
 </div><!--/.navbar-collapse -->
 </div>
 </nav>
@@ -65,9 +66,9 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 <script th:inline="javascript">
 /*<![CDATA[*/
-    window.jQuery || document.write('<script src="/resources/js/vendor/jquery.min.js"/>')
+    window.jQuery || document.write('<script src="/resources/bootstrap/js/vendor/jquery.min.js"/>')
 /*]]>*/
 </script>
-    <script th:attr="src=@{/resources/js/bootstrap.min.js}"></script>
+    <script th:attr="src=@{/resources/bootstrap/js/bootstrap.min.js}"></script>
 </body>
 </html>

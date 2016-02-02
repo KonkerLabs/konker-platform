@@ -13,8 +13,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -37,7 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
-@ContextConfiguration(classes = {WebMvcConfig.class,DeviceControllerTest.DeviceTestContextConfig.class})
+@ContextConfiguration(classes = {WebMvcConfig.class, WebLayerTestContext.BusinessLayerMockUpContextConfig.class})
 public class DeviceControllerTest extends WebLayerTestContext {
 
     @Autowired
@@ -162,13 +160,5 @@ public class DeviceControllerTest extends WebLayerTestContext {
         ).andExpect(view().name("devices/events"));
 
         verify(deviceRegisterService).findById(device.getDeviceId());
-    }
-
-    @Configuration
-    static class DeviceTestContextConfig {
-        @Bean
-        public DeviceRegisterService deviceRegisterService() {
-            return Mockito.mock(DeviceRegisterService.class);
-        }
     }
 }
