@@ -2,6 +2,8 @@ package com.konkerlabs.platform.registry.config;
 
 import com.konkerlabs.platform.registry.business.model.converters.InstantReadConverter;
 import com.konkerlabs.platform.registry.business.model.converters.InstantWriteConverter;
+import com.konkerlabs.platform.registry.business.model.converters.URIReadConverter;
+import com.konkerlabs.platform.registry.business.model.converters.URIWriteConverter;
 import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
 import com.typesafe.config.Config;
@@ -26,7 +28,9 @@ public class MongoConfig extends AbstractMongoConfiguration {
     public static final List<Converter<?,?>> converters = Arrays.asList(
         new Converter[] {
             new InstantReadConverter(),
-            new InstantWriteConverter()
+            new InstantWriteConverter(),
+            new URIReadConverter(),
+            new URIWriteConverter()
         }
     );
 

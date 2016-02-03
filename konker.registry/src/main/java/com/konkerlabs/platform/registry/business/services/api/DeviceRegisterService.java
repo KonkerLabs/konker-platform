@@ -13,5 +13,4 @@ public interface DeviceRegisterService {
 
     // FIXME: deviceId should be unique within tenant, not globally
     Device findById(String deviceId);
-    Device logEvent(String deviceId, String payload);
 }

@@ -67,11 +67,6 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
     }
 
     @Override
-    public Device logEvent(String deviceId, String payload) {
-        return null;
-    }
-
-    @Override
     public ServiceResponse update(String deviceId, Device updatingDevice) throws BusinessException {
         if (deviceId == null) {
             throw new BusinessException("Cannot update device with null ID");
