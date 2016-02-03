@@ -11,7 +11,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
 import org.mockito.Mockito;
+import org.slf4j.helpers.MessageFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,6 +42,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ContextConfiguration(classes = {WebMvcConfig.class,DeviceControllerTest.DeviceTestContextConfig.class})
 public class DeviceControllerTest extends WebLayerTestContext {
 
+    private static final String DEVICE_ID_95C14B36BA2B43F1 = "95c14b36ba2b43f1";
+
     @Autowired
     DeviceRegisterService deviceRegisterService;
 
@@ -56,7 +60,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
 
         deviceData = new LinkedMultiValueMap<>();
         deviceData.add("name","Device name");
-        deviceData.add("deviceId","95c14b36ba2b43f1");
+        deviceData.add("deviceId",DEVICE_ID_95C14B36BA2B43F1);
         deviceData.add("description","Some description");
 
         device = Device.builder()
@@ -164,6 +168,63 @@ public class DeviceControllerTest extends WebLayerTestContext {
         verify(deviceRegisterService).findById(device.getDeviceId());
     }
 
+    @Test
+    public void shouldShowEditForm() throws Exception {
+        when(deviceRegisterService.findById(device.getDeviceId())).thenReturn(device);
+
+        getMockMvc().perform(get(MessageFormat.format("/devices/{0}/edit", DEVICE_ID_95C14B36BA2B43F1)))
+            .andExpect(model().attribute("device", equalTo(device)))
+            .andExpect(view().name("devices/edit-form"));
+    }
+
+    @Test
+    public void shouldBindErrorMessagesWhenEditFailsAndGoBackToEditForm() throws Exception {
+        response = ServiceResponse.builder()
+            .responseMessages(Arrays.asList(new String[]{"Some error"}))
+            .status(ServiceResponse.Status.ERROR).build();
+
+        when(deviceRegisterService.update(Matchers.anyString(), Matchers.anyObject())).thenReturn(response);
+
+        getMockMvc().perform(
+            post(MessageFormat.format("/devices/{0}", DEVICE_ID_95C14B36BA2B43F1)).params(deviceData))
+            .andExpect(model().attribute("errors",equalTo(response.getResponseMessages())))
+            .andExpect(model().attribute("device",equalTo(deviceForm)))
+            .andExpect(view().name("devices/edit-form"));
+
+        verify(deviceRegisterService).update(eq(DEVICE_ID_95C14B36BA2B43F1), eq(device));
+    }
+    
+    @Test
+    public void shouldBindExceptionMessageWhenEditFailsAndGoBackToEditForm() throws Exception {
+        String exceptionMessage = "Some business exception message";
+
+        when(deviceRegisterService.update(Matchers.anyString(), Matchers.isA(Device.class))).thenThrow(new BusinessException(exceptionMessage));
+
+        getMockMvc().perform(
+                post(MessageFormat.format("/devices/{0}", DEVICE_ID_95C14B36BA2B43F1)).params(deviceData))
+                .andExpect(model().attribute("errors",equalTo(Arrays.asList(new String[] {exceptionMessage}))))
+                .andExpect(model().attribute("device",equalTo(deviceForm)))
+                .andExpect(view().name("devices/edit-form"));
+
+        verify(deviceRegisterService).update(eq(DEVICE_ID_95C14B36BA2B43F1), eq(device));
+    }
+
+    @Test
+    public void shouldRedirectToListAfterEditSucceed() throws Exception {
+        response = ServiceResponse.builder()
+                .status(ServiceResponse.Status.OK).build();
+
+        when(deviceRegisterService.update(eq(DEVICE_ID_95C14B36BA2B43F1), eq(device))).thenReturn(response);
+
+        getMockMvc().perform(
+                post(MessageFormat.format("/devices/{0}", DEVICE_ID_95C14B36BA2B43F1)).params(deviceData))
+                .andExpect(flash().attribute("message","Device saved successfully"))
+                .andExpect(redirectedUrl(MessageFormat.format("/devices/{0}", DEVICE_ID_95C14B36BA2B43F1)));
+
+        verify(deviceRegisterService).update(eq(DEVICE_ID_95C14B36BA2B43F1), eq(device));
+    }
+    
+ 
     @Configuration
     static class DeviceTestContextConfig {
         @Bean
