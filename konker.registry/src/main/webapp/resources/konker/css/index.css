@@ -1,7 +1,7 @@
 .version.index /* version checker */
 {
-	color: #0000F8;
-	background-color: #9963C2;
+	color: #00000E;
+	background-color: #49EEBD;
 }
 
 .html
@@ -48,7 +48,12 @@
 	position: relative;
 	margin-right: -10000px;
 	margin-top: 21px;
-	left: 436px;
+	left: 442px;
+}
+
+#u288_img
+{
+	padding-right: 7px;
 }
 
 #u281-bw
@@ -101,8 +106,8 @@
 	background-color: transparent;
 	padding: 6px;
 	line-height: 14px;
-	text-align: center;
 	color: #FFFFFF;
+	text-align: center;
 	font-family: Trebuchet, Trebuchet MS, Tahoma, Arial, sans-serif;
 	font-style: italic;
 	position: relative;
@@ -148,8 +153,8 @@
 	background-color: transparent;
 	padding: 6px;
 	line-height: 14px;
-	text-align: center;
 	color: #FFFFFF;
+	text-align: center;
 	font-family: Trebuchet, Trebuchet MS, Tahoma, Arial, sans-serif;
 	font-style: italic;
 	position: relative;
@@ -226,8 +231,8 @@
 	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
 	filter: alpha(opacity=0);
 	padding-top: 4px;
-	color: #FF0000;
 	line-height: 14px;
+	color: #FF0000;
 	font-size: 12px;
 	font-family: Palatino, Palatino Linotype, Georgia, Times, Times New Roman, serif;
 	position: relative;
@@ -238,8 +243,8 @@
 #widgetu447.frm-sub-st #u462-4 p,#widgetu447.frm-subm-err-st #u452-4 p
 {
 	visibility: hidden;/* 100% transparent text is hidden */
-	line-height: 1;
 	font-size: 14px;
+	line-height: 1;
 	font-family: Georgia, Palatino, Palatino Linotype, Times, Times New Roman, serif;
 	font-style: italic;
 }
@@ -254,8 +259,8 @@
 	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
 	filter: alpha(opacity=0);
 	padding-top: 4px;
-	color: #00FF00;
 	line-height: 12px;
+	color: #00FF00;
 	font-size: 12px;
 	font-family: Palatino, Palatino Linotype, Georgia, Times, Times New Roman, serif;
 	position: relative;
@@ -361,8 +366,8 @@
 	border-style: none;
 	border-color: transparent;
 	background-color: transparent;
-	color: #FFFFFF;
 	line-height: 14px;
+	color: #FFFFFF;
 	text-align: left;
 	font-family: Trebuchet, Trebuchet MS, Tahoma, Arial, sans-serif;
 	position: relative;
@@ -532,8 +537,8 @@
 	width: 142px;
 	min-height: 48px;
 	background-color: transparent;
-	color: #FBBD00;
 	line-height: 48px;
+	color: #FBBD00;
 	font-size: 24px;
 	text-align: center;
 	font-family: Trebuchet, Trebuchet MS, Tahoma, Arial, sans-serif;
@@ -548,8 +553,8 @@
 	width: 89px;
 	min-height: 14px;
 	background-color: transparent;
-	color: #FFFFFF;
 	line-height: 12px;
+	color: #FFFFFF;
 	font-size: 10px;
 	text-align: center;
 	font-family: Trebuchet, Trebuchet MS, Tahoma, Arial, sans-serif;
