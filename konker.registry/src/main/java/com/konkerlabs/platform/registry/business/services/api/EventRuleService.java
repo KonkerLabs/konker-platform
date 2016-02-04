@@ -10,4 +10,6 @@ public interface EventRuleService {
     ServiceResponse create(EventRule rule) throws BusinessException;
 
     List<EventRule> getAll();
+
+    EventRule findById(String id);
 }

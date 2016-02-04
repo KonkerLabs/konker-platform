@@ -27,12 +27,4 @@ public class WebLayerTestContext {
         MockitoAnnotations.initMocks(this);
         this.mockMvc = MockMvcBuilders.webAppContextSetup(this.wac).build();
     }
-
-    @Configuration
-    public static class BusinessLayerMockUpContextConfig {
-        @Bean
-        public DeviceRegisterService deviceRegisterService() {
-            return Mockito.mock(DeviceRegisterService.class);
-        }
-    }
 }

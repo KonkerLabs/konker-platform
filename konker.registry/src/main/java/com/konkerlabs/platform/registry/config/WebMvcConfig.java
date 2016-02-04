@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 
 @Configuration
 @EnableWebMvc
-@ComponentScan(basePackages = {"com.konkerlabs.platform.registry.web"})
+@ComponentScan(lazyInit = true, basePackages = {"com.konkerlabs.platform.registry.web"})
 public class WebMvcConfig extends WebMvcConfigurerAdapter {
 
     private static final Config webConfig = ConfigFactory.load().getConfig("web");

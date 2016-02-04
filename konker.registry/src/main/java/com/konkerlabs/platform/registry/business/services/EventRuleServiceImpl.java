@@ -51,4 +51,9 @@ public class EventRuleServiceImpl implements EventRuleService {
     public List<EventRule> getAll() {
         return eventRuleRepository.findAll();
     }
+
+    @Override
+    public EventRule findById(String id) {
+        return eventRuleRepository.findOne(id);
+    }
 }
