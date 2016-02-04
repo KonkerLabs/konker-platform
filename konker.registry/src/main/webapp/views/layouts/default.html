@@ -1,25 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="utf-8"/>
-<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-<meta name="description" content=""/>
-<meta name="author" content=""/>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="" />
+    <meta name="author" content="" />
 
-<title>Konker</title>
+    <title>Konker</title>
 
-<!-- Bootstrap core CSS -->
-<link th:href="@{/resources/bootstrap/css/bootstrap.min.css}" rel="stylesheet"/>
+    <!-- Bootstrap core CSS -->
+    <link th:href="@{/resources/bootstrap/css/bootstrap.min.css}" href="../../resources/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
 
-<!-- Custom styles for this template -->
-<link th:href="@{/resources/bootstrap/css/jumbotron.css}" rel="stylesheet"/>
+    <!-- Custom styles for this template -->
+    <link th:href="@{/resources/bootstrap/css/jumbotron.css}" href="../../resources/bootstrap/css/jumbotron.css" rel="stylesheet" />
 
-<link th:href="@{/resources/bootstrap/css/konker.css}" rel="stylesheet"/>
+    <link th:href="@{/resources/bootstrap/css/konker.css}" href="../../resources/bootstrap/css/konker.css" rel="stylesheet" />
 
-<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-<!--[if lt IE 9]>
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
@@ -27,48 +28,58 @@
 
 <body>
 
-<nav class="navbar navbar-inverse navbar-fixed-top">
-<div class="container">
-<div class="navbar-header">
-<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-    <span class="sr-only">Toggle navigation</span>
-    <span class="icon-bar"></span>
-    <span class="icon-bar"></span>
-    <span class="icon-bar"></span>
-</button>
-<a class="navbar-brand" href="#">Konker - IoE Platform</a>
-</div>
-<div id="navbar" class="navbar-collapse collapse">
-    <a th:href="@{/logout}" class="btn btn-default pull-right">Logout</a>
-</div><!--/.navbar-collapse -->
-</div>
-</nav>
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <ul class="nav navbar-nav">
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Menu <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a th:href="@{/devices}">Devices</a></li>
+                            <li><a href="#">Rules</a></li>
+<li role="separator" class="divider"></li>
+                            <li><a th:href="@{/logout}">Logout</a></li>
 
-<!-- Main jumbotron for a primary marketing message or call to action -->
-<div id="wrap">
-    <div class="container" layout:fragment="content">
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <div id="navbar" class="navbar-collapse collapse navbar-right">
+                <a class="navbar-link" href="#"><span class="glyphicon glyphicon-wrench btn-lg"></span></a>
+                <a class="navbar-link" th:href="@{/logout}"><span class="glyphicon glyphicon-log-out btn-lg"></span></a>
+                <a class="navbar-link" href="#"><span class="glyphicon glyphicon-search btn-lg"></span></a>
+                <img th:src="@{/resources/konker/images/foto_pessoa.png}" src="../../resources/konker/images/foto_pessoa.png"/>
+            </div>
+            <!--/.navbar-collapse -->
+        </div>
+    </nav>
+
+    <!-- Main jumbotron for a primary marketing message or call to action -->
+    <div id="wrap">
+        <div class="container" layout:fragment="content">
+        </div>
     </div>
-</div>
 
-<div id="footer">
-    <div class="container">
-    <hr/>
-        <footer>
-            <p>&copy; 2016 Konker Labs, Inc.</p>
-        </footer>
+    <div id="footer">
+        <div class="container">
+            <hr/>
+            <footer>
+                <p>&copy; 2016 Konker Labs, Inc.</p>
+            </footer>
+        </div>
     </div>
-</div>
 
 
-<!-- Bootstrap core JavaScript
+    <!-- Bootstrap core JavaScript
 ================================================== -->
-<!-- Placed at the end of the document so the pages load faster -->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-<script th:inline="javascript">
-/*<![CDATA[*/
-    window.jQuery || document.write('<script src="/resources/bootstrap/js/vendor/jquery.min.js"/>')
-/*]]>*/
-</script>
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        window.jQuery || document.write('<script src="/resources/bootstrap/js/vendor/jquery.min.js"/>')
+            /*]]>*/
+    </script>
     <script th:attr="src=@{/resources/bootstrap/js/bootstrap.min.js}"></script>
 </body>
+
 </html>

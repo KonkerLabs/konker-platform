@@ -2,6 +2,13 @@ html,body {
   height: 100%;
 }
 
+.navbar-fixed-top {
+    background-image: url(../../konker/images/menu.png);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
 /* Wrapper for page content to push down footer */
 #wrap {
   min-height: 100%;
@@ -24,3 +31,4 @@ fieldset {
 a.btn.action {
   margin-bottom: 10px;
 }
+
