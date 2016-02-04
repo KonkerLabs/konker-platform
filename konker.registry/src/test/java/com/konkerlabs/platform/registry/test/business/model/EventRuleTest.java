@@ -16,9 +16,6 @@ import static org.hamcrest.Matchers.nullValue;
 
 public class EventRuleTest {
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
-
     private EventRule subject;
 
     @Before
