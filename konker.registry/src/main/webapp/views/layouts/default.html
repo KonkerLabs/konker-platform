@@ -27,32 +27,38 @@
 </head>
 
 <body>
-
     <nav class="navbar navbar-inverse navbar-fixed-top">
-        <div class="container">
-            <div class="navbar-header">
-                <ul class="nav navbar-nav">
-                    <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Menu <span class="caret"></span></a>
-                        <ul class="dropdown-menu">
-                            <li><a th:href="@{/devices}">Devices</a></li>
-                            <li><a href="#">Rules</a></li>
-<li role="separator" class="divider"></li>
-                            <li><a th:href="@{/logout}">Logout</a></li>
+        <div class="container-fluid">
 
-                        </ul>
-                    </li>
-                </ul>
+            <div class="navbar-header">
+
+                <img id="konker-header-logo" th:src="@{/resources/konker/images/logo_konker_header.png}" src="../../resources/konker/images/logo_konker_header.png" />
             </div>
-            <div id="navbar" class="navbar-collapse collapse navbar-right">
-                <a class="navbar-link" href="#"><span class="glyphicon glyphicon-wrench btn-lg"></span></a>
-                <a class="navbar-link" th:href="@{/logout}"><span class="glyphicon glyphicon-log-out btn-lg"></span></a>
-                <a class="navbar-link" href="#"><span class="glyphicon glyphicon-search btn-lg"></span></a>
-                <img th:src="@{/resources/konker/images/foto_pessoa.png}" src="../../resources/konker/images/foto_pessoa.png"/>
-            </div>
+
+            <ul class="nav navbar-nav">
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Menu<span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a th:href="@{/devices}">Devices</a></li>
+                        <li><a href="#">Rules</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a th:href="@{/logout}">Logout</a></li>
+
+                    </ul>
+                </li>
+            </ul>
+
+
+            <ul class="nav navbar-nav navbar-right collapsable">
+                <li><a class="navbar-link" href="#"><span class="glyphicon glyphicon-wrench"></span></a></li>
+                <li><a class="navbar-link" th:href="@{/logout}"><span class="glyphicon glyphicon-log-out"></span></a></li>
+                <li><a class="navbar-link" href="#"><span class="glyphicon glyphicon-search"></span></a></li>
+                <li><img class="user-photo" th:src="@{/resources/konker/images/foto_pessoa.png}" src="../../resources/konker/images/foto_pessoa.png" /></li>
+            </ul>
             <!--/.navbar-collapse -->
         </div>
     </nav>
+
 
     <!-- Main jumbotron for a primary marketing message or call to action -->
     <div id="wrap">
@@ -78,6 +84,7 @@
         /*<![CDATA[*/
         window.jQuery || document.write('<script src="/resources/bootstrap/js/vendor/jquery.min.js"/>')
             /*]]>*/
+
     </script>
     <script th:attr="src=@{/resources/bootstrap/js/bootstrap.min.js}"></script>
 </body>

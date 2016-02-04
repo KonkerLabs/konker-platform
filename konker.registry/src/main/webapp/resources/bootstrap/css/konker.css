@@ -3,7 +3,7 @@ html,body {
 }
 
 .navbar-fixed-top {
-    background-image: url(../../konker/images/menu.png);
+    background-image: url(../../konker/images/topo.png);
     background-size: 100% 100%;
     background-repeat: no-repeat;
     background-position: center;
@@ -32,3 +32,11 @@ a.btn.action {
   margin-bottom: 10px;
 }
 
+#konker-header-logo {
+    max-height: 35px;
+    margin-top: 5px;
+}
+
+img.user-photo {
+    margin-right: 20px;
+}
