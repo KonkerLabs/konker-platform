@@ -1,0 +1,34 @@
+{
+  "eventRules" : [
+    {
+      "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+      "_class" : "com.konkerlabs.platform.registry.model.EventRule",
+      "tenant" : {
+        "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "_class" : "com.konkerlabs.platform.registry.model.Tenant",
+        "name" : "Konker"
+      },
+      "name" : "Device event forwarding rule",
+      "description" : "Rule description",
+      "incoming": {
+        "uri" : "device://0000000000000004/",
+        "data" : {
+          "channel" : "data"
+        }
+      },
+      "outgoing": {
+        "uri" : "device://0000000000000005/",
+        "data" : {
+          "channel" : "in"
+        }
+      },
+      "transformations" : [ {
+        "type" : "CONTENT_MATCH",
+        "data" : {
+          "value" : "LEDSwitch"
+        }
+      } ],
+      "active" : true
+    }
+  ]
+}
