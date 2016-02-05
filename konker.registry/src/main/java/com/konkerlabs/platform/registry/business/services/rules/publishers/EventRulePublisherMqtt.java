@@ -27,7 +27,7 @@ public class EventRulePublisherMqtt implements EventRulePublisher {
     @Override
     public void send(Event outgoingEvent, EventRule.RuleActor outgoingRuleActor) {
         String destinationTopic = MessageFormat.format("konker/device/{0}/{1}",
-                outgoingRuleActor.getUri().getPath(), outgoingRuleActor.getData().get("channel"));
+                outgoingRuleActor.getUri().getAuthority(), outgoingRuleActor.getData().get("channel"));
         mqttMessageGateway.send(outgoingEvent.getPayload(), destinationTopic);
     }
 }
