@@ -45,7 +45,8 @@ public class DeviceTest {
 	public void shouldReturnAValidationMessageIfDeviceIdIsEmpty() throws Exception {
 	    device.setDeviceId("");
 
-		String expectedMessage = "Device ID cannot be null or empty";
+	
+	    String expectedMessage = "Device ID cannot be null or empty";
 
 		assertThat(device.applyValidations(), hasItem(expectedMessage));
 	}
