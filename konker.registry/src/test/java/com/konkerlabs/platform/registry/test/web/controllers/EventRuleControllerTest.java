@@ -3,6 +3,7 @@ package com.konkerlabs.platform.registry.test.web.controllers;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.EventRule;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.rules.api.EventRuleService;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
@@ -23,14 +24,14 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import java.net.URI;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -62,7 +63,9 @@ public class EventRuleControllerTest extends WebLayerTestContext {
         ruleForm.setName("Rule name");
         ruleForm.setDescription("Rule description");
         ruleForm.setIncomingAuthority(incomingDevice.getDeviceId());
+        ruleForm.setIncomingChannel("command");
         ruleForm.setOutgoingAuthority(outgoingDevice.getDeviceId());
+        ruleForm.setOutgoingChannel("in");
         ruleForm.setFilterClause("LEDSwitch");
         ruleForm.setActive(true);
 
@@ -70,7 +73,9 @@ public class EventRuleControllerTest extends WebLayerTestContext {
         ruleData.add("name",ruleForm.getName());
         ruleData.add("description",ruleForm.getDescription());
         ruleData.add("incomingAuthority",ruleForm.getIncomingAuthority());
+        ruleData.add("incomingChannel", ruleForm.getIncomingChannel());
         ruleData.add("outgoingAuthority",ruleForm.getOutgoingAuthority());
+        ruleData.add("outgoingChannel", ruleForm.getOutgoingChannel());
         ruleData.add("filterClause",ruleForm.getFilterClause());
         ruleData.add("active","true");
 
@@ -85,6 +90,9 @@ public class EventRuleControllerTest extends WebLayerTestContext {
             .transformations(Arrays.asList(new EventRule.RuleTransformation[]{contentMatchTransformation}))
             .active(ruleForm.isActive())
             .build();
+
+        rule.getIncoming().getData().put("channel", ruleForm.getIncomingChannel());
+        rule.getOutgoing().getData().put("channel", ruleForm.getOutgoingChannel());
 
         registeredRules = new ArrayList<EventRule>(Arrays.asList(new EventRule[]{rule}));
     }
@@ -124,7 +132,7 @@ public class EventRuleControllerTest extends WebLayerTestContext {
     }
 
     @Test
-    public void shouldBindExceptionMessageWhenRegistrationFailsAndGoBackToRegistrationForm() throws Exception {
+    public void shouldBindBusinessExceptionMessageWhenRegistrationFailsAndGoBackToRegistrationForm() throws Exception {
         String exceptionMessage = "Some business exception message";
 
         when(eventRuleService.create(eq(rule))).thenThrow(new BusinessException(exceptionMessage));
@@ -138,14 +146,17 @@ public class EventRuleControllerTest extends WebLayerTestContext {
     }
 
     @Test
-    public void shouldRedirectToListAfterRuleCreationSucceed() throws Exception {
-        response = ServiceResponse.builder().status(ServiceResponse.Status.OK).build();
+    public void shouldRedirectToShowAfterRuleCreationSucceed() throws Exception {
+        response = spy(ServiceResponse.builder()
+                .status(ServiceResponse.Status.OK)
+                .result(rule)
+                .build());
 
         when(eventRuleService.create(eq(rule))).thenReturn(response);
 
         getMockMvc().perform(post("/rules/save").params(ruleData))
                 .andExpect(flash().attribute("message", "Device registered successfully"))
-                .andExpect(redirectedUrl("/rules"));
+                .andExpect(redirectedUrl(MessageFormat.format("/rules/{0}",rule.getId())));
 
         verify(eventRuleService).create(eq(rule));
     }
@@ -168,6 +179,10 @@ public class EventRuleControllerTest extends WebLayerTestContext {
         @Bean
         public EventRuleService eventRuleService() {
             return Mockito.mock(EventRuleService.class);
+        }
+        @Bean
+        public DeviceRegisterService deviceRegisterService() {
+            return mock(DeviceRegisterService.class);
         }
     }
 }
