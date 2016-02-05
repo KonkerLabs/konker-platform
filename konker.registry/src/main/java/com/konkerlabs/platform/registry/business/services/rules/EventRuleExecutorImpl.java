@@ -15,6 +15,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
+import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.List;
 
@@ -28,7 +29,9 @@ public class EventRuleExecutorImpl implements EventRuleExecutor {
 
     private EventRulePublisher eventRulePublisher;
 
-    private enum RuleTransformationType {CONTENT_MATCH};
+    private enum RuleTransformationType {CONTENT_MATCH}
+
+    ;
 
     //FIXME Apply strategy dynamically, according to the outgoing RuleActor defined in the EventRule
     @Autowired
@@ -49,10 +52,14 @@ public class EventRuleExecutorImpl implements EventRuleExecutor {
                 continue;
 
             for (EventRule.RuleTransformation ruleTransformation : eventRule.getTransformations()) {
+                String transformationValue = ruleTransformation.getData().get("value");
                 switch (RuleTransformationType.valueOf(ruleTransformation.getType())) {
                     case CONTENT_MATCH:
-                        if (incomingPayload.contains(ruleTransformation.getData().get("value"))) {
+                        if (incomingPayload.contains(transformationValue)) {
                             eventRulePublisher.send(Event.builder().timestamp(Instant.now()).payload(incomingPayload).build(), eventRule.getOutgoing());
+                        } else {
+                            LOGGER.debug(MessageFormat.format("Dropped rule \"{0}\", not matching \"{1}\" pattern with content \"{2}\". Message payload: {3} ",
+                                    eventRule.getName(), ruleTransformation.getType(), transformationValue, incomingPayload));
                         }
                         break;
                 }
