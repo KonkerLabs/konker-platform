@@ -155,7 +155,7 @@ public class EventRuleControllerTest extends WebLayerTestContext {
         when(eventRuleService.create(eq(rule))).thenReturn(response);
 
         getMockMvc().perform(post("/rules/save").params(ruleData))
-                .andExpect(flash().attribute("message", "Device registered successfully"))
+                .andExpect(flash().attribute("message", "Rule registered successfully"))
                 .andExpect(redirectedUrl(MessageFormat.format("/rules/{0}",rule.getId())));
 
         verify(eventRuleService).create(eq(rule));

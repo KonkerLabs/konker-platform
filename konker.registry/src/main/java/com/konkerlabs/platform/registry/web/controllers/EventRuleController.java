@@ -89,7 +89,7 @@ public class EventRuleController {
                     .addObject("rule",eventRuleForm);
             }
             default: {
-                redirectAttributes.addFlashAttribute("message", "Device registered successfully");
+                redirectAttributes.addFlashAttribute("message", "Rule registered successfully");
                 return new ModelAndView(MessageFormat.format("redirect:/rules/{0}",
                         EventRule.class.cast(response.getResult()).getId()));
             }
