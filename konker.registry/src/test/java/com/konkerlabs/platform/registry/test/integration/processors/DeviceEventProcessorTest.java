@@ -3,7 +3,7 @@ package com.konkerlabs.platform.registry.test.integration.processors;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
-import com.konkerlabs.platform.registry.integration.gateways.MqttMessageGateway;
+import com.konkerlabs.platform.registry.business.services.rules.api.EventRuleExecutor;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
 import com.konkerlabs.platform.registry.test.base.IntegrationLayerTestContext;
 import org.junit.After;
@@ -18,6 +18,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.net.URI;
 import java.text.MessageFormat;
 
 import static org.mockito.Mockito.mock;
@@ -48,7 +49,7 @@ public class DeviceEventProcessorTest {
     @Autowired
     private DeviceEventService deviceEventService;
     @Autowired
-    private MqttMessageGateway mqttMessageGateway;
+    private EventRuleExecutor eventRuleExecutor;
 
     @Before
     public void setUp() throws Exception {
@@ -60,7 +61,7 @@ public class DeviceEventProcessorTest {
 
     @After
     public void tearDown() throws Exception {
-        reset(deviceEventService,mqttMessageGateway);
+        reset(deviceEventService,eventRuleExecutor);
     }
 
     @Test
@@ -81,12 +82,12 @@ public class DeviceEventProcessorTest {
         verify(deviceEventService).logEvent(event, sourceDeviceId);
     }
 
-    //FIXME Refactor this to support arbitrary command execution in an well designed way
     @Test
     public void shouldForwardIncomingMessageToDestinationDevice() throws Exception {
         subject.process(topic, originalPayload);
 
-        verify(mqttMessageGateway).send(originalPayload,destinationTopic);
+
+        verify(eventRuleExecutor).execute(event,new URI("device://" + sourceDeviceId));
     }
 
     @Configuration
@@ -96,8 +97,8 @@ public class DeviceEventProcessorTest {
             return mock(DeviceEventService.class);
         }
         @Bean
-        public MqttMessageGateway mqttMessageGateway() {
-            return mock(MqttMessageGateway.class);
+        public EventRuleExecutor eventRuleExecutor() {
+            return mock(EventRuleExecutor.class);
         }
     }
 }

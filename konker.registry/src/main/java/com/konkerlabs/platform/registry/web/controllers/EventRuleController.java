@@ -1,14 +1,10 @@
 package com.konkerlabs.platform.registry.web.controllers;
 
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
-import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.EventRule;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.EventRuleService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.rules.api.EventRuleService;
 import com.konkerlabs.platform.registry.web.forms.EventRuleForm;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -20,25 +16,14 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.text.MessageFormat;
 import java.util.Arrays;
-import java.util.List;
 
 @Controller
 @RequestMapping("rules")
 public class EventRuleController {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EventRuleController.class);
-
     @Autowired
     private EventRuleService eventRuleService;
-    @Autowired
-    private DeviceRegisterService deviceRegisterService;
-
-    @ModelAttribute("allDevices")
-    public List<Device> allDevices() {
-        return deviceRegisterService.getAll();
-    }
 
     @RequestMapping
     public ModelAndView index() {
@@ -66,8 +51,6 @@ public class EventRuleController {
                     .transformations(Arrays.asList(new EventRule.RuleTransformation[]{contentFilterTransformation}))
                     .active(eventRuleForm.isActive())
                     .build();
-            rule.getIncoming().getData().put("channel",eventRuleForm.getIncomingChannel());
-            rule.getOutgoing().getData().put("channel",eventRuleForm.getOutgoingChannel());
             response = eventRuleService.create(rule);
         } catch (BusinessException e) {
             response = ServiceResponse.builder()
@@ -75,11 +58,7 @@ public class EventRuleController {
                 .responseMessages(Arrays.asList(new String[]{e.getMessage()}))
                 .build();
         } catch (URISyntaxException e) {
-            LOGGER.error("Fail to encore device URI",e);
-            response = ServiceResponse.builder()
-                    .status(ServiceResponse.Status.ERROR)
-                    .responseMessages(Arrays.asList(new String[]{e.getMessage()}))
-                    .build();
+            e.printStackTrace();
         }
 
         switch (response.getStatus()) {
@@ -90,8 +69,7 @@ public class EventRuleController {
             }
             default: {
                 redirectAttributes.addFlashAttribute("message", "Device registered successfully");
-                return new ModelAndView(MessageFormat.format("redirect:/rules/{0}",
-                        EventRule.class.cast(response.getResult()).getId()));
+                return new ModelAndView("redirect:/rules");
             }
         }
     }

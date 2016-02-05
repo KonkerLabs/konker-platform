@@ -1,16 +1,17 @@
-package com.konkerlabs.platform.registry.business.services;
+package com.konkerlabs.platform.registry.business.services.rules;
 
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.EventRule;
 import com.konkerlabs.platform.registry.business.repositories.EventRuleRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
-import com.konkerlabs.platform.registry.business.services.api.EventRuleService;
+import com.konkerlabs.platform.registry.business.services.rules.api.EventRuleService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
+import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 
@@ -64,5 +65,10 @@ public class EventRuleServiceImpl implements EventRuleService {
     @Override
     public EventRule findById(String id) {
         return eventRuleRepository.findOne(id);
+    }
+
+    @Override
+    public List<EventRule> findByIncomingUri(URI uri) {
+        return eventRuleRepository.findByIncomingURI(uri);
     }
 }
