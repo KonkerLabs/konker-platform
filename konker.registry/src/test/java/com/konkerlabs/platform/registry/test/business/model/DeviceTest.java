@@ -34,7 +34,6 @@ public class DeviceTest {
 
 	@Test
 	public void shouldReturnAValidationMessageIfDeviceIdIsNull() throws Exception {
-		fail();
 	    device.setDeviceId(null);
 
 		String expectedMessage = "Device ID cannot be null or empty";
@@ -44,7 +43,6 @@ public class DeviceTest {
 
 	@Test
 	public void shouldReturnAValidationMessageIfDeviceIdIsEmpty() throws Exception {
-        fail();
 	    device.setDeviceId("");
 
 		String expectedMessage = "Device ID cannot be null or empty";
