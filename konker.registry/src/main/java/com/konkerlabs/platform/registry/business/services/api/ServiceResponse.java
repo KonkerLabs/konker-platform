@@ -13,5 +13,5 @@ public class ServiceResponse {
 
     private Status status;
     private List<String> responseMessages;
-
+    private Object result;
 }

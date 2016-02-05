@@ -42,9 +42,18 @@ public class EventRuleServiceImpl implements EventRuleService {
             return ServiceResponse.builder().responseMessages(validations).status(ServiceResponse.Status.ERROR).build();
         }
 
+        String incomingChannel = rule.getIncoming().getData().get("channel");
+        String outgoingChannel = rule.getOutgoing().getData().get("channel");
+
+        if (incomingChannel != null && outgoingChannel != null && incomingChannel.equals(outgoingChannel)) {
+            return ServiceResponse.builder()
+                    .responseMessages(Arrays.asList(new String[] { "Incoming and outgoing device channels cannot be the same" }))
+                    .status(ServiceResponse.Status.ERROR).build();
+        }
+
         eventRuleRepository.save(rule);
 
-        return ServiceResponse.builder().status(ServiceResponse.Status.OK).build();
+        return ServiceResponse.builder().status(ServiceResponse.Status.OK).result(rule).build();
     }
 
     @Override

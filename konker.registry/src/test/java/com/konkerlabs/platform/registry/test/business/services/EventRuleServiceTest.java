@@ -24,9 +24,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -100,6 +98,20 @@ public class EventRuleServiceTest extends BusinessLayerTestSupport {
         assertThat(response, notNullValue());
         assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
         assertThat(eventRuleRepository.findByIncomingURI(rule.getIncoming().getUri()), notNullValue());
+    }
+    @Test
+    public void shouldReturnAValidationMessageIfIncomingAndOutgoingChannelsAreTheSame() throws Exception {
+        String channel = "channel";
+
+        rule.getIncoming().getData().put("channel",channel);
+        rule.getOutgoing().getData().put("channel",channel);
+
+        List<String> errorMessages = Arrays.asList(new String[] { "Incoming and outgoing device channels cannot be the same" });
+        ServiceResponse response = subject.create(rule);
+
+        assertThat(response, notNullValue());
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+        assertThat(response.getResponseMessages(), equalTo(errorMessages));
     }
     @Test
     @UsingDataSet(locations = "/fixtures/event-rules.json")

@@ -8,7 +8,9 @@ public class EventRuleForm {
     private String name;
     private String description;
     private String incomingAuthority;
+    private String incomingChannel;
     private String outgoingAuthority;
+    private String outgoingChannel;
     private String filterClause;
     private boolean active;
 

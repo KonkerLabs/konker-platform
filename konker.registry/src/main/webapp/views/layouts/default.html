@@ -40,7 +40,7 @@
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Menu<span class="caret"></span></a>
                     <ul class="dropdown-menu">
                         <li><a th:href="@{/devices}">Devices</a></li>
-                        <li><a href="#">Rules</a></li>
+                        <li><a th:href="@{/rules}">Rules</a></li>
                     </ul>
                 </li>
             </ul>
@@ -84,6 +84,8 @@
 
     </script>
     <script th:attr="src=@{/resources/bootstrap/js/bootstrap.min.js}"></script>
+    <div layout:fragment="script">
+    </div>
 </body>
 
 </html>

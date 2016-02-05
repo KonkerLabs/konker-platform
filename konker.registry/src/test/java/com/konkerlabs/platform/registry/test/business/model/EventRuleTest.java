@@ -92,7 +92,6 @@ public class EventRuleTest {
 
         assertThat(subject.applyValidations(), hasItem(expectedMessage));
     }
-
     @Test
     public void shouldHaveNoValidationMessagesIfRecordIsValid() throws Exception {
         assertThat(subject.applyValidations(), nullValue());
