@@ -17,8 +17,12 @@ import java.text.MessageFormat;
 @Scope(BeanDefinition.SCOPE_SINGLETON)
 public class EventRulePublisherMqtt implements EventRulePublisher {
 
-    @Autowired
     private MqttMessageGateway mqttMessageGateway;
+
+    @Autowired
+    public EventRulePublisherMqtt(MqttMessageGateway mqttMessageGateway) {
+        this.mqttMessageGateway = mqttMessageGateway;
+    }
 
     @Override
     public void send(Event outgoingEvent, EventRule.RuleActor outgoingRuleActor) {
