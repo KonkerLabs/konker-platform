@@ -17,6 +17,7 @@ import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.fail;
 
 public class DeviceTest {
 
@@ -33,7 +34,8 @@ public class DeviceTest {
 
 	@Test
 	public void shouldReturnAValidationMessageIfDeviceIdIsNull() throws Exception {
-		device.setDeviceId(null);
+		fail();
+	    device.setDeviceId(null);
 
 		String expectedMessage = "Device ID cannot be null or empty";
 
