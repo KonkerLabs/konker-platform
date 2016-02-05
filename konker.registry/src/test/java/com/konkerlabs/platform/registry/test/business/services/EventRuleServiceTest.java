@@ -47,6 +47,8 @@ public class EventRuleServiceTest extends BusinessLayerTestSupport {
 
     private EventRule rule;
 
+    private String ruleId = "71fb0d48-674b-4f64-a3e5-0256ff3a63af";
+
     @Before
     public void setUp() throws Exception {
         rule = spy(EventRule.builder()
@@ -92,7 +94,7 @@ public class EventRuleServiceTest extends BusinessLayerTestSupport {
     }
     @Test
     @UsingDataSet(locations = "/fixtures/tenants.json")
-    public void shouldPersistIfDeviceIsValid() throws Exception {
+    public void shouldPersistIfRuleIsValid() throws Exception {
         ServiceResponse response = subject.create(rule);
 
         assertThat(response, notNullValue());
@@ -101,10 +103,17 @@ public class EventRuleServiceTest extends BusinessLayerTestSupport {
     }
     @Test
     @UsingDataSet(locations = "/fixtures/event-rules.json")
-    public void shouldReturnAllRegisteredDevices() throws Exception {
+    public void shouldReturnAllRegisteredRules() throws Exception {
         List<EventRule> allRules = subject.getAll();
 
         assertThat(allRules, notNullValue());
         assertThat(allRules, hasSize(1));
+    }
+    @Test
+    @UsingDataSet(locations = "/fixtures/event-rules.json")
+    public void shouldReturnARegisteredRuleByItsID() throws Exception {
+        EventRule rule = subject.findById(ruleId);
+
+        assertThat(rule, notNullValue());
     }
 }

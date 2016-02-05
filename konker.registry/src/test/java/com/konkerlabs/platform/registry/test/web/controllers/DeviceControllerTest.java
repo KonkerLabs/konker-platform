@@ -42,7 +42,7 @@ import com.konkerlabs.platform.registry.web.forms.DeviceRegistrationForm;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
-@ContextConfiguration(classes = { WebMvcConfig.class, WebLayerTestContext.BusinessLayerMockUpContextConfig.class })
+@ContextConfiguration(classes = { WebMvcConfig.class, DeviceControllerTest.DeviceTestContextConfig.class })
 public class DeviceControllerTest extends WebLayerTestContext {
 
     private static final String DEVICE_ID_95C14B36BA2B43F1 = "95c14b36ba2b43f1";

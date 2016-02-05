@@ -1,7 +1,5 @@
 package com.konkerlabs.platform.registry.test.integration.endpoints;
 
-import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.integration.endpoints.DeviceEventEndpoint;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
 import org.junit.Before;
@@ -16,7 +14,6 @@ import org.springframework.messaging.MessagingException;
 import java.text.MessageFormat;
 
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 public class DeviceEventEndpointTest {
