@@ -20,6 +20,9 @@ public class DeviceRegistrationForm implements ModelBuilder<Device,DeviceRegistr
 
     @Override
     public DeviceRegistrationForm fillFrom(Device model) {
-        return null;
+        this.setDeviceId(model.getDeviceId());
+        this.setName(model.getName());
+        this.setDescription(model.getDescription());
+        return this;
     }
 }
