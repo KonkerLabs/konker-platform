@@ -12,8 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.text.MessageFormat;
 
-@Service("eventRulePublisherMqtt")
-@Qualifier("eventRulePublisherMqtt")
+@Service("device")
 @Scope(BeanDefinition.SCOPE_SINGLETON)
 public class EventRulePublisherMqtt implements EventRulePublisher {
 

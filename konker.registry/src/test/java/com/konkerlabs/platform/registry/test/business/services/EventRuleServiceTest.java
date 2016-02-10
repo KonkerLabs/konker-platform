@@ -120,7 +120,10 @@ public class EventRuleServiceTest extends BusinessLayerTestSupport {
         List<EventRule> allRules = subject.getAll();
 
         assertThat(allRules, notNullValue());
-        assertThat(allRules, hasSize(1));
+        assertThat(allRules, hasSize(3));
+        assertThat(allRules.get(0).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63af"));
+        assertThat(allRules.get(1).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ab"));
+        assertThat(allRules.get(2).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ac"));
     }
     @Test
     @UsingDataSet(locations = "/fixtures/event-rules.json")
@@ -128,6 +131,16 @@ public class EventRuleServiceTest extends BusinessLayerTestSupport {
         EventRule rule = subject.findById(ruleId);
 
         assertThat(rule, notNullValue());
+    }
+    @Test
+    @UsingDataSet(locations = "/fixtures/event-rules.json")
+    public void shouldReturnARegisteredRuleByItsIncomingUri() throws Exception {
+        List<EventRule> rules = subject.findByIncomingUri(this.rule.getIncoming().getUri());
+
+        assertThat(rules, notNullValue());
+        assertThat(rules, hasSize(2));
+        assertThat(rules.get(0).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63af"));
+        assertThat(rules.get(1).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ab"));
     }
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/event-rules.json"})
