@@ -1,6 +1,8 @@
 package com.konkerlabs.platform.registry.test.base;
 
 import com.konkerlabs.platform.registry.integration.gateways.MqttMessageGateway;
+import com.konkerlabs.platform.registry.integration.gateways.SMSMessageGateway;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -18,5 +20,10 @@ public class BusinessTestConfiguration {
     @Bean
     public MqttMessageGateway mqttMessageGateway() {
         return mock(MqttMessageGateway.class);
+    }
+    
+    @Bean
+    public SMSMessageGateway smsMessageGateway() {
+        return mock(SMSMessageGateway.class);
     }
 }
