@@ -47,7 +47,7 @@ public class DeviceController {
     @RequestMapping("/{deviceId}/edit")
     public ModelAndView edit(@PathVariable("deviceId") String deviceId) {
         return new ModelAndView("devices/form")
-            .addObject("device", deviceRegisterService.findById(deviceId))
+            .addObject("device", new DeviceRegistrationForm().fillFrom(deviceRegisterService.findById(deviceId)))
             .addObject("isEditing", true)
             .addObject("action", MessageFormat.format("/devices/{0}",deviceId));
     }

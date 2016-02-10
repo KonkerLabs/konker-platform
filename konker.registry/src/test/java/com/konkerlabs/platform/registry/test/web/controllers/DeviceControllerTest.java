@@ -167,7 +167,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
         when(deviceRegisterService.findById(device.getDeviceId())).thenReturn(device);
 
         getMockMvc().perform(get(MessageFormat.format("/devices/{0}/edit", DEVICE_ID_95C14B36BA2B43F1)))
-                .andExpect(model().attribute("device", equalTo(device)))
+                .andExpect(model().attribute("device", equalTo(deviceForm)))
                 .andExpect(model().attribute("isEditing",true))
                 .andExpect(model().attribute("action", MessageFormat.format("/devices/{0}",DEVICE_ID_95C14B36BA2B43F1)))
                 .andExpect(view().name("devices/form"));
