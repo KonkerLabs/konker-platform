@@ -6,7 +6,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.konkerlabs.platform.registry.integration.exceptions.IntegrationException;
+import org.springframework.stereotype.Component;
 
+@Component
 public class SMSMessageGatewayTwilioImpl implements SMSMessageGateway {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SMSMessageGatewayTwilioImpl.class);
@@ -16,5 +18,4 @@ public class SMSMessageGatewayTwilioImpl implements SMSMessageGateway {
         // TODO Implement sending message
         LOGGER.info(MessageFormat.format("Sending {0} to {1}.", text, phoneNumber));
     }
-
 }
