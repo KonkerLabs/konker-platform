@@ -65,7 +65,7 @@ public class EventRuleServiceTest extends BusinessLayerTestSupport {
         thrown.expect(BusinessException.class);
         thrown.expectMessage("Record cannot be null");
 
-        subject.create(null);
+        subject.save(null);
     }
     @Test
     @UsingDataSet(locations = "/fixtures/tenants.json")
@@ -73,7 +73,7 @@ public class EventRuleServiceTest extends BusinessLayerTestSupport {
         List<String> errorMessages = Arrays.asList(new String[] { "Some error" });
         when(rule.applyValidations()).thenReturn(errorMessages);
 
-        ServiceResponse response = subject.create(rule);
+        ServiceResponse response = subject.save(rule);
 
         assertThat(response, notNullValue());
         assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
@@ -84,7 +84,7 @@ public class EventRuleServiceTest extends BusinessLayerTestSupport {
     public void shouldReturnResponseMessagesIfDefaultTenantDoesNotExist() throws Exception {
         List<String> errorMessages = Arrays.asList(new String[] { "Default tenant does not exist" });
 
-        ServiceResponse response = subject.create(rule);
+        ServiceResponse response = subject.save(rule);
 
         assertThat(response, notNullValue());
         assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
@@ -93,13 +93,14 @@ public class EventRuleServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = "/fixtures/tenants.json")
     public void shouldPersistIfRuleIsValid() throws Exception {
-        ServiceResponse response = subject.create(rule);
+        ServiceResponse response = subject.save(rule);
 
         assertThat(response, notNullValue());
         assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
         assertThat(eventRuleRepository.findByIncomingURI(rule.getIncoming().getUri()), notNullValue());
     }
     @Test
+    @UsingDataSet(locations = "/fixtures/tenants.json")
     public void shouldReturnAValidationMessageIfIncomingAndOutgoingChannelsAreTheSame() throws Exception {
         String channel = "channel";
 
@@ -107,7 +108,7 @@ public class EventRuleServiceTest extends BusinessLayerTestSupport {
         rule.getOutgoing().getData().put("channel",channel);
 
         List<String> errorMessages = Arrays.asList(new String[] { "Incoming and outgoing device channels cannot be the same" });
-        ServiceResponse response = subject.create(rule);
+        ServiceResponse response = subject.save(rule);
 
         assertThat(response, notNullValue());
         assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
@@ -127,5 +128,21 @@ public class EventRuleServiceTest extends BusinessLayerTestSupport {
         EventRule rule = subject.findById(ruleId);
 
         assertThat(rule, notNullValue());
+    }
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/event-rules.json"})
+    public void shouldSaveEditedRuleState() throws Exception {
+        EventRule rule = subject.findById(ruleId);
+
+        String editedName = "Edited name";
+        rule.setName(editedName);
+        rule.setActive(false);
+
+        ServiceResponse response = subject.save(rule);
+
+        assertThat(response, notNullValue());
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
+        assertThat(EventRule.class.cast(response.getResult()).getName(),equalTo(editedName));
+        assertThat(EventRule.class.cast(response.getResult()).isActive(),equalTo(false));
     }
 }

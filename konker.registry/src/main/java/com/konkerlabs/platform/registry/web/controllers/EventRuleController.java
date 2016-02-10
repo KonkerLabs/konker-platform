@@ -18,8 +18,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
@@ -47,44 +45,27 @@ public class EventRuleController {
 
     @RequestMapping("new")
     public ModelAndView newRule() {
-        return new ModelAndView("rules/new-form","rule",new EventRuleForm());
+        return new ModelAndView("rules/form")
+            .addObject("rule",new EventRuleForm())
+            .addObject("action","/rules/save");
     }
 
     @RequestMapping(value = "save", method = RequestMethod.POST)
     public ModelAndView save(@ModelAttribute("eventRuleForm") EventRuleForm eventRuleForm,
                              RedirectAttributes redirectAttributes) {
-        EventRule.RuleTransformation contentFilterTransformation = new EventRule.RuleTransformation("CONTENT_MATCH");
-        contentFilterTransformation.getData().put("value",eventRuleForm.getFilterClause());
-
         ServiceResponse response = null;
         try {
-            EventRule rule = EventRule.builder()
-                    .name(eventRuleForm.getName())
-                    .description(eventRuleForm.getDescription())
-                    .incoming(new EventRule.RuleActor(new URI("device",eventRuleForm.getIncomingAuthority(),null,null,null)))
-                    .outgoing(new EventRule.RuleActor(new URI("device",eventRuleForm.getOutgoingAuthority(),null,null,null)))
-                    .transformations(Arrays.asList(new EventRule.RuleTransformation[]{contentFilterTransformation}))
-                    .active(eventRuleForm.isActive())
-                    .build();
-            rule.getIncoming().getData().put("channel",eventRuleForm.getIncomingChannel());
-            rule.getOutgoing().getData().put("channel",eventRuleForm.getOutgoingChannel());
-            response = eventRuleService.create(rule);
+            response = eventRuleService.save(eventRuleForm.toModel());
         } catch (BusinessException e) {
             response = ServiceResponse.builder()
                 .status(ServiceResponse.Status.ERROR)
                 .responseMessages(Arrays.asList(new String[]{e.getMessage()}))
                 .build();
-        } catch (URISyntaxException e) {
-            LOGGER.error("Fail to encore device URI",e);
-            response = ServiceResponse.builder()
-                    .status(ServiceResponse.Status.ERROR)
-                    .responseMessages(Arrays.asList(new String[]{e.getMessage()}))
-                    .build();
         }
 
         switch (response.getStatus()) {
             case ERROR: {
-                return new ModelAndView("rules/new-form")
+                return new ModelAndView("rules/form")
                     .addObject("errors",response.getResponseMessages())
                     .addObject("rule",eventRuleForm);
             }
@@ -96,8 +77,23 @@ public class EventRuleController {
         }
     }
 
-    @RequestMapping("/{ruleId}")
+    @RequestMapping(value = "/{ruleId}", method = RequestMethod.GET)
     public ModelAndView show(@PathVariable("ruleId") String ruleId) {
         return new ModelAndView("rules/show","rule",eventRuleService.findById(ruleId));
+    }
+
+    @RequestMapping("/{ruleId}/edit")
+    public ModelAndView edit(@PathVariable String ruleId) {
+        return new ModelAndView("rules/form")
+            .addObject("rule",new EventRuleForm().fillFrom(eventRuleService.findById(ruleId)))
+            .addObject("action", MessageFormat.format("/rules/{0}",ruleId));
+    }
+
+    @RequestMapping(path = "/{ruleId}", method = RequestMethod.POST)
+    public ModelAndView saveEdit(@PathVariable String ruleId,
+                                 @ModelAttribute("eventRuleForm") EventRuleForm eventRuleForm,
+                                 RedirectAttributes redirectAttributes) {
+        eventRuleForm.setId(ruleId);
+        return save(eventRuleForm, redirectAttributes);
     }
 }

@@ -9,11 +9,8 @@ import java.net.URI;
 import java.util.List;
 
 public interface EventRuleService {
-    ServiceResponse create(EventRule rule) throws BusinessException;
-
+    ServiceResponse save(EventRule rule) throws BusinessException;
     List<EventRule> getAll();
-
     EventRule findById(String id);
-
     List<EventRule> findByIncomingUri(URI uri);
 }

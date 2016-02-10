@@ -103,7 +103,7 @@ public class EventRuleControllerTest extends WebLayerTestContext {
     }
 
     @Test
-    public void shouldListAllRegisteredDevices() throws Exception {
+    public void shouldListAllRegisteredRules() throws Exception {
         when(eventRuleService.getAll()).thenReturn(registeredRules);
 
         getMockMvc().perform(get("/rules")).andExpect(model().attribute("rules", equalTo(registeredRules)))
@@ -111,54 +111,82 @@ public class EventRuleControllerTest extends WebLayerTestContext {
     }
 
     @Test
-    public void shouldShowRegistrationForm() throws Exception {
+    public void shouldShowCreationForm() throws Exception {
         getMockMvc().perform(get("/rules/new"))
-            .andExpect(view().name("rules/new-form"))
-            .andExpect(model().attribute("rule",new EventRuleForm()));
+            .andExpect(view().name("rules/form"))
+            .andExpect(model().attribute("rule",new EventRuleForm()))
+            .andExpect(model().attribute("action","/rules/save"));
     }
 
     @Test
-    public void shouldBindErrorMessagesWhenRegistrationFailsAndGoBackToRegistrationForm() throws Exception {
+    public void shouldBindErrorMessagesWhenRegistrationFailsAndGoBackToCreationForm() throws Exception {
         response = ServiceResponse.builder().responseMessages(Arrays.asList(new String[] { "Some error" }))
                 .status(ServiceResponse.Status.ERROR).build();
 
-        when(eventRuleService.create(eq(rule))).thenReturn(response);
+        when(eventRuleService.save(eq(rule))).thenReturn(response);
 
         getMockMvc().perform(post("/rules/save").params(ruleData))
                 .andExpect(model().attribute("errors", equalTo(response.getResponseMessages())))
-                .andExpect(model().attribute("rule", equalTo(ruleForm))).andExpect(view().name("rules/new-form"));
+                .andExpect(model().attribute("rule", equalTo(ruleForm))).andExpect(view().name("rules/form"));
 
-        verify(eventRuleService).create(eq(rule));
+        verify(eventRuleService).save(eq(rule));
     }
 
     @Test
-    public void shouldBindBusinessExceptionMessageWhenRegistrationFailsAndGoBackToRegistrationForm() throws Exception {
+    public void shouldBindBusinessExceptionMessageWhenRegistrationFailsAndGoBackToCreationForm() throws Exception {
         String exceptionMessage = "Some business exception message";
 
-        when(eventRuleService.create(eq(rule))).thenThrow(new BusinessException(exceptionMessage));
+        when(eventRuleService.save(eq(rule))).thenThrow(new BusinessException(exceptionMessage));
 
         getMockMvc().perform(post("/rules/save").params(ruleData))
                 .andExpect(model().attribute("errors", equalTo(Arrays.asList(new String[] { exceptionMessage }))))
                 .andExpect(model().attribute("rule", equalTo(ruleForm)))
-                .andExpect(view().name("rules/new-form"));
+                .andExpect(view().name("rules/form"));
 
-        verify(eventRuleService).create(eq(rule));
+        verify(eventRuleService).save(eq(rule));
     }
 
     @Test
-    public void shouldRedirectToShowAfterRuleCreationSucceed() throws Exception {
+    public void shouldRedirectToShowAfterSuccessfulRuleCreation() throws Exception {
         response = spy(ServiceResponse.builder()
                 .status(ServiceResponse.Status.OK)
                 .result(rule)
                 .build());
 
-        when(eventRuleService.create(eq(rule))).thenReturn(response);
+        when(eventRuleService.save(eq(rule))).thenReturn(response);
 
         getMockMvc().perform(post("/rules/save").params(ruleData))
                 .andExpect(flash().attribute("message", "Rule registered successfully"))
                 .andExpect(redirectedUrl(MessageFormat.format("/rules/{0}",rule.getId())));
 
-        verify(eventRuleService).create(eq(rule));
+        verify(eventRuleService).save(eq(rule));
+    }
+
+    @Test
+    public void shouldShowEditForm() throws Exception {
+        when(eventRuleService.findById(ruleId)).thenReturn(rule);
+
+        getMockMvc().perform(get(MessageFormat.format("/rules/{0}/edit", ruleId)))
+                .andExpect(model().attribute("rule", equalTo(ruleForm)))
+                .andExpect(model().attribute("action", MessageFormat.format("/rules/{0}",ruleId)))
+                .andExpect(view().name("rules/form"));
+    }
+
+    @Test
+    public void shouldRedirectToShowAfterSuccessfulRuleEdit() throws Exception {
+        rule.setId(ruleId);
+        response = spy(ServiceResponse.builder()
+                .status(ServiceResponse.Status.OK)
+                .result(rule)
+                .build());
+
+        when(eventRuleService.save(eq(rule))).thenReturn(response);
+
+        getMockMvc().perform(post("/rules/{0}",rule.getId()).params(ruleData))
+                .andExpect(flash().attribute("message", "Rule registered successfully"))
+                .andExpect(redirectedUrl(MessageFormat.format("/rules/{0}",rule.getId())));
+
+        verify(eventRuleService).save(eq(rule));
     }
 
     @Test
