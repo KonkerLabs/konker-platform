@@ -6,4 +6,9 @@ public class IntegrationException extends Exception {
     public IntegrationException(String message) {
         super(message);
     }
+
+    public IntegrationException(String message, Throwable rootCause) {
+        super(message, rootCause);
+    }
+
 }
