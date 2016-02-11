@@ -29,7 +29,7 @@ public class SmsConfig {
         SMSMessageGatewayTwilioImpl smsMessageGateway = new SMSMessageGatewayTwilioImpl();
         smsMessageGateway.setApiUri(new URI(smsServiceConfig.getString("uri")));
         smsMessageGateway.setUsername(smsServiceConfig.getString("username"));
-        smsMessageGateway.setUsername(smsServiceConfig.getString("password"));
+        smsMessageGateway.setPassword(smsServiceConfig.getString("password"));
         smsMessageGateway.setFromPhoneNumber(smsServiceConfig.getString("from"));
         smsMessageGateway.setRestTemplate(this.smsRestTemplate());
 
