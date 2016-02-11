@@ -1,21 +1,21 @@
 <!DOCTYPE html>
-<html layout:decorator="layouts/default">
+<html data-layout-decorator="layouts/default">
 <head>
 </head>
 <body>
-<div layout:fragment="content">
+<div data-layout-fragment="content">
     <fieldset>
         <legend>Rules</legend>
-        <div class="alert alert-danger" role="alert" th:if="${errors != null and !errors.empty}">
+        <div class="alert alert-danger" role="alert" data-th-if="${errors != null and !errors.empty}">
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
-            <li th:each="error : ${errors}" th:text="${error}"></li>
+            <li data-th-each="error : ${errors}" data-th-text="${error}"></li>
         </div>
-        <form th:action="@{{url}(url=${action})}" th:object="${rule}" method="post">
+        <form data-th-action="@{{url}(url=${action})}" data-th-object="${rule}" method="post">
             <div class="form-group">
                 <label for="name">Name</label>
-                <input type="text" th:field="*{name}"
+                <input type="text" data-th-field="*{name}"
                        class="form-control"
                        id="name"
                        name="name" placeholder="Type your rule name here..."/>
@@ -23,67 +23,94 @@
             <div class="form-group">
                 <label for="description">Description</label>
                 <textarea id="description" class="form-control" name="description"
-                          placeholder="Type some about your device (optional)" th:field="*{description}">
+                          placeholder="Type some about your device (optional)" data-th-field="*{description}">
                 </textarea>
             </div>
             <div class="form-group">
                 <label for="incomingAuthority">Incoming Device</label>
-                <select class="form-control" th:field="*{incomingAuthority}"
+                <select class="form-control" data-th-field="*{incomingAuthority}"
                     id="incomingAuthority" name="incomingAuthority">
-                    <option th:each="device : ${allDevices}"
-                            th:value="${device.deviceId}"
-                            th:text="${device.deviceId + ' - ' + device.name}"></option>
+                    <option data-th-each="device : ${allDevices}"
+                            data-th-value="${device.deviceId}"
+                            data-th-text="${device.deviceId + ' - ' + device.name}"></option>
                 </select>
             </div>
             <div class="form-group">
                 <label for="incomingChannel">Incoming channel</label>
-                <input type="text" th:field="*{incomingChannel}"
+                <input type="text" data-th-field="*{incomingChannel}"
                        class="form-control"
                        id="incomingChannel"
                        name="incomingChannel" placeholder="Type your incoming device's channel here..."/>
             </div>
             <div class="form-group">
-                <label for="outgoingAuthority">Outgoing Device</label>
-                <select class="form-control" th:field="*{outgoingAuthority}"
-                        id="outgoingAuthority" name="outgoingAuthority">
-                    <option th:each="device : ${allDevices}"
-                            th:value="${device.deviceId}"
-                            th:text="${device.deviceId + ' - ' + device.name}"></option>
-                </select>
+                <label class="radio control-label">Outgoing type</label>
+                <label class="radio-inline">
+                    <input type="radio" name="outgoingScheme"
+                           value="device" data-th-checked="*{outgoingScheme == 'device'}">Devices</input>
+                </label>
+                <label class="radio-inline">
+                    <input type="radio" name="outgoingScheme"
+                           value="sms" data-th-checked="*{outgoingScheme == 'sms'}">SMS</input>
+                </label>
             </div>
-            <div class="form-group">
-                <label for="outgoingChannel">Outgoing channel</label>
-                <input type="text" th:field="*{outgoingChannel}"
-                       class="form-control"
-                       id="outgoingChannel"
-                       name="outgoingChannel" placeholder="Type your incoming device's channel here..."/>
+            <div id="outgoingFragment">
+                <data-th-block data-th-include="rules/device-outgoing :: outgoing"
+                               data-th-if="*{outgoingScheme == 'device'}">
+                </data-th-block>
+                <data-th-block data-th-include="rules/sms-outgoing :: outgoing"
+                               data-th-if="*{outgoingScheme == 'sms'}">
+                </data-th-block>
             </div>
             <div class="form-group">
                 <label for="filterClause">Message filter</label>
-                <input type="text" th:field="*{filterClause}"
+                <input type="text" data-th-field="*{filterClause}"
                        class="form-control"
                        id="filterClause"
                        name="filterClause" placeholder="Type a text to be found on every incoming message..."/>
             </div>
             <div class="form-group">
                 <label for="active">Active?</label>
-                <input type="checkbox" th:field="*{active}"
+                <input type="checkbox" data-th-field="*{active}"
                        id="active"
                        name="active"/>
             </div>
             <button type="submit" class="btn btn-success">Save</button>
-            <a th:href="@{/rules}" class="btn btn-default">Back</a>
+            <a data-th-href="@{/rules}" class="btn btn-default">Back</a>
         </form>
     </fieldset>
 </div>
-<!--<div layout:fragment="script">-->
-    <!--<script th:inline="javascript">-->
-    <!--/*<![CDATA[*/-->
-        <!--$("#incomingAuthority").change(function() {-->
-          <!--alert( "Handler for .change() called." );-->
-        <!--});-->
-    <!--/*]]>*/-->
-    <!--</script>-->
-<!--</div>-->
+<div layout:fragment="script">
+    <script data-th-inline="javascript">
+    /*<![CDATA[*/
+        $(document).ready(function() {
+            $('input[type=radio][name=outgoingScheme]').change(function() {
+                renderOutgoingFragment(this.value);
+            });
+        });
+
+        function renderOutgoingFragment(scheme) {
+            var url = '/registry/rules/outgoing/' + scheme;
+            fetchViewFragment(url);
+        }
+
+        function fetchViewFragment(fetchUrl) {
+            $.ajax({
+                context : this,
+                type : "GET",
+                url : fetchUrl,
+                dataType: "html",
+                timeout : 100000,
+                success : function(data) {
+                    displayFragment(data);
+                }
+            });
+        }
+
+        function displayFragment(data) {
+            $('#outgoingFragment').html(data);
+        }
+    /*]]>*/
+    </script>
+</div>
 </body>
 </html>

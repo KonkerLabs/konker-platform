@@ -85,8 +85,7 @@ public class DeviceController {
 
         ServiceResponse serviceResponse = null;
         try {
-            serviceResponse = deviceRegisterService.update(deviceId, Device.builder().deviceId(deviceId)
-                    .name(deviceForm.getName()).description(deviceForm.getDescription()).build());
+            serviceResponse = deviceRegisterService.update(deviceId, deviceForm.toModel());
         } catch (BusinessException e) {
             return new ModelAndView("devices/form")
                     .addObject("errors", Arrays.asList(new String[] { e.getMessage() }))

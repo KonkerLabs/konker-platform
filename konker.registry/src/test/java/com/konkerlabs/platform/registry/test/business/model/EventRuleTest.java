@@ -17,6 +17,8 @@ import static org.hamcrest.Matchers.nullValue;
 public class EventRuleTest {
 
     private EventRule subject;
+    private String incomingAuthority = "0000000000000004";
+    private String outgoingAuthority = "0000000000000005";
 
     @Before
     public void setUp() throws Exception {
@@ -27,8 +29,8 @@ public class EventRuleTest {
             .tenant(tenant)
             .name("Rule name")
             .description("Description")
-            .incoming(new EventRule.RuleActor(new URI("device://0000000000000004/")))
-            .outgoing(new EventRule.RuleActor(new URI("device://0000000000000005/")))
+            .incoming(new EventRule.RuleActor(new URI("device",incomingAuthority,null,null,null)))
+            .outgoing(new EventRule.RuleActor(new URI("device",outgoingAuthority,null,null,null)))
             .transformations(Arrays.asList(new EventRule.RuleTransformation[]{
                     new EventRule.RuleTransformation("CONTENT_MATCH")
             }))
@@ -77,6 +79,14 @@ public class EventRuleTest {
         assertThat(subject.applyValidations(), hasItem(expectedMessage));
     }
     @Test
+    public void shouldReturnAValidationMessageIfIncomingURIIsEmpty() throws Exception {
+        subject.getIncoming().setUri(new URI(null,null,null,null,null));
+
+        String expectedMessage = "Incoming actor's URI cannot be empty";
+
+        assertThat(subject.applyValidations(), hasItem(expectedMessage));
+    }
+    @Test
     public void shouldReturnAValidationMessageIfOutgoingIsNull() throws Exception {
         subject.setOutgoing(null);
 
@@ -89,6 +99,14 @@ public class EventRuleTest {
         subject.getOutgoing().setUri(null);
 
         String expectedMessage = "Outgoing actor URI cannot be null";
+
+        assertThat(subject.applyValidations(), hasItem(expectedMessage));
+    }
+    @Test
+    public void shouldReturnAValidationMessageIfOutgoingURIIsEmpty() throws Exception {
+        subject.getOutgoing().setUri(new URI(null,null,null,null,null));
+
+        String expectedMessage = "Outgoing actor's URI cannot be empty";
 
         assertThat(subject.applyValidations(), hasItem(expectedMessage));
     }

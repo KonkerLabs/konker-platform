@@ -40,10 +40,18 @@ public class EventRule {
             validations.add("Incoming actor cannot be null");
         if (getIncoming() != null && getIncoming().getUri() == null)
             validations.add("Incoming actor URI cannot be null");
+        if (getIncoming() != null &&
+                getIncoming().getUri() != null &&
+                    getIncoming().getUri().toString().isEmpty())
+            validations.add("Incoming actor's URI cannot be empty");
         if (getOutgoing()==null)
             validations.add("Outgoing actor cannot be null");
         if (getOutgoing() != null && getOutgoing().getUri() == null)
             validations.add("Outgoing actor URI cannot be null");
+        if (getOutgoing() != null &&
+                getOutgoing().getUri() != null &&
+                getOutgoing().getUri().toString().isEmpty())
+            validations.add("Outgoing actor's URI cannot be empty");
 
         if (validations.isEmpty())
             return null;

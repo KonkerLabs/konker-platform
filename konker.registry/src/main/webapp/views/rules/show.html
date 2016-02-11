@@ -1,20 +1,20 @@
 <!DOCTYPE html>
-<html layout:decorator="layouts/default">
+<html data-layout-decorator="layouts/default">
 <head>
 </head>
 <body>
-<div layout:fragment="content">
+<div data-layout-fragment="content">
     <fieldset disabled="">
         <legend>Rules</legend>
-        <div class="alert alert-success" role="alert" th:if="${message != null}">
-            <span th:text="${message}"></span>
+        <div class="alert alert-success" role="alert" data-th-if="${message != null}">
+            <span data-th-text="${message}"></span>
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
         </div>
         <div class="form-group">
             <label for="name">Name</label>
-            <input type="text" th:value="${rule.name}"
+            <input type="text" data-th-value="${rule.name}"
                    class="form-control"
                    id="name"
                    name="name"/>
@@ -22,61 +22,55 @@
         <div class="form-group">
             <label for="description">Description</label>
             <textarea id="description" class="form-control" name="description"
-                      th:text="${rule.description}">
+                      data-th-text="${rule.description}">
             </textarea>
         </div>
         <div class="form-group">
             <label for="incomingAuthority">Incoming Device</label>
-            <input type="text" th:value="${rule.incoming.uri}"
+            <input type="text" data-th-value="${rule.incomingAuthority}"
                    class="form-control"
                    id="incomingAuthority"
                    name="incomingAuthority"/>
         </div>
         <div class="form-group">
             <label for="incomingChannel">Incoming channel</label>
-            <input type="text" th:value="${rule.incoming.data.get('channel')}"
+            <input type="text" data-th-value="${rule.incomingChannel}"
                    class="form-control"
                    id="incomingChannel"
                    name="incomingChannel"/>
         </div>
         <div class="form-group">
-            <label for="outgoingAuthority">Outgoing Device</label>
-            <input type="text" th:value="${rule.outgoing.uri}"
-                   class="form-control"
-                   id="outgoingAuthority"
-                   name="outgoingAuthority"/>
+            <label class="radio control-label">Outgoing type</label>
+            <label class="radio-inline">
+                <input type="radio" name="outgoingScheme"
+                       value="device" data-th-checked="${rule.outgoingScheme == 'device'}">Devices</input>
+            </label>
+            <label class="radio-inline">
+                <input type="radio" name="outgoingScheme"
+                       value="sms" data-th-checked="${rule.outgoingScheme == 'sms'}">SMS</input>
+            </label>
         </div>
-        <div class="form-group">
-            <label for="outgoingChannel">Outgoing channel</label>
-            <input type="text" th:value="${rule.outgoing.data.get('channel')}"
-                   class="form-control"
-                   id="outgoingChannel"
-                   name="outgoingChannel"/>
-        </div>
+        <data-th-block data-th-include="rules/device-outgoing :: outgoing"
+                       data-th-if="${rule.outgoingScheme == 'device'}">
+        </data-th-block>
+        <data-th-block data-th-include="rules/sms-outgoing :: outgoing"
+                       data-th-if="${rule.outgoingScheme == 'sms'}">
+        </data-th-block>
         <div class="form-group">
             <label for="filterClause">Message filter</label>
-            <input type="text" th:value="${rule.transformations[0].data.get('value')}"
+            <input type="text" data-th-value="${rule.filterClause}"
                    class="form-control"
                    id="filterClause"
                    name="filterClause"/>
         </div>
         <div class="form-group">
             <label for="active">Active?</label>
-            <input type="checkbox" th:checked="${rule.active}"
+            <input type="checkbox" data-th-checked="${rule.active}"
                    id="active"
                    name="active"/>
         </div>
     </fieldset>
-    <a th:href="@{/rules}" class="btn btn-default">Back</a>
+    <a data-th-href="@{/rules}" class="btn btn-default">Back</a>
 </div>
-<!--<div layout:fragment="script">-->
-<!--<script th:inline="javascript">-->
-<!--/*<![CDATA[*/-->
-<!--$("#incomingAuthority").change(function() {-->
-<!--alert( "Handler for .change() called." );-->
-<!--});-->
-<!--/*]]>*/-->
-<!--</script>-->
-<!--</div>-->
 </body>
 </html>

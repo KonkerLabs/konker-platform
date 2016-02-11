@@ -64,8 +64,9 @@ public class EventRuleControllerTest extends WebLayerTestContext {
         ruleForm.setDescription("Rule description");
         ruleForm.setIncomingAuthority(incomingDevice.getDeviceId());
         ruleForm.setIncomingChannel("command");
-        ruleForm.setOutgoingAuthority(outgoingDevice.getDeviceId());
-        ruleForm.setOutgoingChannel("in");
+        ruleForm.setOutgoingScheme("device");
+        ruleForm.setOutgoingDeviceAuthority(outgoingDevice.getDeviceId());
+        ruleForm.setOutgoingDeviceChannel("in");
         ruleForm.setFilterClause("LEDSwitch");
         ruleForm.setActive(true);
 
@@ -74,8 +75,9 @@ public class EventRuleControllerTest extends WebLayerTestContext {
         ruleData.add("description",ruleForm.getDescription());
         ruleData.add("incomingAuthority",ruleForm.getIncomingAuthority());
         ruleData.add("incomingChannel", ruleForm.getIncomingChannel());
-        ruleData.add("outgoingAuthority",ruleForm.getOutgoingAuthority());
-        ruleData.add("outgoingChannel", ruleForm.getOutgoingChannel());
+        ruleData.add("outgoingScheme", ruleForm.getOutgoingScheme());
+        ruleData.add("outgoingDeviceAuthority",ruleForm.getOutgoingDeviceAuthority());
+        ruleData.add("outgoingDeviceChannel", ruleForm.getOutgoingDeviceChannel());
         ruleData.add("filterClause",ruleForm.getFilterClause());
         ruleData.add("active","true");
 
@@ -86,13 +88,13 @@ public class EventRuleControllerTest extends WebLayerTestContext {
             .name(ruleForm.getName())
             .description(ruleForm.getDescription())
             .incoming(new EventRule.RuleActor(new URI("device",ruleForm.getIncomingAuthority(),null,null,null)))
-            .outgoing(new EventRule.RuleActor(new URI("device",ruleForm.getOutgoingAuthority(),null,null,null)))
+            .outgoing(new EventRule.RuleActor(new URI(ruleForm.getOutgoingScheme(),ruleForm.getOutgoingDeviceAuthority(),null,null,null)))
             .transformations(Arrays.asList(new EventRule.RuleTransformation[]{contentMatchTransformation}))
             .active(ruleForm.isActive())
             .build();
 
         rule.getIncoming().getData().put("channel", ruleForm.getIncomingChannel());
-        rule.getOutgoing().getData().put("channel", ruleForm.getOutgoingChannel());
+        rule.getOutgoing().getData().put("channel", ruleForm.getOutgoingDeviceChannel());
 
         registeredRules = new ArrayList<EventRule>(Arrays.asList(new EventRule[]{rule}));
     }
@@ -116,6 +118,26 @@ public class EventRuleControllerTest extends WebLayerTestContext {
             .andExpect(view().name("rules/form"))
             .andExpect(model().attribute("rule",new EventRuleForm()))
             .andExpect(model().attribute("action","/rules/save"));
+    }
+
+    @Test
+    public void shouldRenderDeviceOutgoingViewFragment() throws Exception {
+        getMockMvc().perform(get("/rules/outgoing/{0}","device"))
+                .andExpect(view().name("rules/device-outgoing"))
+                .andExpect(model().attribute("rule",new EventRuleForm()));
+    }
+
+    @Test
+    public void shouldRenderSmsViewFragment() throws Exception {
+        getMockMvc().perform(get("/rules/outgoing/{0}","sms"))
+                .andExpect(view().name("rules/sms-outgoing"))
+                .andExpect(model().attribute("rule",new EventRuleForm()));
+    }
+
+    @Test
+    public void shouldRenderEmptyBodyWhenSchemeIsUnknown() throws Exception {
+        getMockMvc().perform(get("/rules/outgoing/{0}","unknown_scheme"))
+                .andExpect(view().name("common/empty"));
     }
 
     @Test
@@ -191,12 +213,13 @@ public class EventRuleControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldShowRuleDetails() throws Exception {
+        ruleForm.setId(ruleId);
         rule.setId(ruleId);
         when(eventRuleService.findById(rule.getId())).thenReturn(rule);
 
         getMockMvc().perform(
             get("/rules/{0}",rule.getId())
-        ).andExpect(model().attribute("rule",rule))
+        ).andExpect(model().attribute("rule",equalTo(ruleForm)))
          .andExpect(view().name("rules/show"));
 
         verify(eventRuleService).findById(rule.getId());
