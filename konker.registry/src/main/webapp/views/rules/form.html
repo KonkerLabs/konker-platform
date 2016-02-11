@@ -89,7 +89,9 @@
         });
 
         function renderOutgoingFragment(scheme) {
-            var url = '/registry/rules/outgoing/' + scheme;
+            var base = /* [[@{/rules/outgoing/}]] */ '/rules/outgoing/'
+            var url = base + scheme;
+
             fetchViewFragment(url);
         }
 
