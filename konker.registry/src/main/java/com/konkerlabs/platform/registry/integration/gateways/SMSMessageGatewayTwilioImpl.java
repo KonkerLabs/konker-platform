@@ -72,36 +72,27 @@ public class SMSMessageGatewayTwilioImpl implements SMSMessageGateway {
     }
 
     @Override
-    public void send(String text, String destinationPhoneNumber) throws IntegrationException {
+    public void send(final String text, final String destinationPhoneNumber) throws IntegrationException {
 
-        if (destinationPhoneNumber == null || destinationPhoneNumber.trim().length() == 0) {
-            throw new IllegalArgumentException("Destination Phone Number must be provided");
-        }
+        Optional.ofNullable(destinationPhoneNumber).filter(n -> n.trim().length() > 0)
+                .orElseThrow(() -> new IllegalArgumentException("Destination Number must be provided"));
 
-        if (text == null || text.trim().length() == 0) {
-            throw new IllegalArgumentException("SMS Body must be provided");
-        }
+        Optional.ofNullable(text).filter(n -> n.trim().length() > 0)
+                .orElseThrow(() -> new IllegalArgumentException("SMS Body must be provided"));
 
-        if (username == null || username.trim().length() == 0) {
-            throw new IllegalStateException("API Username must be provided");
-        }
+        Optional.ofNullable(username).filter(n -> n.trim().length() > 0)
+                .orElseThrow(() -> new IllegalStateException("API Username must be provided"));
 
-        if (password == null || password.trim().length() == 0) {
-            throw new IllegalStateException("API Password must be provided");
-        }
+        Optional.ofNullable(password).filter(n -> n.trim().length() > 0)
+                .orElseThrow(() -> new IllegalStateException("API Password must be provided"));
 
-        if (fromPhoneNumber == null || fromPhoneNumber.trim().length() == 0) {
-            throw new IllegalStateException("From Phone Number must be provided");
-        }
+        Optional.ofNullable(fromPhoneNumber).filter(n -> n.trim().length() > 0)
+                .orElseThrow(() -> new IllegalStateException("From Phone Number must be provided"));
 
-        if (apiUri == null) {
-            throw new IllegalStateException("API URI must be provided");
-        }
+        Optional.ofNullable(apiUri).orElseThrow(() -> new IllegalStateException("API URI must be provided"));
 
-        if (restTemplate == null) {
-            throw new IllegalStateException("RestTemplate must be provided");
-        }
-
+        Optional.ofNullable(restTemplate)
+                .orElseThrow(() -> new IllegalStateException("RestTemplate must be provided"));
 
         try {
             MultiValueMap<String, String> form = new LinkedMultiValueMap<String, String>();

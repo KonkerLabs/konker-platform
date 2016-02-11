@@ -94,7 +94,7 @@ public class SMSMessageGatewayTwilioImplTest extends IntegrationLayerTestSupport
 
         verifyZeroInteractions(restTemplate);
     }
-    
+
     @Test
     public void shouldFailWithExceptionIfUsernameIsEmpty() throws IntegrationException {
         thrown.expect(IllegalStateException.class);
@@ -104,7 +104,7 @@ public class SMSMessageGatewayTwilioImplTest extends IntegrationLayerTestSupport
 
         verifyZeroInteractions(restTemplate);
     }
-    
+
     @Test
     public void shouldFailWithExceptionIfPasswordIsNull() throws IntegrationException {
         thrown.expect(IllegalStateException.class);
@@ -114,7 +114,7 @@ public class SMSMessageGatewayTwilioImplTest extends IntegrationLayerTestSupport
 
         verifyZeroInteractions(restTemplate);
     }
-    
+
     @Test
     public void shouldFailWithExceptionIfPasswordIsEmpty() throws IntegrationException {
         thrown.expect(IllegalStateException.class);
@@ -124,7 +124,7 @@ public class SMSMessageGatewayTwilioImplTest extends IntegrationLayerTestSupport
 
         verifyZeroInteractions(restTemplate);
     }
-    
+
     @Test
     public void shouldFailWithExceptionIfFromIsNull() throws IntegrationException {
         thrown.expect(IllegalStateException.class);
@@ -134,7 +134,7 @@ public class SMSMessageGatewayTwilioImplTest extends IntegrationLayerTestSupport
 
         verifyZeroInteractions(restTemplate);
     }
-    
+
     @Test
     public void shouldFailWithExceptionIfFromIsEmpty() throws IntegrationException {
         thrown.expect(IllegalStateException.class);
@@ -144,8 +144,50 @@ public class SMSMessageGatewayTwilioImplTest extends IntegrationLayerTestSupport
 
         verifyZeroInteractions(restTemplate);
     }
-    
-    
+
+    @Test
+    public void shouldFailWithExceptionIfDestinationIsEmpty() throws IntegrationException {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Destination Number must be provided");
+
+        build(apiUri, USERNAME, PASSWORD, FROM_NUMBER, restTemplate).send("a", "");
+
+        verifyZeroInteractions(restTemplate);
+    }
+
+
+    @Test
+    public void shouldFailWithExceptionIfDestinationIsNull() throws IntegrationException {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Destination Number must be provided");
+
+        build(apiUri, USERNAME, PASSWORD, FROM_NUMBER, restTemplate).send("a", null);
+
+        verifyZeroInteractions(restTemplate);
+    }
+
+
+    @Test
+    public void shouldFailWithExceptionIfBodyIsNull() throws IntegrationException {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("SMS Body must be provided");
+
+        build(apiUri, USERNAME, PASSWORD, FROM_NUMBER, restTemplate).send(null, "+1");
+
+        verifyZeroInteractions(restTemplate);
+    }
+
+
+    @Test
+    public void shouldFailWithExceptionIfBodyIsEmpty() throws IntegrationException {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("SMS Body must be provided");
+
+        build(apiUri, USERNAME, PASSWORD, FROM_NUMBER, restTemplate).send("", "+1");
+
+        verifyZeroInteractions(restTemplate);
+    }
+
     @Test
     public void shouldIncludeAuhtorizationHeader() throws IntegrationException {
         build(apiUri, USERNAME, PASSWORD, FROM_NUMBER, restTemplate).send("a", "+2");
@@ -164,12 +206,13 @@ public class SMSMessageGatewayTwilioImplTest extends IntegrationLayerTestSupport
     @Test
     public void shouldRaiseIntegrationExceptionIfPostFails() throws IntegrationException {
         thrown.expect(IntegrationException.class);
-        
-        Mockito.when(restTemplate.postForLocation(anyObject(), anyObject())).thenThrow(new RestClientException("Dummy Exception"));
+
+        Mockito.when(restTemplate.postForLocation(anyObject(), anyObject()))
+                .thenThrow(new RestClientException("Dummy Exception"));
         build(apiUri, USERNAME, PASSWORD, FROM_NUMBER, restTemplate).send("SMS Text Body", "+2");
         verify(restTemplate).postForLocation(anyObject(), anyObject());
     }
-    
+
     @Test
     public void shouldPostToApiIfDataIsCorrect() throws IntegrationException {
         build(apiUri, USERNAME, PASSWORD, FROM_NUMBER, restTemplate).send("SMS Text Body", "+2");
