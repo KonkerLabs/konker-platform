@@ -1,18 +1,18 @@
 <!DOCTYPE html>
-<html layout:decorator="layouts/default">
+<html data-layout-decorator="layouts/default">
 <head>
 </head>
 <body>
-<div layout:fragment="content">
+<div data-layout-fragment="content">
     <fieldset>
         <legend>Rules</legend>
-        <div class="alert alert-success" role="alert" th:if="${message != null}">
-            <span th:text="${message}"></span>
+        <div class="alert alert-success" role="alert" data-th-if="${message != null}">
+            <span data-th-text="${message}"></span>
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
         </div>
-        <a th:href="@{/rules/new}" th:if="${not allDevices.empty}" class="btn btn-default action pull-right">New</a>
+        <a data-th-href="@{/rules/new}" data-th-if="${not allDevices.empty}" class="btn btn-default action pull-right">New</a>
         <table class="table table-bordered">
             <thead>
             <tr>
@@ -24,16 +24,16 @@
             </tr>
             </thead>
             <tbody>
-            <tr th:each="rule : ${rules}">
-                <td th:text="${rule.name}"></td>
-                <td th:text="${rule.incoming.uri}"></td>
-                <td th:text="${rule.outgoing.uri}"></td>
-                <td th:text="${rule.active}"></td>
+            <tr data-th-each="rule : ${rules}">
+                <td data-th-text="${rule.name}"></td>
+                <td data-th-text="${rule.incoming.uri}"></td>
+                <td data-th-text="${rule.outgoing.uri}"></td>
+                <td data-th-text="${rule.active}"></td>
                 <td class="text-center">
-                    <a th:href="@{/rules/{id}(id=${rule.id})}" class="btn btn-default">
+                    <a data-th-href="@{/rules/{id}(id=${rule.id})}" class="btn btn-default">
                         Show
                     </a>
-                    <a th:href="@{/rules/{id}/edit(id=${rule.id})}" class="btn btn-default">
+                    <a data-th-href="@{/rules/{id}/edit(id=${rule.id})}" class="btn btn-default">
                         Edit
                     </a>
                 </td>

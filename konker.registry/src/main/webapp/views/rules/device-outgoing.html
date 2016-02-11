@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+<div data-th-fragment="outgoing">
+    <div class="form-group">
+        <label for="outgoingDeviceAuthority">Outgoing Device</label>
+        <select class="form-control" data-th-field="${rule.outgoingDeviceAuthority}"
+                id="outgoingDeviceAuthority" name="outgoingDeviceAuthority">
+            <option data-th-each="device : ${allDevices}"
+                    data-th-value="${device.deviceId}"
+                    data-th-text="${device.deviceId + ' - ' + device.name}"></option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="outgoingDeviceChannel">Outgoing channel</label>
+        <input type="text" data-th-field="${rule.outgoingDeviceChannel}"
+               class="form-control"
+               id="outgoingDeviceChannel"
+               name="outgoingDeviceChannel" placeholder="Type your incoming device's channel here..."/>
+    </div>
+</div>
+</body>
+</html>

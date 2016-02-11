@@ -79,7 +79,7 @@ public class EventRuleController {
 
     @RequestMapping(value = "/{ruleId}", method = RequestMethod.GET)
     public ModelAndView show(@PathVariable("ruleId") String ruleId) {
-        return new ModelAndView("rules/show","rule",eventRuleService.findById(ruleId));
+        return new ModelAndView("rules/show","rule",new EventRuleForm().fillFrom(eventRuleService.findById(ruleId)));
     }
 
     @RequestMapping("/{ruleId}/edit")
@@ -95,5 +95,16 @@ public class EventRuleController {
                                  RedirectAttributes redirectAttributes) {
         eventRuleForm.setId(ruleId);
         return save(eventRuleForm, redirectAttributes);
+    }
+
+    @RequestMapping("/outgoing/{outgoingScheme}")
+    public ModelAndView outgoingFragment(@PathVariable String outgoingScheme) {
+        EventRuleForm rule = new EventRuleForm();
+        switch (outgoingScheme) {
+            case "device": return new ModelAndView("rules/device-outgoing","rule",rule);
+            case "sms" : return new ModelAndView("rules/sms-outgoing","rule",rule);
+            //FIXME: Check for a way to render an empty HTTP body without an empty html file
+            default: return new ModelAndView("common/empty");
+        }
     }
 }
