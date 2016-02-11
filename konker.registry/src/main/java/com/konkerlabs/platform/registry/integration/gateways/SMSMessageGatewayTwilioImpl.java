@@ -2,11 +2,11 @@ package com.konkerlabs.platform.registry.integration.gateways;
 
 import java.net.URI;
 import java.text.MessageFormat;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
-import org.springframework.stereotype.Component;
 import org.springframework.util.Base64Utils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -23,10 +23,6 @@ public class SMSMessageGatewayTwilioImpl implements SMSMessageGateway {
     private String password;
     private URI apiUri;
     private String fromPhoneNumber;
-
-    public SMSMessageGatewayTwilioImpl() {
-        LOGGER.debug("X");
-    }
 
     public RestTemplate getRestTemplate() {
         return restTemplate;
@@ -76,11 +72,40 @@ public class SMSMessageGatewayTwilioImpl implements SMSMessageGateway {
     }
 
     @Override
-    public void send(String text, String phoneNumber) throws IntegrationException {
-        try {
+    public void send(String text, String destinationPhoneNumber) throws IntegrationException {
 
+        if (destinationPhoneNumber == null || destinationPhoneNumber.trim().length() == 0) {
+            throw new IllegalArgumentException("Destination Phone Number must be provided");
+        }
+
+        if (text == null || text.trim().length() == 0) {
+            throw new IllegalArgumentException("SMS Body must be provided");
+        }
+
+        if (username == null || username.trim().length() == 0) {
+            throw new IllegalStateException("API Username must be provided");
+        }
+
+        if (password == null || password.trim().length() == 0) {
+            throw new IllegalStateException("API Password must be provided");
+        }
+
+        if (fromPhoneNumber == null || fromPhoneNumber.trim().length() == 0) {
+            throw new IllegalStateException("From Phone Number must be provided");
+        }
+
+        if (apiUri == null) {
+            throw new IllegalStateException("API URI must be provided");
+        }
+
+        if (restTemplate == null) {
+            throw new IllegalStateException("RestTemplate must be provided");
+        }
+
+
+        try {
             MultiValueMap<String, String> form = new LinkedMultiValueMap<String, String>();
-            form.add("To", phoneNumber);
+            form.add("To", destinationPhoneNumber);
             form.add("Body", text);
             form.add("From", fromPhoneNumber);
 
@@ -90,13 +115,13 @@ public class SMSMessageGatewayTwilioImpl implements SMSMessageGateway {
             HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<MultiValueMap<String, String>>(form,
                     headers);
 
-            LOGGER.debug("Sending SMS Message [{}] to [{}].", text, phoneNumber);
+            LOGGER.debug("Sending SMS Message [{}] to [{}].", text, destinationPhoneNumber);
 
             restTemplate.postForLocation(apiUri, entity);
 
         } catch (RestClientException rce) {
             throw new IntegrationException(
-                    MessageFormat.format("Exception while sending {0} to {1}", text, phoneNumber), rce);
+                    MessageFormat.format("Exception while sending {0} to {1}", text, destinationPhoneNumber), rce);
         }
     }
 }
