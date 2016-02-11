@@ -219,7 +219,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     public void shouldRetunResponseErrorMessageIfValidationFailsWhenUpdating() throws Exception {
         device.setName(EMPTY_DEVICE_NAME);
 
-        ServiceResponse response = deviceRegisterService.update(THE_DEVICE_ID, device);
+        ServiceResponse<Device> response = deviceRegisterService.update(THE_DEVICE_ID, device);
         assertThat(response, notNullValue());
         assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
         assertThat(response.getResponseMessages(), not(empty()));

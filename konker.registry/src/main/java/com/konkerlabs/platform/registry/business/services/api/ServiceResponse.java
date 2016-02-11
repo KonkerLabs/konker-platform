@@ -7,11 +7,11 @@ import java.util.List;
 
 @Data
 @Builder
-public class ServiceResponse {
+public class ServiceResponse<T> {
 
     public enum Status { OK, ERROR }
 
     private Status status;
     private List<String> responseMessages;
-    private Object result;
+    private T result;
 }

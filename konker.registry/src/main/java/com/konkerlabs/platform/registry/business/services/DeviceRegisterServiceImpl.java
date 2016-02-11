@@ -26,7 +26,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
     private DeviceRepository deviceRepository;
 
     @Override
-    public ServiceResponse register(Device device) throws BusinessException {
+    public ServiceResponse<Device> register(Device device) throws BusinessException {
         if (device == null)
             throw new BusinessException("Record cannot be null");
 
@@ -35,25 +35,27 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         device.setTenant(tenantRepository.findByName("Konker"));
 
         if (device.getTenant() == null) {
-            return ServiceResponse.builder()
+            return ServiceResponse.<Device>builder()
                     .responseMessages(Arrays.asList(new String[] { "Default tenant does not exist" }))
-                    .status(ServiceResponse.Status.ERROR).build();
+                    .status(ServiceResponse.Status.ERROR).<Device>build();
         }
 
         List<String> validations = device.applyValidations();
 
         if (validations != null)
-            return ServiceResponse.builder().responseMessages(validations).status(ServiceResponse.Status.ERROR).build();
+            return ServiceResponse.<Device>builder()
+                    .responseMessages(validations)
+                    .status(ServiceResponse.Status.ERROR).<Device>build();
 
         if (deviceRepository.findByDeviceId(device.getDeviceId()) != null) {
-            return ServiceResponse.builder()
+            return ServiceResponse.<Device>builder()
                     .responseMessages(Arrays.asList(new String[] { "Device ID already registered" }))
-                    .status(ServiceResponse.Status.ERROR).build();
+                    .status(ServiceResponse.Status.ERROR).<Device>build();
         }
 
         deviceRepository.save(device);
 
-        return ServiceResponse.builder().status(ServiceResponse.Status.OK).build();
+        return ServiceResponse.<Device>builder().status(ServiceResponse.Status.OK).<Device>build();
     }
 
     @Override
@@ -67,7 +69,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
     }
 
     @Override
-    public ServiceResponse update(String deviceId, Device updatingDevice) throws BusinessException {
+    public ServiceResponse<Device> update(String deviceId, Device updatingDevice) throws BusinessException {
         if (deviceId == null) {
             throw new BusinessException("Cannot update device with null ID");
         }
@@ -77,16 +79,16 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         }
 
         if (!deviceId.equalsIgnoreCase(updatingDevice.getDeviceId())) {
-            return ServiceResponse.builder().responseMessages(Arrays.asList(new String[] { "Cannot modify device ID" }))
-                    .status(ServiceResponse.Status.ERROR).build();
+            return ServiceResponse.<Device>builder().responseMessages(Arrays.asList(new String[] { "Cannot modify device ID" }))
+                    .status(ServiceResponse.Status.ERROR).<Device>build();
 
         }
 
         Device deviceFromDB = findById(deviceId);
         if (deviceFromDB == null) {
-            return ServiceResponse.builder()
+            return ServiceResponse.<Device>builder()
                     .responseMessages(Arrays.asList(new String[] { "Device ID does not exists" }))
-                    .status(ServiceResponse.Status.ERROR).build();
+                    .status(ServiceResponse.Status.ERROR).<Device>build();
         }
 
         // modify "modifiable" fields
@@ -96,11 +98,12 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         List<String> validations = deviceFromDB.applyValidations();
 
         if (validations != null) {
-            return ServiceResponse.builder().responseMessages(validations).status(ServiceResponse.Status.ERROR).build();
+            return ServiceResponse.<Device>builder()
+                    .responseMessages(validations).status(ServiceResponse.Status.ERROR).<Device>build();
         }
 
         deviceRepository.save(deviceFromDB);
 
-        return ServiceResponse.builder().status(ServiceResponse.Status.OK).build();
+        return ServiceResponse.<Device>builder().status(ServiceResponse.Status.OK).<Device>build();
     }
 }

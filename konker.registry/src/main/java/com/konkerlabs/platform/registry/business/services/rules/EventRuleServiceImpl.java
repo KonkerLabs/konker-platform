@@ -25,36 +25,38 @@ public class EventRuleServiceImpl implements EventRuleService {
     private EventRuleRepository eventRuleRepository;
 
     @Override
-    public ServiceResponse save(EventRule rule) throws BusinessException {
+    public ServiceResponse<EventRule> save(EventRule rule) throws BusinessException {
         if (rule == null)
             throw new BusinessException("Record cannot be null");
 
         rule.setTenant(tenantRepository.findByName("Konker"));
 
         if (rule.getTenant() == null) {
-            return ServiceResponse.builder()
+            return ServiceResponse.<EventRule>builder()
                     .responseMessages(Arrays.asList(new String[] { "Default tenant does not exist" }))
-                    .status(ServiceResponse.Status.ERROR).build();
+                    .status(ServiceResponse.Status.ERROR).<EventRule>build();
         }
 
         List<String> validations = rule.applyValidations();
 
         if (validations != null) {
-            return ServiceResponse.builder().responseMessages(validations).status(ServiceResponse.Status.ERROR).build();
+            return ServiceResponse.<EventRule>builder()
+                    .responseMessages(validations)
+                    .status(ServiceResponse.Status.ERROR).<EventRule>build();
         }
 
         String incomingChannel = rule.getIncoming().getData().get("channel");
         String outgoingChannel = rule.getOutgoing().getData().get("channel");
 
         if (incomingChannel != null && outgoingChannel != null && incomingChannel.equals(outgoingChannel)) {
-            return ServiceResponse.builder()
+            return ServiceResponse.<EventRule>builder()
                     .responseMessages(Arrays.asList(new String[] { "Incoming and outgoing device channels cannot be the same" }))
-                    .status(ServiceResponse.Status.ERROR).build();
+                    .status(ServiceResponse.Status.ERROR).<EventRule>build();
         }
 
         eventRuleRepository.save(rule);
 
-        return ServiceResponse.builder().status(ServiceResponse.Status.OK).result(rule).build();
+        return ServiceResponse.<EventRule>builder().status(ServiceResponse.Status.OK).result(rule).<EventRule>build();
     }
 
     @Override

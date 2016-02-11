@@ -53,14 +53,14 @@ public class EventRuleController {
     @RequestMapping(value = "save", method = RequestMethod.POST)
     public ModelAndView save(@ModelAttribute("eventRuleForm") EventRuleForm eventRuleForm,
                              RedirectAttributes redirectAttributes) {
-        ServiceResponse response = null;
+        ServiceResponse<EventRule> response = null;
         try {
             response = eventRuleService.save(eventRuleForm.toModel());
         } catch (BusinessException e) {
-            response = ServiceResponse.builder()
+            response = ServiceResponse.<EventRule>builder()
                 .status(ServiceResponse.Status.ERROR)
                 .responseMessages(Arrays.asList(new String[]{e.getMessage()}))
-                .build();
+                .<EventRule>build();
         }
 
         switch (response.getStatus()) {
@@ -72,7 +72,7 @@ public class EventRuleController {
             default: {
                 redirectAttributes.addFlashAttribute("message", "Rule registered successfully");
                 return new ModelAndView(MessageFormat.format("redirect:/rules/{0}",
-                        EventRule.class.cast(response.getResult()).getId()));
+                        response.getResult().getId()));
             }
         }
     }
