@@ -12,10 +12,14 @@
                 </button>
                 <li th:each="error : ${errors}" th:text="${error}"></li>
             </div>
-            <form th:action="@{/devices/save}" th:object="${device}" method="post">
+            <form th:action="@{{url}(url=${action})}" th:object="${device}" method="post">
                 <div class="form-group">
                     <label for="deviceId">Device ID</label>
-                    <input type="text" th:field="*{deviceId}"
+                    <input th:if="${isEditing != null}" type="text" th:field="*{deviceId}"
+                           class="form-control" disabled="disabled"
+                           id="deviceId"
+                           name="deviceId"/>
+                    <input th:if="${isEditing == null}" type="text" th:field="*{deviceId}"
                            class="form-control"
                            id="deviceId"
                            name="deviceId" placeholder="Type your device ID here..."/>

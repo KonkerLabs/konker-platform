@@ -25,7 +25,7 @@ public class EventRuleServiceImpl implements EventRuleService {
     private EventRuleRepository eventRuleRepository;
 
     @Override
-    public ServiceResponse create(EventRule rule) throws BusinessException {
+    public ServiceResponse save(EventRule rule) throws BusinessException {
         if (rule == null)
             throw new BusinessException("Record cannot be null");
 

@@ -34,7 +34,9 @@ public class DeviceController {
 
     @RequestMapping("/new")
     public ModelAndView newDevice() {
-        return new ModelAndView("devices/new-form", "device", Device.builder().build());
+        return new ModelAndView("devices/form")
+            .addObject("device", new DeviceRegistrationForm())
+            .addObject("action", "/devices/save");
     }
 
     @RequestMapping("/{deviceId}")
@@ -44,7 +46,10 @@ public class DeviceController {
 
     @RequestMapping("/{deviceId}/edit")
     public ModelAndView edit(@PathVariable("deviceId") String deviceId) {
-        return new ModelAndView("devices/edit-form", "device", deviceRegisterService.findById(deviceId));
+        return new ModelAndView("devices/form")
+            .addObject("device", new DeviceRegistrationForm().fillFrom(deviceRegisterService.findById(deviceId)))
+            .addObject("isEditing", true)
+            .addObject("action", MessageFormat.format("/devices/{0}",deviceId));
     }
 
     @RequestMapping("/{deviceId}/events")
@@ -60,18 +65,17 @@ public class DeviceController {
 
         ServiceResponse serviceResponse = null;
         try {
-            serviceResponse = deviceRegisterService.register(Device.builder().deviceId(deviceForm.getDeviceId())
-                    .name(deviceForm.getName()).description(deviceForm.getDescription()).build());
+            serviceResponse = deviceRegisterService.register(deviceForm.toModel());
         } catch (BusinessException e) {
-            return new ModelAndView("devices/new-form").addObject("errors", Arrays.asList(new String[] { e.getMessage() }))
+            return new ModelAndView("devices/form").addObject("errors", Arrays.asList(new String[] { e.getMessage() }))
                     .addObject("device", deviceForm);
         }
 
         if (serviceResponse.getStatus().equals(ServiceResponse.Status.OK)) {
             redirectAttributes.addFlashAttribute("message", "Device registered successfully");
-            return new ModelAndView("redirect:/devices");
+            return new ModelAndView(MessageFormat.format("redirect:/devices/{0}", deviceForm.getDeviceId()));
         } else
-            return new ModelAndView("devices/new-form").addObject("errors", serviceResponse.getResponseMessages())
+            return new ModelAndView("devices/form").addObject("errors", serviceResponse.getResponseMessages())
                     .addObject("device", deviceForm);
     }
 
@@ -84,7 +88,7 @@ public class DeviceController {
             serviceResponse = deviceRegisterService.update(deviceId, Device.builder().deviceId(deviceId)
                     .name(deviceForm.getName()).description(deviceForm.getDescription()).build());
         } catch (BusinessException e) {
-            return new ModelAndView("devices/edit-form")
+            return new ModelAndView("devices/form")
                     .addObject("errors", Arrays.asList(new String[] { e.getMessage() }))
                     .addObject("device", deviceForm);
         }
@@ -93,7 +97,7 @@ public class DeviceController {
             redirectAttributes.addFlashAttribute("message", "Device saved successfully");
             return new ModelAndView(MessageFormat.format("redirect:/devices/{0}", deviceForm.getDeviceId()));
         } else
-            return new ModelAndView("devices/edit-form").addObject("errors", serviceResponse.getResponseMessages())
+            return new ModelAndView("devices/form").addObject("errors", serviceResponse.getResponseMessages())
                     .addObject("device", deviceForm);
     }
 

@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.test.web.controllers;
 
+import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
@@ -90,7 +91,10 @@ public class DeviceControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldShowRegistrationForm() throws Exception {
-        getMockMvc().perform(get("/devices/new")).andExpect(view().name("devices/new-form"));
+        getMockMvc().perform(get("/devices/new"))
+                .andExpect(view().name("devices/form"))
+                .andExpect(model().attribute("device",any(DeviceRegistrationForm.class)))
+                .andExpect(model().attribute("action","/devices/save"));
     }
 
     @Test
@@ -102,7 +106,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
 
         getMockMvc().perform(post("/devices/save").params(deviceData))
                 .andExpect(model().attribute("errors", equalTo(response.getResponseMessages())))
-                .andExpect(model().attribute("device", equalTo(deviceForm))).andExpect(view().name("devices/new-form"));
+                .andExpect(model().attribute("device", equalTo(deviceForm))).andExpect(view().name("devices/form"));
 
         verify(deviceRegisterService).register(eq(device));
     }
@@ -115,20 +119,23 @@ public class DeviceControllerTest extends WebLayerTestContext {
 
         getMockMvc().perform(post("/devices/save").params(deviceData))
                 .andExpect(model().attribute("errors", equalTo(Arrays.asList(new String[] { exceptionMessage }))))
-                .andExpect(model().attribute("device", equalTo(deviceForm))).andExpect(view().name("devices/new-form"));
+                .andExpect(model().attribute("device", equalTo(deviceForm))).andExpect(view().name("devices/form"));
 
         verify(deviceRegisterService).register(eq(device));
     }
 
     @Test
     public void shouldRedirectToListAfterRegistrationSucceed() throws Exception {
-        response = ServiceResponse.builder().status(ServiceResponse.Status.OK).build();
+        response = ServiceResponse.builder()
+                .status(ServiceResponse.Status.OK)
+                .result(device)
+                .build();
 
         when(deviceRegisterService.register(eq(device))).thenReturn(response);
 
         getMockMvc().perform(post("/devices/save").params(deviceData))
                 .andExpect(flash().attribute("message", "Device registered successfully"))
-                .andExpect(redirectedUrl("/devices"));
+                .andExpect(redirectedUrl(MessageFormat.format("/devices/{0}", device.getDeviceId())));
 
         verify(deviceRegisterService).register(eq(device));
     }
@@ -160,7 +167,10 @@ public class DeviceControllerTest extends WebLayerTestContext {
         when(deviceRegisterService.findById(device.getDeviceId())).thenReturn(device);
 
         getMockMvc().perform(get(MessageFormat.format("/devices/{0}/edit", DEVICE_ID_95C14B36BA2B43F1)))
-                .andExpect(model().attribute("device", equalTo(device))).andExpect(view().name("devices/edit-form"));
+                .andExpect(model().attribute("device", equalTo(deviceForm)))
+                .andExpect(model().attribute("isEditing",true))
+                .andExpect(model().attribute("action", MessageFormat.format("/devices/{0}",DEVICE_ID_95C14B36BA2B43F1)))
+                .andExpect(view().name("devices/form"));
     }
 
     @Test
@@ -173,7 +183,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
         getMockMvc().perform(post(MessageFormat.format("/devices/{0}", DEVICE_ID_95C14B36BA2B43F1)).params(deviceData))
                 .andExpect(model().attribute("errors", equalTo(response.getResponseMessages())))
                 .andExpect(model().attribute("device", equalTo(deviceForm)))
-                .andExpect(view().name("devices/edit-form"));
+                .andExpect(view().name("devices/form"));
 
         verify(deviceRegisterService).update(eq(DEVICE_ID_95C14B36BA2B43F1), eq(device));
     }
@@ -188,7 +198,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
         getMockMvc().perform(post(MessageFormat.format("/devices/{0}", DEVICE_ID_95C14B36BA2B43F1)).params(deviceData))
                 .andExpect(model().attribute("errors", equalTo(Arrays.asList(new String[] { exceptionMessage }))))
                 .andExpect(model().attribute("device", equalTo(deviceForm)))
-                .andExpect(view().name("devices/edit-form"));
+                .andExpect(view().name("devices/form"));
 
         verify(deviceRegisterService).update(eq(DEVICE_ID_95C14B36BA2B43F1), eq(device));
     }

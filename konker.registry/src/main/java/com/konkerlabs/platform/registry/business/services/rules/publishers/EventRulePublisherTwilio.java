@@ -11,8 +11,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
-@Service("eventRulePublisherTwilio")
-@Qualifier("eventRulePublisherTwilio")
+@Service("sms")
 @Scope(BeanDefinition.SCOPE_SINGLETON)
 public class EventRulePublisherTwilio implements EventRulePublisher {
     

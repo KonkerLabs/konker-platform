@@ -19,6 +19,7 @@
                 <td class="col-md-1">Name</td>
                 <td class="col-md-1">Incoming</td>
                 <td class="col-md-1">Outgoing</td>
+                <td class="col-md-1">Active?</td>
                 <td class="col-md-1 text-center">Actions</td>
             </tr>
             </thead>
@@ -27,9 +28,13 @@
                 <td th:text="${rule.name}"></td>
                 <td th:text="${rule.incoming.uri}"></td>
                 <td th:text="${rule.outgoing.uri}"></td>
+                <td th:text="${rule.active}"></td>
                 <td class="text-center">
                     <a th:href="@{/rules/{id}(id=${rule.id})}" class="btn btn-default">
                         Show
+                    </a>
+                    <a th:href="@{/rules/{id}/edit(id=${rule.id})}" class="btn btn-default">
+                        Edit
                     </a>
                 </td>
             </tr>

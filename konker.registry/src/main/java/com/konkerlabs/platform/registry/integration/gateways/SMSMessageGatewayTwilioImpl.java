@@ -1,13 +1,12 @@
 package com.konkerlabs.platform.registry.integration.gateways;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.text.MessageFormat;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.util.Base64Utils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -24,7 +23,7 @@ public class SMSMessageGatewayTwilioImpl implements SMSMessageGateway {
     private String password;
     private URI apiUri;
     private String fromPhoneNumber;
-    
+
     public SMSMessageGatewayTwilioImpl() {
         LOGGER.debug("X");
     }
@@ -78,7 +77,6 @@ public class SMSMessageGatewayTwilioImpl implements SMSMessageGateway {
 
     @Override
     public void send(String text, String phoneNumber) throws IntegrationException {
-
         try {
 
             MultiValueMap<String, String> form = new LinkedMultiValueMap<String, String>();
@@ -100,6 +98,5 @@ public class SMSMessageGatewayTwilioImpl implements SMSMessageGateway {
             throw new IntegrationException(
                     MessageFormat.format("Exception while sending {0} to {1}", text, phoneNumber), rce);
         }
-
     }
 }
