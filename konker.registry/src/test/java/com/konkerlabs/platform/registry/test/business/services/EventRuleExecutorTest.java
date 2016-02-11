@@ -54,7 +54,7 @@ public class EventRuleExecutorTest extends BusinessLayerTestSupport {
     public void shouldSendOneEvent() throws ExecutionException, InterruptedException {
         Future<List<Event>> eventFuture = subject.execute(event, uri);
         assertThat(eventFuture.get(), notNullValue());
-        assertThat(eventFuture.get(), hasSize(1));
+        assertThat(eventFuture.get(), hasSize(2));
         assertThat(eventFuture.get().get(0).getPayload(), equalTo("LEDSwitch"));
     }
 
