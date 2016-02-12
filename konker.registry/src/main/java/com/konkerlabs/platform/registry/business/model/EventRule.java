@@ -3,6 +3,7 @@ package com.konkerlabs.platform.registry.business.model;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
+import lombok.Singular;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -26,6 +27,7 @@ public class EventRule {
     private String description;
     private RuleActor incoming;
     private RuleActor outgoing;
+    @Singular
     private List<RuleTransformation> transformations = new ArrayList<>();
     private boolean active;
 
