@@ -79,9 +79,18 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <script th:inline="javascript">
         /*<![CDATA[*/
-        window.jQuery || document.write('<script src="/resources/bootstrap/js/vendor/jquery.min.js"/>')
-            /*]]>*/
+            window.jQuery || document.write('<script src="/resources/bootstrap/js/vendor/jquery.min.js"/>')
 
+            function contextPath() {
+                var context = [[@{/}]];
+                return context;
+            }
+
+            function urlTo(path) {
+                var url = contextPath() + path;
+                return url;
+            }
+        /*]]>*/
     </script>
     <script th:attr="src=@{/resources/bootstrap/js/bootstrap.min.js}"></script>
     <div layout:fragment="script">
