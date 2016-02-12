@@ -38,15 +38,16 @@ public class EventRuleExecutorTest extends BusinessLayerTestSupport {
 
     @Autowired
     private EventRuleExecutor subject;
-
     private Event event;
-
     private URI uri;
+
+    private String matchingRuleDeviceId = "0000000000000004";
+    private String nonMatchingRuleDeviceId = "0000000000000009";
 
     @Before
     public void setUp() throws Exception {
         event = spy(Event.builder().channel("data").timestamp(Instant.now()).payload("LEDSwitch").build());
-        uri = new URI("device://0000000000000004/");
+        uri = new URI("device",matchingRuleDeviceId,null,null,null);
     }
 
     @Test
@@ -60,8 +61,19 @@ public class EventRuleExecutorTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = "/fixtures/event-rules.json")
-    public void shouldntSendAnyEvents() throws ExecutionException, InterruptedException, URISyntaxException {
-        Future<List<Event>> eventFuture = subject.execute(event, new URI("device://non_existing_device/"));
+    public void shouldntSendAnyEventsForANonMatchingIncomingDevice() throws ExecutionException, InterruptedException, URISyntaxException {
+        URI nonMatchingDeviceURI = new URI("device",nonMatchingRuleDeviceId,null,null,null);
+        Future<List<Event>> eventFuture = subject.execute(event, nonMatchingDeviceURI);
+        assertThat(eventFuture.get(), notNullValue());
+        assertThat(eventFuture.get(), hasSize(0));
+    }
+
+    @Test
+    @UsingDataSet(locations = "/fixtures/event-rules.json")
+    public void shouldntSendAnyEventsForANonMatchingIncomingChannel() throws ExecutionException, InterruptedException, URISyntaxException {
+        URI nonMatchingDeviceURI = new URI("device",matchingRuleDeviceId,null,null,null);
+        event.setChannel("non_matching_channel");
+        Future<List<Event>> eventFuture = subject.execute(event, nonMatchingDeviceURI);
         assertThat(eventFuture.get(), notNullValue());
         assertThat(eventFuture.get(), hasSize(0));
     }

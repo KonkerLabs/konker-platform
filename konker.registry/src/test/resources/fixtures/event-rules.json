@@ -11,13 +11,13 @@
       "name" : "Device event forwarding rule",
       "description" : "Rule description",
       "incoming": {
-        "uri" : "device://0000000000000004/",
+        "uri" : "device://0000000000000004",
         "data" : {
           "channel" : "data"
         }
       },
       "outgoing": {
-        "uri" : "device://0000000000000005/",
+        "uri" : "device://0000000000000005",
         "data" : {
           "channel" : "in"
         }
@@ -41,13 +41,13 @@
       "name" : "Device event forwarding rule",
       "description" : "Rule description",
       "incoming": {
-        "uri" : "device://0000000000000004/",
+        "uri" : "device://0000000000000004",
         "data" : {
           "channel" : "data"
         }
       },
       "outgoing": {
-        "uri" : "device://0000000000000006/",
+        "uri" : "device://0000000000000006",
         "data" : {
           "channel" : "in"
         }
@@ -71,13 +71,13 @@
       "name" : "Device event forwarding rule",
       "description" : "Rule description",
       "incoming": {
-        "uri" : "device://0000000000000004/",
+        "uri" : "device://0000000000000004",
         "data" : {
           "channel" : "data"
         }
       },
       "outgoing": {
-        "uri" : "sms://+11999999999/",
+        "uri" : "sms://+11999999999",
         "data" : {
           "channel" : "in"
         }
@@ -101,13 +101,13 @@
       "name" : "Device event forwarding rule",
       "description" : "Rule description",
       "incoming": {
-        "uri" : "device://0000000000000007/",
+        "uri" : "device://0000000000000007",
         "data" : {
           "channel" : "data"
         }
       },
       "outgoing": {
-        "uri" : "device://0000000000000005/",
+        "uri" : "device://0000000000000005",
         "data" : {
           "channel" : "in"
         }

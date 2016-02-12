@@ -52,8 +52,8 @@ public class EventRuleServiceTest extends BusinessLayerTestSupport {
         rule = spy(EventRule.builder()
                 .name("Rule name")
                 .description("Description")
-                .incoming(new EventRule.RuleActor(new URI("device://0000000000000004/")))
-                .outgoing(new EventRule.RuleActor(new URI("device://0000000000000005/")))
+                .incoming(new EventRule.RuleActor(new URI("device","0000000000000004",null,null,null)))
+                .outgoing(new EventRule.RuleActor(new URI("device","0000000000000005",null,null,null)))
                 .transformations(Arrays.asList(new EventRule.RuleTransformation[]{
                         new EventRule.RuleTransformation("CONTENT_MATCH")
                 }))

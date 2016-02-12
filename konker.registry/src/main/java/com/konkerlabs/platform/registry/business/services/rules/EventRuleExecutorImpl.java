@@ -38,8 +38,6 @@ public class EventRuleExecutorImpl implements EventRuleExecutor {
 
     private enum RuleTransformationType {CONTENT_MATCH}
 
-    ;
-
     @Async
     @Override
     public Future<List<Event>> execute(Event event, URI uri) {
@@ -50,7 +48,7 @@ public class EventRuleExecutorImpl implements EventRuleExecutor {
 
         //FIXME execute event rules in parallel
         for (EventRule eventRule : eventRules) {
-            if (!eventRule.isActive())
+            if (!eventRule.isActive() || !eventRule.getIncoming().getData().get("channel").equals(event.getChannel()))
                 continue;
 
             for (EventRule.RuleTransformation ruleTransformation : eventRule.getTransformations()) {
