@@ -40,8 +40,10 @@ public class DeviceEventProcessorTest {
     private String sourceDeviceId = "0000000000000004";
     private String destinationDeviceId = "0000000000000005";
     private String originalPayload = MessageFormat.format("{0}LEDSwitch",destinationDeviceId);
-    private String topic = MessageFormat.format(DEVICE_TOPIC_TEMPLATE, sourceDeviceId, "command");
-    private String destinationTopic = MessageFormat.format(DEVICE_TOPIC_TEMPLATE, destinationDeviceId, "in");
+    private String incomingChannel = "command";
+    private String topic = MessageFormat.format(DEVICE_TOPIC_TEMPLATE, sourceDeviceId, incomingChannel);
+    private String outgoingChannel = "in";
+    private String destinationTopic = MessageFormat.format(DEVICE_TOPIC_TEMPLATE, destinationDeviceId, outgoingChannel);
 
     private Event event;
     @Autowired
@@ -54,7 +56,7 @@ public class DeviceEventProcessorTest {
     @Before
     public void setUp() throws Exception {
         event = Event.builder()
-            .channel(topic)
+            .channel(incomingChannel)
             .payload(originalPayload)
             .build();
     }
@@ -76,6 +78,17 @@ public class DeviceEventProcessorTest {
     }
 
     @Test
+    public void shouldRaiseAnExceptionIfEventChannelIsUnknown() throws Exception {
+        //Event incoming channel is expected to be found on fourth level
+        topic = "konker/device/" + sourceDeviceId;
+
+        thrown.expect(BusinessException.class);
+        thrown.expectMessage("Event incoming channel cannot be retrieved");
+
+        subject.process(topic, originalPayload);
+    }
+
+    @Test
     public void shouldLogIncomingEvent() throws Exception {
         subject.process(topic, originalPayload);
 
@@ -87,7 +100,7 @@ public class DeviceEventProcessorTest {
         subject.process(topic, originalPayload);
 
 
-        verify(eventRuleExecutor).execute(event,new URI("device://" + sourceDeviceId));
+        verify(eventRuleExecutor).execute(event,new URI("device",sourceDeviceId,null,null,null));
     }
 
     @Configuration

@@ -7,7 +7,6 @@ import com.konkerlabs.platform.registry.business.services.rules.api.EventRuleExe
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -31,28 +30,33 @@ public class DeviceEventProcessor {
         this.eventRuleExecutor = eventRuleExecutor;
     }
 
-    public void process(String channel, String payload) throws BusinessException {
+    public void process(String topic, String payload) throws BusinessException {
 
-        String deviceId = extractChannelLevel(channel, 2);
+        String deviceId = extractFromTopicLevel(topic, 2);
         if (deviceId == null) {
             throw new BusinessException("Device ID cannot be retrieved");
         }
 
+        String incomingChannel = extractFromTopicLevel(topic, 3);
+        if (incomingChannel == null) {
+            throw new BusinessException("Event incoming channel cannot be retrieved");
+        }
+
         Event event = Event.builder()
-                .channel(channel)
+                .channel(incomingChannel)
                 .payload(payload)
                 .build();
 
         deviceEventService.logEvent(event, deviceId);
 
         try {
-            eventRuleExecutor.execute(event, new URI("device://" + deviceId));
+            eventRuleExecutor.execute(event, new URI("device",deviceId,null,null,null));
         } catch (URISyntaxException e) {
             LOGGER.error("URI syntax error. Probably wrong device ID.", e);
         }
     }
 
-    private String extractChannelLevel(String channel, int index) {
+    private String extractFromTopicLevel(String channel, int index) {
         try {
             return channel.split("/")[index];
         } catch (ArrayIndexOutOfBoundsException e) {
