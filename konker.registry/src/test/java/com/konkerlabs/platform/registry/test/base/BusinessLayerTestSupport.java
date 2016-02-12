@@ -5,6 +5,7 @@ import com.konkerlabs.platform.registry.config.MongoConfig;
 import com.lordofthejars.nosqlunit.mongodb.InMemoryMongoDb;
 import com.lordofthejars.nosqlunit.mongodb.MongoDbRule;
 import com.mongodb.Mongo;
+import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,4 +25,9 @@ public class BusinessLayerTestSupport {
 
     @Rule
     public MongoDbRule mongoDbRule = newMongoDbRule().defaultSpringMongoDb("registry-test");
+
+    @After
+    public void tearDown() throws Exception {
+        mongoDbRule.getDatabaseOperation().deleteAll();
+    }
 }
