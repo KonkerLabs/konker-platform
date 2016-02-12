@@ -48,8 +48,12 @@ public class EventRuleExecutorImpl implements EventRuleExecutor {
 
         //FIXME execute event rules in parallel
         for (EventRule eventRule : eventRules) {
-            if (!eventRule.isActive() || !eventRule.getIncoming().getData().get("channel").equals(event.getChannel()))
+            if (!eventRule.isActive())
                 continue;
+            if (!eventRule.getIncoming().getData().get("channel").equals(event.getChannel())) {
+                LOGGER.debug("Non matching channel for incoming event: {}",event);
+                continue;
+            }
 
             for (EventRule.RuleTransformation ruleTransformation : eventRule.getTransformations()) {
                 String transformationValue = ruleTransformation.getData().get("value");
