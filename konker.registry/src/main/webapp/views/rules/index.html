@@ -28,7 +28,12 @@
                 <td data-th-text="${rule.name}"></td>
                 <td data-th-text="${rule.incoming.uri}"></td>
                 <td data-th-text="${rule.outgoing.uri}"></td>
-                <td data-th-text="${rule.active}"></td>
+                <td data-th-if="${rule.active}">
+                    <span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span>
+                </td>
+                <td data-th-if="${not rule.active}">
+                    <span class="glyphicon glyphicon-thumbs-down" aria-hidden="true"></span>
+                </td>/
                 <td class="text-center">
                     <a data-th-href="@{/rules/{id}(id=${rule.id})}" class="btn btn-default">
                         Show
