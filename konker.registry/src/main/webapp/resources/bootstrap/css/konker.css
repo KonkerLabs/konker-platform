@@ -40,3 +40,7 @@ a.btn.action {
 img.user-photo {
     margin-right: 20px;
 }
+
+img.ajax-loading {
+    display: none;
+}

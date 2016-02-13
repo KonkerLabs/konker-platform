@@ -52,6 +52,7 @@
                     <input type="radio" name="outgoingScheme"
                            value="sms" data-th-checked="*{outgoingScheme == 'sms'}">SMS</input>
                 </label>
+                <img data-th-src="@{/resources/konker/images/loading.gif}" id="loading" class="ajax-loading"/>
             </div>
             <div id="outgoingFragment">
                 <data-th-block data-th-include="rules/device-outgoing :: outgoing"
