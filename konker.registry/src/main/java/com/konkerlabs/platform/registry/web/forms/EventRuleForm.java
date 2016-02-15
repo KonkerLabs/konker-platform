@@ -28,6 +28,9 @@ public class EventRuleForm implements ModelBuilder<EventRule,EventRuleForm> {
     public EventRule toModel() throws BusinessException {
         EventRule rule = null;
 
+        if (getOutgoingScheme() == null || getOutgoingScheme().isEmpty())
+            throw new BusinessException("Please choose an outgoing rule type");
+
         try {
             EventRule.RuleTransformation contentFilterTransformation = new EventRule.RuleTransformation("CONTENT_MATCH");
             contentFilterTransformation.getData().put("value",getFilterClause());

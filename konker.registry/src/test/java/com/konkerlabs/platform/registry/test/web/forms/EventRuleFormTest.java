@@ -1,9 +1,12 @@
 package com.konkerlabs.platform.registry.test.web.forms;
 
+import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.EventRule;
 import com.konkerlabs.platform.registry.web.forms.EventRuleForm;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.net.URI;
 
@@ -11,6 +14,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 public class EventRuleFormTest {
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     private EventRuleForm form;
     private EventRule model;
@@ -32,6 +38,27 @@ public class EventRuleFormTest {
                 .active(form.isActive()).build();
         model.getTransformations().get(0).getData().put("value",form.getFilterClause());
     }
+
+    @Test
+    public void shouldRaiseAnExceptionIfOutgoingSchemeIsNull() throws Exception {
+        form.setOutgoingScheme(null);
+
+        thrown.expect(BusinessException.class);
+        thrown.expectMessage("Please choose an outgoing rule type");
+
+        assertThat(form.toModel(),equalTo(model));
+    }
+
+    @Test
+    public void shouldRaiseAnExceptionIfOutgoingSchemeIsEmpty() throws Exception {
+        form.setOutgoingScheme("");
+
+        thrown.expect(BusinessException.class);
+        thrown.expectMessage("Please choose an outgoing rule type");
+
+        assertThat(form.toModel(),equalTo(model));
+    }
+
     @Test
     public void shouldTranslateFromDeviceRuleFormToModel() throws Exception {
         form.setOutgoingScheme("device");
@@ -96,5 +123,4 @@ public class EventRuleFormTest {
 
         assertThat(new EventRuleForm().fillFrom(model),equalTo(form));
     }
-
 }
