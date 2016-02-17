@@ -5,9 +5,9 @@
 <body>
     <div layout:fragment="content">
         <fieldset disabled="">
-            <legend>Devices</legend>
+            <legend th:text="#{events.legend}">Device Events</legend>
             <div class="form-group">
-                <label for="deviceId">Device ID</label>
+                <label for="deviceId" th:text="#{events.fieldset.deviceid.label}">Device ID</label>
                 <input type="text" th:value="${device.deviceId}"
                         class="form-control"
                         id="deviceId"
@@ -16,9 +16,9 @@
             <table class="table table-bordered" th:if="${recentEvents != null and !recentEvents.empty}">
                 <thead>
                     <tr>
-                        <td class="col-md-1">Date and time</td>
-                        <td class="col-md-2">Channel</td>
-                        <td class="col-md-2">Payload</td>
+                        <td class="col-md-1" th:text="#{events.table.header.dateandtime}">Date and time</td>
+                        <td class="col-md-2" th:text="#{events.table.header.channel}">Channel</td>
+                        <td class="col-md-2" th:text="#{events.table.header.payload}">Payload</td>
                     </tr>
                 </thead>
                 <tbody>
@@ -29,9 +29,9 @@
                     </tr>
                 </tbody>
             </table>
-            <span th:if="${recentEvents == null or recentEvents.empty}">There are no events available</span>
+            <span th:if="${recentEvents == null or recentEvents.empty}" th:text="#{events.emptymsg}">There are no events available</span>
         </fieldset>
-        <a th:href="@{/devices}" class="btn btn-default">Back</a>
+        <a th:href="@{/devices}" class="btn btn-default" th:text="#{events.nav.back}">Back</a>
     </div>
 </body>
 </html>
