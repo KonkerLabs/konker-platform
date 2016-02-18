@@ -12,12 +12,12 @@
     <title>Konker</title>
 
     <!-- Bootstrap core CSS -->
-    <link th:href="@{/resources/bootstrap/css/bootstrap.min.css}" href="../../resources/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <link data-th-href="@{/resources/bootstrap/css/bootstrap.min.css}" href="../../resources/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
 
     <!-- Custom styles for this template -->
-    <link th:href="@{/resources/bootstrap/css/jumbotron.css}" href="../../resources/bootstrap/css/jumbotron.css" rel="stylesheet" />
+    <link data-th-href="@{/resources/bootstrap/css/jumbotron.css}" href="../../resources/bootstrap/css/jumbotron.css" rel="stylesheet" />
 
-    <link th:href="@{/resources/bootstrap/css/konker.css}" href="../../resources/bootstrap/css/konker.css" rel="stylesheet" />
+    <link data-th-href="@{/resources/bootstrap/css/konker.css}" href="../../resources/bootstrap/css/konker.css" rel="stylesheet" />
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -32,15 +32,15 @@
 
             <div class="navbar-header">
 
-                <img id="konker-header-logo" th:src="@{/resources/konker/images/logo_konker_header.png}" src="../../resources/konker/images/logo_konker_header.png" />
+                <img id="konker-header-logo" data-th-src="@{/resources/konker/images/logo_konker_header.png}" src="../../resources/konker/images/logo_konker_header.png" />
             </div>
 
             <ul class="nav navbar-nav">
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Menu<span class="caret"></span></a>
                     <ul class="dropdown-menu">
-                        <li><a th:href="@{/devices}">Devices</a></li>
-                        <li><a th:href="@{/rules}">Rules</a></li>
+                        <li><a data-th-href="@{/devices}">Devices</a></li>
+                        <li><a data-th-href="@{/rules}">Rules</a></li>
                     </ul>
                 </li>
             </ul>
@@ -48,9 +48,9 @@
 
             <ul class="nav navbar-nav navbar-right collapsable">
                 <li><a class="navbar-link" href="#"><span class="glyphicon glyphicon-wrench"></span></a></li>
-                <li><a class="navbar-link" th:href="@{/logout}"><span class="glyphicon glyphicon-log-out"></span></a></li>
+                <li><a class="navbar-link" data-th-href="@{/logout}"><span class="glyphicon glyphicon-log-out"></span></a></li>
                 <li><a class="navbar-link" href="#"><span class="glyphicon glyphicon-search"></span></a></li>
-                <li><img class="user-photo" th:src="@{/resources/konker/images/foto_pessoa.png}" src="../../resources/konker/images/foto_pessoa.png" /></li>
+                <li><img class="user-photo" data-th-src="@{/resources/konker/images/foto_pessoa.png}" src="../../resources/konker/images/foto_pessoa.png" /></li>
             </ul>
             <!--/.navbar-collapse -->
         </div>
@@ -59,7 +59,7 @@
 
     <!-- Main jumbotron for a primary marketing message or call to action -->
     <div id="wrap">
-        <div class="container" layout:fragment="content">
+        <div class="container" data-layout-fragment="content">
         </div>
     </div>
 
@@ -77,7 +77,7 @@
 ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-    <script th:inline="javascript">
+    <script data-th-inline="javascript">
         /*<![CDATA[*/
             window.jQuery || document.write('<script src="/resources/bootstrap/js/vendor/jquery.min.js"/>')
 
@@ -92,8 +92,8 @@
             }
         /*]]>*/
     </script>
-    <script th:attr="src=@{/resources/bootstrap/js/bootstrap.min.js}"></script>
-    <div layout:fragment="script">
+    <script data-th-attr="src=@{/resources/bootstrap/js/bootstrap.min.js}"></script>
+    <div data-layout-fragment="script">
     </div>
 </body>
 
