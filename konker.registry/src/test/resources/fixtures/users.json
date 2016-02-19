@@ -1,0 +1,14 @@
+{
+  "users" : [
+    {
+      "_id" : "admin@konkerlabs.com",
+      "tenant" : {
+        "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "_class" : "com.konkerlabs.platform.registry.model.Tenant",
+        "name" : "Konker"
+      },
+      "_class" : "com.konkerlabs.platform.registry.model.User",
+      "password" : "password"
+    }
+  ]
+}
