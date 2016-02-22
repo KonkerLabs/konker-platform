@@ -34,7 +34,7 @@ public class EventRuleFormTest {
         model = EventRule.builder()
                 .name(form.getName())
                 .description(form.getDescription())
-                .transformation(new EventRule.RuleTransformation("CONTENT_MATCH"))
+                .transformation(new EventRule.RuleTransformation("EXPRESSION_LANGUAGE"))
                 .active(form.isActive()).build();
         model.getTransformations().get(0).getData().put("value",form.getFilterClause());
     }

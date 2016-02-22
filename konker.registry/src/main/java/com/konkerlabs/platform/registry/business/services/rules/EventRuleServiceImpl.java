@@ -4,8 +4,8 @@ import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.EventRule;
 import com.konkerlabs.platform.registry.business.repositories.EventRuleRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
-import com.konkerlabs.platform.registry.business.services.rules.api.EventRuleService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.rules.api.EventRuleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
@@ -23,6 +23,7 @@ public class EventRuleServiceImpl implements EventRuleService {
     private TenantRepository tenantRepository;
     @Autowired
     private EventRuleRepository eventRuleRepository;
+
 
     @Override
     public ServiceResponse<EventRule> save(EventRule rule) throws BusinessException {
@@ -53,6 +54,8 @@ public class EventRuleServiceImpl implements EventRuleService {
                     .responseMessages(Arrays.asList(new String[] { "Incoming and outgoing device channels cannot be the same" }))
                     .status(ServiceResponse.Status.ERROR).<EventRule>build();
         }
+
+        //TODO Validate rule's filter expression language.
 
         eventRuleRepository.save(rule);
 

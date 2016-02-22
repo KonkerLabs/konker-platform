@@ -44,9 +44,11 @@ public class EventRuleExecutorTest extends BusinessLayerTestSupport {
     private String matchingRuleDeviceId = "0000000000000004";
     private String nonMatchingRuleDeviceId = "0000000000000009";
 
+    private String payload = "{\"metric\":\"temperature\",\"device\":\"0000000000000004\",\"value\":30,\"timestamp\":1454900000,\"data\":{\"sn\":1234,\"test\":1,\"foo\":2}}";
+
     @Before
     public void setUp() throws Exception {
-        event = spy(Event.builder().channel("data").timestamp(Instant.now()).payload("LEDSwitch").build());
+        event = spy(Event.builder().channel("data").timestamp(Instant.now()).payload(payload).build());
         uri = new URI("device",matchingRuleDeviceId,null,null,null);
     }
 
@@ -56,7 +58,7 @@ public class EventRuleExecutorTest extends BusinessLayerTestSupport {
         Future<List<Event>> eventFuture = subject.execute(event, uri);
         assertThat(eventFuture.get(), notNullValue());
         assertThat(eventFuture.get(), hasSize(2));
-        assertThat(eventFuture.get().get(0).getPayload(), equalTo("LEDSwitch"));
+        assertThat(eventFuture.get().get(0).getPayload(), equalTo(payload));
     }
 
     @Test

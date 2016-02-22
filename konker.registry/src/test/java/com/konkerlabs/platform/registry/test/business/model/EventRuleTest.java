@@ -2,6 +2,7 @@ package com.konkerlabs.platform.registry.test.business.model;
 
 import com.konkerlabs.platform.registry.business.model.EventRule;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.services.rules.EventRuleExecutorImpl;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,7 +33,7 @@ public class EventRuleTest {
             .incoming(new EventRule.RuleActor(new URI("device",incomingAuthority,null,null,null)))
             .outgoing(new EventRule.RuleActor(new URI("device",outgoingAuthority,null,null,null)))
             .transformations(Arrays.asList(new EventRule.RuleTransformation[]{
-                    new EventRule.RuleTransformation("CONTENT_MATCH")
+                    new EventRule.RuleTransformation(EventRuleExecutorImpl.RuleTransformationType.EXPRESSION_LANGUAGE.name())
             }))
             .active(true)
             .build();

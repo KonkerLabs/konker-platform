@@ -1,5 +1,9 @@
 package com.konkerlabs.platform.registry.business.services.rules;
 
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.EventRule;
 import com.konkerlabs.platform.registry.business.services.rules.api.EventRuleExecutor;
@@ -11,15 +15,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
+import org.springframework.expression.Expression;
+import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
+import org.springframework.integration.json.JsonPropertyAccessor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.net.URI;
 import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Future;
 
 @Service
@@ -36,7 +47,7 @@ public class EventRuleExecutorImpl implements EventRuleExecutor {
 
     private EventRulePublisher eventRulePublisher;
 
-    private enum RuleTransformationType {CONTENT_MATCH}
+    public enum RuleTransformationType {EXPRESSION_LANGUAGE}
 
     @Async
     @Override
@@ -51,15 +62,35 @@ public class EventRuleExecutorImpl implements EventRuleExecutor {
             if (!eventRule.isActive())
                 continue;
             if (!eventRule.getIncoming().getData().get("channel").equals(event.getChannel())) {
-                LOGGER.debug("Non matching channel for incoming event: {}",event);
+                LOGGER.debug("Non matching channel for incoming event: {}", event);
                 continue;
             }
 
             for (EventRule.RuleTransformation ruleTransformation : eventRule.getTransformations()) {
                 String transformationValue = ruleTransformation.getData().get("value");
                 switch (RuleTransformationType.valueOf(ruleTransformation.getType())) {
-                    case CONTENT_MATCH:
-                        if (incomingPayload.contains(transformationValue)) {
+                    case EXPRESSION_LANGUAGE:
+                        ExpressionParser parser = new SpelExpressionParser();
+                        Expression expression = parser.parseExpression(transformationValue);
+
+                        StandardEvaluationContext standardEvaluationContext = new StandardEvaluationContext();
+
+                        try {
+                            ObjectMapper mapper = new ObjectMapper();
+                            Map<String, Object> mapObject = mapper.readValue(incomingPayload,
+                                    new TypeReference<Map<String, Object>>() {
+                                    });
+
+                            standardEvaluationContext.setRootObject(mapObject);
+                            standardEvaluationContext.addPropertyAccessor(new JsonPropertyAccessor());
+
+                        } catch (JsonProcessingException e) {
+                            LOGGER.error("Error parsing JSON payload.", e);
+                        } catch (IOException e) {
+                            LOGGER.error("Error parsing JSON payload.", e);
+                        }
+
+                        if (expression.getValue(standardEvaluationContext, Boolean.class)) {
                             eventRulePublisher = (EventRulePublisher) applicationContext.getBean(eventRule.getOutgoing().getUri().getScheme());
                             Event outEvent = Event.builder().timestamp(Instant.now()).payload(incomingPayload).build();
                             eventRulePublisher.send(outEvent, eventRule.getOutgoing());
@@ -74,6 +105,5 @@ public class EventRuleExecutorImpl implements EventRuleExecutor {
         }
         return new AsyncResult<List<Event>>(outEvents);
     }
-
 
 }

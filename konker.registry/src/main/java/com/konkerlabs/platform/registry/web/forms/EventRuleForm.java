@@ -2,6 +2,7 @@ package com.konkerlabs.platform.registry.web.forms;
 
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.EventRule;
+import com.konkerlabs.platform.registry.business.services.rules.EventRuleExecutorImpl;
 import com.konkerlabs.platform.registry.web.forms.api.ModelBuilder;
 import lombok.Data;
 
@@ -32,7 +33,7 @@ public class EventRuleForm implements ModelBuilder<EventRule,EventRuleForm> {
             throw new BusinessException("Please choose an outgoing rule type");
 
         try {
-            EventRule.RuleTransformation contentFilterTransformation = new EventRule.RuleTransformation("CONTENT_MATCH");
+            EventRule.RuleTransformation contentFilterTransformation = new EventRule.RuleTransformation(EventRuleExecutorImpl.RuleTransformationType.EXPRESSION_LANGUAGE.name());
             contentFilterTransformation.getData().put("value",getFilterClause());
 
             rule = EventRule.builder()

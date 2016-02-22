@@ -81,7 +81,7 @@ public class EventRuleControllerTest extends WebLayerTestContext {
         ruleData.add("filterClause",ruleForm.getFilterClause());
         ruleData.add("active","true");
 
-        EventRule.RuleTransformation contentMatchTransformation = new EventRule.RuleTransformation("CONTENT_MATCH");
+        EventRule.RuleTransformation contentMatchTransformation = new EventRule.RuleTransformation("EXPRESSION_LANGUAGE");
         contentMatchTransformation.getData().put("value",ruleForm.getFilterClause());
 
         rule = EventRule.builder()
