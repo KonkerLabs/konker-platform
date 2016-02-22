@@ -1,8 +1,10 @@
 package com.konkerlabs.platform.registry.test.integration.processors;
 
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
+import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.rules.api.EventRuleExecutor;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
 import com.konkerlabs.platform.registry.test.base.IntegrationLayerTestContext;
@@ -21,9 +23,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.net.URI;
 import java.text.MessageFormat;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
@@ -32,18 +32,18 @@ import static org.mockito.Mockito.verify;
 })
 public class DeviceEventProcessorTest {
 
-    private static final String DEVICE_TOPIC_TEMPLATE = "konker/device/{0}/{1}";
+    private static final String DEVICE_TOPIC_TEMPLATE = "iot/{0}/{1}";
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
-    private String sourceDeviceId = "0000000000000004";
-    private String destinationDeviceId = "0000000000000005";
-    private String originalPayload = MessageFormat.format("{0}LEDSwitch",destinationDeviceId);
+    private String sourceApiKey = "84399b2e-d99e-11e5-86bc-34238775bac9";
+//    private String destinationDeviceId = "0000000000000005";
+    private String originalPayload = "LEDSwitch";
     private String incomingChannel = "command";
-    private String topic = MessageFormat.format(DEVICE_TOPIC_TEMPLATE, sourceDeviceId, incomingChannel);
+    private String topic = MessageFormat.format(DEVICE_TOPIC_TEMPLATE, sourceApiKey, incomingChannel);
     private String outgoingChannel = "in";
-    private String destinationTopic = MessageFormat.format(DEVICE_TOPIC_TEMPLATE, destinationDeviceId, outgoingChannel);
+//    private String destinationTopic = MessageFormat.format(DEVICE_TOPIC_TEMPLATE, destinationDeviceId, outgoingChannel);
 
     private Event event;
     @Autowired
@@ -52,6 +52,9 @@ public class DeviceEventProcessorTest {
     private DeviceEventService deviceEventService;
     @Autowired
     private EventRuleExecutor eventRuleExecutor;
+    @Autowired
+    private DeviceRegisterService deviceRegisterService;
+    private Device device;
 
     @Before
     public void setUp() throws Exception {
@@ -59,28 +62,40 @@ public class DeviceEventProcessorTest {
             .channel(incomingChannel)
             .payload(originalPayload)
             .build();
+
+        device = Device.builder()
+            .apiKey(originalPayload)
+            .id("device_id")
+            .name("device_name").build();
     }
 
     @After
     public void tearDown() throws Exception {
-        reset(deviceEventService,eventRuleExecutor);
+        reset(deviceEventService,eventRuleExecutor,deviceRegisterService);
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfDeviceIdIsUnknown() throws Exception {
-        //Device ID is expected to be found on third level
-        topic = "konker/device";
+    public void shouldRaiseAnExceptionIfDeviceApiKeyIsUnknown() throws Exception {
+        //Device API Key is expected to be found on second level
+        topic = "konker";
 
         thrown.expect(BusinessException.class);
-        thrown.expectMessage("Device ID cannot be retrieved");
+        thrown.expectMessage("Device API Key cannot be retrieved");
+
+        subject.process(topic, originalPayload);
+    }
+    @Test
+    public void shouldRaiseAnExceptionIfDeviceDoesNotExist() throws Exception {
+        thrown.expect(BusinessException.class);
+        thrown.expectMessage("Incoming device does not exist");
 
         subject.process(topic, originalPayload);
     }
 
     @Test
     public void shouldRaiseAnExceptionIfEventChannelIsUnknown() throws Exception {
-        //Event incoming channel is expected to be found on fourth level
-        topic = "konker/device/" + sourceDeviceId;
+        //Event incoming channel is expected to be found on third level
+        topic = "konker/device/";
 
         thrown.expect(BusinessException.class);
         thrown.expectMessage("Event incoming channel cannot be retrieved");
@@ -90,17 +105,20 @@ public class DeviceEventProcessorTest {
 
     @Test
     public void shouldLogIncomingEvent() throws Exception {
+        when(deviceRegisterService.findByApiKey(sourceApiKey)).thenReturn(device);
+
         subject.process(topic, originalPayload);
 
-        verify(deviceEventService).logEvent(event, sourceDeviceId);
+        verify(deviceEventService).logEvent(device, event);
     }
 
     @Test
     public void shouldForwardIncomingMessageToDestinationDevice() throws Exception {
+        when(deviceRegisterService.findByApiKey(sourceApiKey)).thenReturn(device);
+
         subject.process(topic, originalPayload);
 
-
-        verify(eventRuleExecutor).execute(event,new URI("device",sourceDeviceId,null,null,null));
+        verify(eventRuleExecutor).execute(event,new URI("device",sourceApiKey,null,null,null));
     }
 
     @Configuration
@@ -113,5 +131,7 @@ public class DeviceEventProcessorTest {
         public EventRuleExecutor eventRuleExecutor() {
             return mock(EventRuleExecutor.class);
         }
+        @Bean
+        public DeviceRegisterService deviceRegisterService() { return mock(DeviceRegisterService.class); }
     }
 }

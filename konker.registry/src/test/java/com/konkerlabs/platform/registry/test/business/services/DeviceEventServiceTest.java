@@ -5,6 +5,7 @@ import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
@@ -30,6 +31,7 @@ import static org.hamcrest.Matchers.*;
     MongoTestConfiguration.class,
     BusinessTestConfiguration.class
 })
+@UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json"})
 public class DeviceEventServiceTest extends BusinessLayerTestSupport {
 
     @Rule
@@ -40,23 +42,34 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
 
     @Autowired
     private DeviceEventService deviceEventService;
+    @Autowired
+    private DeviceRegisterService deviceRegisterService;
 
-    private String deviceId = "95c14b36ba2b43f1";
+    private String id = "71fc0d48-674a-4d62-b3e5-0216abca63af";
+    private String apiKey = "84399b2e-d99e-11e5-86bc-34238775bac9";
     private String payload = "payload";
-    private String channel = "konker/device/0000000000000004/data";
+    private String channel = MessageFormat.format("iot/{0}/data",apiKey);
     private Event event;
+    private Device device;
 
     @Before
     public void setUp() throws Exception {
         event = Event.builder().channel(channel).payload(payload).build();
+        device = deviceRegisterService.findById(id);
     }
+    @Test
+    public void shouldRaiseAnExceptionIfDeviceIsNull() throws Exception {
+        thrown.expect(BusinessException.class);
+        thrown.expectMessage("Device cannot be null");
 
+        deviceEventService.logEvent(null, event);
+    }
     @Test
     public void shouldRaiseAnExceptionIfEventIsNull() throws Exception {
         thrown.expect(BusinessException.class);
         thrown.expectMessage("Event cannot be null");
 
-        deviceEventService.logEvent(null,deviceId);
+        deviceEventService.logEvent(device, null);
     }
     @Test
     public void shouldRaiseAnExceptionIfPayloadIsNull() throws Exception {
@@ -65,7 +78,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
         thrown.expect(BusinessException.class);
         thrown.expectMessage("Event payload cannot be null or empty");
 
-        deviceEventService.logEvent(event,deviceId);
+        deviceEventService.logEvent(device, event);
     }
     @Test
     public void shouldRaiseAnExceptionIfEventTimestampIsAlreadySet() throws Exception {
@@ -74,7 +87,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
         thrown.expect(BusinessException.class);
         thrown.expectMessage("Event timestamp cannot be already set!");
 
-        deviceEventService.logEvent(event,deviceId);
+        deviceEventService.logEvent(device, event);
     }
     @Test
     public void shouldRaiseAnExceptionIfPayloadIsEmpty() throws Exception {
@@ -83,23 +96,23 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
         thrown.expect(BusinessException.class);
         thrown.expectMessage("Event payload cannot be null or empty");
 
-        deviceEventService.logEvent(event,deviceId);
+        deviceEventService.logEvent(device, event);
     }
     @Test
     public void shouldRaiseAnExceptionIfDeviceDoesNotExist() throws Exception {
-        deviceId = "unknownDevice";
+        apiKey = "unknownDevice";
+        device.setApiKey(apiKey);
 
         thrown.expect(BusinessException.class);
-        thrown.expectMessage(MessageFormat.format("Device ID [{0}] does not exist",deviceId));
+        thrown.expectMessage(MessageFormat.format("Device with API Key [{0}] does not exist", apiKey));
 
-        deviceEventService.logEvent(event,deviceId);
+        deviceEventService.logEvent(device, event);
     }
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json"})
     public void shouldLogFirstDeviceEvent() throws Exception {
-        deviceEventService.logEvent(event,deviceId);
+        deviceEventService.logEvent(device, event);
 
-        Device device = deviceRepository.findByDeviceId(deviceId);
+        Device device = deviceRepository.findByApiKey(apiKey);
 
         assertThat(device,notNullValue());
 
