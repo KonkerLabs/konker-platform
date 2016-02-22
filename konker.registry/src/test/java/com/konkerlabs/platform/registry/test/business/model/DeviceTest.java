@@ -136,7 +136,7 @@ public class DeviceTest {
 	}
 
 	@Test
-	public void shouldReturnNullIfThereIsNoEventsYet() throws Exception {
+	public void shouldReturnNullForLastEventIfThereIsNoEventsYet() throws Exception {
 		device.setEvents(null);
 
 		assertThat(device.getLastEvent(), nullValue());
