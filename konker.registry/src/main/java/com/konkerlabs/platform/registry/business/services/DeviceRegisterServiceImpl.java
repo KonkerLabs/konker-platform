@@ -2,7 +2,9 @@ package com.konkerlabs.platform.registry.business.services;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
+import com.konkerlabs.platform.registry.business.model.Tenant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
@@ -26,19 +28,16 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
     private DeviceRepository deviceRepository;
 
     @Override
-    public ServiceResponse<Device> register(Device device) throws BusinessException {
-        if (device == null)
-            throw new BusinessException("Record cannot be null");
+    public ServiceResponse<Device> register(Tenant tenant, Device device) throws BusinessException {
+        Optional.ofNullable(tenant).orElseThrow(() -> new BusinessException("Tenant cannot be null"));
+        Optional.ofNullable(device).orElseThrow(() -> new BusinessException("Record cannot be null"));
+
+        if (!tenantRepository.exists(tenant.getId()))
+            throw new BusinessException("Tenant does not exist");
 
         device.onRegistration();
 
-        device.setTenant(tenantRepository.findByName("Konker"));
-
-        if (device.getTenant() == null) {
-            return ServiceResponse.<Device>builder()
-                    .responseMessages(Arrays.asList(new String[] { "Default tenant does not exist" }))
-                    .status(ServiceResponse.Status.ERROR).<Device>build();
-        }
+        device.setTenant(tenant);
 
         List<String> validations = device.applyValidations();
 
@@ -47,44 +46,41 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .responseMessages(validations)
                     .status(ServiceResponse.Status.ERROR).<Device>build();
 
-        if (deviceRepository.findByDeviceId(device.getDeviceId()) != null) {
+        if (deviceRepository.findByTenantIdAndDeviceId(tenant.getId(), device.getDeviceId()) != null) {
             return ServiceResponse.<Device>builder()
                     .responseMessages(Arrays.asList(new String[] { "Device ID already registered" }))
                     .status(ServiceResponse.Status.ERROR).<Device>build();
         }
 
-        deviceRepository.save(device);
+        Device saved = deviceRepository.save(device);
 
-        return ServiceResponse.<Device>builder().status(ServiceResponse.Status.OK).<Device>build();
+        return ServiceResponse.<Device>builder().status(ServiceResponse.Status.OK).result(saved).<Device>build();
     }
 
     @Override
-    public List<Device> getAll() {
-        return deviceRepository.findAll();
+    public List<Device> getAll(Tenant tenant) {
+        return deviceRepository.findAllByTenant(tenant.getId());
     }
 
     @Override
-    public Device findById(String deviceId) {
-        return deviceRepository.findByDeviceId(deviceId);
+    public Device findById(String id) {
+        return deviceRepository.findOne(id);
     }
 
     @Override
-    public ServiceResponse<Device> update(String deviceId, Device updatingDevice) throws BusinessException {
-        if (deviceId == null) {
-            throw new BusinessException("Cannot update device with null ID");
-        }
+    public Device findByApiKey(String apiKey) {
+        return deviceRepository.findByApiKey(apiKey);
+    }
 
-        if (updatingDevice == null) {
-            throw new BusinessException("Cannot update null device");
-        }
+    @Override
+    public ServiceResponse<Device> update(String id, Device updatingDevice) throws BusinessException {
+        Optional.ofNullable(id)
+            .orElseThrow(() -> new BusinessException("Cannot update device with null ID"));
 
-        if (!deviceId.equalsIgnoreCase(updatingDevice.getDeviceId())) {
-            return ServiceResponse.<Device>builder().responseMessages(Arrays.asList(new String[] { "Cannot modify device ID" }))
-                    .status(ServiceResponse.Status.ERROR).<Device>build();
+        Optional.ofNullable(updatingDevice)
+            .orElseThrow(() -> new BusinessException("Cannot update null device"));
 
-        }
-
-        Device deviceFromDB = findById(deviceId);
+        Device deviceFromDB = findById(id);
         if (deviceFromDB == null) {
             return ServiceResponse.<Device>builder()
                     .responseMessages(Arrays.asList(new String[] { "Device ID does not exists" }))
@@ -102,8 +98,8 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .responseMessages(validations).status(ServiceResponse.Status.ERROR).<Device>build();
         }
 
-        deviceRepository.save(deviceFromDB);
+        Device saved = deviceRepository.save(deviceFromDB);
 
-        return ServiceResponse.<Device>builder().status(ServiceResponse.Status.OK).<Device>build();
+        return ServiceResponse.<Device>builder().status(ServiceResponse.Status.OK).result(saved).<Device>build();
     }
 }

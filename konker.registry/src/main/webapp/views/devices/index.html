@@ -26,13 +26,13 @@
                     <td data-th-text="${device.deviceId}"></td>
                     <td data-th-text="${device.name}"></td>
                     <td class="text-center">
-                        <a data-th-href="@{/devices/{id}(id=${device.deviceId})}" class="btn btn-default">
+                        <a data-th-href="@{/devices/{id}(id=${device.id})}" class="btn btn-default">
                             Show
                         </a>
-                        <a data-th-href="@{/devices/{id}/edit(id=${device.deviceId})}" class="btn btn-default">
+                        <a data-th-href="@{/devices/{id}/edit(id=${device.id})}" class="btn btn-default">
                             Edit
                         </a>
-                        <a data-th-href="@{/devices/{id}/events(id=${device.deviceId})}" class="btn btn-default">
+                        <a data-th-href="@{/devices/{id}/events(id=${device.id})}" class="btn btn-default">
                             Events
                         </a>
                     </td>

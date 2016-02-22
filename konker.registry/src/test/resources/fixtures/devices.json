@@ -2,12 +2,13 @@
   "devices": [
     {
       "_class" : "com.konkerlabs.platform.registry.model.Device",
-      "_id" : "95c14b36ba2b43f1",
+      "_id" : "71fc0d48-674a-4d62-b3e5-0216abca63af",
       "tenant" : {
-        "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
-        "_class" : "com.konkerlabs.platform.registry.model.Tenant",
-        "name" : "Konker"
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
       },
+      "deviceId" : "95c14b36ba2b43f1",
+      "apiKey" : "84399b2e-d99e-11e5-86bc-34238775bac9",
       "name" : "Test name",
       "description" : "Description",
       "registrationDate" : 1453320973747

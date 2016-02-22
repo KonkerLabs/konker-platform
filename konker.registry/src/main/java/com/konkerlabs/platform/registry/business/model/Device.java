@@ -19,12 +19,11 @@ import java.util.stream.Collectors;
 @Document(collection = "devices")
 public class Device {
 
+    private String id;
 	@DBRef
 	private Tenant tenant;
-
-	//FIXME: deviceId should be unique within a tenant, not globally
-	@Id
 	private String deviceId;
+    private String apiKey;
 	private String name;
 	private String description;
 	private Instant registrationDate;
