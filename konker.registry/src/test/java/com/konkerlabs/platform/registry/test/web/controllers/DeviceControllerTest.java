@@ -113,7 +113,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
     @Test
     public void shouldBindErrorMessagesWhenRegistrationFailsAndGoBackToRegistrationForm() throws Exception {
         response = ServiceResponse.<Device>builder().responseMessages(Arrays.asList(new String[] { "Some error" }))
-                .status(ServiceResponse.Status.ERROR).build();
+                .status(ServiceResponse.Status.ERROR).<Device>build();
 
         when(deviceRegisterService.register(eq(tenant),eq(device))).thenReturn(response);
 
@@ -142,12 +142,12 @@ public class DeviceControllerTest extends WebLayerTestContext {
         response = ServiceResponse.<Device>builder()
                 .status(ServiceResponse.Status.OK)
                 .result(savedDevice)
-                .build();
+                .<Device>build();
 
         when(deviceRegisterService.register(eq(tenant),eq(device))).thenReturn(response);
 
         getMockMvc().perform(post("/devices/save").params(deviceData))
-                .andExpect(flash().attribute("message", "Device registered successfully"))
+                .andExpect(flash().attribute("message", "Device saved successfully"))
                 .andExpect(redirectedUrl(MessageFormat.format("/devices/{0}", savedDevice.getId())));
 
         verify(deviceRegisterService).register(eq(tenant),eq(device));
@@ -189,7 +189,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
     @Test
     public void shouldBindErrorMessagesWhenEditFailsAndGoBackToEditForm() throws Exception {
         response = ServiceResponse.<Device>builder().responseMessages(Arrays.asList(new String[] { "Some error" }))
-                .status(ServiceResponse.Status.ERROR).build();
+                .status(ServiceResponse.Status.ERROR).<Device>build();
 
         when(deviceRegisterService.update(Matchers.anyString(), Matchers.anyObject())).thenReturn(response);
 
@@ -221,7 +221,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
         response = ServiceResponse.<Device>builder()
                 .status(ServiceResponse.Status.OK)
                 .result(savedDevice)
-                .build();
+                .<Device>build();
 
         when(deviceRegisterService.update(eq(savedDevice.getId()), eq(device))).thenReturn(response);
 

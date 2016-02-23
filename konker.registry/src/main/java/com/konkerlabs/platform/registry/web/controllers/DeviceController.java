@@ -18,6 +18,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.function.Supplier;
 
 @Controller
 @Scope("request")
@@ -69,41 +70,56 @@ public class DeviceController {
     public ModelAndView saveNew(@ModelAttribute("deviceForm") DeviceRegistrationForm deviceForm,
             RedirectAttributes redirectAttributes) {
 
-        ServiceResponse<Device> serviceResponse;
-        try {
-            serviceResponse = deviceRegisterService.register(tenant, deviceForm.toModel());
-        } catch (BusinessException e) {
-            return new ModelAndView("devices/form").addObject("errors", Arrays.asList(new String[] { e.getMessage() }))
-                    .addObject("device", deviceForm);
-        }
+        Supplier<ServiceResponse<Device>> responseSupplier = () -> {
+            ServiceResponse<Device> serviceResponse;
+            try {
+                serviceResponse = deviceRegisterService.register(tenant, deviceForm.toModel());
+            } catch (BusinessException e) {
+                serviceResponse = ServiceResponse.<Device>builder()
+                        .status(ServiceResponse.Status.ERROR)
+                        .responseMessages(Arrays.asList(new String[] { e.getMessage() }))
+                        .<Device>build();
+            }
 
-        if (serviceResponse.getStatus().equals(ServiceResponse.Status.OK)) {
-            redirectAttributes.addFlashAttribute("message", "Device registered successfully");
-            return new ModelAndView(MessageFormat.format("redirect:/devices/{0}", serviceResponse.getResult().getId()));
-        } else
-            return new ModelAndView("devices/form").addObject("errors", serviceResponse.getResponseMessages())
-                    .addObject("device", deviceForm);
+            return serviceResponse;
+        };
+
+        return doSave(responseSupplier, deviceForm, redirectAttributes);
     }
 
     @RequestMapping(path = "/{deviceId}", method = RequestMethod.POST)
     public ModelAndView saveEdit(@PathVariable String deviceId,
             @ModelAttribute("deviceForm") DeviceRegistrationForm deviceForm, RedirectAttributes redirectAttributes) {
 
-        ServiceResponse<Device> serviceResponse;
-        try {
-            serviceResponse = deviceRegisterService.update(deviceId, deviceForm.toModel());
-        } catch (BusinessException e) {
-            return new ModelAndView("devices/form")
-                    .addObject("errors", Arrays.asList(new String[] { e.getMessage() }))
-                    .addObject("device", deviceForm);
-        }
+        Supplier<ServiceResponse<Device>> responseSupplier = () -> {
+            ServiceResponse<Device> serviceResponse;
+            try {
+                serviceResponse = deviceRegisterService.update(deviceId, deviceForm.toModel());
+            } catch (BusinessException e) {
+                serviceResponse = ServiceResponse.<Device>builder()
+                        .status(ServiceResponse.Status.ERROR)
+                        .responseMessages(Arrays.asList(new String[] { e.getMessage() }))
+                        .<Device>build();
+            }
+
+            return serviceResponse;
+        };
+
+        return doSave(responseSupplier, deviceForm, redirectAttributes);
+    }
+
+    private ModelAndView doSave(Supplier<ServiceResponse<Device>> responseSupplier,
+                                DeviceRegistrationForm registrationForm,
+                                RedirectAttributes redirectAttributes) {
+
+        ServiceResponse<Device> serviceResponse = responseSupplier.get();
 
         if (serviceResponse.getStatus().equals(ServiceResponse.Status.OK)) {
             redirectAttributes.addFlashAttribute("message", "Device saved successfully");
             return new ModelAndView(MessageFormat.format("redirect:/devices/{0}", serviceResponse.getResult().getId()));
         } else
             return new ModelAndView("devices/form").addObject("errors", serviceResponse.getResponseMessages())
-                    .addObject("device", deviceForm);
-    }
+                    .addObject("device", registrationForm);
 
+    }
 }
