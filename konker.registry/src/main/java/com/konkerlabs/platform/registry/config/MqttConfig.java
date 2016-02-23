@@ -46,11 +46,12 @@ public class MqttConfig {
         return factory;
     }
 
+    //TODO Make this pattern collection configurable via application.conf
     public String[] topicPatternList() {
         return new String[] {
-            "konker/device/+/data",
-            "konker/device/+/command",
-            "konker/device/+/ack"
+            "iot/+/data",
+            "iot/+/command",
+            "iot/+/ack"
         };
     }
 

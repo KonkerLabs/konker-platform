@@ -65,7 +65,8 @@ public class DeviceEventProcessorTest {
 
         device = Device.builder()
             .apiKey(originalPayload)
-            .id("device_id")
+            .id("id")
+            .deviceId("device_id")
             .name("device_name").build();
     }
 
@@ -118,7 +119,7 @@ public class DeviceEventProcessorTest {
 
         subject.process(topic, originalPayload);
 
-        verify(eventRuleExecutor).execute(event,new URI("device",sourceApiKey,null,null,null));
+        verify(eventRuleExecutor).execute(event,new URI("device",device.getDeviceId(),null,null,null));
     }
 
     @Configuration

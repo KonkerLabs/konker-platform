@@ -215,20 +215,6 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         deviceRegisterService.update(THE_DEVICE_ID, null);
     }
 
-//    @Test
-//    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json" })
-//    public void shouldReturnResponseErrorMessageIfDeviceIDIsDifferentFromFieldWhenUpdating() throws Exception {
-//        device.setDeviceId(ANOTHER_DEVICE_ID);
-//
-//        List<String> errorMessages = Arrays.asList(new String[] { "Cannot modify device ID" });
-//
-//        ServiceResponse response = deviceRegisterService.update(THE_DEVICE_ID, device);
-//
-//        assertThat(response, notNullValue());
-//        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
-//        assertThat(response.getResponseMessages(), equalTo(errorMessages));
-//    }
-
     @Test
     @UsingDataSet(locations = { "/fixtures/devices.json" })
     public void shouldReturnResponseErrorMessageIfDeviceNotExists() throws Exception {

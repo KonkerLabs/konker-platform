@@ -3,6 +3,7 @@ package com.konkerlabs.platform.registry.web.controllers;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.EventRule;
+import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.rules.api.EventRuleService;
@@ -34,15 +35,17 @@ public class EventRuleController {
     private EventRuleService eventRuleService;
     @Autowired
     private DeviceRegisterService deviceRegisterService;
+    @Autowired
+    private Tenant tenant;
 
     @ModelAttribute("allDevices")
     public List<Device> allDevices() {
-        return deviceRegisterService.getAll(null);
+        return deviceRegisterService.getAll(tenant);
     }
 
     @RequestMapping
     public ModelAndView index() {
-        return new ModelAndView("rules/index","rules",eventRuleService.getAll());
+        return new ModelAndView("rules/index","rules",eventRuleService.getAll(tenant));
     }
 
     @RequestMapping("new")
@@ -57,7 +60,7 @@ public class EventRuleController {
                              RedirectAttributes redirectAttributes) {
         ServiceResponse<EventRule> response = null;
         try {
-            response = eventRuleService.save(eventRuleForm.toModel());
+            response = eventRuleService.save(tenant,eventRuleForm.toModel());
         } catch (BusinessException e) {
             response = ServiceResponse.<EventRule>builder()
                 .status(ServiceResponse.Status.ERROR)

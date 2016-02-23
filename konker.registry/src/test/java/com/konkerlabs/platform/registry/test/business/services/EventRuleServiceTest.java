@@ -2,6 +2,7 @@ package com.konkerlabs.platform.registry.test.business.services;
 
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.EventRule;
+import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.repositories.EventRuleRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.rules.EventRuleExecutorImpl;
@@ -47,9 +48,14 @@ public class EventRuleServiceTest extends BusinessLayerTestSupport {
     private EventRule rule;
 
     private String ruleId = "71fb0d48-674b-4f64-a3e5-0256ff3a63af";
+    private Tenant tenant;
+    private Tenant emptyTenant;
 
     @Before
     public void setUp() throws Exception {
+        tenant = tenantRepository.findByName("Konker");
+        emptyTenant = tenantRepository.findByName("EmptyTenant");
+
         rule = spy(EventRule.builder()
                 .name("Rule name")
                 .description("Description")
@@ -62,11 +68,19 @@ public class EventRuleServiceTest extends BusinessLayerTestSupport {
                 .build());
     }
     @Test
+    public void shouldRaiseAnExceptionIfTenantIsNull() throws Exception {
+        thrown.expect(BusinessException.class);
+        thrown.expectMessage("Tenant cannot be null");
+
+        subject.save(null,rule);
+    }
+    @Test
+    @UsingDataSet(locations = "/fixtures/tenants.json")
     public void shouldRaiseAnExceptionIfRecordIsNull() throws Exception {
         thrown.expect(BusinessException.class);
         thrown.expectMessage("Record cannot be null");
 
-        subject.save(null);
+        subject.save(tenant,null);
     }
     @Test
     @UsingDataSet(locations = "/fixtures/tenants.json")
@@ -74,51 +88,51 @@ public class EventRuleServiceTest extends BusinessLayerTestSupport {
         List<String> errorMessages = Arrays.asList(new String[] { "Some error" });
         when(rule.applyValidations()).thenReturn(errorMessages);
 
-        ServiceResponse<EventRule> response = subject.save(rule);
+        ServiceResponse<EventRule> response = subject.save(tenant,rule);
 
         assertThat(response, notNullValue());
         assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
         assertThat(response.getResponseMessages(), equalTo(errorMessages));
     }
+
     @Test
-    @UsingDataSet(locations = "/fixtures/empty-tenants.json")
-    public void shouldReturnResponseMessagesIfDefaultTenantDoesNotExist() throws Exception {
-        List<String> errorMessages = Arrays.asList(new String[] { "Default tenant does not exist" });
+    public void shouldRaiseAnExceptionIfTenantDoesNotExist() throws Exception {
+        thrown.expect(BusinessException.class);
+        thrown.expectMessage("Tenant does not exist");
 
-        ServiceResponse<EventRule> response = subject.save(rule);
-
-        assertThat(response, notNullValue());
-        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
-        assertThat(response.getResponseMessages(), equalTo(errorMessages));
+        subject.save(Tenant.builder().id("unknown_id").name("name").build(),rule);
     }
     @Test
     @UsingDataSet(locations = "/fixtures/tenants.json")
     public void shouldPersistIfRuleIsValid() throws Exception {
-        ServiceResponse<EventRule> response = subject.save(rule);
+
+        ServiceResponse<EventRule> response = subject.save(tenant,rule);
 
         assertThat(response, notNullValue());
         assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
         assertThat(eventRuleRepository.findByIncomingURI(rule.getIncoming().getUri()), notNullValue());
+        assertThat(response.getResult().getIncoming().getUri(),equalTo(rule.getIncoming().getUri()));
     }
+    //TODO Verify this constraint for effectiveness
+//    @Test
+//    @UsingDataSet(locations = "/fixtures/tenants.json")
+//    public void shouldReturnAValidationMessageIfIncomingAndOutgoingChannelsAreTheSame() throws Exception {
+//        String channel = "channel";
+//
+//        rule.getIncoming().getData().put("channel",channel);
+//        rule.getOutgoing().getData().put("channel",channel);
+//
+//        List<String> errorMessages = Arrays.asList(new String[] { "Incoming and outgoing device channels cannot be the same" });
+//        ServiceResponse response = subject.save(tenant,rule);
+//
+//        assertThat(response, notNullValue());
+//        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+//        assertThat(response.getResponseMessages(), equalTo(errorMessages));
+//    }
     @Test
-    @UsingDataSet(locations = "/fixtures/tenants.json")
-    public void shouldReturnAValidationMessageIfIncomingAndOutgoingChannelsAreTheSame() throws Exception {
-        String channel = "channel";
-
-        rule.getIncoming().getData().put("channel",channel);
-        rule.getOutgoing().getData().put("channel",channel);
-
-        List<String> errorMessages = Arrays.asList(new String[] { "Incoming and outgoing device channels cannot be the same" });
-        ServiceResponse<EventRule> response = subject.save(rule);
-
-        assertThat(response, notNullValue());
-        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
-        assertThat(response.getResponseMessages(), equalTo(errorMessages));
-    }
-    @Test
-    @UsingDataSet(locations = "/fixtures/event-rules.json")
-    public void shouldReturnAllRegisteredRules() throws Exception {
-        List<EventRule> allRules = subject.getAll();
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/event-rules.json"})
+    public void shouldReturnAllRegisteredRulesWithinATenant() throws Exception {
+        List<EventRule> allRules = subject.getAll(tenant);
 
         assertThat(allRules, notNullValue());
         assertThat(allRules, hasSize(4));
@@ -126,9 +140,13 @@ public class EventRuleServiceTest extends BusinessLayerTestSupport {
         assertThat(allRules.get(1).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ab"));
         assertThat(allRules.get(2).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ac"));
         assertThat(allRules.get(3).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ad"));
+
+        allRules = subject.getAll(emptyTenant);
+        assertThat(allRules, notNullValue());
+        assertThat(allRules, empty());
     }
     @Test
-    @UsingDataSet(locations = "/fixtures/event-rules.json")
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/event-rules.json"})
     public void shouldReturnARegisteredRuleByItsID() throws Exception {
         EventRule rule = subject.findById(ruleId);
 
@@ -154,7 +172,7 @@ public class EventRuleServiceTest extends BusinessLayerTestSupport {
         rule.setName(editedName);
         rule.setActive(false);
 
-        ServiceResponse<EventRule> response = subject.save(rule);
+        ServiceResponse<EventRule> response = subject.save(tenant,rule);
 
         assertThat(response, notNullValue());
         assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));

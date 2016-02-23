@@ -3,10 +3,12 @@ package com.konkerlabs.platform.registry.test.web.controllers;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.EventRule;
+import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.rules.api.EventRuleService;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
+import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
 import com.konkerlabs.platform.registry.web.forms.EventRuleForm;
 import org.junit.After;
@@ -38,11 +40,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
-@ContextConfiguration(classes = {WebMvcConfig.class, EventRuleControllerTest.EventRuleTestContextConfig.class})
+@ContextConfiguration(classes = {
+    WebMvcConfig.class,
+    SecurityTestConfiguration.class,
+    EventRuleControllerTest.EventRuleTestContextConfig.class
+})
 public class EventRuleControllerTest extends WebLayerTestContext {
 
     @Autowired
     private EventRuleService eventRuleService;
+    @Autowired
+    private Tenant tenant;
 
     private Device incomingDevice;
     private Device outgoingDevice;
@@ -106,7 +114,7 @@ public class EventRuleControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldListAllRegisteredRules() throws Exception {
-        when(eventRuleService.getAll()).thenReturn(registeredRules);
+        when(eventRuleService.getAll(eq(tenant))).thenReturn(registeredRules);
 
         getMockMvc().perform(get("/rules")).andExpect(model().attribute("rules", equalTo(registeredRules)))
                 .andExpect(view().name("rules/index"));
@@ -145,27 +153,27 @@ public class EventRuleControllerTest extends WebLayerTestContext {
         response = ServiceResponse.<EventRule>builder().responseMessages(Arrays.asList(new String[] { "Some error" }))
                 .status(ServiceResponse.Status.ERROR).build();
 
-        when(eventRuleService.save(eq(rule))).thenReturn(response);
+        when(eventRuleService.save(eq(tenant),eq(rule))).thenReturn(response);
 
         getMockMvc().perform(post("/rules/save").params(ruleData))
                 .andExpect(model().attribute("errors", equalTo(response.getResponseMessages())))
                 .andExpect(model().attribute("rule", equalTo(ruleForm))).andExpect(view().name("rules/form"));
 
-        verify(eventRuleService).save(eq(rule));
+        verify(eventRuleService).save(eq(tenant),eq(rule));
     }
 
     @Test
     public void shouldBindBusinessExceptionMessageWhenRegistrationFailsAndGoBackToCreationForm() throws Exception {
         String exceptionMessage = "Some business exception message";
 
-        when(eventRuleService.save(eq(rule))).thenThrow(new BusinessException(exceptionMessage));
+        when(eventRuleService.save(eq(tenant),eq(rule))).thenThrow(new BusinessException(exceptionMessage));
 
         getMockMvc().perform(post("/rules/save").params(ruleData))
                 .andExpect(model().attribute("errors", equalTo(Arrays.asList(new String[] { exceptionMessage }))))
                 .andExpect(model().attribute("rule", equalTo(ruleForm)))
                 .andExpect(view().name("rules/form"));
 
-        verify(eventRuleService).save(eq(rule));
+        verify(eventRuleService).save(eq(tenant),eq(rule));
     }
 
     @Test
@@ -175,13 +183,13 @@ public class EventRuleControllerTest extends WebLayerTestContext {
                 .result(rule)
                 .build());
 
-        when(eventRuleService.save(eq(rule))).thenReturn(response);
+        when(eventRuleService.save(eq(tenant),eq(rule))).thenReturn(response);
 
         getMockMvc().perform(post("/rules/save").params(ruleData))
                 .andExpect(flash().attribute("message", "Rule registered successfully"))
                 .andExpect(redirectedUrl(MessageFormat.format("/rules/{0}",rule.getId())));
 
-        verify(eventRuleService).save(eq(rule));
+        verify(eventRuleService).save(eq(tenant),eq(rule));
     }
 
     @Test
@@ -202,13 +210,13 @@ public class EventRuleControllerTest extends WebLayerTestContext {
                 .result(rule)
                 .build());
 
-        when(eventRuleService.save(eq(rule))).thenReturn(response);
+        when(eventRuleService.save(eq(tenant),eq(rule))).thenReturn(response);
 
         getMockMvc().perform(post("/rules/{0}",rule.getId()).params(ruleData))
                 .andExpect(flash().attribute("message", "Rule registered successfully"))
                 .andExpect(redirectedUrl(MessageFormat.format("/rules/{0}",rule.getId())));
 
-        verify(eventRuleService).save(eq(rule));
+        verify(eventRuleService).save(eq(tenant),eq(rule));
     }
 
     @Test

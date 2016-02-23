@@ -4,9 +4,8 @@
       "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
       "_class" : "com.konkerlabs.platform.registry.model.EventRule",
       "tenant" : {
-        "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
-        "_class" : "com.konkerlabs.platform.registry.model.Tenant",
-        "name" : "Konker"
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
       },
       "name" : "Device event forwarding rule",
       "description" : "Rule description",
@@ -34,9 +33,8 @@
       "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63ab",
       "_class" : "com.konkerlabs.platform.registry.model.EventRule",
       "tenant" : {
-        "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
-        "_class" : "com.konkerlabs.platform.registry.model.Tenant",
-        "name" : "Konker"
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
       },
       "name" : "Device event forwarding rule",
       "description" : "Rule description",
@@ -64,9 +62,8 @@
       "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63ac",
       "_class" : "com.konkerlabs.platform.registry.model.EventRule",
       "tenant" : {
-        "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
-        "_class" : "com.konkerlabs.platform.registry.model.Tenant",
-        "name" : "Konker"
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
       },
       "name" : "Device event forwarding rule",
       "description" : "Rule description",
@@ -94,9 +91,8 @@
       "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63ad",
       "_class" : "com.konkerlabs.platform.registry.model.EventRule",
       "tenant" : {
-        "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
-        "_class" : "com.konkerlabs.platform.registry.model.Tenant",
-        "name" : "Konker"
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
       },
       "name" : "Device event forwarding rule",
       "description" : "Rule description",
