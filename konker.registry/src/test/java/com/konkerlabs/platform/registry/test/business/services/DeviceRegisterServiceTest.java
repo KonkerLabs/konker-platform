@@ -19,10 +19,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
-import org.mockito.Matchers;
 import org.mockito.Mockito;
-import org.mockito.internal.verification.Times;
-import org.mockito.verification.VerificationMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -34,7 +31,6 @@ import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -106,7 +102,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         List<String> errorMessages = Arrays.asList(new String[] { "Some error" });
         when(device.applyValidations()).thenReturn(errorMessages);
 
-        ServiceResponse response = deviceRegisterService.register(currentTenant, device);
+        ServiceResponse<Device> response = deviceRegisterService.register(currentTenant, device);
 
         assertThat(response, notNullValue());
         assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
@@ -120,7 +116,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
         List<String> errorMessages = Arrays.asList(new String[] { "Device ID already registered" });
 
-        ServiceResponse response = deviceRegisterService.register(currentTenant, device);
+        ServiceResponse<Device> response = deviceRegisterService.register(currentTenant, device);
 
         assertThat(response, notNullValue());
         assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
@@ -158,7 +154,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         Tenant tenant = tenantRepository.findOne("71fb0d48-674b-4f64-a3e5-0256ff3a63af");
         device.setTenant(tenant);
 
-        ServiceResponse response = deviceRegisterService.register(currentTenant, device);
+        ServiceResponse<Device> response = deviceRegisterService.register(currentTenant, device);
 
         assertThat(response, notNullValue());
         assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
@@ -240,7 +236,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
         List<String> errorMessages = Arrays.asList(new String[] { "Device ID does not exists" });
 
-        ServiceResponse response = deviceRegisterService.update(ANOTHER_DEVICE_ID, device);
+        ServiceResponse<Device> response = deviceRegisterService.update(ANOTHER_DEVICE_ID, device);
 
         assertThat(response, notNullValue());
         assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));

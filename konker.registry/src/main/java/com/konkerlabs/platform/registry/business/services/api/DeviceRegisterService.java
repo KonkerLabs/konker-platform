@@ -8,8 +8,8 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import java.util.List;
 
 public interface DeviceRegisterService {
-    ServiceResponse register(Tenant tenant, Device device) throws BusinessException;
-    ServiceResponse update(String id, Device device) throws BusinessException;
+    ServiceResponse<Device> register(Tenant tenant, Device device) throws BusinessException;
+    ServiceResponse<Device> update(String id, Device device) throws BusinessException;
     List<Device> getAll(Tenant tenant);
 
     // FIXME: deviceId should be unique within tenant, not globally

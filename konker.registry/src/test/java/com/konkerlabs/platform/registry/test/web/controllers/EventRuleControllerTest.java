@@ -48,7 +48,7 @@ public class EventRuleControllerTest extends WebLayerTestContext {
     private Device outgoingDevice;
     private EventRule rule;
     private List<EventRule> registeredRules;
-    private ServiceResponse response;
+    private ServiceResponse<EventRule> response;
     private MultiValueMap<String,String> ruleData;
     private EventRuleForm ruleForm;
 
@@ -142,7 +142,7 @@ public class EventRuleControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldBindErrorMessagesWhenRegistrationFailsAndGoBackToCreationForm() throws Exception {
-        response = ServiceResponse.builder().responseMessages(Arrays.asList(new String[] { "Some error" }))
+        response = ServiceResponse.<EventRule>builder().responseMessages(Arrays.asList(new String[] { "Some error" }))
                 .status(ServiceResponse.Status.ERROR).build();
 
         when(eventRuleService.save(eq(rule))).thenReturn(response);
@@ -170,7 +170,7 @@ public class EventRuleControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldRedirectToShowAfterSuccessfulRuleCreation() throws Exception {
-        response = spy(ServiceResponse.builder()
+        response = spy(ServiceResponse.<EventRule>builder()
                 .status(ServiceResponse.Status.OK)
                 .result(rule)
                 .build());
@@ -197,7 +197,7 @@ public class EventRuleControllerTest extends WebLayerTestContext {
     @Test
     public void shouldRedirectToShowAfterSuccessfulRuleEdit() throws Exception {
         rule.setId(ruleId);
-        response = spy(ServiceResponse.builder()
+        response = spy(ServiceResponse.<EventRule>builder()
                 .status(ServiceResponse.Status.OK)
                 .result(rule)
                 .build());

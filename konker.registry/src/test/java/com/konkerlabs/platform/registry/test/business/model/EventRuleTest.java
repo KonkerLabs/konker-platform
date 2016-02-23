@@ -4,9 +4,7 @@ import com.konkerlabs.platform.registry.business.model.EventRule;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.rules.EventRuleExecutorImpl;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import java.net.URI;
 import java.util.Arrays;

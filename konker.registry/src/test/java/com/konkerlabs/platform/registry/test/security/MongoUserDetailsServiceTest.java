@@ -1,6 +1,5 @@
 package com.konkerlabs.platform.registry.test.security;
 
-import com.konkerlabs.platform.registry.business.repositories.UserRepository;
 import com.konkerlabs.platform.registry.security.MongoUserDetailsService;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
@@ -33,8 +32,6 @@ public class MongoUserDetailsServiceTest extends BusinessLayerTestSupport {
 
     @Autowired
     private UserDetailsService userDetailsService;
-    @Autowired
-    private UserRepository userRepository;
     private String userEmail = "admin@konkerlabs.com";
 
     @Test

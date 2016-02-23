@@ -60,7 +60,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
     private Tenant tenant;
 
     private List<Device> registeredDevices;
-    private ServiceResponse response;
+    private ServiceResponse<Device> response;
     MultiValueMap<String, String> deviceData;
     private Device device;
     private DeviceRegistrationForm deviceForm;
@@ -112,7 +112,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldBindErrorMessagesWhenRegistrationFailsAndGoBackToRegistrationForm() throws Exception {
-        response = ServiceResponse.builder().responseMessages(Arrays.asList(new String[] { "Some error" }))
+        response = ServiceResponse.<Device>builder().responseMessages(Arrays.asList(new String[] { "Some error" }))
                 .status(ServiceResponse.Status.ERROR).build();
 
         when(deviceRegisterService.register(eq(tenant),eq(device))).thenReturn(response);
@@ -139,7 +139,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldRedirectToShowAfterRegistrationSucceed() throws Exception {
-        response = ServiceResponse.builder()
+        response = ServiceResponse.<Device>builder()
                 .status(ServiceResponse.Status.OK)
                 .result(savedDevice)
                 .build();
@@ -188,7 +188,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldBindErrorMessagesWhenEditFailsAndGoBackToEditForm() throws Exception {
-        response = ServiceResponse.builder().responseMessages(Arrays.asList(new String[] { "Some error" }))
+        response = ServiceResponse.<Device>builder().responseMessages(Arrays.asList(new String[] { "Some error" }))
                 .status(ServiceResponse.Status.ERROR).build();
 
         when(deviceRegisterService.update(Matchers.anyString(), Matchers.anyObject())).thenReturn(response);
@@ -218,7 +218,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldRedirectToShowAfterEditSucceed() throws Exception {
-        response = ServiceResponse.builder()
+        response = ServiceResponse.<Device>builder()
                 .status(ServiceResponse.Status.OK)
                 .result(savedDevice)
                 .build();

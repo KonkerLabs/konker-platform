@@ -74,7 +74,7 @@ public class EventRuleServiceTest extends BusinessLayerTestSupport {
         List<String> errorMessages = Arrays.asList(new String[] { "Some error" });
         when(rule.applyValidations()).thenReturn(errorMessages);
 
-        ServiceResponse response = subject.save(rule);
+        ServiceResponse<EventRule> response = subject.save(rule);
 
         assertThat(response, notNullValue());
         assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
@@ -85,7 +85,7 @@ public class EventRuleServiceTest extends BusinessLayerTestSupport {
     public void shouldReturnResponseMessagesIfDefaultTenantDoesNotExist() throws Exception {
         List<String> errorMessages = Arrays.asList(new String[] { "Default tenant does not exist" });
 
-        ServiceResponse response = subject.save(rule);
+        ServiceResponse<EventRule> response = subject.save(rule);
 
         assertThat(response, notNullValue());
         assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
@@ -94,7 +94,7 @@ public class EventRuleServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = "/fixtures/tenants.json")
     public void shouldPersistIfRuleIsValid() throws Exception {
-        ServiceResponse response = subject.save(rule);
+        ServiceResponse<EventRule> response = subject.save(rule);
 
         assertThat(response, notNullValue());
         assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
@@ -109,7 +109,7 @@ public class EventRuleServiceTest extends BusinessLayerTestSupport {
         rule.getOutgoing().getData().put("channel",channel);
 
         List<String> errorMessages = Arrays.asList(new String[] { "Incoming and outgoing device channels cannot be the same" });
-        ServiceResponse response = subject.save(rule);
+        ServiceResponse<EventRule> response = subject.save(rule);
 
         assertThat(response, notNullValue());
         assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
@@ -154,7 +154,7 @@ public class EventRuleServiceTest extends BusinessLayerTestSupport {
         rule.setName(editedName);
         rule.setActive(false);
 
-        ServiceResponse response = subject.save(rule);
+        ServiceResponse<EventRule> response = subject.save(rule);
 
         assertThat(response, notNullValue());
         assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
