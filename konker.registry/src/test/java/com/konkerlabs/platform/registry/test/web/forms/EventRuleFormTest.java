@@ -39,25 +39,25 @@ public class EventRuleFormTest {
         model.getTransformations().get(0).getData().put("value",form.getFilterClause());
     }
 
-    @Test
-    public void shouldRaiseAnExceptionIfOutgoingSchemeIsNull() throws Exception {
-        form.setOutgoingScheme(null);
+//    @Test
+//    public void shouldRaiseAnExceptionIfOutgoingSchemeIsNull() throws Exception {
+//        form.setOutgoingScheme(null);
+//
+//        thrown.expect(BusinessException.class);
+//        thrown.expectMessage("Please choose an outgoing rule type");
+//
+//        assertThat(form.toModel(),equalTo(model));
+//    }
 
-        thrown.expect(BusinessException.class);
-        thrown.expectMessage("Please choose an outgoing rule type");
-
-        assertThat(form.toModel(),equalTo(model));
-    }
-
-    @Test
-    public void shouldRaiseAnExceptionIfOutgoingSchemeIsEmpty() throws Exception {
-        form.setOutgoingScheme("");
-
-        thrown.expect(BusinessException.class);
-        thrown.expectMessage("Please choose an outgoing rule type");
-
-        assertThat(form.toModel(),equalTo(model));
-    }
+//    @Test
+//    public void shouldRaiseAnExceptionIfOutgoingSchemeIsEmpty() throws Exception {
+//        form.setOutgoingScheme("");
+//
+//        thrown.expect(BusinessException.class);
+//        thrown.expectMessage("Please choose an outgoing rule type");
+//
+//        assertThat(form.toModel(),equalTo(model));
+//    }
 
     @Test
     public void shouldTranslateFromDeviceRuleFormToModel() throws Exception {

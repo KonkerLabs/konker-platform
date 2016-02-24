@@ -1,6 +1,5 @@
 package com.konkerlabs.platform.registry.test.business.services;
 
-import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
@@ -68,32 +67,37 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         emptyTenant = tenantRepository.findByName("EmptyTenant");
 
         rawDevice = Device.builder().deviceId("94c32b36cd2b43f1").name("Device name")
-                .description("Description").events(Arrays.asList(new Event[] { Event.builder()
+                .description("Description").active(true)
+                .events(Arrays.asList(new Event[] { Event.builder()
                         .payload("Payload one").timestamp(Instant.ofEpochMilli(1453320973747L)).build() }))
                 .build();
         device = spy(rawDevice);
     }
     @Test
-    public void shouldRaiseAnExceptionIfTenantIsNull() throws Exception {
-        thrown.expect(BusinessException.class);
-        thrown.expectMessage("Tenant cannot be null");
+    public void shouldReturnResponseMessagesIfTenantIsNull() throws Exception {
+        ServiceResponse<Device> serviceResponse = deviceRegisterService.register(null, device);
 
-        deviceRegisterService.register(null, device);
+        assertThat(serviceResponse,notNullValue());
+        assertThat(serviceResponse.getStatus(),equalTo(ServiceResponse.Status.ERROR));
+        assertThat(serviceResponse.getResponseMessages(),hasItem("Tenant cannot be null"));
     }
     @Test
-    public void shouldRaiseAnExceptionIfTenantDoesNotExist() throws Exception {
-        thrown.expect(BusinessException.class);
-        thrown.expectMessage("Tenant does not exist");
+    public void shouldReturnResponseMessagesIfTenantDoesNotExist() throws Exception {
+        ServiceResponse<Device> serviceResponse = deviceRegisterService
+                .register(Tenant.builder().id("unknown_id").build(), device);
 
-        deviceRegisterService.register(Tenant.builder().id("unknown_id").build(), device);
+        assertThat(serviceResponse,notNullValue());
+        assertThat(serviceResponse.getStatus(),equalTo(ServiceResponse.Status.ERROR));
+        assertThat(serviceResponse.getResponseMessages(),hasItem("Tenant does not exist"));
     }
     @Test
     @UsingDataSet(locations = "/fixtures/tenants.json")
-    public void shouldRaiseAnExceptionIfRecordIsNull() throws Exception {
-        thrown.expect(BusinessException.class);
-        thrown.expectMessage("Record cannot be null");
+    public void shouldReturnResponseMessagesIfRecordIsNull() throws Exception {
+        ServiceResponse<Device> serviceResponse = deviceRegisterService.register(currentTenant, null);
 
-        deviceRegisterService.register(currentTenant, null);
+        assertThat(serviceResponse,notNullValue());
+        assertThat(serviceResponse.getStatus(),equalTo(ServiceResponse.Status.ERROR));
+        assertThat(serviceResponse.getResponseMessages(),hasItem("Record cannot be null"));
     }
 
     @Test
@@ -158,7 +162,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
         assertThat(response, notNullValue());
         assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
-        assertThat(response.getResponseMessages(), nullValue());
+        assertThat(response.getResponseMessages(), empty());
     }
 
     @Test
@@ -187,6 +191,20 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         assertThat(found, notNullValue());
         assertThat(found, equalTo(registeredDevice));
     }
+
+    //TODO This test must be extinguished when event rule specialized URI gets available
+    @Test
+    @UsingDataSet(locations = {"/fixtures/devices.json" })
+    public void shouldFindADeviceByItsId() throws Exception {
+        Device registeredDevice = deviceRepository.findByDeviceId(DEVICE_ID_IN_USE);
+        Assert.assertThat(registeredDevice,notNullValue());
+
+        Device found = deviceRegisterService.findByDeviceId(DEVICE_ID_IN_USE);
+
+        assertThat(found, notNullValue());
+        assertThat(found, equalTo(registeredDevice));
+    }
+
     @Test
     @UsingDataSet(locations = {"/fixtures/devices.json" })
     public void shouldFindADeviceByItsApiKey() throws Exception {
@@ -201,18 +219,20 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldRaiseAnExceptionIfDeviceIdIsNullWhenUpdating() throws Exception {
-        thrown.expect(BusinessException.class);
-        thrown.expectMessage("Cannot update device with null ID");
+        ServiceResponse<Device> serviceResponse = deviceRegisterService.update(null, device);
 
-        deviceRegisterService.update(null, device);
+        assertThat(serviceResponse,notNullValue());
+        assertThat(serviceResponse.getStatus(),equalTo(ServiceResponse.Status.ERROR));
+        assertThat(serviceResponse.getResponseMessages(),hasItem("Cannot update device with null ID"));
     }
 
     @Test
     public void shouldRaiseAnExceptionIfDeviceIsNullWhenUpdating() throws Exception {
-        thrown.expect(BusinessException.class);
-        thrown.expectMessage("Cannot update null device");
+        ServiceResponse<Device> serviceResponse = deviceRegisterService.update(THE_DEVICE_ID, null);
 
-        deviceRegisterService.update(THE_DEVICE_ID, null);
+        assertThat(serviceResponse,notNullValue());
+        assertThat(serviceResponse.getStatus(),equalTo(ServiceResponse.Status.ERROR));
+        assertThat(serviceResponse.getResponseMessages(),hasItem("Cannot update null device"));
     }
 
     @Test
@@ -253,6 +273,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         persisted.setName(ANOTHER_DEVICE_NAME);
         persisted.setDescription(ANOTHER_DEVICE_DESCRIPTION);
         persisted.setRegistrationDate(THE_REGISTRATION_TIME);
+        persisted.setActive(false);
 
         ServiceResponse<Device> response = deviceRegisterService.update(THE_DEVICE_ID, persisted);
 
@@ -262,18 +283,52 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
         assertThat(response.getResult(),notNullValue());
         assertThat(response.getResult(),equalTo(updated));
-        assertThat(response.getResponseMessages(), nullValue());
+        assertThat(response.getResponseMessages(), empty());
 
         // ensure that relevant data was changed
         Device foundDevice = deviceRegisterService.findById(THE_DEVICE_ID);
         assertThat(foundDevice.getName(), equalTo(ANOTHER_DEVICE_NAME));
         assertThat(foundDevice.getDescription(), equalTo(ANOTHER_DEVICE_DESCRIPTION));
+        assertThat(foundDevice.isActive(), equalTo(false));
 
         // ensure that data should not be changed didn't change
         assertThat(foundDevice.getRegistrationDate(), not(equalTo(THE_REGISTRATION_TIME)));
         assertThat(foundDevice.getEvents(), nullValue());
-
-        
     }
 
+    @Test
+    public void shouldReturnResponseMessageIfDeviceIdIsNullWhenChangingActivation() throws Exception {
+        ServiceResponse<Device> serviceResponse = deviceRegisterService.switchActivation(null);
+
+        assertThat(serviceResponse,notNullValue());
+        assertThat(serviceResponse.getStatus(),equalTo(ServiceResponse.Status.ERROR));
+        assertThat(serviceResponse.getResponseMessages(),hasItem("Device ID cannot be null"));
+    }
+
+    @Test
+    public void shouldReturnResponseMessageIfDeviceDoesNotExist() throws Exception {
+        ServiceResponse<Device> serviceResponse = deviceRegisterService.switchActivation("unknown_id");
+
+        assertThat(serviceResponse,notNullValue());
+        assertThat(serviceResponse.getStatus(),equalTo(ServiceResponse.Status.ERROR));
+        assertThat(serviceResponse.getResponseMessages(),hasItem("Device ID does not exist"));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json"})
+    public void shouldSwitchDeviceActivation() throws Exception {
+        Device device = deviceRegisterService.findById(THE_DEVICE_ID);
+        boolean expected = !device.isActive();
+
+        ServiceResponse<Device> serviceResponse = deviceRegisterService.switchActivation(THE_DEVICE_ID);
+
+        Device updated = deviceRegisterService.findById(THE_DEVICE_ID);
+
+        assertThat(serviceResponse,notNullValue());
+        assertThat(serviceResponse.getStatus(),equalTo(ServiceResponse.Status.OK));
+        assertThat(serviceResponse.getResponseMessages(),empty());
+        assertThat(updated,notNullValue());
+        assertThat(serviceResponse.getResult(),equalTo(updated));
+        assertThat(updated.isActive(),equalTo(expected));
+    }
 }

@@ -70,42 +70,20 @@ public class DeviceController {
     public ModelAndView saveNew(@ModelAttribute("deviceForm") DeviceRegistrationForm deviceForm,
             RedirectAttributes redirectAttributes) {
 
-        Supplier<ServiceResponse<Device>> responseSupplier = () -> {
-            ServiceResponse<Device> serviceResponse;
-            try {
-                serviceResponse = deviceRegisterService.register(tenant, deviceForm.toModel());
-            } catch (BusinessException e) {
-                serviceResponse = ServiceResponse.<Device>builder()
-                        .status(ServiceResponse.Status.ERROR)
-                        .responseMessages(Arrays.asList(new String[] { e.getMessage() }))
-                        .<Device>build();
-            }
-
-            return serviceResponse;
-        };
-
-        return doSave(responseSupplier, deviceForm, redirectAttributes);
+        return doSave(
+                () -> deviceRegisterService.register(tenant, deviceForm.toModel()),
+                deviceForm,
+                redirectAttributes);
     }
 
     @RequestMapping(path = "/{deviceId}", method = RequestMethod.POST)
     public ModelAndView saveEdit(@PathVariable String deviceId,
             @ModelAttribute("deviceForm") DeviceRegistrationForm deviceForm, RedirectAttributes redirectAttributes) {
 
-        Supplier<ServiceResponse<Device>> responseSupplier = () -> {
-            ServiceResponse<Device> serviceResponse;
-            try {
-                serviceResponse = deviceRegisterService.update(deviceId, deviceForm.toModel());
-            } catch (BusinessException e) {
-                serviceResponse = ServiceResponse.<Device>builder()
-                        .status(ServiceResponse.Status.ERROR)
-                        .responseMessages(Arrays.asList(new String[] { e.getMessage() }))
-                        .<Device>build();
-            }
-
-            return serviceResponse;
-        };
-
-        return doSave(responseSupplier, deviceForm, redirectAttributes);
+        return doSave(
+                () -> deviceRegisterService.update(deviceId, deviceForm.toModel()),
+                deviceForm,
+                redirectAttributes);
     }
 
     private ModelAndView doSave(Supplier<ServiceResponse<Device>> responseSupplier,

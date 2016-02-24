@@ -7,9 +7,12 @@ import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.expression.spel.SpelEvaluationException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -27,6 +30,9 @@ import static org.mockito.Mockito.spy;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {MongoTestConfiguration.class, BusinessTestConfiguration.class})
 public class EventRuleExecutorTest extends BusinessLayerTestSupport {
+
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
 
     @Autowired
     private EventRuleExecutor subject;
@@ -48,7 +54,7 @@ public class EventRuleExecutorTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = "/fixtures/event-rules.json")
+    @UsingDataSet(locations = {"/fixtures/devices.json","/fixtures/event-rules.json"})
     public void shouldSendEventsForAMatchingRule() throws ExecutionException, InterruptedException {
         Future<List<Event>> eventFuture = subject.execute(event, uri);
         assertThat(eventFuture.get(), notNullValue());

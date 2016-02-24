@@ -15,11 +15,14 @@ import org.springframework.stereotype.Component;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.text.MessageFormat;
 import java.util.Optional;
 
 @Component
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
 public class DeviceEventProcessor {
+
+    private static final String EVENT_DROPPED = "Incoming event has been dropped: [Device: {0}] - [Payload: {1}]";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DeviceEventProcessor.class);
 
@@ -51,17 +54,23 @@ public class DeviceEventProcessor {
         Device device = Optional.ofNullable(deviceRegisterService.findByApiKey(apiKey))
             .orElseThrow(() -> new BusinessException("Incoming device does not exist"));
 
-        Event event = Event.builder()
-                .channel(incomingChannel)
-                .payload(payload)
-                .build();
+        if (device.isActive()) {
+            Event event = Event.builder()
+                    .channel(incomingChannel)
+                    .payload(payload)
+                    .build();
 
-        deviceEventService.logEvent(device, event);
+            deviceEventService.logEvent(device, event);
 
-        try {
-            eventRuleExecutor.execute(event, new URI("device",device.getDeviceId(),null,null,null));
-        } catch (URISyntaxException e) {
-            LOGGER.error("URI syntax error. Probably wrong device ID.", e);
+            try {
+                eventRuleExecutor.execute(event, new URI("device", device.getDeviceId(), null, null, null));
+            } catch (URISyntaxException e) {
+                LOGGER.error("URI syntax error. Probably wrong device ID.", e);
+            }
+        } else {
+            LOGGER.debug(MessageFormat.format(EVENT_DROPPED,
+                URI.create("device://"+device.getDeviceId()),
+                payload));
         }
     }
 

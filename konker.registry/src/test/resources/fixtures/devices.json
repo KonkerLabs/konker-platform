@@ -11,7 +11,8 @@
       "apiKey" : "84399b2e-d99e-11e5-86bc-34238775bac9",
       "name" : "Test name",
       "description" : "Description",
-      "registrationDate" : 1453320973747
+      "registrationDate" : 1453320973747,
+      "active" : false
     }
   ]
 }

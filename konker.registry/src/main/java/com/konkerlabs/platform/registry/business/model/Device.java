@@ -28,6 +28,7 @@ public class Device {
 	private String description;
 	private Instant registrationDate;
 	private List<Event> events;
+	private boolean active;
 
 	public List<String> applyValidations() {
 

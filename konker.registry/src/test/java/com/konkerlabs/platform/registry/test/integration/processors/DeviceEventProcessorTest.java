@@ -38,12 +38,9 @@ public class DeviceEventProcessorTest {
     public ExpectedException thrown = ExpectedException.none();
 
     private String sourceApiKey = "84399b2e-d99e-11e5-86bc-34238775bac9";
-//    private String destinationDeviceId = "0000000000000005";
     private String originalPayload = "LEDSwitch";
     private String incomingChannel = "command";
     private String topic = MessageFormat.format(DEVICE_TOPIC_TEMPLATE, sourceApiKey, incomingChannel);
-    private String outgoingChannel = "in";
-//    private String destinationTopic = MessageFormat.format(DEVICE_TOPIC_TEMPLATE, destinationDeviceId, outgoingChannel);
 
     private Event event;
     @Autowired
@@ -67,6 +64,7 @@ public class DeviceEventProcessorTest {
             .apiKey(originalPayload)
             .id("id")
             .deviceId("device_id")
+            .active(true)
             .name("device_name").build();
     }
 
@@ -120,6 +118,26 @@ public class DeviceEventProcessorTest {
         subject.process(topic, originalPayload);
 
         verify(eventRuleExecutor).execute(event,new URI("device",device.getDeviceId(),null,null,null));
+    }
+
+    @Test
+    public void shouldNotLogAnyEventIfIncomingDeviceIsDisabled() throws Exception {
+        device.setActive(false);
+        when(deviceRegisterService.findByApiKey(sourceApiKey)).thenReturn(device);
+
+        subject.process(topic, originalPayload);
+
+        verify(deviceEventService,never()).logEvent(any(Device.class),any(Event.class));
+    }
+
+    @Test
+    public void shouldNotFireRuleExecutionIfIncomingDeviceIsDisabled() throws Exception {
+        device.setActive(false);
+        when(deviceRegisterService.findByApiKey(sourceApiKey)).thenReturn(device);
+
+        subject.process(topic, originalPayload);
+
+        verify(eventRuleExecutor,never()).execute(any(Event.class),any(URI.class));
     }
 
     @Configuration

@@ -14,4 +14,7 @@ public interface DeviceRepository extends MongoRepository<Device,String> {
     Device findByTenantIdAndDeviceId(String tenantId, String deviceId);
     @Query("{ 'apiKey' : ?0 }")
     Device findByApiKey(String apiKey);
+    //TODO This method must be extinguished when event rule specialized URI gets available
+    @Query("{ 'deviceId' : ?0 }")
+    Device findByDeviceId(String deviceId);
 }
