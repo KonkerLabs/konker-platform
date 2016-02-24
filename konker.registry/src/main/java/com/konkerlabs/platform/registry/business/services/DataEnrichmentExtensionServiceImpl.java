@@ -51,8 +51,8 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
             Optional.ofNullable(name).orElseThrow(() -> new BusinessException("Name cannot be null"));
             Optional.ofNullable(tenant).orElseThrow(() -> new BusinessException("Tenant cannot be null"));
 
-            Tenant t = tenantRepository.findByName(tenant.getName());
-            Optional.ofNullable(t).orElseThrow(() -> new BusinessException("Tenant does not exist"));
+            Tenant t = Optional.ofNullable(tenantRepository.findByName(tenant.getName()))
+                    .orElseThrow(() -> new BusinessException("Tenant does not exist"));
 
             DataEnrichmentExtension dee = Optional.ofNullable(repository.findByTenantIdAndName(t.getId(), name))
                     .orElseThrow(() -> new BusinessException("Data Enrichment Extension does not exist"));
