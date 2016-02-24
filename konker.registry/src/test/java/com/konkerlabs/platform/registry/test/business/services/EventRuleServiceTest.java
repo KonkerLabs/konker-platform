@@ -135,13 +135,15 @@ public class EventRuleServiceTest extends BusinessLayerTestSupport {
         List<EventRule> allRules = subject.getAll(tenant);
 
         assertThat(allRules, notNullValue());
-        assertThat(allRules, hasSize(6));
+        assertThat(allRules, hasSize(8));
         assertThat(allRules.get(0).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63af"));
         assertThat(allRules.get(1).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ab"));
         assertThat(allRules.get(2).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ac"));
         assertThat(allRules.get(3).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ad"));
         assertThat(allRules.get(4).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ae"));
         assertThat(allRules.get(5).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ba"));
+        assertThat(allRules.get(6).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63bb"));
+        assertThat(allRules.get(7).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63bc"));
 
         allRules = subject.getAll(emptyTenant);
         assertThat(allRules, notNullValue());
