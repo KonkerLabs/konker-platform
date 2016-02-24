@@ -111,7 +111,123 @@
       "transformations" : [ {
         "type" : "EXPRESSION_LANGUAGE",
         "data" : {
+          "value" : "#root[value] < 0"
+        }
+        } ],
+    "active" : true
+    },
+    {
+      "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63ae",
+      "_class" : "com.konkerlabs.platform.registry.model.EventRule",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
+      },
+      "name" : "Device event forwarding rule",
+      "description" : "Rule description",
+      "incoming": {
+        "uri" : "device://0000000000000004",
+        "data" : {
+          "channel" : "data"
+        }
+      },
+      "outgoing": {
+        "uri" : "device://0000000000000005",
+        "data" : {
+          "channel" : "in"
+        }
+      },
+      "transformations" : [ {
+        "type" : "EXPRESSION_LANGUAGE",
+        "data" : {
           "value" : "#root[XXXX] == 'X'"
+        }
+      } ],
+      "active" : true
+    },
+    {
+      "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63ba",
+      "_class" : "com.konkerlabs.platform.registry.model.EventRule",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
+      },
+      "name" : "Device event forwarding rule",
+      "description" : "Rule description",
+      "incoming": {
+        "uri" : "device://0000000000000004",
+        "data" : {
+          "channel" : "data"
+        }
+      },
+      "outgoing": {
+        "uri" : "device://0000000000000005",
+        "data" : {
+          "channel" : "in"
+        }
+      },
+      "transformations" : [ {
+        "type" : "EXPRESSION_LANGUAGE",
+        "data" : {
+          "value" : ""
+        }
+      } ],
+      "active" : true
+    },
+    {
+      "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63bb",
+      "_class" : "com.konkerlabs.platform.registry.model.EventRule",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
+      },
+      "name" : "Device event forwarding rule",
+      "description" : "Rule description",
+      "incoming": {
+        "uri" : "device://0000000000000001",
+        "data" : {
+          "channel" : "data"
+        }
+      },
+      "outgoing": {
+        "uri" : "device://0000000000000005",
+        "data" : {
+          "channel" : "in"
+        }
+      },
+      "transformations" : [ {
+        "type" : "EXPRESSION_LANGUAGE",
+        "data" : {
+          "value" : ""
+        }
+      } ],
+      "active" : false
+    },
+    {
+      "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63bc",
+      "_class" : "com.konkerlabs.platform.registry.model.EventRule",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
+      },
+      "name" : "Device event forwarding rule",
+      "description" : "Rule description",
+      "incoming": {
+        "uri" : "device://0000000000000002",
+        "data" : {
+          "channel" : "data"
+        }
+      },
+      "outgoing": {
+        "uri" : "device://0000000000000005",
+        "data" : {
+          "channel" : "in"
+        }
+      },
+      "transformations" : [ {
+        "type" : "EXPRESSION_LANGUAGE",
+        "data" : {
+          "value" : "X"
         }
       } ],
       "active" : true

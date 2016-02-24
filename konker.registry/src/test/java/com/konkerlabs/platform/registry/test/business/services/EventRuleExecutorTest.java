@@ -33,10 +33,13 @@ public class EventRuleExecutorTest extends BusinessLayerTestSupport {
     private Event event;
     private URI uri;
 
+    private String inactiveRuleDeviceId = "0000000000000001";
+    private String malformedRuleDeviceId = "0000000000000002";
     private String matchingRuleDeviceId = "0000000000000004";
+    private String nonMatchingFilterDeviceId = "0000000000000007";
     private String nonMatchingRuleDeviceId = "0000000000000009";
 
-    private String payload = "{\"metric\":\"temperature\",\"device\":\"0000000000000004\",\"value\":30,\"timestamp\":1454900000,\"data\":{\"sn\":1234,\"test\":1,\"foo\":2}}";
+    private String payload = "{\"metric\":\"temperature\",\"deviceId\":\"0000000000000004\",\"value\":30,\"ts\":1454900000,\"data\":{\"sn\":1234,\"test\":1,\"foo\":2}}";
 
     @Before
     public void setUp() throws Exception {
@@ -46,11 +49,22 @@ public class EventRuleExecutorTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = "/fixtures/event-rules.json")
-    public void shouldSendOneEvent() throws ExecutionException, InterruptedException {
+    public void shouldSendEventsForAMatchingRule() throws ExecutionException, InterruptedException {
         Future<List<Event>> eventFuture = subject.execute(event, uri);
         assertThat(eventFuture.get(), notNullValue());
-        assertThat(eventFuture.get(), hasSize(2));
+        assertThat(eventFuture.get(), hasSize(3));
         assertThat(eventFuture.get().get(0).getPayload(), equalTo(payload));
+        assertThat(eventFuture.get().get(1).getPayload(), equalTo(payload));
+        assertThat(eventFuture.get().get(2).getPayload(), equalTo(payload));
+    }
+
+    @Test
+    @UsingDataSet(locations = "/fixtures/event-rules.json")
+    public void shouldntSendAnyEventsForANonmatchingRule() throws ExecutionException, InterruptedException, URISyntaxException {
+        URI nonMatchingFilterURI = new URI("device",nonMatchingFilterDeviceId,null,null,null);
+        Future<List<Event>> eventFuture = subject.execute(event, nonMatchingFilterURI);
+        assertThat(eventFuture.get(), notNullValue());
+        assertThat(eventFuture.get(), hasSize(0));
     }
 
     @Test
@@ -71,4 +85,23 @@ public class EventRuleExecutorTest extends BusinessLayerTestSupport {
         assertThat(eventFuture.get(), notNullValue());
         assertThat(eventFuture.get(), hasSize(0));
     }
+
+    @Test
+    @UsingDataSet(locations = "/fixtures/event-rules.json")
+    public void shouldntSendAnyEventsForANonActiveRule() throws ExecutionException, InterruptedException, URISyntaxException {
+        URI inactiveRuleDeviceURI = new URI("device",inactiveRuleDeviceId,null,null,null);
+        Future<List<Event>> eventFuture = subject.execute(event, inactiveRuleDeviceURI);
+        assertThat(eventFuture, notNullValue());
+        assertThat(eventFuture.get(), hasSize(0));
+    }
+
+    @Test
+    @UsingDataSet(locations = "/fixtures/event-rules.json")
+    public void shouldntSendAnyEventsForMalformedExpressionFilter() throws ExecutionException, InterruptedException, URISyntaxException {
+        URI nonBooleanRuleDeviceURI = new URI("device", malformedRuleDeviceId,null,null,null);
+        Future<List<Event>> eventFuture = subject.execute(event, nonBooleanRuleDeviceURI);
+        assertThat(eventFuture, notNullValue());
+        assertThat(eventFuture.get(), hasSize(0));
+    }
+
 }
