@@ -1,10 +1,15 @@
 package com.konkerlabs.platform.registry.test.business.services;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.Matchers.empty;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -36,10 +41,10 @@ public class DataEnrichmentExtensionServiceTest extends BusinessLayerTestSupport
     private static final String INEXISTENT_ENCHRICHMENT_EXTENSION_NAME = "INEXISTENT_NAME";
 
     private Tenant inexistentTenant;
-    private DataEnrichmentExtension dataEnrichmentExtension;
+    private Tenant aTenant;
+    private Tenant emptyTenant;
 
-    private static final Tenant A_TENANT = Tenant.builder().name("Konker").build();
-    private static final Tenant EMPTY_TENANT = Tenant.builder().name("EmptyTenant").build();
+    private DataEnrichmentExtension dataEnrichmentExtension;
 
     @Autowired
     private DataEnrichmentExtensionService service;
@@ -53,7 +58,50 @@ public class DataEnrichmentExtensionServiceTest extends BusinessLayerTestSupport
     @Before
     public void setup() {
         inexistentTenant = Tenant.builder().id(INEXISTENT_TENANT_ID).build();
+        aTenant = Tenant.builder().name("Konker").build();
+        emptyTenant = Tenant.builder().name("EmptyTenant").build();
     }
+
+    /* getAll */
+
+    @Test
+    public void shouldReturnErrorMessageIfTenantIsInexistentWhenGetAll() {
+        ServiceResponse<List<DataEnrichmentExtension>> response = service.getAll(inexistentTenant);
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+        assertThat(response.getResult(), nullValue());
+        assertThat(response.getResponseMessages(), hasItem("Tenant does not exist"));
+    }
+
+    @Test
+    public void shouldReturnErrorMessageIfTenantIsNullWhenGetAll() {
+        ServiceResponse<List<DataEnrichmentExtension>> response = service.getAll(null);
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+        assertThat(response.getResult(), nullValue());
+        assertThat(response.getResponseMessages(), hasItem("Tenant cannot be null"));
+    }
+
+    @Test
+    public void shouldReturnEmptyListIfNoItemExistWhenGetAll() {
+        ServiceResponse<List<DataEnrichmentExtension>> response = service.getAll(emptyTenant);
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
+        assertThat(response.getResult(), empty());
+        assertThat(response.getResponseMessages(), empty());
+    }
+
+    @Test
+    public void shouldReturnItemsIfTenantIsValidWhenGetAll() {
+        ServiceResponse<List<DataEnrichmentExtension>> response = service.getAll(aTenant);
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
+        assertThat(response.getResult(), not(empty()));
+        assertThat(response.getResponseMessages(), empty());
+
+        List<String> foundIds = response.getResult().stream().map(DataEnrichmentExtension::getName)
+                .collect(Collectors.toList());
+        assertThat(foundIds, hasItems("REST-from-Prestashop-01", "REST-from-Magento-01"));
+
+    }
+
+    /* findByName */
 
     @Test
     public void shouldReturnErrorMessageIfTenantIsInexistentWhenFindByName() {
@@ -75,7 +123,7 @@ public class DataEnrichmentExtensionServiceTest extends BusinessLayerTestSupport
 
     @Test
     public void shouldReturnErrorMessageIfIdIsNullWhenFindByName() {
-        ServiceResponse<DataEnrichmentExtension> response = service.findByName(A_TENANT, null);
+        ServiceResponse<DataEnrichmentExtension> response = service.findByName(aTenant, null);
         assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
         assertThat(response.getResult(), nullValue());
         assertThat(response.getResponseMessages(), hasItem("Name cannot be null"));
@@ -83,16 +131,16 @@ public class DataEnrichmentExtensionServiceTest extends BusinessLayerTestSupport
 
     @Test
     public void shouldReturnErrorMessageIfDoesNotExist() {
-        ServiceResponse<DataEnrichmentExtension> response = service.findByName(A_TENANT,
+        ServiceResponse<DataEnrichmentExtension> response = service.findByName(aTenant,
                 INEXISTENT_ENCHRICHMENT_EXTENSION_NAME);
         assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
         assertThat(response.getResult(), nullValue());
         assertThat(response.getResponseMessages(), hasItem("Data Enrichment Extension does not exist"));
     }
-    
+
     @Test
     public void shouldReturnErrorMessageIfNameExistsInAnotherTenant() {
-        ServiceResponse<DataEnrichmentExtension> response = service.findByName(EMPTY_TENANT,
+        ServiceResponse<DataEnrichmentExtension> response = service.findByName(emptyTenant,
                 A_DATA_ENCHRICHMENT_EXTENSION_NAME);
         assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
         assertThat(response.getResult(), nullValue());
@@ -101,7 +149,7 @@ public class DataEnrichmentExtensionServiceTest extends BusinessLayerTestSupport
 
     @Test
     public void shouldReturnRightExtensionIfIsValid() {
-        ServiceResponse<DataEnrichmentExtension> response = service.findByName(A_TENANT,
+        ServiceResponse<DataEnrichmentExtension> response = service.findByName(aTenant,
                 A_DATA_ENCHRICHMENT_EXTENSION_NAME);
         assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
         assertThat(response.getResult().getId(), equalTo(A_DATA_ENCHRICHMENT_EXTENSION_ID));

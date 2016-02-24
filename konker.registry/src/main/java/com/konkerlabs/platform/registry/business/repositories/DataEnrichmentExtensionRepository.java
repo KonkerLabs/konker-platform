@@ -15,4 +15,7 @@ public interface DataEnrichmentExtensionRepository extends MongoRepository<DataE
     @Query("{ 'tenant.id' : ?0, 'name' : ?1 }")
     DataEnrichmentExtension findByTenantIdAndName(String tenantId, String name);
 
+    @Query("{ 'tenant.id' : ?0 }")
+    List<DataEnrichmentExtension> findAllByTenantId(String tenantId);
+
 }

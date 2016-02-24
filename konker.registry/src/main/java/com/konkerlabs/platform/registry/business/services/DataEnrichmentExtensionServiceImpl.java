@@ -38,11 +38,22 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
 
     @Override
     public ServiceResponse<List<DataEnrichmentExtension>> getAll(Tenant tenant) {
-        // TODO Auto-generated method stub
+        try {
 
-        return ServiceResponse.<List<DataEnrichmentExtension>> builder().status(ServiceResponse.Status.OK)
-                .result(Collections.emptyList()).build();
-        // throw new UnsupportedOperationException("Not Implemented");
+            Optional.ofNullable(tenant).orElseThrow(() -> new BusinessException("Tenant cannot be null"));
+
+            Tenant t = Optional.ofNullable(tenantRepository.findByName(tenant.getName()))
+                    .orElseThrow(() -> new BusinessException("Tenant does not exist"));
+
+            List<DataEnrichmentExtension> l = repository.findAllByTenantId(t.getId());
+
+            return ServiceResponse.<List<DataEnrichmentExtension>> builder().status(ServiceResponse.Status.OK).result(l)
+                    .build();
+
+        } catch (BusinessException be) {
+            return ServiceResponse.<List<DataEnrichmentExtension>> builder().status(ServiceResponse.Status.ERROR)
+                    .responseMessage(be.getMessage()).build();
+        }
     }
 
     @Override
@@ -57,15 +68,11 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
             DataEnrichmentExtension dee = Optional.ofNullable(repository.findByTenantIdAndName(t.getId(), name))
                     .orElseThrow(() -> new BusinessException("Data Enrichment Extension does not exist"));
 
-            return ServiceResponse.<DataEnrichmentExtension> builder()
-                    .status(ServiceResponse.Status.OK)
-                    .result(dee)
+            return ServiceResponse.<DataEnrichmentExtension> builder().status(ServiceResponse.Status.OK).result(dee)
                     .build();
         } catch (BusinessException be) {
-            return ServiceResponse.<DataEnrichmentExtension> builder()
-                    .status(ServiceResponse.Status.ERROR)
-                    .responseMessage(be.getMessage())
-                    .build();
+            return ServiceResponse.<DataEnrichmentExtension> builder().status(ServiceResponse.Status.ERROR)
+                    .responseMessage(be.getMessage()).build();
         }
     }
 
