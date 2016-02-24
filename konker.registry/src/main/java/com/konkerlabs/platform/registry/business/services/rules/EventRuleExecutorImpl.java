@@ -17,6 +17,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.spel.SpelEvaluationException;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.integration.json.JsonPropertyAccessor;
@@ -70,35 +71,42 @@ public class EventRuleExecutorImpl implements EventRuleExecutor {
                 String transformationValue = ruleTransformation.getData().get("value");
                 switch (RuleTransformationType.valueOf(ruleTransformation.getType())) {
                     case EXPRESSION_LANGUAGE:
-                        ExpressionParser parser = new SpelExpressionParser();
-                        Expression expression = parser.parseExpression(transformationValue);
+                        Expression expression = null;
+                        StandardEvaluationContext standardEvaluationContext = null;
 
-                        StandardEvaluationContext standardEvaluationContext = new StandardEvaluationContext();
+                        boolean noFilter = transformationValue == null || transformationValue.isEmpty();
 
                         try {
-                            ObjectMapper mapper = new ObjectMapper();
-                            Map<String, Object> mapObject = mapper.readValue(incomingPayload,
-                                    new TypeReference<Map<String, Object>>() {
-                                    });
+                            if (!noFilter) {
+                                ExpressionParser parser = new SpelExpressionParser();
+                                expression = parser.parseExpression(transformationValue);
 
-                            standardEvaluationContext.setRootObject(mapObject);
-                            standardEvaluationContext.addPropertyAccessor(new JsonPropertyAccessor());
 
-                        } catch (JsonProcessingException e) {
-                            LOGGER.error("Error parsing JSON payload.", e);
+                                ObjectMapper mapper = new ObjectMapper();
+                                Map<String, Object> mapObject = mapper.readValue(incomingPayload,
+                                        new TypeReference<Map<String, Object>>() {
+                                        });
+
+                                standardEvaluationContext = new StandardEvaluationContext(mapObject);
+                            }
                         } catch (IOException e) {
                             LOGGER.error("Error parsing JSON payload.", e);
                         }
 
-                        if (expression.getValue(standardEvaluationContext, Boolean.class)) {
-                            eventRulePublisher = (EventRulePublisher) applicationContext.getBean(eventRule.getOutgoing().getUri().getScheme());
-                            Event outEvent = Event.builder().timestamp(Instant.now()).payload(incomingPayload).build();
-                            eventRulePublisher.send(outEvent, eventRule.getOutgoing());
-                            outEvents.add(outEvent);
-                        } else {
-                            LOGGER.debug(MessageFormat.format("Dropped rule \"{0}\", not matching \"{1}\" pattern with content \"{2}\". Message payload: {3} ",
-                                    eventRule.getName(), ruleTransformation.getType(), transformationValue, incomingPayload));
+                        try {
+                            if (noFilter || expression.getValue(standardEvaluationContext, Boolean.class)) {
+                                eventRulePublisher = (EventRulePublisher) applicationContext.getBean(eventRule.getOutgoing().getUri().getScheme());
+                                Event outEvent = Event.builder().timestamp(Instant.now()).payload(incomingPayload).build();
+                                eventRulePublisher.send(outEvent, eventRule.getOutgoing());
+                                outEvents.add(outEvent);
+                            } else {
+                                LOGGER.debug(MessageFormat.format("Dropped rule \"{0}\", not matching \"{1}\" pattern with content \"{2}\". Message payload: {3} ",
+                                        eventRule.getName(), ruleTransformation.getType(), transformationValue, incomingPayload));
+                            }
+                        } catch (SpelEvaluationException e) {
+                            LOGGER.error(MessageFormat.format("Error evaluating, probably malformed, expression: \"{0}\". Message payload: {1} ", transformationValue, incomingPayload), e);
                         }
+
                         break;
                 }
             }

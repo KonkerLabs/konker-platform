@@ -135,11 +135,13 @@ public class EventRuleServiceTest extends BusinessLayerTestSupport {
         List<EventRule> allRules = subject.getAll(tenant);
 
         assertThat(allRules, notNullValue());
-        assertThat(allRules, hasSize(4));
+        assertThat(allRules, hasSize(6));
         assertThat(allRules.get(0).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63af"));
         assertThat(allRules.get(1).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ab"));
         assertThat(allRules.get(2).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ac"));
         assertThat(allRules.get(3).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ad"));
+        assertThat(allRules.get(4).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ae"));
+        assertThat(allRules.get(5).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ba"));
 
         allRules = subject.getAll(emptyTenant);
         assertThat(allRules, notNullValue());
@@ -158,10 +160,12 @@ public class EventRuleServiceTest extends BusinessLayerTestSupport {
         List<EventRule> rules = subject.findByIncomingUri(this.rule.getIncoming().getUri());
 
         assertThat(rules, notNullValue());
-        assertThat(rules, hasSize(3));
+        assertThat(rules, hasSize(5));
         assertThat(rules.get(0).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63af"));
         assertThat(rules.get(1).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ab"));
         assertThat(rules.get(2).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ac"));
+        assertThat(rules.get(3).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ae"));
+        assertThat(rules.get(4).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ba"));
     }
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/event-rules.json"})
