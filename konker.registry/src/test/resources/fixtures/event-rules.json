@@ -16,7 +16,7 @@
         }
       },
       "outgoing": {
-        "uri" : "device://0000000000000005",
+        "uri" : "device://95c14b36ba2b43f1",
         "data" : {
           "channel" : "in"
         }
@@ -103,7 +103,7 @@
         }
       },
       "outgoing": {
-        "uri" : "device://0000000000000005",
+        "uri" : "device://95c14b36ba2b43f1",
         "data" : {
           "channel" : "in"
         }
@@ -132,7 +132,7 @@
         }
       },
       "outgoing": {
-        "uri" : "device://0000000000000005",
+        "uri" : "device://95c14b36ba2b43f1",
         "data" : {
           "channel" : "in"
         }
@@ -161,7 +161,7 @@
         }
       },
       "outgoing": {
-        "uri" : "device://0000000000000005",
+        "uri" : "device://95c14b36ba2b43f1",
         "data" : {
           "channel" : "in"
         }
@@ -190,7 +190,7 @@
         }
       },
       "outgoing": {
-        "uri" : "device://0000000000000005",
+        "uri" : "device://95c14b36ba2b43f1",
         "data" : {
           "channel" : "in"
         }
@@ -219,7 +219,7 @@
         }
       },
       "outgoing": {
-        "uri" : "device://0000000000000005",
+        "uri" : "device://95c14b36ba2b43f1",
         "data" : {
           "channel" : "in"
         }

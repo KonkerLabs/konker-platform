@@ -17,7 +17,8 @@
                 <thead>
                 <tr>
                     <td class="col-md-1">ID</td>
-                    <td class="col-md-3">Name</td>
+                    <td class="col-md-2">Name</td>
+                    <td class="col-md-1">Active?</td>
                     <td class="col-md-1 text-center">Actions</td>
                 </tr>
                 </thead>
@@ -25,6 +26,10 @@
                 <tr data-th-each="device : ${devices}">
                     <td data-th-text="${device.deviceId}"></td>
                     <td data-th-text="${device.name}"></td>
+                    <td>
+                        <span data-th-if="${device.active}" class="glyphicon glyphicon-thumbs-up" aria-hidden="true"/>
+                        <span data-th-if="${not device.active}" class="glyphicon glyphicon-thumbs-down" aria-hidden="true"/>
+                    </td>
                     <td class="text-center">
                         <a data-th-href="@{/devices/{id}(id=${device.id})}" class="btn btn-default">
                             Show

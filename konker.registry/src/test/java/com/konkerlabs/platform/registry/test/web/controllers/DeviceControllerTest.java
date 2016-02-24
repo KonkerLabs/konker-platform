@@ -1,25 +1,13 @@
 package com.konkerlabs.platform.registry.test.web.controllers;
 
-import static org.hamcrest.Matchers.any;
-import static org.hamcrest.Matchers.equalTo;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
-
-import java.text.MessageFormat;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
+import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
+import com.konkerlabs.platform.registry.web.forms.DeviceRegistrationForm;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,13 +23,20 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.config.WebMvcConfig;
-import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
-import com.konkerlabs.platform.registry.web.forms.DeviceRegistrationForm;
+import java.text.MessageFormat;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.hamcrest.Matchers.any;
+import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
@@ -125,19 +120,6 @@ public class DeviceControllerTest extends WebLayerTestContext {
     }
 
     @Test
-    public void shouldBindExceptionMessageWhenRegistrationFailsAndGoBackToRegistrationForm() throws Exception {
-        String exceptionMessage = "Some business exception message";
-
-        when(deviceRegisterService.register(eq(tenant),eq(device))).thenThrow(new BusinessException(exceptionMessage));
-
-        getMockMvc().perform(post("/devices/save").params(deviceData))
-                .andExpect(model().attribute("errors", equalTo(Arrays.asList(new String[] { exceptionMessage }))))
-                .andExpect(model().attribute("device", equalTo(deviceForm))).andExpect(view().name("devices/form"));
-
-        verify(deviceRegisterService).register(eq(tenant),eq(device));
-    }
-
-    @Test
     public void shouldRedirectToShowAfterRegistrationSucceed() throws Exception {
         response = ServiceResponse.<Device>builder()
                 .status(ServiceResponse.Status.OK)
@@ -195,21 +177,6 @@ public class DeviceControllerTest extends WebLayerTestContext {
 
         getMockMvc().perform(post(MessageFormat.format("/devices/{0}", DEVICE_ID_95C14B36BA2B43F1)).params(deviceData))
                 .andExpect(model().attribute("errors", equalTo(response.getResponseMessages())))
-                .andExpect(model().attribute("device", equalTo(deviceForm)))
-                .andExpect(view().name("devices/form"));
-
-        verify(deviceRegisterService).update(eq(DEVICE_ID_95C14B36BA2B43F1), eq(device));
-    }
-
-    @Test
-    public void shouldBindExceptionMessageWhenEditFailsAndGoBackToEditForm() throws Exception {
-        String exceptionMessage = "Some business exception message";
-
-        when(deviceRegisterService.update(Matchers.anyString(), Matchers.isA(Device.class)))
-                .thenThrow(new BusinessException(exceptionMessage));
-
-        getMockMvc().perform(post(MessageFormat.format("/devices/{0}", DEVICE_ID_95C14B36BA2B43F1)).params(deviceData))
-                .andExpect(model().attribute("errors", equalTo(Arrays.asList(new String[] { exceptionMessage }))))
                 .andExpect(model().attribute("device", equalTo(deviceForm)))
                 .andExpect(view().name("devices/form"));
 

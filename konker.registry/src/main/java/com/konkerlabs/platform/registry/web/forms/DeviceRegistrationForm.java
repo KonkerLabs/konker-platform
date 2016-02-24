@@ -11,11 +11,16 @@ public class DeviceRegistrationForm implements ModelBuilder<Device,DeviceRegistr
     private String deviceId;
     private String name;
     private String description;
+    private boolean active;
 
     @Override
-    public Device toModel() throws BusinessException {
-        return Device.builder().deviceId(getDeviceId())
-                .name(getName()).description(getDescription()).build();
+    public Device toModel() {
+        return Device.builder()
+                .deviceId(getDeviceId())
+                .name(getName())
+                .description(getDescription())
+                .active(isActive())
+                .build();
     }
 
     @Override
@@ -23,6 +28,7 @@ public class DeviceRegistrationForm implements ModelBuilder<Device,DeviceRegistr
         this.setDeviceId(model.getDeviceId());
         this.setName(model.getName());
         this.setDescription(model.getDescription());
+        this.setActive(model.isActive());
         return this;
     }
 }

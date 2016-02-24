@@ -8,17 +8,20 @@ import lombok.Data;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.text.MessageFormat;
 import java.util.Arrays;
 
 @Data
 public class EventRuleForm implements ModelBuilder<EventRule,EventRuleForm> {
+
+    private static final String URI_TEMPLATE = "{0}://{1}";
 
     private String id;
     private String name;
     private String description;
     private String incomingAuthority;
     private String incomingChannel;
-    private String outgoingScheme;
+    private String outgoingScheme = "device";
     private String outgoingDeviceAuthority;
     private String outgoingDeviceChannel;
     private String outgoingSmsPhoneNumber;
@@ -26,13 +29,13 @@ public class EventRuleForm implements ModelBuilder<EventRule,EventRuleForm> {
     private boolean active;
 
     @Override
-    public EventRule toModel() throws BusinessException {
+    public EventRule toModel() {
         EventRule rule = null;
 
-        if (getOutgoingScheme() == null || getOutgoingScheme().isEmpty())
-            throw new BusinessException("Please choose an outgoing rule type");
+//        if (getOutgoingScheme() == null || getOutgoingScheme().isEmpty())
+//            throw new BusinessException("Please choose an outgoing rule type");
 
-        try {
+//        try {
             EventRule.RuleTransformation contentFilterTransformation = new EventRule.RuleTransformation(EventRuleExecutorImpl.RuleTransformationType.EXPRESSION_LANGUAGE.name());
             contentFilterTransformation.getData().put("value",getFilterClause());
 
@@ -40,25 +43,31 @@ public class EventRuleForm implements ModelBuilder<EventRule,EventRuleForm> {
                     .id(id)
                     .name(getName())
                     .description(getDescription())
-                    .incoming(new EventRule.RuleActor(new URI("device",getIncomingAuthority(),null,null,null)))
+                    .incoming(new EventRule.RuleActor(
+                        URI.create(MessageFormat.format(URI_TEMPLATE,"device",getIncomingAuthority())
+                    )))
                     .outgoing(new EventRule.RuleActor(buildOutgoingURI()))
                     .transformations(Arrays.asList(new EventRule.RuleTransformation[]{contentFilterTransformation}))
                     .active(isActive())
                     .build();
             applyIncomingMetadata(rule);
             applyOutgoingMetadata(rule);
-        } catch (URISyntaxException e) {
-            throw new BusinessException("Failed to build model instance based on web form", e);
-        }
+//        } catch (URISyntaxException e) {
+//            throw new BusinessException("Failed to build model instance based on web form", e);
+//        }
 
         return rule;
     }
 
-    private URI buildOutgoingURI() throws URISyntaxException {
+    private URI buildOutgoingURI() {
         switch (getOutgoingScheme()) {
-            case "device" : return new URI(getOutgoingScheme(),getOutgoingDeviceAuthority(),null,null,null);
-            case "sms" : return new URI(getOutgoingScheme(),getOutgoingSmsPhoneNumber(),null,null,null);
-            default: return new URI(null,null,null,null,null);
+            case "device" : return URI.create(
+                MessageFormat.format(URI_TEMPLATE,getOutgoingScheme(),getOutgoingDeviceAuthority())
+            );
+            case "sms" : return URI.create(
+                MessageFormat.format(URI_TEMPLATE,getOutgoingScheme(),getOutgoingSmsPhoneNumber())
+            );
+            default: return null;
         }
     }
 

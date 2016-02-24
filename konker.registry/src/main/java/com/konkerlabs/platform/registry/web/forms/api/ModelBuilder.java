@@ -4,6 +4,6 @@ import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 
 public interface ModelBuilder<M,F> {
 
-    M toModel() throws BusinessException;
+    M toModel();
     F fillFrom(M model);
 }

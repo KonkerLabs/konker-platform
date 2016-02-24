@@ -14,7 +14,7 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
 @Configuration
-@ComponentScan(basePackages = "com.konkerlabs.platform.registry.integration")
+//@ComponentScan(basePackages = "com.konkerlabs.platform.registry.integration")
 public class SmsConfig {
 
     private static final Config smsServiceConfig = ConfigFactory.load().getConfig("sms");
