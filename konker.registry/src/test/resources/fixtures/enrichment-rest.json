@@ -1,0 +1,42 @@
+{
+    "dataEnrichmentExtensions": [
+        {
+            "_id": "a09b3f34-db24-11e5-8a31-7b3889d9b0eb",
+            "_class": "com.konkerlabs.platform.registry.business.model.DataEnrichmentExtension",
+            "name": "REST-from-Prestashop-01",
+            "type": "REST",
+            "description": "Get REST Data from Prestahop",
+            "incoming": "device://abc123",
+            "containerKey": "productData",
+            "parameters": {
+                "password": "pass",
+                "uriTemplate": "https://www.google.com/device/${deviceId}",
+                "username": "user"
+            },
+            "active": true,
+            "tenant": {
+                "$id": "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+                "$ref": "tenants"
+            }
+        },
+        {
+            "_id": "a97e0d46-db26-11e5-be01-8bc8ddc000bf",
+            "_class": "com.konkerlabs.platform.registry.business.model.DataEnrichmentExtension",
+            "name": "REST-from-Magento-01",
+            "type": "REST",
+            "description": "Get REST Data from Magento",
+            "incoming": "device://abc123",
+            "containerKey": "productData",
+            "parameters": {
+                "password": "pass",
+                "uriTemplate": "https://www.google.com/device/${deviceId}",
+                "username": "user"
+            },
+            "active": true,
+            "tenant": {
+                "$id": "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+                "$ref": "tenants"
+            }
+        }
+    ]
+}
