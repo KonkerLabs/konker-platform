@@ -13,6 +13,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.Singular;
 
 @Document(collection = "dataEnrichmentExtensions")
 @Data
@@ -30,6 +31,7 @@ public class DataEnrichmentExtension {
     private URI incoming;
     private String containerKey;
 
+    @Singular
     private Map<String, String> parameters = new HashMap<>();
 
     private boolean active;

@@ -7,7 +7,10 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.mockito.Mockito.*;
 
+import java.net.URI;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,15 +39,17 @@ import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 public class DataEnrichmentExtensionServiceTest extends BusinessLayerTestSupport {
 
     private static final String INEXISTENT_TENANT_ID = "INEXISTENT_TENANT_ID";
-    private static final String A_DATA_ENCHRICHMENT_EXTENSION_NAME = "REST-from-Prestashop-01";
-    private static final String A_DATA_ENCHRICHMENT_EXTENSION_ID = "a09b3f34-db24-11e5-8a31-7b3889d9b0eb";
+    private static final String OLD_ENCHRICHMENT_EXTENSION_NAME = "REST-from-Prestashop-01";
+    private static final String OLD_ENCHRICHMENT_EXTENSION_ID = "a09b3f34-db24-11e5-8a31-7b3889d9b0eb";
     private static final String INEXISTENT_ENCHRICHMENT_EXTENSION_NAME = "INEXISTENT_NAME";
+    private static final String NEW_ENCHRICHMENT_EXTENSION_NAME = "REST-from-Amazon-01";
 
     private Tenant inexistentTenant;
     private Tenant aTenant;
     private Tenant emptyTenant;
 
-    private DataEnrichmentExtension dataEnrichmentExtension;
+    private DataEnrichmentExtension oldDataEnrichmentExtension;
+    private DataEnrichmentExtension newDataEnrichmentExtension;
 
     @Autowired
     private DataEnrichmentExtensionService service;
@@ -58,10 +63,75 @@ public class DataEnrichmentExtensionServiceTest extends BusinessLayerTestSupport
     @Before
     public void setup() {
         inexistentTenant = Tenant.builder().id(INEXISTENT_TENANT_ID).build();
-        aTenant = Tenant.builder().name("Konker").build();
+        aTenant = Tenant.builder().id("71fb0d48-674b-4f64-a3e5-0256ff3a63af").name("Konker").build();
         emptyTenant = Tenant.builder().name("EmptyTenant").build();
+        oldDataEnrichmentExtension = spy(
+                DataEnrichmentExtension.builder().name(OLD_ENCHRICHMENT_EXTENSION_NAME).build());
+        newDataEnrichmentExtension = spy(DataEnrichmentExtension.builder().name(NEW_ENCHRICHMENT_EXTENSION_NAME).type("REST")
+                .incoming(URI.create("device://xx")).build());
+
     }
 
+    /* register */
+    @Test
+    public void shouldReturnErrorMessageIfTenantIsInexistentWhenRegister() {
+        ServiceResponse<DataEnrichmentExtension> response = service.register(inexistentTenant,
+                newDataEnrichmentExtension);
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+        assertThat(response.getResult(), nullValue());
+        assertThat(response.getResponseMessages(), hasItem("Tenant does not exist"));
+    }
+
+    @Test
+    public void shouldReturnErrorMessageIfTenantIsNullWhenRegister() {
+        ServiceResponse<DataEnrichmentExtension> response = service.register(null, newDataEnrichmentExtension);
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+        assertThat(response.getResult(), nullValue());
+        assertThat(response.getResponseMessages(), hasItem("Tenant cannot be null"));
+    }
+
+    @Test
+    public void shouldReturnErrorMessageIfDataEnrichmentIsNullWhenRegister() {
+        ServiceResponse<DataEnrichmentExtension> response = service.register(aTenant, null);
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+        assertThat(response.getResult(), nullValue());
+        assertThat(response.getResponseMessages(), hasItem("Data Enrichment Extension cannot be null"));
+    }
+
+    @Test
+    public void shouldReturnErrorMessageIfNameIsDuplicatedWhenRegister() {
+        newDataEnrichmentExtension.setName(OLD_ENCHRICHMENT_EXTENSION_NAME);
+
+        ServiceResponse<DataEnrichmentExtension> response = service.register(aTenant, newDataEnrichmentExtension);
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+        assertThat(response.getResult(), nullValue());
+        assertThat(response.getResponseMessages(), hasItem("Data Enrichment Extension Name must be unique"));
+    }
+
+    @Test
+    public void shouldReturnErrorMessageIfValidationFailsWhenRegister() {
+        when(newDataEnrichmentExtension.applyValidations()).thenReturn((Arrays.asList("Error 1", "Error 2")));
+
+        ServiceResponse<DataEnrichmentExtension> response = service.register(aTenant, newDataEnrichmentExtension);
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+        assertThat(response.getResult(), nullValue());
+        assertThat(response.getResponseMessages(), hasItems("Error 1", "Error 2"));
+    }
+
+    @Test
+    public void shouldReturnDataEnrichmentExtensionIfValidWhenRegister() {
+        newDataEnrichmentExtension.setTenant(inexistentTenant);
+        newDataEnrichmentExtension.setId("XX");
+
+        ServiceResponse<DataEnrichmentExtension> response = service.register(aTenant, newDataEnrichmentExtension);
+        assertThat(response.getResponseMessages(), empty());
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
+        assertThat(response.getResult(), not(nullValue()));
+
+        assertThat(response.getResult().getTenant(), equalTo(aTenant));
+        assertThat(response.getResult().getName(), equalTo(NEW_ENCHRICHMENT_EXTENSION_NAME));
+        assertThat(response.getResult().getId(), not(nullValue()));
+    }
     /* getAll */
 
     @Test
@@ -106,7 +176,7 @@ public class DataEnrichmentExtensionServiceTest extends BusinessLayerTestSupport
     @Test
     public void shouldReturnErrorMessageIfTenantIsInexistentWhenFindByName() {
         ServiceResponse<DataEnrichmentExtension> response = service.findByName(inexistentTenant,
-                A_DATA_ENCHRICHMENT_EXTENSION_NAME);
+                OLD_ENCHRICHMENT_EXTENSION_NAME);
         assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
         assertThat(response.getResult(), nullValue());
         assertThat(response.getResponseMessages(), hasItem("Tenant does not exist"));
@@ -114,8 +184,7 @@ public class DataEnrichmentExtensionServiceTest extends BusinessLayerTestSupport
 
     @Test
     public void shouldReturnErrorMessageIfTenantIsNullWhenFindByName() {
-        ServiceResponse<DataEnrichmentExtension> response = service.findByName(null,
-                A_DATA_ENCHRICHMENT_EXTENSION_NAME);
+        ServiceResponse<DataEnrichmentExtension> response = service.findByName(null, OLD_ENCHRICHMENT_EXTENSION_NAME);
         assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
         assertThat(response.getResult(), nullValue());
         assertThat(response.getResponseMessages(), hasItem("Tenant cannot be null"));
@@ -141,7 +210,7 @@ public class DataEnrichmentExtensionServiceTest extends BusinessLayerTestSupport
     @Test
     public void shouldReturnErrorMessageIfNameExistsInAnotherTenant() {
         ServiceResponse<DataEnrichmentExtension> response = service.findByName(emptyTenant,
-                A_DATA_ENCHRICHMENT_EXTENSION_NAME);
+                OLD_ENCHRICHMENT_EXTENSION_NAME);
         assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
         assertThat(response.getResult(), nullValue());
         assertThat(response.getResponseMessages(), hasItem("Data Enrichment Extension does not exist"));
@@ -150,9 +219,9 @@ public class DataEnrichmentExtensionServiceTest extends BusinessLayerTestSupport
     @Test
     public void shouldReturnRightExtensionIfIsValid() {
         ServiceResponse<DataEnrichmentExtension> response = service.findByName(aTenant,
-                A_DATA_ENCHRICHMENT_EXTENSION_NAME);
+                OLD_ENCHRICHMENT_EXTENSION_NAME);
         assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
-        assertThat(response.getResult().getId(), equalTo(A_DATA_ENCHRICHMENT_EXTENSION_ID));
+        assertThat(response.getResult().getId(), equalTo(OLD_ENCHRICHMENT_EXTENSION_ID));
         assertThat(response.getResponseMessages(), empty());
     }
 
