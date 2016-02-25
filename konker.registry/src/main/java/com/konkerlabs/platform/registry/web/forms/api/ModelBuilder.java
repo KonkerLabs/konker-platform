@@ -1,9 +1,10 @@
 package com.konkerlabs.platform.registry.web.forms.api;
 
-import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
+import java.util.function.Supplier;
 
-public interface ModelBuilder<M,F> {
+public interface ModelBuilder<M,F,S> {
 
     M toModel();
     F fillFrom(M model);
+    void setAdditionalSupplier(Supplier<S> sSupplier);
 }

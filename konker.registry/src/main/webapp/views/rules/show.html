@@ -27,10 +27,12 @@
         </div>
         <div class="form-group">
             <label for="incomingAuthority">Incoming Device</label>
-            <input type="text" data-th-value="${rule.incomingAuthority}"
-                   class="form-control"
-                   id="incomingAuthority"
-                   name="incomingAuthority"/>
+            <select class="form-control" data-th-field="${rule.incomingAuthority}"
+                    id="incomingAuthority" name="incomingAuthority">
+                <option data-th-each="device : ${allDevices}"
+                        data-th-value="${device.deviceId}"
+                        data-th-text="${device.deviceId + ' - ' + device.name}"></option>
+            </select>
         </div>
         <div class="form-group">
             <label for="incomingChannel">Incoming channel</label>

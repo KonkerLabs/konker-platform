@@ -3,6 +3,7 @@ package com.konkerlabs.platform.registry.test.integration.processors;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.rules.api.EventRuleExecutor;
@@ -14,6 +15,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -60,12 +64,18 @@ public class DeviceEventProcessorTest {
             .payload(originalPayload)
             .build();
 
-        device = Device.builder()
+        device = spy(Device.builder()
+            .tenant(
+                Tenant.builder()
+                    .domainName("tenantDomain")
+                    .name("tenantName")
+                    .build()
+            )
             .apiKey(originalPayload)
             .id("id")
             .deviceId("device_id")
             .active(true)
-            .name("device_name").build();
+            .name("device_name").build());
     }
 
     @After
@@ -115,9 +125,12 @@ public class DeviceEventProcessorTest {
     public void shouldForwardIncomingMessageToDestinationDevice() throws Exception {
         when(deviceRegisterService.findByApiKey(sourceApiKey)).thenReturn(device);
 
+        ResultCaptor<URI> returnCaptor = new ResultCaptor<URI>();
+
+        doAnswer(returnCaptor).when(device).toURI();
         subject.process(topic, originalPayload);
 
-        verify(eventRuleExecutor).execute(event,new URI("device",device.getDeviceId(),null,null,null));
+        verify(eventRuleExecutor).execute(eq(event),same(returnCaptor.getResult()));
     }
 
     @Test
@@ -152,5 +165,18 @@ public class DeviceEventProcessorTest {
         }
         @Bean
         public DeviceRegisterService deviceRegisterService() { return mock(DeviceRegisterService.class); }
+    }
+
+    static class ResultCaptor<T> implements Answer {
+        private T result = null;
+        public T getResult() {
+            return result;
+        }
+
+        @Override
+        public T answer(InvocationOnMock invocationOnMock) throws Throwable {
+            result = (T) invocationOnMock.callRealMethod();
+            return result;
+        }
     }
 }

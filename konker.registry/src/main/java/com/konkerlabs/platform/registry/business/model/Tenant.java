@@ -13,4 +13,5 @@ public class Tenant {
     @Id
     private String id;
     private String name;
+    private String domainName;
 }

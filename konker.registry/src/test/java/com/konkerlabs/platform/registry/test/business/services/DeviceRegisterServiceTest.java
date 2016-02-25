@@ -206,6 +206,21 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json" })
+    public void shouldFindADeviceByItsTenantDomainNameAndDeviceId() throws Exception {
+        Device registeredDevice = deviceRepository.findByDeviceId(DEVICE_ID_IN_USE);
+        Assert.assertThat(registeredDevice,notNullValue());
+
+        Device found = deviceRegisterService.findByTenantDomainNameAndDeviceId(
+            registeredDevice.getTenant().getDomainName(),
+            registeredDevice.getDeviceId()
+        );
+
+        assertThat(found, notNullValue());
+        assertThat(found, equalTo(registeredDevice));
+    }
+
+    @Test
     @UsingDataSet(locations = {"/fixtures/devices.json" })
     public void shouldFindADeviceByItsApiKey() throws Exception {
         Device registeredDevice = deviceRepository.findOne(THE_DEVICE_ID);

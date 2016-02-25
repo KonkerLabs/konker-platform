@@ -15,5 +15,6 @@ public interface DeviceRegisterService {
     Device findByApiKey(String apiKey);
     //TODO This method must be extinguished when event rule specialized URI gets available
     Device findByDeviceId(String deviceId);
+    Device findByTenantDomainNameAndDeviceId(String tenantDomainName, String deviceId);
     ServiceResponse<Device> switchActivation(String id);
 }

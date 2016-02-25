@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry.test.business.services;
 
 import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
 import com.konkerlabs.platform.registry.business.services.rules.api.EventRuleExecutor;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
@@ -12,7 +13,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.expression.spel.SpelEvaluationException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -30,6 +30,8 @@ import static org.mockito.Mockito.spy;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {MongoTestConfiguration.class, BusinessTestConfiguration.class})
 public class EventRuleExecutorTest extends BusinessLayerTestSupport {
+
+    private static final String REGISTERED_TENANT_DOMAIN = "konker";
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -50,11 +52,11 @@ public class EventRuleExecutorTest extends BusinessLayerTestSupport {
     @Before
     public void setUp() throws Exception {
         event = spy(Event.builder().channel("data").timestamp(Instant.now()).payload(payload).build());
-        uri = new URI("device",matchingRuleDeviceId,null,null,null);
+        uri = new DeviceURIDealer() {}.toDeviceRuleURI(REGISTERED_TENANT_DOMAIN,matchingRuleDeviceId);
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/devices.json","/fixtures/event-rules.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/event-rules.json"})
     public void shouldSendEventsForAMatchingRule() throws ExecutionException, InterruptedException {
         Future<List<Event>> eventFuture = subject.execute(event, uri);
         assertThat(eventFuture.get(), notNullValue());
