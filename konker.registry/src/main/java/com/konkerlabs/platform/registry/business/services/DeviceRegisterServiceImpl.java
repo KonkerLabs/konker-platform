@@ -173,5 +173,6 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
             return ServiceResponse.<Device> builder().status(ServiceResponse.Status.ERROR)
                     .responseMessage(be.getMessage()).build();
         }
-    }    
+    }
+
 }
