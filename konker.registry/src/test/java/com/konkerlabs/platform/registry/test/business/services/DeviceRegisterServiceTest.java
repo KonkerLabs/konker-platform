@@ -192,19 +192,6 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         assertThat(found, equalTo(registeredDevice));
     }
 
-    //TODO This test must be extinguished when event rule specialized URI gets available
-    @Test
-    @UsingDataSet(locations = {"/fixtures/devices.json" })
-    public void shouldFindADeviceByItsId() throws Exception {
-        Device registeredDevice = deviceRepository.findByDeviceId(DEVICE_ID_IN_USE);
-        Assert.assertThat(registeredDevice,notNullValue());
-
-        Device found = deviceRegisterService.findByDeviceId(DEVICE_ID_IN_USE);
-
-        assertThat(found, notNullValue());
-        assertThat(found, equalTo(registeredDevice));
-    }
-
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json" })
     public void shouldFindADeviceByItsTenantDomainNameAndDeviceId() throws Exception {
