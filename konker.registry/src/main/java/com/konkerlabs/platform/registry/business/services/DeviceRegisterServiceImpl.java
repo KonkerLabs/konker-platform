@@ -85,11 +85,6 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
     }
 
     @Override
-    public Device findByDeviceId(String deviceId) {
-        return deviceRepository.findByDeviceId(deviceId);
-    }
-
-    @Override
     public Device findByTenantDomainNameAndDeviceId(String tenantDomainName, String deviceId) {
         return deviceRepository.findByTenantIdAndDeviceId(
             tenantRepository.findByDomainName(tenantDomainName).getId(),
