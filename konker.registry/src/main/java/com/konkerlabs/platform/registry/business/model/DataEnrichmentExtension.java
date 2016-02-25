@@ -20,12 +20,14 @@ import lombok.Singular;
 @Builder
 public class DataEnrichmentExtension {
 
+    public static enum EnrichmentType {REST};
+    
     @Id
     private String id;
     @DBRef
     private Tenant tenant;
     private String name;
-    private String type;
+    private EnrichmentType type;
     private String description;
 
     private URI incoming;
@@ -53,9 +55,6 @@ public class DataEnrichmentExtension {
 
         if (getType() == null)
             validations.add("Data enrichment type cannot be null");
-
-        if (!"REST".equals(Optional.ofNullable(getType()).orElse("")))
-            validations.add("Type must be REST");
 
         if (parameters == null)
             validations.add("Parameters cannot be null");

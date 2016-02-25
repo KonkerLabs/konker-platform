@@ -1,6 +1,5 @@
 package com.konkerlabs.platform.registry.business.services;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -85,7 +84,7 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
     }
 
     @Override
-    public ServiceResponse<DataEnrichmentExtension> findByName(Tenant tenant, String name) {
+    public ServiceResponse<DataEnrichmentExtension> getByName(Tenant tenant, String name) {
         try {
             Optional.ofNullable(name).orElseThrow(() -> new BusinessException("Name cannot be null"));
             Optional.ofNullable(tenant).orElseThrow(() -> new BusinessException("Tenant cannot be null"));

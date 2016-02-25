@@ -12,10 +12,17 @@ import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.konkerlabs.platform.registry.business.model.DataEnrichmentExtension;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
 
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = { MongoTestConfiguration.class, BusinessTestConfiguration.class })
 public class DataEnrichmentExtensionTest {
     private DataEnrichmentExtension dee;
 
@@ -39,7 +46,7 @@ public class DataEnrichmentExtensionTest {
 
         dee = DataEnrichmentExtension.builder().name(A_DATA_ENRICHMENT_EXTENSION_NAME)
                 .description(A_DATA_ENRICHMENT_EXTENSION_DESCRIPTION).tenant(tenant).active(true)
-                .containerKey(A_DATA_ENRICHMENT_EXTENSION_CONTAINER_KEY).incoming(incomingDeviceUri).type("REST")
+                .containerKey(A_DATA_ENRICHMENT_EXTENSION_CONTAINER_KEY).incoming(incomingDeviceUri).type(DataEnrichmentExtension.EnrichmentType.REST)
                 .parameters(parameters).build();
 
     }
@@ -103,14 +110,6 @@ public class DataEnrichmentExtensionTest {
         assertThat(dee.applyValidations(), nullValue());
     }
 
-    @Test
-    public void shouldReturnAValidationMessageIfTypeIsNotRest() throws Exception {
-        dee.setType("local");
-
-        String expectedMessage = "Type must be REST";
-
-        assertThat(dee.applyValidations(), hasItem(expectedMessage));
-    }
 
     @Test
     public void shouldReturnAValidationMessageIfParametersIsNull() throws Exception {
