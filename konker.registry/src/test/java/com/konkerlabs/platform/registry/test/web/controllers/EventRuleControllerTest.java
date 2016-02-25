@@ -194,7 +194,7 @@ public class EventRuleControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldShowEditForm() throws Exception {
-        when(eventRuleService.findById(ruleId)).thenReturn(rule);
+        when(eventRuleService.getById(tenant, ruleId)).thenReturn(ServiceResponse.<EventRule>builder().result(rule).status(ServiceResponse.Status.OK).build());
 
         getMockMvc().perform(get(MessageFormat.format("/rules/{0}/edit", ruleId)))
                 .andExpect(model().attribute("rule", equalTo(ruleForm)))
@@ -223,14 +223,14 @@ public class EventRuleControllerTest extends WebLayerTestContext {
     public void shouldShowRuleDetails() throws Exception {
         ruleForm.setId(ruleId);
         rule.setId(ruleId);
-        when(eventRuleService.findById(rule.getId())).thenReturn(rule);
+        when(eventRuleService.getById(tenant, rule.getId())).thenReturn(ServiceResponse.<EventRule>builder().result(rule).status(ServiceResponse.Status.OK).build());
 
         getMockMvc().perform(
             get("/rules/{0}",rule.getId())
         ).andExpect(model().attribute("rule",equalTo(ruleForm)))
          .andExpect(view().name("rules/show"));
 
-        verify(eventRuleService).findById(rule.getId());
+        verify(eventRuleService).getById(tenant, rule.getId());
     }
 
     @Configuration

@@ -84,13 +84,13 @@ public class EventRuleController {
 
     @RequestMapping(value = "/{ruleId}", method = RequestMethod.GET)
     public ModelAndView show(@PathVariable("ruleId") String ruleId) {
-        return new ModelAndView("rules/show","rule",new EventRuleForm().fillFrom(eventRuleService.findById(ruleId)));
+        return new ModelAndView("rules/show","rule",new EventRuleForm().fillFrom(eventRuleService.getById(tenant, ruleId).getResult()));
     }
 
     @RequestMapping("/{ruleId}/edit")
     public ModelAndView edit(@PathVariable String ruleId) {
         return new ModelAndView("rules/form")
-            .addObject("rule",new EventRuleForm().fillFrom(eventRuleService.findById(ruleId)))
+            .addObject("rule",new EventRuleForm().fillFrom(eventRuleService.getById(tenant, ruleId).getResult()))
             .addObject("action", MessageFormat.format("/rules/{0}",ruleId));
     }
 

@@ -152,7 +152,7 @@ public class EventRuleServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/event-rules.json"})
     public void shouldReturnARegisteredRuleByItsID() throws Exception {
-        EventRule rule = subject.findById(ruleId);
+        EventRule rule = subject.getById(tenant, ruleId).getResult();
 
         assertThat(rule, notNullValue());
     }
@@ -172,7 +172,7 @@ public class EventRuleServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/event-rules.json"})
     public void shouldSaveEditedRuleState() throws Exception {
-        EventRule rule = subject.findById(ruleId);
+        EventRule rule = subject.getById(tenant, ruleId).getResult();
 
         String editedName = "Edited name";
         rule.setName(editedName);
@@ -185,4 +185,16 @@ public class EventRuleServiceTest extends BusinessLayerTestSupport {
         assertThat(EventRule.class.cast(response.getResult()).getName(),equalTo(editedName));
         assertThat(EventRule.class.cast(response.getResult()).isActive(),equalTo(false));
     }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/event-rules.json"})
+    public void shouldReturnErrorMessageIfRuleDoesNotBelongToTenantWhenFindById() throws Exception {
+        ServiceResponse<EventRule> response = subject.getById(emptyTenant, ruleId);
+
+        assertThat(response, notNullValue());
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+        assertThat(response.getResult(), nullValue());
+        assertThat(response.getResponseMessages(), hasItem("Event Rule does not exist"));
+    }
+
 }

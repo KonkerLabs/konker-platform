@@ -13,7 +13,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -68,8 +67,23 @@ public class EventRuleServiceImpl implements EventRuleService {
     }
 
     @Override
-    public EventRule findById(String id) {
-        return eventRuleRepository.findOne(id);
+    public ServiceResponse<EventRule> getById(Tenant tenant, String id) {
+        try {
+            Optional.ofNullable(id).orElseThrow(() -> new BusinessException("Id cannot be null"));
+            Optional.ofNullable(tenant).orElseThrow(() -> new BusinessException("Tenant cannot be null"));
+
+            Tenant t = Optional.ofNullable(tenantRepository.findByName(tenant.getName()))
+                    .orElseThrow(() -> new BusinessException("Tenant does not exist"));
+
+            EventRule rule = Optional.ofNullable(eventRuleRepository.findByTenantIdAndRuleId(t.getId(), id))
+                    .orElseThrow(() -> new BusinessException("Event Rule does not exist"));
+
+            return ServiceResponse.<EventRule> builder().status(ServiceResponse.Status.OK).result(rule)
+                    .build();
+        } catch (BusinessException be) {
+            return ServiceResponse.<EventRule> builder().status(ServiceResponse.Status.ERROR)
+                    .responseMessage(be.getMessage()).build();
+        }
     }
 
     @Override

@@ -13,4 +13,6 @@ public interface EventRuleRepository extends MongoRepository<EventRule,String> {
     List<EventRule> findByIncomingURI(URI uri);
     @Query("{ 'tenant.id' : ?0 }")
     List<EventRule> findAllByTenant(String tenantId);
+    @Query("{ 'tenant.id' : ?0, 'id' : ?1 }")
+    EventRule findByTenantIdAndRuleId(String tenantId, String name);
 }
