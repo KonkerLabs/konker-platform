@@ -27,7 +27,7 @@ public interface DataEnrichmentExtensionService {
      */
     ServiceResponse<DataEnrichmentExtension> register(Tenant tenant, DataEnrichmentExtension dee);
 
-    ServiceResponse<DataEnrichmentExtension> save(Tenant tenant, DataEnrichmentExtension dee);
+    ServiceResponse<DataEnrichmentExtension> update(Tenant tenant, DataEnrichmentExtension dee);
 
     /**
      * Gets all the {@link DataEnrichmentExtension} associated with a

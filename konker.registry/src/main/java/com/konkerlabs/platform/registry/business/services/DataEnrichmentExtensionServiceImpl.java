@@ -58,9 +58,37 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
     }
 
     @Override
-    public ServiceResponse<DataEnrichmentExtension> save(Tenant tenant, DataEnrichmentExtension dee) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Not Implemented");
+    public ServiceResponse<DataEnrichmentExtension> update(Tenant tenant, DataEnrichmentExtension dee) {
+
+        try {
+            Optional.ofNullable(dee)
+                    .orElseThrow(() -> new BusinessException("Data Enrichment Extension cannot be null"));
+            Optional.ofNullable(tenant).orElseThrow(() -> new BusinessException("Tenant cannot be null"));
+
+            Tenant t = Optional.ofNullable(tenantRepository.findByName(tenant.getName()))
+                    .orElseThrow(() -> new BusinessException("Tenant does not exist"));
+
+            DataEnrichmentExtension oldDee = Optional
+                    .ofNullable(repository.findByTenantIdAndName(t.getId(), dee.getName()))
+                    .orElseThrow(() -> new BusinessException("Data Enrichment Extension does not exist"));
+
+            List<String> validationErrors = Optional.ofNullable(dee.applyValidations()).orElse(Collections.emptyList());
+            if (!validationErrors.isEmpty()) {
+                return ServiceResponse.<DataEnrichmentExtension> builder().status(ServiceResponse.Status.ERROR)
+                        .responseMessages(dee.applyValidations()).build();
+            }
+
+            dee.setId(oldDee.getId());
+            DataEnrichmentExtension saved = repository.save(dee);
+
+            return ServiceResponse.<DataEnrichmentExtension> builder().status(ServiceResponse.Status.OK)
+                    .result(Optional.ofNullable(saved).orElseThrow(() -> new BusinessException("Could no save")))
+                    .build();
+        } catch (BusinessException be) {
+            return ServiceResponse.<DataEnrichmentExtension> builder().status(ServiceResponse.Status.ERROR)
+                    .responseMessage(be.getMessage()).build();
+        }
+
     }
 
     @Override
