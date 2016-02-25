@@ -4,10 +4,12 @@ import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 
+import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
 import org.hamcrest.collection.IsEmptyCollection;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
@@ -25,7 +27,11 @@ public class DeviceTest {
 	@Before
 	public void setUp() {
 
-		Tenant tenant = Tenant.builder().id(UUID.randomUUID().toString()).name("Tenant name").build();
+		Tenant tenant = Tenant.builder()
+                .id(UUID.randomUUID().toString())
+                .name("Tenant name")
+                .domainName("tenant")
+                .build();
 
 		device = Device.builder().deviceId("95c14b36ba2b43f1").name("Device name").description("Description")
 				.tenant(tenant).build();
@@ -166,5 +172,14 @@ public class DeviceTest {
 		List<Event> mostRecentEvents = device.getMostRecentEvents();
 
 		assertThat(mostRecentEvents, new IsEmptyCollection<Event>());
+	}
+
+	@Test
+	public void shouldGenerateItsOwnURI() throws Exception {
+        URI expected = new DeviceURIDealer() {}.toDeviceRuleURI(
+            device.getTenant().getDomainName(),device.getDeviceId()
+        );
+
+        assertThat(device.toURI(),equalTo(expected));
 	}
 }

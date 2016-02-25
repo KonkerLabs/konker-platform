@@ -11,4 +11,5 @@ public interface TenantRepository extends MongoRepository<Tenant, String> {
 
     @Query("{ 'name' : ?0 }")
     Tenant findByName(String name);
+    Tenant findByDomainName(String domainName);
 }

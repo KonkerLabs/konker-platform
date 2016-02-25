@@ -40,16 +40,19 @@ public class EventRulePublisherMqtt implements EventRulePublisher {
     @Override
     public void send(Event outgoingEvent, EventRule.RuleActor outgoingRuleActor) {
 
-        Device outgoingDevice = deviceRegisterService.findByDeviceId(outgoingRuleActor.getUri().getAuthority());
+        Device outgoingDevice = deviceRegisterService.findByTenantDomainNameAndDeviceId(
+            outgoingRuleActor.getUri().getAuthority(),
+            outgoingRuleActor.getUri().getPath().replaceAll("/","")
+        );
 
         Optional.ofNullable(outgoingDevice)
             .orElseThrow(() -> new IllegalArgumentException(
-                MessageFormat.format("Device authority is unknown: {0}",outgoingRuleActor.getUri().getAuthority())
+                MessageFormat.format("Device is unknown : {0}",outgoingRuleActor.getUri().getPath())
             ));
 
         if (outgoingDevice.isActive()) {
             String destinationTopic = MessageFormat.format(MQTT_OUTGOING_TOPIC_TEMPLATE,
-                    outgoingRuleActor.getUri().getAuthority(), outgoingRuleActor.getData().get("channel"));
+                    outgoingRuleActor.getUri().getPath().replaceAll("/",""), outgoingRuleActor.getData().get("channel"));
             mqttMessageGateway.send(outgoingEvent.getPayload(), destinationTopic);
         } else {
             LOGGER.debug(

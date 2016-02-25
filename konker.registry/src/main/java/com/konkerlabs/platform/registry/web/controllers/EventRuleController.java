@@ -58,8 +58,9 @@ public class EventRuleController {
     @RequestMapping(value = "save", method = RequestMethod.POST)
     public ModelAndView save(@ModelAttribute("eventRuleForm") EventRuleForm eventRuleForm,
                              RedirectAttributes redirectAttributes) {
-        ServiceResponse<EventRule> response = null;
+        ServiceResponse<EventRule> response;
         try {
+            eventRuleForm.setAdditionalSupplier(() -> tenant.getDomainName());
             response = eventRuleService.save(tenant,eventRuleForm.toModel());
         } catch (BusinessException e) {
             response = ServiceResponse.<EventRule>builder()

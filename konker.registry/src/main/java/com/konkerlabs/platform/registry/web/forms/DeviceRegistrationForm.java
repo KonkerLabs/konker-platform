@@ -5,8 +5,10 @@ import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.web.forms.api.ModelBuilder;
 import lombok.Data;
 
+import java.util.function.Supplier;
+
 @Data
-public class DeviceRegistrationForm implements ModelBuilder<Device,DeviceRegistrationForm> {
+public class DeviceRegistrationForm implements ModelBuilder<Device,DeviceRegistrationForm,Void> {
 
     private String deviceId;
     private String name;
@@ -30,5 +32,10 @@ public class DeviceRegistrationForm implements ModelBuilder<Device,DeviceRegistr
         this.setDescription(model.getDescription());
         this.setActive(model.isActive());
         return this;
+    }
+
+    @Override
+    public void setAdditionalSupplier(Supplier supplier) {
+        //A supplier isn't necessary to this model builder
     }
 }

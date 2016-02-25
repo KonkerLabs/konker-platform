@@ -13,7 +13,10 @@ public class SecurityTestConfiguration {
         return new FactoryBean<Tenant>() {
             @Override
             public Tenant getObject() throws Exception {
-                return Tenant.builder().id("tenant_id").name("Konker").build();
+                return Tenant.builder()
+                    .id("tenant_id")
+                    .domainName("domainName")
+                    .name("Konker").build();
             }
 
             @Override

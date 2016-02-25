@@ -4,6 +4,8 @@ import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.EventRule;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
+import com.konkerlabs.platform.registry.business.model.behaviors.SmsURIDealer;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.rules.api.EventRuleService;
@@ -30,6 +32,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Matchers.eq;
@@ -78,6 +81,8 @@ public class EventRuleControllerTest extends WebLayerTestContext {
         ruleForm.setFilterClause("LEDSwitch");
         ruleForm.setActive(true);
 
+        ruleForm.setAdditionalSupplier(() -> tenant.getDomainName());
+
         ruleData = new LinkedMultiValueMap<>();
         ruleData.add("name",ruleForm.getName());
         ruleData.add("description",ruleForm.getDescription());
@@ -92,11 +97,28 @@ public class EventRuleControllerTest extends WebLayerTestContext {
         EventRule.RuleTransformation contentMatchTransformation = new EventRule.RuleTransformation("EXPRESSION_LANGUAGE");
         contentMatchTransformation.getData().put("value",ruleForm.getFilterClause());
 
+        DeviceURIDealer deviceUriDealer = new DeviceURIDealer() {};
+        SmsURIDealer smsURIDealer = new SmsURIDealer() {};
+
+        Supplier<URI> outgoingUriSupplier = () -> {
+            switch (ruleForm.getOutgoingScheme()) {
+                case DeviceURIDealer.DEVICE_URI_SCHEME:
+                    return deviceUriDealer.toDeviceRuleURI(tenant.getDomainName(), ruleForm.getOutgoingDeviceAuthority());
+                case SmsURIDealer.SMS_URI_SCHEME:
+                    return smsURIDealer.toSmsURI(ruleForm.getOutgoingSmsPhoneNumber());
+                default: return null;
+            }
+        };
+
         rule = EventRule.builder()
             .name(ruleForm.getName())
             .description(ruleForm.getDescription())
-            .incoming(new EventRule.RuleActor(new URI("device",ruleForm.getIncomingAuthority(),null,null,null)))
-            .outgoing(new EventRule.RuleActor(new URI(ruleForm.getOutgoingScheme(),ruleForm.getOutgoingDeviceAuthority(),null,null,null)))
+            .incoming(new EventRule.RuleActor(
+                deviceUriDealer.toDeviceRuleURI(tenant.getDomainName(),ruleForm.getIncomingAuthority())
+            ))
+            .outgoing(new EventRule.RuleActor(
+                outgoingUriSupplier.get()
+            ))
             .transformations(Arrays.asList(new EventRule.RuleTransformation[]{contentMatchTransformation}))
             .active(ruleForm.isActive())
             .build();
@@ -151,7 +173,7 @@ public class EventRuleControllerTest extends WebLayerTestContext {
     @Test
     public void shouldBindErrorMessagesWhenRegistrationFailsAndGoBackToCreationForm() throws Exception {
         response = ServiceResponse.<EventRule>builder().responseMessages(Arrays.asList(new String[] { "Some error" }))
-                .status(ServiceResponse.Status.ERROR).build();
+                .status(ServiceResponse.Status.ERROR).<EventRule>build();
 
         when(eventRuleService.save(eq(tenant),eq(rule))).thenReturn(response);
 
@@ -181,7 +203,7 @@ public class EventRuleControllerTest extends WebLayerTestContext {
         response = spy(ServiceResponse.<EventRule>builder()
                 .status(ServiceResponse.Status.OK)
                 .result(rule)
-                .build());
+                .<EventRule>build());
 
         when(eventRuleService.save(eq(tenant),eq(rule))).thenReturn(response);
 
@@ -194,7 +216,10 @@ public class EventRuleControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldShowEditForm() throws Exception {
-        when(eventRuleService.getById(tenant, ruleId)).thenReturn(ServiceResponse.<EventRule>builder().result(rule).status(ServiceResponse.Status.OK).build());
+        ruleForm.setAdditionalSupplier(null);
+
+        when(eventRuleService.getById(tenant, ruleId)).thenReturn(
+                ServiceResponse.<EventRule>builder().result(rule).status(ServiceResponse.Status.OK).<EventRule>build());
 
         getMockMvc().perform(get(MessageFormat.format("/rules/{0}/edit", ruleId)))
                 .andExpect(model().attribute("rule", equalTo(ruleForm)))
@@ -208,7 +233,7 @@ public class EventRuleControllerTest extends WebLayerTestContext {
         response = spy(ServiceResponse.<EventRule>builder()
                 .status(ServiceResponse.Status.OK)
                 .result(rule)
-                .build());
+                .<EventRule>build());
 
         when(eventRuleService.save(eq(tenant),eq(rule))).thenReturn(response);
 
@@ -221,9 +246,12 @@ public class EventRuleControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldShowRuleDetails() throws Exception {
+        ruleForm.setAdditionalSupplier(null);
+
         ruleForm.setId(ruleId);
         rule.setId(ruleId);
-        when(eventRuleService.getById(tenant, rule.getId())).thenReturn(ServiceResponse.<EventRule>builder().result(rule).status(ServiceResponse.Status.OK).build());
+        when(eventRuleService.getById(tenant, rule.getId())).thenReturn(
+                ServiceResponse.<EventRule>builder().result(rule).status(ServiceResponse.Status.OK).<EventRule>build());
 
         getMockMvc().perform(
             get("/rules/{0}",rule.getId())

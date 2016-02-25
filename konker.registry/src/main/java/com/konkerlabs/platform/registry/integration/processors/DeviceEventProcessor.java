@@ -62,14 +62,10 @@ public class DeviceEventProcessor {
 
             deviceEventService.logEvent(device, event);
 
-            try {
-                eventRuleExecutor.execute(event, new URI("device", device.getDeviceId(), null, null, null));
-            } catch (URISyntaxException e) {
-                LOGGER.error("URI syntax error. Probably wrong device ID.", e);
-            }
+            eventRuleExecutor.execute(event,device.toURI());
         } else {
             LOGGER.debug(MessageFormat.format(EVENT_DROPPED,
-                URI.create("device://"+device.getDeviceId()),
+                device.toURI(),
                 payload));
         }
     }

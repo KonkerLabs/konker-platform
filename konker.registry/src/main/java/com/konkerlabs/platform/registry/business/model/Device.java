@@ -1,12 +1,12 @@
 package com.konkerlabs.platform.registry.business.model;
 
+import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
 import lombok.Builder;
 import lombok.Data;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.net.URI;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @Data
 @Builder
 @Document(collection = "devices")
-public class Device {
+public class Device implements DeviceURIDealer {
 
     private String id;
 	@DBRef
@@ -65,5 +65,9 @@ public class Device {
 		return Optional.ofNullable(getEvents()).orElse(Collections.emptyList()).stream()
 				.sorted((eventA, eventB) -> eventB.getTimestamp().compareTo(eventA.getTimestamp()))
 				.collect(Collectors.toList());
+	}
+
+	public URI toURI() {
+		return toDeviceRuleURI(getTenant().getDomainName(),getDeviceId());
 	}
 }

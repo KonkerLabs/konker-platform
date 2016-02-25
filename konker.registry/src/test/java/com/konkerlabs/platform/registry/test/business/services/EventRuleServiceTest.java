@@ -3,6 +3,7 @@ package com.konkerlabs.platform.registry.test.business.services;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.EventRule;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
 import com.konkerlabs.platform.registry.business.repositories.EventRuleRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.rules.EventRuleExecutorImpl;
@@ -21,7 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 
@@ -53,14 +53,18 @@ public class EventRuleServiceTest extends BusinessLayerTestSupport {
 
     @Before
     public void setUp() throws Exception {
-        tenant = tenantRepository.findByName("Konker");
-        emptyTenant = tenantRepository.findByName("EmptyTenant");
+        tenant = tenantRepository.findByDomainName("konker");
+        emptyTenant = tenantRepository.findByDomainName("empty");
 
         rule = spy(EventRule.builder()
                 .name("Rule name")
                 .description("Description")
-                .incoming(new EventRule.RuleActor(new URI("device","0000000000000004",null,null,null)))
-                .outgoing(new EventRule.RuleActor(new URI("device","0000000000000005",null,null,null)))
+                .incoming(new EventRule.RuleActor(
+                    new DeviceURIDealer() {}.toDeviceRuleURI(tenant.getDomainName(),"0000000000000004")
+                ))
+                .outgoing(new EventRule.RuleActor(
+                    new DeviceURIDealer(){}.toDeviceRuleURI(tenant.getDomainName(),"0000000000000005")
+                ))
                 .transformations(Arrays.asList(new EventRule.RuleTransformation[]{
                         new EventRule.RuleTransformation(EventRuleExecutorImpl.RuleTransformationType.EXPRESSION_LANGUAGE.name())
                 }))
@@ -68,6 +72,7 @@ public class EventRuleServiceTest extends BusinessLayerTestSupport {
                 .build());
     }
     @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json"})
     public void shouldRaiseAnExceptionIfTenantIsNull() throws Exception {
         thrown.expect(BusinessException.class);
         thrown.expectMessage("Tenant cannot be null");
@@ -96,6 +101,7 @@ public class EventRuleServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json"})
     public void shouldRaiseAnExceptionIfTenantDoesNotExist() throws Exception {
         thrown.expect(BusinessException.class);
         thrown.expectMessage("Tenant does not exist");
@@ -157,7 +163,7 @@ public class EventRuleServiceTest extends BusinessLayerTestSupport {
         assertThat(rule, notNullValue());
     }
     @Test
-    @UsingDataSet(locations = "/fixtures/event-rules.json")
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/event-rules.json"})
     public void shouldReturnARegisteredRuleByItsIncomingUri() throws Exception {
         List<EventRule> rules = subject.findByIncomingUri(this.rule.getIncoming().getUri());
 
