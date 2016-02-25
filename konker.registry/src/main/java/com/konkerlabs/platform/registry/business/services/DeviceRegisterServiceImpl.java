@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.EventRule;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
@@ -75,10 +76,6 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         return deviceRepository.findAllByTenant(tenant.getId());
     }
 
-    @Override
-    public Device findById(String id) {
-        return deviceRepository.findOne(id);
-    }
 
     @Override
     public Device findByApiKey(String apiKey) {
@@ -91,13 +88,13 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
     }
 
     @Override
-    public ServiceResponse<Device> switchActivation(String id) {
+    public ServiceResponse<Device> switchActivation(Tenant tenant, String id) {
         if (!Optional.ofNullable(id).isPresent())
             return ServiceResponse.<Device>builder()
                     .status(ServiceResponse.Status.ERROR)
                     .responseMessage("Device ID cannot be null").<Device>build();
 
-        Device found = findById(id);
+        Device found = getById(tenant, id).getResult();
 
         if (!Optional.ofNullable(found).isPresent())
             return ServiceResponse.<Device>builder()
@@ -115,7 +112,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
     }
 
     @Override
-    public ServiceResponse<Device> update(String id, Device updatingDevice) {
+    public ServiceResponse<Device> update(Tenant tenant, String id, Device updatingDevice) {
         if (!Optional.ofNullable(id).isPresent())
             return ServiceResponse.<Device>builder()
                     .status(ServiceResponse.Status.ERROR)
@@ -128,7 +125,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .responseMessage("Cannot update null device")
                     .<Device>build();
 
-        Device deviceFromDB = findById(id);
+        Device deviceFromDB = getById(tenant, id).getResult();
         if (deviceFromDB == null) {
             return ServiceResponse.<Device>builder()
                     .responseMessages(Arrays.asList(new String[] { "Device ID does not exists" }))
@@ -151,4 +148,24 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
         return ServiceResponse.<Device>builder().status(ServiceResponse.Status.OK).result(saved).<Device>build();
     }
+
+    @Override
+    public ServiceResponse<Device> getById(Tenant tenant, String id) {
+        try {
+            Optional.ofNullable(id).orElseThrow(() -> new BusinessException("Id cannot be null"));
+            Optional.ofNullable(tenant).orElseThrow(() -> new BusinessException("Tenant cannot be null"));
+
+            Tenant t = Optional.ofNullable(tenantRepository.findByName(tenant.getName()))
+                    .orElseThrow(() -> new BusinessException("Tenant does not exist"));
+
+            Device device = Optional.ofNullable(deviceRepository.findByTenantAndId(t.getId(), id))
+                    .orElseThrow(() -> new BusinessException("Device does not exist"));
+
+            return ServiceResponse.<Device> builder().status(ServiceResponse.Status.OK).result(device)
+                    .build();
+        } catch (BusinessException be) {
+            return ServiceResponse.<Device> builder().status(ServiceResponse.Status.ERROR)
+                    .responseMessage(be.getMessage()).build();
+        }
+    }    
 }

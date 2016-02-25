@@ -3,7 +3,9 @@ package com.konkerlabs.platform.registry.test.business.services;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
+import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
@@ -41,6 +43,9 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
     private DeviceRepository deviceRepository;
 
     @Autowired
+    private TenantRepository tenantRepository;
+
+    @Autowired
     private DeviceEventService deviceEventService;
     @Autowired
     private DeviceRegisterService deviceRegisterService;
@@ -51,11 +56,13 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
     private String channel = MessageFormat.format("iot/{0}/data",apiKey);
     private Event event;
     private Device device;
+    private Tenant tenant;
 
     @Before
     public void setUp() throws Exception {
         event = Event.builder().channel(channel).payload(payload).build();
-        device = deviceRegisterService.findById(id);
+        tenant = tenantRepository.findByName("Konker");
+        device = deviceRegisterService.getById(tenant, id).getResult();
     }
     @Test
     public void shouldRaiseAnExceptionIfDeviceIsNull() throws Exception {

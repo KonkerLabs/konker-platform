@@ -138,28 +138,28 @@ public class DeviceControllerTest extends WebLayerTestContext {
     @Test
     public void shouldShowDeviceDetails() throws Exception {
         savedDevice.setRegistrationDate(Instant.now());
-        when(deviceRegisterService.findById(savedDevice.getId())).thenReturn(savedDevice);
+        when(deviceRegisterService.getById(tenant, savedDevice.getId())).thenReturn(ServiceResponse.<Device>builder().status(ServiceResponse.Status.OK).result(savedDevice).build());
 
         getMockMvc().perform(get(MessageFormat.format("/devices/{0}", savedDevice.getId())))
                 .andExpect(model().attribute("device", savedDevice)).andExpect(view().name("devices/show"));
 
-        verify(deviceRegisterService).findById(savedDevice.getId());
+        verify(deviceRegisterService).getById(tenant, savedDevice.getId());
     }
 
     @Test
     public void shouldShowDeviceEventList() throws Exception {
         savedDevice.setRegistrationDate(Instant.now());
-        when(deviceRegisterService.findById(savedDevice.getId())).thenReturn(savedDevice);
+        when(deviceRegisterService.getById(tenant, savedDevice.getId())).thenReturn(ServiceResponse.<Device>builder().status(ServiceResponse.Status.OK).result(savedDevice).build());
 
         getMockMvc().perform(get(MessageFormat.format("/devices/{0}/events", savedDevice.getId())))
                 .andExpect(model().attribute("device", savedDevice)).andExpect(view().name("devices/events"));
 
-        verify(deviceRegisterService).findById(savedDevice.getId());
+        verify(deviceRegisterService).getById(tenant, savedDevice.getId());
     }
 
     @Test
     public void shouldShowEditForm() throws Exception {
-        when(deviceRegisterService.findById(savedDevice.getId())).thenReturn(savedDevice);
+        when(deviceRegisterService.getById(tenant, savedDevice.getId())).thenReturn(ServiceResponse.<Device>builder().status(ServiceResponse.Status.OK).result(savedDevice).build());
 
         getMockMvc().perform(get(MessageFormat.format("/devices/{0}/edit", savedDevice.getId())))
                 .andExpect(model().attribute("device", equalTo(deviceForm)))
@@ -173,14 +173,14 @@ public class DeviceControllerTest extends WebLayerTestContext {
         response = ServiceResponse.<Device>builder().responseMessages(Arrays.asList(new String[] { "Some error" }))
                 .status(ServiceResponse.Status.ERROR).<Device>build();
 
-        when(deviceRegisterService.update(Matchers.anyString(), Matchers.anyObject())).thenReturn(response);
+        when(deviceRegisterService.update(Matchers.anyObject(), Matchers.anyString(), Matchers.anyObject())).thenReturn(response);
 
         getMockMvc().perform(post(MessageFormat.format("/devices/{0}", DEVICE_ID_95C14B36BA2B43F1)).params(deviceData))
                 .andExpect(model().attribute("errors", equalTo(response.getResponseMessages())))
                 .andExpect(model().attribute("device", equalTo(deviceForm)))
                 .andExpect(view().name("devices/form"));
 
-        verify(deviceRegisterService).update(eq(DEVICE_ID_95C14B36BA2B43F1), eq(device));
+        verify(deviceRegisterService).update(eq(tenant), eq(DEVICE_ID_95C14B36BA2B43F1), eq(device));
     }
 
     @Test
@@ -190,13 +190,13 @@ public class DeviceControllerTest extends WebLayerTestContext {
                 .result(savedDevice)
                 .<Device>build();
 
-        when(deviceRegisterService.update(eq(savedDevice.getId()), eq(device))).thenReturn(response);
+        when(deviceRegisterService.update(eq(tenant), eq(savedDevice.getId()), eq(device))).thenReturn(response);
 
         getMockMvc().perform(post(MessageFormat.format("/devices/{0}", savedDevice.getId())).params(deviceData))
                 .andExpect(flash().attribute("message", "Device saved successfully"))
                 .andExpect(redirectedUrl(MessageFormat.format("/devices/{0}", savedDevice.getId())));
 
-        verify(deviceRegisterService).update(eq(savedDevice.getId()), eq(device));
+        verify(deviceRegisterService).update(eq(tenant), eq(savedDevice.getId()), eq(device));
     }
 
     @Configuration

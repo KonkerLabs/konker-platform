@@ -48,20 +48,20 @@ public class DeviceController {
 
     @RequestMapping("/{deviceId}")
     public ModelAndView show(@PathVariable("deviceId") String deviceId) {
-        return new ModelAndView("devices/show", "device", deviceRegisterService.findById(deviceId));
+        return new ModelAndView("devices/show", "device", deviceRegisterService.getById(tenant, deviceId).getResult());
     }
 
     @RequestMapping("/{deviceId}/edit")
     public ModelAndView edit(@PathVariable("deviceId") String deviceId) {
         return new ModelAndView("devices/form")
-            .addObject("device", new DeviceRegistrationForm().fillFrom(deviceRegisterService.findById(deviceId)))
+            .addObject("device", new DeviceRegistrationForm().fillFrom(deviceRegisterService.getById(tenant, deviceId).getResult()))
             .addObject("isEditing", true)
             .addObject("action", MessageFormat.format("/devices/{0}",deviceId));
     }
 
     @RequestMapping("/{deviceId}/events")
     public ModelAndView deviceEvents(@PathVariable String deviceId) {
-        Device device = deviceRegisterService.findById(deviceId);
+        Device device = deviceRegisterService.getById(tenant, deviceId).getResult();
         return new ModelAndView("devices/events").addObject("device", device).addObject("recentEvents",
                 device.getMostRecentEvents());
     }
@@ -81,7 +81,7 @@ public class DeviceController {
             @ModelAttribute("deviceForm") DeviceRegistrationForm deviceForm, RedirectAttributes redirectAttributes) {
 
         return doSave(
-                () -> deviceRegisterService.update(deviceId, deviceForm.toModel()),
+                () -> deviceRegisterService.update(tenant, deviceId, deviceForm.toModel()),
                 deviceForm,
                 redirectAttributes);
     }
