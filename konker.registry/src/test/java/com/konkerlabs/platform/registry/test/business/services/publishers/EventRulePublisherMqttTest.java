@@ -3,7 +3,10 @@ package com.konkerlabs.platform.registry.test.business.services.publishers;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.EventRule;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
+
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.rules.api.EventRulePublisher;
 import com.konkerlabs.platform.registry.integration.gateways.MqttMessageGateway;
@@ -52,6 +55,9 @@ public class EventRulePublisherMqttTest extends BusinessLayerTestSupport {
     private DeviceRegisterService deviceRegisterService;
 
     @Autowired
+    private TenantRepository tenantRepository;
+
+    @Autowired
     private MqttMessageGateway mqttMessageGateway;
 
     @Autowired
@@ -91,9 +97,11 @@ public class EventRulePublisherMqttTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json"})
     public void shouldNotSendAnyEventThroughGatewayIfDeviceIsDisabled() throws Exception {
+        Tenant tenant = tenantRepository.findByName("Konker");
+        
         Optional.of(deviceRegisterService.findByTenantDomainNameAndDeviceId(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_ID))
             .filter(device -> !device.isActive())
-            .orElseGet(() -> deviceRegisterService.switchActivation(THE_DEVICE_ID).getResult());
+            .orElseGet(() -> deviceRegisterService.switchActivation(tenant, THE_DEVICE_ID).getResult());
 
         subject.send(event,outgoingRuleActor);
 
@@ -101,11 +109,14 @@ public class EventRulePublisherMqttTest extends BusinessLayerTestSupport {
     }
 
     @Test
+
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json"})
     public void shouldSendAnEventThroughGatewayIfDeviceIsEnabled() throws Exception {
+        Tenant tenant = tenantRepository.findByName("Konker");
+
         Optional.of(deviceRegisterService.findByTenantDomainNameAndDeviceId(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_ID))
                 .filter(Device::isActive)
-                .orElseGet(() -> deviceRegisterService.switchActivation(THE_DEVICE_ID).getResult());
+                .orElseGet(() -> deviceRegisterService.switchActivation(tenant, THE_DEVICE_ID).getResult());
 
         String expectedMqttTopic = MessageFormat
             .format(MQTT_OUTGOING_TOPIC_TEMPLATE,outgoingUri.getPath().replaceAll("/",""),
