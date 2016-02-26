@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html data-layout-decorator="layouts/default">
+<head>
+</head>
+<body>
+<div data-layout-fragment="content">
+    <fieldset>
+        <legend>Enrichment</legend>
+        <div class="alert alert-success" role="alert" data-th-if="${message != null}">
+            <span data-th-text="${message}"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <a data-th-href="@{/enrichment/new}" data-th-if="${not allDevices.empty}" class="btn btn-default action pull-right">New</a>
+        <table class="table table-bordered">
+            <thead>
+            <tr>
+                <td class="col-md-1">Name</td>
+                <td class="col-md-1">Type</td>
+                <td class="col-md-1">Incoming URI</td>
+                <td class="col-md-1">Active?</td>
+                <td class="col-md-1 text-center">Actions</td>
+            </tr>
+            </thead>
+            <tbody>
+            <tr data-th-each="dataEnrichmentExtension : ${dataEnrichmentExtensions}">
+                <td data-th-text="${dataEnrichmentExtension.name}"></td>
+                <td data-th-text="${dataEnrichmentExtension.type}"></td>
+                <td data-th-text="${dataEnrichmentExtension.incoming}"></td>
+                <td>
+                    <span data-th-if="${dataEnrichmentExtension.active}" class="glyphicon glyphicon-thumbs-up" aria-hidden="true"/>
+                    <span data-th-if="${not dataEnrichmentExtension.active}" class="glyphicon glyphicon-thumbs-down" aria-hidden="true"/>
+                </td>
+                <td class="text-center">
+                    <a data-th-href="@{/enrichment/{id}(id=${dataEnrichmentExtension.name})}" class="btn btn-default">
+                        Show
+                    </a>
+                    <a data-th-href="@{/enrichment/{id}/edit(id=${dataEnrichmentExtension.name})}" class="btn btn-default">
+                        Edit
+                    </a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </fieldset>
+</div>
+</body>
+</html>

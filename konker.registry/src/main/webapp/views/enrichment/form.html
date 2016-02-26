@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html data-layout-decorator="layouts/default">
+<head>
+</head>
+<body>
+<div data-layout-fragment="content">
+    <fieldset>
+        <legend>Enrichment</legend>
+        <div class="alert alert-danger" role="alert" data-th-if="${errors != null and !errors.empty}">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <li data-th-each="error : ${errors}" data-th-text="${error}"></li>
+        </div>
+        <form data-th-action="@{{url}(url=${action})}" action="#" data-th-object="${dataEnrichmentExtension}"
+              method="post">
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" data-th-field="*{name}"
+                       class="form-control"
+                       id="name"
+                       name="name" placeholder="Type your enrichment name here..."/>
+            </div>
+            <div class="form-group">
+                <label for="type">Type</label>
+                <select class="form-control" data-th-field="*{type}"
+                        id="type" name="type">
+                    <option data-th-each="enrichmentType : ${enrichmentTypes}"
+                            data-th-value="${enrichmentType}"
+                            data-th-text="${enrichmentType}"></option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" class="form-control" name="description"
+                          placeholder="Type some about this enrichment (optional)" data-th-field="*{description}">
+                </textarea>
+            </div>
+            <div class="form-group">
+                <label for="incomingURI">Incoming Device</label>
+                <select class="form-control" data-th-field="*{incomingAuthority}"
+                        id="incomingURI" name="incomingAuthority">
+                    <option data-th-each="device : ${allDevices}"
+                            data-th-value="${device.deviceId}"
+                            data-th-text="${device.deviceId + ' - ' + device.name}"></option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="parameters">Service parameters:</label>
+                <!--a onclick="addParameter()" class="btn btn-default action pull-right">New</a-->
+                <table id="parameters" class="table">
+                    <tbody>
+                    <tr data-th-each="pr, stat: *{parameters}">
+                        <td><label for="${pr.key}" data-th-text="${pr.key}"/></td>
+                        <td><input type="text" data-th-field="*{parameters[__${pr.key}__]}" class="form-control" name="${pr.key}" id="${pr.key}"/></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="form-group">
+                <label for="containerKey">Container key</label>
+                <input type="text" data-th-field="*{containerKey}"
+                       class="form-control"
+                       id="containerKey"
+                       name="containerKey" placeholder="Type the placeholder key for enrichment result (optional)"/>
+            </div>
+
+            <div class="form-group">
+                <label for="active">Active?</label>
+                <input type="checkbox" data-th-field="*{active}"
+                       id="active"
+                       name="active"/>
+            </div>
+            <button type="submit" class="btn btn-success">Save</button>
+            <a data-th-href="@{/enrichment}" class="btn btn-default">Back</a>
+        </form>
+    </fieldset>
+</div>
+<div data-layout-fragment="script">
+    <script data-th-attr="src=@{/resources/js/enrichment/form.js}"></script>
+</div>
+</body>
+</html>

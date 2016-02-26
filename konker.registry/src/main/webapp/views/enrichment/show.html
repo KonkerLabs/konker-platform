@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html data-layout-decorator="layouts/default">
+<head>
+</head>
+<body>
+<div data-layout-fragment="content">
+    <fieldset disabled="">
+        <legend>Enrichment</legend>
+        <div class="alert alert-success" role="alert" data-th-if="${message != null}">
+            <span data-th-text="${message}"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" data-th-value="${dataEnrichmentExtension.name}"
+                   class="form-control"
+                   id="name"
+                   name="name"/>
+        </div>
+        <div class="form-group">
+            <label for="name">Type</label>
+            <input type="text" data-th-value="${dataEnrichmentExtension.type}"
+                   class="form-control"
+                   id="type"
+                   name="type"/>
+        </div>
+        <div class="form-group">
+            <label for="description">Description</label>
+            <textarea id="description" class="form-control" name="description"
+                      data-th-text="${dataEnrichmentExtension.description}">
+            </textarea>
+        </div>
+        <div class="form-group">
+            <label for="incomingAuthority">Incoming URI</label>
+            <input type="text" data-th-value="${dataEnrichmentExtension.incomingAuthority}"
+                   class="form-control"
+                   id="incomingAuthority"
+                   name="incomingAuthority"/>
+        </div>
+        <div class="form-group">
+            <label for="parameters">Service parameters</label>
+            <!--a onclick="addParameter()" class="btn btn-default action pull-right">New</a-->
+            <table id="parameters" class="table">
+                <tbody>
+                <tr data-th-each="parameter : ${dataEnrichmentExtension.parameters}">
+                    <td><label for="${parameter.key}" data-th-text="${parameter.key}"/></td>
+                    <td><input type="text" data-th-value="${parameter.value}" class="form-control" name="${parameter.key}" id="${parameter.key}"/></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="form-group">
+            <label for="containerKey">Container key</label>
+            <input type="text" data-th-value="${dataEnrichmentExtension.containerKey}"
+                   class="form-control"
+                   id="containerKey"
+                   name="containerKey"/>
+        </div>
+        <div class="form-group">
+            <label for="active">Active?</label>
+            <input type="checkbox" data-th-checked="${dataEnrichmentExtension.active}"
+                   id="active"
+                   name="active"/>
+        </div>
+    </fieldset>
+    <a data-th-href="@{/enrichment}" class="btn btn-default">Back</a>
+</div>
+</body>
+</html>
