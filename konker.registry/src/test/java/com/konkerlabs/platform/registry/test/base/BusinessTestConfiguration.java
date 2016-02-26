@@ -11,7 +11,10 @@ import org.springframework.context.annotation.Configuration;
 import static org.mockito.Mockito.mock;
 
 @Configuration
-@ComponentScan(basePackages = "com.konkerlabs.platform.registry.business")
+@ComponentScan(basePackages = {
+    "com.konkerlabs.platform.registry.business",
+    "com.konkerlabs.platform.utilities",
+})
 public class BusinessTestConfiguration {
 
     @Autowired

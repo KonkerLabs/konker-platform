@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry;
 
 import com.konkerlabs.platform.registry.config.*;
+import com.konkerlabs.platform.utilities.config.UtilitiesConfig;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
 public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
@@ -12,7 +13,8 @@ public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherSe
                 BusinessConfig.class,
                 MongoConfig.class,
                 MqttConfig.class,
-                SmsConfig.class
+                SmsConfig.class,
+                UtilitiesConfig.class
         };
     }
 

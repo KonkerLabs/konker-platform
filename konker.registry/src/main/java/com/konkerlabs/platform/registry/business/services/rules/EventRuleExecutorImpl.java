@@ -9,6 +9,7 @@ import com.konkerlabs.platform.registry.business.model.EventRule;
 import com.konkerlabs.platform.registry.business.services.rules.api.EventRuleExecutor;
 import com.konkerlabs.platform.registry.business.services.rules.api.EventRulePublisher;
 import com.konkerlabs.platform.registry.business.services.rules.api.EventRuleService;
+import com.konkerlabs.platform.utilities.expressions.ExpressionEvaluationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,11 +45,10 @@ public class EventRuleExecutorImpl implements EventRuleExecutor {
 
     @Autowired
     private EventRuleService eventRuleService;
-
     @Autowired
     private ApplicationContext applicationContext;
-
-    private EventRulePublisher eventRulePublisher;
+    @Autowired
+    private ExpressionEvaluationService evaluationService;
 
     public enum RuleTransformationType {EXPRESSION_LANGUAGE}
 
@@ -76,22 +76,13 @@ public class EventRuleExecutorImpl implements EventRuleExecutor {
                     Optional.ofNullable(ruleTransformation.getData().get("value"))
                         .filter(filter -> !filter.isEmpty())
                         .ifPresent(filter -> {
-                            Expression expression = null;
-                            StandardEvaluationContext standardEvaluationContext = null;
-
                             try {
-                                expression = new SpelExpressionParser().parseExpression(filter);
-
-                                standardEvaluationContext = new StandardEvaluationContext();
-                                standardEvaluationContext.setVariables(
-                                    new ObjectMapper().readValue(incomingPayload,
+                                Map<String,Object> objectMap = new ObjectMapper().readValue(incomingPayload,
                                         new TypeReference<Map<String, Object>>() {
-                                        })
-                                );
-                                standardEvaluationContext.addPropertyAccessor(new MapAccessor());
+                                        });
 
-                                if (expression.getValue(standardEvaluationContext, Boolean.class)) {
-                                    eventRulePublisher = (EventRulePublisher) applicationContext.getBean(eventRule.getOutgoing().getUri().getScheme());
+                                if (evaluationService.evaluateConditional(filter,objectMap)) {
+                                    EventRulePublisher eventRulePublisher = (EventRulePublisher) applicationContext.getBean(eventRule.getOutgoing().getUri().getScheme());
                                     Event outEvent = Event.builder().timestamp(Instant.now()).payload(incomingPayload).build();
                                     eventRulePublisher.send(outEvent, eventRule.getOutgoing());
                                     outEvents.add(outEvent);

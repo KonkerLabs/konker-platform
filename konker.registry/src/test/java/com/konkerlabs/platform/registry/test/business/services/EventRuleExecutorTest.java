@@ -6,6 +6,7 @@ import com.konkerlabs.platform.registry.business.services.rules.api.EventRuleExe
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
+import com.konkerlabs.platform.utilities.config.UtilitiesConfig;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import org.junit.Before;
 import org.junit.Rule;
@@ -28,7 +29,11 @@ import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.spy;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {MongoTestConfiguration.class, BusinessTestConfiguration.class})
+@ContextConfiguration(classes = {
+        MongoTestConfiguration.class,
+        UtilitiesConfig.class,
+        BusinessTestConfiguration.class
+})
 public class EventRuleExecutorTest extends BusinessLayerTestSupport {
 
     private static final String REGISTERED_TENANT_DOMAIN = "konker";
