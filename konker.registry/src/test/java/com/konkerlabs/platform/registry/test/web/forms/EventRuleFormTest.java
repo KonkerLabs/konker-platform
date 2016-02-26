@@ -4,6 +4,7 @@ import com.konkerlabs.platform.registry.business.model.EventRule;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.SmsURIDealer;
+import com.konkerlabs.platform.registry.business.services.rules.EventRuleExecutorImpl;
 import com.konkerlabs.platform.registry.web.forms.EventRuleForm;
 import org.junit.Before;
 import org.junit.Rule;
@@ -41,7 +42,7 @@ public class EventRuleFormTest {
         model = EventRule.builder()
                 .name(form.getName())
                 .description(form.getDescription())
-                .transformation(new EventRule.RuleTransformation("EXPRESSION_LANGUAGE"))
+                .transformation(new EventRule.RuleTransformation(EventRuleExecutorImpl.RuleTransformationType.EXPRESSION_LANGUAGE.name()))
                 .active(form.isActive()).build();
         model.getTransformations().get(0).getData().put("value",form.getFilterClause());
 
