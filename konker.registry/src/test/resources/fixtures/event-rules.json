@@ -24,7 +24,7 @@
       "transformations" : [ {
         "type" : "EXPRESSION_LANGUAGE",
         "data" : {
-          "value" : "#root[metric] == 'temperature' && #root[value] < 40 && #root[data][sn] == 1234"
+          "value" : "#metric == 'temperature' && #value < 40 && #data.sn == 1234"
         }
       } ],
       "active" : true
@@ -53,7 +53,7 @@
       "transformations" : [ {
         "type" : "EXPRESSION_LANGUAGE",
         "data" : {
-          "value" : "#root[metric] == 'X'"
+          "value" : "#metric == 'X'"
         }
       } ],
       "active" : true
@@ -82,7 +82,7 @@
       "transformations" : [ {
         "type" : "EXPRESSION_LANGUAGE",
         "data" : {
-          "value" : "#root[metric] == 'temperature' && #root[value] < 40"
+          "value" : "#metric == 'temperature' && #value < 40"
         }
       } ],
       "active" : true
@@ -111,7 +111,7 @@
       "transformations" : [ {
         "type" : "EXPRESSION_LANGUAGE",
         "data" : {
-          "value" : "#root[value] < 0"
+          "value" : "#value < 0"
         }
         } ],
     "active" : true
@@ -140,7 +140,7 @@
       "transformations" : [ {
         "type" : "EXPRESSION_LANGUAGE",
         "data" : {
-          "value" : "#root[XXXX] == 'X'"
+          "value" : "#XXXX == 'X'"
         }
       } ],
       "active" : true

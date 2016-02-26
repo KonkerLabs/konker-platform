@@ -40,20 +40,20 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
 
             List<String> validationErrors = Optional.ofNullable(dee.applyValidations()).orElse(Collections.emptyList());
             if (!validationErrors.isEmpty()) {
-                return ServiceResponse.<DataEnrichmentExtension> builder().status(ServiceResponse.Status.ERROR)
-                        .responseMessages(dee.applyValidations()).build();
+                return ServiceResponse.<DataEnrichmentExtension>builder().status(ServiceResponse.Status.ERROR)
+                        .responseMessages(dee.applyValidations()).<DataEnrichmentExtension>build();
             }
 
             dee.setTenant(tenant);
             dee.setId(null);
             DataEnrichmentExtension saved = repository.save(dee);
 
-            return ServiceResponse.<DataEnrichmentExtension> builder().status(ServiceResponse.Status.OK).result(saved)
-                    .build();
+            return ServiceResponse.<DataEnrichmentExtension>builder().status(ServiceResponse.Status.OK).result(saved)
+                    .<DataEnrichmentExtension>build();
 
         } catch (BusinessException be) {
             return ServiceResponse.<DataEnrichmentExtension> builder().status(ServiceResponse.Status.ERROR)
-                    .responseMessage(be.getMessage()).build();
+                    .responseMessage(be.getMessage()).<DataEnrichmentExtension>build();
         }
     }
 
@@ -74,8 +74,8 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
 
             List<String> validationErrors = Optional.ofNullable(dee.applyValidations()).orElse(Collections.emptyList());
             if (!validationErrors.isEmpty()) {
-                return ServiceResponse.<DataEnrichmentExtension> builder().status(ServiceResponse.Status.ERROR)
-                        .responseMessages(dee.applyValidations()).build();
+                return ServiceResponse.<DataEnrichmentExtension>builder().status(ServiceResponse.Status.ERROR)
+                        .responseMessages(dee.applyValidations()).<DataEnrichmentExtension>build();
             }
 
             dee.setId(oldDee.getId());
@@ -83,10 +83,10 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
 
             return ServiceResponse.<DataEnrichmentExtension> builder().status(ServiceResponse.Status.OK)
                     .result(Optional.ofNullable(saved).orElseThrow(() -> new BusinessException("Could no save")))
-                    .build();
+                    .<DataEnrichmentExtension>build();
         } catch (BusinessException be) {
             return ServiceResponse.<DataEnrichmentExtension> builder().status(ServiceResponse.Status.ERROR)
-                    .responseMessage(be.getMessage()).build();
+                    .responseMessage(be.getMessage()).<DataEnrichmentExtension>build();
         }
 
     }
@@ -102,17 +102,17 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
 
             List<DataEnrichmentExtension> l = repository.findAllByTenantId(t.getId());
 
-            return ServiceResponse.<List<DataEnrichmentExtension>> builder().status(ServiceResponse.Status.OK).result(l)
-                    .build();
+            return ServiceResponse.<List<DataEnrichmentExtension>>builder().status(ServiceResponse.Status.OK).result(l)
+                    .<List<DataEnrichmentExtension>>build();
 
         } catch (BusinessException be) {
             return ServiceResponse.<List<DataEnrichmentExtension>> builder().status(ServiceResponse.Status.ERROR)
-                    .responseMessage(be.getMessage()).build();
+                    .responseMessage(be.getMessage()).<List<DataEnrichmentExtension>>build();
         }
     }
 
     @Override
-    public ServiceResponse<DataEnrichmentExtension> getByName(Tenant tenant, String name) {
+    public ServiceResponse<DataEnrichmentExtension>getByName(Tenant tenant, String name) {
         try {
             Optional.ofNullable(name).orElseThrow(() -> new BusinessException("Name cannot be null"));
             Optional.ofNullable(tenant).orElseThrow(() -> new BusinessException("Tenant cannot be null"));
@@ -124,10 +124,10 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
                     .orElseThrow(() -> new BusinessException("Data Enrichment Extension does not exist"));
 
             return ServiceResponse.<DataEnrichmentExtension> builder().status(ServiceResponse.Status.OK).result(dee)
-                    .build();
+                    .<DataEnrichmentExtension>build();
         } catch (BusinessException be) {
             return ServiceResponse.<DataEnrichmentExtension> builder().status(ServiceResponse.Status.ERROR)
-                    .responseMessage(be.getMessage()).build();
+                    .responseMessage(be.getMessage()).<DataEnrichmentExtension>build();
         }
     }
 
