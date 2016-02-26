@@ -79,10 +79,10 @@ public class EventRuleServiceImpl implements EventRuleService {
                     .orElseThrow(() -> new BusinessException("Event Rule does not exist"));
 
             return ServiceResponse.<EventRule> builder().status(ServiceResponse.Status.OK).result(rule)
-                    .build();
+                    .<EventRule>build();
         } catch (BusinessException be) {
             return ServiceResponse.<EventRule> builder().status(ServiceResponse.Status.ERROR)
-                    .responseMessage(be.getMessage()).build();
+                    .responseMessage(be.getMessage()).<EventRule>build();
         }
     }
 

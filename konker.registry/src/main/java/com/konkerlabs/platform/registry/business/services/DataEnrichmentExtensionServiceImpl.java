@@ -38,6 +38,9 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
                 throw new BusinessException("Data Enrichment Extension Name must be unique");
             }
 
+            dee.setTenant(tenant);
+            dee.setId(null);
+
             List<String> validationErrors = Optional.ofNullable(dee.applyValidations()).orElse(Collections.emptyList());
             if (!validationErrors.isEmpty()) {
                 return ServiceResponse.<DataEnrichmentExtension>builder().status(ServiceResponse.Status.ERROR)
@@ -71,6 +74,8 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
             DataEnrichmentExtension oldDee = Optional
                     .ofNullable(repository.findByTenantIdAndName(t.getId(), dee.getName()))
                     .orElseThrow(() -> new BusinessException("Data Enrichment Extension does not exist"));
+
+            dee.setTenant(tenant);
 
             List<String> validationErrors = Optional.ofNullable(dee.applyValidations()).orElse(Collections.emptyList());
             if (!validationErrors.isEmpty()) {
