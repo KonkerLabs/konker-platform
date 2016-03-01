@@ -1,0 +1,9 @@
+{ "1": {
+      "product": {"SKU": 123, "description": "20L Bonafont Water Bottle"},
+      "quantity": 1,
+      "storeUser": "johnsmith@nowhere.com"},
+  "2": { 
+       "product": {"SKU": 456, "description": "Nespresso Ristretto"},
+       "quantity": 10,
+       "storeUser": "mary@lamb.com"}
+}
