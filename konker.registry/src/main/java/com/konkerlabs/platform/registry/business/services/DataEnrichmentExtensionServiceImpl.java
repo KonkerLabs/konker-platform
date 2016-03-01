@@ -1,10 +1,12 @@
 package com.konkerlabs.platform.registry.business.services;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
@@ -24,6 +26,21 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
     @Autowired
     private DataEnrichmentExtensionRepository repository;
 
+    @Autowired
+    private MongoTemplate mongoTemplate;
+
+//    private boolean isContainerKeyRegisteredFor(Tenant tenant, URI incoming, String containerKey) {
+//        return mongoTemplate.exists(
+//            new Query(
+//                Criteria.where("tenant.id").is(tenant.getId())
+//                .andOperator(
+//                    Criteria.where("incoming").is(incoming),
+//                    Criteria.where("containerKey").is(containerKey)
+//                )
+//            ), DataEnrichmentExtension.class
+//        );
+//    }
+
     @Override
     public ServiceResponse<DataEnrichmentExtension> register(Tenant tenant, DataEnrichmentExtension dee) {
         try {
@@ -42,9 +59,17 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
             dee.setId(null);
 
             List<String> validationErrors = Optional.ofNullable(dee.applyValidations()).orElse(Collections.emptyList());
+
+            if (!repository.findByTenantIdAndIncomingAndContainerKey(
+                tenant.getId(),
+                dee.getIncoming(),
+                dee.getContainerKey()
+                ).isEmpty())
+                validationErrors.add("Container key already registered for incoming device");
+
             if (!validationErrors.isEmpty()) {
                 return ServiceResponse.<DataEnrichmentExtension>builder().status(ServiceResponse.Status.ERROR)
-                        .responseMessages(dee.applyValidations()).<DataEnrichmentExtension>build();
+                        .responseMessages(validationErrors).<DataEnrichmentExtension>build();
             }
 
             dee.setTenant(tenant);
@@ -78,9 +103,23 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
             dee.setTenant(tenant);
 
             List<String> validationErrors = Optional.ofNullable(dee.applyValidations()).orElse(Collections.emptyList());
+
+            boolean isContainerKeyInUse = Optional.of(
+                repository.findByTenantIdAndIncomingAndContainerKey(
+                        tenant.getId(),
+                        dee.getIncoming(),
+                        dee.getContainerKey()
+                )
+            ).filter(dataEnrichmentExtensions -> !dataEnrichmentExtensions.isEmpty())
+            .orElseGet(ArrayList<DataEnrichmentExtension>::new).stream()
+                .anyMatch(currentDee -> !currentDee.getId().equals(oldDee.getId()));
+
+            if (isContainerKeyInUse)
+                validationErrors.add("Container key already registered for incoming device");
+
             if (!validationErrors.isEmpty()) {
                 return ServiceResponse.<DataEnrichmentExtension>builder().status(ServiceResponse.Status.ERROR)
-                        .responseMessages(dee.applyValidations()).<DataEnrichmentExtension>build();
+                        .responseMessages(validationErrors).<DataEnrichmentExtension>build();
             }
 
             dee.setId(oldDee.getId());

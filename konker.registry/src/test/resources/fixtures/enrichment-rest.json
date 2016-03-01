@@ -6,8 +6,8 @@
             "name": "REST-from-Prestashop-01",
             "type": "REST",
             "description": "Get REST Data from Prestahop",
-            "incoming": "device://abc123",
-            "containerKey": "productData",
+            "incoming": "device://konker/abc123",
+            "containerKey": "prestashopData",
             "parameters": {
                 "password": "pass",
                 "uriTemplate": "https://www.google.com/device/${deviceId}",
@@ -25,8 +25,8 @@
             "name": "REST-from-Magento-01",
             "type": "REST",
             "description": "Get REST Data from Magento",
-            "incoming": "device://abc123",
-            "containerKey": "productData",
+            "incoming": "device://konker/abc123",
+            "containerKey": "magentoData",
             "parameters": {
                 "password": "pass",
                 "uriTemplate": "https://www.google.com/device/${deviceId}",

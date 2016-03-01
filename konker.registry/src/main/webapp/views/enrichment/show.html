@@ -33,11 +33,13 @@
             </textarea>
         </div>
         <div class="form-group">
-            <label for="incomingAuthority">Incoming URI</label>
-            <input type="text" data-th-value="${dataEnrichmentExtension.incomingAuthority}"
-                   class="form-control"
-                   id="incomingAuthority"
-                   name="incomingAuthority"/>
+            <label for="incomingAuthority">Incoming Device</label>
+            <select class="form-control" data-th-field="${dataEnrichmentExtension.incomingAuthority}"
+                    id="incomingAuthority" name="incomingAuthority">
+                <option data-th-each="device : ${allDevices}"
+                        data-th-value="${device.deviceId}"
+                        data-th-text="${device.deviceId + ' - ' + device.name}"></option>
+            </select>
         </div>
         <div class="form-group">
             <label for="parameters">Service parameters</label>

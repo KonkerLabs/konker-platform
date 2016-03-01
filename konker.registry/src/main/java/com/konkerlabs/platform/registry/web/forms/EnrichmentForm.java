@@ -55,7 +55,7 @@ public class EnrichmentForm implements ModelBuilder<DataEnrichmentExtension, Enr
         this.setName(model.getName());
         this.setType(model.getType().name());
         this.setDescription(model.getDescription());
-        this.setIncomingAuthority(model.getIncoming().toString());
+        this.setIncomingAuthority(model.getIncoming().getPath().replaceAll("/",""));
         this.setContainerKey(model.getContainerKey());
         this.setParameters(model.getParameters());
         this.setActive(model.isActive());

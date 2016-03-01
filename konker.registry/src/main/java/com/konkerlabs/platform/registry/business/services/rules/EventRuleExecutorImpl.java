@@ -71,40 +71,47 @@ public class EventRuleExecutorImpl implements EventRuleExecutor {
 
             for (EventRule.RuleTransformation ruleTransformation : eventRule.getTransformations()) {
                 switch (RuleTransformationType.valueOf(ruleTransformation.getType())) {
-                    case EXPRESSION_LANGUAGE:
+                    case EXPRESSION_LANGUAGE: {
 
-                    Optional.ofNullable(ruleTransformation.getData().get("value"))
-                        .filter(filter -> !filter.isEmpty())
-                        .ifPresent(filter -> {
+                        Optional<String> expression = Optional.ofNullable(ruleTransformation.getData().get("value"))
+                                .filter(filter -> !filter.isEmpty());
+
+                        if (expression.isPresent()) {
                             try {
-                                Map<String,Object> objectMap = new ObjectMapper().readValue(incomingPayload,
+                                Map<String, Object> objectMap = new ObjectMapper().readValue(incomingPayload,
                                         new TypeReference<Map<String, Object>>() {
                                         });
 
-                                if (evaluationService.evaluateConditional(filter,objectMap)) {
-                                    EventRulePublisher eventRulePublisher = (EventRulePublisher) applicationContext.getBean(eventRule.getOutgoing().getUri().getScheme());
-                                    Event outEvent = Event.builder().timestamp(Instant.now()).payload(incomingPayload).build();
-                                    eventRulePublisher.send(outEvent, eventRule.getOutgoing());
-                                    outEvents.add(outEvent);
+                                if (evaluationService.evaluateConditional(expression.get(), objectMap)) {
+                                    forwardEvent(eventRule.getOutgoing(), event);
+                                    outEvents.add(event);
                                 } else {
                                     LOGGER.debug(MessageFormat.format("Dropped rule \"{0}\", not matching \"{1}\" pattern with content \"{2}\". Message payload: {3} ",
-                                            eventRule.getName(), ruleTransformation.getType(), filter, incomingPayload));
+                                            eventRule.getName(), ruleTransformation.getType(), expression.get(), incomingPayload));
                                 }
                             } catch (IOException e) {
                                 LOGGER.error("Error parsing JSON payload.", e);
                             } catch (SpelEvaluationException e) {
                                 LOGGER.error(MessageFormat
-                                    .format("Error evaluating, probably malformed, expression: \"{0}\". Message payload: {1} ",
-                                            filter,
-                                            incomingPayload), e);
+                                        .format("Error evaluating, probably malformed, expression: \"{0}\". Message payload: {1} ",
+                                                expression.get(),
+                                                incomingPayload), e);
                             }
-                        });
+                        } else {
+                            forwardEvent(eventRule.getOutgoing(),event);
+                            outEvents.add(event);
+                        }
 
                         break;
+                    }
                 }
             }
         }
         return new AsyncResult<List<Event>>(outEvents);
     }
 
+    private void forwardEvent(EventRule.RuleActor outgoing, Event event) {
+        EventRulePublisher eventRulePublisher = (EventRulePublisher) applicationContext.getBean(outgoing.getUri().getScheme());
+        eventRulePublisher.send(event, outgoing);
+    }
 }
