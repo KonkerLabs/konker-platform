@@ -45,8 +45,8 @@
             <table id="parameters" class="table">
                 <tbody>
                 <tr data-th-each="parameter : ${dataEnrichmentExtension.parameters}">
-                    <td><label for="${parameter.key}" data-th-text="${parameter.key}"/></td>
-                    <td><input type="text" data-th-value="${parameter.value}" class="form-control" name="${parameter.key}" id="${parameter.key}"/></td>
+                    <td><label for="parameter" data-th-text="${parameter.key}"/></td>
+                    <td><input type="text" data-th-value="${parameter.value}" class="form-control" name="parameter" id="parameter"/></td>
                 </tr>
                 </tbody>
             </table>

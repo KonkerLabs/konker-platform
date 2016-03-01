@@ -1,6 +1,9 @@
 package com.konkerlabs.platform.registry.test.web.controllers;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.DataEnrichmentExtension;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
@@ -20,6 +23,8 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -54,6 +59,9 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
     @Autowired
     private Tenant tenant;
 
+    @Autowired
+    private MockHttpServletRequest request;
+
     private Device incomingDevice;
     private DeviceURIDealer deviceUriDealer;
     private DataEnrichmentExtension dataEnrichmentExtension;
@@ -68,7 +76,8 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
     public void setUp() {
 //        tenant = Tenant.builder().name("tenantName").domainName("tenantDomain").build();
         incomingDevice = Device.builder().tenant(tenant).deviceId("1").build();
-        deviceUriDealer = new DeviceURIDealer() {};
+        deviceUriDealer = new DeviceURIDealer() {
+        };
 
         enrichmentForm = new EnrichmentForm();
         enrichmentForm.setName("EnrichmentTest1");
@@ -92,15 +101,20 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
                 .type(DataEnrichmentExtension.EnrichmentType.REST)
                 .parameters(enrichmentForm.getParameters())
                 .containerKey(enrichmentForm.getContainerKey())
-                .active(true)
+                .active(enrichmentForm.isActive())
                 .build();
 
         enrichmentData = new LinkedMultiValueMap<>();
         enrichmentData.add("name", enrichmentForm.getName());
-        enrichmentData.add("description", enrichmentForm.getDescription());
         enrichmentData.add("type", enrichmentForm.getType());
+        enrichmentData.add("description", enrichmentForm.getDescription());
         enrichmentData.add("incomingAuthority", enrichmentForm.getIncomingAuthority());
-        enrichmentData.add("parameters", "");
+        enrichmentData.add("parameters", "[URL]=http://my.enriching.service.com");
+        enrichmentData.add("containerKey", enrichmentForm.getContainerKey());
+        enrichmentData.add("URL", enrichmentForm.getParameters().get("URL"));
+        enrichmentData.add("User", enrichmentForm.getParameters().get("User"));
+        enrichmentData.add("Password", enrichmentForm.getParameters().get("Password"));
+        enrichmentData.add("active", String.valueOf(enrichmentForm.isActive()));
 
         serviceResponse = ServiceResponse.<DataEnrichmentExtension>builder()
                 .status(ServiceResponse.Status.OK)
@@ -137,12 +151,38 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldBindErrorMessagesWhenRegistrationFailsAndGoBackToCreationForm() throws Exception {
-
+//        String exceptionMessage = "Some business exception";
+//
+//        serviceResponse = spy(ServiceResponse.<DataEnrichmentExtension>builder()
+//                .status(ServiceResponse.Status.ERROR)
+//                .responseMessage(exceptionMessage)
+//                .<DataEnrichmentExtension>build());
+//
+//        when(dataEnrichmentExtensionService.register(eq(tenant), eq(dataEnrichmentExtension))).thenReturn(serviceResponse);
+//
+//        getMockMvc().perform(post("/enrichment/save").params(enrichmentData))
+//                .andExpect(model().attribute("errors", equalTo(Arrays.asList(new String[]{"Some business exception"}))))
+//                .andExpect(model().attribute("dataEnrichmentExtension", equalTo(enrichmentForm)))
+//                .andExpect(view().name("enrichment/form"));
+//
+//        verify(dataEnrichmentExtensionService.register(eq(tenant), eq(dataEnrichmentExtension)));
     }
 
     @Test
     public void shouldRedirectToShowAfterSuccessfulEnrichmentCreation() throws Exception {
-
+//        serviceResponse = spy(ServiceResponse.<DataEnrichmentExtension>builder()
+//                .status(ServiceResponse.Status.OK)
+//                .result(dataEnrichmentExtension)
+//                .<DataEnrichmentExtension>build());
+//
+//        when(dataEnrichmentExtensionService.register(eq(tenant), eq(dataEnrichmentExtension))).thenReturn(serviceResponse);
+//
+//        getMockMvc().perform(post("/enrichment/save").params(enrichmentData))
+//                .andExpect(flash().attribute("message", "Enrichment registered successfully"))
+//                .andExpect(redirectedUrl(MessageFormat.format("/enrichment/{0}", dataEnrichmentExtension.getName())));
+//
+//
+//        verify(dataEnrichmentExtensionService.register(tenant, dataEnrichmentExtension));
     }
 
     @Test
@@ -157,9 +197,7 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldRedirectToShowAfterSuccessfulEnrichmentEdit() throws Exception {
-//        String newName = "NewEnrichmentName";
 //        dataEnrichmentExtension.setId(enrichmentId);
-//        dataEnrichmentExtension.setName(newName);
 //        serviceResponse = spy(ServiceResponse.<DataEnrichmentExtension>builder()
 //                .status(ServiceResponse.Status.OK)
 //                .result(dataEnrichmentExtension)
@@ -168,10 +206,11 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
 //        when(dataEnrichmentExtensionService.update(eq(tenant), eq(dataEnrichmentExtension))).thenReturn(serviceResponse);
 //
 //        getMockMvc().perform(post(MessageFormat.format("/enrichment/{0}", dataEnrichmentExtension.getName())).params(enrichmentData))
-//                .andExpect(redirectedUrl(MessageFormat.format("/enrichment/{0}", dataEnrichmentExtension.getName())))
-//                .andExpect(flash().attribute("message", "Enrichment registered successfully"));
+//                .andExpect(flash().attribute("message", "Enrichment updated successfully"))
+//                .andExpect(redirectedUrl(MessageFormat.format("/enrichment/{0}", dataEnrichmentExtension.getName())));
 //
-//        verify(dataEnrichmentExtensionService).update(eq(tenant),eq(dataEnrichmentExtension));
+//
+//        verify(dataEnrichmentExtensionService).update(eq(tenant), eq(dataEnrichmentExtension));
     }
 
     @Test
