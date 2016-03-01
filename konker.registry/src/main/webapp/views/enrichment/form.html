@@ -51,8 +51,8 @@
                 <table id="parameters" class="table">
                     <tbody>
                     <tr data-th-each="pr, stat: *{parameters}">
-                        <td><label for="${pr.key}" data-th-text="${pr.key}"/></td>
-                        <td><input type="text" data-th-field="*{parameters[__${pr.key}__]}" class="form-control" name="${pr.key}" id="${pr.key}"/></td>
+                        <td><label for="parameter" data-th-text="${pr.key}"/></td>
+                        <td><input type="text" data-th-field="*{parameters[__${pr.key}__]}" class="form-control" name="${pr.key}" id="parameter"/></td>
                     </tr>
                     </tbody>
                 </table>
