@@ -1,14 +1,5 @@
 package com.konkerlabs.platform.registry.business.services;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.stereotype.Service;
-
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.DataEnrichmentExtension;
 import com.konkerlabs.platform.registry.business.model.Tenant;
@@ -16,6 +7,15 @@ import com.konkerlabs.platform.registry.business.repositories.DataEnrichmentExte
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.DataEnrichmentExtensionService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.stereotype.Service;
+
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensionService {
@@ -172,6 +172,26 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
         } catch (BusinessException be) {
             return ServiceResponse.<DataEnrichmentExtension> builder().status(ServiceResponse.Status.ERROR)
                     .responseMessage(be.getMessage()).<DataEnrichmentExtension>build();
+        }
+    }
+
+    @Override
+    public ServiceResponse<List<DataEnrichmentExtension>> getByTenantAndByIncomingURI(Tenant tenant, URI incomingUri) {
+        try {
+            Optional.ofNullable(incomingUri).orElseThrow(() -> new BusinessException("Incoming URI cannot be null"));
+            Optional.ofNullable(tenant).orElseThrow(() -> new BusinessException("Tenant cannot be null"));
+
+            Tenant t = Optional.ofNullable(tenantRepository.findByName(tenant.getName()))
+                    .orElseThrow(() -> new BusinessException("Tenant does not exist"));
+
+            List<DataEnrichmentExtension> l = repository.findByTenantIdAndIncoming(t.getId(), incomingUri);
+
+            return ServiceResponse.<List<DataEnrichmentExtension>> builder().status(ServiceResponse.Status.OK).result(l)
+                    .<List<DataEnrichmentExtension>>build();
+
+        } catch (BusinessException be) {
+            return ServiceResponse.<List<DataEnrichmentExtension>> builder().status(ServiceResponse.Status.ERROR)
+                    .responseMessage(be.getMessage()).<List<DataEnrichmentExtension>>build();
         }
     }
 

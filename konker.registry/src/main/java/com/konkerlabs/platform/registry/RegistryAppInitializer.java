@@ -14,7 +14,8 @@ public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherSe
                 MongoConfig.class,
                 MqttConfig.class,
                 SmsConfig.class,
-                UtilitiesConfig.class
+                UtilitiesConfig.class,
+                EnrichingConfig.class
         };
     }
 

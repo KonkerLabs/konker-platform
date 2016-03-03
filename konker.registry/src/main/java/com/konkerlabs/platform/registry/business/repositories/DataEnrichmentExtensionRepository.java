@@ -18,4 +18,7 @@ public interface DataEnrichmentExtensionRepository extends MongoRepository<DataE
 
     @Query("{ 'tenant.id' : ?0, 'incoming' : ?1, 'containerKey' : ?2 }")
     List<DataEnrichmentExtension> findByTenantIdAndIncomingAndContainerKey(String tenantId, URI incoming, String containerKey);
+
+    @Query("{ 'tenant.id' : ?0, 'incoming' : ?1 }")
+    List<DataEnrichmentExtension> findByTenantIdAndIncoming(String tenantId, URI incoming);
 }
