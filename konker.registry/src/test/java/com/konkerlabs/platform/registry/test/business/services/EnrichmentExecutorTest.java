@@ -18,6 +18,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.omg.PortableInterceptor.INACTIVE;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -58,6 +59,7 @@ public class EnrichmentExecutorTest extends BusinessLayerTestSupport {
     private URI nonExistingUri;
     private static final String EXISTING_DEVICE_ID = "abc123";
     private static final String BAD_CONFIGURATION_DEVICE_ID = "abc456";
+    private static final String ENRICHMENT_INACTIVE_DEVICE_ID = "abc789";
     private static final String NON_EXISTING_DEVICE_ID = "999";
 
     private static final String PAYLOAD = "{\"metric\":\"temperature\",\"deviceId\":\"abc123\",\"value\":30,\"ts\":1454900000,\"prestashopData\":\"\"}";
@@ -174,5 +176,16 @@ public class EnrichmentExecutorTest extends BusinessLayerTestSupport {
         assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
         assertThat(response.getResult(), notNullValue());
         assertEquals(ENRICHED_PAYLOAD, response.getResult().getPayload());
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/enrichment-rest.json"})
+    public void shouldNotEnrichBecauseOfEnrichmentInactive() {
+        device.setDeviceId(ENRICHMENT_INACTIVE_DEVICE_ID);
+
+        ServiceResponse<Event> response = subject.enrich(event, device);
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
+        assertThat(response.getResult(), notNullValue());
+        assertEquals(event.getPayload(), response.getResult().getPayload());
     }
 }

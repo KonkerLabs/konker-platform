@@ -45,13 +45,32 @@
             "type": "REST",
             "description": "Get REST Data from Magento",
             "incoming": "device://konker/abc456",
-            "containerKey": "wrong",
+            "containerKey": "enrich1",
             "parameters": {
                 "URL": "https://www.google.com/device/@{deviceId}",
                 "User": "user",
                 "Password": "pass"
             },
             "active": true,
+            "tenant": {
+                "$id": "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+                "$ref": "tenants"
+            }
+        },
+        {
+            "_id": "a97e0d46-db26-11e5-be01-8bc8ddc000ae",
+            "_class": "com.konkerlabs.platform.registry.business.model.DataEnrichmentExtension",
+            "name": "REST-from-Magento-01",
+            "type": "REST",
+            "description": "Get REST Data from Magento",
+            "incoming": "device://konker/abc789",
+            "containerKey": "enrich2",
+            "parameters": {
+                "URL": "https://www.google.com/device/@{#deviceId}",
+                "User": "user",
+                "Password": "pass"
+            },
+            "active": false,
             "tenant": {
                 "$id": "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
                 "$ref": "tenants"

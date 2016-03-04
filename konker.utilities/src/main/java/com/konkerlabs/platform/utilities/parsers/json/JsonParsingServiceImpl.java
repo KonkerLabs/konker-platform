@@ -42,6 +42,10 @@ public class JsonParsingServiceImpl implements JsonParsingService {
 
     @Override
     public Map<String, Object> toMap(String json) throws JsonProcessingException {
+        Optional.ofNullable(json)
+                .filter(s -> !s.isEmpty())
+                .orElseThrow(() -> new IllegalArgumentException("JSON cannot be null or empty"));
+
         try {
             return OBJECT_MAPPER.readValue(json,
                     new TypeReference<Map<String, Object>>() {
@@ -54,6 +58,10 @@ public class JsonParsingServiceImpl implements JsonParsingService {
 
     @Override
     public String toJsonString(Map<String, Object> map) throws JsonProcessingException {
+        Optional.ofNullable(map)
+                .filter(s -> !s.isEmpty())
+                .orElseThrow(() -> new IllegalArgumentException("Map cannot be null or empty"));
+
         return OBJECT_MAPPER.writeValueAsString(map);
     }
 
