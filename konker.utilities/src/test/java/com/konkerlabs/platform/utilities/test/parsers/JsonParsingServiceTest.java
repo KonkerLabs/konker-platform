@@ -68,17 +68,21 @@ public class JsonParsingServiceTest {
 
         @Autowired
         private JsonParsingService service;
-        private HashMap<String, Object> expected;
+
+        private HashMap<String, Object> expectedFlattenMap;
+        private HashMap<String, Object> expectedMap;
+        private String expectedJsonString;
 
         @Before
         public void setUp() throws Exception {
-            expected = new HashMap<>();
+            expectedFlattenMap = new HashMap<>();
+            expectedFlattenMap.put("ts","2016-03-03T18:15:00Z");
+            expectedFlattenMap.put("value",31.0);
+            expectedFlattenMap.put("command.type","ButtonPressed");
+            expectedFlattenMap.put("data.channels.0.name","channel_0");
+            expectedFlattenMap.put("time",123L);
 
-            expected.put("ts","2016-03-03T18:15:00Z");
-            expected.put("value",31.0);
-            expected.put("command.type","ButtonPressed");
-            expected.put("data.channels.0.name","channel_0");
-            expected.put("time",123L);
+            expectedMap = new HashMap<>();
         }
 
         @Test
@@ -106,7 +110,7 @@ public class JsonParsingServiceTest {
             Map<String,Object> actual = service.toFlatMap(validJson);
 
             assertThat(actual,notNullValue());
-            assertThat(actual,equalTo(expected));
+            assertThat(actual,equalTo(expectedFlattenMap));
         }
 
     }

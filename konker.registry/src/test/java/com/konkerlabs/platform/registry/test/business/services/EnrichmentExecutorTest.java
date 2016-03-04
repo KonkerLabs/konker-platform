@@ -63,7 +63,9 @@ public class EnrichmentExecutorTest extends BusinessLayerTestSupport {
     private static final String PAYLOAD = "{\"metric\":\"temperature\",\"deviceId\":\"abc123\",\"value\":30,\"ts\":1454900000,\"prestashopData\":\"\"}";
     private static final String PAYLOAD_WITHOUT_CONTAINER_KEY = "{\"metric\":\"temperature\",\"deviceId\":\"abc123\",\"value\":30,\"ts\":1454900000}";
     private static final String PAYLOAD_PRE_POPULATED_CONTAINER_KEY = "{\"metric\":\"temperature\",\"deviceId\":\"abc123\",\"value\":30,\"ts\":1454900000,\"prestashopData\":\"abc\"}";
-    private static final String ENRICHED_PAYLOAD = "{\"metric\":\"temperature\",\"deviceId\":\"abc123\",\"value\":30,\"ts\":1454900000,\"prestashopData\":{\"product\":{\"SKU\":123,\"description\":\"20LBonafontWaterBottle\"},\"quantity\":1,\"storeUser\":\"johnsmith@nowhere.com\"}}";
+    private static final String ENRICHED_PAYLOAD = "{\"metric\":\"temperature\",\"deviceId\":\"abc123\",\"value\":30,\"ts\":1454900000," +
+            "\"prestashopData\":{\"product\":{\"SKU\":123,\"description\":\"20LBonafontWaterBottle\"},\"quantity\":1,\"storeUser\":\"johnsmith@nowhere.com\"}," +
+            "\"magentoData\":{\"product\":{\"SKU\":123,\"description\":\"20LBonafontWaterBottle\"},\"quantity\":1,\"storeUser\":\"johnsmith@nowhere.com\"}}";
 
     private static final String ENRICHMENT_SERVICE_RESULT = "{\"product\":{\"SKU\":123,\"description\":\"20LBonafontWaterBottle\"},\"quantity\":1,\"storeUser\":\"johnsmith@nowhere.com\"}";
 

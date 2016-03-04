@@ -9,6 +9,7 @@ import com.konkerlabs.platform.registry.business.services.rules.api.EventRuleExe
 import com.konkerlabs.platform.registry.business.services.rules.api.EventRulePublisher;
 import com.konkerlabs.platform.registry.business.services.rules.api.EventRuleService;
 import com.konkerlabs.platform.utilities.expressions.ExpressionEvaluationService;
+import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +42,8 @@ public class EventRuleExecutorImpl implements EventRuleExecutor {
     private ApplicationContext applicationContext;
     @Autowired
     private ExpressionEvaluationService evaluationService;
+    @Autowired
+    private JsonParsingService jsonParsingService;
 
     public enum RuleTransformationType {EXPRESSION_LANGUAGE}
 
@@ -70,9 +73,7 @@ public class EventRuleExecutorImpl implements EventRuleExecutor {
 
                         if (expression.isPresent()) {
                             try {
-                                Map<String, Object> objectMap = new ObjectMapper().readValue(incomingPayload,
-                                        new TypeReference<Map<String, Object>>() {
-                                        });
+                                Map<String, Object> objectMap = jsonParsingService.toMap(incomingPayload);
 
                                 if (evaluationService.evaluateConditional(expression.get(), objectMap)) {
                                     forwardEvent(eventRule.getOutgoing(), event);

@@ -2,6 +2,7 @@ package com.konkerlabs.platform.utilities.parsers.json;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -18,8 +19,11 @@ import java.util.Map;
 import java.util.Optional;
 
 @Component
-@Scope(BeanDefinition.SCOPE_PROTOTYPE)
+@Scope(BeanDefinition.SCOPE_SINGLETON)
 public class JsonParsingServiceImpl implements JsonParsingService {
+
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
     @Override
     public Map<String, Object> toFlatMap(String json) throws JsonProcessingException {
         Optional.ofNullable(json)
@@ -28,12 +32,29 @@ public class JsonParsingServiceImpl implements JsonParsingService {
 
         Map<String, Object> map = new HashMap<>();
         try {
-            addKeys("", new ObjectMapper().readTree(json), map);
+            addKeys("", OBJECT_MAPPER.readTree(json), map);
         } catch (IOException e) {
             throw new JsonParseException("Failed to parse json",null,e);
         }
 
         return map;
+    }
+
+    @Override
+    public Map<String, Object> toMap(String json) throws JsonProcessingException {
+        try {
+            return OBJECT_MAPPER.readValue(json,
+                    new TypeReference<Map<String, Object>>() {
+                    });
+        } catch (IOException e) {
+            throw new JsonParseException("Failed to parse json",null,e);
+        }
+
+    }
+
+    @Override
+    public String toJsonString(Map<String, Object> map) throws JsonProcessingException {
+        return OBJECT_MAPPER.writeValueAsString(map);
     }
 
     private void addKeys(String currentPath, JsonNode jsonNode, Map<String, Object> map) {
