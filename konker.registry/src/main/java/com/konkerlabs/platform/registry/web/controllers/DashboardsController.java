@@ -21,6 +21,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
+import java.util.Optional;
 
 @Controller
 @Scope("session")
@@ -46,7 +47,7 @@ public class DashboardsController {
         URI uri = buildURI(solrBaseUrl,
                 httpServletRequest.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE)
                         .toString().replaceAll("\\/solr\\/",""),
-                httpServletRequest.getQueryString());
+                Optional.ofNullable(httpServletRequest.getQueryString()).orElse(null));
         return restTemplate.exchange(uri, requestEntity.getMethod(), httpEntity, String.class);
     }
 
