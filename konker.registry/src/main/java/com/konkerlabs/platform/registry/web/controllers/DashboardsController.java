@@ -54,6 +54,6 @@ public class DashboardsController {
     private URI buildURI(String solrHost, String path, String query) {
         return URI.create(solrHost +
                 path +
-                query != null ? "?" + query : "");
+                (query != null && !query.isEmpty() ? "?" + query : ""));
     }
 }
