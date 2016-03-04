@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.business.services.api;
 
+import java.net.URI;
 import java.util.List;
 
 import com.konkerlabs.platform.registry.business.model.DataEnrichmentExtension;
@@ -56,4 +57,19 @@ public interface DataEnrichmentExtensionService {
      *         ERROR
      */
     ServiceResponse<DataEnrichmentExtension> getByName(Tenant tenant, String name);
+
+    /**
+     * Gets a previously registered {@link DataEnrichmentExtension} by
+     * {@link Tenant} and incomingUri.
+     *
+     * @param tenant
+     *            The tenant
+     * @param incomingUri
+     *            The incoming URI of the registered item
+     * @return a {@link ServiceResponse} containing the item, if it exists and
+     *         status code OK. If it does not exist, returns a
+     *         {@link ServiceResponse} with an error message and status code
+     *         ERROR
+     */
+    ServiceResponse<List<DataEnrichmentExtension>> getByTenantAndByIncomingURI(Tenant tenant, URI incomingUri);
 }
