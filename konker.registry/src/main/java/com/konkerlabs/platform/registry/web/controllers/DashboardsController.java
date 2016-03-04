@@ -47,11 +47,13 @@ public class DashboardsController {
         URI uri = buildURI(solrBaseUrl,
                 httpServletRequest.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE)
                         .toString().replaceAll("\\/solr\\/",""),
-                Optional.ofNullable(httpServletRequest.getQueryString()).orElse(null));
+                httpServletRequest.getQueryString());
         return restTemplate.exchange(uri, requestEntity.getMethod(), httpEntity, String.class);
     }
 
     private URI buildURI(String solrHost, String path, String query) {
-        return URI.create(solrHost + path + "?" + query);
+        return URI.create(solrHost +
+                path +
+                query != null ? "?" + query : "");
     }
 }
