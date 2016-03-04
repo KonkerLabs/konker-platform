@@ -168,10 +168,10 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .orElseThrow(() -> new BusinessException("Device does not exist"));
 
             return ServiceResponse.<Device> builder().status(ServiceResponse.Status.OK).result(device)
-                    .build();
+                    .<Device>build();
         } catch (BusinessException be) {
             return ServiceResponse.<Device> builder().status(ServiceResponse.Status.ERROR)
-                    .responseMessage(be.getMessage()).build();
+                    .responseMessage(be.getMessage()).<Device>build();
         }
     }
 

@@ -6,6 +6,8 @@ import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.EnrichmentExecutor;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.rules.api.EventRuleExecutor;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
 import com.konkerlabs.platform.registry.test.base.IntegrationLayerTestContext;
@@ -15,7 +17,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +48,9 @@ public class DeviceEventProcessorTest {
     private String topic = MessageFormat.format(DEVICE_TOPIC_TEMPLATE, sourceApiKey, incomingChannel);
 
     private Event event;
+    private Device device;
+    private ServiceResponse<Event> enrichmentResponse;
+
     @Autowired
     private DeviceEventProcessor subject;
     @Autowired
@@ -55,7 +59,8 @@ public class DeviceEventProcessorTest {
     private EventRuleExecutor eventRuleExecutor;
     @Autowired
     private DeviceRegisterService deviceRegisterService;
-    private Device device;
+    @Autowired
+    private EnrichmentExecutor enrichmentExecutor;
 
     @Before
     public void setUp() throws Exception {
@@ -76,6 +81,11 @@ public class DeviceEventProcessorTest {
             .deviceId("device_id")
             .active(true)
             .name("device_name").build());
+
+        enrichmentResponse = spy(ServiceResponse.<Event>builder()
+                .status(ServiceResponse.Status.OK)
+                .result(event)
+                .<Event>build());
     }
 
     @After
@@ -115,6 +125,7 @@ public class DeviceEventProcessorTest {
     @Test
     public void shouldLogIncomingEvent() throws Exception {
         when(deviceRegisterService.findByApiKey(sourceApiKey)).thenReturn(device);
+        when(enrichmentExecutor.enrich(event, device)).thenReturn(enrichmentResponse);
 
         subject.process(topic, originalPayload);
 
@@ -124,6 +135,7 @@ public class DeviceEventProcessorTest {
     @Test
     public void shouldForwardIncomingMessageToDestinationDevice() throws Exception {
         when(deviceRegisterService.findByApiKey(sourceApiKey)).thenReturn(device);
+        when(enrichmentExecutor.enrich(event, device)).thenReturn(enrichmentResponse);
 
         ResultCaptor<URI> returnCaptor = new ResultCaptor<URI>();
 
@@ -164,7 +176,13 @@ public class DeviceEventProcessorTest {
             return mock(EventRuleExecutor.class);
         }
         @Bean
-        public DeviceRegisterService deviceRegisterService() { return mock(DeviceRegisterService.class); }
+        public DeviceRegisterService deviceRegisterService() {
+            return mock(DeviceRegisterService.class);
+        }
+        @Bean
+        public EnrichmentExecutor enrichmentExecutor() {
+            return mock(EnrichmentExecutor.class);
+        }
     }
 
     static class ResultCaptor<T> implements Answer {
