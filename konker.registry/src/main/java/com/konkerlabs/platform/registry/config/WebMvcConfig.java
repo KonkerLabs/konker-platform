@@ -3,11 +3,9 @@ package com.konkerlabs.platform.registry.config;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import nz.net.ultraq.thymeleaf.LayoutDialect;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 import org.springframework.http.CacheControl;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
@@ -31,10 +29,13 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
         registry.addResourceHandler("/resources/**")
                 .addResourceLocations("/resources/")
                 .setCacheControl(CacheControl.maxAge(1, TimeUnit.HOURS).cachePublic());
+        registry.addResourceHandler("/dashboards/**")
+                .addResourceLocations("/dashboards/")
+                .setCacheControl(CacheControl.maxAge(1, TimeUnit.HOURS).cachePublic());
     }
 
     @Bean
-    public ServletContextTemplateResolver templateResolver() {
+    public ServletContextTemplateResolver thymeleafTemplateResolver() {
         ServletContextTemplateResolver templateResolver = new ServletContextTemplateResolver();
         templateResolver.setPrefix("/views/");
         templateResolver.setSuffix(".html");
@@ -47,7 +48,7 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
     @Bean
     public SpringTemplateEngine templateEngine() {
         SpringTemplateEngine templateEngine = new SpringTemplateEngine();
-        templateEngine.setTemplateResolver(templateResolver());
+        templateEngine.addTemplateResolver(thymeleafTemplateResolver());
         templateEngine.addDialect(new LayoutDialect());
         templateEngine.addMessageResolver(new StandardMessageResolver());
         return templateEngine;

@@ -12,6 +12,7 @@ import com.konkerlabs.platform.registry.business.services.rules.api.EventRuleSer
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
+import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
 import com.konkerlabs.platform.registry.web.forms.EventRuleForm;
 import org.junit.After;
 import org.junit.Before;
@@ -45,6 +46,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebAppConfiguration
 @ContextConfiguration(classes = {
     WebMvcConfig.class,
+    WebTestConfiguration.class,
     SecurityTestConfiguration.class,
     EventRuleControllerTest.EventRuleTestContextConfig.class
 })

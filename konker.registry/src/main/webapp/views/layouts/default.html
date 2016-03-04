@@ -42,6 +42,9 @@
                         <li><a data-th-href="@{/devices}">Devices</a></li>
                         <li><a data-th-href="@{/rules}">Rules</a></li>
                         <li><a data-th-href="@{/enrichment}">Enrichment</a></li>
+                        <li><a data-th-href="@{/dashboards/index.html} + '#dashboard/solr/' + ${@tenant.domainName} + '-events'"
+                            target="_blank">
+                            Dashboards</a></li>
                     </ul>
                 </li>
             </ul>

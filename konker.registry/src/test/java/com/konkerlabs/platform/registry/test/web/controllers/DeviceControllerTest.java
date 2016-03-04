@@ -7,6 +7,7 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
+import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
 import com.konkerlabs.platform.registry.web.forms.DeviceRegistrationForm;
 import org.junit.After;
 import org.junit.Before;
@@ -42,6 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebAppConfiguration
 @ContextConfiguration(classes = {
         WebMvcConfig.class,
+        WebTestConfiguration.class,
         SecurityTestConfiguration.class,
         DeviceControllerTest.DeviceTestContextConfig.class
 })
@@ -138,7 +140,8 @@ public class DeviceControllerTest extends WebLayerTestContext {
     @Test
     public void shouldShowDeviceDetails() throws Exception {
         savedDevice.setRegistrationDate(Instant.now());
-        when(deviceRegisterService.getById(tenant, savedDevice.getId())).thenReturn(ServiceResponse.<Device>builder().status(ServiceResponse.Status.OK).result(savedDevice).build());
+        when(deviceRegisterService.getById(tenant, savedDevice.getId())).thenReturn(
+                ServiceResponse.<Device>builder().status(ServiceResponse.Status.OK).result(savedDevice).<Device>build());
 
         getMockMvc().perform(get(MessageFormat.format("/devices/{0}", savedDevice.getId())))
                 .andExpect(model().attribute("device", savedDevice)).andExpect(view().name("devices/show"));
@@ -149,7 +152,8 @@ public class DeviceControllerTest extends WebLayerTestContext {
     @Test
     public void shouldShowDeviceEventList() throws Exception {
         savedDevice.setRegistrationDate(Instant.now());
-        when(deviceRegisterService.getById(tenant, savedDevice.getId())).thenReturn(ServiceResponse.<Device>builder().status(ServiceResponse.Status.OK).result(savedDevice).build());
+        when(deviceRegisterService.getById(tenant, savedDevice.getId())).thenReturn(
+                ServiceResponse.<Device>builder().status(ServiceResponse.Status.OK).result(savedDevice).build());
 
         getMockMvc().perform(get(MessageFormat.format("/devices/{0}/events", savedDevice.getId())))
                 .andExpect(model().attribute("device", savedDevice)).andExpect(view().name("devices/events"));
