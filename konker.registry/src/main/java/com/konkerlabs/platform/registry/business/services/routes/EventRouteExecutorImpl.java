@@ -1,13 +1,11 @@
-package com.konkerlabs.platform.registry.business.services.rules;
+package com.konkerlabs.platform.registry.business.services.routes;
 
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.EventRule;
-import com.konkerlabs.platform.registry.business.services.rules.api.EventRuleExecutor;
-import com.konkerlabs.platform.registry.business.services.rules.api.EventRulePublisher;
-import com.konkerlabs.platform.registry.business.services.rules.api.EventRuleService;
+import com.konkerlabs.platform.registry.business.model.EventRoute;
+import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteExecutor;
+import com.konkerlabs.platform.registry.business.services.routes.api.EventRoutePublisher;
+import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteService;
 import com.konkerlabs.platform.utilities.expressions.ExpressionEvaluationService;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 import org.slf4j.Logger;
@@ -32,12 +30,12 @@ import java.util.concurrent.Future;
 
 @Service
 @Scope(BeanDefinition.SCOPE_SINGLETON)
-public class EventRuleExecutorImpl implements EventRuleExecutor {
+public class EventRouteExecutorImpl implements EventRouteExecutor {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EventRuleExecutorImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(EventRouteExecutorImpl.class);
 
     @Autowired
-    private EventRuleService eventRuleService;
+    private EventRouteService eventRouteService;
     @Autowired
     private ApplicationContext applicationContext;
     @Autowired
@@ -50,21 +48,21 @@ public class EventRuleExecutorImpl implements EventRuleExecutor {
     @Async
     @Override
     public Future<List<Event>> execute(Event event, URI uri) {
-        List<EventRule> eventRules = eventRuleService.findByIncomingUri(uri);
+        List<EventRoute> eventRoutes = eventRouteService.findByIncomingUri(uri);
         String incomingPayload = event.getPayload();
 
         List<Event> outEvents = new ArrayList<Event>();
 
-        //FIXME execute event rules in parallel
-        for (EventRule eventRule : eventRules) {
-            if (!eventRule.isActive())
+        //FIXME execute event routes in parallel
+        for (EventRoute eventRoute : eventRoutes) {
+            if (!eventRoute.isActive())
                 continue;
-            if (!eventRule.getIncoming().getData().get("channel").equals(event.getChannel())) {
+            if (!eventRoute.getIncoming().getData().get("channel").equals(event.getChannel())) {
                 LOGGER.debug("Non matching channel for incoming event: {}", event);
                 continue;
             }
 
-            for (EventRule.RuleTransformation ruleTransformation : eventRule.getTransformations()) {
+            for (EventRoute.RuleTransformation ruleTransformation : eventRoute.getTransformations()) {
                 switch (RuleTransformationType.valueOf(ruleTransformation.getType())) {
                     case EXPRESSION_LANGUAGE: {
 
@@ -76,11 +74,11 @@ public class EventRuleExecutorImpl implements EventRuleExecutor {
                                 Map<String, Object> objectMap = jsonParsingService.toMap(incomingPayload);
 
                                 if (evaluationService.evaluateConditional(expression.get(), objectMap)) {
-                                    forwardEvent(eventRule.getOutgoing(), event);
+                                    forwardEvent(eventRoute.getOutgoing(), event);
                                     outEvents.add(event);
                                 } else {
-                                    LOGGER.debug(MessageFormat.format("Dropped rule \"{0}\", not matching \"{1}\" pattern with content \"{2}\". Message payload: {3} ",
-                                            eventRule.getName(), ruleTransformation.getType(), expression.get(), incomingPayload));
+                                    LOGGER.debug(MessageFormat.format("Dropped route \"{0}\", not matching \"{1}\" pattern with content \"{2}\". Message payload: {3} ",
+                                            eventRoute.getName(), ruleTransformation.getType(), expression.get(), incomingPayload));
                                 }
                             } catch (IOException e) {
                                 LOGGER.error("Error parsing JSON payload.", e);
@@ -91,7 +89,7 @@ public class EventRuleExecutorImpl implements EventRuleExecutor {
                                                 incomingPayload), e);
                             }
                         } else {
-                            forwardEvent(eventRule.getOutgoing(),event);
+                            forwardEvent(eventRoute.getOutgoing(),event);
                             outEvents.add(event);
                         }
 
@@ -103,8 +101,8 @@ public class EventRuleExecutorImpl implements EventRuleExecutor {
         return new AsyncResult<List<Event>>(outEvents);
     }
 
-    private void forwardEvent(EventRule.RuleActor outgoing, Event event) {
-        EventRulePublisher eventRulePublisher = (EventRulePublisher) applicationContext.getBean(outgoing.getUri().getScheme());
-        eventRulePublisher.send(event, outgoing);
+    private void forwardEvent(EventRoute.RuleActor outgoing, Event event) {
+        EventRoutePublisher eventRoutePublisher = (EventRoutePublisher) applicationContext.getBean(outgoing.getUri().getScheme());
+        eventRoutePublisher.send(event, outgoing);
     }
 }

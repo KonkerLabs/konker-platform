@@ -5,14 +5,14 @@
 <body>
 <div data-layout-fragment="content">
     <fieldset>
-        <legend>Rules</legend>
+        <legend>Routes</legend>
         <div class="alert alert-success" role="alert" data-th-if="${message != null}">
             <span data-th-text="${message}"></span>
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
         </div>
-        <a data-th-href="@{/rules/new}" data-th-if="${not allDevices.empty}" class="btn btn-default action pull-right">New</a>
+        <a data-th-href="@{/routes/new}" data-th-if="${not allDevices.empty}" class="btn btn-default action pull-right">New</a>
         <table class="table table-bordered">
             <thead>
             <tr>
@@ -24,19 +24,19 @@
             </tr>
             </thead>
             <tbody>
-            <tr data-th-each="rule : ${rules}">
-                <td data-th-text="${rule.name}"></td>
-                <td data-th-text="${rule.incoming.uri}"></td>
-                <td data-th-text="${rule.outgoing.uri}"></td>
+            <tr data-th-each="route : ${routes}">
+                <td data-th-text="${route.name}"></td>
+                <td data-th-text="${route.incoming.uri}"></td>
+                <td data-th-text="${route.outgoing.uri}"></td>
                 <td>
-                    <span data-th-if="${rule.active}" class="glyphicon glyphicon-thumbs-up" aria-hidden="true"/>
-                    <span data-th-if="${not rule.active}" class="glyphicon glyphicon-thumbs-down" aria-hidden="true"/>
+                    <span data-th-if="${route.active}" class="glyphicon glyphicon-thumbs-up" aria-hidden="true"/>
+                    <span data-th-if="${not route.active}" class="glyphicon glyphicon-thumbs-down" aria-hidden="true"/>
                 </td>
                 <td class="text-center">
-                    <a data-th-href="@{/rules/{id}(id=${rule.id})}" class="btn btn-default">
+                    <a data-th-href="@{/routes/{id}(id=${route.id})}" class="btn btn-default">
                         Show
                     </a>
-                    <a data-th-href="@{/rules/{id}/edit(id=${rule.id})}" class="btn btn-default">
+                    <a data-th-href="@{/routes/{id}/edit(id=${route.id})}" class="btn btn-default">
                         Edit
                     </a>
                 </td>

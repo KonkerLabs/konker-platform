@@ -14,10 +14,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Document(collection = "eventRules")
+@Document(collection = "eventRoutes")
 @Data
 @Builder
-public class EventRule {
+public class EventRoute {
 
     @Id
     private String id;

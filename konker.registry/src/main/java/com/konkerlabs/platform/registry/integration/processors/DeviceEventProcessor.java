@@ -7,7 +7,7 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceEventService
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.EnrichmentExecutor;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.rules.api.EventRuleExecutor;
+import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +15,6 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.util.Optional;
 
@@ -28,18 +26,18 @@ public class DeviceEventProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DeviceEventProcessor.class);
 
-    private EventRuleExecutor eventRuleExecutor;
+    private EventRouteExecutor eventRouteExecutor;
     private DeviceRegisterService deviceRegisterService;
     private DeviceEventService deviceEventService;
     private EnrichmentExecutor enrichmentExecutor;
 
     @Autowired
     public DeviceEventProcessor(DeviceEventService deviceEventService,
-                                EventRuleExecutor eventRuleExecutor,
+                                EventRouteExecutor eventRouteExecutor,
                                 DeviceRegisterService deviceRegisterService,
                                 EnrichmentExecutor enrichmentExecutor) {
         this.deviceEventService = deviceEventService;
-        this.eventRuleExecutor = eventRuleExecutor;
+        this.eventRouteExecutor = eventRouteExecutor;
         this.deviceRegisterService = deviceRegisterService;
         this.enrichmentExecutor = enrichmentExecutor;
     }
@@ -78,7 +76,7 @@ public class DeviceEventProcessor {
 
             deviceEventService.logEvent(device, event);
 
-            eventRuleExecutor.execute(event,device.toURI());
+            eventRouteExecutor.execute(event,device.toURI());
         } else {
             LOGGER.debug(MessageFormat.format(EVENT_DROPPED,
                 device.toURI(),

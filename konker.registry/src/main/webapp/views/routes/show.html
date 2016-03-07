@@ -5,7 +5,7 @@
 <body>
 <div data-layout-fragment="content">
     <fieldset disabled="">
-        <legend>Rules</legend>
+        <legend>Routes</legend>
         <div class="alert alert-success" role="alert" data-th-if="${message != null}">
             <span data-th-text="${message}"></span>
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -14,7 +14,7 @@
         </div>
         <div class="form-group">
             <label for="name">Name</label>
-            <input type="text" data-th-value="${rule.name}"
+            <input type="text" data-th-value="${route.name}"
                    class="form-control"
                    id="name"
                    name="name"/>
@@ -22,12 +22,12 @@
         <div class="form-group">
             <label for="description">Description</label>
             <textarea id="description" class="form-control" name="description"
-                      data-th-text="${rule.description}">
+                      data-th-text="${route.description}">
             </textarea>
         </div>
         <div class="form-group">
             <label for="incomingAuthority">Incoming Device</label>
-            <select class="form-control" data-th-field="${rule.incomingAuthority}"
+            <select class="form-control" data-th-field="${route.incomingAuthority}"
                     id="incomingAuthority" name="incomingAuthority">
                 <option data-th-each="device : ${allDevices}"
                         data-th-value="${device.deviceId}"
@@ -36,7 +36,7 @@
         </div>
         <div class="form-group">
             <label for="incomingChannel">Incoming channel</label>
-            <input type="text" data-th-value="${rule.incomingChannel}"
+            <input type="text" data-th-value="${route.incomingChannel}"
                    class="form-control"
                    id="incomingChannel"
                    name="incomingChannel"/>
@@ -45,34 +45,34 @@
             <label class="radio control-label">Outgoing type</label>
             <label class="radio-inline">
                 <input type="radio" name="outgoingScheme"
-                       value="device" data-th-checked="${rule.outgoingScheme == 'device'}">Devices</input>
+                       value="device" data-th-checked="${route.outgoingScheme == 'device'}">Devices</input>
             </label>
             <label class="radio-inline">
                 <input type="radio" name="outgoingScheme"
-                       value="sms" data-th-checked="${rule.outgoingScheme == 'sms'}">SMS</input>
+                       value="sms" data-th-checked="${route.outgoingScheme == 'sms'}">SMS</input>
             </label>
         </div>
-        <data-th-block data-th-include="rules/device-outgoing :: outgoing"
-                       data-th-if="${rule.outgoingScheme == 'device'}">
+        <data-th-block data-th-include="routes/device-outgoing :: outgoing"
+                       data-th-if="${route.outgoingScheme == 'device'}">
         </data-th-block>
-        <data-th-block data-th-include="rules/sms-outgoing :: outgoing"
-                       data-th-if="${rule.outgoingScheme == 'sms'}">
+        <data-th-block data-th-include="routes/sms-outgoing :: outgoing"
+                       data-th-if="${route.outgoingScheme == 'sms'}">
         </data-th-block>
         <div class="form-group">
             <label for="filterClause">Message filter</label>
-            <input type="text" data-th-value="${rule.filterClause}"
+            <input type="text" data-th-value="${route.filterClause}"
                    class="form-control"
                    id="filterClause"
                    name="filterClause"/>
         </div>
         <div class="form-group">
             <label for="active">Active?</label>
-            <input type="checkbox" data-th-checked="${rule.active}"
+            <input type="checkbox" data-th-checked="${route.active}"
                    id="active"
                    name="active"/>
         </div>
     </fieldset>
-    <a data-th-href="@{/rules}" class="btn btn-default">Back</a>
+    <a data-th-href="@{/routes}" class="btn btn-default">Back</a>
 </div>
 </body>
 </html>

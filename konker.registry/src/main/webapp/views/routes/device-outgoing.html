@@ -6,7 +6,7 @@
 <div data-th-fragment="outgoing">
     <div class="form-group">
         <label for="outgoingDeviceAuthority">Outgoing Device</label>
-        <select class="form-control" data-th-field="${rule.outgoingDeviceAuthority}"
+        <select class="form-control" data-th-field="${route.outgoingDeviceAuthority}"
                 id="outgoingDeviceAuthority" name="outgoingDeviceAuthority">
             <option data-th-each="device : ${allDevices}"
                     data-th-value="${device.deviceId}"
@@ -15,7 +15,7 @@
     </div>
     <div class="form-group">
         <label for="outgoingDeviceChannel">Outgoing channel</label>
-        <input type="text" data-th-field="${rule.outgoingDeviceChannel}"
+        <input type="text" data-th-field="${route.outgoingDeviceChannel}"
                class="form-control"
                id="outgoingDeviceChannel"
                name="outgoingDeviceChannel" placeholder="Type your incoming device's channel here..."/>

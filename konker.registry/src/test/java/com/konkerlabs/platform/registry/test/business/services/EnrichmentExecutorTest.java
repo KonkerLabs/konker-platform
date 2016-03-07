@@ -76,9 +76,9 @@ public class EnrichmentExecutorTest extends BusinessLayerTestSupport {
         event = spy(Event.builder().channel("data").timestamp(Instant.now()).payload(PAYLOAD).build());
 
         existingUri = new DeviceURIDealer() {
-        }.toDeviceRuleURI(REGISTERED_TENANT_DOMAIN, EXISTING_DEVICE_ID);
+        }.toDeviceRouteURI(REGISTERED_TENANT_DOMAIN, EXISTING_DEVICE_ID);
         nonExistingUri = new DeviceURIDealer() {
-        }.toDeviceRuleURI(REGISTERED_TENANT_DOMAIN, NON_EXISTING_DEVICE_ID);
+        }.toDeviceRouteURI(REGISTERED_TENANT_DOMAIN, NON_EXISTING_DEVICE_ID);
 
         device = spy(Device.builder()
                 .tenant(

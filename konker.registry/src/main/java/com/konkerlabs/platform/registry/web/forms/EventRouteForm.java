@@ -1,9 +1,9 @@
 package com.konkerlabs.platform.registry.web.forms;
 
-import com.konkerlabs.platform.registry.business.model.EventRule;
+import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.SmsURIDealer;
-import com.konkerlabs.platform.registry.business.services.rules.EventRuleExecutorImpl;
+import com.konkerlabs.platform.registry.business.services.routes.EventRouteExecutorImpl;
 import com.konkerlabs.platform.registry.web.forms.api.ModelBuilder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -13,9 +13,12 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import static com.konkerlabs.platform.registry.business.model.EventRoute.*;
+import static java.util.Arrays.asList;
+
 @Data
 @EqualsAndHashCode(exclude={"tenantDomainSupplier"})
-public class EventRuleForm implements ModelBuilder<EventRule,EventRuleForm,String>,
+public class EventRouteForm implements ModelBuilder<EventRoute,EventRouteForm,String>,
         DeviceURIDealer,
         SmsURIDealer {
 
@@ -33,7 +36,7 @@ public class EventRuleForm implements ModelBuilder<EventRule,EventRuleForm,Strin
     private Supplier<String> tenantDomainSupplier;
 
     @Override
-    public EventRule toModel() {
+    public EventRoute toModel() {
         Optional.ofNullable(tenantDomainSupplier)
             .orElseThrow(() -> new IllegalStateException("Tenant domain name supplier cannot be null"));
 
@@ -41,46 +44,46 @@ public class EventRuleForm implements ModelBuilder<EventRule,EventRuleForm,Strin
             .filter(s -> !s.isEmpty())
             .orElseThrow(() -> new IllegalStateException("Tenant domain name supplier cannot return null or empty"));
 
-        EventRule rule;
+        EventRoute route;
 
-        EventRule.RuleTransformation contentFilterTransformation = new EventRule.RuleTransformation(EventRuleExecutorImpl.RuleTransformationType.EXPRESSION_LANGUAGE.name());
+        EventRoute.RuleTransformation contentFilterTransformation = new EventRoute.RuleTransformation(EventRouteExecutorImpl.RuleTransformationType.EXPRESSION_LANGUAGE.name());
         contentFilterTransformation.getData().put("value",getFilterClause());
 
-        rule = EventRule.builder()
+        route = builder()
                 .id(id)
                 .name(getName())
                 .description(getDescription())
-                .incoming(new EventRule.RuleActor(
-                    toDeviceRuleURI(tenantDomainSupplier.get(),getIncomingAuthority())
+                .incoming(new RuleActor(
+                        toDeviceRouteURI(tenantDomainSupplier.get(), getIncomingAuthority())
                 ))
-                .outgoing(new EventRule.RuleActor(buildOutgoingURI()))
-                .transformations(Arrays.asList(new EventRule.RuleTransformation[]{contentFilterTransformation}))
+                .outgoing(new RuleActor(buildOutgoingURI()))
+                .transformations(asList(new RuleTransformation[]{contentFilterTransformation}))
                 .active(isActive())
                 .build();
-        applyIncomingMetadata(rule);
-        applyOutgoingMetadata(rule);
+        applyIncomingMetadata(route);
+        applyOutgoingMetadata(route);
 
-        return rule;
+        return route;
     }
 
     private URI buildOutgoingURI() {
         switch (getOutgoingScheme()) {
             case DeviceURIDealer.DEVICE_URI_SCHEME : return
-                toDeviceRuleURI(tenantDomainSupplier.get(),getOutgoingDeviceAuthority());
+                toDeviceRouteURI(tenantDomainSupplier.get(),getOutgoingDeviceAuthority());
             case SmsURIDealer.SMS_URI_SCHEME : return
                 toSmsURI(getOutgoingSmsPhoneNumber());
             default: return null;
         }
     }
 
-    private void applyIncomingMetadata(EventRule rule) {
-        rule.getIncoming().getData().put("channel",getIncomingChannel());
+    private void applyIncomingMetadata(EventRoute route) {
+        route.getIncoming().getData().put("channel",getIncomingChannel());
     }
 
-    private void applyOutgoingMetadata(EventRule rule) {
+    private void applyOutgoingMetadata(EventRoute route) {
         switch (getOutgoingScheme()) {
             case DeviceURIDealer.DEVICE_URI_SCHEME : {
-                rule.getOutgoing().getData().put("channel", getOutgoingDeviceChannel());
+                route.getOutgoing().getData().put("channel", getOutgoingDeviceChannel());
                 break;
             }
             default: break;
@@ -88,7 +91,7 @@ public class EventRuleForm implements ModelBuilder<EventRule,EventRuleForm,Strin
     }
 
     @Override
-    public EventRuleForm fillFrom(EventRule model) {
+    public EventRouteForm fillFrom(EventRoute model) {
         this.setId(model.getId());
         this.setName(model.getName());
         this.setDescription(model.getDescription());

@@ -94,7 +94,7 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
         dataEnrichmentExtension = DataEnrichmentExtension.builder()
                 .name(enrichmentForm.getName())
                 .description(enrichmentForm.getDescription())
-                .incoming(deviceUriDealer.toDeviceRuleURI(tenant.getDomainName(), "1"))
+                .incoming(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(), "1"))
                 .type(DataEnrichmentExtension.EnrichmentType.REST)
                 .parameters(enrichmentForm.getParameters())
                 .containerKey(enrichmentForm.getContainerKey())
@@ -209,7 +209,7 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
     }
 
     @Test
-    public void shouldShowRuleDetails() throws Exception {
+    public void shouldShowRouteDetails() throws Exception {
         when(dataEnrichmentExtensionService.getByName(tenant, dataEnrichmentExtension.getName())).thenReturn(serviceResponse);
 
         getMockMvc().perform(get(MessageFormat.format("/enrichment/{0}", dataEnrichmentExtension.getName())))

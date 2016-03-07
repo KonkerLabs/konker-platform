@@ -49,7 +49,7 @@ public class EnrichmentFormTest {
                 .name(form.getName())
                 .description(form.getDescription())
                 .type(DataEnrichmentExtension.EnrichmentType.REST)
-                .incoming(deviceUriDealer.toDeviceRuleURI(tenant.getDomainName(), deviceId))
+                .incoming(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(), deviceId))
                 .parameters(form.getParameters())
                 .containerKey(form.getContainerKey())
                 .active(form.isActive())

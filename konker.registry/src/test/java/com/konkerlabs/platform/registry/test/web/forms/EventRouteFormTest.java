@@ -1,11 +1,11 @@
 package com.konkerlabs.platform.registry.test.web.forms;
 
-import com.konkerlabs.platform.registry.business.model.EventRule;
+import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.SmsURIDealer;
-import com.konkerlabs.platform.registry.business.services.rules.EventRuleExecutorImpl;
-import com.konkerlabs.platform.registry.web.forms.EventRuleForm;
+import com.konkerlabs.platform.registry.business.services.routes.EventRouteExecutorImpl;
+import com.konkerlabs.platform.registry.web.forms.EventRouteForm;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -14,22 +14,22 @@ import org.junit.rules.ExpectedException;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-public class EventRuleFormTest {
+public class EventRouteFormTest {
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
-    private EventRuleForm form;
-    private EventRule model;
+    private EventRouteForm form;
+    private EventRoute model;
     private DeviceURIDealer deviceUriDealer;
     private SmsURIDealer smsUriDealer;
     private Tenant tenant;
 
     @Before
     public void setUp() {
-        form = new EventRuleForm();
-        form.setName("rule_name");
-        form.setDescription("rule_description");
+        form = new EventRouteForm();
+        form.setName("route_name");
+        form.setDescription("route_description");
         form.setIncomingAuthority("0000000000000004");
         form.setIncomingChannel("command");
         form.setFilterClause("LEDSwitch");
@@ -39,10 +39,10 @@ public class EventRuleFormTest {
 
         form.setAdditionalSupplier(() -> tenant.getDomainName());
 
-        model = EventRule.builder()
+        model = EventRoute.builder()
                 .name(form.getName())
                 .description(form.getDescription())
-                .transformation(new EventRule.RuleTransformation(EventRuleExecutorImpl.RuleTransformationType.EXPRESSION_LANGUAGE.name()))
+                .transformation(new EventRoute.RuleTransformation(EventRouteExecutorImpl.RuleTransformationType.EXPRESSION_LANGUAGE.name()))
                 .active(form.isActive()).build();
         model.getTransformations().get(0).getData().put("value",form.getFilterClause());
 
@@ -81,19 +81,19 @@ public class EventRuleFormTest {
     }
 
     @Test
-    public void shouldTranslateFromDeviceRuleFormToModel() throws Exception {
+    public void shouldTranslateFromDeviceRouteFormToModel() throws Exception {
         form.setOutgoingScheme("device");
         form.setOutgoingDeviceAuthority("0000000000000005");
         form.setOutgoingDeviceChannel("in");
 
         model.setIncoming(
-            new EventRule.RuleActor(deviceUriDealer.toDeviceRuleURI(
+            new EventRoute.RuleActor(deviceUriDealer.toDeviceRouteURI(
                 tenant.getDomainName(),form.getIncomingAuthority()
             ))
         );
         model.getIncoming().getData().put("channel",form.getIncomingChannel());
         model.setOutgoing(
-            new EventRule.RuleActor(deviceUriDealer.toDeviceRuleURI(
+            new EventRoute.RuleActor(deviceUriDealer.toDeviceRouteURI(
                 tenant.getDomainName(),form.getOutgoingDeviceAuthority()
             ))
         );
@@ -102,54 +102,54 @@ public class EventRuleFormTest {
         assertThat(form.toModel(),equalTo(model));
     }
     @Test
-    public void shouldTranslateFromSMSRuleFormToModel() throws Exception {
+    public void shouldTranslateFromSMSRouteFormToModel() throws Exception {
         form.setOutgoingScheme("sms");
         form.setOutgoingSmsPhoneNumber("+5511987654321");
 
-        model.setIncoming(new EventRule.RuleActor(
-            deviceUriDealer.toDeviceRuleURI(tenant.getDomainName(),form.getIncomingAuthority())
+        model.setIncoming(new EventRoute.RuleActor(
+            deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncomingAuthority())
         ));
         model.getIncoming().getData().put("channel",form.getIncomingChannel());
-        model.setOutgoing(new EventRule.RuleActor(
+        model.setOutgoing(new EventRoute.RuleActor(
             smsUriDealer.toSmsURI(form.getOutgoingSmsPhoneNumber())
         ));
 
         assertThat(form.toModel(),equalTo(model));
     }
     @Test
-    public void shouldTranslateFromDeviceRuleModelToForm() throws Exception {
+    public void shouldTranslateFromDeviceRouteModelToForm() throws Exception {
         form.setAdditionalSupplier(null);
 
         form.setOutgoingScheme("device");
         form.setOutgoingDeviceAuthority("0000000000000005");
         form.setOutgoingDeviceChannel("in");
 
-        model.setIncoming(new EventRule.RuleActor(
-            deviceUriDealer.toDeviceRuleURI(tenant.getDomainName(),form.getIncomingAuthority())
+        model.setIncoming(new EventRoute.RuleActor(
+            deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncomingAuthority())
         ));
         model.getIncoming().getData().put("channel",form.getIncomingChannel());
-        model.setOutgoing(new EventRule.RuleActor(
-            deviceUriDealer.toDeviceRuleURI(tenant.getDomainName(),form.getOutgoingDeviceAuthority())
+        model.setOutgoing(new EventRoute.RuleActor(
+            deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getOutgoingDeviceAuthority())
         ));
         model.getOutgoing().getData().put("channel",form.getOutgoingDeviceChannel());
 
-        assertThat(new EventRuleForm().fillFrom(model),equalTo(form));
+        assertThat(new EventRouteForm().fillFrom(model),equalTo(form));
     }
     @Test
-    public void shouldTranslateFromSMSRuleModelToForm() throws Exception {
+    public void shouldTranslateFromSMSRouteModelToForm() throws Exception {
         form.setAdditionalSupplier(null);
 
         form.setOutgoingScheme("sms");
         form.setOutgoingSmsPhoneNumber("+5511987654321");
 
-        model.setIncoming(new EventRule.RuleActor(
-            deviceUriDealer.toDeviceRuleURI(tenant.getDomainName(),form.getIncomingAuthority())
+        model.setIncoming(new EventRoute.RuleActor(
+            deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncomingAuthority())
         ));
         model.getIncoming().getData().put("channel",form.getIncomingChannel());
-        model.setOutgoing(new EventRule.RuleActor(
+        model.setOutgoing(new EventRoute.RuleActor(
             smsUriDealer.toSmsURI(form.getOutgoingSmsPhoneNumber())
         ));
 
-        assertThat(new EventRuleForm().fillFrom(model),equalTo(form));
+        assertThat(new EventRouteForm().fillFrom(model),equalTo(form));
     }
 }

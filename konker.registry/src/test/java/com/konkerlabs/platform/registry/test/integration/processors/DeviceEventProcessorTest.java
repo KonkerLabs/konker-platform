@@ -8,7 +8,7 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceEventService
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.EnrichmentExecutor;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.rules.api.EventRuleExecutor;
+import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteExecutor;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
 import com.konkerlabs.platform.registry.test.base.IntegrationLayerTestContext;
 import org.junit.After;
@@ -56,7 +56,7 @@ public class DeviceEventProcessorTest {
     @Autowired
     private DeviceEventService deviceEventService;
     @Autowired
-    private EventRuleExecutor eventRuleExecutor;
+    private EventRouteExecutor eventRouteExecutor;
     @Autowired
     private DeviceRegisterService deviceRegisterService;
     @Autowired
@@ -90,7 +90,7 @@ public class DeviceEventProcessorTest {
 
     @After
     public void tearDown() throws Exception {
-        reset(deviceEventService,eventRuleExecutor,deviceRegisterService);
+        reset(deviceEventService, eventRouteExecutor,deviceRegisterService);
     }
 
     @Test
@@ -142,7 +142,7 @@ public class DeviceEventProcessorTest {
         doAnswer(returnCaptor).when(device).toURI();
         subject.process(topic, originalPayload);
 
-        verify(eventRuleExecutor).execute(eq(event),same(returnCaptor.getResult()));
+        verify(eventRouteExecutor).execute(eq(event),same(returnCaptor.getResult()));
     }
 
     @Test
@@ -156,13 +156,13 @@ public class DeviceEventProcessorTest {
     }
 
     @Test
-    public void shouldNotFireRuleExecutionIfIncomingDeviceIsDisabled() throws Exception {
+    public void shouldNotFireRouteExecutionIfIncomingDeviceIsDisabled() throws Exception {
         device.setActive(false);
         when(deviceRegisterService.findByApiKey(sourceApiKey)).thenReturn(device);
 
         subject.process(topic, originalPayload);
 
-        verify(eventRuleExecutor,never()).execute(any(Event.class),any(URI.class));
+        verify(eventRouteExecutor,never()).execute(any(Event.class),any(URI.class));
     }
 
     @Configuration
@@ -172,8 +172,8 @@ public class DeviceEventProcessorTest {
             return mock(DeviceEventService.class);
         }
         @Bean
-        public EventRuleExecutor eventRuleExecutor() {
-            return mock(EventRuleExecutor.class);
+        public EventRouteExecutor eventRouteExecutor() {
+            return mock(EventRouteExecutor.class);
         }
         @Bean
         public DeviceRegisterService deviceRegisterService() {

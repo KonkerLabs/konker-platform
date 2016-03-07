@@ -86,7 +86,7 @@ public class DataEnrichmentExtensionServiceTest extends BusinessLayerTestSupport
         newDataEnrichmentExtension = spy(DataEnrichmentExtension.builder().name(NEW_ENCHRICHMENT_EXTENSION_NAME)
                 .type(DataEnrichmentExtension.EnrichmentType.REST)
                 .containerKey("containerKey")
-                .incoming(new DeviceURIDealer(){}.toDeviceRuleURI(aTenant.getDomainName(),"xx")).build());
+                .incoming(new DeviceURIDealer(){}.toDeviceRouteURI(aTenant.getDomainName(),"xx")).build());
 
         oldIncomingUri = new URI(OLD_INCOMING_URI);
         inexistentIncomingUri = new URI(INEXISTENT_INCOMING_URI);
@@ -130,7 +130,7 @@ public class DataEnrichmentExtensionServiceTest extends BusinessLayerTestSupport
 
     @Test
     public void shouldReturnErrorMessageIfContainerKeyIsDuplicatedWhenRegister() {
-        newDataEnrichmentExtension.setIncoming(new DeviceURIDealer(){}.toDeviceRuleURI(
+        newDataEnrichmentExtension.setIncoming(new DeviceURIDealer(){}.toDeviceRouteURI(
             aTenant.getDomainName(),
             DEVICE_ID_IN_USE
         ));

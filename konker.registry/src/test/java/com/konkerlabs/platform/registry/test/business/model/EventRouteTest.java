@@ -1,8 +1,8 @@
 package com.konkerlabs.platform.registry.test.business.model;
 
-import com.konkerlabs.platform.registry.business.model.EventRule;
+import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.services.rules.EventRuleExecutorImpl;
+import com.konkerlabs.platform.registry.business.services.routes.EventRouteExecutorImpl;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -13,9 +13,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.nullValue;
 
-public class EventRuleTest {
+public class EventRouteTest {
 
-    private EventRule subject;
+    private EventRoute subject;
     private String incomingAuthority = "0000000000000004";
     private String outgoingAuthority = "0000000000000005";
 
@@ -24,14 +24,14 @@ public class EventRuleTest {
 
         Tenant tenant = Tenant.builder().name("Konker").build();
 
-        subject = EventRule.builder()
+        subject = EventRoute.builder()
             .tenant(tenant)
-            .name("Rule name")
+            .name("Route name")
             .description("Description")
-            .incoming(new EventRule.RuleActor(new URI("device",incomingAuthority,null,null,null)))
-            .outgoing(new EventRule.RuleActor(new URI("device",outgoingAuthority,null,null,null)))
-            .transformations(Arrays.asList(new EventRule.RuleTransformation[]{
-                    new EventRule.RuleTransformation(EventRuleExecutorImpl.RuleTransformationType.EXPRESSION_LANGUAGE.name())
+            .incoming(new EventRoute.RuleActor(new URI("device",incomingAuthority,null,null,null)))
+            .outgoing(new EventRoute.RuleActor(new URI("device",outgoingAuthority,null,null,null)))
+            .transformations(Arrays.asList(new EventRoute.RuleTransformation[]{
+                    new EventRoute.RuleTransformation(EventRouteExecutorImpl.RuleTransformationType.EXPRESSION_LANGUAGE.name())
             }))
             .active(true)
             .build();

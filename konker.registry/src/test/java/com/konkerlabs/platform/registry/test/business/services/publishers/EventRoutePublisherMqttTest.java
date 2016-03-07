@@ -2,18 +2,17 @@ package com.konkerlabs.platform.registry.test.business.services.publishers;
 
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.EventRule;
+import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
 
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.rules.api.EventRulePublisher;
+import com.konkerlabs.platform.registry.business.services.routes.api.EventRoutePublisher;
 import com.konkerlabs.platform.registry.integration.gateways.MqttMessageGateway;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
-import com.konkerlabs.platform.utilities.config.UtilitiesConfig;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import org.junit.Before;
 import org.junit.Rule;
@@ -39,9 +38,9 @@ import static org.mockito.Mockito.*;
 @ContextConfiguration(classes = {
     MongoTestConfiguration.class,
     BusinessTestConfiguration.class,
-    EventRulePublisherMqttTest.EventRulePublisherMqttTestContext.class
+    EventRoutePublisherMqttTest.EventRoutePublisherMqttTestContext.class
 })
-public class EventRulePublisherMqttTest extends BusinessLayerTestSupport {
+public class EventRoutePublisherMqttTest extends BusinessLayerTestSupport {
 
     private static final String THE_DEVICE_ID = "71fc0d48-674a-4d62-b3e5-0216abca63af";
     private static final String REGISTERED_TENANT_DOMAIN = "konker";
@@ -63,11 +62,11 @@ public class EventRulePublisherMqttTest extends BusinessLayerTestSupport {
 
     @Autowired
     @Qualifier("device")
-    private EventRulePublisher subject;
+    private EventRoutePublisher subject;
 
     private Event event;
     private URI outgoingUri;
-    private EventRule.RuleActor outgoingRuleActor;
+    private EventRoute.RuleActor outgoingRuleActor;
 
     @Before
     public void setUp() throws Exception {
@@ -76,17 +75,17 @@ public class EventRulePublisherMqttTest extends BusinessLayerTestSupport {
             .payload("payload")
             .timestamp(Instant.now()).build();
 
-        outgoingUri = new DeviceURIDealer() {}.toDeviceRuleURI(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_ID);
+        outgoingUri = new DeviceURIDealer() {}.toDeviceRouteURI(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_ID);
 
-        outgoingRuleActor = new EventRule.RuleActor(outgoingUri);
+        outgoingRuleActor = new EventRoute.RuleActor(outgoingUri);
         outgoingRuleActor.getData().put("channel",event.getChannel());
     }
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json"})
     public void shouldRaiseAnExceptionIfDeviceIsUnknown() throws Exception {
-        outgoingUri = new DeviceURIDealer() {}.toDeviceRuleURI(REGISTERED_TENANT_DOMAIN,"unknown_device");
-        outgoingRuleActor = new EventRule.RuleActor(outgoingUri);
+        outgoingUri = new DeviceURIDealer() {}.toDeviceRouteURI(REGISTERED_TENANT_DOMAIN,"unknown_device");
+        outgoingRuleActor = new EventRoute.RuleActor(outgoingUri);
 
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage(
@@ -129,7 +128,7 @@ public class EventRulePublisherMqttTest extends BusinessLayerTestSupport {
     }
 
     @Configuration
-    static class EventRulePublisherMqttTestContext {
+    static class EventRoutePublisherMqttTestContext {
         @Bean
         public MqttMessageGateway mqttMessageGateway() {
             return Mockito.mock(MqttMessageGateway.class);

@@ -1,15 +1,14 @@
-package com.konkerlabs.platform.registry.business.services.rules.publishers;
+package com.konkerlabs.platform.registry.business.services.routes.publishers;
 
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.EventRule;
+import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.rules.api.EventRulePublisher;
+import com.konkerlabs.platform.registry.business.services.routes.api.EventRoutePublisher;
 import com.konkerlabs.platform.registry.integration.gateways.MqttMessageGateway;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
@@ -19,11 +18,11 @@ import java.util.Optional;
 
 @Service("device")
 @Scope(BeanDefinition.SCOPE_SINGLETON)
-public class EventRulePublisherMqtt implements EventRulePublisher {
+public class EventRoutePublisherMqtt implements EventRoutePublisher {
 
     private static final String EVENT_DROPPED = "Outgoing event has been dropped: [URI: {0}] - [Message: {1}]";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EventRulePublisherMqtt.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(EventRoutePublisherMqtt.class);
 
     private static final String MQTT_OUTGOING_TOPIC_TEMPLATE = "iot/{0}/{1}";
 
@@ -31,14 +30,14 @@ public class EventRulePublisherMqtt implements EventRulePublisher {
     private DeviceRegisterService deviceRegisterService;
 
     @Autowired
-    public EventRulePublisherMqtt(MqttMessageGateway mqttMessageGateway,
-                                  DeviceRegisterService deviceRegisterService) {
+    public EventRoutePublisherMqtt(MqttMessageGateway mqttMessageGateway,
+                                   DeviceRegisterService deviceRegisterService) {
         this.mqttMessageGateway = mqttMessageGateway;
         this.deviceRegisterService = deviceRegisterService;
     }
 
     @Override
-    public void send(Event outgoingEvent, EventRule.RuleActor outgoingRuleActor) {
+    public void send(Event outgoingEvent, EventRoute.RuleActor outgoingRuleActor) {
 
         Device outgoingDevice = deviceRegisterService.findByTenantDomainNameAndDeviceId(
             outgoingRuleActor.getUri().getAuthority(),

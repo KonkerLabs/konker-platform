@@ -40,7 +40,7 @@ public class EnrichmentForm implements ModelBuilder<DataEnrichmentExtension, Enr
                 .name(getName())
                 .type(DataEnrichmentExtension.EnrichmentType.valueOf(getType()))
                 .description(getDescription())
-                .incoming(toDeviceRuleURI(tenantDomainSupplier.get(), getIncomingAuthority()))
+                .incoming(toDeviceRouteURI(tenantDomainSupplier.get(), getIncomingAuthority()))
                 .containerKey(getContainerKey())
                 .parameters(getParameters())
                 .active(isActive())

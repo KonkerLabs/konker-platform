@@ -1,0 +1,17 @@
+package com.konkerlabs.platform.registry.business.services.routes.api;
+
+
+import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
+import com.konkerlabs.platform.registry.business.model.EventRoute;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+
+import java.net.URI;
+import java.util.List;
+
+public interface EventRouteService {
+    ServiceResponse<EventRoute> save(Tenant tenant, EventRoute route) throws BusinessException;
+    List<EventRoute> getAll(Tenant tenant);
+    ServiceResponse<EventRoute> getById(Tenant tenant, String id);
+    List<EventRoute> findByIncomingUri(URI uri);
+}

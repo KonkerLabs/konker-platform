@@ -5,7 +5,7 @@ $(document).ready(function() {
 });
 
 function renderOutgoingFragment(scheme) {
-    var base = urlTo('/rules/outgoing/');
+    var base = urlTo('/routes/outgoing/');
     var url = base + scheme;
 
     fetchViewFragment(url);

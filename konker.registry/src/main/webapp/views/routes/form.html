@@ -5,20 +5,20 @@
 <body>
 <div data-layout-fragment="content">
     <fieldset>
-        <legend>Rules</legend>
+        <legend>Routes</legend>
         <div class="alert alert-danger" role="alert" data-th-if="${errors != null and !errors.empty}">
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
             <li data-th-each="error : ${errors}" data-th-text="${error}"></li>
         </div>
-        <form data-th-action="@{{url}(url=${action})}" action="#" data-th-object="${rule}" method="post">
+        <form data-th-action="@{{url}(url=${action})}" action="#" data-th-object="${route}" method="post">
             <div class="form-group">
                 <label for="name">Name</label>
                 <input type="text" data-th-field="*{name}"
                        class="form-control"
                        id="name"
-                       name="name" placeholder="Type your rule name here..."/>
+                       name="name" placeholder="Type your route name here..."/>
             </div>
             <div class="form-group">
                 <label for="description">Description</label>
@@ -55,10 +55,10 @@
                 <img data-th-src="@{/resources/konker/images/loading.gif}" id="loading" class="ajax-loading"/>
             </div>
             <div id="outgoingFragment">
-                <data-th-block data-th-include="rules/device-outgoing :: outgoing"
+                <data-th-block data-th-include="routes/device-outgoing :: outgoing"
                                data-th-if="*{outgoingScheme == 'device'}">
                 </data-th-block>
-                <data-th-block data-th-include="rules/sms-outgoing :: outgoing"
+                <data-th-block data-th-include="routes/sms-outgoing :: outgoing"
                                data-th-if="*{outgoingScheme == 'sms'}">
                 </data-th-block>
             </div>
@@ -76,12 +76,12 @@
                        name="active"/>
             </div>
             <button type="submit" class="btn btn-success">Save</button>
-            <a data-th-href="@{/rules}" class="btn btn-default">Back</a>
+            <a data-th-href="@{/routes}" class="btn btn-default">Back</a>
         </form>
     </fieldset>
 </div>
 <div data-layout-fragment="script">
-    <script data-th-attr="src=@{/resources/js/rules/form.js}"></script>
+    <script data-th-attr="src=@{/resources/js/routes/form.js}"></script>
 </div>
 </body>
 </html>

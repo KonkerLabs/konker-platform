@@ -176,7 +176,7 @@ public class DeviceTest {
 
 	@Test
 	public void shouldGenerateItsOwnURI() throws Exception {
-        URI expected = new DeviceURIDealer() {}.toDeviceRuleURI(
+        URI expected = new DeviceURIDealer() {}.toDeviceRouteURI(
             device.getTenant().getDomainName(),device.getDeviceId()
         );
 

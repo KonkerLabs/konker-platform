@@ -1,14 +1,14 @@
 {
-  "eventRules" : [
+  "eventRoutes" : [
     {
       "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
-      "_class" : "com.konkerlabs.platform.registry.model.EventRule",
+      "_class" : "com.konkerlabs.platform.registry.model.EventRoute",
       "tenant" : {
         "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
         "$ref" : "tenants"
       },
-      "name" : "Device event forwarding rule",
-      "description" : "Rule description",
+      "name" : "Device event forwarding route",
+      "description" : "Route description",
       "incoming": {
         "uri" : "device://konker/0000000000000004",
         "data" : {
@@ -31,13 +31,13 @@
     },
     {
       "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63ab",
-      "_class" : "com.konkerlabs.platform.registry.model.EventRule",
+      "_class" : "com.konkerlabs.platform.registry.model.EventRoute",
       "tenant" : {
         "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
         "$ref" : "tenants"
       },
-      "name" : "Device event forwarding rule",
-      "description" : "Rule description",
+      "name" : "Device event forwarding route",
+      "description" : "Route description",
       "incoming": {
         "uri" : "device://konker/0000000000000004",
         "data" : {
@@ -60,13 +60,13 @@
     },
     {
       "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63ac",
-      "_class" : "com.konkerlabs.platform.registry.model.EventRule",
+      "_class" : "com.konkerlabs.platform.registry.model.EventRoute",
       "tenant" : {
         "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
         "$ref" : "tenants"
       },
-      "name" : "Device event forwarding rule",
-      "description" : "Rule description",
+      "name" : "Device event forwarding route",
+      "description" : "Route description",
       "incoming": {
         "uri" : "device://konker/0000000000000004",
         "data" : {
@@ -89,13 +89,13 @@
     },
     {
       "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63ad",
-      "_class" : "com.konkerlabs.platform.registry.model.EventRule",
+      "_class" : "com.konkerlabs.platform.registry.model.EventRoute",
       "tenant" : {
         "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
         "$ref" : "tenants"
       },
-      "name" : "Device event forwarding rule",
-      "description" : "Rule description",
+      "name" : "Device event forwarding route",
+      "description" : "Route description",
       "incoming": {
         "uri" : "device://konker/0000000000000007",
         "data" : {
@@ -118,13 +118,13 @@
     },
     {
       "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63ae",
-      "_class" : "com.konkerlabs.platform.registry.model.EventRule",
+      "_class" : "com.konkerlabs.platform.registry.model.EventRoute",
       "tenant" : {
         "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
         "$ref" : "tenants"
       },
-      "name" : "Device event forwarding rule",
-      "description" : "Rule description",
+      "name" : "Device event forwarding route",
+      "description" : "Route description",
       "incoming": {
         "uri" : "device://konker/0000000000000004",
         "data" : {
@@ -147,13 +147,13 @@
     },
     {
       "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63ba",
-      "_class" : "com.konkerlabs.platform.registry.model.EventRule",
+      "_class" : "com.konkerlabs.platform.registry.model.EventRoute",
       "tenant" : {
         "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
         "$ref" : "tenants"
       },
-      "name" : "Device event forwarding rule",
-      "description" : "Rule description",
+      "name" : "Device event forwarding route",
+      "description" : "Route description",
       "incoming": {
         "uri" : "device://konker/0000000000000004",
         "data" : {
@@ -176,13 +176,13 @@
     },
     {
       "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63bb",
-      "_class" : "com.konkerlabs.platform.registry.model.EventRule",
+      "_class" : "com.konkerlabs.platform.registry.model.EventRoute",
       "tenant" : {
         "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
         "$ref" : "tenants"
       },
-      "name" : "Device event forwarding rule",
-      "description" : "Rule description",
+      "name" : "Device event forwarding route",
+      "description" : "Route description",
       "incoming": {
         "uri" : "device://konker/0000000000000001",
         "data" : {
@@ -205,13 +205,13 @@
     },
     {
       "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63bc",
-      "_class" : "com.konkerlabs.platform.registry.model.EventRule",
+      "_class" : "com.konkerlabs.platform.registry.model.EventRoute",
       "tenant" : {
         "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
         "$ref" : "tenants"
       },
-      "name" : "Device event forwarding rule",
-      "description" : "Rule description",
+      "name" : "Device event forwarding route",
+      "description" : "Route description",
       "incoming": {
         "uri" : "device://konker/0000000000000002",
         "data" : {
