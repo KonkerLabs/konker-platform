@@ -19,6 +19,8 @@ import org.springframework.integration.mqtt.support.DefaultPahoMessageConverter;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 
+import java.util.UUID;
+
 @Configuration
 @EnableIntegration
 @ComponentScan(basePackages = "com.konkerlabs.platform.registry.integration")
@@ -58,7 +60,7 @@ public class MqttConfig {
     @Bean
     public AbstractMqttMessageDrivenChannelAdapter inbound() {
         MqttPahoMessageDrivenChannelAdapter adapter =
-                new MqttPahoMessageDrivenChannelAdapter("konkerSubscriber",
+                new MqttPahoMessageDrivenChannelAdapter(UUID.randomUUID().toString(),
                         mqttClientFactory(),topicPatternList());
         adapter.setCompletionTimeout(5000);
         adapter.setConverter(new DefaultPahoMessageConverter());

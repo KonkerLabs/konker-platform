@@ -19,6 +19,11 @@ html,body {
   padding: 0 0 60px;
 }
 
+.container {
+  width: 100%;
+  height: 100%;
+}
+
 /* Set the fixed height of the footer here */
 #footer {
   height: 30px;

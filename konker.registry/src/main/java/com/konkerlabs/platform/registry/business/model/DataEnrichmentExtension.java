@@ -20,7 +20,7 @@ import lombok.Singular;
 @Builder
 public class DataEnrichmentExtension {
 
-    public static enum EnrichmentType {REST};
+    public enum EnrichmentType {REST};
     
     @Id
     private String id;
@@ -56,13 +56,14 @@ public class DataEnrichmentExtension {
         if (getType() == null)
             validations.add("Data enrichment type cannot be null");
 
-        if (parameters == null)
+        if (getParameters() == null)
             validations.add("Parameters cannot be null");
 
-            
-        if (validations.isEmpty())
-            return null;
-        else
-            return validations;
+        if (getContainerKey() == null || getContainerKey().isEmpty())
+            validations.add("Container key cannot be null or empty");
+
+        return Optional.of(validations)
+            .filter(strings -> !strings.isEmpty())
+            .orElseGet(ArrayList<String>::new);
     }
 }

@@ -68,6 +68,6 @@ public class Device implements DeviceURIDealer {
 	}
 
 	public URI toURI() {
-		return toDeviceRuleURI(getTenant().getDomainName(),getDeviceId());
+		return toDeviceRouteURI(getTenant().getDomainName(),getDeviceId());
 	}
 }

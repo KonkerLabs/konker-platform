@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.EventRule;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
@@ -168,10 +167,10 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .orElseThrow(() -> new BusinessException("Device does not exist"));
 
             return ServiceResponse.<Device> builder().status(ServiceResponse.Status.OK).result(device)
-                    .build();
+                    .<Device>build();
         } catch (BusinessException be) {
             return ServiceResponse.<Device> builder().status(ServiceResponse.Status.ERROR)
-                    .responseMessage(be.getMessage()).build();
+                    .responseMessage(be.getMessage()).<Device>build();
         }
     }
 

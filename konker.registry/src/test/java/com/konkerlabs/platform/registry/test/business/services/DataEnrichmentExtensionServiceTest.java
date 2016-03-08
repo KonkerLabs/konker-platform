@@ -1,25 +1,24 @@
 package com.konkerlabs.platform.registry.test.business.services;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.*;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
+import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -44,6 +43,10 @@ public class DataEnrichmentExtensionServiceTest extends BusinessLayerTestSupport
     private static final String OLD_ENCHRICHMENT_EXTENSION_ID = "a09b3f34-db24-11e5-8a31-7b3889d9b0eb";
     private static final String INEXISTENT_ENCHRICHMENT_EXTENSION_NAME = "INEXISTENT_NAME";
     private static final String NEW_ENCHRICHMENT_EXTENSION_NAME = "REST-from-Amazon-01";
+    private static final String DEVICE_ID_IN_USE = "abc123";
+    private static final String CONTAINER_KEY_IN_USE = "magentoData";
+    private static final String OLD_INCOMING_URI = "device://konker/abc123";
+    private static final String INEXISTENT_INCOMING_URI = "device://konker/999";
 
     private Tenant inexistentTenant;
     private Tenant aTenant;
@@ -52,25 +55,41 @@ public class DataEnrichmentExtensionServiceTest extends BusinessLayerTestSupport
     private DataEnrichmentExtension oldDataEnrichmentExtension;
     private DataEnrichmentExtension newDataEnrichmentExtension;
 
+    private URI oldIncomingUri;
+    private URI inexistentIncomingUri;
+
+    @Autowired
+    private ApplicationContext applicationContext;
+
     @Autowired
     private DataEnrichmentExtensionService service;
 
     @Autowired
     private DataEnrichmentExtensionRepository repository;
 
+    @Autowired
+    private TenantRepository tenantRepository;
+
+    @Autowired
+    private DataEnrichmentExtensionRepository enrichmentExtensionRepository;
+
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
     @Before
-    public void setup() {
+    public void setup() throws URISyntaxException {
         inexistentTenant = Tenant.builder().id(INEXISTENT_TENANT_ID).build();
-        aTenant = Tenant.builder().id("71fb0d48-674b-4f64-a3e5-0256ff3a63af").name("Konker").build();
+        aTenant = tenantRepository.findByDomainName("konker");
         emptyTenant = Tenant.builder().name("EmptyTenant").build();
         oldDataEnrichmentExtension = spy(
                 DataEnrichmentExtension.builder().name(OLD_ENCHRICHMENT_EXTENSION_NAME).build());
         newDataEnrichmentExtension = spy(DataEnrichmentExtension.builder().name(NEW_ENCHRICHMENT_EXTENSION_NAME)
-                .type(DataEnrichmentExtension.EnrichmentType.REST).incoming(URI.create("device://xx")).build());
+                .type(DataEnrichmentExtension.EnrichmentType.REST)
+                .containerKey("containerKey")
+                .incoming(new DeviceURIDealer(){}.toDeviceRouteURI(aTenant.getDomainName(),"xx")).build());
 
+        oldIncomingUri = new URI(OLD_INCOMING_URI);
+        inexistentIncomingUri = new URI(INEXISTENT_INCOMING_URI);
     }
 
     // ============================== register ==============================//
@@ -107,6 +126,20 @@ public class DataEnrichmentExtensionServiceTest extends BusinessLayerTestSupport
         assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
         assertThat(response.getResult(), nullValue());
         assertThat(response.getResponseMessages(), hasItem("Data Enrichment Extension Name must be unique"));
+    }
+
+    @Test
+    public void shouldReturnErrorMessageIfContainerKeyIsDuplicatedWhenRegister() {
+        newDataEnrichmentExtension.setIncoming(new DeviceURIDealer(){}.toDeviceRouteURI(
+            aTenant.getDomainName(),
+            DEVICE_ID_IN_USE
+        ));
+        newDataEnrichmentExtension.setContainerKey(CONTAINER_KEY_IN_USE);
+
+        ServiceResponse<DataEnrichmentExtension> response = service.register(aTenant, newDataEnrichmentExtension);
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+        assertThat(response.getResult(), nullValue());
+        assertThat(response.getResponseMessages(), hasItem("Container key already registered for incoming device"));
     }
 
     @Test
@@ -176,6 +209,18 @@ public class DataEnrichmentExtensionServiceTest extends BusinessLayerTestSupport
         assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
         assertThat(response.getResult(), nullValue());
         assertThat(response.getResponseMessages(), hasItems("Error 1", "Error 2"));
+    }
+
+    @Test
+    public void shouldReturnErrorMessageIfContainerKeyIsDuplicatedWhenUpdating() {
+        oldDataEnrichmentExtension = enrichmentExtensionRepository.findOne(OLD_ENCHRICHMENT_EXTENSION_ID);
+
+        oldDataEnrichmentExtension.setContainerKey(CONTAINER_KEY_IN_USE);
+
+        ServiceResponse<DataEnrichmentExtension> response = service.update(aTenant, oldDataEnrichmentExtension);
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+        assertThat(response.getResult(), nullValue());
+        assertThat(response.getResponseMessages(), hasItem("Container key already registered for incoming device"));
     }
 
     @Test
@@ -286,6 +331,50 @@ public class DataEnrichmentExtensionServiceTest extends BusinessLayerTestSupport
         ServiceResponse<DataEnrichmentExtension> response = service.getByName(aTenant, OLD_ENCHRICHMENT_EXTENSION_NAME);
         assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
         assertThat(response.getResult().getId(), equalTo(OLD_ENCHRICHMENT_EXTENSION_ID));
+        assertThat(response.getResponseMessages(), empty());
+    }
+
+
+    // ============================== getByTenantAndByIncomingURI ==============================//
+    @Test
+    public void shouldReturnErrorMessageIfTenantIsInexistentWhenFindByTenantAndIncomingURI() {
+        ServiceResponse<List<DataEnrichmentExtension>> response = service.getByTenantAndByIncomingURI(inexistentTenant,
+                oldIncomingUri);
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+        assertThat(response.getResult(), nullValue());
+        assertThat(response.getResponseMessages(), hasItem("Tenant does not exist"));
+    }
+
+    @Test
+    public void shouldReturnErrorMessageIfTenantIsNullWhenFindByTenantAndIncomingURI() {
+        ServiceResponse<List<DataEnrichmentExtension>> response = service.getByTenantAndByIncomingURI(null, oldIncomingUri);
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+        assertThat(response.getResult(), nullValue());
+        assertThat(response.getResponseMessages(), hasItem("Tenant cannot be null"));
+    }
+
+    @Test
+    public void shouldReturnErrorMessageIfIdIsNullWhenFindByTenantAndIncomingURI() {
+        ServiceResponse<List<DataEnrichmentExtension>> response = service.getByTenantAndByIncomingURI(aTenant, null);
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+        assertThat(response.getResult(), nullValue());
+        assertThat(response.getResponseMessages(), hasItem("Incoming URI cannot be null"));
+    }
+
+    @Test
+    public void shouldReturnEmptyListIfDoesNotExistIncomingURI() {
+        ServiceResponse<List<DataEnrichmentExtension>> response = service.getByTenantAndByIncomingURI(aTenant,
+                inexistentIncomingUri);
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
+        assertThat(response.getResult(), notNullValue());
+        assertThat(response.getResult(), hasSize(0));
+    }
+
+    @Test
+    public void shouldReturnRightExtensionIfIsValidWhenFindByTenantAndIncomingURI() {
+        ServiceResponse<List<DataEnrichmentExtension>> response = service.getByTenantAndByIncomingURI(aTenant, oldIncomingUri);
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
+        assertThat(response.getResult().get(0).getId(), equalTo(OLD_ENCHRICHMENT_EXTENSION_ID));
         assertThat(response.getResponseMessages(), empty());
     }
 

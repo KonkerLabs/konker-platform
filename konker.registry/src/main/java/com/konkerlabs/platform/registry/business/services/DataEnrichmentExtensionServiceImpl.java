@@ -1,12 +1,5 @@
 package com.konkerlabs.platform.registry.business.services;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.DataEnrichmentExtension;
 import com.konkerlabs.platform.registry.business.model.Tenant;
@@ -14,6 +7,15 @@ import com.konkerlabs.platform.registry.business.repositories.DataEnrichmentExte
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.DataEnrichmentExtensionService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.stereotype.Service;
+
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensionService {
@@ -23,6 +25,21 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
 
     @Autowired
     private DataEnrichmentExtensionRepository repository;
+
+    @Autowired
+    private MongoTemplate mongoTemplate;
+
+//    private boolean isContainerKeyRegisteredFor(Tenant tenant, URI incoming, String containerKey) {
+//        return mongoTemplate.exists(
+//            new Query(
+//                Criteria.where("tenant.id").is(tenant.getId())
+//                .andOperator(
+//                    Criteria.where("incoming").is(incoming),
+//                    Criteria.where("containerKey").is(containerKey)
+//                )
+//            ), DataEnrichmentExtension.class
+//        );
+//    }
 
     @Override
     public ServiceResponse<DataEnrichmentExtension> register(Tenant tenant, DataEnrichmentExtension dee) {
@@ -42,9 +59,17 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
             dee.setId(null);
 
             List<String> validationErrors = Optional.ofNullable(dee.applyValidations()).orElse(Collections.emptyList());
+
+            if (!repository.findByTenantIdAndIncomingAndContainerKey(
+                tenant.getId(),
+                dee.getIncoming(),
+                dee.getContainerKey()
+                ).isEmpty())
+                validationErrors.add("Container key already registered for incoming device");
+
             if (!validationErrors.isEmpty()) {
                 return ServiceResponse.<DataEnrichmentExtension>builder().status(ServiceResponse.Status.ERROR)
-                        .responseMessages(dee.applyValidations()).<DataEnrichmentExtension>build();
+                        .responseMessages(validationErrors).<DataEnrichmentExtension>build();
             }
 
             dee.setTenant(tenant);
@@ -78,9 +103,23 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
             dee.setTenant(tenant);
 
             List<String> validationErrors = Optional.ofNullable(dee.applyValidations()).orElse(Collections.emptyList());
+
+            boolean isContainerKeyInUse = Optional.of(
+                repository.findByTenantIdAndIncomingAndContainerKey(
+                        tenant.getId(),
+                        dee.getIncoming(),
+                        dee.getContainerKey()
+                )
+            ).filter(dataEnrichmentExtensions -> !dataEnrichmentExtensions.isEmpty())
+            .orElseGet(ArrayList<DataEnrichmentExtension>::new).stream()
+                .anyMatch(currentDee -> !currentDee.getId().equals(oldDee.getId()));
+
+            if (isContainerKeyInUse)
+                validationErrors.add("Container key already registered for incoming device");
+
             if (!validationErrors.isEmpty()) {
                 return ServiceResponse.<DataEnrichmentExtension>builder().status(ServiceResponse.Status.ERROR)
-                        .responseMessages(dee.applyValidations()).<DataEnrichmentExtension>build();
+                        .responseMessages(validationErrors).<DataEnrichmentExtension>build();
             }
 
             dee.setId(oldDee.getId());
@@ -133,6 +172,26 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
         } catch (BusinessException be) {
             return ServiceResponse.<DataEnrichmentExtension> builder().status(ServiceResponse.Status.ERROR)
                     .responseMessage(be.getMessage()).<DataEnrichmentExtension>build();
+        }
+    }
+
+    @Override
+    public ServiceResponse<List<DataEnrichmentExtension>> getByTenantAndByIncomingURI(Tenant tenant, URI incomingUri) {
+        try {
+            Optional.ofNullable(incomingUri).orElseThrow(() -> new BusinessException("Incoming URI cannot be null"));
+            Optional.ofNullable(tenant).orElseThrow(() -> new BusinessException("Tenant cannot be null"));
+
+            Tenant t = Optional.ofNullable(tenantRepository.findByName(tenant.getName()))
+                    .orElseThrow(() -> new BusinessException("Tenant does not exist"));
+
+            List<DataEnrichmentExtension> l = repository.findByTenantIdAndIncoming(t.getId(), incomingUri);
+
+            return ServiceResponse.<List<DataEnrichmentExtension>> builder().status(ServiceResponse.Status.OK).result(l)
+                    .<List<DataEnrichmentExtension>>build();
+
+        } catch (BusinessException be) {
+            return ServiceResponse.<List<DataEnrichmentExtension>> builder().status(ServiceResponse.Status.ERROR)
+                    .responseMessage(be.getMessage()).<List<DataEnrichmentExtension>>build();
         }
     }
 

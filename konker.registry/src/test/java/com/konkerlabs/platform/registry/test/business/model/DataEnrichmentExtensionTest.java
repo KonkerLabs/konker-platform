@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry.test.business.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.nullValue;
 
@@ -21,8 +22,6 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = { MongoTestConfiguration.class, BusinessTestConfiguration.class })
 public class DataEnrichmentExtensionTest {
     private DataEnrichmentExtension dee;
 
@@ -73,7 +72,7 @@ public class DataEnrichmentExtensionTest {
     public void shouldNotReturnAValidationMessageIfDescriptionIsNull() throws Exception {
         dee.setDescription(null);
 
-        assertThat(dee.applyValidations(), nullValue());
+        assertThat(dee.applyValidations(), emptyIterable());
     }
 
     @Test
@@ -104,14 +103,6 @@ public class DataEnrichmentExtensionTest {
     }
 
     @Test
-    public void shouldNotReturnAValidationMessageIfContainerKeyIsNull() throws Exception {
-        dee.setContainerKey(null);
-
-        assertThat(dee.applyValidations(), nullValue());
-    }
-
-
-    @Test
     public void shouldReturnAValidationMessageIfParametersIsNull() throws Exception {
         dee.setParameters(null);
 
@@ -120,4 +111,21 @@ public class DataEnrichmentExtensionTest {
         assertThat(dee.applyValidations(), hasItem(expectedMessage));
     }
 
+    @Test
+    public void shouldReturnAValidationMessageIfContainerKeyIsNull() throws Exception {
+        dee.setContainerKey(null);
+
+        String expectedMessage = "Container key cannot be null or empty";
+
+        assertThat(dee.applyValidations(), hasItem(expectedMessage));
+    }
+
+    @Test
+    public void shouldReturnAValidationMessageIfContainerKeyIsEmpty() throws Exception {
+        dee.setContainerKey("");
+
+        String expectedMessage = "Container key cannot be null or empty";
+
+        assertThat(dee.applyValidations(), hasItem(expectedMessage));
+    }
 }

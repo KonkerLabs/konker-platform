@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.business.repositories;
 
+import java.net.URI;
 import java.util.List;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -15,4 +16,9 @@ public interface DataEnrichmentExtensionRepository extends MongoRepository<DataE
     @Query("{ 'tenant.id' : ?0 }")
     List<DataEnrichmentExtension> findAllByTenantId(String tenantId);
 
+    @Query("{ 'tenant.id' : ?0, 'incoming' : ?1, 'containerKey' : ?2 }")
+    List<DataEnrichmentExtension> findByTenantIdAndIncomingAndContainerKey(String tenantId, URI incoming, String containerKey);
+
+    @Query("{ 'tenant.id' : ?0, 'incoming' : ?1 }")
+    List<DataEnrichmentExtension> findByTenantIdAndIncoming(String tenantId, URI incoming);
 }

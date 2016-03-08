@@ -4,6 +4,7 @@ import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
+import com.konkerlabs.platform.registry.business.repositories.solr.EventRepository;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -19,12 +20,10 @@ import java.util.Optional;
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
 public class DeviceEventServiceImpl implements DeviceEventService {
 
-    private DeviceRepository deviceRepository;
-
     @Autowired
-    public DeviceEventServiceImpl(DeviceRepository deviceRepository) {
-        this.deviceRepository = deviceRepository;
-    }
+    private DeviceRepository deviceRepository;
+    @Autowired
+    private EventRepository eventRepository;
 
     @Override
     public void logEvent(Device device, Event event) throws BusinessException {
@@ -49,5 +48,7 @@ public class DeviceEventServiceImpl implements DeviceEventService {
         device.getEvents().add(event);
 
         deviceRepository.save(device);
+
+        eventRepository.push(device, event);
     }
 }

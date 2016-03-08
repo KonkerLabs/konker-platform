@@ -29,7 +29,7 @@ public class DeviceURIDealerTest {
 
         subject = new DeviceURIDealer() {};
 
-        uri = URI.create(MessageFormat.format(DeviceURIDealer.DEVICE_RULE_URI_TEMPLATE,tenantDomain,deviceId));
+        uri = URI.create(MessageFormat.format(DeviceURIDealer.DEVICE_ROUTE_URI_TEMPLATE,tenantDomain,deviceId));
     }
 
     @Test
@@ -39,7 +39,7 @@ public class DeviceURIDealerTest {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Tenant domain cannot be null or empty");
 
-        subject.toDeviceRuleURI(tenantDomain,deviceId);
+        subject.toDeviceRouteURI(tenantDomain,deviceId);
     }
     @Test
     public void shouldRaiseAnExceptionIfTenantDomainIsEmpty() throws Exception {
@@ -48,7 +48,7 @@ public class DeviceURIDealerTest {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Tenant domain cannot be null or empty");
 
-        subject.toDeviceRuleURI(tenantDomain,deviceId);
+        subject.toDeviceRouteURI(tenantDomain,deviceId);
     }
     @Test
     public void shouldRaiseAnExceptionIfDeviceIdIsNull() throws Exception {
@@ -57,7 +57,7 @@ public class DeviceURIDealerTest {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Device ID cannot be null or empty");
 
-        subject.toDeviceRuleURI(tenantDomain,deviceId);
+        subject.toDeviceRouteURI(tenantDomain,deviceId);
     }
     @Test
     public void shouldRaiseAnExceptionIfDeviceIdIsEmpty() throws Exception {
@@ -66,10 +66,10 @@ public class DeviceURIDealerTest {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Device ID cannot be null or empty");
 
-        subject.toDeviceRuleURI(tenantDomain,deviceId);
+        subject.toDeviceRouteURI(tenantDomain,deviceId);
     }
     @Test
     public void shouldGenerateTheURI() throws Exception {
-        assertThat(subject.toDeviceRuleURI(tenantDomain,deviceId),equalTo(uri));
+        assertThat(subject.toDeviceRouteURI(tenantDomain,deviceId),equalTo(uri));
     }
 }

@@ -11,6 +11,7 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterServ
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.SolrTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import org.junit.Before;
 import org.junit.Rule;
@@ -18,6 +19,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -31,7 +33,8 @@ import static org.hamcrest.Matchers.*;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
     MongoTestConfiguration.class,
-    BusinessTestConfiguration.class
+    BusinessTestConfiguration.class,
+    SolrTestConfiguration.class
 })
 @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json"})
 public class DeviceEventServiceTest extends BusinessLayerTestSupport {
@@ -52,7 +55,19 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
 
     private String id = "71fc0d48-674a-4d62-b3e5-0216abca63af";
     private String apiKey = "84399b2e-d99e-11e5-86bc-34238775bac9";
-    private String payload = "payload";
+    private String payload = "{\n" +
+            "    \"ts\" : \"2016-03-03T18:15:00Z\",\n" +
+            "    \"value\" : 31.0,\n" +
+            "    \"command\" : {\n" +
+            "      \"type\" : \"ButtonPressed\"\n" +
+            "      },\n" +
+            "    \"data\" : {\n" +
+            "      \"channels\" : [\n" +
+            "        { \"name\" : \"channel_0\" }\n" +
+            "      ]\n" +
+            "    },\n" +
+            "    \"time\" : 123\n" +
+            "  }";
     private String channel = MessageFormat.format("iot/{0}/data",apiKey);
     private Event event;
     private Device device;

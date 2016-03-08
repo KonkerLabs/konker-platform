@@ -3,6 +3,7 @@ package com.konkerlabs.platform.registry.test.web.controllers;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
+import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
@@ -14,7 +15,7 @@ import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
-@ContextConfiguration(classes = { WebMvcConfig.class })
+@ContextConfiguration(classes = { WebTestConfiguration.class, WebMvcConfig.class })
 public class LoginControllerTest extends WebLayerTestContext {
 
     @Test

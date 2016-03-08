@@ -34,7 +34,7 @@ public class EnrichmentFormTest {
         form.setName("EnrichmentTest1");
         form.setDescription("Testing the enrichment form.");
         form.setType("REST");
-        form.setIncomingAuthority("device://tenantDomain/1");
+        form.setIncomingAuthority(deviceId);
         form.setParameters(new HashMap<String, String>(){{put("URL", "http://my.enriching.service.com");put("User", "admin");put("Password", "secret");}});
         form.setContainerKey("fieldTest");
         form.setActive(true);
@@ -49,7 +49,7 @@ public class EnrichmentFormTest {
                 .name(form.getName())
                 .description(form.getDescription())
                 .type(DataEnrichmentExtension.EnrichmentType.REST)
-                .incoming(deviceUriDealer.toDeviceRuleURI(tenant.getDomainName(), deviceId))
+                .incoming(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(), deviceId))
                 .parameters(form.getParameters())
                 .containerKey(form.getContainerKey())
                 .active(form.isActive())
@@ -87,10 +87,14 @@ public class EnrichmentFormTest {
     }
 
     @Test
-    public void shouldTranslateAuthorityToEnrichmentIncomingURI() {
-        URI uri = deviceUriDealer.toDeviceRuleURI(tenant.getDomainName(), deviceId);
-        model.setIncoming(uri);
+    public void shouldTranslateFromFormToModel() {
+        form.setAdditionalSupplier(() -> tenant.getDomainName());
 
+        assertThat(form.toModel(),equalTo(model));
+    }
+
+    @Test
+    public void shouldTranslateFromModelToForm() {
         assertThat(new EnrichmentForm().fillFrom(model),equalTo(form));
     }
 }

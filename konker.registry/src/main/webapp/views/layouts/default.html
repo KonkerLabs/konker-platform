@@ -40,8 +40,11 @@
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Menu<span class="caret"></span></a>
                     <ul class="dropdown-menu">
                         <li><a data-th-href="@{/devices}">Devices</a></li>
-                        <li><a data-th-href="@{/rules}">Rules</a></li>
+                        <li><a data-th-href="@{/routes}">Routes</a></li>
                         <li><a data-th-href="@{/enrichment}">Enrichment</a></li>
+                        <li><a data-th-href="@{/dashboards/index.html} + '#dashboard/solr/' + ${@tenant.domainName} + '-events'"
+                            target="_blank">
+                            Dashboards</a></li>
                     </ul>
                 </li>
             </ul>

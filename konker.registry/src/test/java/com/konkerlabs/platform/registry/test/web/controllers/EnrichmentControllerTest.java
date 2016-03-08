@@ -1,9 +1,6 @@
 package com.konkerlabs.platform.registry.test.web.controllers;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.DataEnrichmentExtension;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
@@ -14,6 +11,7 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
+import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
 import com.konkerlabs.platform.registry.web.forms.EnrichmentForm;
 import org.junit.After;
 import org.junit.Before;
@@ -23,7 +21,6 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -47,6 +44,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebAppConfiguration
 @ContextConfiguration(classes = {
         WebMvcConfig.class,
+        WebTestConfiguration.class,
         SecurityTestConfiguration.class,
         EnrichmentControllerTest.EnrichmentTestContextConfig.class
 })
@@ -96,7 +94,7 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
         dataEnrichmentExtension = DataEnrichmentExtension.builder()
                 .name(enrichmentForm.getName())
                 .description(enrichmentForm.getDescription())
-                .incoming(deviceUriDealer.toDeviceRuleURI(tenant.getDomainName(), "1"))
+                .incoming(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(), "1"))
                 .type(DataEnrichmentExtension.EnrichmentType.REST)
                 .parameters(enrichmentForm.getParameters())
                 .containerKey(enrichmentForm.getContainerKey())
@@ -211,7 +209,7 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
     }
 
     @Test
-    public void shouldShowRuleDetails() throws Exception {
+    public void shouldShowRouteDetails() throws Exception {
         when(dataEnrichmentExtensionService.getByName(tenant, dataEnrichmentExtension.getName())).thenReturn(serviceResponse);
 
         getMockMvc().perform(get(MessageFormat.format("/enrichment/{0}", dataEnrichmentExtension.getName())))

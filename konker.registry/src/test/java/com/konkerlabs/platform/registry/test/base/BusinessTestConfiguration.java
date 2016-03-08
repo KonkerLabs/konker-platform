@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.test.base;
 
+import com.konkerlabs.platform.registry.integration.gateways.HttpEnrichmentGateway;
 import com.konkerlabs.platform.registry.integration.gateways.MqttMessageGateway;
 import com.konkerlabs.platform.registry.integration.gateways.SMSMessageGateway;
 
@@ -14,11 +15,14 @@ import static org.mockito.Mockito.mock;
 @ComponentScan(basePackages = {
     "com.konkerlabs.platform.registry.business",
     "com.konkerlabs.platform.utilities",
-})
+},lazyInit = true)
 public class BusinessTestConfiguration {
 
     @Autowired
     MqttMessageGateway mqttMessageGateway;
+
+    @Autowired
+    HttpEnrichmentGateway httpEnrichmentGateway;
 
     @Bean
     public MqttMessageGateway mqttMessageGateway() {
@@ -28,5 +32,9 @@ public class BusinessTestConfiguration {
     @Bean
     public SMSMessageGateway smsMessageGateway() {
         return mock(SMSMessageGateway.class);
+    }
+
+    @Bean HttpEnrichmentGateway httpEnrichmentGateway() {
+        return mock(HttpEnrichmentGateway.class);
     }
 }
