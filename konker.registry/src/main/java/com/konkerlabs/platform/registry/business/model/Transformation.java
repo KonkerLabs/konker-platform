@@ -1,7 +1,9 @@
 package com.konkerlabs.platform.registry.business.model;
 
+import com.konkerlabs.platform.registry.business.model.enumerations.IntegrationType;
 import lombok.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -20,22 +22,6 @@ public class Transformation {
     private String description;
     @Singular
     private List<TransformationStep> steps = new LinkedList<>();
-
-    @Getter
-    @AllArgsConstructor
-    @EqualsAndHashCode
-    public static abstract class TransformationStep {
-
-        public enum TransformationType {
-            REST
-        }
-
-        private TransformationType type;
-        @Singular
-        private Map<String,String> attributes = new HashMap<>();
-
-        public abstract Set<String> applyValidations();
-    }
 
     public Set<String> applyValidation() {
         Set<String> validations = new HashSet<>();

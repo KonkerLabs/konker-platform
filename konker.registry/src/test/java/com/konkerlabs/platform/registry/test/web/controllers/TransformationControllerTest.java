@@ -109,7 +109,7 @@ public class TransformationControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldBindAnErrorMessageOnSaveError() throws Exception {
-        when(transformationService.save(eq(tenant), eq(transformation))).thenReturn(ServiceResponse.<Transformation>builder()
+        when(transformationService.register(eq(tenant), eq(transformation))).thenReturn(ServiceResponse.<Transformation>builder()
                 .status(ServiceResponse.Status.ERROR)
                 .responseMessage("Any errors").<Transformation>build());
 

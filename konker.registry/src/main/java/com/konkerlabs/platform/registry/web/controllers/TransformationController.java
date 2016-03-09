@@ -40,7 +40,7 @@ public class TransformationController {
     @RequestMapping(value = "save", method = RequestMethod.POST)
     public ModelAndView save(@ModelAttribute("routeTransformationForm") TransformationForm routeTransformationForm,
                              BindingResult bindingResult, RedirectAttributes redirectAttributes) {
-        ServiceResponse<Transformation> serviceResponse = transformationService.save(tenant, routeTransformationForm.toModel());
+        ServiceResponse<Transformation> serviceResponse = transformationService.register(tenant, routeTransformationForm.toModel());
         switch (serviceResponse.getStatus()) {
             case ERROR:
                 return new ModelAndView("/transformations/form")
