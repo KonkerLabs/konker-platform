@@ -23,6 +23,7 @@ public class Transformation {
 
     @Getter
     @AllArgsConstructor
+    @EqualsAndHashCode
     public static abstract class TransformationStep {
 
         public enum TransformationType {
