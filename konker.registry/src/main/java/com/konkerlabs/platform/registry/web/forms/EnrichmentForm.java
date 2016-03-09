@@ -2,6 +2,7 @@ package com.konkerlabs.platform.registry.web.forms;
 
 import com.konkerlabs.platform.registry.business.model.DataEnrichmentExtension;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
+import com.konkerlabs.platform.registry.business.model.enumerations.IntegrationType;
 import com.konkerlabs.platform.registry.web.forms.api.ModelBuilder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -22,7 +23,11 @@ public class EnrichmentForm implements ModelBuilder<DataEnrichmentExtension, Enr
     private String incomingAuthority;
     private String containerKey;
     //FIXME Retrieve parameters associated with enrichment type from database?
-    private Map<String, String> parameters = new LinkedHashMap<String, String>(){{put("URL", "");put("User", "");put("Password", "");}};
+    private Map<String, String> parameters = new LinkedHashMap<String, String>(){{
+        put(DataEnrichmentExtension.URL, "");
+        put(DataEnrichmentExtension.USERNAME, "");
+        put(DataEnrichmentExtension.PASSWORD, "");
+    }};
     private boolean active;
     private Supplier<String> tenantDomainSupplier;
 
@@ -38,7 +43,7 @@ public class EnrichmentForm implements ModelBuilder<DataEnrichmentExtension, Enr
         DataEnrichmentExtension dataEnrichmentExtension = DataEnrichmentExtension.builder()
                 .id(getId())
                 .name(getName())
-                .type(DataEnrichmentExtension.EnrichmentType.valueOf(getType()))
+                .type(IntegrationType.valueOf(getType()))
                 .description(getDescription())
                 .incoming(toDeviceRouteURI(tenantDomainSupplier.get(), getIncomingAuthority()))
                 .containerKey(getContainerKey())

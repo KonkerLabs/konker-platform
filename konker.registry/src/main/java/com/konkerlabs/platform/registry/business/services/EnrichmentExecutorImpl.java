@@ -60,9 +60,9 @@ public class EnrichmentExecutorImpl implements EnrichmentExecutor {
                 if (!dee.isActive())
                     continue;
 
-                String url = dee.getParameters().get("URL");
-                String user = dee.getParameters().get("User");
-                String password = dee.getParameters().get("Password");
+                String url = dee.getParameters().get(DataEnrichmentExtension.URL);
+                String user = dee.getParameters().get(DataEnrichmentExtension.USERNAME);
+                String password = dee.getParameters().get(DataEnrichmentExtension.PASSWORD);
 
                 try {
                     Map<String, Object> incomingPayloadMap = jsonParsingService.toMap(incomingEvent.getPayload());

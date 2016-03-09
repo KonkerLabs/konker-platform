@@ -3,6 +3,7 @@ package com.konkerlabs.platform.registry.web.controllers;
 import com.konkerlabs.platform.registry.business.model.DataEnrichmentExtension;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.enumerations.IntegrationType;
 import com.konkerlabs.platform.registry.business.services.api.DataEnrichmentExtensionService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
@@ -46,7 +47,7 @@ public class EnrichmentController {
     @ModelAttribute("enrichmentTypes")
     public Set<String> enrichmentTypes() {
         Set<String> enrichmentTypes = new HashSet<>();
-        for (DataEnrichmentExtension.EnrichmentType enrichmentType : DataEnrichmentExtension.EnrichmentType.values()) {
+        for (IntegrationType enrichmentType : IntegrationType.values()) {
             enrichmentTypes.add(enrichmentType.name());
         }
         return enrichmentTypes;
