@@ -33,9 +33,4 @@ public class DeviceRegistrationForm implements ModelBuilder<Device,DeviceRegistr
         this.setActive(model.isActive());
         return this;
     }
-
-    @Override
-    public void setAdditionalSupplier(Supplier supplier) {
-        //A supplier isn't necessary to this model builder
-    }
 }

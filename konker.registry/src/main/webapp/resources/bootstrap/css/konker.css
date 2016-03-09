@@ -49,3 +49,10 @@ img.user-photo {
 img.ajax-loading {
     display: none;
 }
+
+.center-block {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  float: none;
+}

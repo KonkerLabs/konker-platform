@@ -17,6 +17,9 @@ public class SmsURIDealerTest {
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
+    String SMS_URI_SCHEME = "sms";
+    String SMS_URI_TEMPLATE = SMS_URI_SCHEME + "://{0}";
+
     private String phoneNumber;
     private URI uri;
     private SmsURIDealer subject;
@@ -26,7 +29,7 @@ public class SmsURIDealerTest {
         phoneNumber = "+5599987654321";
 
         uri = URI.create(
-            MessageFormat.format(SmsURIDealer.SMS_URI_TEMPLATE,phoneNumber)
+            MessageFormat.format(SMS_URI_TEMPLATE,phoneNumber)
         );
 
         subject = new SmsURIDealer() {};
