@@ -17,6 +17,9 @@ public class DeviceURIDealerTest {
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
+    String DEVICE_URI_SCHEME = "device";
+    String DEVICE_ROUTE_URI_TEMPLATE = DEVICE_URI_SCHEME + "://{0}/{1}";
+
     private String tenantDomain;
     private String deviceId;
     private DeviceURIDealer subject;
@@ -29,7 +32,7 @@ public class DeviceURIDealerTest {
 
         subject = new DeviceURIDealer() {};
 
-        uri = URI.create(MessageFormat.format(DeviceURIDealer.DEVICE_ROUTE_URI_TEMPLATE,tenantDomain,deviceId));
+        uri = URI.create(MessageFormat.format(DEVICE_ROUTE_URI_TEMPLATE,tenantDomain,deviceId));
     }
 
     @Test

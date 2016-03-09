@@ -4,6 +4,7 @@ package com.konkerlabs.platform.registry.test.web.forms;
 import com.konkerlabs.platform.registry.business.model.DataEnrichmentExtension;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
+import com.konkerlabs.platform.registry.business.model.enumerations.IntegrationType;
 import com.konkerlabs.platform.registry.web.forms.EnrichmentForm;
 import org.junit.Before;
 import org.junit.Rule;
@@ -48,7 +49,7 @@ public class EnrichmentFormTest {
         model = DataEnrichmentExtension.builder()
                 .name(form.getName())
                 .description(form.getDescription())
-                .type(DataEnrichmentExtension.EnrichmentType.REST)
+                .type(IntegrationType.REST)
                 .incoming(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(), deviceId))
                 .parameters(form.getParameters())
                 .containerKey(form.getContainerKey())

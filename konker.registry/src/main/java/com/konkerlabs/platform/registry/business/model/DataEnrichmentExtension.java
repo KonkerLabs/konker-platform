@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.konkerlabs.platform.registry.business.model.enumerations.IntegrationType;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -20,14 +21,16 @@ import lombok.Singular;
 @Builder
 public class DataEnrichmentExtension {
 
-    public enum EnrichmentType {REST};
+    public static final String URL = "URL";
+    public static final String USERNAME = "User";
+    public static final String PASSWORD = "Password";
     
     @Id
     private String id;
     @DBRef
     private Tenant tenant;
     private String name;
-    private EnrichmentType type;
+    private IntegrationType type;
     private String description;
 
     private URI incoming;

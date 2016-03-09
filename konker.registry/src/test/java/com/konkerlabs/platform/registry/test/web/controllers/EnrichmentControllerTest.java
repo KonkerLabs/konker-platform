@@ -5,6 +5,7 @@ import com.konkerlabs.platform.registry.business.model.DataEnrichmentExtension;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
+import com.konkerlabs.platform.registry.business.model.enumerations.IntegrationType;
 import com.konkerlabs.platform.registry.business.services.api.DataEnrichmentExtensionService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
@@ -95,7 +96,7 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
                 .name(enrichmentForm.getName())
                 .description(enrichmentForm.getDescription())
                 .incoming(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(), "1"))
-                .type(DataEnrichmentExtension.EnrichmentType.REST)
+                .type(IntegrationType.REST)
                 .parameters(enrichmentForm.getParameters())
                 .containerKey(enrichmentForm.getContainerKey())
                 .active(enrichmentForm.isActive())

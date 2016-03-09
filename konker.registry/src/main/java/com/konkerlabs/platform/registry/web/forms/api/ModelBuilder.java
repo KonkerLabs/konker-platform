@@ -6,5 +6,6 @@ public interface ModelBuilder<M,F,S> {
 
     M toModel();
     F fillFrom(M model);
-    void setAdditionalSupplier(Supplier<S> sSupplier);
+
+    default void setAdditionalSupplier(Supplier<S> sSupplier) {}
 }
