@@ -210,7 +210,7 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
     }
 
     @Test
-    public void shouldShowRouteDetails() throws Exception {
+    public void shouldShowEnrichmentDetails() throws Exception {
         when(dataEnrichmentExtensionService.getByName(tenant, dataEnrichmentExtension.getName())).thenReturn(serviceResponse);
 
         getMockMvc().perform(get(MessageFormat.format("/enrichment/{0}", dataEnrichmentExtension.getName())))

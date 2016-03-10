@@ -21,6 +21,17 @@
             </tr>
             </thead>
             <tbody>
+            <tr data-th-each="transformation : ${transformations}">
+                <td data-th-text="${transformation.name}"></td>
+                <td class="text-center">
+                    <a data-th-href="@{/transformation/{id}(id=${transformation.id})}" class="btn btn-default">
+                        Show
+                    </a>
+                    <a data-th-href="@{/transformation/{id}/edit(id=${transformation.id})}" class="btn btn-default">
+                        Edit
+                    </a>
+                </td>
+            </tr>
             </tbody>
         </table>
     </fieldset>
