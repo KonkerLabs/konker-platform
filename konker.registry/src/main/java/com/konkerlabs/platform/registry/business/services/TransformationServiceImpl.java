@@ -55,7 +55,7 @@ public class TransformationServiceImpl implements TransformationService {
 
         Set<String> validations = transformation.applyValidation();
 
-        if (Optional.ofNullable(transformationRepository.findByName(transformation.getName()))
+        if (Optional.ofNullable(transformationRepository.findByName(tenant.getId(),transformation.getName()))
                 .filter(transformations -> !transformations.isEmpty()).isPresent())
             validations.add("Transformation name is already in use");
 
@@ -109,7 +109,7 @@ public class TransformationServiceImpl implements TransformationService {
 
         Set<String> validations = fromDb.applyValidation();
 
-        if (Optional.ofNullable(transformationRepository.findByName(fromDb.getName()))
+        if (Optional.ofNullable(transformationRepository.findByName(fromDb.getTenant().getId(),fromDb.getName()))
                 .filter(transformations -> !transformations.isEmpty())
                 .orElseGet(ArrayList<Transformation>::new)
                 .stream().anyMatch(transformation1 -> !transformation1.getId().equals(fromDb.getId())))
