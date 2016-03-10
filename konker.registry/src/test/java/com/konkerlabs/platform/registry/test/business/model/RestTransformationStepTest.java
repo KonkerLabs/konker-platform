@@ -2,6 +2,7 @@ package com.konkerlabs.platform.registry.test.business.model;
 
 import com.konkerlabs.platform.registry.business.model.RestTransformationStep;
 import com.konkerlabs.platform.registry.business.model.Transformation;
+import com.konkerlabs.platform.registry.business.model.enumerations.IntegrationType;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -29,7 +30,7 @@ public class RestTransformationStepTest {
 
     @Test
     public void shoultReturnValidationMessageIfTypeIsNotREST() throws Exception {
-        assertThat(subject.getType(),equalTo(Transformation.TransformationStep.TransformationType.REST));
+        assertThat(subject.getType(),equalTo(IntegrationType.REST));
     }
     @Test
     public void shouldReturnValidationMessageIfAttributesMapIsNull() throws Exception {
