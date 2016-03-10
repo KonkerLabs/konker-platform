@@ -17,7 +17,6 @@ public class MongoTestConfiguration extends MongoConfig {
     @Override
     @Bean
     public Mongo mongo() throws Exception {
-//        return new Fongo("registry-test").getMongo();
-        return super.mongo();
+        return new Fongo("registry-test").getMongo();
     }
 }
