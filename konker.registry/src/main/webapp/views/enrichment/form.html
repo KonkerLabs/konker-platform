@@ -13,63 +13,76 @@
             <li data-th-each="error : ${errors}" data-th-text="${error}"></li>
         </div>
         <form data-th-action="@{{url}(url=${action})}" action="#" data-th-object="${dataEnrichmentExtension}"
-              method="post">
+              method="post" class="form-horizontal">
             <div class="form-group">
-                <label for="name">Name</label>
-                <input type="text" data-th-field="*{name}"
-                       class="form-control"
-                       id="name"
-                       name="name" placeholder="Type your enrichment name here..."/>
+                <label class="col-sm-1 control-label" for="name">Name</label>
+                <div class="col-sm-4">
+                    <input type="text" data-th-field="*{name}"
+                           class="form-control"
+                           id="name"
+                           name="name" placeholder="Type your enrichment name here..."/>
+                </div>
             </div>
             <div class="form-group">
-                <label for="type">Type</label>
-                <select class="form-control" data-th-field="*{type}"
-                        id="type" name="type">
-                    <option data-th-each="enrichmentType : ${enrichmentTypes}"
-                            data-th-value="${enrichmentType}"
-                            data-th-text="${enrichmentType}"></option>
-                </select>
+                <label class="col-sm-1 control-label" for="type">Type</label>
+                <div class="col-sm-4">
+                    <select class="form-control" data-th-field="*{type}"
+                            id="type" name="type">
+                        <option data-th-each="enrichmentType : ${enrichmentTypes}"
+                                data-th-value="${enrichmentType}"
+                                data-th-text="${enrichmentType}"></option>
+                    </select>
+                </div>
             </div>
             <div class="form-group">
-                <label for="description">Description</label>
-                <textarea id="description" class="form-control" name="description"
-                          placeholder="Type some about this enrichment (optional)" data-th-field="*{description}">
-                </textarea>
+                <label class="col-sm-1 control-label" for="description">Description</label>
+                <div class="col-sm-6">
+                    <textarea id="description" class="form-control" name="description"
+                              placeholder="Type some about this enrichment (optional)" data-th-field="*{description}">
+                    </textarea>
+                </div>
             </div>
             <div class="form-group">
-                <label for="incomingURI">Incoming Device</label>
-                <select class="form-control" data-th-field="*{incomingAuthority}"
-                        id="incomingURI" name="incomingAuthority">
-                    <option data-th-each="device : ${allDevices}"
-                            data-th-value="${device.deviceId}"
-                            data-th-text="${device.deviceId + ' - ' + device.name}"></option>
-                </select>
+                <label class="col-sm-1 control-label" for="incomingURI">Incoming Device</label>
+                <div class="col-sm-4">
+                    <select class="form-control" data-th-field="*{incomingAuthority}"
+                            id="incomingURI" name="incomingAuthority">
+                        <option data-th-each="device : ${allDevices}"
+                                data-th-value="${device.deviceId}"
+                                data-th-text="${device.deviceId + ' - ' + device.name}"></option>
+                    </select>
+                </div>
             </div>
             <div class="form-group">
-                <label for="parameters">Service parameters:</label>
-                <!--a onclick="addParameter()" class="btn btn-default action pull-right">New</a-->
-                <table id="parameters" class="table">
-                    <tbody>
-                    <tr data-th-each="pr, stat: *{parameters}">
-                        <td><label for="parameter" data-th-text="${pr.key}"/></td>
-                        <td><input type="text" data-th-field="*{parameters[__${pr.key}__]}" class="form-control" id="parameter"/></td>
-                    </tr>
-                    </tbody>
-                </table>
+                <label class="col-sm-1 control-label" for="parameters">Service parameters</label>
+                <div class="col-sm-7">
+                    <table id="parameters" class="table">
+                        <tbody>
+                        <tr data-th-each="pr, stat: *{parameters}">
+                            <td class="col-sm-1"><label for="parameter" data-th-text="${pr.key}"/></td>
+                            <td class="col-sm-4"><input type="text" data-th-field="*{parameters[__${pr.key}__]}" class="form-control" id="parameter"/></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
             <div class="form-group">
-                <label for="containerKey">Container key</label>
-                <input type="text" data-th-field="*{containerKey}"
-                       class="form-control"
-                       id="containerKey"
-                       name="containerKey" placeholder="Type the placeholder key for enrichment result..."/>
+                <label class="col-sm-1 control-label" for="containerKey">Container key</label>
+                <div class="col-sm-4">
+                    <input type="text" data-th-field="*{containerKey}"
+                           class="form-control"
+                           id="containerKey"
+                           name="containerKey" placeholder="Type the placeholder key for enrichment result..."/>
+                </div>
             </div>
 
             <div class="form-group">
-                <label for="active">Active?</label>
-                <input type="checkbox" data-th-field="*{active}"
-                       id="active"
-                       name="active"/>
+                <label class="col-sm-1 control-label" for="active">Active?</label>
+                <div class="col-sm-4">
+                    <input type="checkbox" data-th-field="*{active}"
+                           id="active"
+                           name="active"/>
+                </div>
             </div>
             <button type="submit" class="btn btn-success">Save</button>
             <a data-th-href="@{/enrichment}" class="btn btn-default">Back</a>

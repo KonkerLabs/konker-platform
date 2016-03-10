@@ -12,35 +12,44 @@
                 </button>
                 <li data-th-each="error : ${errors}" data-th-text="${error}"></li>
             </div>
-            <form data-th-action="@{{url}(url=${action})}" data-th-object="${device}" method="post">
+            <form data-th-action="@{{url}(url=${action})}" data-th-object="${device}"
+                  method="post" class="form-horizontal">
                 <div class="form-group">
-                    <label for="deviceId">Device ID</label>
-                    <input data-th-if="${isEditing != null}" type="text" data-th-field="*{deviceId}"
-                           class="form-control" disabled="disabled"
-                           id="deviceId"
-                           name="deviceId"/>
-                    <input data-th-if="${isEditing == null}" type="text" data-th-field="*{deviceId}"
-                           class="form-control"
-                           id="deviceId"
-                           name="deviceId" placeholder="Type your device ID here..."/>
+                    <label class="col-sm-1 control-label" for="deviceId">Device ID</label>
+                    <div class="col-sm-4">
+                        <input data-th-if="${isEditing != null}" type="text" data-th-field="*{deviceId}"
+                               class="form-control" disabled="disabled"
+                               id="deviceId"
+                               name="deviceId"/>
+                        <input data-th-if="${isEditing == null}" type="text" data-th-field="*{deviceId}"
+                               class="form-control"
+                               id="deviceId"
+                               name="deviceId" placeholder="Type your device ID here..."/>
+                    </div>
                 </div>
                 <div class="form-group">
-                    <label for="name">Device Name</label>
-                    <input type="text" data-th-field="*{name}"
-                           class="form-control"
-                           id="name" name="name" placeholder="Type your device name here..."/>
+                    <label class="col-sm-1 control-label" for="name">Device Name</label>
+                    <div class="col-sm-4">
+                        <input type="text" data-th-field="*{name}"
+                               class="form-control"
+                               id="name" name="name" placeholder="Type your device name here..."/>
+                    </div>
                 </div>
                 <div class="form-group">
-                    <label for="description">Description</label>
-                    <textarea id="description" class="form-control" name="description"
-                              placeholder="Type some about your device (optional)" data-th-field="*{description}">
-                    </textarea>
+                    <label class="col-sm-1 control-label" for="description">Description</label>
+                    <div class="col-sm-6">
+                        <textarea id="description" class="form-control" name="description"
+                                  placeholder="Type some about your device (optional)" data-th-field="*{description}">
+                        </textarea>
+                    </div>
                 </div>
                 <div class="form-group">
-                    <label for="active">Active?</label>
-                    <input type="checkbox" data-th-field="*{active}"
-                           id="active"
-                           name="active"/>
+                    <label class="col-sm-1 control-label" for="active">Active?</label>
+                    <div class="col-sm-2">
+                        <input type="checkbox" data-th-field="*{active}"
+                               id="active"
+                               name="active"/>
+                    </div>
                 </div>
                 <button type="submit" class="btn btn-success">Save</button>
                 <a data-th-href="@{/devices}" class="btn btn-default">Back</a>

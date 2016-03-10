@@ -5,11 +5,13 @@
 <body>
 <div data-th-fragment="outgoing">
     <div class="form-group">
-        <label for="outgoingSmsPhoneNumber">Cellphone number</label>
-        <input type="text" data-th-field="${route.outgoingSmsPhoneNumber}"
-               class="form-control"
-               id="outgoingSmsPhoneNumber"
-               name="outgoingSmsPhoneNumber" placeholder="Type outgoing cellphone number here..."/>
+        <label class="col-sm-1 control-label" for="outgoingSmsPhoneNumber">Cellphone number</label>
+        <div class="col-sm-4">
+            <input type="text" data-th-field="${route.outgoingSmsPhoneNumber}"
+                   class="form-control"
+                   id="outgoingSmsPhoneNumber"
+                   name="outgoingSmsPhoneNumber" placeholder="Type outgoing cellphone number here..."/>
+        </div>
     </div>
 </div>
 </body>
