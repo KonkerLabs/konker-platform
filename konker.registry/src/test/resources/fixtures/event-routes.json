@@ -21,12 +21,7 @@
           "channel" : "in"
         }
       },
-      "transformations" : [ {
-        "type" : "EXPRESSION_LANGUAGE",
-        "data" : {
-          "value" : "#metric == 'temperature' && #value < 40 && #data.sn == 1234"
-        }
-      } ],
+      "filteringExpression" : "#metric == 'temperature' && #value < 40 && #data.sn == 1234",
       "active" : true
     },
     {
@@ -50,12 +45,7 @@
           "channel" : "in"
         }
       },
-      "transformations" : [ {
-        "type" : "EXPRESSION_LANGUAGE",
-        "data" : {
-          "value" : "#metric == 'X'"
-        }
-      } ],
+      "filteringExpression" : "#metric == 'X'",
       "active" : true
     },
     {
@@ -79,12 +69,7 @@
           "channel" : "in"
         }
       },
-      "transformations" : [ {
-        "type" : "EXPRESSION_LANGUAGE",
-        "data" : {
-          "value" : "#metric == 'temperature' && #value < 40"
-        }
-      } ],
+      "filteringExpression" : "#metric == 'temperature' && #value < 40",
       "active" : true
     },
     {
@@ -108,13 +93,8 @@
           "channel" : "in"
         }
       },
-      "transformations" : [ {
-        "type" : "EXPRESSION_LANGUAGE",
-        "data" : {
-          "value" : "#value < 0"
-        }
-        } ],
-    "active" : true
+      "filteringExpression" : "#value < 0",
+      "active" : true
     },
     {
       "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63ae",
@@ -137,12 +117,7 @@
           "channel" : "in"
         }
       },
-      "transformations" : [ {
-        "type" : "EXPRESSION_LANGUAGE",
-        "data" : {
-          "value" : "#XXXX == 'X'"
-        }
-      } ],
+      "filteringExpression" : "#XXXX == 'X'",
       "active" : true
     },
     {
@@ -166,12 +141,7 @@
           "channel" : "in"
         }
       },
-      "transformations" : [ {
-        "type" : "EXPRESSION_LANGUAGE",
-        "data" : {
-          "value" : ""
-        }
-      } ],
+      "filteringExpression" : "",
       "active" : true
     },
     {
@@ -195,12 +165,7 @@
           "channel" : "in"
         }
       },
-      "transformations" : [ {
-        "type" : "EXPRESSION_LANGUAGE",
-        "data" : {
-          "value" : ""
-        }
-      } ],
+      "filteringExpression" : "",
       "active" : false
     },
     {
@@ -224,12 +189,7 @@
           "channel" : "in"
         }
       },
-      "transformations" : [ {
-        "type" : "EXPRESSION_LANGUAGE",
-        "data" : {
-          "value" : "X"
-        }
-      } ],
+      "filteringExpression" : "X",
       "active" : true
     }
   ]

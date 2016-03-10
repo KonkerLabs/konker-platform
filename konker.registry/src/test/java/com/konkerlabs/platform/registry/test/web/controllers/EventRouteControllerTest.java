@@ -4,10 +4,12 @@ import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.Transformation;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.SmsURIDealer;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.TransformationService;
 import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteService;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
@@ -35,7 +37,6 @@ import java.util.function.Supplier;
 
 import static com.konkerlabs.platform.registry.business.model.Device.builder;
 import static com.konkerlabs.platform.registry.business.model.EventRoute.RuleActor;
-import static com.konkerlabs.platform.registry.business.model.EventRoute.RuleTransformation;
 import static com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer.DEVICE_URI_SCHEME;
 import static com.konkerlabs.platform.registry.business.model.behaviors.SmsURIDealer.SMS_URI_SCHEME;
 import static com.konkerlabs.platform.registry.business.services.api.ServiceResponse.Status.ERROR;
@@ -62,6 +63,9 @@ public class EventRouteControllerTest extends WebLayerTestContext {
     @Autowired
     private EventRouteService eventRouteService;
     @Autowired
+    private TransformationService transformationService;
+
+    @Autowired
     private Tenant tenant;
 
     private Device incomingDevice;
@@ -76,6 +80,14 @@ public class EventRouteControllerTest extends WebLayerTestContext {
 
     @Before
     public void setUp() throws Exception {
+        List<Transformation> transformations = new ArrayList<>();
+
+        when(transformationService.getAll(tenant)).thenReturn(
+            ServiceResponse.<List<Transformation>>builder()
+                .status(OK)
+                .result(transformations).<List<Transformation>>build()
+        );
+
         incomingDevice = builder().deviceId("0000000000000004").build();
         outgoingDevice = builder().deviceId("0000000000000005").build();
 
@@ -87,7 +99,8 @@ public class EventRouteControllerTest extends WebLayerTestContext {
         routeForm.setOutgoingScheme("device");
         routeForm.setOutgoingDeviceAuthority(outgoingDevice.getDeviceId());
         routeForm.setOutgoingDeviceChannel("in");
-        routeForm.setFilterClause("LEDSwitch");
+        routeForm.setFilteringExpression("#command.type == 'ButtonPressed'");
+        routeForm.setTransformation("trans_id");
         routeForm.setActive(true);
 
         routeForm.setAdditionalSupplier(() -> tenant.getDomainName());
@@ -100,11 +113,9 @@ public class EventRouteControllerTest extends WebLayerTestContext {
         routeData.add("outgoingScheme", routeForm.getOutgoingScheme());
         routeData.add("outgoingDeviceAuthority", routeForm.getOutgoingDeviceAuthority());
         routeData.add("outgoingDeviceChannel", routeForm.getOutgoingDeviceChannel());
-        routeData.add("filterClause", routeForm.getFilterClause());
+        routeData.add("filteringExpression", routeForm.getFilteringExpression());
+        routeData.add("transformation", routeForm.getTransformation());
         routeData.add("active", "true");
-
-        RuleTransformation contentMatchTransformation = new RuleTransformation("EXPRESSION_LANGUAGE");
-        contentMatchTransformation.getData().put("value", routeForm.getFilterClause());
 
         DeviceURIDealer deviceUriDealer = new DeviceURIDealer() {
         };
@@ -131,7 +142,8 @@ public class EventRouteControllerTest extends WebLayerTestContext {
                 .outgoing(new RuleActor(
                         outgoingUriSupplier.get()
                 ))
-                .transformations(asList(new RuleTransformation[]{contentMatchTransformation}))
+                .filteringExpression(routeForm.getFilteringExpression())
+                .transformation(Transformation.builder().id(routeForm.getTransformation()).build())
                 .active(routeForm.isActive())
                 .build();
 
@@ -283,6 +295,11 @@ public class EventRouteControllerTest extends WebLayerTestContext {
         @Bean
         public DeviceRegisterService deviceRegisterService() {
             return mock(DeviceRegisterService.class);
+        }
+
+        @Bean
+        public TransformationService transformationService() {
+            return mock(TransformationService.class);
         }
     }
 }

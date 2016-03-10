@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry.web.forms;
 
 import com.konkerlabs.platform.registry.business.model.EventRoute;
+import com.konkerlabs.platform.registry.business.model.Transformation;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.SmsURIDealer;
 import com.konkerlabs.platform.registry.business.services.routes.EventRouteExecutorImpl;
@@ -9,7 +10,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.net.URI;
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -31,7 +31,8 @@ public class EventRouteForm implements ModelBuilder<EventRoute,EventRouteForm,St
     private String outgoingDeviceAuthority;
     private String outgoingDeviceChannel;
     private String outgoingSmsPhoneNumber;
-    private String filterClause;
+    private String filteringExpression;
+    private String transformation;
     private boolean active;
     private Supplier<String> tenantDomainSupplier;
 
@@ -46,9 +47,6 @@ public class EventRouteForm implements ModelBuilder<EventRoute,EventRouteForm,St
 
         EventRoute route;
 
-        EventRoute.RuleTransformation contentFilterTransformation = new EventRoute.RuleTransformation(EventRouteExecutorImpl.RuleTransformationType.EXPRESSION_LANGUAGE.name());
-        contentFilterTransformation.getData().put("value",getFilterClause());
-
         route = builder()
                 .id(id)
                 .name(getName())
@@ -57,7 +55,12 @@ public class EventRouteForm implements ModelBuilder<EventRoute,EventRouteForm,St
                         toDeviceRouteURI(tenantDomainSupplier.get(), getIncomingAuthority())
                 ))
                 .outgoing(new RuleActor(buildOutgoingURI()))
-                .transformations(asList(new RuleTransformation[]{contentFilterTransformation}))
+                .filteringExpression(getFilteringExpression())
+                .transformation(
+                    Optional.ofNullable(getTransformation()).filter(value -> !value.isEmpty())
+                        .map(selectedId -> Transformation.builder().id(selectedId).build())
+                        .orElseGet(() -> null)
+                )
                 .active(isActive())
                 .build();
         applyIncomingMetadata(route);
@@ -110,7 +113,11 @@ public class EventRouteForm implements ModelBuilder<EventRoute,EventRouteForm,St
             }
             default: break;
         }
-        this.setFilterClause(model.getTransformations().get(0).getData().get("value"));
+        this.setFilteringExpression(model.getFilteringExpression());
+        this.setTransformation(
+            Optional.ofNullable(model.getTransformation())
+                .map(t -> t.getId()).orElseGet(() -> null)
+        );
         this.setActive(model.isActive());
         return this;
     }

@@ -2,8 +2,6 @@ package com.konkerlabs.platform.registry.business.model;
 
 import lombok.Builder;
 import lombok.Data;
-import lombok.NonNull;
-import lombok.Singular;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -27,8 +25,11 @@ public class EventRoute {
     private String description;
     private RuleActor incoming;
     private RuleActor outgoing;
-    @Singular
-    private List<RuleTransformation> transformations = new ArrayList<>();
+    private String filteringExpression;
+    @DBRef
+    private Transformation transformation;
+//    @Singular
+//    private List<RuleTransformation> transformations = new ArrayList<>();
     private boolean active;
 
     public List<String> applyValidations() {
@@ -71,13 +72,13 @@ public class EventRoute {
         }
     }
 
-    @Data
-    public static class RuleTransformation {
-        private String type;
-        private Map<String,String> data = new HashMap<>();
-
-        public RuleTransformation(String type) {
-            this.type = type;
-        }
-    }
+//    @Data
+//    public static class RuleTransformation {
+//        private String type;
+//        private Map<String,String> data = new HashMap<>();
+//
+//        public RuleTransformation(String type) {
+//            this.type = type;
+//        }
+//    }
 }

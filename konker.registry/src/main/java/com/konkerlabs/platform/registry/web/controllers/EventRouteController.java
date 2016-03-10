@@ -4,13 +4,16 @@ import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.Transformation;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.TransformationService;
 import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteService;
 import com.konkerlabs.platform.registry.web.forms.EventRouteForm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -36,11 +39,18 @@ public class EventRouteController {
     @Autowired
     private DeviceRegisterService deviceRegisterService;
     @Autowired
+    private TransformationService transformationService;
+    @Autowired
     private Tenant tenant;
 
     @ModelAttribute("allDevices")
     public List<Device> allDevices() {
         return deviceRegisterService.getAll(tenant);
+    }
+
+    @ModelAttribute("allTransformations")
+    public List<Transformation> allTransformations() {
+        return transformationService.getAll(tenant).getResult();
     }
 
     @RequestMapping

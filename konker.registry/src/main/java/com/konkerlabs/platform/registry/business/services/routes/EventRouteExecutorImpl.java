@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry.business.services.routes;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteExecutor;
@@ -62,43 +63,71 @@ public class EventRouteExecutorImpl implements EventRouteExecutor {
                 continue;
             }
 
-            for (EventRoute.RuleTransformation ruleTransformation : eventRoute.getTransformations()) {
-                switch (RuleTransformationType.valueOf(ruleTransformation.getType())) {
-                    case EXPRESSION_LANGUAGE: {
-
-                        Optional<String> expression = Optional.ofNullable(ruleTransformation.getData().get("value"))
-                                .filter(filter -> !filter.isEmpty());
-
-                        if (expression.isPresent()) {
-                            try {
-                                Map<String, Object> objectMap = jsonParsingService.toMap(incomingPayload);
-
-                                if (evaluationService.evaluateConditional(expression.get(), objectMap)) {
-                                    forwardEvent(eventRoute.getOutgoing(), event);
-                                    outEvents.add(event);
-                                } else {
-                                    LOGGER.debug(MessageFormat.format("Dropped route \"{0}\", not matching \"{1}\" pattern with content \"{2}\". Message payload: {3} ",
-                                            eventRoute.getName(), ruleTransformation.getType(), expression.get(), incomingPayload));
-                                }
-                            } catch (IOException e) {
-                                LOGGER.error("Error parsing JSON payload.", e);
-                            } catch (SpelEvaluationException e) {
-                                LOGGER.error(MessageFormat
-                                        .format("Error evaluating, probably malformed, expression: \"{0}\". Message payload: {1} ",
-                                                expression.get(),
-                                                incomingPayload), e);
-                            }
-                        } else {
-                            forwardEvent(eventRoute.getOutgoing(),event);
-                            outEvents.add(event);
-                        }
-
-                        break;
-                    }
+            try {
+                if (isFilterMatch(event, eventRoute)) {
+                    forwardEvent(eventRoute.getOutgoing(), event);
+                    outEvents.add(event);
+                } else {
+                    LOGGER.debug(MessageFormat.format("Dropped route \"{0}\", not matching pattern with content \"{1}\". Message payload: {2} ",
+                            eventRoute.getName(), eventRoute.getFilteringExpression(), incomingPayload));
                 }
+            } catch (IOException e) {
+                LOGGER.error("Error parsing JSON payload.", e);
+            } catch (SpelEvaluationException e) {
+                LOGGER.error(MessageFormat
+                        .format("Error evaluating, probably malformed, expression: \"{0}\". Message payload: {1} ",
+                                eventRoute.getFilteringExpression(),
+                                incomingPayload), e);
             }
+
+//            for (EventRoute.RuleTransformation ruleTransformation : eventRoute.getTransformations()) {
+//                switch (RuleTransformationType.valueOf(ruleTransformation.getType())) {
+//                    case EXPRESSION_LANGUAGE: {
+//
+//                        Optional<String> expression = Optional.ofNullable(ruleTransformation.getData().get("value"))
+//                                .filter(filter -> !filter.isEmpty());
+//
+//                        if (expression.isPresent()) {
+//                            try {
+//                                Map<String, Object> objectMap = jsonParsingService.toMap(incomingPayload);
+//
+//                                if (evaluationService.evaluateConditional(expression.get(), objectMap)) {
+//                                    forwardEvent(eventRoute.getOutgoing(), event);
+//                                    outEvents.add(event);
+//                                } else {
+//                                    LOGGER.debug(MessageFormat.format("Dropped route \"{0}\", not matching \"{1}\" pattern with content \"{2}\". Message payload: {3} ",
+//                                            eventRoute.getName(), ruleTransformation.getType(), expression.get(), incomingPayload));
+//                                }
+//                            } catch (IOException e) {
+//                                LOGGER.error("Error parsing JSON payload.", e);
+//                            } catch (SpelEvaluationException e) {
+//                                LOGGER.error(MessageFormat
+//                                        .format("Error evaluating, probably malformed, expression: \"{0}\". Message payload: {1} ",
+//                                                expression.get(),
+//                                                incomingPayload), e);
+//                            }
+//                        } else {
+//                            forwardEvent(eventRoute.getOutgoing(),event);
+//                            outEvents.add(event);
+//                        }
+//
+//                        break;
+//                    }
+//                }
+//            }
         }
         return new AsyncResult<List<Event>>(outEvents);
+    }
+
+    private boolean isFilterMatch(Event event, EventRoute eventRoute) throws JsonProcessingException {
+        Optional<String> expression = Optional.ofNullable(eventRoute.getFilteringExpression())
+                .filter(filter -> !filter.isEmpty());
+
+        if (expression.isPresent()) {
+            Map<String, Object> objectMap = jsonParsingService.toMap(event.getPayload());
+            return evaluationService.evaluateConditional(expression.get(), objectMap);
+        } else
+            return true;
     }
 
     private void forwardEvent(EventRoute.RuleActor outgoing, Event event) {

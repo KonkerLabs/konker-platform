@@ -3,12 +3,13 @@ package com.konkerlabs.platform.registry.test.business.services;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.Transformation;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
 import com.konkerlabs.platform.registry.business.repositories.EventRouteRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
-import com.konkerlabs.platform.registry.business.services.routes.EventRouteExecutorImpl;
-import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteService;
+import com.konkerlabs.platform.registry.business.repositories.TransformationRepository;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteService;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
@@ -22,15 +23,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.util.Arrays;
 import java.util.List;
 
-import static com.konkerlabs.platform.registry.business.model.EventRoute.*;
-import static com.konkerlabs.platform.registry.business.services.api.ServiceResponse.Status;
+import static com.konkerlabs.platform.registry.business.model.EventRoute.RuleActor;
+import static com.konkerlabs.platform.registry.business.model.EventRoute.builder;
 import static com.konkerlabs.platform.registry.business.services.api.ServiceResponse.Status.ERROR;
 import static com.konkerlabs.platform.registry.business.services.api.ServiceResponse.Status.OK;
-import static com.konkerlabs.platform.registry.business.services.routes.EventRouteExecutorImpl.RuleTransformationType;
-import static com.konkerlabs.platform.registry.business.services.routes.EventRouteExecutorImpl.RuleTransformationType.EXPRESSION_LANGUAGE;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -42,6 +40,8 @@ import static org.mockito.Mockito.when;
 @ContextConfiguration(classes = {MongoTestConfiguration.class, BusinessTestConfiguration.class})
 public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
+    private static final String TRANSFORMATION_ID_IN_USE = "2747ec73-6910-43a1-8ddc-5a4a134ebab3";
+
     @Rule
     public ExpectedException thrown = none();
 
@@ -52,17 +52,22 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     private TenantRepository tenantRepository;
     @Autowired
     private EventRouteRepository eventRouteRepository;
+    @Autowired
+    private TransformationRepository transformationRepository;
 
     private EventRoute route;
 
     private String routeId = "71fb0d48-674b-4f64-a3e5-0256ff3a63af";
     private Tenant tenant;
     private Tenant emptyTenant;
+    private Transformation transformation;
 
     @Before
     public void setUp() throws Exception {
         tenant = tenantRepository.findByDomainName("konker");
         emptyTenant = tenantRepository.findByDomainName("empty");
+
+        transformation = Transformation.builder().id(TRANSFORMATION_ID_IN_USE).build();
 
         route = spy(builder()
                 .name("Route name")
@@ -75,15 +80,14 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
                         new DeviceURIDealer() {
                         }.toDeviceRouteURI(tenant.getDomainName(), "0000000000000005")
                 ))
-                .transformations(asList(new RuleTransformation[]{
-                        new RuleTransformation(EXPRESSION_LANGUAGE.name())
-                }))
+                .filteringExpression("#command.type == 'ButtonPressed'")
+                .transformation(transformation)
                 .active(true)
                 .build());
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/transformations.json"})
     public void shouldRaiseAnExceptionIfTenantIsNull() throws Exception {
         thrown.expect(BusinessException.class);
         thrown.expectMessage("Tenant cannot be null");
@@ -92,7 +96,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = "/fixtures/tenants.json")
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/transformations.json"})
     public void shouldRaiseAnExceptionIfRecordIsNull() throws Exception {
         thrown.expect(BusinessException.class);
         thrown.expectMessage("Record cannot be null");
@@ -101,7 +105,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = "/fixtures/tenants.json")
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/transformations.json"})
     public void shouldReturnResponseMessagesIfRecordIsInvalid() throws Exception {
         List<String> errorMessages = asList(new String[]{"Some error"});
         when(route.applyValidations()).thenReturn(errorMessages);
@@ -114,7 +118,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/transformations.json"})
     public void shouldRaiseAnExceptionIfTenantDoesNotExist() throws Exception {
         thrown.expect(BusinessException.class);
         thrown.expectMessage("Tenant does not exist");
@@ -123,7 +127,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = "/fixtures/tenants.json")
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/transformations.json"})
     public void shouldPersistIfRouteIsValid() throws Exception {
 
         ServiceResponse<EventRoute> response = subject.save(tenant, route);
@@ -132,6 +136,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
         assertThat(response.getStatus(), equalTo(OK));
         assertThat(eventRouteRepository.findByIncomingURI(route.getIncoming().getUri()), notNullValue());
         assertThat(response.getResult().getIncoming().getUri(), equalTo(route.getIncoming().getUri()));
+        assertThat(response.getResult().getTransformation(),equalTo(route.getTransformation()));
     }
 
     //TODO Verify this constraint for effectiveness
@@ -151,7 +156,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 //        assertThat(response.getResponseMessages(), equalTo(errorMessages));
 //    }
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/event-routes.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/transformations.json", "/fixtures/event-routes.json"})
     public void shouldReturnAllRegisteredRoutesWithinATenant() throws Exception {
         List<EventRoute> allRoutes = subject.getAll(tenant);
 
@@ -172,7 +177,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/event-routes.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/transformations.json", "/fixtures/event-routes.json"})
     public void shouldReturnARegisteredRouteByItsID() throws Exception {
         EventRoute route = subject.getById(tenant, routeId).getResult();
 
@@ -180,7 +185,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/event-routes.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/transformations.json","/fixtures/event-routes.json"})
     public void shouldReturnARegisteredRouteByItsIncomingUri() throws Exception {
         List<EventRoute> routes = subject.findByIncomingUri(route.getIncoming().getUri());
 
@@ -194,7 +199,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/event-routes.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/transformations.json", "/fixtures/event-routes.json"})
     public void shouldSaveEditedRouteState() throws Exception {
         EventRoute route = subject.getById(tenant, routeId).getResult();
 
@@ -211,7 +216,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/event-routes.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/transformations.json", "/fixtures/event-routes.json"})
     public void shouldReturnErrorMessageIfRouteDoesNotBelongToTenantWhenFindById() throws Exception {
         ServiceResponse<EventRoute> response = subject.getById(emptyTenant, routeId);
 

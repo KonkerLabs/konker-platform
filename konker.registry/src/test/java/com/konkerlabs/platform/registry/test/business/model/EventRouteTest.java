@@ -1,7 +1,9 @@
 package com.konkerlabs.platform.registry.test.business.model;
 
 import com.konkerlabs.platform.registry.business.model.EventRoute;
+import com.konkerlabs.platform.registry.business.model.RestTransformationStep;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.Transformation;
 import com.konkerlabs.platform.registry.business.services.routes.EventRouteExecutorImpl;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,9 +32,19 @@ public class EventRouteTest {
             .description("Description")
             .incoming(new EventRoute.RuleActor(new URI("device",incomingAuthority,null,null,null)))
             .outgoing(new EventRoute.RuleActor(new URI("device",outgoingAuthority,null,null,null)))
-            .transformations(Arrays.asList(new EventRoute.RuleTransformation[]{
-                    new EventRoute.RuleTransformation(EventRouteExecutorImpl.RuleTransformationType.EXPRESSION_LANGUAGE.name())
-            }))
+//            .transformations(Arrays.asList(new EventRoute.RuleTransformation[]{
+//                    new EventRoute.RuleTransformation(EventRouteExecutorImpl.RuleTransformationType.EXPRESSION_LANGUAGE.name())
+//            }))
+            .filteringExpression("#command.type == 'ButtonPressed'")
+            .transformation(
+                Transformation.builder()
+                    .id("id")
+                    .name("Name")
+                    .description("Description")
+                    .step(
+                        RestTransformationStep.builder().build()
+                    ).build()
+            )
             .active(true)
             .build();
     }
