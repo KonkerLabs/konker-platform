@@ -49,13 +49,13 @@ def field_set(doc, field_name):
     if request.args.get('random_value', 'false') == 'true':
         if field_type == 'int':
             min_value = int(request.args.get('min', '0'))
-            max_value = int(request.args.get('max', '10'))
+            max_value = max(min_value, int(request.args.get('max', '10')))
             value = random_int(min_value, max_value)
         elif field_type == 'json':
             value = random_json()
         else:
             min_size = int(request.args.get('min', '1'))
-            max_size = int(request.args.get('max', '10'))
+            max_size = max(min_size, int(request.args.get('max', '10')))
             value = random_str(min_size, max_size)
     d[field_name] = value
     return jsonify(d)
@@ -130,4 +130,4 @@ def current_json(request):
     return json.loads(request.data)
 
 if __name__ == "__main__":
-    app.run(debug=False)
+    app.run(debug=True)
