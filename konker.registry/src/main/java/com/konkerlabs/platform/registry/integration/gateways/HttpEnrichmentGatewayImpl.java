@@ -3,7 +3,11 @@ package com.konkerlabs.platform.registry.integration.gateways;
 import com.konkerlabs.platform.registry.integration.exceptions.IntegrationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.Scope;
 import org.springframework.http.*;
+import org.springframework.stereotype.Component;
 import org.springframework.util.Base64Utils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -15,20 +19,14 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Optional;
 
+@Component
+@Scope(BeanDefinition.SCOPE_PROTOTYPE)
 public class HttpEnrichmentGatewayImpl implements HttpEnrichmentGateway {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpEnrichmentGatewayImpl.class);
 
+    @Autowired
     private RestTemplate restTemplate;
-
-    public RestTemplate getRestTemplate() {
-        return restTemplate;
-    }
-
-    public void setRestTemplate(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
-    }
-
 
     @Override
     public String get(URI uri, String username, String password) throws IntegrationException {

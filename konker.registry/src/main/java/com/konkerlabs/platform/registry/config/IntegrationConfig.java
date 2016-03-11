@@ -18,16 +18,19 @@ import org.springframework.integration.mqtt.outbound.MqttPahoMessageHandler;
 import org.springframework.integration.mqtt.support.DefaultPahoMessageConverter;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.UUID;
 
 @Configuration
 @EnableIntegration
 @ComponentScan(basePackages = "com.konkerlabs.platform.registry.integration")
-@IntegrationComponentScan(basePackageClasses = MqttMessageGateway.class)
-public class MqttConfig {
+@IntegrationComponentScan(basePackages = "com.konkerlabs.platform.registry.integration")
+public class IntegrationConfig {
 
     private static final Config brokerConfig = ConfigFactory.load().getConfig("mqtt");
+
+    //MQTT stuff
 
     @Bean(name = "konkerMqttInputChannel")
     public MessageChannel inputChannel() {
@@ -86,5 +89,12 @@ public class MqttConfig {
         factoryBean.setDefaultRequestChannel(outputChannel());
         factoryBean.setDefaultRequestTimeout(1L);
         return factoryBean;
+    }
+
+    //HTTP stuff
+
+    @Bean
+    public RestTemplate enrichmentRestTemplate() {
+        return new RestTemplate();
     }
 }
