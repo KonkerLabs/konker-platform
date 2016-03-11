@@ -1,6 +1,6 @@
 package com.konkerlabs.platform.registry.test.base;
 
-import com.konkerlabs.platform.registry.integration.gateways.HttpEnrichmentGateway;
+import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
 import com.konkerlabs.platform.registry.integration.gateways.MqttMessageGateway;
 import com.konkerlabs.platform.registry.integration.gateways.SMSMessageGateway;
 
@@ -22,7 +22,7 @@ public class BusinessTestConfiguration {
     MqttMessageGateway mqttMessageGateway;
 
     @Autowired
-    HttpEnrichmentGateway httpEnrichmentGateway;
+    HttpGateway httpGateway;
 
     @Bean
     public MqttMessageGateway mqttMessageGateway() {
@@ -34,7 +34,8 @@ public class BusinessTestConfiguration {
         return mock(SMSMessageGateway.class);
     }
 
-    @Bean HttpEnrichmentGateway httpEnrichmentGateway() {
-        return mock(HttpEnrichmentGateway.class);
+    @Bean
+    HttpGateway httpEnrichmentGateway() {
+        return mock(HttpGateway.class);
     }
 }

@@ -7,7 +7,7 @@ import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer
 import com.konkerlabs.platform.registry.business.services.api.EnrichmentExecutor;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.integration.exceptions.IntegrationException;
-import com.konkerlabs.platform.registry.integration.gateways.HttpEnrichmentGateway;
+import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
@@ -18,8 +18,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.omg.PortableInterceptor.INACTIVE;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -50,7 +50,7 @@ public class EnrichmentExecutorTest extends BusinessLayerTestSupport {
     @Autowired
     private EnrichmentExecutor subject;
     @Autowired
-    private HttpEnrichmentGateway httpEnrichmentGateway;
+    private HttpGateway httpGateway;
 
     private Event event;
     private Device device;
@@ -93,8 +93,8 @@ public class EnrichmentExecutorTest extends BusinessLayerTestSupport {
                 .active(true)
                 .name("device_name").build());
 
-        when(httpEnrichmentGateway.get(eq(new URI("https://www.google.com/device/abc123")),
-                eq("user"), eq("pass"))).thenReturn(ENRICHMENT_SERVICE_RESULT);
+        when(httpGateway.request(eq(HttpMethod.GET), eq(new URI("https://www.google.com/device/abc123")),
+                eq(null), eq("user"), eq("pass"))).thenReturn(ENRICHMENT_SERVICE_RESULT);
     }
 
     @Test

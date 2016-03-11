@@ -1,14 +1,12 @@
 package com.konkerlabs.platform.registry.business.services;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.konkerlabs.platform.registry.business.model.DataEnrichmentExtension;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.services.api.DataEnrichmentExtensionService;
 import com.konkerlabs.platform.registry.business.services.api.EnrichmentExecutor;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.integration.gateways.HttpEnrichmentGateway;
+import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
 import com.konkerlabs.platform.utilities.expressions.ExpressionEvaluationService;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 import org.slf4j.Logger;
@@ -16,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
 import java.net.URL;
@@ -33,7 +32,7 @@ public class EnrichmentExecutorImpl implements EnrichmentExecutor {
     @Autowired
     private DataEnrichmentExtensionService dataEnrichmentExtensionService;
     @Autowired
-    private HttpEnrichmentGateway httpEnrichmentGateway;
+    private HttpGateway httpGateway;
     @Autowired
     private ExpressionEvaluationService expressionEvaluationService;
     @Autowired
@@ -69,7 +68,7 @@ public class EnrichmentExecutorImpl implements EnrichmentExecutor {
 
                     URL finalUrl = new URL(expressionEvaluationService.evaluateTemplate(url, incomingPayloadMap));
 
-                    String body = httpEnrichmentGateway.get(finalUrl.toURI(), user, password);
+                    String body = httpGateway.request(HttpMethod.GET, finalUrl.toURI(), null, user, password);
 
                     Map<String, Object> enrichmentResultMap = jsonParsingService.toMap(body);
 

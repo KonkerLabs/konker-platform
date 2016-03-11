@@ -15,7 +15,7 @@ public class SmsMessageGatewayFactory implements SmartFactoryBean<SMSMessageGate
     private static final Config smsServiceConfig = ConfigFactory.load().getConfig("sms");
 
     @Autowired
-    private RestTemplate restTemplate;
+    private HttpGateway httpGateway;
 
     @Override
     public boolean isPrototype() {
@@ -34,7 +34,8 @@ public class SmsMessageGatewayFactory implements SmartFactoryBean<SMSMessageGate
         smsMessageGateway.setUsername(smsServiceConfig.getString("username"));
         smsMessageGateway.setPassword(smsServiceConfig.getString("password"));
         smsMessageGateway.setFromPhoneNumber(smsServiceConfig.getString("from"));
-        smsMessageGateway.setRestTemplate(restTemplate);
+//        smsMessageGateway.setRestTemplate(restTemplate);
+        smsMessageGateway.setHttpGateway(httpGateway);
 
         return smsMessageGateway;
     }

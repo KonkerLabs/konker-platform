@@ -9,8 +9,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Base64Utils;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -18,19 +16,28 @@ import java.net.URI;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 @Component
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
-public class HttpEnrichmentGatewayImpl implements HttpEnrichmentGateway {
+public class HttpGatewayImpl implements HttpGateway {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(HttpEnrichmentGatewayImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(HttpGatewayImpl.class);
 
     @Autowired
     private RestTemplate restTemplate;
 
     @Override
-    public String get(URI uri, String username, String password) throws IntegrationException {
-        Optional.ofNullable(uri).orElseThrow(() -> new IllegalStateException("Service URI must be provided"));
+    public <T> String request(HttpMethod method,
+                          URI uri,
+                          Supplier<T> body,
+                          String username,
+                          String password) throws IntegrationException {
+        Optional.ofNullable(method)
+                .orElseThrow(() -> new IllegalStateException("HTTP method must be provided"));
+
+        Optional.ofNullable(uri)
+                .orElseThrow(() -> new IllegalStateException("Service URI must be provided"));
 
         Optional.ofNullable(restTemplate)
                 .orElseThrow(() -> new IllegalStateException("RestTemplate must be provided"));
@@ -50,14 +57,16 @@ public class HttpEnrichmentGatewayImpl implements HttpEnrichmentGateway {
                 headers.add("Authorization", MessageFormat.format("Basic {0}", encodedCredentials));
             }
 
-            HttpEntity<String> entity = new HttpEntity<String>(headers);
+            HttpEntity<String> entity = new HttpEntity(
+                Optional.ofNullable(body).orElse(() -> null).get(),
+                headers
+            );
 
             LOGGER.debug("Requesting GET from {}.", uri);
 
+            ResponseEntity<String> exchange = restTemplate.exchange(uri, method, entity, String.class);
 
-            ResponseEntity<String> exchange = restTemplate.exchange(uri, HttpMethod.GET, entity, String.class);
-
-            Optional.ofNullable(exchange).orElseThrow(() -> new IntegrationException(MessageFormat.format("Exception while requesting GET from {0}.", uri)));
+//            Optional.ofNullable(exchange).orElseThrow(() -> new IntegrationException(MessageFormat.format("Exception while requesting GET from {0}.", uri)));
 
             if (exchange.getStatusCode().equals(HttpStatus.OK)) {
                 return exchange.getBody();
