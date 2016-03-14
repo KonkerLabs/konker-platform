@@ -8,7 +8,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 
 import java.net.URI;
+import java.util.function.Supplier;
 
+import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -20,11 +22,10 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 
 import com.konkerlabs.platform.registry.integration.exceptions.IntegrationException;
 import com.konkerlabs.platform.registry.integration.gateways.SMSMessageGatewayTwilioImpl;
@@ -44,19 +45,19 @@ public class SMSMessageGatewayTwilioImplTest extends IntegrationLayerTestSupport
     public ExpectedException thrown = ExpectedException.none();
 
     @Mock
-    private RestTemplate restTemplate;
+    private HttpGateway httpGateway;
 
     @Captor
-    private ArgumentCaptor<HttpEntity<MultiValueMap<String, String>>> httpEntityCaptor;
+    private ArgumentCaptor<Supplier<MultiValueMap<String, String>>> formCaptor;
 
     private SMSMessageGatewayTwilioImpl build(URI uri, String username, String password, String fromNumber,
-            RestTemplate restTemplate) {
+            HttpGateway httpGateway) {
         SMSMessageGatewayTwilioImpl s = new SMSMessageGatewayTwilioImpl();
         s.setApiUri(uri);
         s.setUsername(username);
         s.setFromPhoneNumber(fromNumber);
         s.setPassword(password);
-        s.setRestTemplate(restTemplate);
+        s.setHttpGateway(httpGateway);
         return s;
     }
 
@@ -68,11 +69,11 @@ public class SMSMessageGatewayTwilioImplTest extends IntegrationLayerTestSupport
     @Test
     public void shouldFailWithExceptionIfRestTemplateNotDefined() throws IntegrationException {
         thrown.expect(IllegalStateException.class);
-        thrown.expectMessage("RestTemplate must be provided");
+        thrown.expectMessage("HTTP gateway must be provided");
 
         build(apiUri, USERNAME, PASSWORD, FROM_NUMBER, null).send("a", "+111111111");
 
-        verifyZeroInteractions(restTemplate);
+        verifyZeroInteractions(httpGateway);
     }
 
     @Test
@@ -80,9 +81,9 @@ public class SMSMessageGatewayTwilioImplTest extends IntegrationLayerTestSupport
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("API URI must be provided");
 
-        build(null, USERNAME, PASSWORD, FROM_NUMBER, restTemplate).send("a", "+111111111");
+        build(null, USERNAME, PASSWORD, FROM_NUMBER, httpGateway).send("a", "+111111111");
 
-        verifyZeroInteractions(restTemplate);
+        verifyZeroInteractions(httpGateway);
     }
 
     @Test
@@ -90,9 +91,9 @@ public class SMSMessageGatewayTwilioImplTest extends IntegrationLayerTestSupport
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("API Username must be provided");
 
-        build(apiUri, null, PASSWORD, FROM_NUMBER, restTemplate).send("a", "+111111111");
+        build(apiUri, null, PASSWORD, FROM_NUMBER, httpGateway).send("a", "+111111111");
 
-        verifyZeroInteractions(restTemplate);
+        verifyZeroInteractions(httpGateway);
     }
 
     @Test
@@ -100,9 +101,9 @@ public class SMSMessageGatewayTwilioImplTest extends IntegrationLayerTestSupport
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("API Username must be provided");
 
-        build(apiUri, "", PASSWORD, FROM_NUMBER, restTemplate).send("a", "+111111111");
+        build(apiUri, "", PASSWORD, FROM_NUMBER, httpGateway).send("a", "+111111111");
 
-        verifyZeroInteractions(restTemplate);
+        verifyZeroInteractions(httpGateway);
     }
 
     @Test
@@ -110,9 +111,9 @@ public class SMSMessageGatewayTwilioImplTest extends IntegrationLayerTestSupport
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("API Password must be provided");
 
-        build(apiUri, USERNAME, null, FROM_NUMBER, restTemplate).send("a", "+111111111");
+        build(apiUri, USERNAME, null, FROM_NUMBER, httpGateway).send("a", "+111111111");
 
-        verifyZeroInteractions(restTemplate);
+        verifyZeroInteractions(httpGateway);
     }
 
     @Test
@@ -120,9 +121,9 @@ public class SMSMessageGatewayTwilioImplTest extends IntegrationLayerTestSupport
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("API Password must be provided");
 
-        build(apiUri, USERNAME, "", FROM_NUMBER, restTemplate).send("a", "+111111111");
+        build(apiUri, USERNAME, "", FROM_NUMBER, httpGateway).send("a", "+111111111");
 
-        verifyZeroInteractions(restTemplate);
+        verifyZeroInteractions(httpGateway);
     }
 
     @Test
@@ -130,9 +131,9 @@ public class SMSMessageGatewayTwilioImplTest extends IntegrationLayerTestSupport
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("From Phone Number must be provided");
 
-        build(apiUri, USERNAME, PASSWORD, null, restTemplate).send("a", "+111111111");
+        build(apiUri, USERNAME, PASSWORD, null, httpGateway).send("a", "+111111111");
 
-        verifyZeroInteractions(restTemplate);
+        verifyZeroInteractions(httpGateway);
     }
 
     @Test
@@ -140,9 +141,9 @@ public class SMSMessageGatewayTwilioImplTest extends IntegrationLayerTestSupport
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("From Phone Number must be provided");
 
-        build(apiUri, USERNAME, PASSWORD, "", restTemplate).send("a", "+111111111");
+        build(apiUri, USERNAME, PASSWORD, "", httpGateway).send("a", "+111111111");
 
-        verifyZeroInteractions(restTemplate);
+        verifyZeroInteractions(httpGateway);
     }
 
     @Test
@@ -150,9 +151,9 @@ public class SMSMessageGatewayTwilioImplTest extends IntegrationLayerTestSupport
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Destination Number must be provided");
 
-        build(apiUri, USERNAME, PASSWORD, FROM_NUMBER, restTemplate).send("a", "");
+        build(apiUri, USERNAME, PASSWORD, FROM_NUMBER, httpGateway).send("a", "");
 
-        verifyZeroInteractions(restTemplate);
+        verifyZeroInteractions(httpGateway);
     }
 
 
@@ -161,9 +162,9 @@ public class SMSMessageGatewayTwilioImplTest extends IntegrationLayerTestSupport
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Destination Number must be provided");
 
-        build(apiUri, USERNAME, PASSWORD, FROM_NUMBER, restTemplate).send("a", null);
+        build(apiUri, USERNAME, PASSWORD, FROM_NUMBER, httpGateway).send("a", null);
 
-        verifyZeroInteractions(restTemplate);
+        verifyZeroInteractions(httpGateway);
     }
 
 
@@ -172,9 +173,9 @@ public class SMSMessageGatewayTwilioImplTest extends IntegrationLayerTestSupport
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("SMS Body must be provided");
 
-        build(apiUri, USERNAME, PASSWORD, FROM_NUMBER, restTemplate).send(null, "+1");
+        build(apiUri, USERNAME, PASSWORD, FROM_NUMBER, httpGateway).send(null, "+1");
 
-        verifyZeroInteractions(restTemplate);
+        verifyZeroInteractions(httpGateway);
     }
 
 
@@ -183,49 +184,32 @@ public class SMSMessageGatewayTwilioImplTest extends IntegrationLayerTestSupport
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("SMS Body must be provided");
 
-        build(apiUri, USERNAME, PASSWORD, FROM_NUMBER, restTemplate).send("", "+1");
+        build(apiUri, USERNAME, PASSWORD, FROM_NUMBER, httpGateway).send("", "+1");
 
-        verifyZeroInteractions(restTemplate);
-    }
-
-    @Test
-    public void shouldIncludeAuhtorizationHeader() throws IntegrationException {
-        build(apiUri, USERNAME, PASSWORD, FROM_NUMBER, restTemplate).send("a", "+2");
-
-        verify(restTemplate).postForLocation(anyObject(), httpEntityCaptor.capture());
-
-        HttpEntity<MultiValueMap<String, String>> entity = httpEntityCaptor.getValue();
-        assertNotNull(entity);
-
-        HttpHeaders headers = entity.getHeaders();
-        assertNotNull(headers);
-
-        assertEquals("Basic VXNlcm5hbWU6UGFzc3dvcmQ=", headers.getFirst("Authorization"));
+        verifyZeroInteractions(httpGateway);
     }
 
     @Test
     public void shouldRaiseIntegrationExceptionIfPostFails() throws IntegrationException {
         thrown.expect(IntegrationException.class);
 
-        Mockito.when(restTemplate.postForLocation(anyObject(), anyObject()))
+        Mockito.when(httpGateway.request(eq(HttpMethod.POST),eq(apiUri),anyObject(),eq(USERNAME),eq(PASSWORD)))
                 .thenThrow(new RestClientException("Dummy Exception"));
-        build(apiUri, USERNAME, PASSWORD, FROM_NUMBER, restTemplate).send("SMS Text Body", "+2");
-        verify(restTemplate).postForLocation(anyObject(), anyObject());
+        build(apiUri, USERNAME, PASSWORD, FROM_NUMBER, httpGateway).send("SMS Text Body", "+2");
     }
 
     @Test
     public void shouldPostToApiIfDataIsCorrect() throws IntegrationException {
-        build(apiUri, USERNAME, PASSWORD, FROM_NUMBER, restTemplate).send("SMS Text Body", "+2");
+        build(apiUri, USERNAME, PASSWORD, FROM_NUMBER, httpGateway).send("SMS Text Body", "+2");
 
-        verify(restTemplate).postForLocation(eq(apiUri), httpEntityCaptor.capture());
+        verify(httpGateway).request(eq(HttpMethod.POST),anyObject(),formCaptor.capture(),eq(USERNAME),eq(PASSWORD));
 
-        HttpEntity<MultiValueMap<String, String>> entity = httpEntityCaptor.getValue();
+        Supplier<MultiValueMap<String, String>> entity = formCaptor.getValue();
         assertNotNull(entity);
 
-        MultiValueMap<String, String> body = entity.getBody();
+        MultiValueMap<String, String> body = entity.get();
         assertEquals(FROM_NUMBER, body.getFirst("From"));
         assertEquals("+2", body.getFirst("To"));
         assertEquals("SMS Text Body", body.getFirst("Body"));
     }
-
 }
