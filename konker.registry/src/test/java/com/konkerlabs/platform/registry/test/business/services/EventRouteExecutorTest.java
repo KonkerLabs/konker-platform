@@ -3,17 +3,22 @@ package com.konkerlabs.platform.registry.test.business.services;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
 import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteExecutor;
+import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
 import com.konkerlabs.platform.utilities.config.UtilitiesConfig;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -23,10 +28,13 @@ import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.function.Supplier;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
@@ -43,6 +51,9 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
 
     @Autowired
     private EventRouteExecutor subject;
+    @Autowired
+    private HttpGateway httpGateway;
+
     private Event event;
     private URI uri;
 
@@ -53,22 +64,43 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
     private String nonMatchingRouteDeviceId = "0000000000000009";
 
     private String payload = "{\"metric\":\"temperature\",\"deviceId\":\"0000000000000004\",\"value\":30,\"ts\":1454900000,\"data\":{\"sn\":1234,\"test\":1,\"foo\":2}}";
+    private String transformationResponse = "{\"okToGo\" : true }";
 
     @Before
     public void setUp() throws Exception {
         event = spy(Event.builder().channel("data").timestamp(Instant.now()).payload(payload).build());
         uri = new DeviceURIDealer() {}.toDeviceRouteURI(REGISTERED_TENANT_DOMAIN,matchingRouteDeviceId);
+
+        when(
+            httpGateway.request(
+                eq(HttpMethod.POST),
+                Mockito.any(URI.class),
+                Mockito.any(Supplier.class),
+                Mockito.anyString(),
+                Mockito.anyString(),
+                eq(HttpStatus.OK)
+            )
+        ).thenReturn(transformationResponse);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        Mockito.reset(httpGateway);
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json", "/fixtures/event-routes.json"})
+    @UsingDataSet(locations = {
+        "/fixtures/tenants.json",
+        "/fixtures/devices.json",
+        "/fixtures/transformations.json",
+        "/fixtures/event-routes.json"})
     public void shouldSendEventsForAMatchingRoute() throws ExecutionException, InterruptedException {
         Future<List<Event>> eventFuture = subject.execute(event, uri);
         assertThat(eventFuture.get(), notNullValue());
         assertThat(eventFuture.get(), hasSize(3));
-        assertThat(eventFuture.get().get(0).getPayload(), equalTo(payload));
-        assertThat(eventFuture.get().get(1).getPayload(), equalTo(payload));
-        assertThat(eventFuture.get().get(2).getPayload(), equalTo(payload));
+        assertThat(eventFuture.get().get(0).getPayload(), equalTo(transformationResponse));
+        assertThat(eventFuture.get().get(1).getPayload(), equalTo(transformationResponse));
+        assertThat(eventFuture.get().get(2).getPayload(), equalTo(transformationResponse));
     }
 
     @Test
@@ -116,5 +148,4 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
         assertThat(eventFuture, notNullValue());
         assertThat(eventFuture.get(), hasSize(0));
     }
-
 }

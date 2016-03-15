@@ -9,6 +9,7 @@ import org.junit.Test;
 import java.util.HashMap;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 
@@ -79,5 +80,9 @@ public class RestTransformationStepTest {
         String expectedError = "REST step: Password attribute is missing";
 
         assertThat(subject.applyValidations(),hasItem(expectedError));
+    }
+    @Test
+    public void shouldReturnNoValidationMessageIfRecordIsValid() throws Exception {
+        assertThat(subject.applyValidations(),empty());
     }
 }

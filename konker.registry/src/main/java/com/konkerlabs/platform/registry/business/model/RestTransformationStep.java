@@ -15,7 +15,7 @@ public class RestTransformationStep extends TransformationStep {
     public static final String REST_PASSWORD_ATTRIBUTE_NAME = "password";
 
     @Builder
-    public RestTransformationStep(IntegrationType type, Map<String, String> attributes) {
+    public RestTransformationStep(Map<String, String> attributes) {
         super(IntegrationType.REST, attributes);
     }
 

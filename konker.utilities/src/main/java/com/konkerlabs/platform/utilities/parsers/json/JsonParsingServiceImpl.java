@@ -65,6 +65,16 @@ public class JsonParsingServiceImpl implements JsonParsingService {
         return OBJECT_MAPPER.writeValueAsString(map);
     }
 
+    @Override
+    public boolean isValid(String json) {
+        try {
+            return Optional.ofNullable(json).isPresent() &&
+                   Optional.ofNullable(OBJECT_MAPPER.readTree(json)).isPresent();
+        } catch (IOException|IllegalArgumentException e) {
+            return false;
+        }
+    }
+
     private void addKeys(String currentPath, JsonNode jsonNode, Map<String, Object> map) {
         if (jsonNode.isObject()) {
             ObjectNode objectNode = (ObjectNode) jsonNode;

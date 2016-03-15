@@ -1,14 +1,20 @@
 package com.konkerlabs.platform.utilities.expressions;
 
+import com.konkerlabs.platform.utilities.support.Functions;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.expression.MapAccessor;
+import org.springframework.expression.EvaluationException;
 import org.springframework.expression.Expression;
 import org.springframework.expression.common.TemplateParserContext;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Optional;
 
@@ -29,6 +35,12 @@ public class ExpressionEvaluationServiceImpl implements ExpressionEvaluationServ
                 ,new TemplateParserContext("@{","}"));
 
         StandardEvaluationContext standardEvaluationContext = new StandardEvaluationContext();
+        try {
+            standardEvaluationContext.registerFunction("urlEncode",
+                    Functions.class.getDeclaredMethod("urlEncode", new Class[] {String.class}));
+        } catch (NoSuchMethodException e) {
+            throw new EvaluationException("Fail to register function to evaluation context", e);
+        }
         standardEvaluationContext.addPropertyAccessor(new MapAccessor());
         standardEvaluationContext.setVariables(evaluationContext);
 

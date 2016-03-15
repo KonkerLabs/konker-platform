@@ -10,5 +10,7 @@ public interface JsonParsingService {
 
     Map<String,Object> toMap(String json) throws JsonProcessingException;
 
-    String toJsonString(Map<String, Object> map) throws  JsonProcessingException;
+    String toJsonString(Map<String, Object> map) throws JsonProcessingException;
+
+    boolean isValid(String json);
 }

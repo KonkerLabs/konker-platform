@@ -20,7 +20,10 @@ import static org.hamcrest.Matchers.*;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-        JsonParsingServiceTest.FlatMap.class
+        JsonParsingServiceTest.FlatMap.class,
+        JsonParsingServiceTest.ToMap.class,
+        JsonParsingServiceTest.ToJsonString.class,
+        JsonParsingServiceTest.IsValid.class
 })
 public class JsonParsingServiceTest {
 
@@ -29,15 +32,10 @@ public class JsonParsingServiceTest {
         @Rule
         public ExpectedException thrown = ExpectedException.none();
 
-    }
+        @Autowired
+        protected JsonParsingService service;
 
-    @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(classes = {
-            UtilitiesConfig.class
-    })
-    public static class FlatMap extends JsonParsingServiceTestBase {
-
-        private String invalidJson = "{\n" +
+        protected String invalidJson = "{\n" +
                 "    \"ts\" : \"2016-03-03T18:15:00Z\",\n" +
                 "    \"value\" : 31.0\n" +
                 "    \"command : {\n" +
@@ -51,7 +49,7 @@ public class JsonParsingServiceTest {
                 "    \"time\" : 123\n" +
                 "  }";
 
-        private String validJson = "{\n" +
+        protected String validJson = "{\n" +
                 "    \"ts\" : \"2016-03-03T18:15:00Z\",\n" +
                 "    \"value\" : 31.0,\n" +
                 "    \"command\" : {\n" +
@@ -64,13 +62,15 @@ public class JsonParsingServiceTest {
                 "    },\n" +
                 "    \"time\" : 123\n" +
                 "  }";
+    }
 
-        @Autowired
-        private JsonParsingService service;
+    @RunWith(SpringJUnit4ClassRunner.class)
+    @ContextConfiguration(classes = {
+            UtilitiesConfig.class
+    })
+    public static class FlatMap extends JsonParsingServiceTestBase {
 
         private HashMap<String, Object> expectedFlattenMap;
-        private HashMap<String, Object> expectedMap;
-        private String expectedJsonString;
 
         @Before
         public void setUp() throws Exception {
@@ -80,27 +80,6 @@ public class JsonParsingServiceTest {
             expectedFlattenMap.put("command.type", "ButtonPressed");
             expectedFlattenMap.put("data.channels.0.name", "channel_0");
             expectedFlattenMap.put("time", 123L);
-
-            expectedMap = new HashMap<>();
-            expectedMap.put("ts", "2016-03-03T18:15:00Z");
-            expectedMap.put("value", 31.0);
-            expectedMap.put("command", new HashMap<String, String>() {{
-                put("type", "ButtonPressed");
-            }});
-            expectedMap.put("data", new HashMap<String, List<HashMap<String, String>>>() {{
-                put("channels", new ArrayList<HashMap<String, String>>() {{
-                    add(new HashMap<String, String>() {{
-                        put("name", "channel_0");
-                    }});
-                }});
-            }});
-            expectedMap.put("time", 123);
-
-            expectedJsonString = "{\"data\":{\"channels\":[{\"name\":\"channel_0\"}]}," +
-                    "\"time\":123," +
-                    "\"value\":31.0," +
-                    "\"command\":{\"type\":\"ButtonPressed\"}," +
-                    "\"ts\":\"2016-03-03T18:15:00Z\"}";
         }
 
         @Test
@@ -127,6 +106,41 @@ public class JsonParsingServiceTest {
         }
 
         @Test
+        public void shouldCreateAFlatMap() throws Exception {
+            Map<String, Object> actual = service.toFlatMap(validJson);
+
+            assertThat(actual, notNullValue());
+            assertThat(actual, equalTo(expectedFlattenMap));
+        }
+    }
+
+    @RunWith(SpringJUnit4ClassRunner.class)
+    @ContextConfiguration(classes = {
+            UtilitiesConfig.class
+    })
+    public static class ToMap extends JsonParsingServiceTestBase {
+
+        private HashMap<String, Object> expectedMap;
+
+        @Before
+        public void setUp() throws Exception {
+            expectedMap = new HashMap<>();
+            expectedMap.put("ts", "2016-03-03T18:15:00Z");
+            expectedMap.put("value", 31.0);
+            expectedMap.put("command", new HashMap<String, String>() {{
+                put("type", "ButtonPressed");
+            }});
+            expectedMap.put("data", new HashMap<String, List<HashMap<String, String>>>() {{
+                put("channels", new ArrayList<HashMap<String, String>>() {{
+                    add(new HashMap<String, String>() {{
+                        put("name", "channel_0");
+                    }});
+                }});
+            }});
+            expectedMap.put("time", 123);
+        }
+
+        @Test
         public void shouldRaiseAnExceptionIfJsonIsNullOnToMap() throws Exception {
             thrown.expect(IllegalArgumentException.class);
             thrown.expectMessage("JSON cannot be null or empty");
@@ -150,6 +164,48 @@ public class JsonParsingServiceTest {
         }
 
         @Test
+        public void shouldCreateAMap() throws Exception {
+            Map<String, Object> actual = service.toMap(validJson);
+
+            assertThat(actual, notNullValue());
+            assertThat(actual, equalTo(expectedMap));
+        }
+    }
+
+    @RunWith(SpringJUnit4ClassRunner.class)
+    @ContextConfiguration(classes = {
+            UtilitiesConfig.class
+    })
+    public static class ToJsonString extends JsonParsingServiceTestBase {
+
+        private HashMap<String, Object> expectedMap;
+        private String expectedJsonString;
+
+        @Before
+        public void setUp() throws Exception {
+            expectedMap = new HashMap<>();
+            expectedMap.put("ts", "2016-03-03T18:15:00Z");
+            expectedMap.put("value", 31.0);
+            expectedMap.put("command", new HashMap<String, String>() {{
+                put("type", "ButtonPressed");
+            }});
+            expectedMap.put("data", new HashMap<String, List<HashMap<String, String>>>() {{
+                put("channels", new ArrayList<HashMap<String, String>>() {{
+                    add(new HashMap<String, String>() {{
+                        put("name", "channel_0");
+                    }});
+                }});
+            }});
+            expectedMap.put("time", 123);
+
+            expectedJsonString = "{\"data\":{\"channels\":[{\"name\":\"channel_0\"}]}," +
+                    "\"time\":123," +
+                    "\"value\":31.0," +
+                    "\"command\":{\"type\":\"ButtonPressed\"}," +
+                    "\"ts\":\"2016-03-03T18:15:00Z\"}";
+        }
+
+        @Test
         public void shouldRaiseAnExceptionIfJsonIsNullOnToJsonString() throws Exception {
             thrown.expect(IllegalArgumentException.class);
             thrown.expectMessage("Map cannot be null or empty");
@@ -167,22 +223,6 @@ public class JsonParsingServiceTest {
         }
 
         @Test
-        public void shouldCreateAFlatMap() throws Exception {
-            Map<String, Object> actual = service.toFlatMap(validJson);
-
-            assertThat(actual, notNullValue());
-            assertThat(actual, equalTo(expectedFlattenMap));
-        }
-
-        @Test
-        public void shouldCreateAMap() throws Exception {
-            Map<String, Object> actual = service.toMap(validJson);
-
-            assertThat(actual, notNullValue());
-            assertThat(actual, equalTo(expectedMap));
-        }
-
-        @Test
         public void shouldCreateAJsonString() throws Exception {
             String actual = service.toJsonString(expectedMap);
 
@@ -191,4 +231,31 @@ public class JsonParsingServiceTest {
         }
     }
 
+    @RunWith(SpringJUnit4ClassRunner.class)
+    @ContextConfiguration(classes = {
+            UtilitiesConfig.class
+    })
+    public static class IsValid extends JsonParsingServiceTestBase {
+
+        @Test
+        public void shouldReturnFalseIfJsonStringIsNull() throws Exception {
+            assertThat(service.isValid(null),equalTo(false));
+        }
+
+        @Test
+        public void shouldReturnFalseIfJsonStringIsEmpty() throws Exception {
+            assertThat(service.isValid(""),equalTo(false));
+        }
+
+        @Test
+        public void shouldReturnFalseIfJsonStringIsAnInvalidJsonMessage() throws Exception {
+            assertThat(service.isValid(invalidJson),equalTo(false));
+        }
+
+        @Test
+        public void shouldReturnTrueIfJsonStringIsAValidJsonMessage() throws Exception {
+            assertThat(service.isValid(validJson),equalTo(true));
+        }
+
+    }
 }

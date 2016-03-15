@@ -19,7 +19,6 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 @Component
-@Scope(BeanDefinition.SCOPE_PROTOTYPE)
 public class HttpGatewayImpl implements HttpGateway {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpGatewayImpl.class);
@@ -32,7 +31,8 @@ public class HttpGatewayImpl implements HttpGateway {
                           URI uri,
                           Supplier<T> body,
                           String username,
-                          String password) throws IntegrationException {
+                          String password,
+                          HttpStatus expectedStatus) throws IntegrationException {
         Optional.ofNullable(method)
                 .orElseThrow(() -> new IllegalStateException("HTTP method must be provided"));
 
@@ -45,6 +45,8 @@ public class HttpGatewayImpl implements HttpGateway {
         if ((username != null && password == null) || username == null && password != null) {
             throw new IllegalStateException("Username and Password must be both provided together");
         }
+
+        expectedStatus = Optional.ofNullable(expectedStatus).orElse(HttpStatus.OK);
 
         try {
             HttpHeaders headers = new HttpHeaders();;
@@ -66,9 +68,7 @@ public class HttpGatewayImpl implements HttpGateway {
 
             ResponseEntity<String> exchange = restTemplate.exchange(uri, method, entity, String.class);
 
-//            Optional.ofNullable(exchange).orElseThrow(() -> new IntegrationException(MessageFormat.format("Exception while requesting GET from {0}.", uri)));
-
-            if (exchange.getStatusCode().equals(HttpStatus.OK)) {
+            if (exchange.getStatusCode().equals(expectedStatus)) {
                 return exchange.getBody();
             } else
                 throw new IntegrationException(MessageFormat.format("Exception while requesting GET from {0}. Status Code: {1}. Message: {2}.",

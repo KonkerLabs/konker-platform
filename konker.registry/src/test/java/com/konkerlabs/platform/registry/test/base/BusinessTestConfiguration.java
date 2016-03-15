@@ -18,12 +18,6 @@ import static org.mockito.Mockito.mock;
 },lazyInit = true)
 public class BusinessTestConfiguration {
 
-    @Autowired
-    MqttMessageGateway mqttMessageGateway;
-
-    @Autowired
-    HttpGateway httpGateway;
-
     @Bean
     public MqttMessageGateway mqttMessageGateway() {
         return mock(MqttMessageGateway.class);
@@ -35,7 +29,7 @@ public class BusinessTestConfiguration {
     }
 
     @Bean
-    HttpGateway httpEnrichmentGateway() {
+    public HttpGateway httpEnrichmentGateway() {
         return mock(HttpGateway.class);
     }
 }

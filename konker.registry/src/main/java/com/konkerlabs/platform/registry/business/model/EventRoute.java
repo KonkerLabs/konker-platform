@@ -28,8 +28,6 @@ public class EventRoute {
     private String filteringExpression;
     @DBRef
     private Transformation transformation;
-//    @Singular
-//    private List<RuleTransformation> transformations = new ArrayList<>();
     private boolean active;
 
     public List<String> applyValidations() {
@@ -68,14 +66,4 @@ public class EventRoute {
         private URI uri;
         private Map<String,String> data = new HashMap<>();
     }
-
-//    @Data
-//    public static class RuleTransformation {
-//        private String type;
-//        private Map<String,String> data = new HashMap<>();
-//
-//        public RuleTransformation(String type) {
-//            this.type = type;
-//        }
-//    }
 }

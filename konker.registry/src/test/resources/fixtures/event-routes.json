@@ -22,6 +22,10 @@
         }
       },
       "filteringExpression" : "#metric == 'temperature' && #value < 40 && #data.sn == 1234",
+      "transformation" : {
+        "$id" : "2747ec73-6910-43a1-8ddc-5a4a134ebab3",
+        "$ref" : "transformations"
+      },
       "active" : true
     },
     {
@@ -46,6 +50,10 @@
         }
       },
       "filteringExpression" : "#metric == 'X'",
+      "transformation" : {
+        "$id" : "2747ec73-6910-43a1-8ddc-5a4a134ebab3",
+        "$ref" : "transformations"
+      },
       "active" : true
     },
     {
@@ -70,6 +78,10 @@
         }
       },
       "filteringExpression" : "#metric == 'temperature' && #value < 40",
+      "transformation" : {
+        "$id" : "2747ec73-6910-43a1-8ddc-5a4a134ebab3",
+        "$ref" : "transformations"
+      },
       "active" : true
     },
     {
@@ -94,6 +106,10 @@
         }
       },
       "filteringExpression" : "#value < 0",
+      "transformation" : {
+        "$id" : "2747ec73-6910-43a1-8ddc-5a4a134ebab3",
+        "$ref" : "transformations"
+      },
       "active" : true
     },
     {
@@ -118,6 +134,10 @@
         }
       },
       "filteringExpression" : "#XXXX == 'X'",
+      "transformation" : {
+        "$id" : "2747ec73-6910-43a1-8ddc-5a4a134ebab3",
+        "$ref" : "transformations"
+      },
       "active" : true
     },
     {
@@ -142,6 +162,10 @@
         }
       },
       "filteringExpression" : "",
+      "transformation" : {
+        "$id" : "2747ec73-6910-43a1-8ddc-5a4a134ebab3",
+        "$ref" : "transformations"
+      },
       "active" : true
     },
     {
@@ -166,6 +190,10 @@
         }
       },
       "filteringExpression" : "",
+      "transformation" : {
+        "$id" : "2747ec73-6910-43a1-8ddc-5a4a134ebab3",
+        "$ref" : "transformations"
+      },
       "active" : false
     },
     {
@@ -190,6 +218,10 @@
         }
       },
       "filteringExpression" : "X",
+      "transformation" : {
+        "$id" : "2747ec73-6910-43a1-8ddc-5a4a134ebab3",
+        "$ref" : "transformations"
+      },
       "active" : true
     }
   ]
