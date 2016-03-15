@@ -4,6 +4,7 @@ package com.konkerlabs.platform.registry.business.services.routes;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.EventRoute;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteExecutor;
 import com.konkerlabs.platform.registry.business.services.routes.api.EventRoutePublisher;
 import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteService;
@@ -49,73 +50,48 @@ public class EventRouteExecutorImpl implements EventRouteExecutor {
     @Async
     @Override
     public Future<List<Event>> execute(Event event, URI uri) {
-        List<EventRoute> eventRoutes = eventRouteService.findByIncomingUri(uri);
-        String incomingPayload = event.getPayload();
+
+        ServiceResponse<List<EventRoute>> serviceResponse = eventRouteService.findByIncomingUri(uri);
 
         List<Event> outEvents = new ArrayList<Event>();
 
-        //FIXME execute event routes in parallel
-        for (EventRoute eventRoute : eventRoutes) {
-            if (!eventRoute.isActive())
-                continue;
-            if (!eventRoute.getIncoming().getData().get("channel").equals(event.getChannel())) {
-                LOGGER.debug("Non matching channel for incoming event: {}", event);
-                continue;
-            }
+        switch (serviceResponse.getStatus()) {
+            case OK:
+                List<EventRoute> eventRoutes = serviceResponse.getResult();
 
-            try {
-                if (isFilterMatch(event, eventRoute)) {
-                    forwardEvent(eventRoute.getOutgoing(), event);
-                    outEvents.add(event);
-                } else {
-                    LOGGER.debug(MessageFormat.format("Dropped route \"{0}\", not matching pattern with content \"{1}\". Message payload: {2} ",
-                            eventRoute.getName(), eventRoute.getFilteringExpression(), incomingPayload));
+                String incomingPayload = event.getPayload();
+
+                //FIXME execute event routes in parallel
+                for (EventRoute eventRoute : eventRoutes) {
+                    if (!eventRoute.isActive())
+                        continue;
+                    if (!eventRoute.getIncoming().getData().get("channel").equals(event.getChannel())) {
+                        LOGGER.debug("Non matching channel for incoming event: {}", event);
+                        continue;
+                    }
+
+                    try {
+                        if (isFilterMatch(event, eventRoute)) {
+                            forwardEvent(eventRoute.getOutgoing(), event);
+                            outEvents.add(event);
+                        } else {
+                            LOGGER.debug(MessageFormat.format("Dropped route \"{0}\", not matching pattern with content \"{1}\". Message payload: {2} ",
+                                    eventRoute.getName(), eventRoute.getFilteringExpression(), incomingPayload));
+                        }
+                    } catch (IOException e) {
+                        LOGGER.error("Error parsing JSON payload.", e);
+                    } catch (SpelEvaluationException e) {
+                        LOGGER.error(MessageFormat
+                                .format("Error evaluating, probably malformed, expression: \"{0}\". Message payload: {1} ",
+                                        eventRoute.getFilteringExpression(),
+                                        incomingPayload), e);
+                    }
+
                 }
-            } catch (IOException e) {
-                LOGGER.error("Error parsing JSON payload.", e);
-            } catch (SpelEvaluationException e) {
-                LOGGER.error(MessageFormat
-                        .format("Error evaluating, probably malformed, expression: \"{0}\". Message payload: {1} ",
-                                eventRoute.getFilteringExpression(),
-                                incomingPayload), e);
-            }
-
-//            for (EventRoute.RuleTransformation ruleTransformation : eventRoute.getTransformations()) {
-//                switch (RuleTransformationType.valueOf(ruleTransformation.getType())) {
-//                    case EXPRESSION_LANGUAGE: {
-//
-//                        Optional<String> expression = Optional.ofNullable(ruleTransformation.getData().get("value"))
-//                                .filter(filter -> !filter.isEmpty());
-//
-//                        if (expression.isPresent()) {
-//                            try {
-//                                Map<String, Object> objectMap = jsonParsingService.toMap(incomingPayload);
-//
-//                                if (evaluationService.evaluateConditional(expression.get(), objectMap)) {
-//                                    forwardEvent(eventRoute.getOutgoing(), event);
-//                                    outEvents.add(event);
-//                                } else {
-//                                    LOGGER.debug(MessageFormat.format("Dropped route \"{0}\", not matching \"{1}\" pattern with content \"{2}\". Message payload: {3} ",
-//                                            eventRoute.getName(), ruleTransformation.getType(), expression.get(), incomingPayload));
-//                                }
-//                            } catch (IOException e) {
-//                                LOGGER.error("Error parsing JSON payload.", e);
-//                            } catch (SpelEvaluationException e) {
-//                                LOGGER.error(MessageFormat
-//                                        .format("Error evaluating, probably malformed, expression: \"{0}\". Message payload: {1} ",
-//                                                expression.get(),
-//                                                incomingPayload), e);
-//                            }
-//                        } else {
-//                            forwardEvent(eventRoute.getOutgoing(),event);
-//                            outEvents.add(event);
-//                        }
-//
-//                        break;
-//                    }
-//                }
-//            }
+            default:
+                LOGGER.debug(MessageFormat.format("No routes found for Incoming URI: {0}", uri));
         }
+
         return new AsyncResult<List<Event>>(outEvents);
     }
 
@@ -130,7 +106,7 @@ public class EventRouteExecutorImpl implements EventRouteExecutor {
             return true;
     }
 
-    private void forwardEvent(EventRoute.RuleActor outgoing, Event event) {
+    private void forwardEvent(EventRoute.RouteActor outgoing, Event event) {
         EventRoutePublisher eventRoutePublisher = (EventRoutePublisher) applicationContext.getBean(outgoing.getUri().getScheme());
         eventRoutePublisher.send(event, outgoing);
     }

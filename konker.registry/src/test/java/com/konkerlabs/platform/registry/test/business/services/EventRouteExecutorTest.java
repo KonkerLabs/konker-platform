@@ -109,7 +109,7 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = "/fixtures/event-routes.json")
+    @UsingDataSet(locations = {"/fixtures/event-routes.json"})
     public void shouldntSendAnyEventsForMalformedExpressionFilter() throws ExecutionException, InterruptedException, URISyntaxException {
         URI nonBooleanRouteDeviceURI = new URI("device", malformedRouteDeviceId,null,null,null);
         Future<List<Event>> eventFuture = subject.execute(event, nonBooleanRouteDeviceURI);

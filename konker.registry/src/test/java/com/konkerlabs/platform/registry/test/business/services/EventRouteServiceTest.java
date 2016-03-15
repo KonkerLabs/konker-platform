@@ -1,7 +1,7 @@
 package com.konkerlabs.platform.registry.test.business.services;
 
-import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.EventRoute;
+import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.Transformation;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
@@ -23,9 +23,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.util.HashMap;
 import java.util.List;
 
-import static com.konkerlabs.platform.registry.business.model.EventRoute.RuleActor;
 import static com.konkerlabs.platform.registry.business.model.EventRoute.builder;
 import static com.konkerlabs.platform.registry.business.services.api.ServiceResponse.Status.ERROR;
 import static com.konkerlabs.platform.registry.business.services.api.ServiceResponse.Status.OK;
@@ -61,6 +61,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     private Tenant tenant;
     private Tenant emptyTenant;
     private Transformation transformation;
+    private RouteActor nonExistingRouteActor;
 
     @Before
     public void setUp() throws Exception {
@@ -72,36 +73,43 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
         route = spy(builder()
                 .name("Route name")
                 .description("Description")
-                .incoming(new RuleActor(
+                .incoming(RouteActor.builder().uri(
                         new DeviceURIDealer() {
                         }.toDeviceRouteURI(tenant.getDomainName(), "0000000000000004")
-                ))
-                .outgoing(new RuleActor(
+                ).build())
+                .outgoing(RouteActor.builder().uri(
                         new DeviceURIDealer() {
-                        }.toDeviceRouteURI(tenant.getDomainName(), "0000000000000005")
-                ))
+                        }.toDeviceRouteURI(tenant.getDomainName(), "0000000000000006")
+                ).build())
                 .filteringExpression("#command.type == 'ButtonPressed'")
                 .transformation(transformation)
                 .active(true)
                 .build());
+
+        nonExistingRouteActor = RouteActor.builder()
+                .uri(new DeviceURIDealer(){}.toDeviceRouteURI(tenant.getDomainName(), "999"))
+                .data(new HashMap<>())
+                .build();
     }
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/transformations.json"})
     public void shouldRaiseAnExceptionIfTenantIsNull() throws Exception {
-        thrown.expect(BusinessException.class);
-        thrown.expectMessage("Tenant cannot be null");
+        ServiceResponse<EventRoute> response = subject.save(null, route);
 
-        subject.save(null, route);
+        assertThat(response, notNullValue());
+        assertThat(response.getStatus(), equalTo(ERROR));
+        assertThat(response.getResponseMessages(), contains("Tenant cannot be null"));
     }
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/transformations.json"})
     public void shouldRaiseAnExceptionIfRecordIsNull() throws Exception {
-        thrown.expect(BusinessException.class);
-        thrown.expectMessage("Record cannot be null");
+        ServiceResponse<EventRoute> response = subject.save(tenant, null);
 
-        subject.save(tenant, null);
+        assertThat(response, notNullValue());
+        assertThat(response.getStatus(), equalTo(ERROR));
+        assertThat(response.getResponseMessages(), contains("Record cannot be null"));
     }
 
     @Test
@@ -120,21 +128,44 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/transformations.json"})
     public void shouldRaiseAnExceptionIfTenantDoesNotExist() throws Exception {
-        thrown.expect(BusinessException.class);
-        thrown.expectMessage("Tenant does not exist");
+        ServiceResponse<EventRoute> response = subject.save(Tenant.builder().id("unknown_id").name("name").build(), route);
 
-        subject.save(Tenant.builder().id("unknown_id").name("name").build(), route);
+        assertThat(response, notNullValue());
+        assertThat(response.getStatus(), equalTo(ERROR));
+        assertThat(response.getResponseMessages(), contains("Tenant does not exist"));
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/transformations.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/transformations.json","/fixtures/event-routes.json"})
+    public void shouldRaiseAnExceptionIfIncomingRouteActorDoesNotExist() throws Exception {
+        route.setIncoming(nonExistingRouteActor);
+        ServiceResponse<EventRoute> response = subject.save(tenant, route);
+
+        assertThat(response, notNullValue());
+        assertThat(response.getStatus(), equalTo(ERROR));
+        assertThat(response.getResponseMessages(), contains("Incoming actor cannot be null"));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/transformations.json","/fixtures/event-routes.json"})
+    public void shouldRaiseAnExceptionIfOutgoingRouteActorDoesNotExist() throws Exception {
+        route.setOutgoing(nonExistingRouteActor);
+        ServiceResponse<EventRoute> response = subject.save(tenant, route);
+
+        assertThat(response, notNullValue());
+        assertThat(response.getStatus(), equalTo(ERROR));
+        assertThat(response.getResponseMessages(), contains("Outgoing actor cannot be null"));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/transformations.json","/fixtures/event-routes.json"})
     public void shouldPersistIfRouteIsValid() throws Exception {
 
         ServiceResponse<EventRoute> response = subject.save(tenant, route);
 
         assertThat(response, notNullValue());
         assertThat(response.getStatus(), equalTo(OK));
-        assertThat(eventRouteRepository.findByIncomingURI(route.getIncoming().getUri()), notNullValue());
+        assertThat(eventRouteRepository.findByIncomingUri(route.getIncoming().getUri()), notNullValue());
         assertThat(response.getResult().getIncoming().getUri(), equalTo(route.getIncoming().getUri()));
         assertThat(response.getResult().getTransformation(),equalTo(route.getTransformation()));
     }
@@ -187,7 +218,8 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/transformations.json","/fixtures/event-routes.json"})
     public void shouldReturnARegisteredRouteByItsIncomingUri() throws Exception {
-        List<EventRoute> routes = subject.findByIncomingUri(route.getIncoming().getUri());
+        ServiceResponse<List<EventRoute>> serviceResponse = subject.findByIncomingUri(route.getIncoming().getUri());
+        List<EventRoute> routes = serviceResponse.getResult();
 
         assertThat(routes, notNullValue());
         assertThat(routes, hasSize(5));
@@ -199,7 +231,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/transformations.json", "/fixtures/event-routes.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/transformations.json", "/fixtures/event-routes.json", "/fixtures/route-actors.json"})
     public void shouldSaveEditedRouteState() throws Exception {
         EventRoute route = subject.getById(tenant, routeId).getResult();
 

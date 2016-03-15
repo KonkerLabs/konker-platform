@@ -2,7 +2,7 @@ package com.konkerlabs.platform.registry.business.services.routes.publishers;
 
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.EventRoute;
+import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.routes.api.EventRoutePublisher;
 import com.konkerlabs.platform.registry.integration.gateways.MqttMessageGateway;
@@ -37,7 +37,7 @@ public class EventRoutePublisherMqtt implements EventRoutePublisher {
     }
 
     @Override
-    public void send(Event outgoingEvent, EventRoute.RuleActor outgoingRuleActor) {
+    public void send(Event outgoingEvent, RouteActor outgoingRuleActor) {
 
         Device outgoingDevice = deviceRegisterService.findByTenantDomainNameAndDeviceId(
             outgoingRuleActor.getUri().getAuthority(),

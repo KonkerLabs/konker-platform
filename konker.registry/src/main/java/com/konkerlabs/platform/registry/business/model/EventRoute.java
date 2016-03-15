@@ -23,8 +23,8 @@ public class EventRoute {
     private Tenant tenant;
     private String name;
     private String description;
-    private RuleActor incoming;
-    private RuleActor outgoing;
+    private RouteActor incoming;
+    private RouteActor outgoing;
     private String filteringExpression;
     @DBRef
     private Transformation transformation;
@@ -63,13 +63,10 @@ public class EventRoute {
     }
 
     @Data
-    public static class RuleActor {
+    @Builder
+    public static class RouteActor {
         private URI uri;
         private Map<String,String> data = new HashMap<>();
-
-        public RuleActor(URI uri) {
-            this.uri = uri;
-        }
     }
 
 //    @Data

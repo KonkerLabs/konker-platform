@@ -32,11 +32,13 @@ import org.springframework.util.MultiValueMap;
 import java.net.URI;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
 
 import static com.konkerlabs.platform.registry.business.model.Device.builder;
-import static com.konkerlabs.platform.registry.business.model.EventRoute.RuleActor;
+
+import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
 import static com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer.DEVICE_URI_SCHEME;
 import static com.konkerlabs.platform.registry.business.model.behaviors.SmsURIDealer.SMS_URI_SCHEME;
 import static com.konkerlabs.platform.registry.business.services.api.ServiceResponse.Status.ERROR;
@@ -136,12 +138,14 @@ public class EventRouteControllerTest extends WebLayerTestContext {
         route = EventRoute.builder()
                 .name(routeForm.getName())
                 .description(routeForm.getDescription())
-                .incoming(new RuleActor(
-                        deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(), routeForm.getIncomingAuthority())
-                ))
-                .outgoing(new RuleActor(
-                        outgoingUriSupplier.get()
-                ))
+                .incoming(RouteActor.builder()
+                        .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(), routeForm.getIncomingAuthority()))
+                        .data(new HashMap<>())
+                        .build())
+                .outgoing(RouteActor.builder()
+                        .uri(outgoingUriSupplier.get())
+                        .data(new HashMap<>())
+                        .build())
                 .filteringExpression(routeForm.getFilteringExpression())
                 .transformation(Transformation.builder().id(routeForm.getTransformation()).build())
                 .active(routeForm.isActive())
@@ -204,20 +208,6 @@ public class EventRouteControllerTest extends WebLayerTestContext {
         getMockMvc().perform(post("/routes/save").params(routeData))
                 .andExpect(model().attribute("errors", equalTo(response.getResponseMessages())))
                 .andExpect(model().attribute("route", equalTo(routeForm))).andExpect(view().name("routes/form"));
-
-        verify(eventRouteService).save(eq(tenant), eq(route));
-    }
-
-    @Test
-    public void shouldBindBusinessExceptionMessageWhenRegistrationFailsAndGoBackToCreationForm() throws Exception {
-        String exceptionMessage = "Some business exception message";
-
-        when(eventRouteService.save(eq(tenant), eq(route))).thenThrow(new BusinessException(exceptionMessage));
-
-        getMockMvc().perform(post("/routes/save").params(routeData))
-                .andExpect(model().attribute("errors", equalTo(asList(new String[]{exceptionMessage}))))
-                .andExpect(model().attribute("route", equalTo(routeForm)))
-                .andExpect(view().name("routes/form"));
 
         verify(eventRouteService).save(eq(tenant), eq(route));
     }

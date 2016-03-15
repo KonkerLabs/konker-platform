@@ -1,7 +1,7 @@
 package com.konkerlabs.platform.registry.business.services.routes.publishers;
 
 import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.EventRoute;
+import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
 import com.konkerlabs.platform.registry.business.services.routes.api.EventRoutePublisher;
 import com.konkerlabs.platform.registry.integration.exceptions.IntegrationException;
 import com.konkerlabs.platform.registry.integration.gateways.SMSMessageGateway;
@@ -23,7 +23,7 @@ public class EventRoutePublisherTwilio implements EventRoutePublisher {
     private SMSMessageGateway messageGateway;
     
     @Override
-    public void send(Event outgoingEvent, EventRoute.RuleActor outgoingRuleActor) {
+    public void send(Event outgoingEvent, RouteActor outgoingRuleActor) {
         try {
             messageGateway.send("You have received a message from Konker device: " + outgoingEvent.getPayload(),
                     outgoingRuleActor.getUri().getAuthority());

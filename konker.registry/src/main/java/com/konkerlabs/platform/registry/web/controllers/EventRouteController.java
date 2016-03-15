@@ -69,15 +69,8 @@ public class EventRouteController {
     public ModelAndView save(@ModelAttribute("eventRouteForm") EventRouteForm eventRouteForm,
                              RedirectAttributes redirectAttributes) {
         ServiceResponse<EventRoute> response;
-        try {
-            eventRouteForm.setAdditionalSupplier(() -> tenant.getDomainName());
-            response = eventRouteService.save(tenant, eventRouteForm.toModel());
-        } catch (BusinessException e) {
-            response = ServiceResponse.<EventRoute>builder()
-                .status(ServiceResponse.Status.ERROR)
-                .responseMessages(Arrays.asList(new String[]{e.getMessage()}))
-                .<EventRoute>build();
-        }
+        eventRouteForm.setAdditionalSupplier(() -> tenant.getDomainName());
+        response = eventRouteService.save(tenant, eventRouteForm.toModel());
 
         switch (response.getStatus()) {
             case ERROR: {

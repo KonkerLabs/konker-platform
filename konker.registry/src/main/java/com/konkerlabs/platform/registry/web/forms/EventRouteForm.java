@@ -1,20 +1,20 @@
 package com.konkerlabs.platform.registry.web.forms;
 
 import com.konkerlabs.platform.registry.business.model.EventRoute;
+import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
 import com.konkerlabs.platform.registry.business.model.Transformation;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.SmsURIDealer;
-import com.konkerlabs.platform.registry.business.services.routes.EventRouteExecutorImpl;
 import com.konkerlabs.platform.registry.web.forms.api.ModelBuilder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.net.URI;
+import java.util.HashMap;
 import java.util.Optional;
 import java.util.function.Supplier;
 
 import static com.konkerlabs.platform.registry.business.model.EventRoute.*;
-import static java.util.Arrays.asList;
 
 @Data
 @EqualsAndHashCode(exclude={"tenantDomainSupplier"})
@@ -51,10 +51,8 @@ public class EventRouteForm implements ModelBuilder<EventRoute,EventRouteForm,St
                 .id(id)
                 .name(getName())
                 .description(getDescription())
-                .incoming(new RuleActor(
-                        toDeviceRouteURI(tenantDomainSupplier.get(), getIncomingAuthority())
-                ))
-                .outgoing(new RuleActor(buildOutgoingURI()))
+                .incoming(RouteActor.builder().uri(toDeviceRouteURI(tenantDomainSupplier.get(), getIncomingAuthority())).data(new HashMap<>()).build())
+                .outgoing(RouteActor.builder().uri(buildOutgoingURI()).data(new HashMap<>()).build())
                 .filteringExpression(getFilteringExpression())
                 .transformation(
                     Optional.ofNullable(getTransformation()).filter(value -> !value.isEmpty())

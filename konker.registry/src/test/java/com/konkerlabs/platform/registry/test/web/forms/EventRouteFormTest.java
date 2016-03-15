@@ -1,12 +1,13 @@
 package com.konkerlabs.platform.registry.test.web.forms;
 
 import com.konkerlabs.platform.registry.business.model.EventRoute;
+import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.Transformation;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.SmsURIDealer;
-import com.konkerlabs.platform.registry.business.services.routes.EventRouteExecutorImpl;
 import com.konkerlabs.platform.registry.web.forms.EventRouteForm;
+import org.apache.commons.collections.map.HashedMap;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -89,15 +90,17 @@ public class EventRouteFormTest {
         form.setOutgoingDeviceChannel("in");
 
         model.setIncoming(
-            new EventRoute.RuleActor(deviceUriDealer.toDeviceRouteURI(
-                tenant.getDomainName(),form.getIncomingAuthority()
-            ))
+                RouteActor.builder()
+                        .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncomingAuthority()))
+                        .data(new HashedMap())
+                        .build()
         );
         model.getIncoming().getData().put("channel",form.getIncomingChannel());
         model.setOutgoing(
-            new EventRoute.RuleActor(deviceUriDealer.toDeviceRouteURI(
-                tenant.getDomainName(),form.getOutgoingDeviceAuthority()
-            ))
+                RouteActor.builder()
+                        .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getOutgoingDeviceAuthority()))
+                        .data(new HashedMap())
+                        .build()
         );
         model.getOutgoing().getData().put("channel",form.getOutgoingDeviceChannel());
 
@@ -108,13 +111,15 @@ public class EventRouteFormTest {
         form.setOutgoingScheme("sms");
         form.setOutgoingSmsPhoneNumber("+5511987654321");
 
-        model.setIncoming(new EventRoute.RuleActor(
-            deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncomingAuthority())
-        ));
+        model.setIncoming(RouteActor.builder()
+                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncomingAuthority()))
+                .data(new HashedMap())
+                .build());
         model.getIncoming().getData().put("channel",form.getIncomingChannel());
-        model.setOutgoing(new EventRoute.RuleActor(
-            smsUriDealer.toSmsURI(form.getOutgoingSmsPhoneNumber())
-        ));
+        model.setOutgoing(RouteActor.builder()
+                .uri(smsUriDealer.toSmsURI(form.getOutgoingSmsPhoneNumber()))
+                .data(new HashedMap())
+                .build());
 
         assertThat(form.toModel(),equalTo(model));
     }
@@ -125,16 +130,16 @@ public class EventRouteFormTest {
         form.setOutgoingDeviceAuthority("0000000000000005");
         form.setOutgoingDeviceChannel("in");
 
-        model.setIncoming(
-                new EventRoute.RuleActor(deviceUriDealer.toDeviceRouteURI(
-                        tenant.getDomainName(),form.getIncomingAuthority()
-                ))
+        model.setIncoming(RouteActor.builder()
+                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncomingAuthority()))
+                .data(new HashedMap())
+                .build()
         );
         model.getIncoming().getData().put("channel",form.getIncomingChannel());
-        model.setOutgoing(
-                new EventRoute.RuleActor(deviceUriDealer.toDeviceRouteURI(
-                        tenant.getDomainName(),form.getOutgoingDeviceAuthority()
-                ))
+        model.setOutgoing(RouteActor.builder()
+                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getOutgoingDeviceAuthority()))
+                .data(new HashedMap())
+                .build()
         );
         model.getOutgoing().getData().put("channel",form.getOutgoingDeviceChannel());
 
@@ -156,13 +161,15 @@ public class EventRouteFormTest {
         form.setOutgoingDeviceAuthority("0000000000000005");
         form.setOutgoingDeviceChannel("in");
 
-        model.setIncoming(new EventRoute.RuleActor(
-            deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncomingAuthority())
-        ));
+        model.setIncoming(RouteActor.builder()
+                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncomingAuthority()))
+                .data(new HashedMap())
+                .build());
         model.getIncoming().getData().put("channel",form.getIncomingChannel());
-        model.setOutgoing(new EventRoute.RuleActor(
-            deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getOutgoingDeviceAuthority())
-        ));
+        model.setOutgoing(RouteActor.builder()
+                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getOutgoingDeviceAuthority()))
+                .data(new HashedMap())
+                .build());
         model.getOutgoing().getData().put("channel",form.getOutgoingDeviceChannel());
 
         assertThat(new EventRouteForm().fillFrom(model),equalTo(form));
@@ -175,13 +182,15 @@ public class EventRouteFormTest {
         form.setOutgoingScheme("sms");
         form.setOutgoingSmsPhoneNumber("+5511987654321");
 
-        model.setIncoming(new EventRoute.RuleActor(
-            deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncomingAuthority())
-        ));
+        model.setIncoming(RouteActor.builder()
+                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncomingAuthority()))
+                .data(new HashedMap())
+                .build());
         model.getIncoming().getData().put("channel",form.getIncomingChannel());
-        model.setOutgoing(new EventRoute.RuleActor(
-            smsUriDealer.toSmsURI(form.getOutgoingSmsPhoneNumber())
-        ));
+        model.setOutgoing(RouteActor.builder()
+                .uri(smsUriDealer.toSmsURI(form.getOutgoingSmsPhoneNumber()))
+                .data(new HashedMap())
+                .build());
 
         assertThat(new EventRouteForm().fillFrom(model),equalTo(form));
     }
@@ -194,13 +203,15 @@ public class EventRouteFormTest {
         form.setOutgoingDeviceAuthority("0000000000000005");
         form.setOutgoingDeviceChannel("in");
 
-        model.setIncoming(new EventRoute.RuleActor(
-                deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncomingAuthority())
-        ));
+        model.setIncoming(RouteActor.builder()
+                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncomingAuthority()))
+                .data(new HashedMap())
+                .build());
         model.getIncoming().getData().put("channel",form.getIncomingChannel());
-        model.setOutgoing(new EventRoute.RuleActor(
-                deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getOutgoingDeviceAuthority())
-        ));
+        model.setOutgoing(RouteActor.builder()
+                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getOutgoingDeviceAuthority()))
+                .data(new HashedMap())
+                .build());
         model.getOutgoing().getData().put("channel",form.getOutgoingDeviceChannel());
 
         assertThat(new EventRouteForm().fillFrom(model),equalTo(form));

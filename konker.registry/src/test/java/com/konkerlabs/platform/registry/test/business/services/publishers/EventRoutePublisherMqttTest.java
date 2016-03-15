@@ -2,11 +2,10 @@ package com.konkerlabs.platform.registry.test.business.services.publishers;
 
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.EventRoute;
+import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
-
+import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.routes.api.EventRoutePublisher;
 import com.konkerlabs.platform.registry.integration.gateways.MqttMessageGateway;
@@ -30,6 +29,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.net.URI;
 import java.text.MessageFormat;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.Optional;
 
 import static org.mockito.Mockito.*;
@@ -66,7 +66,7 @@ public class EventRoutePublisherMqttTest extends BusinessLayerTestSupport {
 
     private Event event;
     private URI outgoingUri;
-    private EventRoute.RuleActor outgoingRuleActor;
+    private RouteActor outgoingRuleActor;
 
     @Before
     public void setUp() throws Exception {
@@ -77,7 +77,7 @@ public class EventRoutePublisherMqttTest extends BusinessLayerTestSupport {
 
         outgoingUri = new DeviceURIDealer() {}.toDeviceRouteURI(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_ID);
 
-        outgoingRuleActor = new EventRoute.RuleActor(outgoingUri);
+        outgoingRuleActor = RouteActor.builder().uri(outgoingUri).data(new HashMap<>()).build();
         outgoingRuleActor.getData().put("channel",event.getChannel());
     }
 
@@ -85,7 +85,7 @@ public class EventRoutePublisherMqttTest extends BusinessLayerTestSupport {
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json"})
     public void shouldRaiseAnExceptionIfDeviceIsUnknown() throws Exception {
         outgoingUri = new DeviceURIDealer() {}.toDeviceRouteURI(REGISTERED_TENANT_DOMAIN,"unknown_device");
-        outgoingRuleActor = new EventRoute.RuleActor(outgoingUri);
+        outgoingRuleActor = RouteActor.builder().uri(outgoingUri).build();
 
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage(

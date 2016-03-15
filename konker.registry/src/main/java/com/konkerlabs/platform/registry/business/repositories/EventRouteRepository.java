@@ -9,7 +9,9 @@ import java.util.List;
 
 public interface EventRouteRepository extends MongoRepository<EventRoute,String> {
     @Query("{ 'incoming.uri' : ?0 }")
-    List<EventRoute> findByIncomingURI(URI uri);
+    List<EventRoute> findByIncomingUri(URI routeActorUri);
+    @Query("{ 'outgoing.uri' : ?0 }")
+    List<EventRoute> findByOutgoingUri(URI routeActorUri);
     @Query("{ 'tenant.id' : ?0 }")
     List<EventRoute> findAllByTenant(String tenantId);
     @Query("{ 'tenant.id' : ?0, 'id' : ?1 }")

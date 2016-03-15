@@ -1,0 +1,108 @@
+{
+  "routeActors" : [
+    {
+      "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63aa",
+      "_class" : "com.konkerlabs.platform.registry.model.RouteActor",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
+      },
+      "name" : "TestActor",
+      "uri" : "device://konker/0000000000000004",
+      "data" : {
+        "channel" : "data"
+      }
+    },
+    {
+      "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63ab",
+      "_class" : "com.konkerlabs.platform.registry.model.RouteActor",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
+      },
+      "name" : "TestActor",
+      "uri" : "device://konker/95c14b36ba2b43f1",
+      "data" : {
+        "channel" : "in"
+      }
+    },
+    {
+      "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63ac",
+      "_class" : "com.konkerlabs.platform.registry.model.RouteActor",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
+      },
+      "name" : "TestActor",
+      "uri" : "device://konker/0000000000000006",
+      "data" : {
+        "channel" : "in"
+      }
+    },
+    {
+      "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63ad",
+      "_class" : "com.konkerlabs.platform.registry.model.RouteActor",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
+      },
+      "name" : "TestActor",
+      "uri" : "sms://+11999999999",
+      "data" : {
+        "channel" : "in"
+      }
+    },
+    {
+      "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63ae",
+      "_class" : "com.konkerlabs.platform.registry.model.RouteActor",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
+      },
+      "name" : "TestActor",
+      "uri" : "device://konker/0000000000000001",
+      "data" : {
+        "channel" : "data"
+      }
+    },
+    {
+      "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63ba",
+      "_class" : "com.konkerlabs.platform.registry.model.RouteActor",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
+      },
+      "name" : "TestActor",
+      "uri" : "device://konker/0000000000000007",
+      "data" : {
+        "channel" : "data"
+      }
+    },
+    {
+      "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63bb",
+      "_class" : "com.konkerlabs.platform.registry.model.RouteActor",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
+      },
+      "name" : "TestActor",
+      "uri" : "device://konker/0000000000000002",
+      "data" : {
+        "channel" : "data"
+      }
+    },
+    {
+      "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63bc",
+      "_class" : "com.konkerlabs.platform.registry.model.RouteActor",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
+      },
+      "name" : "TestActor",
+      "uri" : "device://konker/0000000000000005",
+      "data" : {
+        "channel" : "out"
+      }
+    }
+  ]
+}

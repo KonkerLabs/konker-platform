@@ -1,15 +1,14 @@
 package com.konkerlabs.platform.registry.test.business.model;
 
 import com.konkerlabs.platform.registry.business.model.EventRoute;
+import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
 import com.konkerlabs.platform.registry.business.model.RestTransformationStep;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.Transformation;
-import com.konkerlabs.platform.registry.business.services.routes.EventRouteExecutorImpl;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.net.URI;
-import java.util.Arrays;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
@@ -30,8 +29,8 @@ public class EventRouteTest {
             .tenant(tenant)
             .name("Route name")
             .description("Description")
-            .incoming(new EventRoute.RuleActor(new URI("device",incomingAuthority,null,null,null)))
-            .outgoing(new EventRoute.RuleActor(new URI("device",outgoingAuthority,null,null,null)))
+            .incoming(RouteActor.builder().uri(new URI("device",incomingAuthority,null,null,null)).build())
+            .outgoing(RouteActor.builder().uri(new URI("device",outgoingAuthority,null,null,null)).build())
 //            .transformations(Arrays.asList(new EventRoute.RuleTransformation[]{
 //                    new EventRoute.RuleTransformation(EventRouteExecutorImpl.RuleTransformationType.EXPRESSION_LANGUAGE.name())
 //            }))
