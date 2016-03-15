@@ -2,7 +2,7 @@ package com.konkerlabs.platform.registry.business.services.outgoing;
 
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.outgoing.Rest;
+import com.konkerlabs.platform.registry.business.model.destinations.RestDestination;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.outgoing.RestRepository;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
@@ -25,99 +25,99 @@ public class RestServiceImpl implements RestService {
     private RestRepository restRepository;
 
     @Override
-    public ServiceResponse<List<Rest>> getAll(Tenant tenant) {
+    public ServiceResponse<List<RestDestination>> getAll(Tenant tenant) {
         try {
             Optional.ofNullable(tenant).orElseThrow(() -> new BusinessException("Tenant cannot be null"));
 
             Optional.ofNullable(tenantRepository.findOne(tenant.getId()))
                     .orElseThrow(() -> new BusinessException("Tenant does not exist"));
 
-            List<Rest> RestList = Optional.ofNullable(restRepository.getAllByTenant(tenant.getId()))
-                    .orElseThrow(() -> new BusinessException("Rest outgoing list does not exist"));
+            List<RestDestination> restDestinationList = Optional.ofNullable(restRepository.getAllByTenant(tenant.getId()))
+                    .orElseThrow(() -> new BusinessException("RestDestination outgoing list does not exist"));
 
-            return ServiceResponse.<List<Rest>>builder()
-                    .result(RestList)
+            return ServiceResponse.<List<RestDestination>>builder()
+                    .result(restDestinationList)
                     .status(ServiceResponse.Status.OK)
-                    .<List<Rest>>build();
+                    .<List<RestDestination>>build();
         } catch (BusinessException be) {
-            return ServiceResponse.<List<Rest>>builder()
+            return ServiceResponse.<List<RestDestination>>builder()
                     .responseMessage(be.getMessage())
                     .status(ServiceResponse.Status.ERROR)
-                    .<List<Rest>>build();
+                    .<List<RestDestination>>build();
         }
     }
 
     @Override
-    public ServiceResponse<Rest> get(Tenant tenant, String RestId) {
+    public ServiceResponse<RestDestination> get(Tenant tenant, String RestId) {
         try {
             Optional.ofNullable(tenant).orElseThrow(() -> new BusinessException("Tenant cannot be null"));
-            Optional.ofNullable(RestId).orElseThrow(() -> new BusinessException("Rest outgoing ID cannot be null"));
+            Optional.ofNullable(RestId).orElseThrow(() -> new BusinessException("RestDestination outgoing ID cannot be null"));
 
             Optional.ofNullable(tenantRepository.findOne(tenant.getId()))
                     .orElseThrow(() -> new BusinessException("Tenant does not exist"));
 
-            Rest RestList = Optional.ofNullable(restRepository.findOne(RestId))
-                    .orElseThrow(() -> new BusinessException("Rest outgoing does not exist"));
+            RestDestination restDestinationList = Optional.ofNullable(restRepository.findOne(RestId))
+                    .orElseThrow(() -> new BusinessException("RestDestination outgoing does not exist"));
 
-            return ServiceResponse.<Rest>builder()
-                    .result(RestList)
+            return ServiceResponse.<RestDestination>builder()
+                    .result(restDestinationList)
                     .status(ServiceResponse.Status.OK)
-                    .<Rest>build();
+                    .<RestDestination>build();
         } catch (BusinessException be) {
-            return ServiceResponse.<Rest>builder()
+            return ServiceResponse.<RestDestination>builder()
                     .responseMessage(be.getMessage())
                     .status(ServiceResponse.Status.ERROR)
-                    .<Rest>build();
+                    .<RestDestination>build();
         }
     }
 
     @Override
-    public ServiceResponse<Rest> getByUri(Tenant tenant, URI RestUri) {
+    public ServiceResponse<RestDestination> getByUri(Tenant tenant, URI RestUri) {
         try {
             Optional.ofNullable(tenant).orElseThrow(() -> new BusinessException("Tenant cannot be null"));
-            Optional.ofNullable(RestUri).orElseThrow(() -> new BusinessException("Rest outgoing URI cannot be null"));
+            Optional.ofNullable(RestUri).orElseThrow(() -> new BusinessException("RestDestination outgoing URI cannot be null"));
 
             Optional.ofNullable(tenantRepository.findOne(tenant.getId()))
                     .orElseThrow(() -> new BusinessException("Tenant does not exist"));
 
-            Rest RestList = Optional.ofNullable(restRepository.findByURI(RestUri))
-                    .orElseThrow(() -> new BusinessException("Rest outgoing does not exist"));
+            RestDestination restDestinationList = Optional.ofNullable(restRepository.findByURI(RestUri))
+                    .orElseThrow(() -> new BusinessException("RestDestination outgoing does not exist"));
 
-            return ServiceResponse.<Rest>builder()
-                    .result(RestList)
+            return ServiceResponse.<RestDestination>builder()
+                    .result(restDestinationList)
                     .status(ServiceResponse.Status.OK)
-                    .<Rest>build();
+                    .<RestDestination>build();
         } catch (BusinessException be) {
-            return ServiceResponse.<Rest>builder()
+            return ServiceResponse.<RestDestination>builder()
                     .responseMessage(be.getMessage())
                     .status(ServiceResponse.Status.ERROR)
-                    .<Rest>build();
+                    .<RestDestination>build();
         }
     }
 
     @Override
-    public ServiceResponse<Rest> save(Tenant tenant, Rest Rest) {
+    public ServiceResponse<RestDestination> save(Tenant tenant, RestDestination RestDestination) {
         try {
             Optional.ofNullable(tenant).orElseThrow(() -> new BusinessException("Tenant cannot be null"));
-            Optional.ofNullable(Rest).orElseThrow(() -> new BusinessException("Rest outgoing cannot be null"));
+            Optional.ofNullable(RestDestination).orElseThrow(() -> new BusinessException("RestDestination outgoing cannot be null"));
 
             Optional.ofNullable(tenantRepository.findOne(tenant.getId()))
                     .orElseThrow(() -> new BusinessException("Tenant does not exist"));
 
-            Rest.setTenant(tenant);
+            RestDestination.setTenant(tenant);
 
-            Rest RestList = Optional.ofNullable(restRepository.findOne(tenant.getId()))
-                    .orElseThrow(() -> new BusinessException("Rest outgoing does not exist"));
+            RestDestination restDestinationList = Optional.ofNullable(restRepository.findOne(tenant.getId()))
+                    .orElseThrow(() -> new BusinessException("RestDestination outgoing does not exist"));
 
-            return ServiceResponse.<Rest>builder()
-                    .result(RestList)
+            return ServiceResponse.<RestDestination>builder()
+                    .result(restDestinationList)
                     .status(ServiceResponse.Status.OK)
-                    .<Rest>build();
+                    .<RestDestination>build();
         } catch (BusinessException be) {
-            return ServiceResponse.<Rest>builder()
+            return ServiceResponse.<RestDestination>builder()
                     .responseMessage(be.getMessage())
                     .status(ServiceResponse.Status.ERROR)
-                    .<Rest>build();
+                    .<RestDestination>build();
         }
     }
 }

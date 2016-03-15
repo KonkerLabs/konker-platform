@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 import org.apache.solr.common.SolrInputDocument;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,16 +27,17 @@ public class EventRepositoryImpl implements EventRepository {
     private ApplicationContext applicationContext;
 
     @Override
-    public void push(Device device, Event event) throws BusinessException {
-        Optional.ofNullable(device)
-                .orElseThrow(() -> new IllegalArgumentException("Device cannot be null"));
+    public void push(Tenant tenant, Event event) throws BusinessException {
+        Optional.ofNullable(tenant)
+                .filter(tenant1 -> Optional.ofNullable(tenant1.getDomainName()).filter(s -> !s.isEmpty()).isPresent())
+                .orElseThrow(() -> new IllegalArgumentException("Tenant cannot be null"));
         Optional.ofNullable(event)
             .orElseThrow(() -> new IllegalArgumentException("Event cannot be null"));
         Optional.ofNullable(event.getTimestamp())
             .orElseThrow(() -> new IllegalStateException("Event timestamp cannot be null"));
 
         SolrTemplate template = applicationContext.getBean(SolrTemplate.class);
-        template.setSolrCore(MessageFormat.format("{0}-{1}",device.getTenant().getDomainName(),"events"));
+        template.setSolrCore(MessageFormat.format("{0}-{1}",tenant.getDomainName(),"events"));
 
         SolrInputDocument toBeSent = new SolrInputDocument();
 
@@ -48,7 +50,7 @@ public class EventRepositoryImpl implements EventRepository {
         }
 
         toBeSent.remove("ts");
-        toBeSent.addField("ts", Instant.now());
+        toBeSent.addField("ts", event.getTimestamp().toString());
 
         template.saveDocument(toBeSent);
         template.commit();

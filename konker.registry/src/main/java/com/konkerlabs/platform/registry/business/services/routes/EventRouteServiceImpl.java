@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry.business.services.routes;
 
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
+import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.repositories.EventRouteRepository;
@@ -30,29 +31,20 @@ public class EventRouteServiceImpl implements EventRouteService {
 
     @Override
     public ServiceResponse<EventRoute> save(Tenant tenant, EventRoute route) {
-        try {
-            Optional.ofNullable(tenant)
-                    .orElseThrow(() -> new BusinessException("Tenant cannot be null"));
-            Optional.ofNullable(route)
-                    .orElseThrow(() -> new BusinessException("Record cannot be null"));
-            Optional.ofNullable(tenantRepository.findOne(tenant.getId()))
-                    .orElseThrow(() -> new BusinessException("Tenant does not exist"));
+        if (!Optional.ofNullable(tenant).isPresent())
+            return invalidServiceResponse("Tenant cannot be null").<EventRoute>build();
+        if (!Optional.ofNullable(route).isPresent())
+            return invalidServiceResponse("Record cannot be null").<EventRoute>build();
+        if (!Optional.ofNullable(tenantRepository.findOne(tenant.getId())).isPresent())
+            return invalidServiceResponse("Tenant does not exist").<EventRoute>build();
 
-            route.setTenant(tenant);
+        route.setTenant(tenant);
 
-            List<String> validations = route.applyValidations();
+        List<String> validations = route.applyValidations();
 
-            if (validations != null) {
-                return ServiceResponse.<EventRoute>builder()
-                        .responseMessages(validations)
-                        .status(ServiceResponse.Status.ERROR).<EventRoute>build();
-            }
-
-            Optional.ofNullable(eventRouteRepository.findByIncomingUri(route.getIncoming().getUri())).filter(l -> !l.isEmpty())
-                    .orElseThrow(() -> new BusinessException("Incoming actor cannot be null"));
-
-            Optional.ofNullable(eventRouteRepository.findByOutgoingUri(route.getOutgoing().getUri())).filter(l -> !l.isEmpty())
-                    .orElseThrow(() -> new BusinessException("Outgoing actor cannot be null"));
+        if (validations != null) {
+            return invalidServiceResponse(validations.toArray(new String[validations.size()])).<EventRoute>build();
+        }
 
 //        String incomingChannel = route.getIncoming().getData().get("channel");
 //        String outgoingChannel = route.getOutgoing().getData().get("channel");
@@ -63,16 +55,11 @@ public class EventRouteServiceImpl implements EventRouteService {
 //                    .status(ServiceResponse.Status.ERROR).<EventRoute>build();
 //        }
 
-            //TODO Validate route's filter expression language.
+        //TODO Validate route's filter expression language.
 
-            EventRoute saved = eventRouteRepository.save(route);
+        EventRoute saved = eventRouteRepository.save(route);
 
-            return ServiceResponse.<EventRoute>builder().status(ServiceResponse.Status.OK).result(saved).<EventRoute>build();
-        } catch (BusinessException be) {
-            return ServiceResponse.<EventRoute>builder()
-                    .responseMessage(be.getMessage())
-                    .status(ServiceResponse.Status.ERROR).<EventRoute>build();
-        }
+        return ServiceResponse.<EventRoute>builder().status(ServiceResponse.Status.OK).result(saved).<EventRoute>build();
     }
 
     @Override
@@ -82,41 +69,41 @@ public class EventRouteServiceImpl implements EventRouteService {
 
     @Override
     public ServiceResponse<EventRoute> getById(Tenant tenant, String id) {
-        try {
-            Optional.ofNullable(id).orElseThrow(() -> new BusinessException("Id cannot be null"));
-            Optional.ofNullable(tenant).orElseThrow(() -> new BusinessException("Tenant cannot be null"));
+        if (!Optional.ofNullable(id).isPresent())
+            return invalidServiceResponse("Id cannot be null").<EventRoute>build();
+        if (!Optional.ofNullable(tenant).isPresent())
+            return invalidServiceResponse("Tenant cannot be null").<EventRoute>build();
+        if (!Optional.ofNullable(tenantRepository.findByName(tenant.getName())).isPresent())
+            return invalidServiceResponse("Tenant does not exist").<EventRoute>build();
 
-            Tenant t = Optional.ofNullable(tenantRepository.findByName(tenant.getName()))
-                    .orElseThrow(() -> new BusinessException("Tenant does not exist"));
+        EventRoute route = eventRouteRepository.findByTenantIdAndRouteName(tenant.getId(), id);
 
-            EventRoute route = ofNullable(eventRouteRepository.findByTenantIdAndRouteName(t.getId(), id))
-                    .orElseThrow(() -> new BusinessException("Event Route does not exist"));
+        if (!Optional.ofNullable(route).isPresent())
+            return invalidServiceResponse("Event Route does not exist").<EventRoute>build();
 
-            return ServiceResponse.<EventRoute>builder().status(ServiceResponse.Status.OK).result(route)
-                    .<EventRoute>build();
-        } catch (BusinessException be) {
-            return ServiceResponse.<EventRoute>builder().status(ServiceResponse.Status.ERROR)
-                    .responseMessage(be.getMessage()).<EventRoute>build();
-        }
+        return ServiceResponse.<EventRoute>builder().status(ServiceResponse.Status.OK).result(route)
+                .<EventRoute>build();
     }
 
     @Override
     public ServiceResponse<List<EventRoute>> findByIncomingUri(URI uri) {
-        try {
-            Optional.ofNullable(uri).orElseThrow(() -> new BusinessException("URI cannot be null"));
+        if (!Optional.ofNullable(uri).isPresent())
+            return invalidServiceResponse("URI cannot be null").<List<EventRoute>>build();
 
-            List<EventRoute> eventRoutes = Optional.ofNullable(eventRouteRepository.findByIncomingUri(uri))
-                    .orElseThrow(() -> new BusinessException("Route actor from specified URI does not exist"));
+        List<EventRoute> eventRoutes = eventRouteRepository.findByIncomingUri(uri);
 
-            return ServiceResponse.<List<EventRoute>>builder()
-                    .status(ServiceResponse.Status.OK)
-                    .result(eventRoutes)
-                    .<List<EventRoute>>build();
+        return ServiceResponse.<List<EventRoute>>builder()
+                .status(ServiceResponse.Status.OK)
+                .result(eventRoutes)
+                .<List<EventRoute>>build();
+    }
 
-        } catch (BusinessException be) {
-            return ServiceResponse.<List<EventRoute>>builder().status(ServiceResponse.Status.ERROR)
-                    .responseMessage(be.getMessage()).<List<EventRoute>>build();
-        }
+    private ServiceResponse.ServiceResponseBuilder invalidServiceResponse(String... errors) {
+        ServiceResponse.ServiceResponseBuilder invalidBuilder = ServiceResponse.builder()
+                .status(ServiceResponse.Status.ERROR);
+        for (String error : errors)
+            invalidBuilder.responseMessage(error);
 
+        return invalidBuilder;
     }
 }

@@ -1,26 +1,27 @@
 package com.konkerlabs.platform.registry.test.business.model;
 
 import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.outgoing.Rest;
+import com.konkerlabs.platform.registry.business.model.destinations.RestDestination;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.net.URI;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.nullValue;
 
-public class RestTest {
+public class RestDestinationTest {
 
-    private Rest subject;
+    private RestDestination subject;
 
     @Before
     public void setUp() throws Exception {
 
         Tenant tenant = Tenant.builder().name("Konker").build();
 
-        subject = Rest.builder()
+        subject = RestDestination.builder()
                 .tenant(tenant)
                 .name("TestActor")
                 .uri(new URI("http://outgoing.rest.com"))
@@ -67,9 +68,8 @@ public class RestTest {
 
         assertThat(subject.applyValidations(), hasItem(expectedMessage));
     }
-
     @Test
     public void shouldHaveNoValidationMessagesIfRecordIsValid() throws Exception {
-        assertThat(subject.applyValidations(), nullValue());
+        assertThat(subject.applyValidations(), empty());
     }
 }

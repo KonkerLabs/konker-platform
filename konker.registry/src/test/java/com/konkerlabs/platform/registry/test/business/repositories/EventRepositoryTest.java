@@ -2,23 +2,35 @@ package com.konkerlabs.platform.registry.test.business.repositories;
 
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
+import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.solr.EventRepository;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.SolrTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
+import org.apache.solr.client.solrj.response.UpdateResponse;
+import org.apache.solr.common.SolrInputDocument;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.solr.core.SolrTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.time.Instant;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
@@ -26,21 +38,16 @@ import java.time.Instant;
     MongoTestConfiguration.class,
     SolrTestConfiguration.class
 })
-@UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json"})
+@UsingDataSet(locations = {"/fixtures/tenants.json"})
 public class EventRepositoryTest extends BusinessLayerTestSupport {
-
-    private static final String DEVICE_ID_IN_USE = "95c14b36ba2b43f1";
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
     @Autowired
-    private DeviceRepository deviceRepository;
-
+    private TenantRepository tenantRepository;
     @Autowired
     private EventRepository eventRepository;
-
-    private Device device;
 
     private String payload = "{\n" +
             "    \"ts\" : \"2016-03-03T18:15:00Z\",\n" +
@@ -55,22 +62,39 @@ public class EventRepositoryTest extends BusinessLayerTestSupport {
             "    },\n" +
             "    \"time\" : 123\n" +
             "  }";
+
+    private Tenant tenant;
     private Event event;
+    private SolrInputDocument toBeSent;
+
+    @Captor
+    private ArgumentCaptor<SolrInputDocument> inputCaptor;
+    @Autowired
+    private SolrTemplate solrTemplate;
 
     @Before
     public void setUp() throws Exception {
-        device = deviceRepository.findByDeviceId(DEVICE_ID_IN_USE);
+        MockitoAnnotations.initMocks(this);
+
+        tenant = tenantRepository.findByDomainName("konker");
 
         event = Event.builder()
             .channel("channel")
             .timestamp(Instant.now())
             .payload(payload).build();
+
+        toBeSent = new SolrInputDocument();
+        toBeSent.addField("data.channels.0.name","channel_0");
+        toBeSent.addField("command.type","ButtonPressed");
+        toBeSent.addField("time",123L);
+        toBeSent.addField("value",31.0);
+        toBeSent.addField("ts",event.getTimestamp().toString());
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfDeviceIsNull() throws Exception {
+    public void shouldRaiseAnExceptionIfTenantIsNull() throws Exception {
         thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("Device cannot be null");
+        thrown.expectMessage("Tenant cannot be null");
 
         eventRepository.push(null,event);
     }
@@ -80,7 +104,7 @@ public class EventRepositoryTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Event cannot be null");
 
-        eventRepository.push(device,null);
+        eventRepository.push(tenant,null);
     }
 
     @Test
@@ -90,9 +114,21 @@ public class EventRepositoryTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("Event timestamp cannot be null");
 
-        eventRepository.push(device,event);
+        eventRepository.push(tenant,event);
     }
 
     @Test
-    public void shouldPushTheIncomingEvent() throws Exception {}
+    public void shouldPushTheIncomingEvent() throws Exception {
+        when(
+            solrTemplate.saveDocument(inputCaptor.capture())
+        ).thenReturn(new UpdateResponse());
+
+        eventRepository.push(tenant,event);
+
+        SolrInputDocument saved = inputCaptor.getValue();
+
+        saved.getFieldNames().stream().forEach(sent -> {
+            assertThat(saved.getFieldValue(sent),equalTo(toBeSent.getFieldValue(sent)));
+        });
+    }
 }

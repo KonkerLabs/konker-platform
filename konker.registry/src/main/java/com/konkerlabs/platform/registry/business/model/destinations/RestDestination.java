@@ -1,4 +1,4 @@
-package com.konkerlabs.platform.registry.business.model.outgoing;
+package com.konkerlabs.platform.registry.business.model.destinations;
 
 
 import com.konkerlabs.platform.registry.business.model.Tenant;
@@ -16,7 +16,7 @@ import java.util.Optional;
 @Data
 @Builder
 @Document(collection = "outgoingRest")
-public class Rest {
+public class RestDestination {
 
     @Id
     private String id;
@@ -42,9 +42,6 @@ public class Rest {
 //        if (!Optional.ofNullable(getPassword()).filter(s -> !s.isEmpty()).isPresent())
 //            validations.add("Password cannot be null or empty");
 
-        if (validations.isEmpty())
-            return null;
-        else
-            return validations;
+        return validations;
     }
 }

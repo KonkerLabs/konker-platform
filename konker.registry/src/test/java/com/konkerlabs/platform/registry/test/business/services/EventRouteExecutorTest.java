@@ -7,6 +7,7 @@ import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.SolrTestConfiguration;
 import com.konkerlabs.platform.utilities.config.UtilitiesConfig;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import org.junit.After;
@@ -40,7 +41,8 @@ import static org.mockito.Mockito.when;
 @ContextConfiguration(classes = {
         MongoTestConfiguration.class,
         UtilitiesConfig.class,
-        BusinessTestConfiguration.class
+        BusinessTestConfiguration.class,
+        SolrTestConfiguration.class
 })
 public class EventRouteExecutorTest extends BusinessLayerTestSupport {
 
