@@ -1,6 +1,5 @@
 package com.konkerlabs.platform.registry.web.controllers;
 
-import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.Tenant;
@@ -13,7 +12,6 @@ import com.konkerlabs.platform.registry.web.forms.EventRouteForm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -24,7 +22,6 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.text.MessageFormat;
-import java.util.Arrays;
 import java.util.List;
 
 @Controller
@@ -45,7 +42,7 @@ public class EventRouteController {
 
     @ModelAttribute("allDevices")
     public List<Device> allDevices() {
-        return deviceRegisterService.getAll(tenant);
+        return deviceRegisterService.findAll(tenant).getResult();
     }
 
     @ModelAttribute("allTransformations")

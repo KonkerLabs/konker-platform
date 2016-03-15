@@ -31,6 +31,7 @@ import org.springframework.util.MultiValueMap;
 
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -73,6 +74,12 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
 
     @Before
     public void setUp() {
+        when(deviceRegisterService.findAll(tenant))
+        .thenReturn(ServiceResponse.<List<Device>>builder()
+                .status(ServiceResponse.Status.OK)
+                .result(Collections.emptyList())
+                .build());
+        
         incomingDevice = Device.builder().tenant(tenant).deviceId("1").build();
         deviceUriDealer = new DeviceURIDealer() {
         };

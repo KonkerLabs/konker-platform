@@ -10,7 +10,6 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import org.junit.Assert;
 import org.junit.Before;
@@ -188,16 +187,18 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json" })
     public void shouldReturnAllRegisteredDevicesWithinATenant() throws Exception {
-        List<Device> all = deviceRegisterService.getAll(emptyTenant);
+        ServiceResponse<List<Device>> response = deviceRegisterService.findAll(emptyTenant);
+        assertThat(response, isResponseOk());
+        List<Device> all = response.getResult();
 
         assertThat(all, notNullValue());
         assertThat(all, empty());
 
-        all = deviceRegisterService.getAll(currentTenant);
-
+        response = deviceRegisterService.findAll(currentTenant);
+        assertThat(response, isResponseOk());
+        all = response.getResult();
         assertThat(all, notNullValue());
         assertThat(all, hasSize(1));
-
     }
 
     @Test
@@ -206,7 +207,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         Device registeredDevice = deviceRepository.findOne(THE_DEVICE_ID);
         Assert.assertThat(registeredDevice,notNullValue());
 
-        Device found = deviceRegisterService.getById(currentTenant, THE_DEVICE_ID).getResult();
+        Device found = deviceRegisterService.getByDeviceId(currentTenant, THE_DEVICE_ID).getResult();
 
         assertThat(found, notNullValue());
         assertThat(found, equalTo(registeredDevice));
@@ -287,7 +288,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         assertThat(response.getResponseMessages(), not(empty()));
 
         // ensure data was not changed
-        Device foundDevice = deviceRegisterService.getById(currentTenant, THE_DEVICE_ID).getResult();
+        Device foundDevice = deviceRegisterService.getByDeviceId(currentTenant, THE_DEVICE_ID).getResult();
         assertThat(foundDevice.getName().length(), greaterThan(0));
 
     }
@@ -314,7 +315,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         assertThat(response.getResult(),equalTo(updated));
 
         // ensure that relevant data was changed
-        Device foundDevice = deviceRegisterService.getById(currentTenant, THE_DEVICE_ID).getResult();
+        Device foundDevice = deviceRegisterService.getByDeviceId(currentTenant, THE_DEVICE_ID).getResult();
         assertThat(foundDevice.getName(), equalTo(ANOTHER_DEVICE_NAME));
         assertThat(foundDevice.getDescription(), equalTo(ANOTHER_DEVICE_DESCRIPTION));
         assertThat(foundDevice.isActive(), equalTo(false));
@@ -326,7 +327,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldReturnResponseMessageIfDeviceIdIsNullWhenChangingActivation() throws Exception {
-        ServiceResponse<Device> serviceResponse = deviceRegisterService.switchActivation(currentTenant, null);
+        ServiceResponse<Device> serviceResponse = deviceRegisterService.switchEnabledDisabled(currentTenant, null);
 
 //        assertThat(serviceResponse,notNullValue());
 //        assertThat(serviceResponse.getStatus(),equalTo(ServiceResponse.Status.ERROR));
@@ -337,7 +338,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldReturnResponseMessageIfDeviceDoesNotExist() throws Exception {
-        ServiceResponse<Device> serviceResponse = deviceRegisterService.switchActivation(currentTenant, "unknown_id");
+        ServiceResponse<Device> serviceResponse = deviceRegisterService.switchEnabledDisabled(currentTenant, "unknown_id");
 
 //        assertThat(serviceResponse,notNullValue());
 //        assertThat(serviceResponse.getStatus(),equalTo(ServiceResponse.Status.ERROR));
@@ -349,12 +350,12 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json"})
     public void shouldSwitchDeviceActivation() throws Exception {
-        Device device = deviceRegisterService.getById(currentTenant, THE_DEVICE_ID).getResult();
+        Device device = deviceRegisterService.getByDeviceId(currentTenant, THE_DEVICE_ID).getResult();
         boolean expected = !device.isActive();
 
-        ServiceResponse<Device> serviceResponse = deviceRegisterService.switchActivation(currentTenant, THE_DEVICE_ID);
+        ServiceResponse<Device> serviceResponse = deviceRegisterService.switchEnabledDisabled(currentTenant, THE_DEVICE_ID);
 
-        Device updated = deviceRegisterService.getById(currentTenant, THE_DEVICE_ID).getResult();
+        Device updated = deviceRegisterService.getByDeviceId(currentTenant, THE_DEVICE_ID).getResult();
 
 //        assertThat(serviceResponse,notNullValue());
 //        assertThat(serviceResponse.getStatus(),equalTo(ServiceResponse.Status.OK));
@@ -368,7 +369,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json"})
     public void shouldReturnErrorMessageIfIdDoesNotBelongToTenantWhenGet() throws Exception {
-        ServiceResponse<Device> serviceResponse = deviceRegisterService.getById(emptyTenant, THE_DEVICE_ID);
+        ServiceResponse<Device> serviceResponse = deviceRegisterService.getByDeviceId(emptyTenant, THE_DEVICE_ID);
 
         assertThat(serviceResponse,notNullValue());
         assertThat(serviceResponse.getStatus(),equalTo(ServiceResponse.Status.ERROR));

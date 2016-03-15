@@ -93,7 +93,11 @@ public class DeviceControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldListAllRegisteredDevices() throws Exception {
-        when(deviceRegisterService.getAll(tenant)).thenReturn(registeredDevices);
+        when(deviceRegisterService.findAll(tenant))
+        .thenReturn(ServiceResponse.<List<Device>>builder()
+                .status(ServiceResponse.Status.OK)
+                .result(registeredDevices)
+                .build());
 
         getMockMvc().perform(get("/devices")).andExpect(model().attribute("devices", equalTo(registeredDevices)))
                 .andExpect(view().name("devices/index"));
@@ -140,30 +144,30 @@ public class DeviceControllerTest extends WebLayerTestContext {
     @Test
     public void shouldShowDeviceDetails() throws Exception {
         savedDevice.setRegistrationDate(Instant.now());
-        when(deviceRegisterService.getById(tenant, savedDevice.getId())).thenReturn(
+        when(deviceRegisterService.getByDeviceId(tenant, savedDevice.getId())).thenReturn(
                 ServiceResponse.<Device>builder().status(ServiceResponse.Status.OK).result(savedDevice).<Device>build());
 
         getMockMvc().perform(get(MessageFormat.format("/devices/{0}", savedDevice.getId())))
                 .andExpect(model().attribute("device", savedDevice)).andExpect(view().name("devices/show"));
 
-        verify(deviceRegisterService).getById(tenant, savedDevice.getId());
+        verify(deviceRegisterService).getByDeviceId(tenant, savedDevice.getId());
     }
 
     @Test
     public void shouldShowDeviceEventList() throws Exception {
         savedDevice.setRegistrationDate(Instant.now());
-        when(deviceRegisterService.getById(tenant, savedDevice.getId())).thenReturn(
+        when(deviceRegisterService.getByDeviceId(tenant, savedDevice.getId())).thenReturn(
                 ServiceResponse.<Device>builder().status(ServiceResponse.Status.OK).result(savedDevice).build());
 
         getMockMvc().perform(get(MessageFormat.format("/devices/{0}/events", savedDevice.getId())))
                 .andExpect(model().attribute("device", savedDevice)).andExpect(view().name("devices/events"));
 
-        verify(deviceRegisterService).getById(tenant, savedDevice.getId());
+        verify(deviceRegisterService).getByDeviceId(tenant, savedDevice.getId());
     }
 
     @Test
     public void shouldShowEditForm() throws Exception {
-        when(deviceRegisterService.getById(tenant, savedDevice.getId())).thenReturn(ServiceResponse.<Device>builder().status(ServiceResponse.Status.OK).result(savedDevice).build());
+        when(deviceRegisterService.getByDeviceId(tenant, savedDevice.getId())).thenReturn(ServiceResponse.<Device>builder().status(ServiceResponse.Status.OK).result(savedDevice).build());
 
         getMockMvc().perform(get(MessageFormat.format("/devices/{0}/edit", savedDevice.getId())))
                 .andExpect(model().attribute("device", equalTo(deviceForm)))

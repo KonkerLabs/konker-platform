@@ -73,8 +73,9 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
     }
 
     @Override
-    public List<Device> getAll(Tenant tenant) {
-        return deviceRepository.findAllByTenant(tenant.getId());
+    public ServiceResponse<List<Device>> findAll(Tenant tenant) {
+        List<Device> all = deviceRepository.findAllByTenant(tenant.getId());
+        return ServiceResponse.<List<Device>>builder().status(ServiceResponse.Status.OK).result(all).build();
     }
 
 
@@ -93,13 +94,13 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
 
     @Override
-    public ServiceResponse<Device> switchActivation(Tenant tenant, String id) {
+    public ServiceResponse<Device> switchEnabledDisabled(Tenant tenant, String id) {
         if (!Optional.ofNullable(id).isPresent())
             return ServiceResponse.<Device>builder()
                     .status(ServiceResponse.Status.ERROR)
                     .responseMessage("Device ID cannot be null").<Device>build();
 
-        Device found = getById(tenant, id).getResult();
+        Device found = getByDeviceId(tenant, id).getResult();
 
         if (!Optional.ofNullable(found).isPresent())
             return ServiceResponse.<Device>builder()
@@ -130,7 +131,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .responseMessage("Cannot update null device")
                     .<Device>build();
 
-        Device deviceFromDB = getById(tenant, id).getResult();
+        Device deviceFromDB = getByDeviceId(tenant, id).getResult();
         if (deviceFromDB == null) {
             return ServiceResponse.<Device>builder()
                     .responseMessages(Arrays.asList(new String[] { "Device ID does not exists" }))
@@ -155,7 +156,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
     }
 
     @Override
-    public ServiceResponse<Device> getById(Tenant tenant, String id) {
+    public ServiceResponse<Device> getByDeviceId(Tenant tenant, String id) {
         try {
             Optional.ofNullable(id).orElseThrow(() -> new BusinessException("Id cannot be null"));
             Optional.ofNullable(tenant).orElseThrow(() -> new BusinessException("Tenant cannot be null"));

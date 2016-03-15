@@ -77,7 +77,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
     public void setUp() throws Exception {
         event = Event.builder().channel(channel).payload(payload).build();
         tenant = tenantRepository.findByName("Konker");
-        device = deviceRegisterService.getById(tenant, id).getResult();
+        device = deviceRegisterService.getByDeviceId(tenant, id).getResult();
     }
     @Test
     public void shouldRaiseAnExceptionIfDeviceIsNull() throws Exception {

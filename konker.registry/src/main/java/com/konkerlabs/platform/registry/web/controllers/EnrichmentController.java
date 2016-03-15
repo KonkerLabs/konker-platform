@@ -41,7 +41,7 @@ public class EnrichmentController {
 
     @ModelAttribute("allDevices")
     public List<Device> allDevices() {
-        return deviceRegisterService.getAll(tenant);
+        return deviceRegisterService.findAll(tenant).getResult();
     }
 
     @ModelAttribute("enrichmentTypes")

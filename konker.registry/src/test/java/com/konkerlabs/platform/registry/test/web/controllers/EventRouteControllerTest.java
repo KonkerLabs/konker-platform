@@ -66,6 +66,8 @@ public class EventRouteControllerTest extends WebLayerTestContext {
     private EventRouteService eventRouteService;
     @Autowired
     private TransformationService transformationService;
+    @Autowired
+    private DeviceRegisterService deviceRegisterService;
 
     @Autowired
     private Tenant tenant;
@@ -89,6 +91,13 @@ public class EventRouteControllerTest extends WebLayerTestContext {
                 .status(OK)
                 .result(transformations).<List<Transformation>>build()
         );
+
+        List<Device> devices = new ArrayList<>();
+        when(deviceRegisterService.findAll(tenant)).thenReturn(
+                ServiceResponse.<List<Device>>builder()
+                    .status(OK)
+                    .result(devices).<List<Device>>build()
+            );
 
         incomingDevice = builder().deviceId("0000000000000004").build();
         outgoingDevice = builder().deviceId("0000000000000005").build();

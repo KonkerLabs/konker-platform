@@ -101,7 +101,7 @@ public class EventRoutePublisherMqttTest extends BusinessLayerTestSupport {
         
         Optional.of(deviceRegisterService.findByTenantDomainNameAndDeviceId(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_ID))
             .filter(device -> !device.isActive())
-            .orElseGet(() -> deviceRegisterService.switchActivation(tenant, THE_DEVICE_ID).getResult());
+            .orElseGet(() -> deviceRegisterService.switchEnabledDisabled(tenant, THE_DEVICE_ID).getResult());
 
         subject.send(event,outgoingRuleActor);
 
@@ -116,7 +116,7 @@ public class EventRoutePublisherMqttTest extends BusinessLayerTestSupport {
 
         Optional.of(deviceRegisterService.findByTenantDomainNameAndDeviceId(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_ID))
                 .filter(Device::isActive)
-                .orElseGet(() -> deviceRegisterService.switchActivation(tenant, THE_DEVICE_ID).getResult());
+                .orElseGet(() -> deviceRegisterService.switchEnabledDisabled(tenant, THE_DEVICE_ID).getResult());
 
         String expectedMqttTopic = MessageFormat
             .format(MQTT_OUTGOING_TOPIC_TEMPLATE,outgoingUri.getPath().replaceAll("/",""),

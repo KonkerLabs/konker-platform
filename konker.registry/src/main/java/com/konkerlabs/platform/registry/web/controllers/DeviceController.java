@@ -18,6 +18,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.Supplier;
 
 @Controller
@@ -36,7 +37,8 @@ public class DeviceController {
 
     @RequestMapping
     public ModelAndView index() {
-        return new ModelAndView("devices/index", "devices", deviceRegisterService.getAll(tenant));
+        List<Device> all = deviceRegisterService.findAll(tenant).getResult();
+        return new ModelAndView("devices/index", "devices", all);
     }
 
     @RequestMapping("/new")
@@ -48,20 +50,20 @@ public class DeviceController {
 
     @RequestMapping("/{deviceId}")
     public ModelAndView show(@PathVariable("deviceId") String deviceId) {
-        return new ModelAndView("devices/show", "device", deviceRegisterService.getById(tenant, deviceId).getResult());
+        return new ModelAndView("devices/show", "device", deviceRegisterService.getByDeviceId(tenant, deviceId).getResult());
     }
 
     @RequestMapping("/{deviceId}/edit")
     public ModelAndView edit(@PathVariable("deviceId") String deviceId) {
         return new ModelAndView("devices/form")
-            .addObject("device", new DeviceRegistrationForm().fillFrom(deviceRegisterService.getById(tenant, deviceId).getResult()))
+            .addObject("device", new DeviceRegistrationForm().fillFrom(deviceRegisterService.getByDeviceId(tenant, deviceId).getResult()))
             .addObject("isEditing", true)
             .addObject("action", MessageFormat.format("/devices/{0}",deviceId));
     }
 
     @RequestMapping("/{deviceId}/events")
     public ModelAndView deviceEvents(@PathVariable String deviceId) {
-        Device device = deviceRegisterService.getById(tenant, deviceId).getResult();
+        Device device = deviceRegisterService.getByDeviceId(tenant, deviceId).getResult();
         return new ModelAndView("devices/events").addObject("device", device).addObject("recentEvents",
                 device.getMostRecentEvents());
     }
