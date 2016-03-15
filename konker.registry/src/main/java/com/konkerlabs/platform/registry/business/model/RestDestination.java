@@ -1,7 +1,6 @@
-package com.konkerlabs.platform.registry.business.model.outgoing;
+package com.konkerlabs.platform.registry.business.model;
 
 
-import com.konkerlabs.platform.registry.business.model.Tenant;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
@@ -15,33 +14,40 @@ import java.util.Optional;
 
 @Data
 @Builder
-@Document(collection = "outgoingRest")
-public class Rest {
+@Document(collection = "restDestinations")
+public class RestDestination {
 
     @Id
     private String id;
     @DBRef
     private Tenant tenant;
     private String name;
-    private URI uri;
-    private String username;
-    private String password;
+    private URI serviceURI;
+    private String serviceUsername;
+    private String servicePassword;
     private boolean active;
 
     public List<String> applyValidations() {
         List<String> validations = new ArrayList<>();
 
-        if (!Optional.ofNullable(getTenant()).isPresent())
+        if (tenant == null) {
             validations.add("Tenant cannot be null");
-        if (!Optional.ofNullable(getName()).filter(s -> !s.isEmpty()).isPresent())
+        }
+        
+        if ("".equals(Optional.ofNullable(getName()).orElse("").trim())) {
             validations.add("Name cannot be null or empty");
-        if (!Optional.ofNullable(getUri()).filter(s -> !s.toString().isEmpty()).isPresent())
+        }
+        
+        if ("".equals(Optional.ofNullable(getServiceURI()).orElse(URI.create("")).toString().trim())) {
             validations.add("URL cannot be null or empty");
-//        if (!Optional.ofNullable(getUsername()).filter(s -> !s.isEmpty()).isPresent())
-//            validations.add("Username cannot be null or empty");
-//        if (!Optional.ofNullable(getPassword()).filter(s -> !s.isEmpty()).isPresent())
-//            validations.add("Password cannot be null or empty");
+        }
 
+        if (Optional.ofNullable(getServicePassword()).filter(s -> !s.isEmpty()).isPresent()) {
+            if ("".equals(Optional.ofNullable(getServiceUsername()).orElse("").trim())) {
+                validations.add("Password is set but username is empty");
+            }
+        }
+        
         if (validations.isEmpty())
             return null;
         else
