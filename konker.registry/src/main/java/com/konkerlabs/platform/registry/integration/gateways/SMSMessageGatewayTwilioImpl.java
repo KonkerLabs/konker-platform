@@ -114,7 +114,7 @@ public class SMSMessageGatewayTwilioImpl implements SMSMessageGateway {
             LOGGER.debug("Sending SMS Message [{}] to [{}].", text, destinationPhoneNumber);
 
 //            restTemplate.postForLocation(apiUri, entity);
-            httpGateway.request(HttpMethod.POST,apiUri,() -> form,username,password, HttpStatus.CREATED);
+            httpGateway.request(HttpMethod.POST,apiUri,() -> form,username,password);
 
         } catch (RestClientException rce) {
             throw new IntegrationException(

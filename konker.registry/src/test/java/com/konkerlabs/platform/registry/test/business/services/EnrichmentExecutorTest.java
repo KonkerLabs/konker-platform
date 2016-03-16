@@ -95,7 +95,7 @@ public class EnrichmentExecutorTest extends BusinessLayerTestSupport {
                 .name("device_name").build());
 
         when(httpGateway.request(eq(HttpMethod.GET), eq(new URI("https://www.google.com/device/abc123")),
-                eq(null), eq("user"), eq("pass"), eq(HttpStatus.OK))).thenReturn(ENRICHMENT_SERVICE_RESULT);
+                eq(null), eq("user"), eq("pass"))).thenReturn(ENRICHMENT_SERVICE_RESULT);
     }
 
     @Test

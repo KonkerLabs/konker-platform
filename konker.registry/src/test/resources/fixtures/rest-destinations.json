@@ -9,7 +9,7 @@
             },
             "guid": "dda64780-eb81-11e5-958b-a73dab8b32ee",
             "name": "a restful destination",
-            "serviceURI": "http://host/service",
+            "serviceURI": "http://host/service/@{#field}",
             "serviceUsername": "a username",
             "servicePassword": "a password",
             "active": true

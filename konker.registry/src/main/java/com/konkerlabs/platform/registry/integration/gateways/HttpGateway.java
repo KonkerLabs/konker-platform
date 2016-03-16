@@ -15,7 +15,6 @@ public interface HttpGateway {
                        URI uri,
                        Supplier<T> body,
                        String user,
-                       String password,
-                       HttpStatus expectedStatus) throws IntegrationException;
+                       String password) throws IntegrationException;
 
 }

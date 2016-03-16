@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.business.services.publishers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.RestDestination;
@@ -11,6 +12,8 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.publishers.api.EventPublisher;
 import com.konkerlabs.platform.registry.integration.exceptions.IntegrationException;
 import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
+import com.konkerlabs.platform.utilities.expressions.ExpressionEvaluationService;
+import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,17 +33,24 @@ import java.util.Optional;
 public class EventPublisherRest implements EventPublisher {
 
     private static final String EVENT_DROPPED = "Outgoing event has been dropped: [URI: {0}] - [Message: {1}]";
-
     private static final Logger LOGGER = LoggerFactory.getLogger(EventPublisherRest.class);
 
     private HttpGateway httpGateway;
     private RestDestinationService restDestinationService;
+    private JsonParsingService jsonParsingService;
+    private ExpressionEvaluationService expressionEvaluationService;
+    private ExpressionEvaluationService evaluationService;
     private EventRepository eventRepository;
 
     @Autowired
-    public EventPublisherRest(HttpGateway httpGateway, RestDestinationService restDestinationService) {
+    public EventPublisherRest(HttpGateway httpGateway,
+                              RestDestinationService restDestinationService,
+                              JsonParsingService jsonParsingService,
+                              ExpressionEvaluationService expressionEvaluationService) {
         this.httpGateway = httpGateway;
         this.restDestinationService = restDestinationService;
+        this.jsonParsingService = jsonParsingService;
+        this.expressionEvaluationService = expressionEvaluationService;
     }
 
     @Autowired
@@ -71,16 +81,20 @@ public class EventPublisherRest implements EventPublisher {
 
         if (destination.getResult().isActive()) {
             try {
+
+                String serviceURI = evaluateExpressionIfNecessary(
+                    destination.getResult().getServiceURI(),outgoingEvent.getPayload()
+                );
+
                 httpGateway.request(
                     HttpMethod.POST,
-                    URI.create(destination.getResult().getServiceURI()),
+                    URI.create(serviceURI),
                     () -> outgoingEvent.getPayload(),
                     destination.getResult().getServiceUsername(),
-                    destination.getResult().getServicePassword(),
-                    HttpStatus.OK
+                    destination.getResult().getServicePassword()
                 );
                 eventRepository.push(tenant,outgoingEvent);
-            } catch (BusinessException|IntegrationException e) {
+            } catch (JsonProcessingException|BusinessException|IntegrationException e) {
                 LOGGER.error("Failed to forward event to its destination", e);
             }
         } else {
@@ -88,5 +102,11 @@ public class EventPublisherRest implements EventPublisher {
                     MessageFormat.format(EVENT_DROPPED,destinationUri,outgoingEvent.getPayload())
             );
         }
+    }
+
+    private String evaluateExpressionIfNecessary(String template, String json) throws JsonProcessingException {
+        if (ExpressionEvaluationService.EXPRESSION_TEMPLATE_PATTERN.matcher(template).matches())
+            return expressionEvaluationService.evaluateTemplate(template,jsonParsingService.toMap(json));
+        else return template;
     }
 }

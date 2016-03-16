@@ -141,8 +141,7 @@ public class EventTransformationServiceTest {
                 eq(uri),
                 bodyCaptor.capture(),
                 eq(transformationServiceUsername),
-                eq(transformationServicePassword),
-                eq(HttpStatus.OK))
+                eq(transformationServicePassword))
         ).thenThrow(IntegrationException.class);
 
         Optional<Event> transformed = subject.transform(event,transformation);
@@ -158,8 +157,7 @@ public class EventTransformationServiceTest {
                     Mockito.any(URI.class),
                     bodyCaptor.capture(),
                     eq(transformationServiceUsername),
-                    eq(transformationServicePassword),
-                    eq(HttpStatus.OK))
+                    eq(transformationServicePassword))
         ).thenReturn("");
 
         Optional<Event> transformed = subject.transform(event,transformation);
@@ -174,8 +172,7 @@ public class EventTransformationServiceTest {
                         Mockito.any(URI.class),
                         bodyCaptor.capture(),
                         eq(transformationServiceUsername),
-                        eq(transformationServicePassword),
-                        eq(HttpStatus.OK))
+                        eq(transformationServicePassword))
         ).thenReturn("[]");
 
         Optional<Event> transformed = subject.transform(event,transformation);
@@ -190,8 +187,7 @@ public class EventTransformationServiceTest {
                         Mockito.any(URI.class),
                         bodyCaptor.capture(),
                         eq(transformationServiceUsername),
-                        eq(transformationServicePassword),
-                        eq(HttpStatus.OK))
+                        eq(transformationServicePassword))
         ).thenReturn("{}");
 
         Optional<Event> transformed = subject.transform(event,transformation);
@@ -213,8 +209,7 @@ public class EventTransformationServiceTest {
                         Mockito.any(URI.class),
                         bodyCaptor.capture(),
                         eq(transformationServiceUsername),
-                        eq(transformationServicePassword),
-                        eq(HttpStatus.OK))
+                        eq(transformationServicePassword))
         ).thenReturn(firstStepResponseJson);
 
         Optional<Event> transformed = subject.transform(event,transformation);
@@ -249,8 +244,7 @@ public class EventTransformationServiceTest {
                     eq(firstURI),
                     bodyCaptor.capture(),
                     eq(transformationServiceUsername),
-                    eq(transformationServicePassword),
-                    eq(HttpStatus.OK))
+                    eq(transformationServicePassword))
         ).thenReturn(firstStepResponseJson);
 
         String secondStepURI = "http://server:8080/service/@{#customerId}/verify";
@@ -275,8 +269,7 @@ public class EventTransformationServiceTest {
                     eq(secondURI),
                     bodyCaptor.capture(),
                     eq(""),
-                    eq(""),
-                    eq(HttpStatus.OK))
+                    eq(""))
         ).thenReturn(secondStepResponseJson);
 
         Optional<Event> transformed = subject.transform(event,transformation);

@@ -73,8 +73,7 @@ public class EventTransformationServiceImpl implements EventTransformationServic
                     new URI(stepUrl),
                     () -> event.getPayload(),
                     step.getAttributes().get(RestTransformationStep.REST_USERNAME_ATTRIBUTE_NAME),
-                    step.getAttributes().get(RestTransformationStep.REST_PASSWORD_ATTRIBUTE_NAME),
-                    HttpStatus.OK);
+                    step.getAttributes().get(RestTransformationStep.REST_PASSWORD_ATTRIBUTE_NAME));
 
             if (isValidResponse(stepResponse))
                 return Event.builder()

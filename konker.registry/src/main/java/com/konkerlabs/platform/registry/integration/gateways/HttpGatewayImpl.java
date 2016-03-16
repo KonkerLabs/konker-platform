@@ -4,8 +4,6 @@ import com.konkerlabs.platform.registry.integration.exceptions.IntegrationExcept
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.context.annotation.Scope;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Base64Utils;
@@ -13,7 +11,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
-import java.text.MessageFormat;
+import static java.text.MessageFormat.*;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -31,8 +29,7 @@ public class HttpGatewayImpl implements HttpGateway {
                           URI uri,
                           Supplier<T> body,
                           String username,
-                          String password,
-                          HttpStatus expectedStatus) throws IntegrationException {
+                          String password) throws IntegrationException {
         Optional.ofNullable(method)
                 .orElseThrow(() -> new IllegalStateException("HTTP method must be provided"));
 
@@ -46,17 +43,15 @@ public class HttpGatewayImpl implements HttpGateway {
             throw new IllegalStateException("Username and Password must be both provided together");
         }
 
-        expectedStatus = Optional.ofNullable(expectedStatus).orElse(HttpStatus.OK);
-
         try {
             HttpHeaders headers = new HttpHeaders();;
             headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 
             if (username != null && password != null) {
                 String encodedCredentials = Base64Utils
-                        .encodeToString(MessageFormat.format("{0}:{1}", username, password).getBytes());
+                        .encodeToString(format("{0}:{1}", username, password).getBytes());
 
-                headers.add("Authorization", MessageFormat.format("Basic {0}", encodedCredentials));
+                headers.add("Authorization", format("Basic {0}", encodedCredentials));
             }
 
             HttpEntity<String> entity = new HttpEntity(
@@ -68,17 +63,17 @@ public class HttpGatewayImpl implements HttpGateway {
 
             ResponseEntity<String> exchange = restTemplate.exchange(uri, method, entity, String.class);
 
-            if (exchange.getStatusCode().equals(expectedStatus)) {
+            if (exchange.getStatusCode().is2xxSuccessful()) {
                 return exchange.getBody();
             } else
-                throw new IntegrationException(MessageFormat.format("Exception while requesting GET from {0}. Status Code: {1}. Message: {2}.",
+                throw new IntegrationException(format("Exception while requesting GET from {0}. Status Code: {1}. Message: {2}.",
                         uri,
                         exchange.getStatusCode(),
                         exchange.getBody()));
 
         } catch (RestClientException rce) {
             throw new IntegrationException(
-                    MessageFormat.format("Exception while requesting GET from {0}", uri), rce);
+                    format("Exception while requesting GET from {0}", uri), rce);
         }
     }
 }

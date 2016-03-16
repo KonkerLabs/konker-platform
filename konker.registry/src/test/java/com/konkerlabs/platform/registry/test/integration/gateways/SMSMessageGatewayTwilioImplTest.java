@@ -194,7 +194,7 @@ public class SMSMessageGatewayTwilioImplTest extends IntegrationLayerTestSupport
     public void shouldRaiseIntegrationExceptionIfPostFails() throws IntegrationException {
         thrown.expect(IntegrationException.class);
 
-        Mockito.when(httpGateway.request(eq(HttpMethod.POST),eq(apiUri),anyObject(),eq(USERNAME),eq(PASSWORD),eq(HttpStatus.CREATED)))
+        Mockito.when(httpGateway.request(eq(HttpMethod.POST),eq(apiUri),anyObject(),eq(USERNAME),eq(PASSWORD)))
                 .thenThrow(new RestClientException("Dummy Exception"));
         build(apiUri, USERNAME, PASSWORD, FROM_NUMBER, httpGateway).send("SMS Text Body", "+2");
     }
@@ -203,7 +203,7 @@ public class SMSMessageGatewayTwilioImplTest extends IntegrationLayerTestSupport
     public void shouldPostToApiIfDataIsCorrect() throws IntegrationException {
         build(apiUri, USERNAME, PASSWORD, FROM_NUMBER, httpGateway).send("SMS Text Body", "+2");
 
-        verify(httpGateway).request(eq(HttpMethod.POST),anyObject(),formCaptor.capture(),eq(USERNAME),eq(PASSWORD),eq(HttpStatus.CREATED));
+        verify(httpGateway).request(eq(HttpMethod.POST),anyObject(),formCaptor.capture(),eq(USERNAME),eq(PASSWORD));
 
         Supplier<MultiValueMap<String, String>> entity = formCaptor.getValue();
         assertNotNull(entity);

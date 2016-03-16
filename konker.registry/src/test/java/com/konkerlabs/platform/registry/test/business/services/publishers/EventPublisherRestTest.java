@@ -35,11 +35,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.net.URI;
 import java.text.MessageFormat;
 import java.time.Instant;
-import java.util.function.Supplier;
 
 import static info.solidsoft.mockito.java8.LambdaMatcher.argLambda;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -74,12 +72,20 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
 
     private Tenant tenant;
 
-    private String eventPayload = "{\n" +
+    private String invalidEventPayload = "{\n" +
+            "    \"field\" : \"value\"\n" +
+            "    \"count\" : 34,2,\n" +
+            "    \"amount\" : 21.45.1,\n" +
+            "    \"valid\" : tru\n" +
+            "";
+
+    private String validEventPayload = "{\n" +
             "    \"field\" : \"value\",\n" +
             "    \"count\" : 34,\n" +
             "    \"amount\" : 21.45,\n" +
             "    \"valid\" : true\n" +
             "  }";
+
     private Event event;
     private RestDestination destination;
     private URI destinationUri;
@@ -97,7 +103,7 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
 
         event = Event.builder()
                 .channel("channel")
-                .payload(eventPayload)
+                .payload(validEventPayload)
                 .timestamp(Instant.now()).build();
     }
 
@@ -160,7 +166,17 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
 
         subject.send(event,destinationUri,null,tenant);
 
-        verify(httpGateway,never()).request(any(),any(),any(),any(),any(),any());
+        verify(httpGateway,never()).request(any(),any(),any(),any(),any());
+        verify(eventRepository,never()).push(tenant,event);
+    }
+
+    @Test
+    public void shouldNotSendAnyEventThroughGatewayIfPayloadParsingFails() throws Exception {
+        event.setPayload(invalidEventPayload);
+
+        subject.send(event,destinationUri,null,tenant);
+
+        verify(httpGateway,never()).request(any(),any(),any(),any(),any());
         verify(eventRepository,never()).push(tenant,event);
     }
 
@@ -172,11 +188,10 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
 
         inOrder.verify(httpGateway).request(
             eq(HttpMethod.POST),
-            eq(URI.create(destination.getServiceURI())),
+            eq(URI.create(destination.getServiceURI().replaceAll("\\@\\{.*}", "value"))),
             argLambda(objectSupplier -> objectSupplier.get().equals(event.getPayload())),
             eq(destination.getServiceUsername()),
-            eq(destination.getServicePassword()),
-            eq(HttpStatus.OK)
+            eq(destination.getServicePassword())
         );
         inOrder.verify(eventRepository).push(eq(tenant),eq(event));
     }

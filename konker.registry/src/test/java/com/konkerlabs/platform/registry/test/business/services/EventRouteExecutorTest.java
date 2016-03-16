@@ -79,8 +79,7 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
                 Mockito.any(URI.class),
                 Mockito.any(Supplier.class),
                 Mockito.anyString(),
-                Mockito.anyString(),
-                eq(HttpStatus.OK)
+                Mockito.anyString()
             )
         ).thenReturn(transformationResponse);
     }

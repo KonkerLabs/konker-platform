@@ -69,7 +69,7 @@ public class EnrichmentExecutorImpl implements EnrichmentExecutor {
 
                     URL finalUrl = new URL(expressionEvaluationService.evaluateTemplate(url, incomingPayloadMap));
 
-                    String body = httpGateway.request(HttpMethod.GET, finalUrl.toURI(), null, user, password, HttpStatus.OK);
+                    String body = httpGateway.request(HttpMethod.GET, finalUrl.toURI(), null, user, password);
 
                     Map<String, Object> enrichmentResultMap = jsonParsingService.toMap(body);
 
