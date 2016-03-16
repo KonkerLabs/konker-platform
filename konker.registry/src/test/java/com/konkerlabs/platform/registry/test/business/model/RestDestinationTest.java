@@ -2,30 +2,32 @@ package com.konkerlabs.platform.registry.test.business.model;
 
 import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
+
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.net.URI;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.*;
 
 public class RestDestinationTest {
 
     private RestDestination subject;
 
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
+
     @Before
     public void setUp() throws Exception {
 
-        Tenant tenant = Tenant.builder().name("Konker").build();
+        Tenant tenant = Tenant.builder().name("Konker").domainName("konker").build();
 
-        subject = RestDestination.builder()
-                .tenant(tenant)
-                .name("TestActor")
-                .serviceURI(new URI("http://outgoing.rest.com"))
-                .serviceUsername("user")
-                .servicePassword("password")
+        subject = RestDestination.builder().tenant(tenant).name("TestActor")
+                .serviceURI(new URI("http://outgoing.rest.com")).serviceUsername("user").servicePassword("password")
                 .build();
     }
 
@@ -37,6 +39,7 @@ public class RestDestinationTest {
 
         assertThat(subject.applyValidations(), hasItem(expectedMessage));
     }
+
     @Test
     public void shouldReturnAValidationMessageIfNameIsNull() throws Exception {
         subject.setName(null);
@@ -45,6 +48,7 @@ public class RestDestinationTest {
 
         assertThat(subject.applyValidations(), hasItem(expectedMessage));
     }
+
     @Test
     public void shouldReturnAValidationMessageIfNameIsEmpty() throws Exception {
         subject.setName("");
@@ -53,6 +57,7 @@ public class RestDestinationTest {
 
         assertThat(subject.applyValidations(), hasItem(expectedMessage));
     }
+
     @Test
     public void shouldReturnAValidationMessageIfURIIsNull() throws Exception {
         subject.setServiceURI(null);
@@ -61,14 +66,16 @@ public class RestDestinationTest {
 
         assertThat(subject.applyValidations(), hasItem(expectedMessage));
     }
+
     @Test
     public void shouldReturnAValidationMessageIfURIIsEmpty() throws Exception {
-        subject.setServiceURI(new URI(null,null,null,null,null));
+        subject.setServiceURI(new URI(null, null, null, null, null));
 
         String expectedMessage = "URL cannot be null or empty";
 
         assertThat(subject.applyValidations(), hasItem(expectedMessage));
     }
+
     @Test
     public void shouldReturnAValidationMessageIfPassowrdIsSetAndUsernameIsNull() throws Exception {
         subject.setServiceUsername(null);
@@ -80,7 +87,7 @@ public class RestDestinationTest {
         subject.setServiceUsername("   ");
         assertThat(subject.applyValidations(), hasItem("Password is set but username is empty"));
     }
-    
+
     @Test
     public void shouldHaveNoValidationMessagesIfUsernameIsSetButPasswordIsNull() throws Exception {
         subject.setServicePassword(null);
@@ -107,9 +114,68 @@ public class RestDestinationTest {
         assertThat(subject.applyValidations(), nullValue());
     }
 
-
     @Test
     public void shouldHaveNoValidationMessagesIfRecordIsValid() throws Exception {
         assertThat(subject.applyValidations(), nullValue());
     }
+
+    @Test
+    public void shouldReturnValidURIIfNameIsOK() throws Exception {
+        URI uri = subject.toURI();
+        assertThat(uri, not(nullValue()));
+        assertThat(uri.getScheme(), equalTo(RESTDestinationURIDealer.REST_DESTINATION_URI_SCHEME));
+        assertThat(uri.getAuthority(), equalTo("konker"));
+        assertThat(uri.getPath(), equalTo("/TestActor"));
+    }
+
+    @Test
+    public void shouldThrowExceptionIfTenantIsNullWhenToURI() throws Exception {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("tenant domain");
+
+        subject.setTenant(null);
+        URI uri = subject.toURI();
+        assertThat(uri, nullValue());
+    }
+
+    @Test
+    public void shouldThrowExceptionIfTenantDomainIsNullWhenToURI() throws Exception {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("tenant domain");
+
+        subject.getTenant().setDomainName(null);;
+        URI uri = subject.toURI();
+        assertThat(uri, nullValue());
+    }
+
+    @Test
+    public void shouldThrowExceptionIfTenantDomainIsEmptyWhenToURI() throws Exception {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("tenant domain");
+
+        subject.getTenant().setDomainName("");;
+        URI uri = subject.toURI();
+        assertThat(uri, nullValue());
+    }
+
+    @Test
+    public void shouldThrowExceptionIfNameIsNullWhenToURI() throws Exception {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("name");
+
+        subject.setName(null);;
+        URI uri = subject.toURI();
+        assertThat(uri, nullValue());
+    }
+
+    @Test
+    public void shouldThrowExceptionIfNameIsEmptyWhenToURI() throws Exception {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("name");
+
+        subject.setName("");;
+        URI uri = subject.toURI();
+        assertThat(uri, nullValue());
+    }
+
 }

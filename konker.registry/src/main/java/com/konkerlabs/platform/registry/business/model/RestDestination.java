@@ -1,6 +1,5 @@
 package com.konkerlabs.platform.registry.business.model;
 
-
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
@@ -35,11 +34,11 @@ public class RestDestination implements RESTDestinationURIDealer {
         if (tenant == null) {
             validations.add("Tenant cannot be null");
         }
-        
+
         if ("".equals(Optional.ofNullable(getName()).orElse("").trim())) {
             validations.add("Name cannot be null or empty");
         }
-        
+
         if ("".equals(Optional.ofNullable(getServiceURI()).orElse(URI.create("")).toString().trim())) {
             validations.add("URL cannot be null or empty");
         }
@@ -49,7 +48,7 @@ public class RestDestination implements RESTDestinationURIDealer {
                 validations.add("Password is set but username is empty");
             }
         }
-        
+
         if (validations.isEmpty())
             return null;
         else
@@ -57,6 +56,6 @@ public class RestDestination implements RESTDestinationURIDealer {
     }
 
     public URI toURI() {
-        return toRestDestinationURI(this.getName());
+        return toRestDestinationURI(Optional.ofNullable(tenant).map(Tenant::getDomainName).orElse(""), this.getName());
     }
 }
