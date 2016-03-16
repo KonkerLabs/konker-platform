@@ -21,6 +21,7 @@ public class RestDestination implements RESTDestinationURIDealer {
     @Id
     private String id;
     @DBRef
+    private String guid;
     private Tenant tenant;
     private String name;
     private URI serviceURI;

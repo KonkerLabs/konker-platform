@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
@@ -43,12 +44,12 @@ public class RestDestinationServiceImpl implements RestDestinationService {
     }
 
     @Override
-    public ServiceResponse<RestDestination> getByID(Tenant tenant, String id) {
+    public ServiceResponse<RestDestination> getByGUID(Tenant tenant, String guid) {
         try {
             Optional.ofNullable(tenant).orElseThrow(() -> new BusinessException("Tenant cannot be null"));
-            Optional.ofNullable(id).orElseThrow(() -> new BusinessException("REST Destination ID cannot be null"));
+            Optional.ofNullable(guid).orElseThrow(() -> new BusinessException("REST Destination ID cannot be null"));
 
-            RestDestination restDestination = Optional.ofNullable(restRepository.getByTenantAndID(tenant.getId(), id))
+            RestDestination restDestination = Optional.ofNullable(restRepository.getByTenantAndGUID(tenant.getId(), guid))
                     .orElseThrow(() -> new BusinessException("REST Destination does not exist"));
 
             return ServiceResponse.<RestDestination> builder().result(restDestination).status(ServiceResponse.Status.OK)
@@ -75,6 +76,7 @@ public class RestDestinationServiceImpl implements RestDestinationService {
 
             destination.setId(null);
             destination.setTenant(savedTenant);
+            destination.setGuid(UUID.randomUUID().toString());
 
             List<String> validations = Optional.ofNullable(destination.applyValidations())
                     .orElse(Collections.emptyList());
@@ -93,22 +95,22 @@ public class RestDestinationServiceImpl implements RestDestinationService {
     }
 
     @Override
-    public ServiceResponse<RestDestination> update(Tenant tenant, String id, RestDestination destination) {
+    public ServiceResponse<RestDestination> update(Tenant tenant, String guid, RestDestination destination) {
         try {
             Optional.ofNullable(tenant).orElseThrow(() -> new BusinessException("Tenant cannot be null"));
             Optional.ofNullable(destination)
                     .orElseThrow(() -> new BusinessException("REST Destination cannot be null"));
-            Optional.ofNullable(id).orElseThrow(() -> new BusinessException("REST Destination ID cannot be null"));
+            Optional.ofNullable(guid).orElseThrow(() -> new BusinessException("REST Destination ID cannot be null"));
 
             Tenant savedTenant = tenantRepository.findByDomainName(tenant.getDomainName());
             Optional.ofNullable(savedTenant).orElseThrow(() -> new BusinessException("Tenant does not exist"));
 
             RestDestination byName = restRepository.getByTenantAndName(savedTenant.getId(), destination.getName());
-            if (!id.equals(Optional.ofNullable(byName).map(RestDestination::getId).orElse(id))) {
+            if (!guid.equals(Optional.ofNullable(byName).map(RestDestination::getId).orElse(guid))) {
                 throw new BusinessException("REST Destination Name already exists");
             }
 
-            RestDestination old = restRepository.getByTenantAndID(savedTenant.getId(), id);
+            RestDestination old = restRepository.getByTenantAndGUID(savedTenant.getId(), guid);
             Optional.ofNullable(old).orElseThrow(() -> new BusinessException("REST Destination does not exist"));
 
             destination.setId(old.getId());
