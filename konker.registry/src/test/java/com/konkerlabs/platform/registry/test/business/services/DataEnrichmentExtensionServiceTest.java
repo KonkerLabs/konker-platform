@@ -86,6 +86,7 @@ public class DataEnrichmentExtensionServiceTest extends BusinessLayerTestSupport
         newDataEnrichmentExtension = spy(DataEnrichmentExtension.builder().name(NEW_ENCHRICHMENT_EXTENSION_NAME)
                 .type(IntegrationType.REST)
                 .containerKey("containerKey")
+                .parameter(DataEnrichmentExtension.URL,"http://host/path")
                 .incoming(new DeviceURIDealer(){}.toDeviceRouteURI(aTenant.getDomainName(),"xx")).build());
 
         oldIncomingUri = new URI(OLD_INCOMING_URI);
@@ -227,7 +228,9 @@ public class DataEnrichmentExtensionServiceTest extends BusinessLayerTestSupport
     public void shouldReturnDataEnrichmentExtensionIfValidWhenUpdate() {
         DataEnrichmentExtension x = DataEnrichmentExtension.builder().name(OLD_ENCHRICHMENT_EXTENSION_NAME).tenant(aTenant)
                 .description("New Description").containerKey("New Container Key")
-                .incoming(URI.create("device://newdevice")).parameter("a", "b").active(true).type(IntegrationType.REST)
+                .incoming(URI.create("device://newdevice"))
+                .parameter(DataEnrichmentExtension.URL, "http://host:8089/path")
+                .active(true).type(IntegrationType.REST)
                 .build();
 
 

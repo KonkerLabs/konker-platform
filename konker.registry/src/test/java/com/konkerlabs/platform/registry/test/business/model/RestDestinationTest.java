@@ -120,7 +120,7 @@ public class RestDestinationTest {
     }
 
     @Test
-    public void shouldHaveNoValidationMessagesIfUsernameAndPasswordAreEmptys() throws Exception {
+    public void shouldHaveNoValidationMessagesIfUsernameAndPasswordAreEmpty() throws Exception {
         subject.setServiceUsername("");
         subject.setServicePassword("");
         assertThat(subject.applyValidations(), nullValue());

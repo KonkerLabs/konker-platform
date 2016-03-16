@@ -1,9 +1,8 @@
 package com.konkerlabs.platform.registry.test.business.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.emptyIterable;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.empty;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -40,15 +39,16 @@ public class DataEnrichmentExtensionTest {
 
         incomingDeviceUri = new URI("device://mydeviceid");
         parameters = new HashMap<String, String>();
-        parameters.put("uriTemplate", "http://www.google.com/${device.id}/");
-        parameters.put("username", "user");
-        parameters.put("password", "pass");
+        parameters.put("URL", "http://www.google.com/${device.id}/");
+        parameters.put("User", "user");
+        parameters.put("Password", "pass");
 
         dee = DataEnrichmentExtension.builder().name(A_DATA_ENRICHMENT_EXTENSION_NAME)
                 .description(A_DATA_ENRICHMENT_EXTENSION_DESCRIPTION).tenant(tenant).active(true)
                 .containerKey(A_DATA_ENRICHMENT_EXTENSION_CONTAINER_KEY).incoming(incomingDeviceUri).type(IntegrationType.REST)
-                .parameters(parameters).build();
+                .build();
 
+        dee.setParameters(parameters);
     }
 
     @Test
@@ -110,6 +110,74 @@ public class DataEnrichmentExtensionTest {
         String expectedMessage = "Parameters cannot be null";
 
         assertThat(dee.applyValidations(), hasItem(expectedMessage));
+    }
+
+    @Test
+    public void shouldReturnAValidationMessageIfURIIsNull() throws Exception {
+        dee.getParameters().put(DataEnrichmentExtension.URL,null);
+
+        String expectedMessage = "Service URL cannot be null or empty";
+
+        assertThat(dee.applyValidations(), hasItem(expectedMessage));
+    }
+
+    @Test
+    public void shouldReturnAValidationMessageIfURIIsEmpty() throws Exception {
+        dee.getParameters().put(DataEnrichmentExtension.URL,"");
+
+        String expectedMessage = "Service URL cannot be null or empty";
+
+        assertThat(dee.applyValidations(), hasItem(expectedMessage));
+    }
+
+    @Test
+    public void shouldReturnAValidationMessageIfPassowrdIsSetAndUsernameIsNull() throws Exception {
+        dee.getParameters().put(DataEnrichmentExtension.USERNAME,null);
+        assertThat(dee.applyValidations(), hasItem("Password is set but username is empty"));
+    }
+
+    @Test
+    public void shouldReturnAValidationMessageIfPassowrdIsSetAndUsernameIsEmpty() throws Exception {
+        dee.getParameters().put(DataEnrichmentExtension.USERNAME,"   ");
+        assertThat(dee.applyValidations(), hasItem("Password is set but username is empty"));
+    }
+
+    @Test
+    public void shouldHaveNoValidationMessagesIfUsernameIsSetButPasswordIsNull() throws Exception {
+        dee.getParameters().put(DataEnrichmentExtension.PASSWORD,null);
+        assertThat(dee.applyValidations(), empty());
+    }
+
+    @Test
+    public void shouldReturnAValidationMessageIfInterpolatesHost() throws Exception {
+        dee.getParameters().put(DataEnrichmentExtension.URL,"http://@{#var}/");
+        assertThat(dee.applyValidations(), not(empty()));
+    }
+
+    @Test
+    public void shouldHaveNoValidationMessagesIfInterpolatesPath() throws Exception {
+        dee.getParameters().put(DataEnrichmentExtension.URL,"http://host/@{#var}/");
+        assertThat(dee.applyValidations(), empty());
+    }
+
+    @Test
+    public void shouldHaveNoValidationMessagesIfUsernameIsSetButPasswordIsEmpty() throws Exception {
+        dee.getParameters().put(DataEnrichmentExtension.PASSWORD,"   ");
+        assertThat(dee.applyValidations(), empty());
+    }
+
+    @Test
+    public void shouldHaveNoValidationMessagesIfUsernameAndPasswordAreNull() throws Exception {
+        dee.getParameters().put(DataEnrichmentExtension.USERNAME,null);
+        dee.getParameters().put(DataEnrichmentExtension.PASSWORD,null);
+        assertThat(dee.applyValidations(), empty());
+    }
+
+    @Test
+    public void shouldHaveNoValidationMessagesIfUsernameAndPasswordAreEmpty() throws Exception {
+        dee.getParameters().put(DataEnrichmentExtension.USERNAME,"");
+        dee.getParameters().put(DataEnrichmentExtension.PASSWORD,"");
+        assertThat(dee.applyValidations(), empty());
     }
 
     @Test

@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.konkerlabs.platform.registry.business.model.enumerations.IntegrationType;
+import com.konkerlabs.platform.utilities.validations.InterpolableURIValidationUtil;
+import com.konkerlabs.platform.utilities.validations.ValidationException;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -61,6 +63,25 @@ public class DataEnrichmentExtension {
 
         if (getParameters() == null)
             validations.add("Parameters cannot be null");
+
+        Optional.ofNullable(getParameters())
+            .ifPresent(map -> {
+                if ("".equals(Optional.ofNullable(getParameters().get(URL)).orElse(""))) {
+                    validations.add("Service URL cannot be null or empty");
+                } else {
+                    try {
+                        InterpolableURIValidationUtil.validate(getParameters().get(URL));
+                    } catch (ValidationException ve) {
+                        validations.add(ve.getMessage());
+                    }
+                }
+
+                if (Optional.ofNullable(getParameters().get(PASSWORD)).filter(s -> !s.isEmpty()).isPresent()) {
+                    if ("".equals(Optional.ofNullable(getParameters().get(USERNAME)).orElse("").trim())) {
+                        validations.add("Password is set but username is empty");
+                    }
+                }
+            });
 
         if (getContainerKey() == null || getContainerKey().isEmpty())
             validations.add("Container key cannot be null or empty");
