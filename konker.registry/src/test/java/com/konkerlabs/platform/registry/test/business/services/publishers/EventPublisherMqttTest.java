@@ -6,6 +6,7 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.solr.EventRepository;
+import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.publishers.api.EventPublisher;
 import com.konkerlabs.platform.registry.business.services.publishers.EventPublisherMqtt;
@@ -15,6 +16,7 @@ import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.SolrTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -22,6 +24,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -69,7 +72,7 @@ public class EventPublisherMqttTest extends BusinessLayerTestSupport {
     private EventPublisher subject;
 
     @Mock
-    private EventRepository eventRepository;
+    private DeviceEventService deviceEventService;
 
     private Event event;
     private URI destinationUri;
@@ -87,7 +90,7 @@ public class EventPublisherMqttTest extends BusinessLayerTestSupport {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
 
-        ((EventPublisherMqtt)subject).setEventRepository(eventRepository);
+        ((EventPublisherMqtt)subject).setDeviceEventService(deviceEventService);
 
         device = deviceRegisterService.findByTenantDomainNameAndDeviceId(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_ID);
         event = Event.builder()
@@ -100,6 +103,11 @@ public class EventPublisherMqttTest extends BusinessLayerTestSupport {
         data = new HashMap<String,String>() {{
             put("channel",event.getChannel());
         }};
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        Mockito.reset(deviceEventService);
     }
 
     @Test
@@ -185,7 +193,7 @@ public class EventPublisherMqttTest extends BusinessLayerTestSupport {
         subject.send(event,destinationUri,data,device.getTenant());
 
         verify(mqttMessageGateway,never()).send(anyString(),anyString());
-        verify(eventRepository,never()).push(device.getTenant(),event);
+        verify(deviceEventService,never()).logEvent(device,event);
     }
 
     @Test
@@ -196,15 +204,17 @@ public class EventPublisherMqttTest extends BusinessLayerTestSupport {
                 .filter(Device::isActive)
                 .orElseGet(() -> deviceRegisterService.switchEnabledDisabled(tenant, THE_DEVICE_ID).getResult());
 
+        device = deviceRegisterService.findByTenantDomainNameAndDeviceId(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_ID);
+
         String expectedMqttTopic = MessageFormat
             .format(MQTT_OUTGOING_TOPIC_TEMPLATE, destinationUri.getPath().replaceAll("/",""),
                     data.get("channel"));
 
         subject.send(event,destinationUri,data,device.getTenant());
 
-        InOrder inOrder = inOrder(mqttMessageGateway,eventRepository);
+        InOrder inOrder = inOrder(mqttMessageGateway,deviceEventService);
 
         inOrder.verify(mqttMessageGateway).send(event.getPayload(),expectedMqttTopic);
-        inOrder.verify(eventRepository).push(device.getTenant(),event);
+        inOrder.verify(deviceEventService).logEvent(eq(device),eq(event));
     }
 }

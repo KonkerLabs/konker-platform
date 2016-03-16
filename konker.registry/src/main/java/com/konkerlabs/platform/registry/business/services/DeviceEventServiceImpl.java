@@ -43,7 +43,8 @@ public class DeviceEventServiceImpl implements DeviceEventService {
         if (device.getEvents() == null)
             device.setEvents(new ArrayList<>());
 
-        event.setTimestamp(Instant.now());
+        if (!Optional.ofNullable(event.getTimestamp()).isPresent())
+            event.setTimestamp(Instant.now());
 
         device.getEvents().add(event);
 

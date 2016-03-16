@@ -5,6 +5,7 @@ import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.repositories.solr.EventRepository;
+import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.publishers.api.EventPublisher;
 import com.konkerlabs.platform.registry.integration.gateways.MqttMessageGateway;
@@ -32,7 +33,7 @@ public class EventPublisherMqtt implements EventPublisher {
 
     private MqttMessageGateway mqttMessageGateway;
     private DeviceRegisterService deviceRegisterService;
-    private EventRepository eventRepository;
+    private DeviceEventService deviceEventService;
 
     @Autowired
     public EventPublisherMqtt(MqttMessageGateway mqttMessageGateway,
@@ -42,8 +43,8 @@ public class EventPublisherMqtt implements EventPublisher {
     }
 
     @Autowired
-    public void setEventRepository(EventRepository eventRepository) {
-        this.eventRepository = eventRepository;
+    public void setDeviceEventService(DeviceEventService deviceEventService) {
+        this.deviceEventService = deviceEventService;
     }
 
     @Override
@@ -76,7 +77,7 @@ public class EventPublisherMqtt implements EventPublisher {
                 String destinationTopic = MessageFormat.format(MQTT_OUTGOING_TOPIC_TEMPLATE,
                         destinationUri.getPath().replaceAll("/",""), data.get("channel"));
                 mqttMessageGateway.send(outgoingEvent.getPayload(), destinationTopic);
-                eventRepository.push(tenant,outgoingEvent);
+                deviceEventService.logEvent(outgoingDevice,outgoingEvent);
             } catch (BusinessException e) {
                 LOGGER.error("Failed to forward event to its destination", e);
             }
