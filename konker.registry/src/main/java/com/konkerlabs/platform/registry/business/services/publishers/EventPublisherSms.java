@@ -1,10 +1,11 @@
-package com.konkerlabs.platform.registry.business.services.routes.publishers;
+package com.konkerlabs.platform.registry.business.services.publishers;
 
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.behaviors.SmsURIDealer;
 import com.konkerlabs.platform.registry.business.repositories.solr.EventRepository;
-import com.konkerlabs.platform.registry.business.services.routes.api.EventPublisher;
+import com.konkerlabs.platform.registry.business.services.publishers.api.EventPublisher;
 import com.konkerlabs.platform.registry.integration.exceptions.IntegrationException;
 import com.konkerlabs.platform.registry.integration.gateways.SMSMessageGateway;
 
@@ -19,7 +20,7 @@ import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
 
-@Service("sms")
+@Service(SmsURIDealer.SMS_URI_SCHEME)
 @Scope(BeanDefinition.SCOPE_SINGLETON)
 public class EventPublisherSms implements EventPublisher {
 
@@ -49,12 +50,10 @@ public class EventPublisherSms implements EventPublisher {
                 .orElseThrow(() -> new IllegalArgumentException("Tenant cannot be null"));
 
         try {
-            eventRepository.push(tenant,outgoingEvent);
             messageGateway.send("You have received a message from Konker device: " + outgoingEvent.getPayload(),
                     destinationUri.getAuthority());
-        } catch (IntegrationException e) {
-            LOGGER.error("Error sending SMS.", e);
-        } catch (BusinessException e) {
+            eventRepository.push(tenant,outgoingEvent);
+        } catch (IntegrationException|BusinessException e) {
             LOGGER.error("Error sending SMS.", e);
         }
     }

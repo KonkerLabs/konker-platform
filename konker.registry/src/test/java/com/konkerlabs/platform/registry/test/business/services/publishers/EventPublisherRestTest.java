@@ -1,15 +1,15 @@
 package com.konkerlabs.platform.registry.test.business.services.publishers;
 
-import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.behaviors.SmsURIDealer;
+import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.solr.EventRepository;
+import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
+import com.konkerlabs.platform.registry.business.services.publishers.EventPublisherRest;
 import com.konkerlabs.platform.registry.business.services.publishers.api.EventPublisher;
-import com.konkerlabs.platform.registry.business.services.publishers.EventPublisherSms;
-import com.konkerlabs.platform.registry.integration.exceptions.IntegrationException;
-import com.konkerlabs.platform.registry.integration.gateways.SMSMessageGateway;
+import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
@@ -27,17 +27,22 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.net.URI;
+import java.text.MessageFormat;
 import java.time.Instant;
+import java.util.function.Supplier;
 
+import static info.solidsoft.mockito.java8.LambdaMatcher.argLambda;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
@@ -45,26 +50,27 @@ import static org.mockito.Mockito.never;
         BusinessTestConfiguration.class,
         SolrTestConfiguration.class
 })
-@UsingDataSet(locations = {"/fixtures/tenants.json"})
-public class EventPublisherSmsTest extends BusinessLayerTestSupport {
+@UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/rest-destinations.json"})
+public class EventPublisherRestTest extends BusinessLayerTestSupport {
+
+    private static final String REGISTERED_AND_ACTIVE_DESTINATION_GUID = "dda64780-eb81-11e5-958b-a73dab8b32ee";
+    private static final String REGISTERED_AND_INACTIVE_DESTINATION_GUID = "e6d8e466-eb81-11e5-8a7c-eb0c7d7c235c";
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
-    private String smsPhoneNumber;
-    private URI destinationUri;
-
     @Autowired
     private TenantRepository tenantRepository;
     @Autowired
-    @Qualifier("sms")
+    private RestDestinationService destinationService;
+    @Autowired
+    @Qualifier(RESTDestinationURIDealer.REST_DESTINATION_URI_SCHEME)
     private EventPublisher subject;
 
     @Mock
     private EventRepository eventRepository;
-
     @Autowired
-    private SMSMessageGateway smsMessageGateway;
+    private HttpGateway httpGateway;
 
     private Tenant tenant;
 
@@ -75,16 +81,19 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
             "    \"valid\" : true\n" +
             "  }";
     private Event event;
+    private RestDestination destination;
+    private URI destinationUri;
 
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
 
-        EventPublisherSms.class.cast(subject).setEventRepository(eventRepository);
+        EventPublisherRest.class.cast(subject).setEventRepository(eventRepository);
 
-        smsPhoneNumber = "+5511987654321";
-        destinationUri = new SmsURIDealer() {}.toSmsURI(smsPhoneNumber);
         tenant = tenantRepository.findByDomainName("konker");
+        destination = destinationService.getByGUID(tenant, REGISTERED_AND_ACTIVE_DESTINATION_GUID).getResult();
+
+        destinationUri = new RESTDestinationURIDealer() {}.toRestDestinationURI(tenant.getDomainName(),destination.getGuid());
 
         event = Event.builder()
                 .channel("channel")
@@ -94,7 +103,7 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
 
     @After
     public void tearDown() {
-        Mockito.reset(eventRepository,smsMessageGateway);
+        Mockito.reset(eventRepository,httpGateway);
     }
 
     @Test
@@ -130,23 +139,45 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldSendEventThroughGateway() throws Exception {
-        String expectedMessage = "You have received a message from Konker device: " + event.getPayload();
+    public void shouldRaiseAnExceptionIfDestinationIsUnknown() throws Exception {
+        destinationUri = new RESTDestinationURIDealer() {}.toRestDestinationURI(
+            tenant.getDomainName(),"unknown_guid"
+        );
+
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage(
+                MessageFormat.format("REST Destination is unknown : {0}", destinationUri)
+        );
 
         subject.send(event,destinationUri,null,tenant);
-
-        InOrder inOrder = Mockito.inOrder(eventRepository,smsMessageGateway);
-
-        inOrder.verify(smsMessageGateway).send(eq(expectedMessage),eq(smsPhoneNumber));
-        inOrder.verify(eventRepository).push(tenant,event);
     }
 
     @Test
-    public void shouldNotLogEventThroughGatewayIfItCouldNotBeForwarded() throws Exception {
-        doThrow(IntegrationException.class).when(smsMessageGateway).send(anyString(),anyString());
+    public void shouldNotSendAnyEventThroughGatewayIfDestinationIsDisabled() throws Exception {
+        destinationUri = new RESTDestinationURIDealer() {}.toRestDestinationURI(
+                tenant.getDomainName(),REGISTERED_AND_INACTIVE_DESTINATION_GUID
+        );
 
         subject.send(event,destinationUri,null,tenant);
 
-        Mockito.verify(eventRepository,never()).push(any(Tenant.class),any(Event.class));
+        verify(httpGateway,never()).request(any(),any(),any(),any(),any(),any());
+        verify(eventRepository,never()).push(tenant,event);
+    }
+
+    @Test
+    public void shouldSendAnEventThroughGatewayIfDestinationIsEnabled() throws Exception {
+        subject.send(event,destinationUri,null,tenant);
+
+        InOrder inOrder = Mockito.inOrder(eventRepository,httpGateway);
+
+        inOrder.verify(httpGateway).request(
+            eq(HttpMethod.POST),
+            eq(URI.create(destination.getServiceURI())),
+            argLambda(objectSupplier -> objectSupplier.get().equals(event.getPayload())),
+            eq(destination.getServiceUsername()),
+            eq(destination.getServicePassword()),
+            eq(HttpStatus.OK)
+        );
+        inOrder.verify(eventRepository).push(eq(tenant),eq(event));
     }
 }

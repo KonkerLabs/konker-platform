@@ -12,7 +12,7 @@
             "serviceURI": "http://host/service",
             "serviceUsername": "a username",
             "servicePassword": "a password",
-            "active": false
+            "active": true
       },
                {
             "_id": "96723516-eafc-11e5-a510-4317362f7cf2",
