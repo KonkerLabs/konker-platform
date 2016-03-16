@@ -49,6 +49,6 @@ public class DeviceEventServiceImpl implements DeviceEventService {
 
         deviceRepository.save(device);
 
-        eventRepository.push(device, event);
+        eventRepository.push(device.getTenant(), event);
     }
 }

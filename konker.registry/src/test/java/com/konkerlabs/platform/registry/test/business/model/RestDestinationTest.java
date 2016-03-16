@@ -2,13 +2,13 @@ package com.konkerlabs.platform.registry.test.business.model;
 
 import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-
 import org.junit.Before;
 import org.junit.Test;
 
 import java.net.URI;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.nullValue;
 
@@ -70,7 +70,6 @@ public class RestDestinationTest {
 
         assertThat(subject.applyValidations(), hasItem(expectedMessage));
     }
-
     @Test
     public void shouldReturnAValidationMessageIfPassowrdIsSetAndUsernameIsNull() throws Exception {
         subject.setServiceUsername(null);

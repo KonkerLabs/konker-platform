@@ -94,7 +94,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/transformations.json"})
-    public void shouldRaiseAnExceptionIfTenantIsNull() throws Exception {
+    public void shouldReturnValidationMessageTenantIsNull() throws Exception {
         ServiceResponse<EventRoute> response = subject.save(null, route);
 
         assertThat(response, notNullValue());
@@ -104,7 +104,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/transformations.json"})
-    public void shouldRaiseAnExceptionIfRecordIsNull() throws Exception {
+    public void shouldReturnValidationMessageIfRecordIsNull() throws Exception {
         ServiceResponse<EventRoute> response = subject.save(tenant, null);
 
         assertThat(response, notNullValue());
@@ -114,7 +114,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/transformations.json"})
-    public void shouldReturnResponseMessagesIfRecordIsInvalid() throws Exception {
+    public void shouldReturnValidationMessageIfRecordIsInvalid() throws Exception {
         List<String> errorMessages = asList(new String[]{"Some error"});
         when(route.applyValidations()).thenReturn(errorMessages);
 
@@ -127,34 +127,12 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/transformations.json"})
-    public void shouldRaiseAnExceptionIfTenantDoesNotExist() throws Exception {
+    public void shouldReturnValidationMessageIfTenantDoesNotExist() throws Exception {
         ServiceResponse<EventRoute> response = subject.save(Tenant.builder().id("unknown_id").name("name").build(), route);
 
         assertThat(response, notNullValue());
         assertThat(response.getStatus(), equalTo(ERROR));
         assertThat(response.getResponseMessages(), contains("Tenant does not exist"));
-    }
-
-    @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/transformations.json","/fixtures/event-routes.json"})
-    public void shouldRaiseAnExceptionIfIncomingRouteActorDoesNotExist() throws Exception {
-        route.setIncoming(nonExistingRouteActor);
-        ServiceResponse<EventRoute> response = subject.save(tenant, route);
-
-        assertThat(response, notNullValue());
-        assertThat(response.getStatus(), equalTo(ERROR));
-        assertThat(response.getResponseMessages(), contains("Incoming actor cannot be null"));
-    }
-
-    @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/transformations.json","/fixtures/event-routes.json"})
-    public void shouldRaiseAnExceptionIfOutgoingRouteActorDoesNotExist() throws Exception {
-        route.setOutgoing(nonExistingRouteActor);
-        ServiceResponse<EventRoute> response = subject.save(tenant, route);
-
-        assertThat(response, notNullValue());
-        assertThat(response.getStatus(), equalTo(ERROR));
-        assertThat(response.getResponseMessages(), contains("Outgoing actor cannot be null"));
     }
 
     @Test

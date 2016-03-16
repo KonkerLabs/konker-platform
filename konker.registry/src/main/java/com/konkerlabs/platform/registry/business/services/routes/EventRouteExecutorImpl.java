@@ -6,7 +6,7 @@ import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteExecutor;
-import com.konkerlabs.platform.registry.business.services.routes.api.EventRoutePublisher;
+import com.konkerlabs.platform.registry.business.services.routes.api.EventPublisher;
 import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteService;
 import com.konkerlabs.platform.registry.business.services.routes.api.EventTransformationService;
 import com.konkerlabs.platform.utilities.expressions.ExpressionEvaluationService;
@@ -72,13 +72,13 @@ public class EventRouteExecutorImpl implements EventRouteExecutor {
                             Optional<Event> transformed = eventTransformationService.transform(
                                     event, eventRoute.getTransformation());
                             if (transformed.isPresent()) {
-                                forwardEvent(eventRoute.getOutgoing(), transformed.get());
+                                forwardEvent(eventRoute, transformed.get());
                                 outEvents.add(transformed.get());
                             } else {
                                 logEventWithInvalidTransformation(event, eventRoute);
                             }
                         } else {
-                            forwardEvent(eventRoute.getOutgoing(), event);
+                            forwardEvent(eventRoute, event);
                             outEvents.add(event);
                         }
                     } else {
@@ -109,9 +109,12 @@ public class EventRouteExecutorImpl implements EventRouteExecutor {
             return true;
     }
 
-    private void forwardEvent(EventRoute.RouteActor outgoing, Event event) {
-        EventRoutePublisher eventRoutePublisher = (EventRoutePublisher) applicationContext.getBean(outgoing.getUri().getScheme());
-        eventRoutePublisher.send(event, outgoing);
+    private void forwardEvent(EventRoute eventRoute, Event event) {
+        EventPublisher eventPublisher = (EventPublisher) applicationContext
+                .getBean(eventRoute.getOutgoing().getUri().getScheme());
+        eventPublisher.send(event, eventRoute.getOutgoing().getUri(),
+                eventRoute.getOutgoing().getData(),
+                eventRoute.getTenant());
     }
 
     private void logEventFilterMismatch(Event event, EventRoute eventRoute) {
