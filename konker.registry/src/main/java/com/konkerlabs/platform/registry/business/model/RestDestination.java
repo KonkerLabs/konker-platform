@@ -24,7 +24,7 @@ public class RestDestination implements RESTDestinationURIDealer {
     private Tenant tenant;
     private String guid;
     private String name;
-    private URI serviceURI;
+    private String serviceURI;
     private String serviceUsername;
     private String servicePassword;
     private boolean active;
@@ -40,7 +40,7 @@ public class RestDestination implements RESTDestinationURIDealer {
             validations.add("Name cannot be null or empty");
         }
 
-        if ("".equals(Optional.ofNullable(getServiceURI()).orElse(URI.create("")).toString().trim())) {
+        if ("".equals(Optional.ofNullable(getServiceURI()).orElse(""))) {
             validations.add("URL cannot be null or empty");
         }
 
@@ -57,6 +57,6 @@ public class RestDestination implements RESTDestinationURIDealer {
     }
 
     public URI toURI() {
-        return toRestDestinationURI(Optional.ofNullable(tenant).map(Tenant::getDomainName).orElse(""), this.getName());
+        return toRestDestinationURI(Optional.ofNullable(tenant).map(Tenant::getDomainName).orElse(""), this.getGuid());
     }
 }

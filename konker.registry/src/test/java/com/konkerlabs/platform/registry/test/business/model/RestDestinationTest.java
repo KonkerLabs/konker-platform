@@ -26,8 +26,8 @@ public class RestDestinationTest {
 
         Tenant tenant = Tenant.builder().name("Konker").domainName("konker").build();
 
-        subject = RestDestination.builder().tenant(tenant).name("TestActor")
-                .serviceURI(new URI("http://outgoing.rest.com")).serviceUsername("user").servicePassword("password")
+        subject = RestDestination.builder().tenant(tenant).guid("2e941f28-eb82-11e5-8cc4-ef309bb052d7").name("TestActor")
+                .serviceURI("http://outgoing.rest.com").serviceUsername("user").servicePassword("password")
                 .build();
     }
 
@@ -69,7 +69,7 @@ public class RestDestinationTest {
 
     @Test
     public void shouldReturnAValidationMessageIfURIIsEmpty() throws Exception {
-        subject.setServiceURI(new URI(null, null, null, null, null));
+        subject.setServiceURI("");
 
         String expectedMessage = "URL cannot be null or empty";
 
@@ -125,7 +125,7 @@ public class RestDestinationTest {
         assertThat(uri, not(nullValue()));
         assertThat(uri.getScheme(), equalTo(RESTDestinationURIDealer.REST_DESTINATION_URI_SCHEME));
         assertThat(uri.getAuthority(), equalTo("konker"));
-        assertThat(uri.getPath(), equalTo("/TestActor"));
+        assertThat(uri.getPath(), equalTo("/2e941f28-eb82-11e5-8cc4-ef309bb052d7"));
     }
 
     @Test
@@ -161,19 +161,19 @@ public class RestDestinationTest {
     @Test
     public void shouldThrowExceptionIfNameIsNullWhenToURI() throws Exception {
         thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("name");
+        thrown.expectMessage("REST Destination ID");
 
-        subject.setName(null);;
+        subject.setGuid(null);
         URI uri = subject.toURI();
         assertThat(uri, nullValue());
     }
 
     @Test
-    public void shouldThrowExceptionIfNameIsEmptyWhenToURI() throws Exception {
+    public void shouldThrowExceptionIfGUIDIsEmptyWhenToURI() throws Exception {
         thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("name");
+        thrown.expectMessage("REST Destination ID");
 
-        subject.setName("");;
+        subject.setGuid("");;
         URI uri = subject.toURI();
         assertThat(uri, nullValue());
     }

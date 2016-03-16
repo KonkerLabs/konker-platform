@@ -7,6 +7,7 @@
                 "$id": "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
                 "$ref": "tenants"
             },
+            "guid": "dda64780-eb81-11e5-958b-a73dab8b32ee",
             "name": "a restful destination",
             "serviceURI": "http://host/service",
             "serviceUsername": "a username",
@@ -20,6 +21,7 @@
                 "$id": "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
                 "$ref": "tenants"
             },
+            "guid": "e6d8e466-eb81-11e5-8a7c-eb0c7d7c235c",
             "name": "sjhsdf",
             "serviceURI": "http://sdg/sdsdf",
             "serviceUsername": "djfg",
@@ -33,6 +35,7 @@
                 "$id": "33d7cc77-91f2-4d22-ba31-e44c87963347",
                 "$ref": "tenants"
             },
+            "guid": "faf3391a-eb81-11e5-8c84-33e0d9a91f0c",
             "name": "another tenant restful destination",
             "serviceURI": "http://host-3/service-4",
             "serviceUsername": "zdfg",

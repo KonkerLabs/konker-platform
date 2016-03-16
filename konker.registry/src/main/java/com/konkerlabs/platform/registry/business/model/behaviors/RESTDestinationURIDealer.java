@@ -9,11 +9,11 @@ public interface RESTDestinationURIDealer {
     String REST_DESTINATION_URI_SCHEME = "rest";
     String REST_DESTINATION_URI_TEMPLATE = REST_DESTINATION_URI_SCHEME + "://{0}/{1}";
 
-    default URI toRestDestinationURI(String tenantDomain, String name) {
-        Optional.ofNullable(name)
+    default URI toRestDestinationURI(String tenantDomain, String guid) {
+        Optional.ofNullable(guid)
             .filter(s -> !s.isEmpty())
             .orElseThrow(() -> new IllegalArgumentException(
-                "REST Destination name cannot be null or empty"
+                "REST Destination ID cannot be null or empty"
             ));
 
         Optional.ofNullable(tenantDomain)
@@ -24,7 +24,7 @@ public interface RESTDestinationURIDealer {
 
 
         return URI.create(
-                MessageFormat.format(REST_DESTINATION_URI_TEMPLATE, tenantDomain, name)
+                MessageFormat.format(REST_DESTINATION_URI_TEMPLATE, tenantDomain, guid)
         );
     }
 
