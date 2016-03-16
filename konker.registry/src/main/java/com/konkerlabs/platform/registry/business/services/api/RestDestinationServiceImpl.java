@@ -59,36 +59,6 @@ public class RestDestinationServiceImpl implements RestDestinationService {
         }
     }
 
-    // @Override
-    // TODO: check if we will need it
-    // public ServiceResponse<RestDestination> getByUri(Tenant tenant, URI
-    // RestUri) {
-    // try {
-    // Optional.ofNullable(tenant).orElseThrow(() -> new
-    // BusinessException("Tenant cannot be null"));
-    // Optional.ofNullable(RestUri).orElseThrow(() -> new
-    // BusinessException("Rest outgoing URI cannot be null"));
-    //
-    // Optional.ofNullable(tenantRepository.findOne(tenant.getId()))
-    // .orElseThrow(() -> new BusinessException("Tenant does not exist"));
-    //
-    // RestDestination RestList =
-    // Optional.ofNullable(restRepository.findByURI(RestUri))
-    // .orElseThrow(() -> new BusinessException("Rest outgoing does not
-    // exist"));
-    //
-    // return ServiceResponse.<RestDestination>builder()
-    // .result(RestList)
-    // .status(ServiceResponse.Status.OK)
-    // .<RestDestination>build();
-    // } catch (BusinessException be) {
-    // return ServiceResponse.<RestDestination>builder()
-    // .responseMessage(be.getMessage())
-    // .status(ServiceResponse.Status.ERROR)
-    // .<RestDestination>build();
-    // }
-    // }
-
     @Override
     public ServiceResponse<RestDestination> register(final Tenant tenant, RestDestination destination) {
         try {

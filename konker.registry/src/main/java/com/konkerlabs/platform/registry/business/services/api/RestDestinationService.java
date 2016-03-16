@@ -14,6 +14,6 @@ public interface RestDestinationService {
     ServiceResponse<RestDestination> update(Tenant tenant, String id, RestDestination destination);
 
     ServiceResponse<RestDestination> getByID(Tenant tenant, String restId);
-    // TODO: will we need this?
+    // TODO: will we need this? URI encapsulation for destinations should have taken care of this by now
     // ServiceResponse<RestDestination> getByUri(Tenant tenant, URI restUri);
 }
