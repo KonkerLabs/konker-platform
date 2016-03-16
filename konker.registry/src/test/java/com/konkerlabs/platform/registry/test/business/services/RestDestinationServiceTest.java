@@ -18,15 +18,12 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.repositories.RestDestinationRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteService;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 
 import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.*;
@@ -57,9 +54,11 @@ public class RestDestinationServiceTest extends BusinessLayerTestSupport {
 
     public static final String THE_DESTINATION_ID = "4e6c441c-eaf9-11e5-a33b-8374b127eaa8";
     public static final String THE_DESTINATION_NAME = "a restful destination";
+    public static final String OTHER_DESTINATION_NAME = "sjhsdf";
     public static final String OTHER_TENANT_DESTINATION_ID = "109cd550-eafb-11e5-b610-d3af18d1439d";
     public static final String OTHER_TENANT_DESTINATION_NAME = "another tenant restful destination";
     public static final String INEXISTENT_DESTINATION_ID = "INEXISTENT";
+    public static final String UPDATED_DESTINATION_NAME = "updated restful destination";
 
     @Before
     public void setUp() {
@@ -69,8 +68,13 @@ public class RestDestinationServiceTest extends BusinessLayerTestSupport {
         inexistentTenant = Tenant.builder().domainName("someInexistentDomain")
                 .id("e2bfa8b0-eaf5-11e5-8fd5-a755d49a5c5b").name("someInexistentName").build();
 
-        newRestDestination = spy(RestDestination.builder().name("New Name").active(true)
-                .serviceURI(URI.create("http://host.com/")).serviceUsername("user").servicePassword("password").build());
+        newRestDestination = spy(
+                RestDestination.builder().name("New Name").active(true).serviceURI(URI.create("http://host.com/"))
+                        .serviceUsername("user").servicePassword("password").build());
+        oldRestDestination = spy(RestDestination.builder().id(THE_DESTINATION_ID).name(THE_DESTINATION_NAME)
+                .tenant(tenant).active(false).serviceURI(URI.create("http://host.com/")).serviceUsername("user")
+                .servicePassword("password").build());
+
     }
 
     // ============================== findAll ==============================//
@@ -115,7 +119,7 @@ public class RestDestinationServiceTest extends BusinessLayerTestSupport {
         assertThat(ids, hasItem(OTHER_TENANT_DESTINATION_ID));
     }
 
-    // ============================== getBydID ==============================//
+    // ============================== getByID ==============================//
 
     @Test
     public void shouldReturnDestinationIfExistsWithinTenantWhenGetByID() {
@@ -219,8 +223,167 @@ public class RestDestinationServiceTest extends BusinessLayerTestSupport {
         assertThat(response, isResponseOk());
         assertThat(response.getResult().getTenant(), equalTo(tenant));
         assertThat(response.getResult().getId(), not(nullValue()));
+        assertThat(subject.getByID(otherTenant, response.getResult().getId()),
+                hasErrorMessage("REST Destination does not exist"));
     }
 
     // ============================== update ==============================//
+    @Test
+    public void shouldSaveIfEverythingIsOkWhenUpdate() {
+        RestDestination before = subject.getByID(tenant, THE_DESTINATION_ID).getResult();
+        assertThat(before.getName(), not(equalTo(UPDATED_DESTINATION_NAME)));
+       
+        oldRestDestination.setName(UPDATED_DESTINATION_NAME);
+        
+        ServiceResponse<RestDestination> response = subject.update(tenant, THE_DESTINATION_ID, oldRestDestination);
+        RestDestination returned = response.getResult();
+        assertThat(response, isResponseOk());
+        assertThat(returned.getId(), equalTo(THE_DESTINATION_ID));
+        assertThat(returned.getTenant(), equalTo(tenant));
+        assertThat(returned.getName(), equalTo(UPDATED_DESTINATION_NAME));
+
+        RestDestination after = subject.getByID(tenant, THE_DESTINATION_ID).getResult();
+        assertThat(after.getName(), equalTo(UPDATED_DESTINATION_NAME));
+    }
+
+    @Test
+    public void shouldIgnoreTenantInsideDataObjectWhenUpdate() {
+        RestDestination before = subject.getByID(tenant, THE_DESTINATION_ID).getResult();
+        assertThat(before.getName(), not(equalTo(UPDATED_DESTINATION_NAME)));
+       
+        oldRestDestination.setName(UPDATED_DESTINATION_NAME);
+        oldRestDestination.setTenant(otherTenant);
+        
+        ServiceResponse<RestDestination> response = subject.update(tenant, THE_DESTINATION_ID, oldRestDestination);
+        RestDestination returned = response.getResult();
+        assertThat(response, isResponseOk());
+        assertThat(returned.getId(), equalTo(THE_DESTINATION_ID));
+        assertThat(returned.getTenant(), equalTo(tenant));
+        assertThat(returned.getName(), equalTo(UPDATED_DESTINATION_NAME));
+
+        RestDestination after = subject.getByID(tenant, THE_DESTINATION_ID).getResult();
+        assertThat(after.getName(), equalTo(UPDATED_DESTINATION_NAME));
+    }
+
+    @Test
+    public void shouldIgnoreIDInsideDataObjectWhenUpdate() {
+        RestDestination before = subject.getByID(tenant, THE_DESTINATION_ID).getResult();
+        assertThat(before.getName(), not(equalTo(UPDATED_DESTINATION_NAME)));
+       
+        oldRestDestination.setName(UPDATED_DESTINATION_NAME);
+        oldRestDestination.setId(INEXISTENT_DESTINATION_ID);
+            
+        ServiceResponse<RestDestination> response = subject.update(tenant, THE_DESTINATION_ID, oldRestDestination);
+        RestDestination returned = response.getResult();
+        assertThat(response, isResponseOk());
+        assertThat(returned.getId(), equalTo(THE_DESTINATION_ID));
+        assertThat(returned.getTenant(), equalTo(tenant));
+        assertThat(returned.getName(), equalTo(UPDATED_DESTINATION_NAME));
+
+        RestDestination after = subject.getByID(tenant, THE_DESTINATION_ID).getResult();
+        assertThat(after.getName(), equalTo(UPDATED_DESTINATION_NAME));
+    }
+
+    @Test
+    public void shouldReturnErrorIfOwnedByOtherTenantWhenUpdate() {
+        RestDestination before = subject.getByID(otherTenant, OTHER_TENANT_DESTINATION_ID).getResult();
+        assertThat(before.getName(), not(equalTo(UPDATED_DESTINATION_NAME)));
+       
+        oldRestDestination.setId(OTHER_TENANT_DESTINATION_ID);
+        oldRestDestination.setName(UPDATED_DESTINATION_NAME);
+        
+        ServiceResponse<RestDestination> response = subject.update(tenant, OTHER_TENANT_DESTINATION_ID, oldRestDestination);
+        assertThat(response, hasErrorMessage("REST Destination does not exist"));
+
+        RestDestination after = subject.getByID(otherTenant, OTHER_TENANT_DESTINATION_ID).getResult();
+        assertThat(after.getName(), not(equalTo(UPDATED_DESTINATION_NAME)));
+    }
+
+    @Test
+    public void shouldReturnErrorIfHasValidationErrorsWhenUpdate() {
+        RestDestination before = subject.getByID(tenant, THE_DESTINATION_ID).getResult();
+        assertThat(before.getName(), not(equalTo(UPDATED_DESTINATION_NAME)));
+       
+        oldRestDestination.setName(UPDATED_DESTINATION_NAME);
+        when(oldRestDestination.applyValidations()).thenReturn(Collections.singletonList("My Error"));
+        
+        ServiceResponse<RestDestination> response = subject.update(tenant, THE_DESTINATION_ID, oldRestDestination);
+        assertThat(response, hasErrorMessage("My Error"));
+
+        RestDestination after = subject.getByID(tenant, THE_DESTINATION_ID).getResult();
+        assertThat(after.getName(), not(equalTo(UPDATED_DESTINATION_NAME)));
+    }
+
+    @Test
+    public void shouldReturnErrorIfTenantDoesNotExistWhenUpdate() {
+        RestDestination before = subject.getByID(tenant, THE_DESTINATION_ID).getResult();
+        assertThat(before.getName(), not(equalTo(UPDATED_DESTINATION_NAME)));
+       
+        oldRestDestination.setName(UPDATED_DESTINATION_NAME);
+        
+        ServiceResponse<RestDestination> response = subject.update(inexistentTenant, THE_DESTINATION_ID, oldRestDestination);
+        assertThat(response, hasErrorMessage("Tenant does not exist"));
+
+        RestDestination after = subject.getByID(tenant, THE_DESTINATION_ID).getResult();
+        assertThat(after.getName(), not(equalTo(UPDATED_DESTINATION_NAME)));
+    }
+
+    @Test
+    public void shouldReturnErrorIfTenantIsNullWhenUpdate() {
+        RestDestination before = subject.getByID(tenant, THE_DESTINATION_ID).getResult();
+        assertThat(before.getName(), not(equalTo(UPDATED_DESTINATION_NAME)));
+       
+        oldRestDestination.setName(UPDATED_DESTINATION_NAME);
+        
+        ServiceResponse<RestDestination> response = subject.update(null, THE_DESTINATION_ID, oldRestDestination);
+        assertThat(response, hasErrorMessage("Tenant cannot be null"));
+
+        RestDestination after = subject.getByID(tenant, THE_DESTINATION_ID).getResult();
+        assertThat(after.getName(), not(equalTo(UPDATED_DESTINATION_NAME)));
+    }
+
+    @Test
+    public void shouldReturnErrorIfIDIsNullWhenUpdate() {
+        RestDestination before = subject.getByID(tenant, THE_DESTINATION_ID).getResult();
+        assertThat(before.getName(), not(equalTo(UPDATED_DESTINATION_NAME)));
+       
+        oldRestDestination.setName(UPDATED_DESTINATION_NAME);
+        
+        ServiceResponse<RestDestination> response = subject.update(tenant, null, oldRestDestination);
+        assertThat(response, hasErrorMessage("REST Destination ID cannot be null"));
+
+        RestDestination after = subject.getByID(tenant, THE_DESTINATION_ID).getResult();
+        assertThat(after.getName(), not(equalTo(UPDATED_DESTINATION_NAME)));
+    }
+
+
+    @Test
+    public void shouldReturnErrorIfIDDoesNotExistWhenUpdate() {
+        RestDestination before = subject.getByID(tenant, THE_DESTINATION_ID).getResult();
+        assertThat(before.getName(), not(equalTo(UPDATED_DESTINATION_NAME)));
+       
+        oldRestDestination.setName(UPDATED_DESTINATION_NAME);
+        
+        ServiceResponse<RestDestination> response = subject.update(tenant, INEXISTENT_DESTINATION_ID, oldRestDestination);
+        assertThat(response, hasErrorMessage("REST Destination does not exist"));
+
+        RestDestination after = subject.getByID(tenant, THE_DESTINATION_ID).getResult();
+        assertThat(after.getName(), not(equalTo(UPDATED_DESTINATION_NAME)));
+    }
+
+    @Test
+    public void shouldReturnErrorIfNameIsDuplicateWhenUpdate() {
+        RestDestination before = subject.getByID(tenant, THE_DESTINATION_ID).getResult();
+        assertThat(before.getName(), not(equalTo(OTHER_DESTINATION_NAME)));
+       
+        oldRestDestination.setName(OTHER_DESTINATION_NAME);
+        
+        ServiceResponse<RestDestination> response = subject.update(tenant, THE_DESTINATION_ID, oldRestDestination);
+        assertThat(response, hasErrorMessage("REST Destination Name already exists"));
+
+        RestDestination after = subject.getByID(tenant, THE_DESTINATION_ID).getResult();
+        assertThat(after.getName(), not(equalTo(OTHER_DESTINATION_NAME)));
+    }
+
 
 }

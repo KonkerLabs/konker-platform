@@ -34,15 +34,11 @@ public class RestDestinationServiceImpl implements RestDestinationService {
 
             List<RestDestination> RestList = restRepository.findAllByTenant(tenant.getId());
 
-            return ServiceResponse.<List<RestDestination>>builder()
-                    .result(RestList)
-                    .status(ServiceResponse.Status.OK)
+            return ServiceResponse.<List<RestDestination>> builder().result(RestList).status(ServiceResponse.Status.OK)
                     .build();
         } catch (BusinessException be) {
-            return ServiceResponse.<List<RestDestination>>builder()
-                    .responseMessage(be.getMessage())
-                    .status(ServiceResponse.Status.ERROR)
-                    .build();
+            return ServiceResponse.<List<RestDestination>> builder().responseMessage(be.getMessage())
+                    .status(ServiceResponse.Status.ERROR).build();
         }
     }
 
@@ -52,56 +48,56 @@ public class RestDestinationServiceImpl implements RestDestinationService {
             Optional.ofNullable(tenant).orElseThrow(() -> new BusinessException("Tenant cannot be null"));
             Optional.ofNullable(id).orElseThrow(() -> new BusinessException("REST Destination ID cannot be null"));
 
-
             RestDestination restDestination = Optional.ofNullable(restRepository.getByTenantAndID(tenant.getId(), id))
                     .orElseThrow(() -> new BusinessException("REST Destination does not exist"));
 
-            return ServiceResponse.<RestDestination>builder()
-                    .result(restDestination)
-                    .status(ServiceResponse.Status.OK)
+            return ServiceResponse.<RestDestination> builder().result(restDestination).status(ServiceResponse.Status.OK)
                     .build();
         } catch (BusinessException be) {
-            return ServiceResponse.<RestDestination>builder()
-                    .responseMessage(be.getMessage())
-                    .status(ServiceResponse.Status.ERROR)
-                    .build();
+            return ServiceResponse.<RestDestination> builder().responseMessage(be.getMessage())
+                    .status(ServiceResponse.Status.ERROR).build();
         }
     }
 
-//    @Override
-//    TODO: check if we will need it    
-//    public ServiceResponse<RestDestination> getByUri(Tenant tenant, URI RestUri) {
-//        try {
-//            Optional.ofNullable(tenant).orElseThrow(() -> new BusinessException("Tenant cannot be null"));
-//            Optional.ofNullable(RestUri).orElseThrow(() -> new BusinessException("Rest outgoing URI cannot be null"));
-//
-//            Optional.ofNullable(tenantRepository.findOne(tenant.getId()))
-//                    .orElseThrow(() -> new BusinessException("Tenant does not exist"));
-//
-//            RestDestination RestList = Optional.ofNullable(restRepository.findByURI(RestUri))
-//                    .orElseThrow(() -> new BusinessException("Rest outgoing does not exist"));
-//
-//            return ServiceResponse.<RestDestination>builder()
-//                    .result(RestList)
-//                    .status(ServiceResponse.Status.OK)
-//                    .<RestDestination>build();
-//        } catch (BusinessException be) {
-//            return ServiceResponse.<RestDestination>builder()
-//                    .responseMessage(be.getMessage())
-//                    .status(ServiceResponse.Status.ERROR)
-//                    .<RestDestination>build();
-//        }
-//    }
+    // @Override
+    // TODO: check if we will need it
+    // public ServiceResponse<RestDestination> getByUri(Tenant tenant, URI
+    // RestUri) {
+    // try {
+    // Optional.ofNullable(tenant).orElseThrow(() -> new
+    // BusinessException("Tenant cannot be null"));
+    // Optional.ofNullable(RestUri).orElseThrow(() -> new
+    // BusinessException("Rest outgoing URI cannot be null"));
+    //
+    // Optional.ofNullable(tenantRepository.findOne(tenant.getId()))
+    // .orElseThrow(() -> new BusinessException("Tenant does not exist"));
+    //
+    // RestDestination RestList =
+    // Optional.ofNullable(restRepository.findByURI(RestUri))
+    // .orElseThrow(() -> new BusinessException("Rest outgoing does not
+    // exist"));
+    //
+    // return ServiceResponse.<RestDestination>builder()
+    // .result(RestList)
+    // .status(ServiceResponse.Status.OK)
+    // .<RestDestination>build();
+    // } catch (BusinessException be) {
+    // return ServiceResponse.<RestDestination>builder()
+    // .responseMessage(be.getMessage())
+    // .status(ServiceResponse.Status.ERROR)
+    // .<RestDestination>build();
+    // }
+    // }
 
     @Override
     public ServiceResponse<RestDestination> register(final Tenant tenant, RestDestination destination) {
         try {
             Optional.ofNullable(tenant).orElseThrow(() -> new BusinessException("Tenant cannot be null"));
-            Optional.ofNullable(destination).orElseThrow(() -> new BusinessException("REST Destination cannot be null"));
+            Optional.ofNullable(destination)
+                    .orElseThrow(() -> new BusinessException("REST Destination cannot be null"));
 
             Tenant savedTenant = tenantRepository.findByDomainName(tenant.getDomainName());
-            Optional.ofNullable(savedTenant)
-                    .orElseThrow(() -> new BusinessException("Tenant does not exist"));
+            Optional.ofNullable(savedTenant).orElseThrow(() -> new BusinessException("Tenant does not exist"));
 
             if (restRepository.getByTenantAndName(savedTenant.getId(), destination.getName()) != null) {
                 throw new BusinessException("Name already exists");
@@ -109,26 +105,20 @@ public class RestDestinationServiceImpl implements RestDestinationService {
 
             destination.setId(null);
             destination.setTenant(savedTenant);
-            
-            List<String> validations = Optional.ofNullable(destination.applyValidations()).orElse(Collections.emptyList());
+
+            List<String> validations = Optional.ofNullable(destination.applyValidations())
+                    .orElse(Collections.emptyList());
             if (!validations.isEmpty()) {
-                return ServiceResponse.<RestDestination>builder()
-                        .responseMessages(validations)
-                        .status(ServiceResponse.Status.ERROR)
-                        .build();
+                return ServiceResponse.<RestDestination> builder().responseMessages(validations)
+                        .status(ServiceResponse.Status.ERROR).build();
             }
 
-            RestDestination saved =  restRepository.save(destination);
+            RestDestination saved = restRepository.save(destination);
 
-            return ServiceResponse.<RestDestination>builder()
-                    .result(saved)
-                    .status(ServiceResponse.Status.OK)
-                    .build();
+            return ServiceResponse.<RestDestination> builder().result(saved).status(ServiceResponse.Status.OK).build();
         } catch (BusinessException be) {
-            return ServiceResponse.<RestDestination>builder()
-                    .responseMessage(be.getMessage())
-                    .status(ServiceResponse.Status.ERROR)
-                    .build();
+            return ServiceResponse.<RestDestination> builder().responseMessage(be.getMessage())
+                    .status(ServiceResponse.Status.ERROR).build();
         }
     }
 
@@ -136,38 +126,37 @@ public class RestDestinationServiceImpl implements RestDestinationService {
     public ServiceResponse<RestDestination> update(Tenant tenant, String id, RestDestination destination) {
         try {
             Optional.ofNullable(tenant).orElseThrow(() -> new BusinessException("Tenant cannot be null"));
-            Optional.ofNullable(destination).orElseThrow(() -> new BusinessException("REST Destination cannot be null"));
+            Optional.ofNullable(destination)
+                    .orElseThrow(() -> new BusinessException("REST Destination cannot be null"));
             Optional.ofNullable(id).orElseThrow(() -> new BusinessException("REST Destination ID cannot be null"));
 
             Tenant savedTenant = tenantRepository.findByDomainName(tenant.getDomainName());
-            Optional.ofNullable(savedTenant)
-                    .orElseThrow(() -> new BusinessException("Tenant does not exist"));
+            Optional.ofNullable(savedTenant).orElseThrow(() -> new BusinessException("Tenant does not exist"));
+
+            RestDestination byName = restRepository.getByTenantAndName(savedTenant.getId(), destination.getName());
+            if (!id.equals(Optional.ofNullable(byName).map(RestDestination::getId).orElse(id))) {
+                throw new BusinessException("REST Destination Name already exists");
+            }
 
             RestDestination old = restRepository.getByTenantAndID(savedTenant.getId(), id);
             Optional.ofNullable(old).orElseThrow(() -> new BusinessException("REST Destination does not exist"));
-            
+
             destination.setId(old.getId());
             destination.setTenant(tenant);
-            
-            List<String> validations = Optional.ofNullable(destination.applyValidations()).orElse(Collections.emptyList());
+
+            List<String> validations = Optional.ofNullable(destination.applyValidations())
+                    .orElse(Collections.emptyList());
             if (!validations.isEmpty()) {
-                return ServiceResponse.<RestDestination>builder()
-                        .responseMessages(validations)
-                        .status(ServiceResponse.Status.ERROR)
-                        .build();
+                return ServiceResponse.<RestDestination> builder().responseMessages(validations)
+                        .status(ServiceResponse.Status.ERROR).build();
             }
 
-            RestDestination saved =  restRepository.save(destination);
+            RestDestination saved = restRepository.save(destination);
 
-            return ServiceResponse.<RestDestination>builder()
-                    .result(saved)
-                    .status(ServiceResponse.Status.OK)
-                    .build();
+            return ServiceResponse.<RestDestination> builder().result(saved).status(ServiceResponse.Status.OK).build();
         } catch (BusinessException be) {
-            return ServiceResponse.<RestDestination>builder()
-                    .responseMessage(be.getMessage())
-                    .status(ServiceResponse.Status.ERROR)
-                    .build();
+            return ServiceResponse.<RestDestination> builder().responseMessage(be.getMessage())
+                    .status(ServiceResponse.Status.ERROR).build();
         }
     }
 
