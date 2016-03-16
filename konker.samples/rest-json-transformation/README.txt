@@ -175,7 +175,7 @@ Result:
 === EMPTY DOCUMENTS ===
 An empty (zero sized) response:
 curl -H 'Content-type: application/json' -d
- '{"a": 1, "b": 2}' http://host/literal/empty_response
+ '{"a": 1, "b": 2}' http://host/literal/empty_text
 
 Result: Nothing (zero sized response)
 

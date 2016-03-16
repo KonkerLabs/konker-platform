@@ -7,6 +7,8 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
+import com.konkerlabs.platform.utilities.validations.InterpolableURIValidationUtil;
+import com.konkerlabs.platform.utilities.validations.ValidationException;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -42,6 +44,12 @@ public class RestDestination implements RESTDestinationURIDealer {
 
         if ("".equals(Optional.ofNullable(getServiceURI()).orElse(""))) {
             validations.add("URL cannot be null or empty");
+        } else {
+            try {
+                InterpolableURIValidationUtil.validate(getServiceURI());
+                } catch (ValidationException ve) {
+                    validations.add(ve.getMessage());
+                }
         }
 
         if (Optional.ofNullable(getServicePassword()).filter(s -> !s.isEmpty()).isPresent()) {
@@ -57,6 +65,6 @@ public class RestDestination implements RESTDestinationURIDealer {
     }
 
     public URI toURI() {
-        return toRestDestinationURI(Optional.ofNullable(tenant).map(Tenant::getDomainName).orElse(""), this.getGuid());
+        return toRestDestinationURI(Optional.ofNullable(tenant).map(Tenant::getDomainName).orElse(null), this.getGuid());
     }
 }

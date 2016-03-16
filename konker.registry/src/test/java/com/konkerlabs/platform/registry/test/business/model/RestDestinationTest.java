@@ -95,6 +95,18 @@ public class RestDestinationTest {
     }
 
     @Test
+    public void shouldReturnAValidationMessageIfInterpolatesHost() throws Exception {
+        subject.setServiceURI("http://@{#var}/");
+        assertThat(subject.applyValidations(), not(empty()));
+    }
+
+    @Test
+    public void shouldHaveNoValidationMessagesIfInterpolatesPath() throws Exception {
+        subject.setServiceURI("http://host/@{#var}/");
+        assertThat(subject.applyValidations(), nullValue());
+    }
+
+    @Test
     public void shouldHaveNoValidationMessagesIfUsernameIsSetButPasswordIsEmpty() throws Exception {
         subject.setServicePassword("   ");
         assertThat(subject.applyValidations(), nullValue());
