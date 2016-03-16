@@ -7,8 +7,8 @@ import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.solr.EventRepository;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.routes.api.EventPublisher;
-import com.konkerlabs.platform.registry.business.services.routes.publishers.EventPublisherMqtt;
+import com.konkerlabs.platform.registry.business.services.publishers.api.EventPublisher;
+import com.konkerlabs.platform.registry.business.services.publishers.EventPublisherMqtt;
 import com.konkerlabs.platform.registry.integration.gateways.MqttMessageGateway;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
@@ -20,6 +20,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -201,7 +202,9 @@ public class EventPublisherMqttTest extends BusinessLayerTestSupport {
 
         subject.send(event,destinationUri,data,device.getTenant());
 
-        verify(eventRepository).push(device.getTenant(),event);
-        verify(mqttMessageGateway).send(event.getPayload(),expectedMqttTopic);
+        InOrder inOrder = inOrder(mqttMessageGateway,eventRepository);
+
+        inOrder.verify(mqttMessageGateway).send(event.getPayload(),expectedMqttTopic);
+        inOrder.verify(eventRepository).push(device.getTenant(),event);
     }
 }

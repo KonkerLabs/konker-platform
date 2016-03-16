@@ -85,6 +85,12 @@
             <version>1.10.19</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>info.solidsoft.mockito</groupId>
+            <artifactId>mockito-java8</artifactId>
+            <version>0.3.1</version>
+            <scope>test</scope>
+        </dependency>
         <!-- Compile scope -->
         <dependency>
             <groupId>org.projectlombok</groupId>
