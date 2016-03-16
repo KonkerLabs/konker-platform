@@ -1,13 +1,11 @@
 package com.konkerlabs.platform.registry.test.web.controllers;
 
-import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.EventRoute;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.Transformation;
+import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
+import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.SmsURIDealer;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.TransformationService;
 import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteService;
@@ -41,6 +39,7 @@ import static com.konkerlabs.platform.registry.business.model.Device.builder;
 import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
 import static com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer.DEVICE_URI_SCHEME;
 import static com.konkerlabs.platform.registry.business.model.behaviors.SmsURIDealer.SMS_URI_SCHEME;
+import static com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer.REST_DESTINATION_URI_SCHEME;
 import static com.konkerlabs.platform.registry.business.services.api.ServiceResponse.Status.ERROR;
 import static com.konkerlabs.platform.registry.business.services.api.ServiceResponse.Status.OK;
 import static java.text.MessageFormat.format;
@@ -68,6 +67,8 @@ public class EventRouteControllerTest extends WebLayerTestContext {
     private TransformationService transformationService;
     @Autowired
     private DeviceRegisterService deviceRegisterService;
+    @Autowired
+    private RestDestinationService restDestinationService;
 
     @Autowired
     private Tenant tenant;
@@ -85,19 +86,24 @@ public class EventRouteControllerTest extends WebLayerTestContext {
     @Before
     public void setUp() throws Exception {
         List<Transformation> transformations = new ArrayList<>();
-
         when(transformationService.getAll(tenant)).thenReturn(
-            ServiceResponse.<List<Transformation>>builder()
-                .status(OK)
-                .result(transformations).<List<Transformation>>build()
+                ServiceResponse.<List<Transformation>>builder()
+                        .status(OK)
+                        .result(transformations).<List<Transformation>>build()
         );
 
         List<Device> devices = new ArrayList<>();
         when(deviceRegisterService.findAll(tenant)).thenReturn(
                 ServiceResponse.<List<Device>>builder()
-                    .status(OK)
-                    .result(devices).<List<Device>>build()
-            );
+                        .status(OK)
+                        .result(devices).<List<Device>>build()
+        );
+        List<RestDestination> restDestinations = new ArrayList<>();
+        when(restDestinationService.findAll(tenant)).thenReturn(
+                ServiceResponse.<List<RestDestination>>builder()
+                        .status(OK)
+                        .result(restDestinations).<List<RestDestination>>build()
+        );
 
         incomingDevice = builder().deviceId("0000000000000004").build();
         outgoingDevice = builder().deviceId("0000000000000005").build();
@@ -132,6 +138,8 @@ public class EventRouteControllerTest extends WebLayerTestContext {
         };
         SmsURIDealer smsURIDealer = new SmsURIDealer() {
         };
+        RESTDestinationURIDealer restDestinationURIDealer = new RESTDestinationURIDealer() {
+        };
 
         Supplier<URI> outgoingUriSupplier = () -> {
             switch (routeForm.getOutgoingScheme()) {
@@ -139,6 +147,8 @@ public class EventRouteControllerTest extends WebLayerTestContext {
                     return deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(), routeForm.getOutgoingDeviceAuthority());
                 case SMS_URI_SCHEME:
                     return smsURIDealer.toSmsURI(routeForm.getOutgoingSmsPhoneNumber());
+                case REST_DESTINATION_URI_SCHEME:
+                    return restDestinationURIDealer.toRestDestinationURI(tenant.getDomainName(), routeForm.getOutgoingRestDestinationGuid());
                 default:
                     return null;
             }
@@ -198,6 +208,13 @@ public class EventRouteControllerTest extends WebLayerTestContext {
     public void shouldRenderSmsViewFragment() throws Exception {
         getMockMvc().perform(get("/routes/outgoing/{0}", "sms"))
                 .andExpect(view().name("routes/sms-outgoing"))
+                .andExpect(model().attribute("route", new EventRouteForm()));
+    }
+
+    @Test
+    public void shouldRenderRestDestinationsViewFragment() throws Exception {
+        getMockMvc().perform(get("/routes/outgoing/{0}", "rest"))
+                .andExpect(view().name("routes/rest-outgoing"))
                 .andExpect(model().attribute("route", new EventRouteForm()));
     }
 
@@ -294,6 +311,11 @@ public class EventRouteControllerTest extends WebLayerTestContext {
         @Bean
         public DeviceRegisterService deviceRegisterService() {
             return mock(DeviceRegisterService.class);
+        }
+
+        @Bean
+        public RestDestinationService restDestinationService() {
+            return mock(RestDestinationService.class);
         }
 
         @Bean

@@ -60,6 +60,10 @@
                     <input type="radio" name="outgoingScheme"
                            value="sms" data-th-checked="${route.outgoingScheme == 'sms'}">SMS</input>
                 </label>
+                <label class="radio-inline">
+                    <input type="radio" name="outgoingScheme"
+                           value="rest" data-th-checked="${route.outgoingScheme == 'rest'}">REST Destinations</input>
+                </label>
             </div>
         </div>
         <data-th-block data-th-include="routes/device-outgoing :: outgoing"
@@ -67,6 +71,9 @@
         </data-th-block>
         <data-th-block data-th-include="routes/sms-outgoing :: outgoing"
                        data-th-if="${route.outgoingScheme == 'sms'}">
+        </data-th-block>
+        <data-th-block data-th-include="routes/rest-outgoing :: outgoing"
+                       data-th-if="${route.outgoingScheme == 'rest'}">
         </data-th-block>
         <div class="form-group">
             <label class="col-sm-1 control-label" for="filteringExpression">Message filter</label>

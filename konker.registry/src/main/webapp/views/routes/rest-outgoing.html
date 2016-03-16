@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+<div data-th-fragment="outgoing">
+    <div class="form-group">
+        <label class="col-sm-1 control-label" for="outgoingRestDestinationGuid">Outgoing Rest Destination</label>
+        <div class="col-sm-4">
+            <select class="form-control" data-th-field="${route.outgoingRestDestinationGuid}"
+                    id="outgoingRestDestinationGuid" name="outgoingRestDestinationGuid">
+                <option data-th-each="restDestination : ${allRestDestinations}"
+                        data-th-value="${restDestination.guid}"
+                        data-th-text="${restDestination.name}"></option>
+            </select>
+        </div>
+    </div>
+</div>
+</body>
+</html>
