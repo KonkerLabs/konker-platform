@@ -7,6 +7,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
+
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +17,7 @@ import java.util.Optional;
 @Data
 @Builder
 @Document(collection = "restDestinations")
-public class RestDestination {
+public class RestDestination implements RESTDestinationURIDealer {
 
     @Id
     private String id;
@@ -52,5 +54,9 @@ public class RestDestination {
             return null;
         else
             return validations;
+    }
+
+    public URI toURI() {
+        return toRestDestinationURI(this.getName());
     }
 }
