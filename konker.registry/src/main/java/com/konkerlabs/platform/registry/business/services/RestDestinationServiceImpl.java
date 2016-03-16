@@ -1,4 +1,4 @@
-package com.konkerlabs.platform.registry.business.services.api;
+package com.konkerlabs.platform.registry.business.services;
 
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.RestDestination;
@@ -6,6 +6,8 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.repositories.RestDestinationRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 
+import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
@@ -36,10 +38,10 @@ public class RestDestinationServiceImpl implements RestDestinationService {
             List<RestDestination> RestList = restRepository.findAllByTenant(tenant.getId());
 
             return ServiceResponse.<List<RestDestination>> builder().result(RestList).status(ServiceResponse.Status.OK)
-                    .build();
+                    .<List<RestDestination>>build();
         } catch (BusinessException be) {
             return ServiceResponse.<List<RestDestination>> builder().responseMessage(be.getMessage())
-                    .status(ServiceResponse.Status.ERROR).build();
+                    .status(ServiceResponse.Status.ERROR).<List<RestDestination>>build();
         }
     }
 
@@ -53,10 +55,10 @@ public class RestDestinationServiceImpl implements RestDestinationService {
                     .orElseThrow(() -> new BusinessException("REST Destination does not exist"));
 
             return ServiceResponse.<RestDestination> builder().result(restDestination).status(ServiceResponse.Status.OK)
-                    .build();
+                    .<RestDestination>build();
         } catch (BusinessException be) {
             return ServiceResponse.<RestDestination> builder().responseMessage(be.getMessage())
-                    .status(ServiceResponse.Status.ERROR).build();
+                    .status(ServiceResponse.Status.ERROR).<RestDestination>build();
         }
     }
 
@@ -82,15 +84,16 @@ public class RestDestinationServiceImpl implements RestDestinationService {
                     .orElse(Collections.emptyList());
             if (!validations.isEmpty()) {
                 return ServiceResponse.<RestDestination> builder().responseMessages(validations)
-                        .status(ServiceResponse.Status.ERROR).build();
+                        .status(ServiceResponse.Status.ERROR).<RestDestination>build();
             }
 
             RestDestination saved = restRepository.save(destination);
 
-            return ServiceResponse.<RestDestination> builder().result(saved).status(ServiceResponse.Status.OK).build();
+            return ServiceResponse.<RestDestination> builder().result(saved).status(ServiceResponse.Status.OK)
+                    .<RestDestination>build();
         } catch (BusinessException be) {
             return ServiceResponse.<RestDestination> builder().responseMessage(be.getMessage())
-                    .status(ServiceResponse.Status.ERROR).build();
+                    .status(ServiceResponse.Status.ERROR).<RestDestination>build();
         }
     }
 
@@ -121,15 +124,16 @@ public class RestDestinationServiceImpl implements RestDestinationService {
                     .orElse(Collections.emptyList());
             if (!validations.isEmpty()) {
                 return ServiceResponse.<RestDestination> builder().responseMessages(validations)
-                        .status(ServiceResponse.Status.ERROR).build();
+                        .status(ServiceResponse.Status.ERROR).<RestDestination>build();
             }
 
             RestDestination saved = restRepository.save(destination);
 
-            return ServiceResponse.<RestDestination> builder().result(saved).status(ServiceResponse.Status.OK).build();
+            return ServiceResponse.<RestDestination> builder().result(saved).status(ServiceResponse.Status.OK)
+                    .<RestDestination>build();
         } catch (BusinessException be) {
             return ServiceResponse.<RestDestination> builder().responseMessage(be.getMessage())
-                    .status(ServiceResponse.Status.ERROR).build();
+                    .status(ServiceResponse.Status.ERROR).<RestDestination>build();
         }
     }
 
