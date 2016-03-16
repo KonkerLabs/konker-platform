@@ -6,7 +6,7 @@ import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteExecutor;
-import com.konkerlabs.platform.registry.business.services.routes.api.EventPublisher;
+import com.konkerlabs.platform.registry.business.services.publishers.api.EventPublisher;
 import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteService;
 import com.konkerlabs.platform.registry.business.services.routes.api.EventTransformationService;
 import com.konkerlabs.platform.utilities.expressions.ExpressionEvaluationService;

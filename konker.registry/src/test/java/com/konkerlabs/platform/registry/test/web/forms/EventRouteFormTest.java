@@ -5,6 +5,7 @@ import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.Transformation;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
+import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.SmsURIDealer;
 import com.konkerlabs.platform.registry.web.forms.EventRouteForm;
 import org.apache.commons.collections.map.HashedMap;
@@ -25,6 +26,7 @@ public class EventRouteFormTest {
     private EventRoute model;
     private DeviceURIDealer deviceUriDealer;
     private SmsURIDealer smsUriDealer;
+    private RESTDestinationURIDealer restDestinationURIDealer;
     private Tenant tenant;
 
     @Before
@@ -51,6 +53,7 @@ public class EventRouteFormTest {
 
         deviceUriDealer = new DeviceURIDealer() {};
         smsUriDealer = new SmsURIDealer() {};
+        restDestinationURIDealer = new RESTDestinationURIDealer() {};
     }
 
     @Test
@@ -125,6 +128,24 @@ public class EventRouteFormTest {
     }
 
     @Test
+    public void shouldTranslateFromRestDestinationRouteFormToModel() throws Exception {
+        form.setOutgoingScheme("rest");
+        form.setOutgoingRestDestinationGuid("dda64780-eb81-11e5-958b-a73dab8b32ee");
+
+        model.setIncoming(RouteActor.builder()
+                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncomingAuthority()))
+                .data(new HashedMap())
+                .build());
+        model.getIncoming().getData().put("channel",form.getIncomingChannel());
+        model.setOutgoing(RouteActor.builder()
+                .uri(restDestinationURIDealer.toRestDestinationURI(tenant.getDomainName(), form.getOutgoingRestDestinationGuid()))
+                .data(new HashedMap())
+                .build());
+
+        assertThat(form.toModel(),equalTo(model));
+    }
+
+    @Test
     public void shouldTranslateToModelWithOptionalTransformation() throws Exception {
         form.setOutgoingScheme("device");
         form.setOutgoingDeviceAuthority("0000000000000005");
@@ -189,6 +210,26 @@ public class EventRouteFormTest {
         model.getIncoming().getData().put("channel",form.getIncomingChannel());
         model.setOutgoing(RouteActor.builder()
                 .uri(smsUriDealer.toSmsURI(form.getOutgoingSmsPhoneNumber()))
+                .data(new HashedMap())
+                .build());
+
+        assertThat(new EventRouteForm().fillFrom(model),equalTo(form));
+    }
+
+    @Test
+    public void shouldTranslateFromRestDestinationRouteModelToForm() throws Exception {
+        form.setAdditionalSupplier(null);
+
+        form.setOutgoingScheme("rest");
+        form.setOutgoingRestDestinationGuid("dda64780-eb81-11e5-958b-a73dab8b32ee");
+
+        model.setIncoming(RouteActor.builder()
+                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncomingAuthority()))
+                .data(new HashedMap())
+                .build());
+        model.getIncoming().getData().put("channel",form.getIncomingChannel());
+        model.setOutgoing(RouteActor.builder()
+                .uri(restDestinationURIDealer.toRestDestinationURI(tenant.getDomainName(), form.getOutgoingRestDestinationGuid()))
                 .data(new HashedMap())
                 .build());
 

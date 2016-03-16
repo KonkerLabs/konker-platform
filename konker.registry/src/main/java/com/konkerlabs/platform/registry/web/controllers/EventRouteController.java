@@ -1,10 +1,8 @@
 package com.konkerlabs.platform.registry.web.controllers;
 
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.EventRoute;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.Transformation;
+import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.TransformationService;
 import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteService;
@@ -36,6 +34,8 @@ public class EventRouteController {
     @Autowired
     private DeviceRegisterService deviceRegisterService;
     @Autowired
+    private RestDestinationService restDestinationService;
+    @Autowired
     private TransformationService transformationService;
     @Autowired
     private Tenant tenant;
@@ -43,6 +43,11 @@ public class EventRouteController {
     @ModelAttribute("allDevices")
     public List<Device> allDevices() {
         return deviceRegisterService.findAll(tenant).getResult();
+    }
+
+    @ModelAttribute("allRestDestinations")
+    public List<RestDestination> allRestDestinations() {
+        return restDestinationService.findAll(tenant).getResult();
     }
 
     @ModelAttribute("allTransformations")
@@ -109,6 +114,7 @@ public class EventRouteController {
         switch (outgoingScheme) {
             case "device": return new ModelAndView("routes/device-outgoing", "route", route);
             case "sms" : return new ModelAndView("routes/sms-outgoing", "route", route);
+            case "rest" : return new ModelAndView("routes/rest-outgoing", "route", route);
             //FIXME: Check for a way to render an empty HTTP body without an empty html file
             default: return new ModelAndView("common/empty");
         }

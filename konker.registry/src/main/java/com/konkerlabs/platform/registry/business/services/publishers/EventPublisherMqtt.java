@@ -1,4 +1,4 @@
-package com.konkerlabs.platform.registry.business.services.routes.publishers;
+package com.konkerlabs.platform.registry.business.services.publishers;
 
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
@@ -6,9 +6,8 @@ import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.repositories.solr.EventRepository;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.routes.api.EventPublisher;
+import com.konkerlabs.platform.registry.business.services.publishers.api.EventPublisher;
 import com.konkerlabs.platform.registry.integration.gateways.MqttMessageGateway;
-import org.apache.zookeeper.Op;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,10 +73,10 @@ public class EventPublisherMqtt implements EventPublisher {
 
         if (outgoingDevice.isActive()) {
             try {
-                eventRepository.push(tenant,outgoingEvent);
                 String destinationTopic = MessageFormat.format(MQTT_OUTGOING_TOPIC_TEMPLATE,
                         destinationUri.getPath().replaceAll("/",""), data.get("channel"));
                 mqttMessageGateway.send(outgoingEvent.getPayload(), destinationTopic);
+                eventRepository.push(tenant,outgoingEvent);
             } catch (BusinessException e) {
                 LOGGER.error("Failed to forward event to its destination", e);
             }

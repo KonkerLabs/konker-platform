@@ -209,7 +209,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/transformations.json", "/fixtures/event-routes.json", "/fixtures/route-actors.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/transformations.json", "/fixtures/event-routes.json"})
     public void shouldSaveEditedRouteState() throws Exception {
         EventRoute route = subject.getById(tenant, routeId).getResult();
 
