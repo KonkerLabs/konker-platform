@@ -1,10 +1,14 @@
 package com.konkerlabs.platform.registry.business.model;
 
 import com.konkerlabs.platform.registry.business.model.enumerations.IntegrationType;
+import com.konkerlabs.platform.utilities.validations.InterpolableURIValidationUtil;
+import com.konkerlabs.platform.utilities.validations.ValidationException;
+
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import org.springframework.data.annotation.TypeAlias;
 
+import java.text.MessageFormat;
 import java.util.*;
 
 @EqualsAndHashCode(callSuper = true)
@@ -28,8 +32,15 @@ public class RestTransformationStep extends TransformationStep {
 
         Optional.ofNullable(getAttributes()).filter(attributes -> !attributes.isEmpty())
             .ifPresent(attr -> {
-                if (!attr.containsKey(REST_URL_ATTRIBUTE_NAME) || attr.get(REST_URL_ATTRIBUTE_NAME).isEmpty())
+                if (!attr.containsKey(REST_URL_ATTRIBUTE_NAME) || attr.get(REST_URL_ATTRIBUTE_NAME).isEmpty()) {
                     validations.add("REST step: URL attribute is missing");
+                } else {
+                    try {
+                        InterpolableURIValidationUtil.validate(attr.get(REST_URL_ATTRIBUTE_NAME));
+                    } catch (ValidationException e) {
+                        validations.add(MessageFormat.format("REST step: {0}", e.getMessage()));
+                    }
+                }
                 if (!attr.containsKey(REST_USERNAME_ATTRIBUTE_NAME))
                     validations.add("REST step: Username attribute is missing");
                 if (!attr.containsKey(REST_PASSWORD_ATTRIBUTE_NAME))

@@ -37,7 +37,7 @@ public class InterpolableURIValidationUtil {
         }
 
         if (!("HTTP".equalsIgnoreCase(parsedURI.getScheme()) || "HTTPS".equalsIgnoreCase(parsedURI.getScheme()))) {
-            throw new ValidationException("Protocol must be HTTP ou HTTPS");
+            throw new ValidationException("Protocol must be HTTP or HTTPS");
         }
 
         if (parsedURI.getUserInfo() != null) {

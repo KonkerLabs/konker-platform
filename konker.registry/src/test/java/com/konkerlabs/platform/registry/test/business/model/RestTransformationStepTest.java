@@ -66,6 +66,14 @@ public class RestTransformationStepTest {
         assertThat(subject.applyValidations(),hasItem(expectedError));
     }
     @Test
+    public void shouldReturnValidationMessageIfURLIsMalformed() throws Exception {
+        subject.getAttributes().put("url","xttp://host.com");
+
+        String expectedError = "REST step: Protocol must be HTTP or HTTPS";
+
+        assertThat(subject.applyValidations(),hasItem(expectedError));
+    }
+    @Test
     public void shouldReturnValidationMessageIfUsernameAttributeIsMissing() throws Exception {
         subject.getAttributes().remove("username");
 
