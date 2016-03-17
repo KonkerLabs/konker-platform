@@ -15,8 +15,6 @@ import java.util.HashMap;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import static com.konkerlabs.platform.registry.business.model.EventRoute.builder;
-
 @Data
 @EqualsAndHashCode(exclude={"tenantDomainSupplier"})
 public class EventRouteForm implements ModelBuilder<EventRoute,EventRouteForm,String>,
@@ -52,7 +50,7 @@ public class EventRouteForm implements ModelBuilder<EventRoute,EventRouteForm,St
 
         EventRoute route;
 
-        route = builder()
+        route = EventRoute.builder()
                 .id(id)
                 .name(getName())
                 .description(getDescription())
