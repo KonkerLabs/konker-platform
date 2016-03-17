@@ -48,15 +48,17 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
             Tenant t = Optional.ofNullable(tenantRepository.findByName(tenant.getName()))
                     .orElseThrow(() -> new BusinessException("Tenant does not exist"));
 
+            List<String> validationErrors = new ArrayList<>();
+
             if (repository.findByTenantIdAndName(t.getId(), dee.getName()) != null) {
-                throw new BusinessException("Data Enrichment Extension Name must be unique");
+                validationErrors.add("Data Enrichment Extension Name must be unique");
             }
 
             dee.setTenant(tenant);
             dee.setId(null);
             dee.setGuid(UUID.randomUUID().toString());
 
-            List<String> validationErrors = Optional.ofNullable(dee.applyValidations()).orElse(Collections.emptyList());
+            validationErrors = Optional.ofNullable(dee.applyValidations()).filter(de -> !de.isEmpty()).orElse(validationErrors);
 
             if (!repository.findByTenantIdAndIncomingAndContainerKey(
                 tenant.getId(),
@@ -100,6 +102,11 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
 
             List<String> validationErrors = Optional.ofNullable(dee.applyValidations()).orElse(Collections.emptyList());
 
+            DataEnrichmentExtension tenantIdAndName = repository.findByTenantIdAndName(t.getId(), dee.getName());
+
+            if (tenantIdAndName != null && !tenantIdAndName.getGuid().equals(oldDee.getGuid()))
+                validationErrors.add("Data Enrichment Extension Name must be unique");
+
             boolean isContainerKeyInUse = Optional.of(
                 repository.findByTenantIdAndIncomingAndContainerKey(
                         tenant.getId(),
@@ -108,7 +115,7 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
                 )
             ).filter(dataEnrichmentExtensions -> !dataEnrichmentExtensions.isEmpty())
             .orElseGet(ArrayList<DataEnrichmentExtension>::new).stream()
-                .anyMatch(currentDee -> currentDee.getGuid().equals(oldDee.getGuid()));
+                .anyMatch(currentDee -> !currentDee.getGuid().equals(oldDee.getGuid()));
 
             if (isContainerKeyInUse)
                 validationErrors.add("Container key already registered for incoming device");
