@@ -3,7 +3,7 @@ package com.konkerlabs.platform.registry.test.web.controllers;
 import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
-import com.konkerlabs.platform.registry.business.model.behaviors.SmsURIDealer;
+import com.konkerlabs.platform.registry.business.model.behaviors.SmsDestinationURIDealer;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
@@ -38,7 +38,7 @@ import static com.konkerlabs.platform.registry.business.model.Device.builder;
 
 import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
 import static com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer.DEVICE_URI_SCHEME;
-import static com.konkerlabs.platform.registry.business.model.behaviors.SmsURIDealer.SMS_URI_SCHEME;
+import static com.konkerlabs.platform.registry.business.model.behaviors.SmsDestinationURIDealer.SMS_URI_SCHEME;
 import static com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer.REST_DESTINATION_URI_SCHEME;
 import static com.konkerlabs.platform.registry.business.services.api.ServiceResponse.Status.ERROR;
 import static com.konkerlabs.platform.registry.business.services.api.ServiceResponse.Status.OK;
@@ -136,7 +136,7 @@ public class EventRouteControllerTest extends WebLayerTestContext {
 
         DeviceURIDealer deviceUriDealer = new DeviceURIDealer() {
         };
-        SmsURIDealer smsURIDealer = new SmsURIDealer() {
+        SmsDestinationURIDealer smsDestinationURIDealer = new SmsDestinationURIDealer() {
         };
         RESTDestinationURIDealer restDestinationURIDealer = new RESTDestinationURIDealer() {
         };
@@ -146,7 +146,7 @@ public class EventRouteControllerTest extends WebLayerTestContext {
                 case DEVICE_URI_SCHEME:
                     return deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(), routeForm.getOutgoingDeviceAuthority());
                 case SMS_URI_SCHEME:
-                    return smsURIDealer.toSmsURI(routeForm.getOutgoingSmsPhoneNumber());
+                    return smsDestinationURIDealer.toSmsURI(tenant.getDomainName(), routeForm.getOutgoingSmsPhoneNumber());
                 case REST_DESTINATION_URI_SCHEME:
                     return restDestinationURIDealer.toRestDestinationURI(tenant.getDomainName(), routeForm.getOutgoingRestDestinationGuid());
                 default:

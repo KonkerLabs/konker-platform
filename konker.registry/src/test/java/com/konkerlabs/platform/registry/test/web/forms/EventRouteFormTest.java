@@ -6,7 +6,7 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.Transformation;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
-import com.konkerlabs.platform.registry.business.model.behaviors.SmsURIDealer;
+import com.konkerlabs.platform.registry.business.model.behaviors.SmsDestinationURIDealer;
 import com.konkerlabs.platform.registry.web.forms.EventRouteForm;
 import org.apache.commons.collections.map.HashedMap;
 import org.junit.Before;
@@ -25,7 +25,7 @@ public class EventRouteFormTest {
     private EventRouteForm form;
     private EventRoute model;
     private DeviceURIDealer deviceUriDealer;
-    private SmsURIDealer smsUriDealer;
+    private SmsDestinationURIDealer smsDestinationUriDealer;
     private RESTDestinationURIDealer restDestinationURIDealer;
     private Tenant tenant;
 
@@ -52,7 +52,7 @@ public class EventRouteFormTest {
                 .active(form.isActive()).build();
 
         deviceUriDealer = new DeviceURIDealer() {};
-        smsUriDealer = new SmsURIDealer() {};
+        smsDestinationUriDealer = new SmsDestinationURIDealer() {};
         restDestinationURIDealer = new RESTDestinationURIDealer() {};
     }
 
@@ -120,7 +120,7 @@ public class EventRouteFormTest {
                 .build());
         model.getIncoming().getData().put("channel",form.getIncomingChannel());
         model.setOutgoing(RouteActor.builder()
-                .uri(smsUriDealer.toSmsURI(form.getOutgoingSmsPhoneNumber()))
+                .uri(smsDestinationUriDealer.toSmsURI(tenant.getDomainName(), form.getOutgoingSmsPhoneNumber()))
                 .data(new HashedMap())
                 .build());
 
@@ -209,7 +209,7 @@ public class EventRouteFormTest {
                 .build());
         model.getIncoming().getData().put("channel",form.getIncomingChannel());
         model.setOutgoing(RouteActor.builder()
-                .uri(smsUriDealer.toSmsURI(form.getOutgoingSmsPhoneNumber()))
+                .uri(smsDestinationUriDealer.toSmsURI(tenant.getDomainName(),form.getOutgoingSmsPhoneNumber()))
                 .data(new HashedMap())
                 .build());
 

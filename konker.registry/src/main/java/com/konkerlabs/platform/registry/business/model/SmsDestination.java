@@ -1,12 +1,13 @@
 package com.konkerlabs.platform.registry.business.model;
 
-import com.konkerlabs.platform.registry.business.model.behaviors.SmsURIDealer;
+import com.konkerlabs.platform.registry.business.model.behaviors.SmsDestinationURIDealer;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -14,7 +15,7 @@ import java.util.Optional;
 @Data
 @Builder
 @Document(collection = "smsDestinations")
-public class SmsDestination implements SmsURIDealer {
+public class SmsDestination implements SmsDestinationURIDealer {
 
     @Id
     private String id;
@@ -41,5 +42,9 @@ public class SmsDestination implements SmsURIDealer {
                 .orElseThrow(() -> new IllegalStateException("GUID cannot be null or empty"));
 
         return validations;
+    }
+
+    public URI toURI() {
+        return toSmsURI(Optional.ofNullable(getTenant()).orElse(Tenant.builder().build()).getDomainName(),getGuid());
     }
 }

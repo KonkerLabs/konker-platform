@@ -5,7 +5,7 @@ import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
 import com.konkerlabs.platform.registry.business.model.Transformation;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
-import com.konkerlabs.platform.registry.business.model.behaviors.SmsURIDealer;
+import com.konkerlabs.platform.registry.business.model.behaviors.SmsDestinationURIDealer;
 import com.konkerlabs.platform.registry.web.forms.api.ModelBuilder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,7 +21,7 @@ import static com.konkerlabs.platform.registry.business.model.EventRoute.*;
 @EqualsAndHashCode(exclude={"tenantDomainSupplier"})
 public class EventRouteForm implements ModelBuilder<EventRoute,EventRouteForm,String>,
         DeviceURIDealer,
-        SmsURIDealer,
+        SmsDestinationURIDealer,
         RESTDestinationURIDealer {
 
     private String id;
@@ -74,8 +74,8 @@ public class EventRouteForm implements ModelBuilder<EventRoute,EventRouteForm,St
         switch (getOutgoingScheme()) {
             case DeviceURIDealer.DEVICE_URI_SCHEME : return
                 toDeviceRouteURI(tenantDomainSupplier.get(),getOutgoingDeviceAuthority());
-            case SmsURIDealer.SMS_URI_SCHEME : return
-                toSmsURI(getOutgoingSmsPhoneNumber());
+            case SmsDestinationURIDealer.SMS_URI_SCHEME : return
+                toSmsURI(tenantDomainSupplier.get(), getOutgoingSmsPhoneNumber());
             case RESTDestinationURIDealer.REST_DESTINATION_URI_SCHEME : return
                 toRestDestinationURI(tenantDomainSupplier.get(),getOutgoingRestDestinationGuid());
             default: return null;
@@ -110,8 +110,8 @@ public class EventRouteForm implements ModelBuilder<EventRoute,EventRouteForm,St
                 this.setOutgoingDeviceChannel(model.getOutgoing().getData().get("channel"));
                 break;
             }
-            case SmsURIDealer.SMS_URI_SCHEME : {
-                this.setOutgoingSmsPhoneNumber(model.getOutgoing().getUri().getAuthority());
+            case SmsDestinationURIDealer.SMS_URI_SCHEME : {
+                this.setOutgoingSmsPhoneNumber(model.getOutgoing().getUri().getPath().replaceAll("/",""));
                 break;
             }
             case RESTDestinationURIDealer.REST_DESTINATION_URI_SCHEME : {

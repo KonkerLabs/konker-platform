@@ -1,9 +1,8 @@
 package com.konkerlabs.platform.registry.test.business.services.publishers;
 
-import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.behaviors.SmsURIDealer;
+import com.konkerlabs.platform.registry.business.model.behaviors.SmsDestinationURIDealer;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.solr.EventRepository;
 import com.konkerlabs.platform.registry.business.services.publishers.api.EventPublisher;
@@ -81,10 +80,10 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
         MockitoAnnotations.initMocks(this);
 
         EventPublisherSms.class.cast(subject).setEventRepository(eventRepository);
+        tenant = tenantRepository.findByDomainName("konker");
 
         smsPhoneNumber = "+5511987654321";
-        destinationUri = new SmsURIDealer() {}.toSmsURI(smsPhoneNumber);
-        tenant = tenantRepository.findByDomainName("konker");
+        destinationUri = new SmsDestinationURIDealer() {}.toSmsURI(tenant.getDomainName(), smsPhoneNumber);
 
         event = Event.builder()
                 .channel("channel")
