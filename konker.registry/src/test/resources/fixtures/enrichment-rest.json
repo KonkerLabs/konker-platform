@@ -3,6 +3,7 @@
         {
             "_id": "a09b3f34-db24-11e5-8a31-7b3889d9b0eb",
             "_class": "com.konkerlabs.platform.registry.business.model.DataEnrichmentExtension",
+            "guid" : "aac07163-4192-4db2-89a8-6f2b2aac514b",
             "name": "REST-from-Prestashop-01",
             "type": "REST",
             "description": "Get REST Data from Prestahop",
@@ -22,6 +23,7 @@
         {
             "_id": "a97e0d46-db26-11e5-be01-8bc8ddc000bf",
             "_class": "com.konkerlabs.platform.registry.business.model.DataEnrichmentExtension",
+            "guid" : "aac07163-4192-4db2-89a8-6f2b2aac514c",
             "name": "REST-from-Magento-01",
             "type": "REST",
             "description": "Get REST Data from Magento",
@@ -41,7 +43,8 @@
         {
             "_id": "a97e0d46-db26-11e5-be01-8bc8ddc000ac",
             "_class": "com.konkerlabs.platform.registry.business.model.DataEnrichmentExtension",
-            "name": "REST-from-Magento-01",
+            "guid" : "aac07163-4192-4db2-89a8-6f2b2aac514d",
+            "name": "REST-from-Magento-01_1",
             "type": "REST",
             "description": "Get REST Data from Magento",
             "incoming": "device://konker/abc456",
@@ -60,7 +63,8 @@
         {
             "_id": "a97e0d46-db26-11e5-be01-8bc8ddc000ae",
             "_class": "com.konkerlabs.platform.registry.business.model.DataEnrichmentExtension",
-            "name": "REST-from-Magento-01",
+            "guid" : "aac07163-4192-4db2-89a8-6f2b2aac514e",
+            "name": "REST-from-Magento-01_2",
             "type": "REST",
             "description": "Get REST Data from Magento",
             "incoming": "device://konker/abc789",

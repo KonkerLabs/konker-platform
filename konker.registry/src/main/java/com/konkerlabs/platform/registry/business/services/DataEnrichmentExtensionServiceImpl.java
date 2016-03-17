@@ -12,10 +12,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensionService {
@@ -57,6 +54,7 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
 
             dee.setTenant(tenant);
             dee.setId(null);
+            dee.setGuid(UUID.randomUUID().toString());
 
             List<String> validationErrors = Optional.ofNullable(dee.applyValidations()).orElse(Collections.emptyList());
 
@@ -72,8 +70,6 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
                         .responseMessages(validationErrors).<DataEnrichmentExtension>build();
             }
 
-            dee.setTenant(tenant);
-            dee.setId(null);
             DataEnrichmentExtension saved = repository.save(dee);
 
             return ServiceResponse.<DataEnrichmentExtension>builder().status(ServiceResponse.Status.OK).result(saved)
@@ -86,7 +82,7 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
     }
 
     @Override
-    public ServiceResponse<DataEnrichmentExtension> update(Tenant tenant, DataEnrichmentExtension dee) {
+    public ServiceResponse<DataEnrichmentExtension> update(Tenant tenant, String uuid, DataEnrichmentExtension dee) {
 
         try {
             Optional.ofNullable(dee)
@@ -97,7 +93,7 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
                     .orElseThrow(() -> new BusinessException("Tenant does not exist"));
 
             DataEnrichmentExtension oldDee = Optional
-                    .ofNullable(repository.findByTenantIdAndName(t.getId(), dee.getName()))
+                    .ofNullable(repository.findByTenantIdAndGUID(t.getId(), uuid))
                     .orElseThrow(() -> new BusinessException("Data Enrichment Extension does not exist"));
 
             dee.setTenant(tenant);
@@ -112,7 +108,7 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
                 )
             ).filter(dataEnrichmentExtensions -> !dataEnrichmentExtensions.isEmpty())
             .orElseGet(ArrayList<DataEnrichmentExtension>::new).stream()
-                .anyMatch(currentDee -> !currentDee.getId().equals(oldDee.getId()));
+                .anyMatch(currentDee -> currentDee.getGuid().equals(oldDee.getGuid()));
 
             if (isContainerKeyInUse)
                 validationErrors.add("Container key already registered for incoming device");
@@ -123,6 +119,7 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
             }
 
             dee.setId(oldDee.getId());
+            dee.setGuid(oldDee.getGuid());
             DataEnrichmentExtension saved = repository.save(dee);
 
             return ServiceResponse.<DataEnrichmentExtension> builder().status(ServiceResponse.Status.OK)
@@ -156,15 +153,15 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
     }
 
     @Override
-    public ServiceResponse<DataEnrichmentExtension>getByName(Tenant tenant, String name) {
+    public ServiceResponse<DataEnrichmentExtension> getByGUID(Tenant tenant, String guid) {
         try {
-            Optional.ofNullable(name).orElseThrow(() -> new BusinessException("Name cannot be null"));
+            Optional.ofNullable(guid).orElseThrow(() -> new BusinessException("ID cannot be null"));
             Optional.ofNullable(tenant).orElseThrow(() -> new BusinessException("Tenant cannot be null"));
 
             Tenant t = Optional.ofNullable(tenantRepository.findByName(tenant.getName()))
                     .orElseThrow(() -> new BusinessException("Tenant does not exist"));
 
-            DataEnrichmentExtension dee = Optional.ofNullable(repository.findByTenantIdAndName(t.getId(), name))
+            DataEnrichmentExtension dee = Optional.ofNullable(repository.findByTenantIdAndGUID(t.getId(), guid))
                     .orElseThrow(() -> new BusinessException("Data Enrichment Extension does not exist"));
 
             return ServiceResponse.<DataEnrichmentExtension> builder().status(ServiceResponse.Status.OK).result(dee)

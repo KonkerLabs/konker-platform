@@ -70,7 +70,7 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
     private EnrichmentForm enrichmentForm;
     private MultiValueMap<String, String> enrichmentData;
 
-    private String enrichmentId = "a09b3f34-db24-11e5-8a31-7b3889d9b0eb";
+    private String enrichmentGuid = "aac07163-4192-4db2-89a8-6f2b2aac514c";
 
     @Before
     public void setUp() {
@@ -78,7 +78,7 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
         .thenReturn(ServiceResponse.<List<Device>>builder()
                 .status(ServiceResponse.Status.OK)
                 .result(Collections.emptyList())
-                .build());
+                .<List<Device>>build());
         
         incomingDevice = Device.builder().tenant(tenant).deviceId("1").build();
         deviceUriDealer = new DeviceURIDealer() {
@@ -183,7 +183,7 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
 
         getMockMvc().perform(post("/enrichment/save").params(enrichmentData))
                 .andExpect(flash().attribute("message", "Enrichment registered successfully"))
-                .andExpect(redirectedUrl(MessageFormat.format("/enrichment/{0}", dataEnrichmentExtension.getName())));
+                .andExpect(redirectedUrl(MessageFormat.format("/enrichment/{0}", dataEnrichmentExtension.getGuid())));
 
 
         verify(dataEnrichmentExtensionService).register(tenant, dataEnrichmentExtension);
@@ -191,7 +191,7 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldShowEditForm() throws Exception {
-        when(dataEnrichmentExtensionService.getByName(tenant, dataEnrichmentExtension.getName())).thenReturn(serviceResponse);
+        when(dataEnrichmentExtensionService.getByGUID(tenant, dataEnrichmentExtension.getName())).thenReturn(serviceResponse);
 
         getMockMvc().perform(get(MessageFormat.format("/enrichment/{0}/edit", dataEnrichmentExtension.getName())))
                 .andExpect(view().name("enrichment/form"))
@@ -206,19 +206,18 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
                 .result(dataEnrichmentExtension)
                 .<DataEnrichmentExtension>build());
 
-        when(dataEnrichmentExtensionService.update(eq(tenant), eq(dataEnrichmentExtension))).thenReturn(serviceResponse);
+        when(dataEnrichmentExtensionService.update(eq(tenant), eq(enrichmentGuid), eq(dataEnrichmentExtension))).thenReturn(serviceResponse);
 
-        getMockMvc().perform(post(MessageFormat.format("/enrichment/{0}", dataEnrichmentExtension.getName())).params(enrichmentData))
+        getMockMvc().perform(post(MessageFormat.format("/enrichment/{0}", enrichmentGuid)).params(enrichmentData))
                 .andExpect(flash().attribute("message", "Enrichment updated successfully"))
-                .andExpect(redirectedUrl(MessageFormat.format("/enrichment/{0}", dataEnrichmentExtension.getName())));
+                .andExpect(redirectedUrl(MessageFormat.format("/enrichment/{0}", dataEnrichmentExtension.getGuid())));
 
-
-        verify(dataEnrichmentExtensionService).update(eq(tenant), eq(dataEnrichmentExtension));
+        verify(dataEnrichmentExtensionService).update(eq(tenant), eq(enrichmentGuid), eq(dataEnrichmentExtension));
     }
 
     @Test
     public void shouldShowEnrichmentDetails() throws Exception {
-        when(dataEnrichmentExtensionService.getByName(tenant, dataEnrichmentExtension.getName())).thenReturn(serviceResponse);
+        when(dataEnrichmentExtensionService.getByGUID(tenant, dataEnrichmentExtension.getName())).thenReturn(serviceResponse);
 
         getMockMvc().perform(get(MessageFormat.format("/enrichment/{0}", dataEnrichmentExtension.getName())))
                 .andExpect(view().name("enrichment/show"))

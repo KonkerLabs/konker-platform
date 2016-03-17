@@ -28,7 +28,7 @@ public interface DataEnrichmentExtensionService {
      */
     ServiceResponse<DataEnrichmentExtension> register(Tenant tenant, DataEnrichmentExtension dee);
 
-    ServiceResponse<DataEnrichmentExtension> update(Tenant tenant, DataEnrichmentExtension dee);
+    ServiceResponse<DataEnrichmentExtension> update(Tenant tenant, String uuid, DataEnrichmentExtension dee);
 
     /**
      * Gets all the {@link DataEnrichmentExtension} associated with a
@@ -49,14 +49,14 @@ public interface DataEnrichmentExtensionService {
      * 
      * @param tenant
      *            The tenant
-     * @param name
+     * @param guid
      *            The name of the registered item
      * @return a {@link ServiceResponse} containing the item, if it exists and
      *         status code OK. If it does not exist, returns a
      *         {@link ServiceResponse} with an error message and status code
      *         ERROR
      */
-    ServiceResponse<DataEnrichmentExtension> getByName(Tenant tenant, String name);
+    ServiceResponse<DataEnrichmentExtension> getByGUID(Tenant tenant, String guid);
 
     /**
      * Gets a previously registered {@link DataEnrichmentExtension} by

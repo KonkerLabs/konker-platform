@@ -11,6 +11,7 @@ import com.konkerlabs.platform.registry.business.model.enumerations.IntegrationT
 import com.konkerlabs.platform.utilities.validations.InterpolableURIValidationUtil;
 import com.konkerlabs.platform.utilities.validations.ValidationException;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -31,6 +32,9 @@ public class DataEnrichmentExtension {
     private String id;
     @DBRef
     private Tenant tenant;
+    @Indexed(unique = true)
+    private String guid;
+    @Indexed(unique = true)
     private String name;
     private IntegrationType type;
     private String description;

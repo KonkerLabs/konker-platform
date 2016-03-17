@@ -82,31 +82,30 @@ public class EnrichmentController {
             default: {
                 redirectAttributes.addFlashAttribute("message", "Enrichment registered successfully");
                 return new ModelAndView(MessageFormat.format("redirect:/enrichment/{0}",
-                        response.getResult().getName()));
+                        response.getResult().getGuid()));
             }
         }
     }
 
-    @RequestMapping(value = "/{dataEnrichmentExtensionName}", method = RequestMethod.GET)
-    public ModelAndView show(@PathVariable("dataEnrichmentExtensionName") String dataEnrichmentExtensionName) {
-        return new ModelAndView("enrichment/show","dataEnrichmentExtension",new EnrichmentForm().fillFrom(dataEnrichmentExtensionService.getByName(tenant, dataEnrichmentExtensionName).getResult()));
+    @RequestMapping(value = "/{dataEnrichmentExtensionGUID}", method = RequestMethod.GET)
+    public ModelAndView show(@PathVariable("dataEnrichmentExtensionGUID") String dataEnrichmentExtensionGUID) {
+        return new ModelAndView("enrichment/show","dataEnrichmentExtension",new EnrichmentForm().fillFrom(dataEnrichmentExtensionService.getByGUID(tenant, dataEnrichmentExtensionGUID).getResult()));
     }
 
-    @RequestMapping("/{dataEnrichmentExtensionName}/edit")
-    public ModelAndView edit(@PathVariable("dataEnrichmentExtensionName") String dataEnrichmentExtensionName) {
+    @RequestMapping("/{dataEnrichmentExtensionGUID}/edit")
+    public ModelAndView edit(@PathVariable("dataEnrichmentExtensionGUID") String dataEnrichmentExtensionGUID) {
         return new ModelAndView("enrichment/form")
-                .addObject("dataEnrichmentExtension",new EnrichmentForm().fillFrom(dataEnrichmentExtensionService.getByName(tenant, dataEnrichmentExtensionName).getResult()))
-                .addObject("action", MessageFormat.format("/enrichment/{0}",dataEnrichmentExtensionName));
+                .addObject("dataEnrichmentExtension",new EnrichmentForm().fillFrom(dataEnrichmentExtensionService.getByGUID(tenant, dataEnrichmentExtensionGUID).getResult()))
+                .addObject("action", MessageFormat.format("/enrichment/{0}",dataEnrichmentExtensionGUID));
     }
 
-    @RequestMapping(path = "/{dataEnrichmentExtensionName}", method = RequestMethod.POST)
-    public ModelAndView saveEdit(@PathVariable String dataEnrichmentExtensionName,
+    @RequestMapping(path = "/{dataEnrichmentExtensionGUID}", method = RequestMethod.POST)
+    public ModelAndView saveEdit(@PathVariable String dataEnrichmentExtensionGUID,
                                  @ModelAttribute("enrichmentForm") EnrichmentForm enrichmentForm,
                                  RedirectAttributes redirectAttributes) {
 
-        enrichmentForm.setName(dataEnrichmentExtensionName);
         enrichmentForm.setTenantDomainSupplier(() -> tenant.getDomainName());
-        ServiceResponse<DataEnrichmentExtension> response = dataEnrichmentExtensionService.update(tenant, enrichmentForm.toModel());
+        ServiceResponse<DataEnrichmentExtension> response = dataEnrichmentExtensionService.update(tenant, dataEnrichmentExtensionGUID, enrichmentForm.toModel());
 
         switch (response.getStatus()) {
             case ERROR: {
@@ -117,7 +116,7 @@ public class EnrichmentController {
             default: {
                 redirectAttributes.addFlashAttribute("message", "Enrichment updated successfully");
                 return new ModelAndView(MessageFormat.format("redirect:/enrichment/{0}",
-                        response.getResult().getName()));
+                        response.getResult().getGuid()));
             }
         }
     }
