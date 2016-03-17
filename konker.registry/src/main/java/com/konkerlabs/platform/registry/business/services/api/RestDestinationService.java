@@ -11,7 +11,7 @@ public interface RestDestinationService {
 
     ServiceResponse<RestDestination> register(Tenant tenant, RestDestination destination);
 
-    ServiceResponse<RestDestination> update(Tenant tenant, String id, RestDestination destination);
+    ServiceResponse<RestDestination> update(Tenant tenant, String guid, RestDestination destination);
 
     ServiceResponse<RestDestination> getByGUID(Tenant tenant, String guid);
     // TODO: will we need this? URI encapsulation for destinations should have taken care of this by now
