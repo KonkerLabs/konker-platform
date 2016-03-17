@@ -63,7 +63,7 @@ public class TransformationServiceTest extends BusinessLayerTestSupport {
             .step(
                 RestTransformationStep.builder()
                 .attributes(new HashMap<String,String>() {{
-                    put(RestTransformationStep.REST_URL_ATTRIBUTE_NAME,"url");
+                    put(RestTransformationStep.REST_URL_ATTRIBUTE_NAME,"http://host.com");
                     put(RestTransformationStep.REST_USERNAME_ATTRIBUTE_NAME,"username");
                     put(RestTransformationStep.REST_PASSWORD_ATTRIBUTE_NAME,"password");
                 }}).build()
@@ -216,7 +216,7 @@ public class TransformationServiceTest extends BusinessLayerTestSupport {
         transformation.setSteps(Arrays.asList(new TransformationStep[] {
             RestTransformationStep.builder()
             .attributes(new HashMap<String,String>() {{
-                put(RestTransformationStep.REST_URL_ATTRIBUTE_NAME,"another_url");
+                put(RestTransformationStep.REST_URL_ATTRIBUTE_NAME,"https://otherhost.com");
                 put(RestTransformationStep.REST_USERNAME_ATTRIBUTE_NAME,"username");
                 put(RestTransformationStep.REST_PASSWORD_ATTRIBUTE_NAME,"password");
             }}).build()})
