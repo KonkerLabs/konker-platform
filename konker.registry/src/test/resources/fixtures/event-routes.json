@@ -72,9 +72,10 @@
         }
       },
       "outgoing": {
-        "uri" : "sms://+11999999999",
+        "uri" : "sms://konker/140307f9-7d50-4f37-ac67-80313776bef4",
         "data" : {
-          "channel" : "in"
+          "messageStrategy" : "custom",
+          "messageTemplate" : "Current value is @{#value}"
         }
       },
       "filteringExpression" : "#metric == 'temperature' && #value < 40",

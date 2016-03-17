@@ -94,6 +94,7 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
         "/fixtures/tenants.json",
         "/fixtures/devices.json",
         "/fixtures/transformations.json",
+        "/fixtures/sms-destinations.json",
         "/fixtures/event-routes.json"})
     public void shouldSendEventsForAMatchingRoute() throws ExecutionException, InterruptedException {
         Future<List<Event>> eventFuture = subject.execute(event, uri);

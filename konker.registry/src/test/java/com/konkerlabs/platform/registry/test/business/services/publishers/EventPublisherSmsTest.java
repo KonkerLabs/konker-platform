@@ -1,10 +1,13 @@
 package com.konkerlabs.platform.registry.test.business.services.publishers;
 
 import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.SmsDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.SmsDestinationURIDealer;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.solr.EventRepository;
+import com.konkerlabs.platform.registry.business.services.api.SmsDestinationService;
 import com.konkerlabs.platform.registry.business.services.publishers.api.EventPublisher;
 import com.konkerlabs.platform.registry.business.services.publishers.EventPublisherSms;
 import com.konkerlabs.platform.registry.integration.exceptions.IntegrationException;
@@ -30,13 +33,17 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.net.URI;
+import java.text.MessageFormat;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
@@ -44,17 +51,21 @@ import static org.mockito.Mockito.never;
         BusinessTestConfiguration.class,
         SolrTestConfiguration.class
 })
-@UsingDataSet(locations = {"/fixtures/tenants.json"})
+@UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/sms-destinations.json"})
 public class EventPublisherSmsTest extends BusinessLayerTestSupport {
+
+    private static final String REGISTERED_AND_ACTIVE_DESTINATION_GUID = "140307f9-7d50-4f37-ac67-80313776bef4";
+    private static final String REGISTERED_AND_INACTIVE_DESTINATION_GUID = "0def8df0-9459-49c1-aa9b-82d5bf21d932";
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
-    private String smsPhoneNumber;
     private URI destinationUri;
 
     @Autowired
     private TenantRepository tenantRepository;
+    @Autowired
+    private SmsDestinationService destinationService;
     @Autowired
     @Qualifier("sms")
     private EventPublisher subject;
@@ -67,23 +78,42 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
 
     private Tenant tenant;
 
+    private String invalidEventPayload = "{\n" +
+            "    \"field\" : \"value\"\n" +
+            "    \"count\" : 34,2,\n" +
+            "    \"amount\" : 21.45.1,\n" +
+            "    \"valid\" : tru\n" +
+            "";
+
     private String eventPayload = "{\n" +
             "    \"field\" : \"value\",\n" +
             "    \"count\" : 34,\n" +
             "    \"amount\" : 21.45,\n" +
             "    \"valid\" : true\n" +
             "  }";
+
     private Event event;
+    private SmsDestination destination;
+    private Map<String, String> data;
+    private String messageTemplate;
 
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
 
+        messageTemplate = "Current field value is @{#amount}";
+
         EventPublisherSms.class.cast(subject).setEventRepository(eventRepository);
         tenant = tenantRepository.findByDomainName("konker");
 
-        smsPhoneNumber = "+5511987654321";
-        destinationUri = new SmsDestinationURIDealer() {}.toSmsURI(tenant.getDomainName(), smsPhoneNumber);
+        data = new HashMap<String,String>();
+        data.put(EventPublisherSms.SMS_MESSAGE_STRATEGY_PARAMETER_NAME,
+                 EventPublisherSms.SMS_MESSAGE_CUSTOM_STRATEGY_PARAMETER_VALUE);
+        data.put(EventPublisherSms.SMS_MESSAGE_TEMPLATE_PARAMETER_NAME,
+                 messageTemplate);
+
+        destination = destinationService.getByGUID(tenant, REGISTERED_AND_ACTIVE_DESTINATION_GUID).getResult();
+        destinationUri = new SmsDestinationURIDealer() {}.toSmsURI(tenant.getDomainName(), destination.getGuid());
 
         event = Event.builder()
                 .channel("channel")
@@ -121,22 +151,115 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
     }
 
     @Test
+    public void shouldRaiseAnExceptionIfDataIsNull() throws Exception {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Data cannot be null");
+
+        subject.send(event,destinationUri,null,tenant);
+    }
+
+    @Test
+    public void shouldRaiseAnExceptionIfMessageStrategyParameterIsNull() throws Exception {
+        data.remove(EventPublisherSms.SMS_MESSAGE_STRATEGY_PARAMETER_NAME);
+
+        thrown.expect(IllegalStateException.class);
+        thrown.expectMessage("A SMS message strategy is required");
+
+        subject.send(event,destinationUri,data,tenant);
+    }
+
+    @Test
+    public void shouldRaiseAnExceptionIfMessageStrategyParameterIsEmpty() throws Exception {
+        data.put(EventPublisherSms.SMS_MESSAGE_STRATEGY_PARAMETER_NAME,"");
+
+        thrown.expect(IllegalStateException.class);
+        thrown.expectMessage("A SMS message strategy is required");
+
+        subject.send(event,destinationUri,data,tenant);
+    }
+
+    @Test
+    public void shouldRaiseAnExceptionIfMessageTemplateParameterIsNullOnCustomMessageStrategy() throws Exception {
+        data.put(EventPublisherSms.SMS_MESSAGE_STRATEGY_PARAMETER_NAME,
+                 EventPublisherSms.SMS_MESSAGE_CUSTOM_STRATEGY_PARAMETER_VALUE);
+        data.remove(EventPublisherSms.SMS_MESSAGE_TEMPLATE_PARAMETER_NAME);
+
+        thrown.expect(IllegalStateException.class);
+        thrown.expectMessage("A message template is required on custom strategy");
+
+        subject.send(event,destinationUri,data,tenant);
+    }
+
+    @Test
     public void shouldRaiseAnExceptionIfTenantIsNull() throws Exception {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Tenant cannot be null");
 
-        subject.send(event,destinationUri,null,null);
+        subject.send(event,destinationUri,data,null);
     }
 
     @Test
-    public void shouldSendEventThroughGateway() throws Exception {
-        String expectedMessage = "You have received a message from Konker device: " + event.getPayload();
+    public void shouldRaiseAnExceptionIfDestinationIsUnknown() throws Exception {
+        destinationUri = new SmsDestinationURIDealer() {}.toSmsURI(
+                tenant.getDomainName(),"unknown_guid"
+        );
 
-        subject.send(event,destinationUri,null,tenant);
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage(
+                MessageFormat.format("SMS Destination is unknown : {0}", destinationUri)
+        );
+
+        subject.send(event,destinationUri,data,tenant);
+    }
+
+    @Test
+    public void shouldNotSendAnyEventThroughGatewayIfDestinationIsDisabled() throws Exception {
+        destinationUri = new RESTDestinationURIDealer() {}.toRestDestinationURI(
+                tenant.getDomainName(),REGISTERED_AND_INACTIVE_DESTINATION_GUID
+        );
+
+        subject.send(event,destinationUri,data,tenant);
+
+        verify(smsMessageGateway,never()).send(anyString(),anyString());
+        verify(eventRepository,never()).push(tenant,event);
+    }
+
+    @Test
+    public void shouldNotSendAnyEventThroughGatewayIfPayloadParsingFails() throws Exception {
+        event.setPayload(invalidEventPayload);
+
+        subject.send(event,destinationUri,data,tenant);
+
+        verify(smsMessageGateway,never()).send(anyString(),anyString());
+        verify(eventRepository,never()).push(tenant,event);
+    }
+
+    @Test
+    public void onEnabledDestinationShouldSendInterpolatedTemplateThroughGatewayIfStrategyIsCustom() throws Exception {
+        String expectedMessage = "You have received a message from Konker device: " +
+                messageTemplate.replaceAll("\\@\\{.*}","21.45");
+
+        subject.send(event,destinationUri,data,tenant);
 
         InOrder inOrder = Mockito.inOrder(eventRepository,smsMessageGateway);
 
-        inOrder.verify(smsMessageGateway).send(eq(expectedMessage),eq(smsPhoneNumber));
+        inOrder.verify(smsMessageGateway).send(eq(expectedMessage),eq(destination.getPhoneNumber()));
+        inOrder.verify(eventRepository).push(tenant,event);
+    }
+
+    @Test
+    public void onEnabledDestinationShouldSendReceivedPayloadThroughGatewayIfStrategyIsForward() throws Exception {
+        String expectedMessage = "You have received a message from Konker device: " +
+                event.getPayload();
+
+        data.put(EventPublisherSms.SMS_MESSAGE_STRATEGY_PARAMETER_NAME,
+                 EventPublisherSms.SMS_MESSAGE_FORWARD_STRATEGY_PARAMETER_VALUE);
+
+        subject.send(event,destinationUri,data,tenant);
+
+        InOrder inOrder = Mockito.inOrder(eventRepository,smsMessageGateway);
+
+        inOrder.verify(smsMessageGateway).send(eq(expectedMessage),eq(destination.getPhoneNumber()));
         inOrder.verify(eventRepository).push(tenant,event);
     }
 
@@ -144,7 +267,7 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
     public void shouldNotLogEventThroughGatewayIfItCouldNotBeForwarded() throws Exception {
         doThrow(IntegrationException.class).when(smsMessageGateway).send(anyString(),anyString());
 
-        subject.send(event,destinationUri,null,tenant);
+        subject.send(event,destinationUri,data,tenant);
 
         Mockito.verify(eventRepository,never()).push(any(Tenant.class),any(Event.class));
     }

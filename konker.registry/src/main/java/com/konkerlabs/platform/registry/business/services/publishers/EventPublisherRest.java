@@ -39,7 +39,6 @@ public class EventPublisherRest implements EventPublisher {
     private RestDestinationService restDestinationService;
     private JsonParsingService jsonParsingService;
     private ExpressionEvaluationService expressionEvaluationService;
-    private ExpressionEvaluationService evaluationService;
     private EventRepository eventRepository;
 
     @Autowired
