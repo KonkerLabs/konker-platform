@@ -112,7 +112,7 @@ public class EventRouteFormTest {
     @Test
     public void shouldTranslateFromSMSRouteFormToModel() throws Exception {
         form.setOutgoingScheme("sms");
-        form.setOutgoingSmsPhoneNumber("+5511987654321");
+        form.setOutgoingSmsDestinationGuid("+5511987654321");
 
         model.setIncoming(RouteActor.builder()
                 .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncomingAuthority()))
@@ -120,7 +120,7 @@ public class EventRouteFormTest {
                 .build());
         model.getIncoming().getData().put("channel",form.getIncomingChannel());
         model.setOutgoing(RouteActor.builder()
-                .uri(smsDestinationUriDealer.toSmsURI(tenant.getDomainName(), form.getOutgoingSmsPhoneNumber()))
+                .uri(smsDestinationUriDealer.toSmsURI(tenant.getDomainName(), form.getOutgoingSmsDestinationGuid()))
                 .data(new HashedMap())
                 .build());
 
@@ -201,7 +201,7 @@ public class EventRouteFormTest {
         form.setAdditionalSupplier(null);
 
         form.setOutgoingScheme("sms");
-        form.setOutgoingSmsPhoneNumber("+5511987654321");
+        form.setOutgoingSmsDestinationGuid("+5511987654321");
 
         model.setIncoming(RouteActor.builder()
                 .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncomingAuthority()))
@@ -209,7 +209,7 @@ public class EventRouteFormTest {
                 .build());
         model.getIncoming().getData().put("channel",form.getIncomingChannel());
         model.setOutgoing(RouteActor.builder()
-                .uri(smsDestinationUriDealer.toSmsURI(tenant.getDomainName(),form.getOutgoingSmsPhoneNumber()))
+                .uri(smsDestinationUriDealer.toSmsURI(tenant.getDomainName(),form.getOutgoingSmsDestinationGuid()))
                 .data(new HashedMap())
                 .build());
 

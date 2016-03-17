@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import static com.konkerlabs.platform.registry.business.model.EventRoute.*;
+import static com.konkerlabs.platform.registry.business.model.EventRoute.builder;
 
 @Data
 @EqualsAndHashCode(exclude={"tenantDomainSupplier"})
@@ -32,7 +32,9 @@ public class EventRouteForm implements ModelBuilder<EventRoute,EventRouteForm,St
     private String outgoingScheme = DeviceURIDealer.DEVICE_URI_SCHEME;
     private String outgoingDeviceAuthority;
     private String outgoingDeviceChannel;
-    private String outgoingSmsPhoneNumber;
+    private String outgoingSmsDestinationGuid;
+    private String outgoingSmsTemplateType;
+    private String outgoingSmsCustomText;
     private String outgoingRestDestinationGuid;
     private String filteringExpression;
     private String transformation;
@@ -75,7 +77,7 @@ public class EventRouteForm implements ModelBuilder<EventRoute,EventRouteForm,St
             case DeviceURIDealer.DEVICE_URI_SCHEME : return
                 toDeviceRouteURI(tenantDomainSupplier.get(),getOutgoingDeviceAuthority());
             case SmsDestinationURIDealer.SMS_URI_SCHEME : return
-                toSmsURI(tenantDomainSupplier.get(), getOutgoingSmsPhoneNumber());
+                toSmsURI(tenantDomainSupplier.get(), getOutgoingSmsDestinationGuid());
             case RESTDestinationURIDealer.REST_DESTINATION_URI_SCHEME : return
                 toRestDestinationURI(tenantDomainSupplier.get(),getOutgoingRestDestinationGuid());
             default: return null;
@@ -90,6 +92,11 @@ public class EventRouteForm implements ModelBuilder<EventRoute,EventRouteForm,St
         switch (getOutgoingScheme()) {
             case DeviceURIDealer.DEVICE_URI_SCHEME : {
                 route.getOutgoing().getData().put("channel", getOutgoingDeviceChannel());
+                break;
+            }
+            case SmsDestinationURIDealer.SMS_URI_SCHEME : {
+                route.getOutgoing().getData().put("templateType", getOutgoingSmsTemplateType());
+                route.getOutgoing().getData().put("customText", getOutgoingSmsCustomText());
                 break;
             }
             default: break;
@@ -111,7 +118,9 @@ public class EventRouteForm implements ModelBuilder<EventRoute,EventRouteForm,St
                 break;
             }
             case SmsDestinationURIDealer.SMS_URI_SCHEME : {
-                this.setOutgoingSmsPhoneNumber(model.getOutgoing().getUri().getPath().replaceAll("/",""));
+                this.setOutgoingSmsDestinationGuid(model.getOutgoing().getUri().getPath().replaceAll("/",""));
+                this.setOutgoingSmsTemplateType(model.getOutgoing().getData().get("templateType"));
+                this.setOutgoingSmsCustomText(model.getOutgoing().getData().get("customText"));
                 break;
             }
             case RESTDestinationURIDealer.REST_DESTINATION_URI_SCHEME : {

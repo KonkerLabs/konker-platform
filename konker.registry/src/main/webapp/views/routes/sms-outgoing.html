@@ -5,12 +5,30 @@
 <body>
 <div data-th-fragment="outgoing">
     <div class="form-group">
-        <label class="col-sm-1 control-label" for="outgoingSmsPhoneNumber">Cellphone number</label>
+        <label class="col-sm-1 control-label" for="outgoingSmsDestinationGuid">SMS Destination</label>
         <div class="col-sm-4">
-            <input type="text" data-th-field="${route.outgoingSmsPhoneNumber}"
-                   class="form-control"
-                   id="outgoingSmsPhoneNumber"
-                   name="outgoingSmsPhoneNumber" placeholder="Type outgoing cellphone number here..."/>
+            <select class="form-control" data-th-field="${route.outgoingSmsDestinationGuid}"
+                    id="outgoingSmsDestinationGuid" name="outgoingSmsDestinationGuid">
+                <option data-th-each="smsDestination : ${allSmsDestinations}"
+                        data-th-value="${smsDestination.guid}"
+                        data-th-text="${smsDestination.name}"></option>
+            </select>
+        </div>
+        <div class="col-sm-4">
+            <div class="col-sm-4">
+                <label class="radio-inline">
+                    <input type="radio" name="smsDestinationType"
+                           value="custom" data-th-checked="${route.outgoingSmsTemplateType == 'custom'}">Custom</input>
+                </label>
+                <label class="radio-inline">
+                    <input type="radio" name="smsDestinationType"
+                           value="forward" data-th-checked="${route.outgoingSmsTemplateType == 'forward'}">Forward</input>
+                </label>
+                <input type="text" data-th-field="${route.outgoingSmsCustomText}"
+                       class="form-control"
+                       id="outgoingSmsCustomText"
+                       name="outgoingSmsCustomText" placeholder="Type your custom text here..."/>
+            </div>
         </div>
     </div>
 </div>

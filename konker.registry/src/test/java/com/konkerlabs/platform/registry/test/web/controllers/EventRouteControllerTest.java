@@ -136,7 +136,7 @@ public class EventRouteControllerTest extends WebLayerTestContext {
 
         DeviceURIDealer deviceUriDealer = new DeviceURIDealer() {
         };
-        SmsDestinationURIDealer smsDestinationURIDealer = new SmsDestinationURIDealer() {
+        SmsDestinationURIDealer smsURIDealer = new SmsDestinationURIDealer() {
         };
         RESTDestinationURIDealer restDestinationURIDealer = new RESTDestinationURIDealer() {
         };
@@ -146,7 +146,7 @@ public class EventRouteControllerTest extends WebLayerTestContext {
                 case DEVICE_URI_SCHEME:
                     return deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(), routeForm.getOutgoingDeviceAuthority());
                 case SMS_URI_SCHEME:
-                    return smsDestinationURIDealer.toSmsURI(tenant.getDomainName(), routeForm.getOutgoingSmsPhoneNumber());
+                    return smsURIDealer.toSmsURI(tenant.getDomainName(), routeForm.getOutgoingSmsDestinationGuid());
                 case REST_DESTINATION_URI_SCHEME:
                     return restDestinationURIDealer.toRestDestinationURI(tenant.getDomainName(), routeForm.getOutgoingRestDestinationGuid());
                 default:

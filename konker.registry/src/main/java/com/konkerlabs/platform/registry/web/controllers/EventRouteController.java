@@ -1,10 +1,7 @@
 package com.konkerlabs.platform.registry.web.controllers;
 
 import com.konkerlabs.platform.registry.business.model.*;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.TransformationService;
+import com.konkerlabs.platform.registry.business.services.api.*;
 import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteService;
 import com.konkerlabs.platform.registry.web.forms.EventRouteForm;
 import org.slf4j.Logger;
@@ -36,6 +33,8 @@ public class EventRouteController {
     @Autowired
     private RestDestinationService restDestinationService;
     @Autowired
+    private SmsDestinationService smsDestinationService;
+    @Autowired
     private TransformationService transformationService;
     @Autowired
     private Tenant tenant;
@@ -48,6 +47,11 @@ public class EventRouteController {
     @ModelAttribute("allRestDestinations")
     public List<RestDestination> allRestDestinations() {
         return restDestinationService.findAll(tenant).getResult();
+    }
+
+    @ModelAttribute("allSmsDestinations")
+    public List<SmsDestination> allSmsDestinations() {
+        return smsDestinationService.findAll(tenant).getResult();
     }
 
     @ModelAttribute("allTransformations")
