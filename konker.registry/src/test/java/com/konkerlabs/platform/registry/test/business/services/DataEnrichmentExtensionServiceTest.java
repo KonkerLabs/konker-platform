@@ -219,8 +219,9 @@ public class DataEnrichmentExtensionServiceTest extends BusinessLayerTestSupport
     @Test
     public void shouldReturnErrorMessageIfContainerKeyIsDuplicatedWhenUpdating() {
         oldDataEnrichmentExtension = enrichmentExtensionRepository.findOne(OLD_ENCHRICHMENT_EXTENSION_ID);
-
-        oldDataEnrichmentExtension.setContainerKey(CONTAINER_KEY_IN_USE);
+        oldDataEnrichmentExtension.setGuid("aac07163-4192-4db2-89a8-6f2b2aac514b");
+        oldDataEnrichmentExtension.setName("REST-from-Magento-01");
+        oldDataEnrichmentExtension.setContainerKey("prestashopData");
 
         ServiceResponse<DataEnrichmentExtension> response = service.update(aTenant, enrichmentGuid, oldDataEnrichmentExtension);
         assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
