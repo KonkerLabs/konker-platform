@@ -154,7 +154,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
     }
 
     @Test
-    public void shouldShowDeviceDetails() throws Exception {
+    public void shouldShowDestinationDetails() throws Exception {
         response = ServiceResponse.<RestDestination>builder()
                 .status(ServiceResponse.Status.OK)
                 .result(savedDestination)
