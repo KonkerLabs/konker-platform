@@ -102,15 +102,15 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
 
         deviceEventService.logEvent(device, event);
     }
-    @Test
-    public void shouldRaiseAnExceptionIfEventTimestampIsAlreadySet() throws Exception {
-        event.setTimestamp(Instant.now());
-
-        thrown.expect(BusinessException.class);
-        thrown.expectMessage("Event timestamp cannot be already set!");
-
-        deviceEventService.logEvent(device, event);
-    }
+//    @Test
+//    public void shouldRaiseAnExceptionIfEventTimestampIsAlreadySet() throws Exception {
+//        event.setTimestamp(Instant.now());
+//
+//        thrown.expect(BusinessException.class);
+//        thrown.expectMessage("Event timestamp cannot be already set!");
+//
+//        deviceEventService.logEvent(device, event);
+//    }
     @Test
     public void shouldRaiseAnExceptionIfPayloadIsEmpty() throws Exception {
         event.setPayload("");
