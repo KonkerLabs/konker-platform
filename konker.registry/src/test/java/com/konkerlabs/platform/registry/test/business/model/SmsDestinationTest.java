@@ -9,7 +9,9 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.net.URI;
+import java.util.Arrays;
 import java.util.UUID;
+import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -82,6 +84,22 @@ public class SmsDestinationTest {
         String expectedMessage = "Phone number cannot be null or empty";
 
         assertThat(subject.applyValidations(), hasItem(expectedMessage));
+    }
+
+    @Test
+    public void shouldReturnAValidationMessageIfPhoneNumberIsInvalid() throws Exception {
+        String expectedMessage = "Phone number is invalid";
+
+        List<String> invalidPhoneNumbers = Arrays.asList(new String[] {
+            "11987654321",
+            "+837192ht12",
+            "+5511987654321x"
+        });
+
+        invalidPhoneNumbers.stream().forEach(invalid -> {
+            subject.setPhoneNumber(invalid);
+            assertThat(subject.applyValidations(), hasItem(expectedMessage));
+        });
     }
 
     @Test

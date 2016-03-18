@@ -11,11 +11,14 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 @Data
 @Builder
 @Document(collection = "smsDestinations")
 public class SmsDestination implements SmsDestinationURIDealer {
+
+    private static final Pattern PATTERN_INTERNACIONAL_PHONE_NUMBER = Pattern.compile("^\\+(?:[0-9] ?){6,14}[0-9]$");
 
     @Id
     private String id;
@@ -36,6 +39,11 @@ public class SmsDestination implements SmsDestinationURIDealer {
             validations.add("Name cannot be null or empty");
         if (!Optional.ofNullable(getPhoneNumber()).filter(s -> !s.isEmpty()).isPresent())
             validations.add("Phone number cannot be null or empty");
+        Optional.ofNullable(getPhoneNumber())
+            .ifPresent(phone -> {
+                if (!PATTERN_INTERNACIONAL_PHONE_NUMBER.matcher(phone).matches())
+                    validations.add("Phone number is invalid");
+            });
 
         Optional.ofNullable(getGuid())
                 .filter(s -> !s.isEmpty())
