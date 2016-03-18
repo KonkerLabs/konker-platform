@@ -54,7 +54,7 @@ public class EventRoute {
         if (getOutgoing() != null && getOutgoing().getUri() != null && getOutgoing().getUri().toString().isEmpty())
             validations.add("Outgoing actor's URI cannot be empty");
         
-        if ("sms".equals(Optional.of(getOutgoing()).map(RouteActor::getUri).map(URI::getScheme).orElse(""))) {
+        if ("sms".equals(Optional.ofNullable(getOutgoing()).map(RouteActor::getUri).map(URI::getScheme).orElse(""))) {
             applySMSOutgoingValidations(validations);
         }
 
