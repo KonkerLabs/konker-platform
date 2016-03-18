@@ -8,8 +8,8 @@ import com.konkerlabs.platform.registry.business.model.behaviors.SmsDestinationU
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.solr.EventRepository;
 import com.konkerlabs.platform.registry.business.services.api.SmsDestinationService;
-import com.konkerlabs.platform.registry.business.services.publishers.api.EventPublisher;
 import com.konkerlabs.platform.registry.business.services.publishers.EventPublisherSms;
+import com.konkerlabs.platform.registry.business.services.publishers.api.EventPublisher;
 import com.konkerlabs.platform.registry.integration.exceptions.IntegrationException;
 import com.konkerlabs.platform.registry.integration.gateways.SMSMessageGateway;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
@@ -38,12 +38,11 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.konkerlabs.platform.registry.business.services.publishers.EventPublisherMqtt.DEVICE_MQTT_CHANNEL;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
@@ -116,7 +115,7 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
         destinationUri = new SmsDestinationURIDealer() {}.toSmsURI(tenant.getDomainName(), destination.getGuid());
 
         event = Event.builder()
-                .channel("channel")
+                .channel(DEVICE_MQTT_CHANNEL)
                 .payload(eventPayload)
                 .timestamp(Instant.now()).build();
     }

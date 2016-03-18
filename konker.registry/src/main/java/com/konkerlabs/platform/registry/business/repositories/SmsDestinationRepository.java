@@ -1,6 +1,5 @@
 package com.konkerlabs.platform.registry.business.repositories;
 
-import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.SmsDestination;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;

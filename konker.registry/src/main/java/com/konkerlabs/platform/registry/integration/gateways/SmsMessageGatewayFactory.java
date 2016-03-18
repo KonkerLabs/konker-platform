@@ -5,7 +5,6 @@ import com.typesafe.config.ConfigFactory;
 import org.springframework.beans.factory.SmartFactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
 

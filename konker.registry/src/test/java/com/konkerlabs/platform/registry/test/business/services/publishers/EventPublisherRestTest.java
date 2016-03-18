@@ -28,7 +28,6 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -36,6 +35,7 @@ import java.net.URI;
 import java.text.MessageFormat;
 import java.time.Instant;
 
+import static com.konkerlabs.platform.registry.business.services.publishers.EventPublisherMqtt.DEVICE_MQTT_CHANNEL;
 import static info.solidsoft.mockito.java8.LambdaMatcher.argLambda;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -102,7 +102,7 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
         destinationUri = new RESTDestinationURIDealer() {}.toRestDestinationURI(tenant.getDomainName(),destination.getGuid());
 
         event = Event.builder()
-                .channel("channel")
+                .channel(DEVICE_MQTT_CHANNEL)
                 .payload(validEventPayload)
                 .timestamp(Instant.now()).build();
     }

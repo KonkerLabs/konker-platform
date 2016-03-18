@@ -1,8 +1,10 @@
 package com.konkerlabs.platform.registry.test.business.model;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.hamcrest.Matchers.empty;
+import com.konkerlabs.platform.registry.business.model.DataEnrichmentExtension;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.enumerations.IntegrationType;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -10,17 +12,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import com.konkerlabs.platform.registry.business.model.enumerations.IntegrationType;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import com.konkerlabs.platform.registry.business.model.DataEnrichmentExtension;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 
 public class DataEnrichmentExtensionTest {
     private DataEnrichmentExtension dee;

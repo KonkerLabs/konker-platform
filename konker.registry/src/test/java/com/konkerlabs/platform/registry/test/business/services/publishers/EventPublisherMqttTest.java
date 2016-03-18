@@ -5,11 +5,10 @@ import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
-import com.konkerlabs.platform.registry.business.repositories.solr.EventRepository;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.publishers.api.EventPublisher;
 import com.konkerlabs.platform.registry.business.services.publishers.EventPublisherMqtt;
+import com.konkerlabs.platform.registry.business.services.publishers.api.EventPublisher;
 import com.konkerlabs.platform.registry.integration.gateways.MqttMessageGateway;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
@@ -38,6 +37,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import static com.konkerlabs.platform.registry.business.services.publishers.EventPublisherMqtt.DEVICE_MQTT_CHANNEL;
 import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -94,14 +94,14 @@ public class EventPublisherMqttTest extends BusinessLayerTestSupport {
 
         device = deviceRegisterService.findByTenantDomainNameAndDeviceId(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_ID);
         event = Event.builder()
-            .channel("channel")
+            .channel(DEVICE_MQTT_CHANNEL)
             .payload(eventPayload)
             .timestamp(Instant.now()).build();
 
         destinationUri = new DeviceURIDealer() {}.toDeviceRouteURI(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_ID);
 
         data = new HashMap<String,String>() {{
-            put("channel",event.getChannel());
+            put(DEVICE_MQTT_CHANNEL,event.getChannel());
         }};
     }
 
@@ -144,7 +144,7 @@ public class EventPublisherMqttTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldRaiseAnExceptionIfMqttChannelIsNull() throws Exception {
-        data.remove("channel");
+        data.remove(DEVICE_MQTT_CHANNEL);
 
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("A valid MQTT channel is required");
@@ -154,7 +154,7 @@ public class EventPublisherMqttTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldRaiseAnExceptionIfMqttChannelIsEmpty() throws Exception {
-        data.put("channel","");
+        data.put(DEVICE_MQTT_CHANNEL,"");
 
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("A valid MQTT channel is required");
@@ -208,7 +208,7 @@ public class EventPublisherMqttTest extends BusinessLayerTestSupport {
 
         String expectedMqttTopic = MessageFormat
             .format(MQTT_OUTGOING_TOPIC_TEMPLATE, destinationUri.getPath().replaceAll("/",""),
-                    data.get("channel"));
+                    data.get(DEVICE_MQTT_CHANNEL));
 
         subject.send(event,destinationUri,data,device.getTenant());
 

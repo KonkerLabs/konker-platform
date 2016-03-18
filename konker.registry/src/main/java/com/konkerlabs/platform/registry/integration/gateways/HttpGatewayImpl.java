@@ -11,10 +11,11 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
-import static java.text.MessageFormat.*;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Supplier;
+
+import static java.text.MessageFormat.format;
 
 @Component
 public class HttpGatewayImpl implements HttpGateway {

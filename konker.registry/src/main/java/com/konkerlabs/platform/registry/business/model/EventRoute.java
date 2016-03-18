@@ -1,20 +1,17 @@
 package com.konkerlabs.platform.registry.business.model;
 
+import com.konkerlabs.platform.registry.business.services.publishers.EventPublisherSms;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import com.konkerlabs.platform.registry.business.services.publishers.EventPublisherSms;
-
 import java.net.URI;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+
+import static com.konkerlabs.platform.registry.business.services.publishers.EventPublisherMqtt.DEVICE_MQTT_CHANNEL;
 
 @Document(collection = "eventRoutes")
 @Data
@@ -53,7 +50,13 @@ public class EventRoute {
             validations.add("Outgoing actor URI cannot be null");
         if (getOutgoing() != null && getOutgoing().getUri() != null && getOutgoing().getUri().toString().isEmpty())
             validations.add("Outgoing actor's URI cannot be empty");
-        
+
+        if ("device".equals(Optional.ofNullable(getIncoming()).map(RouteActor::getUri).map(URI::getScheme).orElse(""))) {
+            applyDeviceIncomingValidations(validations);
+        }
+        if ("device".equals(Optional.ofNullable(getOutgoing()).map(RouteActor::getUri).map(URI::getScheme).orElse(""))) {
+            applyDeviceOutgoingValidations(validations);
+        }
         if ("sms".equals(Optional.ofNullable(getOutgoing()).map(RouteActor::getUri).map(URI::getScheme).orElse(""))) {
             applySMSOutgoingValidations(validations);
         }
@@ -62,6 +65,30 @@ public class EventRoute {
             return null;
         else
             return validations;
+    }
+
+    public List<String> applyDeviceIncomingValidations(List<String> validations) {
+        Map<String, String> data = getIncoming().getData();
+        if (!"device".equals(getIncoming().getUri().getScheme())) {
+            validations.add("Device Incoming URI must be an Device URI");
+        } else {
+            if (!Optional.ofNullable(data.get(DEVICE_MQTT_CHANNEL))
+                    .filter(s -> !s.trim().isEmpty()).isPresent())
+                validations.add("A valid MQTT incoming channel is required");
+        }
+        return validations;
+    }
+
+    public List<String> applyDeviceOutgoingValidations(List<String> validations) {
+        Map<String, String> data = getOutgoing().getData();
+        if (!"device".equals(getOutgoing().getUri().getScheme())) {
+            validations.add("Device Outgoing URI must be an Device URI");
+        } else {
+            if (!Optional.ofNullable(data.get(DEVICE_MQTT_CHANNEL))
+                    .filter(s -> !s.trim().isEmpty()).isPresent())
+                validations.add("A valid MQTT outgoing channel is required");
+        }
+        return validations;
     }
 
     public List<String> applySMSOutgoingValidations(List<String> validations) {

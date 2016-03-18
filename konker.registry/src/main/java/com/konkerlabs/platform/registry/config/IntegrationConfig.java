@@ -1,6 +1,5 @@
 package com.konkerlabs.platform.registry.config;
 
-import com.konkerlabs.platform.registry.integration.gateways.MqttMessageGateway;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.springframework.context.annotation.Bean;

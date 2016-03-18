@@ -11,7 +11,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.net.URI;
 import java.util.HashMap;
 
 import static org.hamcrest.MatcherAssert.assertThat;

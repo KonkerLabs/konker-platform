@@ -1,9 +1,7 @@
 package com.konkerlabs.platform.registry.test.business.repositories;
 
-import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.solr.EventRepository;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
@@ -28,6 +26,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.time.Instant;
 
+import static com.konkerlabs.platform.registry.business.services.publishers.EventPublisherMqtt.DEVICE_MQTT_CHANNEL;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Mockito.when;
@@ -79,7 +78,7 @@ public class EventRepositoryTest extends BusinessLayerTestSupport {
         tenant = tenantRepository.findByDomainName("konker");
 
         event = Event.builder()
-            .channel("channel")
+            .channel(DEVICE_MQTT_CHANNEL)
             .timestamp(Instant.now())
             .payload(payload).build();
 

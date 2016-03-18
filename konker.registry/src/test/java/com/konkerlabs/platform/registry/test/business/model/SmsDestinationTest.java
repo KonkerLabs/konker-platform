@@ -10,13 +10,11 @@ import org.junit.rules.ExpectedException;
 
 import java.net.URI;
 import java.util.Arrays;
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.nullValue;
 
 public class SmsDestinationTest {
 

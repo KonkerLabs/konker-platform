@@ -19,7 +19,6 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -31,6 +30,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import static com.konkerlabs.platform.registry.business.services.publishers.EventPublisherMqtt.DEVICE_MQTT_CHANNEL;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Matchers.eq;
@@ -78,7 +78,7 @@ public class EventTransformationServiceTest {
         MockitoAnnotations.initMocks(this);
 
         event = Event.builder().timestamp(Instant.now())
-            .channel("channel").payload(validPayloadJson).build();
+            .channel(DEVICE_MQTT_CHANNEL).payload(validPayloadJson).build();
 
         transformation = Transformation.builder()
             .id("id")

@@ -2,10 +2,7 @@ package com.konkerlabs.platform.registry.security;
 
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
-import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.SmartFactoryBean;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.context.annotation.Scope;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;

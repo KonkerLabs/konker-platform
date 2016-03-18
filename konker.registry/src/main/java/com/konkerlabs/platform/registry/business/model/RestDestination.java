@@ -1,14 +1,13 @@
 package com.konkerlabs.platform.registry.business.model;
 
+import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
+import com.konkerlabs.platform.utilities.validations.InterpolableURIValidationUtil;
+import com.konkerlabs.platform.utilities.validations.ValidationException;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
-
-import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
-import com.konkerlabs.platform.utilities.validations.InterpolableURIValidationUtil;
-import com.konkerlabs.platform.utilities.validations.ValidationException;
 
 import java.net.URI;
 import java.util.ArrayList;

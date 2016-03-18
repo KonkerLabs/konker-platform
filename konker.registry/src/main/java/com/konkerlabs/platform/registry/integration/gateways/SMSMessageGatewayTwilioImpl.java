@@ -1,22 +1,18 @@
 package com.konkerlabs.platform.registry.integration.gateways;
 
-import java.net.URI;
-import java.text.MessageFormat;
-import java.util.Optional;
-
+import com.konkerlabs.platform.registry.integration.exceptions.IntegrationException;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.util.Base64Utils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 
-import com.konkerlabs.platform.registry.integration.exceptions.IntegrationException;
+import java.net.URI;
+import java.text.MessageFormat;
+import java.util.Optional;
 
 @Data
 public class SMSMessageGatewayTwilioImpl implements SMSMessageGateway {

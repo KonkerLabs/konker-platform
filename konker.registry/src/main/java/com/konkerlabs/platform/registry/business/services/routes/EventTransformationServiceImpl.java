@@ -16,14 +16,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.expression.EvaluationException;
 import org.springframework.expression.ParseException;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 @Component

@@ -3,13 +3,14 @@ package com.konkerlabs.platform.registry.business.model;
 import com.konkerlabs.platform.registry.business.model.enumerations.IntegrationType;
 import com.konkerlabs.platform.utilities.validations.InterpolableURIValidationUtil;
 import com.konkerlabs.platform.utilities.validations.ValidationException;
-
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
-import org.springframework.data.annotation.TypeAlias;
 
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 @EqualsAndHashCode(callSuper = true)
 public class RestTransformationStep extends TransformationStep {

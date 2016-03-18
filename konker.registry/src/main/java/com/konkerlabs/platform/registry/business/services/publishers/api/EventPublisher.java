@@ -1,7 +1,6 @@
 package com.konkerlabs.platform.registry.business.services.publishers.api;
 
 import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 
 import java.net.URI;

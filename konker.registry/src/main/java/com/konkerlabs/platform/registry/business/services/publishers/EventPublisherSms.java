@@ -3,7 +3,6 @@ package com.konkerlabs.platform.registry.business.services.publishers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.SmsDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.behaviors.SmsDestinationURIDealer;
@@ -13,7 +12,6 @@ import com.konkerlabs.platform.registry.business.services.api.SmsDestinationServ
 import com.konkerlabs.platform.registry.business.services.publishers.api.EventPublisher;
 import com.konkerlabs.platform.registry.integration.exceptions.IntegrationException;
 import com.konkerlabs.platform.registry.integration.gateways.SMSMessageGateway;
-
 import com.konkerlabs.platform.utilities.expressions.ExpressionEvaluationService;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 import org.slf4j.Logger;

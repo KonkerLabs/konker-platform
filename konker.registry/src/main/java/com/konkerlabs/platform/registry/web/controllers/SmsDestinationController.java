@@ -1,11 +1,9 @@
 package com.konkerlabs.platform.registry.web.controllers;
 
-import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.SmsDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.SmsDestinationService;
-import com.konkerlabs.platform.registry.web.forms.RestDestinationForm;
 import com.konkerlabs.platform.registry.web.forms.SmsDestinationForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;

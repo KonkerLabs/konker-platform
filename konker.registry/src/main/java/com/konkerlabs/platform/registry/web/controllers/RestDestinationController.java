@@ -1,11 +1,9 @@
 package com.konkerlabs.platform.registry.web.controllers;
 
-import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.web.forms.DeviceRegistrationForm;
 import com.konkerlabs.platform.registry.web.forms.RestDestinationForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -17,10 +15,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.text.MessageFormat;
 import java.util.function.Supplier;
 
-import static java.text.MessageFormat.*;
+import static java.text.MessageFormat.format;
 
 @Controller
 @Scope("request")

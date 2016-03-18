@@ -3,8 +3,6 @@ package com.konkerlabs.platform.registry.test.base;
 import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
 import com.konkerlabs.platform.registry.integration.gateways.MqttMessageGateway;
 import com.konkerlabs.platform.registry.integration.gateways.SMSMessageGateway;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;

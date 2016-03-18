@@ -1,6 +1,5 @@
 package com.konkerlabs.platform.registry.business.services;
 
-import com.konkerlabs.platform.registry.business.model.DataEnrichmentExtension;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.Transformation;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;

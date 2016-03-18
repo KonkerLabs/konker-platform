@@ -3,7 +3,6 @@ package com.konkerlabs.platform.registry.test.business.model;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
 import org.hamcrest.collection.IsEmptyCollection;
 import org.junit.Before;

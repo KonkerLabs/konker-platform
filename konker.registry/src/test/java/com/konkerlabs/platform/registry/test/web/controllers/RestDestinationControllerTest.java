@@ -22,11 +22,11 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.util.LinkedMultiValueMap;
 
-import static java.text.MessageFormat.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static java.text.MessageFormat.format;
 import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Matchers.eq;

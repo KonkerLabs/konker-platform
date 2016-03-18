@@ -9,7 +9,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.net.URI;
+import java.util.HashMap;
 
+import static com.konkerlabs.platform.registry.business.services.publishers.EventPublisherMqtt.DEVICE_MQTT_CHANNEL;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.nullValue;
@@ -29,8 +31,18 @@ public class EventRouteTest {
             .tenant(tenant)
             .name("Route name")
             .description("Description")
-            .incoming(RouteActor.builder().uri(new URI("device",incomingAuthority,null,null,null)).build())
-            .outgoing(RouteActor.builder().uri(new URI("device",outgoingAuthority,null,null,null)).build())
+            .incoming(RouteActor.builder()
+                    .data(new HashMap<String,String>(){{
+                        put(DEVICE_MQTT_CHANNEL,"data");
+                    }})
+                    .uri(new URI("device",incomingAuthority,null,null,null))
+                    .build())
+            .outgoing(RouteActor.builder()
+                    .data(new HashMap<String,String>(){{
+                        put(DEVICE_MQTT_CHANNEL,"in");
+                    }})
+                    .uri(new URI("device",outgoingAuthority,null,null,null))
+                    .build())
 //            .transformations(Arrays.asList(new EventRoute.RuleTransformation[]{
 //                    new EventRoute.RuleTransformation(EventRouteExecutorImpl.RuleTransformationType.EXPRESSION_LANGUAGE.name())
 //            }))
@@ -117,6 +129,22 @@ public class EventRouteTest {
         subject.getOutgoing().setUri(new URI(null,null,null,null,null));
 
         String expectedMessage = "Outgoing actor's URI cannot be empty";
+
+        assertThat(subject.applyValidations(), hasItem(expectedMessage));
+    }
+    @Test
+    public void shouldReturnAValidationMessageIfIncomingChannelIsEmpty() throws Exception {
+        subject.getIncoming().setData(new HashMap<>());
+
+        String expectedMessage = "A valid MQTT incoming channel is required";
+
+        assertThat(subject.applyValidations(), hasItem(expectedMessage));
+    }
+    @Test
+    public void shouldReturnAValidationMessageIfOutgoingChannelIsEmpty() throws Exception {
+        subject.getOutgoing().setData(new HashMap<>());
+
+        String expectedMessage = "A valid MQTT outgoing channel is required";
 
         assertThat(subject.applyValidations(), hasItem(expectedMessage));
     }

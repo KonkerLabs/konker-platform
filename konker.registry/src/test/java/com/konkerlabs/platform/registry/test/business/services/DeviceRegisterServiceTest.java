@@ -28,12 +28,11 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasAllErrors;
-import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
-import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.isResponseOk;
+import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { MongoTestConfiguration.class, BusinessTestConfiguration.class })

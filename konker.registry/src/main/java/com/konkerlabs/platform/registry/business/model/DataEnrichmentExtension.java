@@ -1,23 +1,18 @@
 package com.konkerlabs.platform.registry.business.model;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
 import com.konkerlabs.platform.registry.business.model.enumerations.IntegrationType;
 import com.konkerlabs.platform.utilities.validations.InterpolableURIValidationUtil;
 import com.konkerlabs.platform.utilities.validations.ValidationException;
+import lombok.Builder;
+import lombok.Data;
+import lombok.Singular;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.Singular;
+import java.net.URI;
+import java.util.*;
 
 @Document(collection = "dataEnrichmentExtensions")
 @Data

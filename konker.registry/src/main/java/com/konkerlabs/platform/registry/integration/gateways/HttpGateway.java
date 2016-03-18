@@ -3,7 +3,6 @@ package com.konkerlabs.platform.registry.integration.gateways;
 
 import com.konkerlabs.platform.registry.integration.exceptions.IntegrationException;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 
 import java.net.URI;
 import java.util.function.Supplier;

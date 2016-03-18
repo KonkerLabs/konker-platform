@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry.test.web.controllers;
 
 import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.SmsDestinationURIDealer;
@@ -32,13 +33,12 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import static com.konkerlabs.platform.registry.business.model.Device.builder;
-
-import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
 import static com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer.DEVICE_URI_SCHEME;
-import static com.konkerlabs.platform.registry.business.model.behaviors.SmsDestinationURIDealer.SMS_URI_SCHEME;
 import static com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer.REST_DESTINATION_URI_SCHEME;
+import static com.konkerlabs.platform.registry.business.model.behaviors.SmsDestinationURIDealer.SMS_URI_SCHEME;
 import static com.konkerlabs.platform.registry.business.services.api.ServiceResponse.Status.ERROR;
 import static com.konkerlabs.platform.registry.business.services.api.ServiceResponse.Status.OK;
+import static com.konkerlabs.platform.registry.business.services.publishers.EventPublisherMqtt.DEVICE_MQTT_CHANNEL;
 import static java.text.MessageFormat.format;
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.equalTo;
@@ -175,8 +175,8 @@ public class EventRouteControllerTest extends WebLayerTestContext {
                 .active(routeForm.isActive())
                 .build();
 
-        route.getIncoming().getData().put("channel", routeForm.getIncomingChannel());
-        route.getOutgoing().getData().put("channel", routeForm.getOutgoingDeviceChannel());
+        route.getIncoming().getData().put(DEVICE_MQTT_CHANNEL, routeForm.getIncomingChannel());
+        route.getOutgoing().getData().put(DEVICE_MQTT_CHANNEL, routeForm.getOutgoingDeviceChannel());
 
         registeredRoutes = new ArrayList<EventRoute>(asList(new EventRoute[]{route}));
     }

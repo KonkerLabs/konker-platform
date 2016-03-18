@@ -1,6 +1,5 @@
 package com.konkerlabs.platform.registry.test.web.controllers;
 
-import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.SmsDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
@@ -9,7 +8,6 @@ import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
 import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
-import com.konkerlabs.platform.registry.web.forms.RestDestinationForm;
 import com.konkerlabs.platform.registry.web.forms.SmsDestinationForm;
 import org.junit.After;
 import org.junit.Before;
@@ -32,9 +30,7 @@ import static java.text.MessageFormat.format;
 import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;

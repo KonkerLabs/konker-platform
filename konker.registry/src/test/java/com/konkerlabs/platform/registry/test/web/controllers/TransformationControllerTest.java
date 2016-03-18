@@ -9,7 +9,6 @@ import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
 import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
-import com.konkerlabs.platform.registry.web.forms.EnrichmentForm;
 import com.konkerlabs.platform.registry.web.forms.TransformationForm;
 import org.junit.After;
 import org.junit.Before;

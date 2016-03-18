@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
@@ -24,9 +23,7 @@ import java.util.function.Supplier;
 
 import static java.text.MessageFormat.format;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)

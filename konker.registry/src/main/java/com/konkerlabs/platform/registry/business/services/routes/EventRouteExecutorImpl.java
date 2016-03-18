@@ -5,8 +5,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteExecutor;
 import com.konkerlabs.platform.registry.business.services.publishers.api.EventPublisher;
+import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteExecutor;
 import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteService;
 import com.konkerlabs.platform.registry.business.services.routes.api.EventTransformationService;
 import com.konkerlabs.platform.utilities.expressions.ExpressionEvaluationService;
@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Future;
+
+import static com.konkerlabs.platform.registry.business.services.publishers.EventPublisherMqtt.DEVICE_MQTT_CHANNEL;
 
 @Service
 public class EventRouteExecutorImpl implements EventRouteExecutor {
@@ -61,7 +63,7 @@ public class EventRouteExecutorImpl implements EventRouteExecutor {
             for (EventRoute eventRoute : eventRoutes) {
                 if (!eventRoute.isActive())
                     continue;
-                if (!eventRoute.getIncoming().getData().get("channel").equals(event.getChannel())) {
+                if (!eventRoute.getIncoming().getData().get(DEVICE_MQTT_CHANNEL).equals(event.getChannel())) {
                     LOGGER.debug("Non matching channel for incoming event: {}", event);
                     continue;
                 }

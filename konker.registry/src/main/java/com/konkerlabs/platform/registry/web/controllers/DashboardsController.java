@@ -4,13 +4,11 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.HandlerMapping;
@@ -20,8 +18,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.text.MessageFormat;
-import java.util.Optional;
 
 @Controller
 @Scope("session")

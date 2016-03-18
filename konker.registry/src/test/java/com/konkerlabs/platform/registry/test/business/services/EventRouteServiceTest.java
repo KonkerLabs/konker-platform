@@ -29,6 +29,7 @@ import java.util.List;
 import static com.konkerlabs.platform.registry.business.model.EventRoute.builder;
 import static com.konkerlabs.platform.registry.business.services.api.ServiceResponse.Status.ERROR;
 import static com.konkerlabs.platform.registry.business.services.api.ServiceResponse.Status.OK;
+import static com.konkerlabs.platform.registry.business.services.publishers.EventPublisherMqtt.DEVICE_MQTT_CHANNEL;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -76,11 +77,15 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
                 .incoming(RouteActor.builder().uri(
                         new DeviceURIDealer() {
                         }.toDeviceRouteURI(tenant.getDomainName(), "0000000000000004")
-                ).build())
+                ).data(new HashMap<String,String>(){{
+                    put(DEVICE_MQTT_CHANNEL,"data");
+                }}).build())
                 .outgoing(RouteActor.builder().uri(
                         new DeviceURIDealer() {
                         }.toDeviceRouteURI(tenant.getDomainName(), "0000000000000006")
-                ).build())
+                ).data(new HashMap<String,String>(){{
+                    put(DEVICE_MQTT_CHANNEL,"in");
+                }}).build())
                 .filteringExpression("#command.type == 'ButtonPressed'")
                 .transformation(transformation)
                 .active(true)

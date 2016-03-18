@@ -1,23 +1,21 @@
 package com.konkerlabs.platform.registry.web.controllers;
 
-import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.web.forms.DeviceRegistrationForm;
-
-import org.slf4j.helpers.MessageFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.text.MessageFormat;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 

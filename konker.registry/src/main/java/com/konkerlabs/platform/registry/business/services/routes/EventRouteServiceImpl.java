@@ -1,7 +1,5 @@
 package com.konkerlabs.platform.registry.business.services.routes;
 
-import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
-import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.repositories.EventRouteRepository;
@@ -10,15 +8,12 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.cglib.beans.BulkBeanException;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
-
-import static java.util.Optional.ofNullable;
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)

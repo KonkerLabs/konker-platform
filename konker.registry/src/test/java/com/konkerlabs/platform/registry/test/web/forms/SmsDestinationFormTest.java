@@ -1,8 +1,6 @@
 package com.konkerlabs.platform.registry.test.web.forms;
 
-import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.SmsDestination;
-import com.konkerlabs.platform.registry.web.forms.RestDestinationForm;
 import com.konkerlabs.platform.registry.web.forms.SmsDestinationForm;
 import org.junit.Before;
 import org.junit.Test;

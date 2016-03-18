@@ -1,16 +1,10 @@
 package com.konkerlabs.platform.registry.test.integration.gateways;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-
-import java.net.URI;
-import java.util.function.Supplier;
-
+import com.konkerlabs.platform.registry.integration.exceptions.IntegrationException;
 import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
+import com.konkerlabs.platform.registry.integration.gateways.SMSMessageGatewayTwilioImpl;
+import com.konkerlabs.platform.registry.test.base.IntegrationLayerTestContext;
+import com.konkerlabs.platform.registry.test.base.IntegrationLayerTestSupport;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -21,17 +15,20 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
 
-import com.konkerlabs.platform.registry.integration.exceptions.IntegrationException;
-import com.konkerlabs.platform.registry.integration.gateways.SMSMessageGatewayTwilioImpl;
-import com.konkerlabs.platform.registry.test.base.IntegrationLayerTestContext;
-import com.konkerlabs.platform.registry.test.base.IntegrationLayerTestSupport;
+import java.net.URI;
+import java.util.function.Supplier;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 
 @ContextConfiguration(classes = { IntegrationLayerTestContext.class })
 @RunWith(MockitoJUnitRunner.class)

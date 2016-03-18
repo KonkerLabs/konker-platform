@@ -4,7 +4,6 @@ import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.repositories.solr.EventRepository;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.publishers.api.EventPublisher;
@@ -31,6 +30,8 @@ public class EventPublisherMqtt implements EventPublisher {
 
     private static final String MQTT_OUTGOING_TOPIC_TEMPLATE = "iot/{0}/{1}";
 
+    public static final String DEVICE_MQTT_CHANNEL = "channel";
+
     private MqttMessageGateway mqttMessageGateway;
     private DeviceRegisterService deviceRegisterService;
     private DeviceEventService deviceEventService;
@@ -56,7 +57,7 @@ public class EventPublisherMqtt implements EventPublisher {
             .orElseThrow(() -> new IllegalArgumentException("Destination URI cannot be null or empty"));
         Optional.ofNullable(data)
             .orElseThrow(() -> new IllegalArgumentException("Data cannot be null"));
-        Optional.ofNullable(data.get("channel"))
+        Optional.ofNullable(data.get(DEVICE_MQTT_CHANNEL))
             .filter(s -> !s.isEmpty())
             .orElseThrow(() -> new IllegalStateException("A valid MQTT channel is required"));
         Optional.ofNullable(tenant)
@@ -75,7 +76,7 @@ public class EventPublisherMqtt implements EventPublisher {
         if (outgoingDevice.isActive()) {
             try {
                 String destinationTopic = MessageFormat.format(MQTT_OUTGOING_TOPIC_TEMPLATE,
-                        destinationUri.getPath().replaceAll("/",""), data.get("channel"));
+                        destinationUri.getPath().replaceAll("/",""), data.get(DEVICE_MQTT_CHANNEL));
                 mqttMessageGateway.send(outgoingEvent.getPayload(), destinationTopic);
                 deviceEventService.logEvent(outgoingDevice,outgoingEvent);
             } catch (BusinessException e) {

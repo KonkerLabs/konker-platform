@@ -1,21 +1,20 @@
 package com.konkerlabs.platform.registry.business.services;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-
+import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
+import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
+import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
-import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
-import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
@@ -75,7 +74,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
     @Override
     public ServiceResponse<List<Device>> findAll(Tenant tenant) {
         List<Device> all = deviceRepository.findAllByTenant(tenant.getId());
-        return ServiceResponse.<List<Device>>builder().status(ServiceResponse.Status.OK).result(all).build();
+        return ServiceResponse.<List<Device>>builder().status(ServiceResponse.Status.OK).result(all).<List<Device>>build();
     }
 
 

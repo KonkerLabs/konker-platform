@@ -16,6 +16,8 @@ import java.util.HashMap;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import static com.konkerlabs.platform.registry.business.services.publishers.EventPublisherMqtt.DEVICE_MQTT_CHANNEL;
+
 @Data
 @EqualsAndHashCode(exclude={"tenantDomainSupplier"})
 public class EventRouteForm implements ModelBuilder<EventRoute,EventRouteForm,String>,
@@ -84,13 +86,13 @@ public class EventRouteForm implements ModelBuilder<EventRoute,EventRouteForm,St
     }
 
     private void applyIncomingMetadata(EventRoute route) {
-        route.getIncoming().getData().put("channel",getIncomingChannel());
+        route.getIncoming().getData().put(DEVICE_MQTT_CHANNEL,getIncomingChannel());
     }
 
     private void applyOutgoingMetadata(EventRoute route) {
         switch (getOutgoingScheme()) {
             case DeviceURIDealer.DEVICE_URI_SCHEME : {
-                route.getOutgoing().getData().put("channel", getOutgoingDeviceChannel());
+                route.getOutgoing().getData().put(DEVICE_MQTT_CHANNEL, getOutgoingDeviceChannel());
                 break;
             }
             case SmsDestinationURIDealer.SMS_URI_SCHEME : {
@@ -108,12 +110,12 @@ public class EventRouteForm implements ModelBuilder<EventRoute,EventRouteForm,St
         this.setName(model.getName());
         this.setDescription(model.getDescription());
         this.setIncomingAuthority(model.getIncoming().getUri().getPath().replaceAll("/",""));
-        this.setIncomingChannel(model.getIncoming().getData().get("channel"));
+        this.setIncomingChannel(model.getIncoming().getData().get(DEVICE_MQTT_CHANNEL));
         this.setOutgoingScheme(model.getOutgoing().getUri().getScheme());
         switch (getOutgoingScheme()) {
             case DeviceURIDealer.DEVICE_URI_SCHEME : {
                 this.setOutgoingDeviceAuthority(model.getOutgoing().getUri().getPath().replaceAll("/",""));
-                this.setOutgoingDeviceChannel(model.getOutgoing().getData().get("channel"));
+                this.setOutgoingDeviceChannel(model.getOutgoing().getData().get(DEVICE_MQTT_CHANNEL));
                 break;
             }
             case SmsDestinationURIDealer.SMS_URI_SCHEME : {

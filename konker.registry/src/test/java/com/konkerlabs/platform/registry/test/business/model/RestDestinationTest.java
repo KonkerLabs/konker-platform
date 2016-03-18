@@ -3,7 +3,6 @@ package com.konkerlabs.platform.registry.test.business.model;
 import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

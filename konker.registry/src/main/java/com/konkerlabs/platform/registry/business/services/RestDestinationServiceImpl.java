@@ -5,7 +5,6 @@ import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.repositories.RestDestinationRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
-
 import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import org.springframework.beans.factory.annotation.Autowired;
