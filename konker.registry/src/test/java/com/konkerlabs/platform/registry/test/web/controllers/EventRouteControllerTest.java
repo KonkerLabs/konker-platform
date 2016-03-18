@@ -4,10 +4,7 @@ import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.SmsDestinationURIDealer;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.TransformationService;
+import com.konkerlabs.platform.registry.business.services.api.*;
 import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteService;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
@@ -69,6 +66,8 @@ public class EventRouteControllerTest extends WebLayerTestContext {
     private DeviceRegisterService deviceRegisterService;
     @Autowired
     private RestDestinationService restDestinationService;
+    @Autowired
+    private SmsDestinationService smsDestinationService;
 
     @Autowired
     private Tenant tenant;
@@ -103,6 +102,12 @@ public class EventRouteControllerTest extends WebLayerTestContext {
                 ServiceResponse.<List<RestDestination>>builder()
                         .status(OK)
                         .result(restDestinations).<List<RestDestination>>build()
+        );
+        List<SmsDestination> smsDestinations = new ArrayList<>();
+        when(smsDestinationService.findAll(tenant)).thenReturn(
+                ServiceResponse.<List<SmsDestination>>builder()
+                        .status(OK)
+                        .result(smsDestinations).<List<SmsDestination>>build()
         );
 
         incomingDevice = builder().deviceId("0000000000000004").build();
@@ -318,6 +323,10 @@ public class EventRouteControllerTest extends WebLayerTestContext {
             return mock(RestDestinationService.class);
         }
 
+        @Bean
+        public SmsDestinationService smsDestinationService() {
+            return mock(SmsDestinationService.class);
+        }
         @Bean
         public TransformationService transformationService() {
             return mock(TransformationService.class);

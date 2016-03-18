@@ -14,21 +14,24 @@
                         data-th-text="${smsDestination.name}"></option>
             </select>
         </div>
-        <div class="col-sm-4">
-            <div class="col-sm-4">
-                <label class="radio-inline">
-                    <input type="radio" name="smsDestinationType"
-                           value="custom" data-th-checked="${route.outgoingSmsTemplateType == 'custom'}">Custom</input>
-                </label>
-                <label class="radio-inline">
-                    <input type="radio" name="smsDestinationType"
-                           value="forward" data-th-checked="${route.outgoingSmsTemplateType == 'forward'}">Forward</input>
-                </label>
-                <input type="text" data-th-field="${route.outgoingSmsCustomText}"
-                       class="form-control"
-                       id="outgoingSmsCustomText"
-                       name="outgoingSmsCustomText" placeholder="Type your custom text here..."/>
-            </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-1 control-label">Strategy Type</label>
+        <div class="col-sm-2">
+            <label class="radio-inline">
+                <input type="radio" name="smsDestinationType" onchange="renderCustomTemplate(this);"
+                       value="custom" data-th-checked="${route.outgoingSmsMessageStrategy == 'custom'}">Custom</input>
+            </label>
+            <label class="radio-inline">
+                <input type="radio" name="smsDestinationType" onchange="renderCustomTemplate(this);"
+                       value="forward" data-th-checked="${route.outgoingSmsMessageStrategy == 'forward'}">Forward</input>
+            </label>
+        </div>
+        <div class="col-sm-2">
+            <input type="text" data-th-field="${route.outgoingSmsMessageTemplate}"
+                   class="form-control"
+                   id="outgoingSmsMessageTemplate"
+                   name="outgoingSmsMessageTemplate" placeholder="Type your custom text here..."/>
         </div>
     </div>
 </div>

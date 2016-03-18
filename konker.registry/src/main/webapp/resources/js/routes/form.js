@@ -11,6 +11,15 @@ function renderOutgoingFragment(scheme) {
     fetchViewFragment(url);
 }
 
+function renderCustomTemplate(elem) {
+    if (elem.value == "forward") {
+        $('#outgoingSmsMessageTemplate').prop( "disabled", true );
+        $('#outgoingSmsMessageTemplate').prop( "value", null );
+    } else if (elem.value == "custom") {
+        $('#outgoingSmsMessageTemplate').prop( "disabled", false );
+    }
+}
+
 function fetchViewFragment(fetchUrl) {
     $.ajax({
         context : this,

@@ -6,6 +6,7 @@ import com.konkerlabs.platform.registry.business.model.Transformation;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.SmsDestinationURIDealer;
+import com.konkerlabs.platform.registry.business.services.publishers.EventPublisherSms;
 import com.konkerlabs.platform.registry.web.forms.api.ModelBuilder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -31,8 +32,8 @@ public class EventRouteForm implements ModelBuilder<EventRoute,EventRouteForm,St
     private String outgoingDeviceAuthority;
     private String outgoingDeviceChannel;
     private String outgoingSmsDestinationGuid;
-    private String outgoingSmsTemplateType;
-    private String outgoingSmsCustomText;
+    private String outgoingSmsMessageStrategy; //= EventPublisherSms.SMS_MESSAGE_FORWARD_STRATEGY_PARAMETER_VALUE;
+    private String outgoingSmsMessageTemplate;
     private String outgoingRestDestinationGuid;
     private String filteringExpression;
     private String transformation;
@@ -93,8 +94,8 @@ public class EventRouteForm implements ModelBuilder<EventRoute,EventRouteForm,St
                 break;
             }
             case SmsDestinationURIDealer.SMS_URI_SCHEME : {
-                route.getOutgoing().getData().put("templateType", getOutgoingSmsTemplateType());
-                route.getOutgoing().getData().put("customText", getOutgoingSmsCustomText());
+                route.getOutgoing().getData().put(EventPublisherSms.SMS_MESSAGE_STRATEGY_PARAMETER_NAME, getOutgoingSmsMessageStrategy());
+                route.getOutgoing().getData().put(EventPublisherSms.SMS_MESSAGE_TEMPLATE_PARAMETER_NAME, getOutgoingSmsMessageTemplate());
                 break;
             }
             default: break;
@@ -117,8 +118,8 @@ public class EventRouteForm implements ModelBuilder<EventRoute,EventRouteForm,St
             }
             case SmsDestinationURIDealer.SMS_URI_SCHEME : {
                 this.setOutgoingSmsDestinationGuid(model.getOutgoing().getUri().getPath().replaceAll("/",""));
-                this.setOutgoingSmsTemplateType(model.getOutgoing().getData().get("templateType"));
-                this.setOutgoingSmsCustomText(model.getOutgoing().getData().get("customText"));
+                this.setOutgoingSmsMessageStrategy(model.getOutgoing().getData().get(EventPublisherSms.SMS_MESSAGE_STRATEGY_PARAMETER_NAME));
+                this.setOutgoingSmsMessageTemplate(model.getOutgoing().getData().get(EventPublisherSms.SMS_MESSAGE_TEMPLATE_PARAMETER_NAME));
                 break;
             }
             case RESTDestinationURIDealer.REST_DESTINATION_URI_SCHEME : {

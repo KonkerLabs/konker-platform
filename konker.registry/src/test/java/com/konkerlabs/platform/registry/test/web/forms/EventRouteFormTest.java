@@ -14,6 +14,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.util.HashMap;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -116,12 +118,12 @@ public class EventRouteFormTest {
 
         model.setIncoming(RouteActor.builder()
                 .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncomingAuthority()))
-                .data(new HashedMap())
+                .data(new HashMap())
                 .build());
         model.getIncoming().getData().put("channel",form.getIncomingChannel());
         model.setOutgoing(RouteActor.builder()
                 .uri(smsDestinationUriDealer.toSmsURI(tenant.getDomainName(), form.getOutgoingSmsDestinationGuid()))
-                .data(new HashedMap())
+                .data(new HashMap<String, String>(){{put("messageStrategy", null);put("messageTemplate", null);}})
                 .build());
 
         assertThat(form.toModel(),equalTo(model));
