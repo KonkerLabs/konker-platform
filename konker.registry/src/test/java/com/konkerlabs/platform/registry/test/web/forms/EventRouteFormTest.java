@@ -7,6 +7,7 @@ import com.konkerlabs.platform.registry.business.model.Transformation;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.SmsDestinationURIDealer;
+import com.konkerlabs.platform.registry.business.services.publishers.EventPublisherSms;
 import com.konkerlabs.platform.registry.web.forms.EventRouteForm;
 import org.apache.commons.collections.map.HashedMap;
 import org.junit.Before;
@@ -14,6 +15,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.util.Collections;
 import java.util.HashMap;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -123,7 +125,7 @@ public class EventRouteFormTest {
         model.getIncoming().getData().put("channel",form.getIncomingChannel());
         model.setOutgoing(RouteActor.builder()
                 .uri(smsDestinationUriDealer.toSmsURI(tenant.getDomainName(), form.getOutgoingSmsDestinationGuid()))
-                .data(new HashMap<String, String>(){{put("messageStrategy", null);put("messageTemplate", null);}})
+                .data(new HashMap<String, String>(){{put("messageStrategy", null);put("messageTemplate", null);put(EventPublisherSms.SMS_MESSAGE_STRATEGY_PARAMETER_NAME, "forward");}})
                 .build());
 
         assertThat(form.toModel(),equalTo(model));
@@ -212,7 +214,7 @@ public class EventRouteFormTest {
         model.getIncoming().getData().put("channel",form.getIncomingChannel());
         model.setOutgoing(RouteActor.builder()
                 .uri(smsDestinationUriDealer.toSmsURI(tenant.getDomainName(),form.getOutgoingSmsDestinationGuid()))
-                .data(new HashedMap())
+                .data(Collections.singletonMap(EventPublisherSms.SMS_MESSAGE_STRATEGY_PARAMETER_NAME, EventPublisherSms.SMS_MESSAGE_FORWARD_STRATEGY_PARAMETER_VALUE))
                 .build());
 
         assertThat(new EventRouteForm().fillFrom(model),equalTo(form));
