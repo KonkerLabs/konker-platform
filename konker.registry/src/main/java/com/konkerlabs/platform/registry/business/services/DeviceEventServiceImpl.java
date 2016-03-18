@@ -37,8 +37,8 @@ public class DeviceEventServiceImpl implements DeviceEventService {
             throw new BusinessException("Event cannot be null");
         if (event.getPayload() == null || event.getPayload().isEmpty())
             throw new BusinessException("Event payload cannot be null or empty");
-        if (event.getTimestamp() != null)
-            throw new BusinessException("Event timestamp cannot be already set!");
+//        if (event.getTimestamp() != null)
+//            throw new BusinessException("Event timestamp cannot be already set!");
 
         if (device.getEvents() == null)
             device.setEvents(new ArrayList<>());

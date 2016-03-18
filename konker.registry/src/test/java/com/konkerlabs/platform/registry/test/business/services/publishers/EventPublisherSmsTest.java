@@ -236,8 +236,7 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
 
     @Test
     public void onEnabledDestinationShouldSendInterpolatedTemplateThroughGatewayIfStrategyIsCustom() throws Exception {
-        String expectedMessage = "You have received a message from Konker device: " +
-                messageTemplate.replaceAll("\\@\\{.*}","21.45");
+        String expectedMessage = messageTemplate.replaceAll("\\@\\{.*}","21.45");
 
         subject.send(event,destinationUri,data,tenant);
 
@@ -249,8 +248,7 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
 
     @Test
     public void onEnabledDestinationShouldSendReceivedPayloadThroughGatewayIfStrategyIsForward() throws Exception {
-        String expectedMessage = "You have received a message from Konker device: " +
-                event.getPayload();
+        String expectedMessage = event.getPayload();
 
         data.put(EventPublisherSms.SMS_MESSAGE_STRATEGY_PARAMETER_NAME,
                  EventPublisherSms.SMS_MESSAGE_FORWARD_STRATEGY_PARAMETER_VALUE);

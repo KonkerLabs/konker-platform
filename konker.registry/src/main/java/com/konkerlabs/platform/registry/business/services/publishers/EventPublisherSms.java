@@ -111,8 +111,7 @@ public class EventPublisherSms implements EventPublisher {
                     default: messageBody = outgoingEvent.getPayload();
                 }
 
-                messageGateway.send("You have received a message from Konker device: " + messageBody,
-                        destination.getResult().getPhoneNumber());
+                messageGateway.send(messageBody,destination.getResult().getPhoneNumber());
                 eventRepository.push(tenant, outgoingEvent);
             } catch (JsonProcessingException|IntegrationException | BusinessException e) {
                 LOGGER.error("Error sending SMS.", e);
