@@ -16,23 +16,29 @@
         </div>
     </div>
     <div class="form-group">
-        <label class="col-sm-1 control-label">Strategy Type</label>
-        <div class="col-sm-2">
+        <label class="col-sm-1 control-label">SMS Text</label>
+        <div class="col-sm-4">
             <label class="radio-inline">
-                <input type="radio" name="smsDestinationType" onchange="renderCustomTemplate(this);"
-                       value="custom" data-th-checked="${route.outgoingSmsMessageStrategy == 'custom'}">Custom</input>
+                <input type="radio" name="outgoingSmsMessageStrategy" onchange="renderCustomTemplate(this);"
+                       value="forward" data-th-checked="${route.outgoingSmsMessageStrategy == 'forward'}">Forward Message</input>
             </label>
             <label class="radio-inline">
-                <input type="radio" name="smsDestinationType" onchange="renderCustomTemplate(this);"
-                       value="forward" data-th-checked="${route.outgoingSmsMessageStrategy == 'forward'}">Forward</input>
+                <input type="radio" name="outgoingSmsMessageStrategy" onchange="renderCustomTemplate(this);"
+                       value="custom" data-th-checked="${route.outgoingSmsMessageStrategy == 'custom'}">Custom Template</input>
             </label>
         </div>
-        <div class="col-sm-2">
-            <input type="text" data-th-field="${route.outgoingSmsMessageTemplate}"
-                   class="form-control"
-                   id="outgoingSmsMessageTemplate"
-                   name="outgoingSmsMessageTemplate" placeholder="Type your custom text here..."/>
-        </div>
+    </div>
+    <div class="form-group">
+          <label class="col-sm-1 control-label" for="outgoingSmsMessageTemplate">Custom SMS Template</label>
+          <div class="col-sm-4">
+              <textarea id="outgoingSmsMessageTemplate" class="form-control" name="outgoingSmsMessageTemplate"
+                        placeholder="Type your custom text here..."
+                        data-th-text="${route.outgoingSmsMessageTemplate}" 
+                        data-th-disabled="${route.outgoingSmsMessageStrategy == 'forward'}"
+                        disabled="disabled">
+                        Custom Template
+              </textarea>
+          </div>
     </div>
 </div>
 </body>

@@ -32,7 +32,7 @@ public class EventRouteForm implements ModelBuilder<EventRoute,EventRouteForm,St
     private String outgoingDeviceAuthority;
     private String outgoingDeviceChannel;
     private String outgoingSmsDestinationGuid;
-    private String outgoingSmsMessageStrategy; //= EventPublisherSms.SMS_MESSAGE_FORWARD_STRATEGY_PARAMETER_VALUE;
+    private String outgoingSmsMessageStrategy = EventPublisherSms.SMS_MESSAGE_FORWARD_STRATEGY_PARAMETER_VALUE;
     private String outgoingSmsMessageTemplate;
     private String outgoingRestDestinationGuid;
     private String filteringExpression;

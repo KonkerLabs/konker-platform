@@ -14,7 +14,7 @@ function renderOutgoingFragment(scheme) {
 function renderCustomTemplate(elem) {
     if (elem.value == "forward") {
         $('#outgoingSmsMessageTemplate').prop( "disabled", true );
-        $('#outgoingSmsMessageTemplate').prop( "value", null );
+//        $('#outgoingSmsMessageTemplate').prop( "value", null );
     } else if (elem.value == "custom") {
         $('#outgoingSmsMessageTemplate').prop( "disabled", false );
     }
