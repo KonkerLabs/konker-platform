@@ -1,26 +1,21 @@
 $(document).ready(function() {
-    $('input[type=radio][name=outgoingScheme]').change(function() {
+    var outgoingSchemeControl = $('input[type=radio][name=outgoingScheme]');
+
+    outgoingSchemeControl.change(function() {
         renderOutgoingFragment(this.value);
     });
+
+    applyEventBindings(outgoingSchemeControl.filter('input:checked').val());
 });
 
 function renderOutgoingFragment(scheme) {
     var base = urlTo('/routes/outgoing/');
     var url = base + scheme;
 
-    fetchViewFragment(url);
+    fetchViewFragment(scheme, url);
 }
 
-function renderCustomTemplate(elem) {
-    if (elem.value == "forward") {
-        $('#outgoingSmsMessageTemplate').prop( "disabled", true );
-//        $('#outgoingSmsMessageTemplate').prop( "value", null );
-    } else if (elem.value == "custom") {
-        $('#outgoingSmsMessageTemplate').prop( "disabled", false );
-    }
-}
-
-function fetchViewFragment(fetchUrl) {
+function fetchViewFragment(scheme, fetchUrl) {
     $.ajax({
         context : this,
         type : "GET",
@@ -32,6 +27,7 @@ function fetchViewFragment(fetchUrl) {
         },
         success : function(data) {
             displayFragment(data);
+            applyEventBindings(scheme);
         },
         complete : function() {
             hideElement('#loading');
@@ -41,6 +37,28 @@ function fetchViewFragment(fetchUrl) {
 
 function displayFragment(data) {
     $('#outgoingFragment').html(data);
+}
+
+function applyEventBindings(scheme) {
+    switch (scheme) {
+        case "sms" :
+            $('input[type=radio][name=outgoingSmsMessageStrategy]').change(function() {
+                applySmsFragmentControlState(this);
+            });
+            break;
+        default : break;
+    }
+}
+
+function applySmsFragmentControlState(selected) {
+    switch (selected.value) {
+        case "forward" :
+            $('#outgoingSmsMessageTemplate').prop('disabled', true);
+            break;
+        default :
+            $('#outgoingSmsMessageTemplate').prop('disabled', false);
+            break;
+    }
 }
 
 function showElement(selector) {

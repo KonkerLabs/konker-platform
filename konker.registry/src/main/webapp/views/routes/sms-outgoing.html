@@ -19,11 +19,11 @@
         <label class="col-sm-1 control-label">SMS Text</label>
         <div class="col-sm-4">
             <label class="radio-inline">
-                <input type="radio" name="outgoingSmsMessageStrategy" onchange="renderCustomTemplate(this);"
+                <input type="radio" name="outgoingSmsMessageStrategy"
                        value="forward" data-th-checked="${route.outgoingSmsMessageStrategy == 'forward'}">Forward Message</input>
             </label>
             <label class="radio-inline">
-                <input type="radio" name="outgoingSmsMessageStrategy" onchange="renderCustomTemplate(this);"
+                <input type="radio" name="outgoingSmsMessageStrategy"
                        value="custom" data-th-checked="${route.outgoingSmsMessageStrategy == 'custom'}">Custom Template</input>
             </label>
         </div>
