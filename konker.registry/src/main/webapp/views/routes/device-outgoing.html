@@ -7,7 +7,7 @@
     <div class="form-group">
         <label class="col-sm-1 control-label" for="outgoingDeviceAuthority">Outgoing Device</label>
         <div class="col-sm-4">
-            <select class="form-control" data-th-field="${route.outgoingDeviceAuthority}"
+            <select class="form-control" data-th-field="${route.outgoing.authorityId}"
                     id="outgoingDeviceAuthority" name="outgoingDeviceAuthority">
                 <option data-th-each="device : ${allDevices}"
                         data-th-value="${device.deviceId}"
@@ -18,7 +18,7 @@
     <div class="form-group">
         <label class="col-sm-1 control-label" for="outgoingDeviceChannel">Outgoing channel</label>
         <div class="col-sm-4">
-            <input type="text" data-th-field="${route.outgoingDeviceChannel}"
+            <input type="text" data-th-field="${route.outgoing.authorityData['channel']}"
                    class="form-control"
                    id="outgoingDeviceChannel"
                    name="outgoingDeviceChannel" placeholder="Type your incoming device's channel here..."/>

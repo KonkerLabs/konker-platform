@@ -116,11 +116,11 @@ public class EventRouteControllerTest extends WebLayerTestContext {
         routeForm = new EventRouteForm();
         routeForm.setName("Route name");
         routeForm.setDescription("Route description");
-        routeForm.setIncomingAuthority(incomingDevice.getDeviceId());
-        routeForm.setIncomingChannel("command");
+        routeForm.getIncoming().setAuthorityId(incomingDevice.getDeviceId());
+        routeForm.getIncoming().getAuthorityData().put("channel","command");
         routeForm.setOutgoingScheme("device");
-        routeForm.setOutgoingDeviceAuthority(outgoingDevice.getDeviceId());
-        routeForm.setOutgoingDeviceChannel("in");
+        routeForm.getOutgoing().setAuthorityId(outgoingDevice.getDeviceId());
+        routeForm.getOutgoing().getAuthorityData().put("channel","in");
         routeForm.setFilteringExpression("#command.type == 'ButtonPressed'");
         routeForm.setTransformation("trans_id");
         routeForm.setActive(true);
@@ -130,11 +130,11 @@ public class EventRouteControllerTest extends WebLayerTestContext {
         routeData = new LinkedMultiValueMap<>();
         routeData.add("name", routeForm.getName());
         routeData.add("description", routeForm.getDescription());
-        routeData.add("incomingAuthority", routeForm.getIncomingAuthority());
-        routeData.add("incomingChannel", routeForm.getIncomingChannel());
+        routeData.add("incoming.authorityId", routeForm.getIncoming().getAuthorityId());
+        routeData.add("incoming.authorityData['channel']", routeForm.getIncoming().getAuthorityData().get("channel"));
         routeData.add("outgoingScheme", routeForm.getOutgoingScheme());
-        routeData.add("outgoingDeviceAuthority", routeForm.getOutgoingDeviceAuthority());
-        routeData.add("outgoingDeviceChannel", routeForm.getOutgoingDeviceChannel());
+        routeData.add("outgoing.authorityId", routeForm.getOutgoing().getAuthorityId());
+        routeData.add("outgoing.authorityData['channel']", routeForm.getOutgoing().getAuthorityData().get("channel"));
         routeData.add("filteringExpression", routeForm.getFilteringExpression());
         routeData.add("transformation", routeForm.getTransformation());
         routeData.add("active", "true");
@@ -149,11 +149,11 @@ public class EventRouteControllerTest extends WebLayerTestContext {
         Supplier<URI> outgoingUriSupplier = () -> {
             switch (routeForm.getOutgoingScheme()) {
                 case DEVICE_URI_SCHEME:
-                    return deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(), routeForm.getOutgoingDeviceAuthority());
+                    return deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(), routeForm.getOutgoing().getAuthorityId());
                 case SMS_URI_SCHEME:
-                    return smsURIDealer.toSmsURI(tenant.getDomainName(), routeForm.getOutgoingSmsDestinationGuid());
+                    return smsURIDealer.toSmsURI(tenant.getDomainName(), routeForm.getOutgoing().getAuthorityId());
                 case REST_DESTINATION_URI_SCHEME:
-                    return restDestinationURIDealer.toRestDestinationURI(tenant.getDomainName(), routeForm.getOutgoingRestDestinationGuid());
+                    return restDestinationURIDealer.toRestDestinationURI(tenant.getDomainName(), routeForm.getOutgoing().getAuthorityId());
                 default:
                     return null;
             }
@@ -163,20 +163,17 @@ public class EventRouteControllerTest extends WebLayerTestContext {
                 .name(routeForm.getName())
                 .description(routeForm.getDescription())
                 .incoming(RouteActor.builder()
-                        .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(), routeForm.getIncomingAuthority()))
-                        .data(new HashMap<>())
+                        .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(), routeForm.getIncoming().getAuthorityId()))
+                        .data(routeForm.getIncoming().getAuthorityData())
                         .build())
                 .outgoing(RouteActor.builder()
                         .uri(outgoingUriSupplier.get())
-                        .data(new HashMap<>())
+                        .data(routeForm.getOutgoing().getAuthorityData())
                         .build())
                 .filteringExpression(routeForm.getFilteringExpression())
                 .transformation(Transformation.builder().id(routeForm.getTransformation()).build())
                 .active(routeForm.isActive())
                 .build();
-
-        route.getIncoming().getData().put(DEVICE_MQTT_CHANNEL, routeForm.getIncomingChannel());
-        route.getOutgoing().getData().put(DEVICE_MQTT_CHANNEL, routeForm.getOutgoingDeviceChannel());
 
         registeredRoutes = new ArrayList<EventRoute>(asList(new EventRoute[]{route}));
     }

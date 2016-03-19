@@ -34,7 +34,7 @@
             <div class="form-group">
                 <label class="col-sm-1 control-label" for="incomingAuthority">Incoming Device</label>
                 <div class="col-sm-4">
-                    <select class="form-control" data-th-field="*{incomingAuthority}"
+                    <select class="form-control" data-th-field="*{incoming.authorityId}"
                         id="incomingAuthority" name="incomingAuthority">
                         <option data-th-each="device : ${allDevices}"
                                 data-th-value="${device.deviceId}"
@@ -45,7 +45,7 @@
             <div class="form-group">
                 <label class="col-sm-1 control-label" for="incomingChannel">Incoming channel</label>
                 <div class="col-sm-4">
-                    <input type="text" data-th-field="*{incomingChannel}"
+                    <input type="text" data-th-field="*{incoming.authorityData['channel']}"
                            class="form-control"
                            id="incomingChannel"
                            name="incomingChannel" placeholder="Type your incoming device's channel here..."/>

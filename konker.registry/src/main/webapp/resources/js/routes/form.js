@@ -42,7 +42,7 @@ function displayFragment(data) {
 function applyEventBindings(scheme) {
     switch (scheme) {
         case "sms" :
-            $('input[type=radio][name=outgoingSmsMessageStrategy]').change(function() {
+            $('input[type=radio][data-sms]').change(function() {
                 applySmsFragmentControlState(this);
             });
             break;
@@ -53,10 +53,10 @@ function applyEventBindings(scheme) {
 function applySmsFragmentControlState(selected) {
     switch (selected.value) {
         case "forward" :
-            $('#outgoingSmsMessageTemplate').prop('disabled', true);
+            $('#smsMessageTemplate').prop('disabled', true);
             break;
         default :
-            $('#outgoingSmsMessageTemplate').prop('disabled', false);
+            $('#smsMessageTemplate').prop('disabled', false);
             break;
     }
 }

@@ -7,7 +7,7 @@
     <div class="form-group">
         <label class="col-sm-1 control-label" for="outgoingSmsDestinationGuid">SMS Destination</label>
         <div class="col-sm-4">
-            <select class="form-control" data-th-field="${route.outgoingSmsDestinationGuid}"
+            <select class="form-control" data-th-field="${route.outgoing.authorityId}"
                     id="outgoingSmsDestinationGuid" name="outgoingSmsDestinationGuid">
                 <option data-th-each="smsDestination : ${allSmsDestinations}"
                         data-th-value="${smsDestination.guid}"
@@ -19,22 +19,28 @@
         <label class="col-sm-1 control-label">SMS Text</label>
         <div class="col-sm-4">
             <label class="radio-inline">
-                <input type="radio" name="outgoingSmsMessageStrategy"
-                       value="forward" data-th-checked="${route.outgoingSmsMessageStrategy == 'forward'}">Forward Message</input>
+                <input type="radio" name="outgoing.authorityData['messageStrategy']"
+                       value="forward" data-sms=""
+                       data-th-checked="${route.outgoing.authorityData['messageStrategy'] == 'forward' || route.outgoing.authorityData['messageStrategy'] == null}">
+                    Forward Message
+                </input>
             </label>
             <label class="radio-inline">
-                <input type="radio" name="outgoingSmsMessageStrategy"
-                       value="custom" data-th-checked="${route.outgoingSmsMessageStrategy == 'custom'}">Custom Template</input>
+                <input type="radio" name="outgoing.authorityData['messageStrategy']"
+                       value="custom" data-sms=""
+                       data-th-checked="${route.outgoing.authorityData['messageStrategy'] == 'custom'}">
+                    Custom Template
+                </input>
             </label>
         </div>
     </div>
     <div class="form-group">
-          <label class="col-sm-1 control-label" for="outgoingSmsMessageTemplate">Custom SMS Template</label>
+          <label class="col-sm-1 control-label" for="smsMessageTemplate">Custom SMS Template</label>
           <div class="col-sm-4">
-              <textarea id="outgoingSmsMessageTemplate" class="form-control" name="outgoingSmsMessageTemplate"
+              <textarea id="smsMessageTemplate" class="form-control" name="outgoing.authorityData['messageTemplate']"
                         placeholder="Type your custom text here..."
-                        data-th-text="${route.outgoingSmsMessageTemplate}" 
-                        data-th-disabled="${route.outgoingSmsMessageStrategy == 'forward'}"
+                        data-th-text="${route.outgoing.authorityData['messageTemplate']}"
+                        data-th-disabled="${route.outgoing.authorityData['messageStrategy'] == 'forward' or route.outgoing.authorityData['messageStrategy'] == null}"
                         disabled="disabled">
                         Custom Template
               </textarea>

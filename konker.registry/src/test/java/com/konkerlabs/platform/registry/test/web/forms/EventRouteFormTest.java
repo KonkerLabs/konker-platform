@@ -39,8 +39,8 @@ public class EventRouteFormTest {
         form = new EventRouteForm();
         form.setName("route_name");
         form.setDescription("route_description");
-        form.setIncomingAuthority("0000000000000004");
-        form.setIncomingChannel("command");
+        form.getIncoming().setAuthorityId("0000000000000004");
+        form.getIncoming().getAuthorityData().put("channel","command");
         form.setFilteringExpression("#command.type == 'ButtonPressed'");
         form.setTransformation("trans_id");
         form.setActive(true);
@@ -94,39 +94,41 @@ public class EventRouteFormTest {
     @Test
     public void shouldTranslateFromDeviceRouteFormToModel() throws Exception {
         form.setOutgoingScheme("device");
-        form.setOutgoingDeviceAuthority("0000000000000005");
-        form.setOutgoingDeviceChannel("in");
+        form.getOutgoing().setAuthorityId("0000000000000005");
+        form.getOutgoing().getAuthorityData().put("channel","in");
 
         model.setIncoming(
                 RouteActor.builder()
-                        .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncomingAuthority()))
-                        .data(new HashedMap())
+                        .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncoming().getAuthorityId()))
+                        .data(form.getIncoming().getAuthorityData())
                         .build()
         );
-        model.getIncoming().getData().put(DEVICE_MQTT_CHANNEL,form.getIncomingChannel());
         model.setOutgoing(
                 RouteActor.builder()
-                        .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getOutgoingDeviceAuthority()))
-                        .data(new HashedMap())
+                        .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getOutgoing().getAuthorityId()))
+                        .data(form.getOutgoing().getAuthorityData())
                         .build()
         );
-        model.getOutgoing().getData().put(DEVICE_MQTT_CHANNEL,form.getOutgoingDeviceChannel());
 
         assertThat(form.toModel(),equalTo(model));
     }
     @Test
     public void shouldTranslateFromSMSRouteFormToModel() throws Exception {
         form.setOutgoingScheme("sms");
-        form.setOutgoingSmsDestinationGuid("+5511987654321");
+        form.getOutgoing().setAuthorityId("407902f6-5b85-4767-ad83-b8b3e847bd92");
+        form.getOutgoing().getAuthorityData().put("messageStrategy","custom");
+        form.getOutgoing().getAuthorityData().put("messageTemplate","A given message template");
 
         model.setIncoming(RouteActor.builder()
-                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncomingAuthority()))
-                .data(new HashMap())
+                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncoming().getAuthorityId()))
+                .data(form.getIncoming().getAuthorityData())
                 .build());
-        model.getIncoming().getData().put(DEVICE_MQTT_CHANNEL,form.getIncomingChannel());
         model.setOutgoing(RouteActor.builder()
-                .uri(smsDestinationUriDealer.toSmsURI(tenant.getDomainName(), form.getOutgoingSmsDestinationGuid()))
-                .data(new HashMap<String, String>(){{put("messageStrategy", null);put("messageTemplate", null);put(EventPublisherSms.SMS_MESSAGE_STRATEGY_PARAMETER_NAME, "forward");}})
+                .uri(smsDestinationUriDealer.toSmsURI(tenant.getDomainName(), form.getOutgoing().getAuthorityId()))
+                .data(new HashMap<String, String>(){{
+                    put(EventPublisherSms.SMS_MESSAGE_STRATEGY_PARAMETER_NAME, "custom");
+                    put(EventPublisherSms.SMS_MESSAGE_TEMPLATE_PARAMETER_NAME, "A given message template");
+                }})
                 .build());
 
         assertThat(form.toModel(),equalTo(model));
@@ -135,16 +137,15 @@ public class EventRouteFormTest {
     @Test
     public void shouldTranslateFromRestDestinationRouteFormToModel() throws Exception {
         form.setOutgoingScheme("rest");
-        form.setOutgoingRestDestinationGuid("dda64780-eb81-11e5-958b-a73dab8b32ee");
+        form.getOutgoing().setAuthorityId("dda64780-eb81-11e5-958b-a73dab8b32ee");
 
         model.setIncoming(RouteActor.builder()
-                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncomingAuthority()))
-                .data(new HashedMap())
+                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncoming().getAuthorityId()))
+                .data(form.getIncoming().getAuthorityData())
                 .build());
-        model.getIncoming().getData().put(DEVICE_MQTT_CHANNEL,form.getIncomingChannel());
         model.setOutgoing(RouteActor.builder()
-                .uri(restDestinationURIDealer.toRestDestinationURI(tenant.getDomainName(), form.getOutgoingRestDestinationGuid()))
-                .data(new HashedMap())
+                .uri(restDestinationURIDealer.toRestDestinationURI(tenant.getDomainName(), form.getOutgoing().getAuthorityId()))
+                .data(form.getOutgoing().getAuthorityData())
                 .build());
 
         assertThat(form.toModel(),equalTo(model));
@@ -153,21 +154,19 @@ public class EventRouteFormTest {
     @Test
     public void shouldTranslateToModelWithOptionalTransformation() throws Exception {
         form.setOutgoingScheme("device");
-        form.setOutgoingDeviceAuthority("0000000000000005");
-        form.setOutgoingDeviceChannel("in");
+        form.getOutgoing().setAuthorityId("0000000000000005");
+        form.getOutgoing().getAuthorityData().put("channel","in");
 
         model.setIncoming(RouteActor.builder()
-                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncomingAuthority()))
-                .data(new HashedMap())
+                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncoming().getAuthorityId()))
+                .data(form.getIncoming().getAuthorityData())
                 .build()
         );
-        model.getIncoming().getData().put(DEVICE_MQTT_CHANNEL,form.getIncomingChannel());
         model.setOutgoing(RouteActor.builder()
-                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getOutgoingDeviceAuthority()))
-                .data(new HashedMap())
+                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getOutgoing().getAuthorityId()))
+                .data(form.getOutgoing().getAuthorityData())
                 .build()
         );
-        model.getOutgoing().getData().put(DEVICE_MQTT_CHANNEL,form.getOutgoingDeviceChannel());
 
         assertThat(form.toModel(),equalTo(model));
 
@@ -181,41 +180,36 @@ public class EventRouteFormTest {
 
     @Test
     public void shouldTranslateFromDeviceRouteModelToForm() throws Exception {
-        form.setAdditionalSupplier(null);
-
         form.setOutgoingScheme("device");
-        form.setOutgoingDeviceAuthority("0000000000000005");
-        form.setOutgoingDeviceChannel("in");
+        form.getOutgoing().setAuthorityId("0000000000000005");
+        form.getOutgoing().getAuthorityData().put("channel","in");
 
         model.setIncoming(RouteActor.builder()
-                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncomingAuthority()))
-                .data(new HashedMap())
+                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncoming().getAuthorityId()))
+                .data(form.getIncoming().getAuthorityData())
                 .build());
-        model.getIncoming().getData().put(DEVICE_MQTT_CHANNEL,form.getIncomingChannel());
         model.setOutgoing(RouteActor.builder()
-                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getOutgoingDeviceAuthority()))
-                .data(new HashedMap())
+                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getOutgoing().getAuthorityId()))
+                .data(form.getOutgoing().getAuthorityData())
                 .build());
-        model.getOutgoing().getData().put(DEVICE_MQTT_CHANNEL,form.getOutgoingDeviceChannel());
 
         assertThat(new EventRouteForm().fillFrom(model),equalTo(form));
     }
 
     @Test
     public void shouldTranslateFromSMSRouteModelToForm() throws Exception {
-        form.setAdditionalSupplier(null);
-
         form.setOutgoingScheme("sms");
-        form.setOutgoingSmsDestinationGuid("+5511987654321");
+        form.getOutgoing().setAuthorityId("407902f6-5b85-4767-ad83-b8b3e847bd92");
+        form.getOutgoing().getAuthorityData().put("smsMessageStrategy","custom");
+        form.getOutgoing().getAuthorityData().put("smsMessageTemplate","A given message template");
 
         model.setIncoming(RouteActor.builder()
-                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncomingAuthority()))
-                .data(new HashedMap())
+                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncoming().getAuthorityId()))
+                .data(form.getIncoming().getAuthorityData())
                 .build());
-        model.getIncoming().getData().put(DEVICE_MQTT_CHANNEL,form.getIncomingChannel());
         model.setOutgoing(RouteActor.builder()
-                .uri(smsDestinationUriDealer.toSmsURI(tenant.getDomainName(),form.getOutgoingSmsDestinationGuid()))
-                .data(Collections.singletonMap(EventPublisherSms.SMS_MESSAGE_STRATEGY_PARAMETER_NAME, EventPublisherSms.SMS_MESSAGE_FORWARD_STRATEGY_PARAMETER_VALUE))
+                .uri(smsDestinationUriDealer.toSmsURI(tenant.getDomainName(),form.getOutgoing().getAuthorityId()))
+                .data(form.getOutgoing().getAuthorityData())
                 .build());
 
         assertThat(new EventRouteForm().fillFrom(model),equalTo(form));
@@ -223,19 +217,16 @@ public class EventRouteFormTest {
 
     @Test
     public void shouldTranslateFromRestDestinationRouteModelToForm() throws Exception {
-        form.setAdditionalSupplier(null);
-
         form.setOutgoingScheme("rest");
-        form.setOutgoingRestDestinationGuid("dda64780-eb81-11e5-958b-a73dab8b32ee");
+        form.getOutgoing().setAuthorityId("dda64780-eb81-11e5-958b-a73dab8b32ee");
 
         model.setIncoming(RouteActor.builder()
-                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncomingAuthority()))
-                .data(new HashedMap())
+                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncoming().getAuthorityId()))
+                .data(form.getIncoming().getAuthorityData())
                 .build());
-        model.getIncoming().getData().put(DEVICE_MQTT_CHANNEL,form.getIncomingChannel());
         model.setOutgoing(RouteActor.builder()
-                .uri(restDestinationURIDealer.toRestDestinationURI(tenant.getDomainName(), form.getOutgoingRestDestinationGuid()))
-                .data(new HashedMap())
+                .uri(restDestinationURIDealer.toRestDestinationURI(tenant.getDomainName(), form.getOutgoing().getAuthorityId()))
+                .data(form.getOutgoing().getAuthorityData())
                 .build());
 
         assertThat(new EventRouteForm().fillFrom(model),equalTo(form));
@@ -243,22 +234,18 @@ public class EventRouteFormTest {
 
     @Test
     public void shouldTranslateFromModelToFormWithOptionalTransformation() throws Exception {
-        form.setAdditionalSupplier(null);
-
         form.setOutgoingScheme("device");
-        form.setOutgoingDeviceAuthority("0000000000000005");
-        form.setOutgoingDeviceChannel("in");
+        form.getOutgoing().setAuthorityId("0000000000000005");
+        form.getOutgoing().getAuthorityData().put("channel","in");
 
         model.setIncoming(RouteActor.builder()
-                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncomingAuthority()))
-                .data(new HashedMap())
+                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncoming().getAuthorityId()))
+                .data(form.getIncoming().getAuthorityData())
                 .build());
-        model.getIncoming().getData().put(DEVICE_MQTT_CHANNEL,form.getIncomingChannel());
         model.setOutgoing(RouteActor.builder()
-                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getOutgoingDeviceAuthority()))
-                .data(new HashedMap())
+                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getOutgoing().getAuthorityId()))
+                .data(form.getOutgoing().getAuthorityData())
                 .build());
-        model.getOutgoing().getData().put(DEVICE_MQTT_CHANNEL,form.getOutgoingDeviceChannel());
 
         assertThat(new EventRouteForm().fillFrom(model),equalTo(form));
 

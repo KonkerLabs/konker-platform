@@ -13,6 +13,7 @@ import lombok.EqualsAndHashCode;
 
 import java.net.URI;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -28,15 +29,9 @@ public class EventRouteForm implements ModelBuilder<EventRoute,EventRouteForm,St
     private String id;
     private String name;
     private String description;
-    private String incomingAuthority;
-    private String incomingChannel;
+    private EventRouteActorForm incoming = new EventRouteActorForm();
     private String outgoingScheme = DeviceURIDealer.DEVICE_URI_SCHEME;
-    private String outgoingDeviceAuthority;
-    private String outgoingDeviceChannel;
-    private String outgoingSmsDestinationGuid;
-    private String outgoingSmsMessageStrategy = EventPublisherSms.SMS_MESSAGE_FORWARD_STRATEGY_PARAMETER_VALUE;
-    private String outgoingSmsMessageTemplate;
-    private String outgoingRestDestinationGuid;
+    private EventRouteActorForm outgoing = new EventRouteActorForm();
     private String filteringExpression;
     private String transformation;
     private boolean active;
@@ -57,8 +52,9 @@ public class EventRouteForm implements ModelBuilder<EventRoute,EventRouteForm,St
                 .id(id)
                 .name(getName())
                 .description(getDescription())
-                .incoming(RouteActor.builder().uri(toDeviceRouteURI(tenantDomainSupplier.get(), getIncomingAuthority())).data(new HashMap<>()).build())
-                .outgoing(RouteActor.builder().uri(buildOutgoingURI()).data(new HashMap<>()).build())
+                .incoming(RouteActor.builder().uri(toDeviceRouteURI(tenantDomainSupplier.get(),
+                        getIncoming().getAuthorityId())).data(getIncoming().getAuthorityData()).build())
+                .outgoing(RouteActor.builder().uri(buildOutgoingURI()).data(getOutgoing().getAuthorityData()).build())
                 .filteringExpression(getFilteringExpression())
                 .transformation(
                     Optional.ofNullable(getTransformation()).filter(value -> !value.isEmpty())
@@ -67,8 +63,6 @@ public class EventRouteForm implements ModelBuilder<EventRoute,EventRouteForm,St
                 )
                 .active(isActive())
                 .build();
-        applyIncomingMetadata(route);
-        applyOutgoingMetadata(route);
 
         return route;
     }
@@ -76,60 +70,62 @@ public class EventRouteForm implements ModelBuilder<EventRoute,EventRouteForm,St
     private URI buildOutgoingURI() {
         switch (getOutgoingScheme()) {
             case DeviceURIDealer.DEVICE_URI_SCHEME : return
-                toDeviceRouteURI(tenantDomainSupplier.get(),getOutgoingDeviceAuthority());
+                toDeviceRouteURI(tenantDomainSupplier.get(),getOutgoing().getAuthorityId());
             case SmsDestinationURIDealer.SMS_URI_SCHEME : return
-                toSmsURI(tenantDomainSupplier.get(), getOutgoingSmsDestinationGuid());
+                toSmsURI(tenantDomainSupplier.get(), getOutgoing().getAuthorityId());
             case RESTDestinationURIDealer.REST_DESTINATION_URI_SCHEME : return
-                toRestDestinationURI(tenantDomainSupplier.get(),getOutgoingRestDestinationGuid());
+                toRestDestinationURI(tenantDomainSupplier.get(),getOutgoing().getAuthorityId());
             default: return null;
         }
     }
-
-    private void applyIncomingMetadata(EventRoute route) {
-        route.getIncoming().getData().put(DEVICE_MQTT_CHANNEL,getIncomingChannel());
-    }
-
-    private void applyOutgoingMetadata(EventRoute route) {
-        switch (getOutgoingScheme()) {
-            case DeviceURIDealer.DEVICE_URI_SCHEME : {
-                route.getOutgoing().getData().put(DEVICE_MQTT_CHANNEL, getOutgoingDeviceChannel());
-                break;
-            }
-            case SmsDestinationURIDealer.SMS_URI_SCHEME : {
-                route.getOutgoing().getData().put(EventPublisherSms.SMS_MESSAGE_STRATEGY_PARAMETER_NAME, getOutgoingSmsMessageStrategy());
-                route.getOutgoing().getData().put(EventPublisherSms.SMS_MESSAGE_TEMPLATE_PARAMETER_NAME, getOutgoingSmsMessageTemplate());
-                break;
-            }
-            default: break;
-        }
-    }
+//
+//    private void applyIncomingMetadata(EventRoute route) {
+//        route.getIncoming().getData().put(DEVICE_MQTT_CHANNEL,getIncomingChannel());
+//    }
+//
+//    private void applyOutgoingMetadata(EventRoute route) {
+//        switch (getOutgoingScheme()) {
+//            case DeviceURIDealer.DEVICE_URI_SCHEME : {
+//                route.getOutgoing().getData().put(DEVICE_MQTT_CHANNEL, getOutgoingDeviceChannel());
+//                break;
+//            }
+//            case SmsDestinationURIDealer.SMS_URI_SCHEME : {
+//                route.getOutgoing().getData().put(EventPublisherSms.SMS_MESSAGE_STRATEGY_PARAMETER_NAME, getOutgoingSmsMessageStrategy());
+//                route.getOutgoing().getData().put(EventPublisherSms.SMS_MESSAGE_TEMPLATE_PARAMETER_NAME, getOutgoingSmsMessageTemplate());
+//                break;
+//            }
+//            default: break;
+//        }
+//    }
 
     @Override
     public EventRouteForm fillFrom(EventRoute model) {
         this.setId(model.getId());
         this.setName(model.getName());
         this.setDescription(model.getDescription());
-        this.setIncomingAuthority(model.getIncoming().getUri().getPath().replaceAll("/",""));
-        this.setIncomingChannel(model.getIncoming().getData().get(DEVICE_MQTT_CHANNEL));
+        this.getIncoming().setAuthorityId(model.getIncoming().getUri().getPath().replaceAll("/",""));
+        this.getIncoming().setAuthorityData(model.getIncoming().getData());
         this.setOutgoingScheme(model.getOutgoing().getUri().getScheme());
-        switch (getOutgoingScheme()) {
-            case DeviceURIDealer.DEVICE_URI_SCHEME : {
-                this.setOutgoingDeviceAuthority(model.getOutgoing().getUri().getPath().replaceAll("/",""));
-                this.setOutgoingDeviceChannel(model.getOutgoing().getData().get(DEVICE_MQTT_CHANNEL));
-                break;
-            }
-            case SmsDestinationURIDealer.SMS_URI_SCHEME : {
-                this.setOutgoingSmsDestinationGuid(model.getOutgoing().getUri().getPath().replaceAll("/",""));
-                this.setOutgoingSmsMessageStrategy(model.getOutgoing().getData().get(EventPublisherSms.SMS_MESSAGE_STRATEGY_PARAMETER_NAME));
-                this.setOutgoingSmsMessageTemplate(model.getOutgoing().getData().get(EventPublisherSms.SMS_MESSAGE_TEMPLATE_PARAMETER_NAME));
-                break;
-            }
-            case RESTDestinationURIDealer.REST_DESTINATION_URI_SCHEME : {
-                this.setOutgoingRestDestinationGuid(model.getOutgoing().getUri().getPath().replaceAll("/",""));
-                break;
-            }
-            default: break;
-        }
+//        switch (getOutgoingScheme()) {
+//            case DeviceURIDealer.DEVICE_URI_SCHEME : {
+//                this.setOutgoingDeviceAuthority(model.getOutgoing().getUri().getPath().replaceAll("/",""));
+//                this.setOutgoingDeviceChannel(model.getOutgoing().getData().get(DEVICE_MQTT_CHANNEL));
+//                break;
+//            }
+//            case SmsDestinationURIDealer.SMS_URI_SCHEME : {
+//                this.setOutgoingSmsDestinationGuid(model.getOutgoing().getUri().getPath().replaceAll("/",""));
+//                this.setOutgoingSmsMessageStrategy(model.getOutgoing().getData().get(EventPublisherSms.SMS_MESSAGE_STRATEGY_PARAMETER_NAME));
+//                this.setOutgoingSmsMessageTemplate(model.getOutgoing().getData().get(EventPublisherSms.SMS_MESSAGE_TEMPLATE_PARAMETER_NAME));
+//                break;
+//            }
+//            case RESTDestinationURIDealer.REST_DESTINATION_URI_SCHEME : {
+//                this.setOutgoingRestDestinationGuid(model.getOutgoing().getUri().getPath().replaceAll("/",""));
+//                break;
+//            }
+//            default: break;
+//        }
+        this.getOutgoing().setAuthorityId(model.getOutgoing().getUri().getPath().replaceAll("\\/",""));
+        this.getOutgoing().setAuthorityData(model.getOutgoing().getData());
         this.setFilteringExpression(model.getFilteringExpression());
         this.setTransformation(
             Optional.ofNullable(model.getTransformation())
@@ -142,5 +138,11 @@ public class EventRouteForm implements ModelBuilder<EventRoute,EventRouteForm,St
     @Override
     public void setAdditionalSupplier(Supplier<String> supplier) {
         tenantDomainSupplier = supplier;
+    }
+
+    @Data
+    public static class EventRouteActorForm {
+        private String authorityId;
+        private Map<String,String> authorityData = new HashMap<>();
     }
 }
