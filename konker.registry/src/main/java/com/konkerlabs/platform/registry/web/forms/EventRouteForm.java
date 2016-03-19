@@ -78,25 +78,6 @@ public class EventRouteForm implements ModelBuilder<EventRoute,EventRouteForm,St
             default: return null;
         }
     }
-//
-//    private void applyIncomingMetadata(EventRoute route) {
-//        route.getIncoming().getData().put(DEVICE_MQTT_CHANNEL,getIncomingChannel());
-//    }
-//
-//    private void applyOutgoingMetadata(EventRoute route) {
-//        switch (getOutgoingScheme()) {
-//            case DeviceURIDealer.DEVICE_URI_SCHEME : {
-//                route.getOutgoing().getData().put(DEVICE_MQTT_CHANNEL, getOutgoingDeviceChannel());
-//                break;
-//            }
-//            case SmsDestinationURIDealer.SMS_URI_SCHEME : {
-//                route.getOutgoing().getData().put(EventPublisherSms.SMS_MESSAGE_STRATEGY_PARAMETER_NAME, getOutgoingSmsMessageStrategy());
-//                route.getOutgoing().getData().put(EventPublisherSms.SMS_MESSAGE_TEMPLATE_PARAMETER_NAME, getOutgoingSmsMessageTemplate());
-//                break;
-//            }
-//            default: break;
-//        }
-//    }
 
     @Override
     public EventRouteForm fillFrom(EventRoute model) {
@@ -106,24 +87,6 @@ public class EventRouteForm implements ModelBuilder<EventRoute,EventRouteForm,St
         this.getIncoming().setAuthorityId(model.getIncoming().getUri().getPath().replaceAll("/",""));
         this.getIncoming().setAuthorityData(model.getIncoming().getData());
         this.setOutgoingScheme(model.getOutgoing().getUri().getScheme());
-//        switch (getOutgoingScheme()) {
-//            case DeviceURIDealer.DEVICE_URI_SCHEME : {
-//                this.setOutgoingDeviceAuthority(model.getOutgoing().getUri().getPath().replaceAll("/",""));
-//                this.setOutgoingDeviceChannel(model.getOutgoing().getData().get(DEVICE_MQTT_CHANNEL));
-//                break;
-//            }
-//            case SmsDestinationURIDealer.SMS_URI_SCHEME : {
-//                this.setOutgoingSmsDestinationGuid(model.getOutgoing().getUri().getPath().replaceAll("/",""));
-//                this.setOutgoingSmsMessageStrategy(model.getOutgoing().getData().get(EventPublisherSms.SMS_MESSAGE_STRATEGY_PARAMETER_NAME));
-//                this.setOutgoingSmsMessageTemplate(model.getOutgoing().getData().get(EventPublisherSms.SMS_MESSAGE_TEMPLATE_PARAMETER_NAME));
-//                break;
-//            }
-//            case RESTDestinationURIDealer.REST_DESTINATION_URI_SCHEME : {
-//                this.setOutgoingRestDestinationGuid(model.getOutgoing().getUri().getPath().replaceAll("/",""));
-//                break;
-//            }
-//            default: break;
-//        }
         this.getOutgoing().setAuthorityId(model.getOutgoing().getUri().getPath().replaceAll("\\/",""));
         this.getOutgoing().setAuthorityData(model.getOutgoing().getData());
         this.setFilteringExpression(model.getFilteringExpression());
