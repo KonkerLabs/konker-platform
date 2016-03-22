@@ -58,8 +58,11 @@ public class EventRouteServiceImpl implements EventRouteService {
     }
 
     @Override
-    public List<EventRoute> getAll(Tenant tenant) {
-        return eventRouteRepository.findAllByTenant(tenant.getId());
+    public ServiceResponse<List<EventRoute>> getAll(Tenant tenant) {
+        return ServiceResponse.<List<EventRoute>>builder()
+            .status(ServiceResponse.Status.OK)
+            .result(eventRouteRepository.findAllByTenant(tenant.getId()))
+            .<List<EventRoute>>build();
     }
 
     @Override

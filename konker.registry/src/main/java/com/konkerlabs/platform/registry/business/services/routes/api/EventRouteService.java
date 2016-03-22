@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface EventRouteService {
     ServiceResponse<EventRoute> save(Tenant tenant, EventRoute route);
-    List<EventRoute> getAll(Tenant tenant);
+    ServiceResponse<List<EventRoute>> getAll(Tenant tenant);
     ServiceResponse<EventRoute> getById(Tenant tenant, String id);
     ServiceResponse<List<EventRoute>> findByIncomingUri(URI uri);
 }

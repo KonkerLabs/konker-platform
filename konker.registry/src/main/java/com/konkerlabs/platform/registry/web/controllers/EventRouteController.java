@@ -61,7 +61,7 @@ public class EventRouteController {
 
     @RequestMapping
     public ModelAndView index() {
-        return new ModelAndView("routes/index","routes", eventRouteService.getAll(tenant));
+        return new ModelAndView("routes/index","routes", eventRouteService.getAll(tenant).getResult());
     }
 
     @RequestMapping("new")

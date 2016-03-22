@@ -172,7 +172,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/transformations.json", "/fixtures/event-routes.json"})
     public void shouldReturnAllRegisteredRoutesWithinATenant() throws Exception {
-        List<EventRoute> allRoutes = subject.getAll(tenant);
+        List<EventRoute> allRoutes = subject.getAll(tenant).getResult();
 
         assertThat(allRoutes, notNullValue());
         assertThat(allRoutes, hasSize(8));
@@ -185,7 +185,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
         assertThat(allRoutes.get(6).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63bb"));
         assertThat(allRoutes.get(7).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63bc"));
 
-        allRoutes = subject.getAll(emptyTenant);
+        allRoutes = subject.getAll(emptyTenant).getResult();
         assertThat(allRoutes, notNullValue());
         assertThat(allRoutes, empty());
     }

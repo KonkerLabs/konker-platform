@@ -186,7 +186,11 @@ public class EventRouteControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldListAllRegisteredRoutes() throws Exception {
-        when(eventRouteService.getAll(eq(tenant))).thenReturn(registeredRoutes);
+        when(eventRouteService.getAll(eq(tenant))).thenReturn(
+            ServiceResponse.<List<EventRoute>>builder()
+                .status(OK)
+                .result(registeredRoutes).<List<EventRoute>>build()
+        );
 
         getMockMvc().perform(get("/routes")).andExpect(model().attribute("routes", equalTo(registeredRoutes)))
                 .andExpect(view().name("routes/index"));
