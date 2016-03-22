@@ -90,7 +90,7 @@ public class RestDestinationTest {
     @Test
     public void shouldHaveNoValidationMessagesIfUsernameIsSetButPasswordIsNull() throws Exception {
         subject.setServicePassword(null);
-        assertThat(subject.applyValidations(), nullValue());
+        assertThat(subject.applyValidations(), empty());
     }
 
     @Test
@@ -100,34 +100,48 @@ public class RestDestinationTest {
     }
 
     @Test
+    public void shouldReturnAValidationMessageIfGUIDIsNull() throws Exception {
+        subject.setGuid(null);
+
+        assertThat(subject.applyValidations(), hasItem("GUID cannot be null or empty"));
+    }
+
+    @Test
+    public void shouldReturnAValidationMessageIfGUIDIsEmpty() throws Exception {
+        subject.setGuid("");
+
+        assertThat(subject.applyValidations(), hasItem("GUID cannot be null or empty"));
+    }
+
+    @Test
     public void shouldHaveNoValidationMessagesIfInterpolatesPath() throws Exception {
         subject.setServiceURI("http://host/@{#var}/");
-        assertThat(subject.applyValidations(), nullValue());
+        assertThat(subject.applyValidations(), empty());
     }
 
     @Test
     public void shouldHaveNoValidationMessagesIfUsernameIsSetButPasswordIsEmpty() throws Exception {
         subject.setServicePassword("   ");
-        assertThat(subject.applyValidations(), nullValue());
+        assertThat(subject.applyValidations(), empty());
     }
 
     @Test
     public void shouldHaveNoValidationMessagesIfUsernameAndPasswordAreNull() throws Exception {
         subject.setServiceUsername(null);
         subject.setServicePassword(null);
-        assertThat(subject.applyValidations(), nullValue());
+        assertThat(subject.applyValidations(), empty());
     }
 
     @Test
     public void shouldHaveNoValidationMessagesIfUsernameAndPasswordAreEmpty() throws Exception {
         subject.setServiceUsername("");
         subject.setServicePassword("");
-        assertThat(subject.applyValidations(), nullValue());
+        assertThat(subject.applyValidations(), empty());
     }
 
     @Test
     public void shouldHaveNoValidationMessagesIfRecordIsValid() throws Exception {
-        assertThat(subject.applyValidations(), nullValue());
+        assertThat(subject.applyValidations(), empty());
     }
 
     @Test

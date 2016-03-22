@@ -57,10 +57,10 @@ public class RestDestination implements RESTDestinationURIDealer {
             }
         }
 
-        if (validations.isEmpty())
-            return null;
-        else
-            return validations;
+        if (!Optional.ofNullable(getGuid()).filter(s -> !s.isEmpty()).isPresent())
+            validations.add("GUID cannot be null or empty");
+
+        return validations;
     }
 
     public URI toURI() {
