@@ -2,7 +2,10 @@ package com.konkerlabs.platform.registry;
 
 import com.konkerlabs.platform.registry.config.*;
 import com.konkerlabs.platform.utilities.config.UtilitiesConfig;
+import org.springframework.web.filter.HiddenHttpMethodFilter;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
+
+import javax.servlet.Filter;
 
 public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
 
@@ -26,5 +29,10 @@ public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherSe
     @Override
     protected String[] getServletMappings() {
         return new String[] { "/" };
+    }
+
+    @Override
+    protected Filter[] getServletFilters() {
+        return new Filter[] { new HiddenHttpMethodFilter() };
     }
 }

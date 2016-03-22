@@ -33,6 +33,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -176,6 +177,7 @@ public class SmsDestinationControllerTest extends WebLayerTestContext {
         getMockMvc().perform(get(format("/destinations/sms/{0}/edit", savedDestination.getGuid())))
                 .andExpect(model().attribute("destination", equalTo(new SmsDestinationForm().fillFrom(savedDestination))))
                 .andExpect(model().attribute("action", format("/destinations/sms/{0}",savedDestination.getGuid())))
+                .andExpect(model().attribute("method", "put"))
                 .andExpect(view().name("destinations/sms/form"));
 
         verify(smsDestinationService).getByGUID(eq(tenant),eq(savedDestination.getGuid()));
@@ -189,7 +191,7 @@ public class SmsDestinationControllerTest extends WebLayerTestContext {
 
         when(smsDestinationService.update(eq(tenant),eq(savedDestination.getGuid()),eq(destination))).thenReturn(response);
 
-        getMockMvc().perform(post(format("/destinations/sms/{0}",savedDestination.getGuid())).params(destinationData))
+        getMockMvc().perform(put(format("/destinations/sms/{0}",savedDestination.getGuid())).params(destinationData))
                 .andExpect(model().attribute("errors", equalTo(response.getResponseMessages())))
                 .andExpect(model().attribute("destination", equalTo(destinationForm)))
                 .andExpect(view().name("destinations/sms/form"));
@@ -206,7 +208,7 @@ public class SmsDestinationControllerTest extends WebLayerTestContext {
 
         when(smsDestinationService.update(eq(tenant),eq(savedDestination.getGuid()),eq(destination))).thenReturn(response);
 
-        getMockMvc().perform(post(format("/destinations/sms/{0}",savedDestination.getGuid())).params(destinationData))
+        getMockMvc().perform(put(format("/destinations/sms/{0}",savedDestination.getGuid())).params(destinationData))
                 .andExpect(flash().attribute("message", "Destination saved successfully"))
                 .andExpect(redirectedUrl(format("/destinations/sms/{0}", savedDestination.getGuid())));
 

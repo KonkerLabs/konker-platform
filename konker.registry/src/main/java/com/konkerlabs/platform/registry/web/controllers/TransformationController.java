@@ -66,10 +66,11 @@ public class TransformationController {
     public ModelAndView edit(@PathVariable("transformationId") String transformationId) {
         return new ModelAndView("transformations/form")
                 .addObject("transformation",new TransformationForm().fillFrom(transformationService.get(tenant, transformationId).getResult()))
-                .addObject("action", MessageFormat.format("/transformation/{0}",transformationId));
+                .addObject("action", MessageFormat.format("/transformation/{0}",transformationId))
+                .addObject("method", "put");
     }
 
-    @RequestMapping(path = "/{transformationId}", method = RequestMethod.POST)
+    @RequestMapping(path = "/{transformationId}", method = RequestMethod.PUT)
     public ModelAndView saveEdit(@PathVariable String transformationId,
                                  @ModelAttribute("transformation") TransformationForm transformationForm,
                                  RedirectAttributes redirectAttributes) {

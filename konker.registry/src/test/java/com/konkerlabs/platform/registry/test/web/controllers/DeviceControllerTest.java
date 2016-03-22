@@ -37,6 +37,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -97,7 +98,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
         .thenReturn(ServiceResponse.<List<Device>>builder()
                 .status(ServiceResponse.Status.OK)
                 .result(registeredDevices)
-                .build());
+                .<List<Device>>build());
 
         getMockMvc().perform(get("/devices")).andExpect(model().attribute("devices", equalTo(registeredDevices)))
                 .andExpect(view().name("devices/index"));
@@ -157,7 +158,8 @@ public class DeviceControllerTest extends WebLayerTestContext {
     public void shouldShowDeviceEventList() throws Exception {
         savedDevice.setRegistrationDate(Instant.now());
         when(deviceRegisterService.getByDeviceId(tenant, savedDevice.getId())).thenReturn(
-                ServiceResponse.<Device>builder().status(ServiceResponse.Status.OK).result(savedDevice).build());
+                ServiceResponse.<Device>builder().status(ServiceResponse.Status.OK).result(savedDevice)
+                        .<Device>build());
 
         getMockMvc().perform(get(MessageFormat.format("/devices/{0}/events", savedDevice.getId())))
                 .andExpect(model().attribute("device", savedDevice)).andExpect(view().name("devices/events"));
@@ -167,12 +169,15 @@ public class DeviceControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldShowEditForm() throws Exception {
-        when(deviceRegisterService.getByDeviceId(tenant, savedDevice.getId())).thenReturn(ServiceResponse.<Device>builder().status(ServiceResponse.Status.OK).result(savedDevice).build());
+        when(deviceRegisterService.getByDeviceId(tenant, savedDevice.getId())).thenReturn(ServiceResponse.<Device>builder()
+                .status(ServiceResponse.Status.OK).result(savedDevice)
+                .<Device>build());
 
         getMockMvc().perform(get(MessageFormat.format("/devices/{0}/edit", savedDevice.getId())))
                 .andExpect(model().attribute("device", equalTo(deviceForm)))
                 .andExpect(model().attribute("isEditing",true))
                 .andExpect(model().attribute("action", MessageFormat.format("/devices/{0}",savedDevice.getId())))
+                .andExpect(model().attribute("method", "put"))
                 .andExpect(view().name("devices/form"));
     }
 
@@ -183,7 +188,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
 
         when(deviceRegisterService.update(Matchers.anyObject(), Matchers.anyString(), Matchers.anyObject())).thenReturn(response);
 
-        getMockMvc().perform(post(MessageFormat.format("/devices/{0}", DEVICE_ID_95C14B36BA2B43F1)).params(deviceData))
+        getMockMvc().perform(put(MessageFormat.format("/devices/{0}", DEVICE_ID_95C14B36BA2B43F1)).params(deviceData))
                 .andExpect(model().attribute("errors", equalTo(response.getResponseMessages())))
                 .andExpect(model().attribute("device", equalTo(deviceForm)))
                 .andExpect(view().name("devices/form"));
@@ -200,7 +205,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
 
         when(deviceRegisterService.update(eq(tenant), eq(savedDevice.getId()), eq(device))).thenReturn(response);
 
-        getMockMvc().perform(post(MessageFormat.format("/devices/{0}", savedDevice.getId())).params(deviceData))
+        getMockMvc().perform(put(MessageFormat.format("/devices/{0}", savedDevice.getId())).params(deviceData))
                 .andExpect(flash().attribute("message", "Device saved successfully"))
                 .andExpect(redirectedUrl(MessageFormat.format("/devices/{0}", savedDevice.getId())));
 

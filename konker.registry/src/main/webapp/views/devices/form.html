@@ -14,6 +14,7 @@
             </div>
             <form data-th-action="@{{url}(url=${action})}" data-th-object="${device}"
                   method="post" class="form-horizontal">
+                <input type="hidden" name="_method" data-th-value="${method}" data-th-if="${method != null}"/>
                 <div class="form-group">
                     <label class="col-sm-1 control-label" for="deviceId">Device ID</label>
                     <div class="col-sm-4">

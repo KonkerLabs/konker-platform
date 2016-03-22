@@ -101,10 +101,11 @@ public class EventRouteController {
     public ModelAndView edit(@PathVariable String routeId) {
         return new ModelAndView("routes/form")
             .addObject("route",new EventRouteForm().fillFrom(eventRouteService.getById(tenant, routeId).getResult()))
-            .addObject("action", MessageFormat.format("/routes/{0}",routeId));
+            .addObject("action", MessageFormat.format("/routes/{0}",routeId))
+            .addObject("method", "put");
     }
 
-    @RequestMapping(path = "/{routeId}", method = RequestMethod.POST)
+    @RequestMapping(path = "/{routeId}", method = RequestMethod.PUT)
     public ModelAndView saveEdit(@PathVariable String routeId,
                                  @ModelAttribute("eventRouteForm") EventRouteForm eventRouteForm,
                                  RedirectAttributes redirectAttributes) {

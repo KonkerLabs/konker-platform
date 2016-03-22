@@ -63,10 +63,11 @@ public class RestDestinationController {
         return new ModelAndView("destinations/rest/form")
                 .addObject("destination",new RestDestinationForm()
                         .fillFrom(restDestinationService.getByGUID(tenant,guid).getResult()))
-                .addObject("action",format("/destinations/rest/{0}",guid));
+                .addObject("action",format("/destinations/rest/{0}",guid))
+                .addObject("method", "put");
     }
 
-    @RequestMapping(value = "/{guid}", method = RequestMethod.POST)
+    @RequestMapping(value = "/{guid}", method = RequestMethod.PUT)
     public ModelAndView saveEdit(@PathVariable String guid,
                                 @ModelAttribute("destinationForm") RestDestinationForm destinationForm,
                                 RedirectAttributes redirectAttributes) {

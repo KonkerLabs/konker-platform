@@ -46,6 +46,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -266,7 +267,24 @@ public class EventRouteControllerTest extends WebLayerTestContext {
         getMockMvc().perform(get(format("/routes/{0}/edit", routeId)))
                 .andExpect(model().attribute("route", equalTo(routeForm)))
                 .andExpect(model().attribute("action", format("/routes/{0}", routeId)))
+                .andExpect(model().attribute("method", "put"))
                 .andExpect(view().name("routes/form"));
+    }
+
+    @Test
+    public void shouldBindErrorMessagesWhenUpdateFailsAndGoBackToEditForm() throws Exception {
+        routeForm.setId(routeId);
+        route.setId(routeId);
+        response = ServiceResponse.<EventRoute>builder().responseMessages(asList(new String[]{"Some error"}))
+                .status(ERROR).<EventRoute>build();
+
+        when(eventRouteService.save(eq(tenant), eq(route))).thenReturn(response);
+
+        getMockMvc().perform(put("/routes/{0}", route.getId()).params(routeData))
+                .andExpect(model().attribute("errors", equalTo(response.getResponseMessages())))
+                .andExpect(model().attribute("route", equalTo(routeForm))).andExpect(view().name("routes/form"));
+
+        verify(eventRouteService).save(eq(tenant), eq(route));
     }
 
     @Test
@@ -279,7 +297,7 @@ public class EventRouteControllerTest extends WebLayerTestContext {
 
         when(eventRouteService.save(eq(tenant), eq(route))).thenReturn(response);
 
-        getMockMvc().perform(post("/routes/{0}", route.getId()).params(routeData))
+        getMockMvc().perform(put("/routes/{0}", route.getId()).params(routeData))
                 .andExpect(flash().attribute("message", "Route registered successfully"))
                 .andExpect(redirectedUrl(MessageFormat.format("/routes/{0}", route.getId())));
 

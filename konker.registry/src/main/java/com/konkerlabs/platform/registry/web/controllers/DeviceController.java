@@ -56,7 +56,8 @@ public class DeviceController {
         return new ModelAndView("devices/form")
             .addObject("device", new DeviceRegistrationForm().fillFrom(deviceRegisterService.getByDeviceId(tenant, deviceId).getResult()))
             .addObject("isEditing", true)
-            .addObject("action", MessageFormat.format("/devices/{0}",deviceId));
+            .addObject("action", MessageFormat.format("/devices/{0}",deviceId))
+            .addObject("method", "put");
     }
 
     @RequestMapping("/{deviceId}/events")
@@ -76,7 +77,7 @@ public class DeviceController {
                 redirectAttributes);
     }
 
-    @RequestMapping(path = "/{deviceId}", method = RequestMethod.POST)
+    @RequestMapping(path = "/{deviceId}", method = RequestMethod.PUT)
     public ModelAndView saveEdit(@PathVariable String deviceId,
             @ModelAttribute("deviceForm") DeviceRegistrationForm deviceForm, RedirectAttributes redirectAttributes) {
 

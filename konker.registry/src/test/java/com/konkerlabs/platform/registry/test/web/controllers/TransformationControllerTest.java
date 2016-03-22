@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -165,7 +166,7 @@ public class TransformationControllerTest extends WebLayerTestContext {
                         .status(ServiceResponse.Status.ERROR)
                         .responseMessage("Any errors").<Transformation>build());
 
-        getMockMvc().perform(post(MessageFormat.format("/transformation/{0}", "123")).params(transformationData))
+        getMockMvc().perform(put(MessageFormat.format("/transformation/{0}", "123")).params(transformationData))
                 .andExpect(model().attribute("transformation", transformationForm))
                 .andExpect(model().attribute("errors", Arrays.asList(new String[]{"Any errors"})))
                 .andExpect(view().name("transformations/form"));
@@ -181,7 +182,7 @@ public class TransformationControllerTest extends WebLayerTestContext {
 
         when(transformationService.update(eq(tenant), eq("123"), eq(transformation))).thenReturn(serviceResponse);
 
-        getMockMvc().perform(post(MessageFormat.format("/transformation/{0}", "123")).params(transformationData))
+        getMockMvc().perform(put(MessageFormat.format("/transformation/{0}", "123")).params(transformationData))
                 .andExpect(flash().attribute("message", "Transformation updated successfully"))
                 .andExpect(redirectedUrl(MessageFormat.format("/transformation/{0}", transformation.getId())));
 
@@ -214,6 +215,7 @@ public class TransformationControllerTest extends WebLayerTestContext {
         getMockMvc().perform(get(MessageFormat.format("/transformation/{0}/edit", transformation.getId())))
                 .andExpect(view().name("transformations/form"))
                 .andExpect(model().attribute("transformation", new TransformationForm().fillFrom(transformation)))
+                .andExpect(model().attribute("method", "put"))
                 .andExpect(model().attribute("action", MessageFormat.format("/transformation/{0}", transformation.getId())));
     }
 

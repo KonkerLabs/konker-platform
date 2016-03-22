@@ -96,10 +96,11 @@ public class EnrichmentController {
     public ModelAndView edit(@PathVariable("dataEnrichmentExtensionGUID") String dataEnrichmentExtensionGUID) {
         return new ModelAndView("enrichment/form")
                 .addObject("dataEnrichmentExtension",new EnrichmentForm().fillFrom(dataEnrichmentExtensionService.getByGUID(tenant, dataEnrichmentExtensionGUID).getResult()))
-                .addObject("action", MessageFormat.format("/enrichment/{0}",dataEnrichmentExtensionGUID));
+                .addObject("action", MessageFormat.format("/enrichment/{0}",dataEnrichmentExtensionGUID))
+                .addObject("method","put");
     }
 
-    @RequestMapping(path = "/{dataEnrichmentExtensionGUID}", method = RequestMethod.POST)
+    @RequestMapping(path = "/{dataEnrichmentExtensionGUID}", method = RequestMethod.PUT)
     public ModelAndView saveEdit(@PathVariable String dataEnrichmentExtensionGUID,
                                  @ModelAttribute("enrichmentForm") EnrichmentForm enrichmentForm,
                                  RedirectAttributes redirectAttributes) {

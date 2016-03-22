@@ -40,6 +40,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -196,7 +197,28 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
         getMockMvc().perform(get(MessageFormat.format("/enrichment/{0}/edit", dataEnrichmentExtension.getName())))
                 .andExpect(view().name("enrichment/form"))
                 .andExpect(model().attribute("dataEnrichmentExtension", new EnrichmentForm().fillFrom(dataEnrichmentExtension)))
-                .andExpect(model().attribute("action", MessageFormat.format("/enrichment/{0}", dataEnrichmentExtension.getName())));
+                .andExpect(model().attribute("action", MessageFormat.format("/enrichment/{0}", dataEnrichmentExtension.getName())))
+                .andExpect(model().attribute("method", "put"));
+    }
+
+    @Test
+    public void shouldBindErrorMessagesWhenUpdateFailsAndGoBackToEditForm() throws Exception {
+        String exceptionMessage = "Some business exception";
+
+        serviceResponse = spy(ServiceResponse.<DataEnrichmentExtension>builder()
+                .status(ServiceResponse.Status.ERROR)
+                .responseMessage(exceptionMessage)
+                .<DataEnrichmentExtension>build());
+
+        when(dataEnrichmentExtensionService.update(eq(tenant), eq(enrichmentGuid), eq(dataEnrichmentExtension)))
+                .thenReturn(serviceResponse);
+
+        getMockMvc().perform(put(MessageFormat.format("/enrichment/{0}", enrichmentGuid)).params(enrichmentData))
+                .andExpect(model().attribute("errors", equalTo(Arrays.asList(new String[]{"Some business exception"}))))
+                .andExpect(model().attribute("dataEnrichmentExtension", equalTo(enrichmentForm)))
+                .andExpect(view().name("enrichment/form"));
+
+        verify(dataEnrichmentExtensionService).update(eq(tenant), eq(enrichmentGuid), eq(dataEnrichmentExtension));
     }
 
     @Test
@@ -208,7 +230,7 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
 
         when(dataEnrichmentExtensionService.update(eq(tenant), eq(enrichmentGuid), eq(dataEnrichmentExtension))).thenReturn(serviceResponse);
 
-        getMockMvc().perform(post(MessageFormat.format("/enrichment/{0}", enrichmentGuid)).params(enrichmentData))
+        getMockMvc().perform(put(MessageFormat.format("/enrichment/{0}", enrichmentGuid)).params(enrichmentData))
                 .andExpect(flash().attribute("message", "Enrichment updated successfully"))
                 .andExpect(redirectedUrl(MessageFormat.format("/enrichment/{0}", dataEnrichmentExtension.getGuid())));
 
