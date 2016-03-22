@@ -75,6 +75,10 @@ def empty_text():
 def abort_request():
     abort(400, "Aborted")
 
+@app.route("/literal/redirect", methods=["POST", "GET"])
+def redirect_request():
+    return(redirect("/document/empty", code=302))
+
 @app.route("/admin/log", methods=["GET"])
 def log_list():
     resp = Response(json.dumps([x for x in history], indent=4))

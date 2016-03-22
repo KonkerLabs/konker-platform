@@ -36,6 +36,7 @@ There are also
 /literal/empty_list  => Returns an empty json list
 /literal/empty_text  => Returns an empty text
 /literal/abort       => Returns a 400 Error
+/literal/redirect    => Redirects to empty document with a status 302
 
 Same examples:
 
