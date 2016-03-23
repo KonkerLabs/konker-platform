@@ -29,6 +29,7 @@ public class EventRoute {
     private String filteringExpression;
     @DBRef
     private Transformation transformation;
+    private String guid;
     private boolean active;
 
     public List<String> applyValidations() {
@@ -50,6 +51,8 @@ public class EventRoute {
             validations.add("Outgoing actor URI cannot be null");
         if (getOutgoing() != null && getOutgoing().getUri() != null && getOutgoing().getUri().toString().isEmpty())
             validations.add("Outgoing actor's URI cannot be empty");
+        if (!Optional.ofNullable(getGuid()).filter(s -> !s.isEmpty()).isPresent())
+            validations.add("GUID cannot be null or empty");
 
         if ("device".equals(Optional.ofNullable(getIncoming()).map(RouteActor::getUri).map(URI::getScheme).orElse(""))) {
             applyDeviceIncomingValidations(validations);

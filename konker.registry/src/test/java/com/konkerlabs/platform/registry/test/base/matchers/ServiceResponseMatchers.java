@@ -53,6 +53,26 @@ public class ServiceResponseMatchers {
         };
     }
 
+    public static Matcher<ServiceResponse> hasNoErrorMessage(String message) {
+        return new BaseMatcher<ServiceResponse>() {
+            @Override
+            protected boolean matchesSafely(ServiceResponse item) {
+                return item.getStatus().equals(ServiceResponse.Status.ERROR) &&
+                        item.getResponseMessages().contains(message);
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText(
+                        ServiceResponse.builder()
+                                .status(ServiceResponse.Status.ERROR)
+                                .responseMessage(message)
+                                .build().toString()
+                );
+            }
+        };
+    }
+
     public static Matcher<ServiceResponse> hasAllErrors(List<String> errors) {
         return new BaseMatcher<ServiceResponse>() {
             @Override

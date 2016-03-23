@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import java.net.URI;
 import java.util.HashMap;
+import java.util.UUID;
 
 import static com.konkerlabs.platform.registry.business.services.publishers.EventPublisherMqtt.DEVICE_MQTT_CHANNEL;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -21,11 +22,14 @@ public class EventRouteTest {
     private EventRoute subject;
     private String incomingAuthority = "0000000000000004";
     private String outgoingAuthority = "0000000000000005";
+    private String guid;
 
     @Before
     public void setUp() throws Exception {
 
         Tenant tenant = Tenant.builder().name("Konker").build();
+
+        guid = UUID.randomUUID().toString();
 
         subject = EventRoute.builder()
             .tenant(tenant)
@@ -56,6 +60,7 @@ public class EventRouteTest {
                         RestTransformationStep.builder().build()
                     ).build()
             )
+            .guid(guid)
             .active(true)
             .build();
     }
@@ -145,6 +150,22 @@ public class EventRouteTest {
         subject.getOutgoing().setData(new HashMap<>());
 
         String expectedMessage = "A valid MQTT outgoing channel is required";
+
+        assertThat(subject.applyValidations(), hasItem(expectedMessage));
+    }
+    @Test
+    public void shouldReturnAValidationMessageIfGUIDIsNull() throws Exception {
+        subject.setGuid(null);
+
+        String expectedMessage = "GUID cannot be null or empty";
+
+        assertThat(subject.applyValidations(), hasItem(expectedMessage));
+    }
+    @Test
+    public void shouldReturnAValidationMessageIfGUIDIsEmpty() throws Exception {
+        subject.setGuid("");
+
+        String expectedMessage = "GUID cannot be null or empty";
 
         assertThat(subject.applyValidations(), hasItem(expectedMessage));
     }

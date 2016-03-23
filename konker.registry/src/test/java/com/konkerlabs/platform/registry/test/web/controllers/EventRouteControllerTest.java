@@ -28,7 +28,6 @@ import org.springframework.util.MultiValueMap;
 import java.net.URI;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -38,7 +37,6 @@ import static com.konkerlabs.platform.registry.business.model.behaviors.RESTDest
 import static com.konkerlabs.platform.registry.business.model.behaviors.SmsDestinationURIDealer.SMS_URI_SCHEME;
 import static com.konkerlabs.platform.registry.business.services.api.ServiceResponse.Status.ERROR;
 import static com.konkerlabs.platform.registry.business.services.api.ServiceResponse.Status.OK;
-import static com.konkerlabs.platform.registry.business.services.publishers.EventPublisherMqtt.DEVICE_MQTT_CHANNEL;
 import static java.text.MessageFormat.format;
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.equalTo;
@@ -75,13 +73,14 @@ public class EventRouteControllerTest extends WebLayerTestContext {
 
     private Device incomingDevice;
     private Device outgoingDevice;
-    private EventRoute route;
+    private EventRoute newRoute;
+    private EventRoute savedRoute;
     private List<EventRoute> registeredRoutes;
     private ServiceResponse<EventRoute> response;
     private MultiValueMap<String, String> routeData;
-    private EventRouteForm routeForm;
 
-    private String routeId = "71fb0d48-674b-4f64-a3e5-0256ff3a63af";
+    private EventRouteForm routeForm;
+    private String routeGuid = "71fb0d48-674b-4f64-a3e5-0256ff3a63af";
 
     @Before
     public void setUp() throws Exception {
@@ -160,7 +159,7 @@ public class EventRouteControllerTest extends WebLayerTestContext {
             }
         };
 
-        route = EventRoute.builder()
+        EventRoute.EventRouteBuilder routeBuilder = EventRoute.builder()
                 .name(routeForm.getName())
                 .description(routeForm.getDescription())
                 .incoming(RouteActor.builder()
@@ -173,10 +172,13 @@ public class EventRouteControllerTest extends WebLayerTestContext {
                         .build())
                 .filteringExpression(routeForm.getFilteringExpression())
                 .transformation(Transformation.builder().id(routeForm.getTransformation()).build())
-                .active(routeForm.isActive())
-                .build();
+                .active(routeForm.isActive());
 
-        registeredRoutes = new ArrayList<EventRoute>(asList(new EventRoute[]{route}));
+        newRoute = routeBuilder.build();
+
+        savedRoute = routeBuilder.guid(routeGuid).build();
+
+        registeredRoutes = new ArrayList<EventRoute>(asList(new EventRoute[]{newRoute}));
     }
 
     @After
@@ -236,93 +238,90 @@ public class EventRouteControllerTest extends WebLayerTestContext {
         response = ServiceResponse.<EventRoute>builder().responseMessages(asList(new String[]{"Some error"}))
                 .status(ERROR).<EventRoute>build();
 
-        when(eventRouteService.save(eq(tenant), eq(route))).thenReturn(response);
+        when(eventRouteService.save(eq(tenant), eq(newRoute))).thenReturn(response);
 
         getMockMvc().perform(post("/routes/save").params(routeData))
                 .andExpect(model().attribute("errors", equalTo(response.getResponseMessages())))
                 .andExpect(model().attribute("route", equalTo(routeForm))).andExpect(view().name("routes/form"));
 
-        verify(eventRouteService).save(eq(tenant), eq(route));
+        verify(eventRouteService).save(eq(tenant), eq(newRoute));
     }
 
     @Test
     public void shouldRedirectToShowAfterSuccessfulRouteCreation() throws Exception {
         response = spy(ServiceResponse.<EventRoute>builder()
                 .status(OK)
-                .result(route)
+                .result(savedRoute)
                 .<EventRoute>build());
 
-        when(eventRouteService.save(eq(tenant), eq(route))).thenReturn(response);
+        when(eventRouteService.save(eq(tenant), eq(newRoute))).thenReturn(response);
 
         getMockMvc().perform(post("/routes/save").params(routeData))
                 .andExpect(flash().attribute("message", "Route registered successfully"))
-                .andExpect(redirectedUrl(MessageFormat.format("/routes/{0}", route.getId())));
+                .andExpect(redirectedUrl(MessageFormat.format("/routes/{0}", savedRoute.getGuid())));
 
-        verify(eventRouteService).save(eq(tenant), eq(route));
+        verify(eventRouteService).save(eq(tenant), eq(newRoute));
     }
 
     @Test
     public void shouldShowEditForm() throws Exception {
         routeForm.setAdditionalSupplier(null);
 
-        when(eventRouteService.getById(tenant, routeId)).thenReturn(
-                ServiceResponse.<EventRoute>builder().result(route).status(OK).<EventRoute>build());
+        when(eventRouteService.getByGUID(tenant, routeGuid)).thenReturn(
+                ServiceResponse.<EventRoute>builder().result(newRoute).status(OK).<EventRoute>build());
 
-        getMockMvc().perform(get(format("/routes/{0}/edit", routeId)))
+        getMockMvc().perform(get(format("/routes/{0}/edit", routeGuid)))
                 .andExpect(model().attribute("route", equalTo(routeForm)))
-                .andExpect(model().attribute("action", format("/routes/{0}", routeId)))
+                .andExpect(model().attribute("action", format("/routes/{0}", routeGuid)))
                 .andExpect(model().attribute("method", "put"))
                 .andExpect(view().name("routes/form"));
     }
 
     @Test
     public void shouldBindErrorMessagesWhenUpdateFailsAndGoBackToEditForm() throws Exception {
-        routeForm.setId(routeId);
-        route.setId(routeId);
         response = ServiceResponse.<EventRoute>builder().responseMessages(asList(new String[]{"Some error"}))
                 .status(ERROR).<EventRoute>build();
 
-        when(eventRouteService.save(eq(tenant), eq(route))).thenReturn(response);
+        when(eventRouteService.update(eq(tenant), eq(routeGuid), eq(newRoute))).thenReturn(response);
 
-        getMockMvc().perform(put("/routes/{0}", route.getId()).params(routeData))
+        getMockMvc().perform(put("/routes/{0}", routeGuid).params(routeData))
                 .andExpect(model().attribute("errors", equalTo(response.getResponseMessages())))
                 .andExpect(model().attribute("route", equalTo(routeForm))).andExpect(view().name("routes/form"));
 
-        verify(eventRouteService).save(eq(tenant), eq(route));
+        verify(eventRouteService).update(eq(tenant), eq(routeGuid), eq(newRoute));
     }
 
     @Test
     public void shouldRedirectToShowAfterSuccessfulRouteEdit() throws Exception {
-        route.setId(routeId);
         response = spy(ServiceResponse.<EventRoute>builder()
                 .status(OK)
-                .result(route)
+                .result(newRoute)
                 .<EventRoute>build());
 
-        when(eventRouteService.save(eq(tenant), eq(route))).thenReturn(response);
+        when(eventRouteService.update(eq(tenant), eq(routeGuid), eq(newRoute))).thenReturn(response);
 
-        getMockMvc().perform(put("/routes/{0}", route.getId()).params(routeData))
+        getMockMvc().perform(put("/routes/{0}", routeGuid).params(routeData))
                 .andExpect(flash().attribute("message", "Route registered successfully"))
-                .andExpect(redirectedUrl(MessageFormat.format("/routes/{0}", route.getId())));
+                .andExpect(redirectedUrl(MessageFormat.format("/routes/{0}", newRoute.getGuid())));
 
-        verify(eventRouteService).save(eq(tenant), eq(route));
+        verify(eventRouteService).update(eq(tenant), eq(routeGuid), eq(newRoute));
     }
 
     @Test
     public void shouldShowRouteDetails() throws Exception {
         routeForm.setAdditionalSupplier(null);
 
-        routeForm.setId(routeId);
-        route.setId(routeId);
-        when(eventRouteService.getById(tenant, route.getId())).thenReturn(
-                ServiceResponse.<EventRoute>builder().result(route).status(OK).<EventRoute>build());
+        routeForm.setId(routeGuid);
+        newRoute.setId(routeGuid);
+        when(eventRouteService.getByGUID(tenant, newRoute.getId())).thenReturn(
+                ServiceResponse.<EventRoute>builder().result(newRoute).status(OK).<EventRoute>build());
 
         getMockMvc().perform(
-                get("/routes/{0}", route.getId())
+                get("/routes/{0}", newRoute.getId())
         ).andExpect(model().attribute("route", equalTo(routeForm)))
                 .andExpect(view().name("routes/show"));
 
-        verify(eventRouteService).getById(tenant, route.getId());
+        verify(eventRouteService).getByGUID(tenant, newRoute.getId());
     }
 
     @Configuration

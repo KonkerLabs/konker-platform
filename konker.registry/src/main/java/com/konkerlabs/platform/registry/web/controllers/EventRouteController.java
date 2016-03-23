@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +19,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.function.Supplier;
 
 @Controller
 @Scope("request")
@@ -74,43 +76,37 @@ public class EventRouteController {
     @RequestMapping(value = "save", method = RequestMethod.POST)
     public ModelAndView save(@ModelAttribute("eventRouteForm") EventRouteForm eventRouteForm,
                              RedirectAttributes redirectAttributes) {
-        ServiceResponse<EventRoute> response;
-        eventRouteForm.setAdditionalSupplier(() -> tenant.getDomainName());
-        response = eventRouteService.save(tenant, eventRouteForm.toModel());
 
-        switch (response.getStatus()) {
-            case ERROR: {
-                return new ModelAndView("routes/form")
-                    .addObject("errors",response.getResponseMessages())
-                    .addObject("route", eventRouteForm);
-            }
-            default: {
-                redirectAttributes.addFlashAttribute("message", "Route registered successfully");
-                return new ModelAndView(MessageFormat.format("redirect:/routes/{0}",
-                        response.getResult().getId()));
-            }
-        }
+        return doSave(() -> {
+            eventRouteForm.setAdditionalSupplier(() -> tenant.getDomainName());
+            return eventRouteService.save(tenant, eventRouteForm.toModel());
+        },eventRouteForm,redirectAttributes);
+
     }
 
-    @RequestMapping(value = "/{routeId}", method = RequestMethod.GET)
-    public ModelAndView show(@PathVariable("routeId") String routeId) {
-        return new ModelAndView("routes/show","route",new EventRouteForm().fillFrom(eventRouteService.getById(tenant, routeId).getResult()));
+    @RequestMapping(value = "/{routeGUID}", method = RequestMethod.GET)
+    public ModelAndView show(@PathVariable("routeGUID") String routeGUID) {
+        return new ModelAndView("routes/show","route",new EventRouteForm().fillFrom(eventRouteService.getByGUID(tenant, routeGUID).getResult()));
     }
 
     @RequestMapping("/{routeId}/edit")
     public ModelAndView edit(@PathVariable String routeId) {
         return new ModelAndView("routes/form")
-            .addObject("route",new EventRouteForm().fillFrom(eventRouteService.getById(tenant, routeId).getResult()))
+            .addObject("route",new EventRouteForm().fillFrom(eventRouteService.getByGUID(tenant, routeId).getResult()))
             .addObject("action", MessageFormat.format("/routes/{0}",routeId))
             .addObject("method", "put");
     }
 
-    @RequestMapping(path = "/{routeId}", method = RequestMethod.PUT)
-    public ModelAndView saveEdit(@PathVariable String routeId,
+    @RequestMapping(path = "/{routeGUID}", method = RequestMethod.PUT)
+    public ModelAndView saveEdit(@PathVariable String routeGUID,
                                  @ModelAttribute("eventRouteForm") EventRouteForm eventRouteForm,
                                  RedirectAttributes redirectAttributes) {
-        eventRouteForm.setId(routeId);
-        return save(eventRouteForm, redirectAttributes);
+
+        return doSave(() -> {
+            eventRouteForm.setAdditionalSupplier(() -> tenant.getDomainName());
+            return eventRouteService.update(tenant, routeGUID, eventRouteForm.toModel());
+        },eventRouteForm,redirectAttributes);
+
     }
 
     @RequestMapping("/outgoing/{outgoingScheme}")
@@ -122,6 +118,25 @@ public class EventRouteController {
             case "rest" : return new ModelAndView("routes/rest-outgoing", "route", route);
             //FIXME: Check for a way to render an empty HTTP body without an empty html file
             default: return new ModelAndView("common/empty");
+        }
+    }
+
+    private ModelAndView doSave(Supplier<ServiceResponse<EventRoute>> responseSupplier,
+                                EventRouteForm eventRouteForm,
+                                RedirectAttributes redirectAttributes) {
+        ServiceResponse<EventRoute> response = responseSupplier.get();
+
+        switch (response.getStatus()) {
+            case ERROR: {
+                return new ModelAndView("routes/form")
+                        .addObject("errors",response.getResponseMessages())
+                        .addObject("route", eventRouteForm);
+            }
+            default: {
+                redirectAttributes.addFlashAttribute("message", "Route registered successfully");
+                return new ModelAndView(MessageFormat.format("redirect:/routes/{0}",
+                        response.getResult().getGuid()));
+            }
         }
     }
 }

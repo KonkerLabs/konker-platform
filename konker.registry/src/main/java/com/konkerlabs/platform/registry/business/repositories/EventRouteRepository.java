@@ -14,6 +14,8 @@ public interface EventRouteRepository extends MongoRepository<EventRoute,String>
     List<EventRoute> findByOutgoingUri(URI routeActorUri);
     @Query("{ 'tenant.id' : ?0 }")
     List<EventRoute> findAllByTenant(String tenantId);
-    @Query("{ 'tenant.id' : ?0, 'id' : ?1 }")
+    @Query("{ 'tenant.id' : ?0, 'name' : ?1 }")
     EventRoute findByTenantIdAndRouteName(String tenantId, String name);
+    @Query("{ 'tenant.id' : ?0, 'guid' : ?1 }")
+    EventRoute findByTenantIdAndGuid(String tenantId, String guid);
 }
