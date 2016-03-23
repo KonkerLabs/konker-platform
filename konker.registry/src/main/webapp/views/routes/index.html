@@ -26,8 +26,8 @@
             <tbody>
             <tr data-th-each="route : ${routes}">
                 <td data-th-text="${route.name}"></td>
-                <td data-th-text="${route.incoming.uri}"></td>
-                <td data-th-text="${route.outgoing.uri}"></td>
+                <td data-th-text="${#strings.toUpperCase(route.incoming.uri.scheme)}"></td>
+                <td data-th-text="${#strings.toUpperCase(route.outgoing.uri.scheme)}"></td>
                 <td>
                     <span data-th-if="${route.active}" class="glyphicon glyphicon-thumbs-up" aria-hidden="true"/>
                     <span data-th-if="${not route.active}" class="glyphicon glyphicon-thumbs-down" aria-hidden="true"/>
