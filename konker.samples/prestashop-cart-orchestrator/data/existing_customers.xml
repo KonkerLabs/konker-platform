@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<prestashop xmlns:xlink="http://www.w3.org/1999/xlink">
+    <customers>
+        <customer id="2" xlink:href="http://ec2-52-4-244-64.compute-1.amazonaws.com/konkershop/api/customers/2"/>
+    </customers>
+</prestashop>
