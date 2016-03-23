@@ -1,9 +1,1 @@
-{ "1": {
-      "product": {"SKU": 123, "description": "20L Bonafont Water Bottle"},
-      "quantity": 1,
-      "storeUser": "johnsmith@nowhere.com"},
-  "2": { 
-       "product": {"SKU": 456, "description": "Nespresso Ristretto"},
-       "quantity": 10,
-       "storeUser": "mary@lamb.com"}
-}
+{"0000000000000099": {"productSKU": "demo_2", "storeUser": "konker@konker.net", "quantity": 5}, "0000000000000004": {"productSKU": "demo_1", "storeUser": "pub@prestashop.com", "quantity": 2}}
