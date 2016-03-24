@@ -1,3 +1,6 @@
 from prestashop.repositories import customers
 
-customers.get_customer("konker@konker.net2")
+customers.APIKEY = 'W79GDVSI32LLJA8BVVZGSYLUAX7FJCHB'
+
+code = customers.get_customer_code("konker@konker.net")
+print("Found: %s" % code)

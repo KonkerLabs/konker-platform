@@ -1,16 +1,21 @@
 import requests
 import xml.etree.ElementTree as ET
 
-ns = {'real_person': 'http://people.example.com',
-      'role': 'http://characters.example.com'}
+GET_CUSTOMER_URL_TEMPLATE = "http://ec2-52-4-244-64.compute-1.amazonaws.com/konkershop/api/customers?filter[email]=%s"
 
-def get_customer(email):
-    url = "http://ec2-52-4-244-64.compute-1.amazonaws.com/konkershop/api/customers?filter[email]=%s" % email
-    r = requests.get(url, auth=('W79GDVSI32LLJA8BVVZGSYLUAX7FJCHB', ''))
-#    print r.text
-    xml = ET.fromstring(r.text)
-    if len(xml.find(".//customers").getchildren()) == 0:
-        print "No customers"
-    else:
-        print "Found: %s" % xml.find(".//customer[0]").attrib['id']
-#    print xml.find(".//customer[1]").attrib['id']
+def get_customer_code(email):
+    def get_response(url):
+        try:
+            r = requests.get(url, auth=(APIKEY, ''))
+            return r.text if r.status_code == requests.codes.ok else None
+        except Exception as e:
+            print "Error on response fetch:", e
+            return None
+
+    def parse(text):
+        return ET.fromstring(text) if text is not None else text
+    def customers(xml):
+        return xml.find(".//customers") if xml is not None else xml
+
+    customers = customers(parse(get_response(GET_CUSTOMER_URL_TEMPLATE % email)))
+    return customers[0].attrib['id'] if customers is not None and len(customers) > 0 else None
