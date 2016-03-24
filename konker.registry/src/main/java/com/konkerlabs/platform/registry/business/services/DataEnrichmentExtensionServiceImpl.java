@@ -199,4 +199,34 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
         }
     }
 
+    @Override
+    public ServiceResponse<DataEnrichmentExtension> remove(Tenant tenant, String guid) {
+        if (!Optional.ofNullable(tenant).isPresent())
+            return invalidServiceResponse("Tenant cannot be null").<DataEnrichmentExtension>build();
+        if (!Optional.ofNullable(tenantRepository.findByName(tenant.getName())).isPresent())
+            return invalidServiceResponse("Tenant does not exist").<DataEnrichmentExtension>build();
+        if (!Optional.ofNullable(guid).filter(s -> !s.isEmpty()).isPresent())
+            return invalidServiceResponse("GUID cannot be null or empty").<DataEnrichmentExtension>build();
+
+        DataEnrichmentExtension route = repository.findByTenantIdAndGUID(tenant.getId(), guid);
+
+        if (!Optional.ofNullable(route).isPresent())
+            return invalidServiceResponse("Enrichment does not exist").<DataEnrichmentExtension>build();
+
+        repository.delete(route);
+
+        return ServiceResponse.<DataEnrichmentExtension>builder()
+                .status(ServiceResponse.Status.OK)
+                .result(route)
+                .<DataEnrichmentExtension>build();
+    }
+
+    private ServiceResponse.ServiceResponseBuilder invalidServiceResponse(String... errors) {
+        ServiceResponse.ServiceResponseBuilder invalidBuilder = ServiceResponse.builder()
+                .status(ServiceResponse.Status.ERROR);
+        for (String error : errors)
+            invalidBuilder.responseMessage(error);
+
+        return invalidBuilder;
+    }
 }

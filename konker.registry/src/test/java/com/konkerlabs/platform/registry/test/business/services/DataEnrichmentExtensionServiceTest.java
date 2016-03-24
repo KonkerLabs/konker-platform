@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.isResponseOk;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.spy;
@@ -386,4 +387,58 @@ public class DataEnrichmentExtensionServiceTest extends BusinessLayerTestSupport
         assertThat(response.getResponseMessages(), empty());
     }
 
+    // ============================== remove ==============================//
+    @Test
+    public void shouldReturnErrorMessageIfTenantIsInexistentWhenRemove() {
+        ServiceResponse<DataEnrichmentExtension> response = service.remove(inexistentTenant, enrichmentGuid);
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+        assertThat(response.getResult(), nullValue());
+        assertThat(response.getResponseMessages(), hasItem("Tenant does not exist"));
+    }
+
+    @Test
+    public void shouldReturnErrorMessageIfTenantIsNullWhenRemove() {
+        ServiceResponse<DataEnrichmentExtension> response = service.remove(null, enrichmentGuid);
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+        assertThat(response.getResult(), nullValue());
+        assertThat(response.getResponseMessages(), hasItem("Tenant cannot be null"));
+    }
+
+    @Test
+    public void shouldReturnErrorMessageIfDataEnrichmentIsNullWhenRemove() {
+        ServiceResponse<DataEnrichmentExtension> response = service.remove(aTenant, null);
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+        assertThat(response.getResult(), nullValue());
+        assertThat(response.getResponseMessages(), hasItem("GUID cannot be null or empty"));
+    }
+
+    @Test
+    public void shouldReturnErrorMessageIfDataEnrichmentIsEmptyWhenRemove() {
+        ServiceResponse<DataEnrichmentExtension> response = service.remove(aTenant, "");
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+        assertThat(response.getResult(), nullValue());
+        assertThat(response.getResponseMessages(), hasItem("GUID cannot be null or empty"));
+    }
+
+    @Test
+    public void shouldReturnErrorMessageIfGUIDDoesNotExistWhenRemove() {
+        enrichmentGuid = "999999";
+        ServiceResponse<DataEnrichmentExtension> response = service.update(aTenant, enrichmentGuid, newDataEnrichmentExtension);
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+        assertThat(response.getResult(), nullValue());
+        assertThat(response.getResponseMessages(), hasItem("Data Enrichment Extension does not exist"));
+    }
+
+    @Test
+    public void shouldRemoveSuccessfully() throws Exception {
+        ServiceResponse<DataEnrichmentExtension> response = service.remove(aTenant,enrichmentGuid);
+
+        DataEnrichmentExtension removedRoute = service.getByGUID(aTenant, enrichmentGuid).getResult();
+
+        assertThat(response,isResponseOk());
+        assertThat(response.getResult(),notNullValue());
+        assertThat(response.getResult().getGuid(),equalTo(enrichmentGuid));
+
+        assertThat(removedRoute, nullValue());
+    }
 }

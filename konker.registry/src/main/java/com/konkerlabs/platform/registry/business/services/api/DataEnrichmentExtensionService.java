@@ -45,12 +45,12 @@ public interface DataEnrichmentExtensionService {
 
     /**
      * Gets a previously registered {@link DataEnrichmentExtension} by
-     * {@link Tenant} and name.
+     * {@link Tenant} and guid.
      * 
      * @param tenant
      *            The tenant
      * @param guid
-     *            The name of the registered item
+     *            The guid of the registered item
      * @return a {@link ServiceResponse} containing the item, if it exists and
      *         status code OK. If it does not exist, returns a
      *         {@link ServiceResponse} with an error message and status code
@@ -72,4 +72,19 @@ public interface DataEnrichmentExtensionService {
      *         ERROR
      */
     ServiceResponse<List<DataEnrichmentExtension>> getByTenantAndByIncomingURI(Tenant tenant, URI incomingUri);
+
+    /**
+     * Removes a previously registered {@link DataEnrichmentExtension} by
+     * {@link Tenant} and guid.
+     *
+     * @param tenant
+     *            The tenant
+     * @param guid
+     *            The guid of the registered item
+     * @return a {@link ServiceResponse} containing the item, if it was removed
+     *         successfully and status code OK. If it was not removed, returns a
+     *         {@link ServiceResponse} with an error message and status code
+     *         ERROR
+     */
+    ServiceResponse<DataEnrichmentExtension> remove(Tenant tenant, String guid);
 }

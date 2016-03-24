@@ -38,9 +38,7 @@ import java.util.List;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -244,6 +242,24 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
         getMockMvc().perform(get(MessageFormat.format("/enrichment/{0}", dataEnrichmentExtension.getName())))
                 .andExpect(view().name("enrichment/show"))
                 .andExpect(model().attribute("dataEnrichmentExtension", new EnrichmentForm().fillFrom(dataEnrichmentExtension)));
+    }
+
+    @Test
+    public void shoudlRedirectToRouteIndexAfterRouteRemoval() throws Exception {
+        dataEnrichmentExtension.setGuid(enrichmentGuid);
+
+        spy(serviceResponse);
+        spy(listServiceResponse);
+
+        when(dataEnrichmentExtensionService.remove(tenant, dataEnrichmentExtension.getGuid())).thenReturn(serviceResponse);
+        when(dataEnrichmentExtensionService.getAll(eq(tenant))).thenReturn(listServiceResponse);
+
+        getMockMvc().perform(delete("/enrichment/{0}", dataEnrichmentExtension.getGuid()))
+                .andExpect(flash().attribute("message",
+                        MessageFormat.format("Enrichment {0} was successfully removed", dataEnrichmentExtension.getName())))
+                .andExpect(redirectedUrl("/enrichment"));
+
+        verify(dataEnrichmentExtensionService).remove(tenant, dataEnrichmentExtension.getGuid());
     }
 
     @Configuration

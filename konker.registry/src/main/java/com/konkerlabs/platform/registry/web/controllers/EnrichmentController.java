@@ -121,4 +121,15 @@ public class EnrichmentController {
             }
         }
     }
+
+    @RequestMapping(path = "/{dataEnrichmentExtensionGUID}", method = RequestMethod.DELETE)
+    public ModelAndView remove(@PathVariable("dataEnrichmentExtensionGUID") String dataEnrichmentExtensionGUID,
+                               RedirectAttributes redirectAttributes) {
+        ServiceResponse<DataEnrichmentExtension> serviceResponse = dataEnrichmentExtensionService.remove(tenant, dataEnrichmentExtensionGUID);
+
+        redirectAttributes.addFlashAttribute("message",
+                MessageFormat.format("Enrichment {0} was successfully removed", serviceResponse.getResult().getName()));
+
+        return new ModelAndView("redirect:/enrichment");
+    }
 }
