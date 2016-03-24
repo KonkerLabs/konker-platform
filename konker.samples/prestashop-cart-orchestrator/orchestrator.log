@@ -1,0 +1,7 @@
+INFO:requests.packages.urllib3.connectionpool:Starting new HTTP connection (1): ec2-52-4-244-64.compute-1.amazonaws.com
+INFO:requests.packages.urllib3.connectionpool:Starting new HTTP connection (1): ec2-52-4-244-64.compute-1.amazonaws.com
+INFO:orchestrator:Customer or product not found!
+INFO:requests.packages.urllib3.connectionpool:Starting new HTTP connection (1): ec2-52-4-244-64.compute-1.amazonaws.com
+INFO:requests.packages.urllib3.connectionpool:Starting new HTTP connection (1): ec2-52-4-244-64.compute-1.amazonaws.com
+INFO:requests.packages.urllib3.connectionpool:Starting new HTTP connection (1): ec2-52-4-244-64.compute-1.amazonaws.com
+INFO:requests.packages.urllib3.connectionpool:Starting new HTTP connection (1): ec2-52-4-244-64.compute-1.amazonaws.com
