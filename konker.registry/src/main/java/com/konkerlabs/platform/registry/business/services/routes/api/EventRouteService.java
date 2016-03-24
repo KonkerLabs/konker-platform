@@ -14,4 +14,5 @@ public interface EventRouteService {
     ServiceResponse<List<EventRoute>> getAll(Tenant tenant);
     ServiceResponse<EventRoute> getByGUID(Tenant tenant, String guid);
     ServiceResponse<List<EventRoute>> findByIncomingUri(URI uri);
+    ServiceResponse<EventRoute> remove(Tenant tenant, String guid);
 }

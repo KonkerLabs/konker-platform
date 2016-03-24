@@ -334,4 +334,64 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
         assertThat(routes.get(4).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ba"));
     }
 
+    /* ---------------------- remove ------------------------- */
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json"})
+    public void shouldReturnValidationMessageTenantIsNullWhenRemoving() throws Exception {
+        ServiceResponse<EventRoute> response = subject.remove(null,existingGuid);
+
+        assertThat(response,hasErrorMessage("Tenant cannot be null"));
+    }
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json"})
+    public void shouldReturnValidationMessageTenantDoesNotExistWhenRemoving() throws Exception {
+        ServiceResponse<EventRoute> response = subject.remove(
+                Tenant.builder().id("unknown_id").name("name").domainName("unknown_domain").build(),
+                existingGuid);
+
+        assertThat(response,hasErrorMessage("Tenant does not exist"));
+    }
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json"})
+    public void shouldReturnValidationMessageGuidIsNullWhenRemoving() throws Exception {
+        ServiceResponse<EventRoute> response = subject.remove(tenant,null);
+
+        assertThat(response,hasErrorMessage("GUID cannot be null or empty"));
+    }
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json"})
+    public void shouldReturnValidationMessageGuidIsEmptyWhenRemoving() throws Exception {
+        ServiceResponse<EventRoute> response = subject.remove(tenant,"");
+
+        assertThat(response,hasErrorMessage("GUID cannot be null or empty"));
+    }
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/event-routes.json"})
+    public void shouldReturnValidationMessageGuidDoesNotExistWhenRemoving() throws Exception {
+        ServiceResponse<EventRoute> response = subject.remove(tenant,"unknown_guid");
+
+        assertThat(response,hasErrorMessage("Event Route does not exist"));
+    }
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json"})
+    public void shouldReturnValidationMessageIfRecordIsNullWhenRemoving() throws Exception {
+        ServiceResponse<EventRoute> response = subject.remove(tenant,existingGuid);
+
+        assertThat(response,hasErrorMessage("Event Route does not exist"));
+    }
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/event-routes.json"})
+    public void shouldRemoveSuccessfully() throws Exception {
+        ServiceResponse<EventRoute> response = subject.remove(tenant,existingGuid);
+
+        EventRoute removedRoute = subject.getByGUID(tenant, existingGuid).getResult();
+
+        assertThat(response,isResponseOk());
+        assertThat(response.getResult(),notNullValue());
+        assertThat(response.getResult().getId(),equalTo(routeId));
+
+        assertThat(removedRoute, nullValue());
+    }
+
 }

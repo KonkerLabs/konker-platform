@@ -140,6 +140,28 @@ public class EventRouteServiceImpl implements EventRouteService {
                 .<List<EventRoute>>build();
     }
 
+    @Override
+    public ServiceResponse<EventRoute> remove(Tenant tenant, String guid) {
+        if (!Optional.ofNullable(tenant).isPresent())
+            return invalidServiceResponse("Tenant cannot be null").<EventRoute>build();
+        if (!Optional.ofNullable(tenantRepository.findByName(tenant.getName())).isPresent())
+            return invalidServiceResponse("Tenant does not exist").<EventRoute>build();
+        if (!Optional.ofNullable(guid).filter(s -> !s.isEmpty()).isPresent())
+            return invalidServiceResponse("GUID cannot be null or empty").<EventRoute>build();
+
+        EventRoute route = eventRouteRepository.findByTenantIdAndGuid(tenant.getId(), guid);
+
+        if (!Optional.ofNullable(route).isPresent())
+            return invalidServiceResponse("Event Route does not exist").<EventRoute>build();
+
+        eventRouteRepository.delete(route);
+
+        return ServiceResponse.<EventRoute>builder()
+                .status(ServiceResponse.Status.OK)
+                .result(route)
+                .<EventRoute>build();
+    }
+
     private ServiceResponse.ServiceResponseBuilder invalidServiceResponse(String... errors) {
         ServiceResponse.ServiceResponseBuilder invalidBuilder = ServiceResponse.builder()
                 .status(ServiceResponse.Status.ERROR);

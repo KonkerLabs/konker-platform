@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.servlet.view.RedirectView;
 
 import java.text.MessageFormat;
 import java.util.List;
@@ -138,5 +140,20 @@ public class EventRouteController {
                         response.getResult().getGuid()));
             }
         }
+    }
+
+    @RequestMapping(path = "/{routeGUID}", method = RequestMethod.DELETE)
+    public ModelAndView remove(@PathVariable("routeGUID") String routeGUID,
+                               RedirectAttributes redirectAttributes) {
+        ServiceResponse<EventRoute> serviceResponse = eventRouteService.remove(tenant, routeGUID);
+
+        redirectAttributes.addFlashAttribute("message",
+                MessageFormat.format("Route {0} was successfully removed", serviceResponse.getResult().getName()));
+
+//        RedirectView view = new RedirectView("/registry/routes");
+//        view.setStatusCode(HttpStatus.SEE_OTHER);
+
+        return new ModelAndView("redirect:/routes");
+//        return new ModelAndView(view);
     }
 }

@@ -42,9 +42,7 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -324,6 +322,30 @@ public class EventRouteControllerTest extends WebLayerTestContext {
         verify(eventRouteService).getByGUID(tenant, newRoute.getId());
     }
 
+    @Test
+    public void shoudlRedirectToRouteIndexAfterRouteRemoval() throws Exception {
+        newRoute.setGuid(routeGuid);
+
+        ServiceResponse<EventRoute> responseDelete = ServiceResponse.<EventRoute>builder()
+                .result(newRoute)
+                .status(OK).<EventRoute>build();
+        ServiceResponse<List<EventRoute>> responseGetAll = ServiceResponse.<List<EventRoute>>builder()
+                .status(OK)
+                .result(registeredRoutes).<List<EventRoute>>build();
+        spy(responseDelete);
+        spy(responseGetAll);
+
+        when(eventRouteService.remove(tenant, newRoute.getGuid())).thenReturn(responseDelete);
+        when(eventRouteService.getAll(eq(tenant))).thenReturn(responseGetAll);
+
+        getMockMvc().perform(delete("/routes/{0}", newRoute.getGuid()))
+                .andExpect(flash().attribute("message",
+                        MessageFormat.format("Route {0} was successfully removed", newRoute.getName())))
+                .andExpect(redirectedUrl("/routes"));
+
+        verify(eventRouteService).remove(tenant, newRoute.getGuid());
+    }
+
     @Configuration
     static class EventRouteTestContextConfig {
         @Bean
@@ -345,6 +367,7 @@ public class EventRouteControllerTest extends WebLayerTestContext {
         public SmsDestinationService smsDestinationService() {
             return mock(SmsDestinationService.class);
         }
+
         @Bean
         public TransformationService transformationService() {
             return mock(TransformationService.class);

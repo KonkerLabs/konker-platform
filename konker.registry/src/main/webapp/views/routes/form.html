@@ -113,6 +113,19 @@
             </div>
             <button type="submit" class="btn btn-success">Save</button>
             <a data-th-href="@{/routes}" class="btn btn-default">Back</a>
+            <a class="btn btn-default confirm-delete" data-th-if="*{id} != null">Remove</a>
+
+            <div id="removeItemModal" class="modal">
+                <div class="modal-content">
+                    <span href="#" data-dismiss="modal" aria-hidden="true" class="close">×</span>
+                    <h3>Remove</h3>
+                    <p>You are about to remove this Route.</p>
+                    <p>Do you want to proceed?</p>
+                    <a id="btnYes" class="btn btn-default">Yes</a>
+                    <a href="#" data-dismiss="modal" aria-hidden="true" class="btn btn-default">No</a>
+                </div>
+            </div>
+
         </form>
     </fieldset>
 </div>
