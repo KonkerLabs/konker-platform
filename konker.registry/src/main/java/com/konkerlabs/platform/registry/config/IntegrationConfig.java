@@ -50,13 +50,8 @@ public class IntegrationConfig {
         return factory;
     }
 
-    //TODO Make this pattern collection configurable via application.conf
     public String[] topicPatternList() {
-        return new String[] {
-            "iot/+/data",
-            "iot/+/command",
-            "iot/+/ack"
-        };
+        return brokerConfig.getStringList("topics").toArray(new String[] {});
     }
 
     @Bean
