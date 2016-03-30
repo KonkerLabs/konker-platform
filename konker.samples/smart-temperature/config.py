@@ -5,5 +5,5 @@ PID_CONFIG = {
 }
 
 DATABASE_CONFIG = {
-    'path': "data/pid.db"
+    'path': "data/smart.db"
 }
