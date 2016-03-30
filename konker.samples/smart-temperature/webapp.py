@@ -17,7 +17,7 @@ def pid_control():
         input=float(request.args['input']),
         Sp=float(sp) if sp else None
     )
-    response = request.json
+    response = request.json or json.loads(request.data)
     response['value'] = result
     return jsonify(response)
 
