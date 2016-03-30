@@ -26,5 +26,11 @@ def set_params():
     service.set(key=request.args['key'],kp=request.args['kp'],ki=request.args['ki'],kd=request.args['kd'])
     return ""
 
+@app.route('/lookup/<brand>/<model>/<command>/ircode', methods['GET'])
+def lookup_ir(brand,model,command):
+    response = service.lookup_ir(brand,model,command)
+    return jsonify(response)
+
+
 if __name__ == '__main__':
     app.run(debug=True)

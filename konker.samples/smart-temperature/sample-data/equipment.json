@@ -1,0 +1,10 @@
+{
+  "equipments": [
+    {
+      "id": "1",
+      "class": "equipment",
+      "brand": "Midea",
+      "model": "x"
+    }
+  ]
+}

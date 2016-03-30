@@ -1,1 +1,1 @@
-__all__ = ["pid"]
+__all__ = ["pid","lookup_ir"]
