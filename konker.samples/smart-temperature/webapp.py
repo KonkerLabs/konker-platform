@@ -10,6 +10,8 @@ def pid_control():
         abort(400, "Key must be provided!")
     if not request.args.get('input',None):
         abort(400, "Input value must be provided!")
+    if not request.headers.get('Content-Type') or request.headers.get('Content-Type') != "application/json":
+        abort(400, "Invalid Content-Type")
 
     sp = request.args.get('Sp',None)
     result = pid_service.control(
@@ -17,7 +19,8 @@ def pid_control():
         input=float(request.args['input']),
         Sp=float(sp) if sp else None
     )
-    response = request.json or json.loads(request.data)
+    
+    response = request.json
     response['value'] = result
     return jsonify(response)
 
