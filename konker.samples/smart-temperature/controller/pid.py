@@ -9,8 +9,8 @@ class PID:
 
     def GenOut(self, input, Sp, Ci, last_error, last_time):
 
-        curr_time = int(time.time())                             # get t
-        dt = 0 if last_time == 0 else int(curr_time - last_time) # get delta t
+        curr_time = int(time.time())            # get t
+        dt = 0 if last_time == 0 else 1         # get delta t
         
         error = Sp - input                      # get current error
         de = error - last_error                 # get delta error
