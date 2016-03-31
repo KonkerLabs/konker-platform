@@ -114,11 +114,59 @@ public class HttpGatewayTest {
     }
 
     @Test
+    public void shouldIncludeAuhtorizationHeaderWithEmptyUser() throws IntegrationException {
+        when(restTemplate.exchange(eq(uri), eq(HttpMethod.GET), httpEntityCaptor.capture(),
+                eq(String.class))).thenReturn(new ResponseEntity<String>(HttpStatus.OK));
+
+        enrichmentGateway.request(method, uri, () -> null, "", PASSWORD);
+
+        HttpEntity<String> entity = httpEntityCaptor.getValue();
+        assertThat(entity,notNullValue());
+
+        HttpHeaders headers = entity.getHeaders();
+        assertThat(headers,notNullValue());
+
+        assertThat(headers.getFirst("Authorization"), equalTo("Basic OlBhc3N3b3Jk"));
+    }
+
+    @Test
+    public void shouldIncludeAuhtorizationHeaderWithEmptyPasword() throws IntegrationException {
+        when(restTemplate.exchange(eq(uri), eq(HttpMethod.GET), httpEntityCaptor.capture(),
+                eq(String.class))).thenReturn(new ResponseEntity<String>(HttpStatus.OK));
+
+        enrichmentGateway.request(method, uri, () -> null, USERNAME, "");
+
+        HttpEntity<String> entity = httpEntityCaptor.getValue();
+        assertThat(entity,notNullValue());
+
+        HttpHeaders headers = entity.getHeaders();
+        assertThat(headers,notNullValue());
+
+        assertThat(headers.getFirst("Authorization"), equalTo("Basic VXNlcm5hbWU6"));
+    }
+
+    @Test
     public void shouldNotIncludeAuhtorizationHeader() throws IntegrationException {
         when(restTemplate.exchange(eq(uri), eq(HttpMethod.GET), httpEntityCaptor.capture(),
                 eq(String.class))).thenReturn(new ResponseEntity<String>(HttpStatus.OK));
 
         enrichmentGateway.request(method, uri, () -> null, null, null);
+
+        HttpEntity<String> entity = httpEntityCaptor.getValue();
+        assertThat(entity,notNullValue());
+
+        HttpHeaders headers = entity.getHeaders();
+        assertThat(headers,notNullValue());
+
+        assertThat(headers.getFirst("Authorization"), nullValue());
+    }
+
+    @Test
+    public void shouldNotIncludeAuhtorizationHeaderForEmptyUserAndPassword() throws IntegrationException {
+        when(restTemplate.exchange(eq(uri), eq(HttpMethod.GET), httpEntityCaptor.capture(),
+                eq(String.class))).thenReturn(new ResponseEntity<String>(HttpStatus.OK));
+
+        enrichmentGateway.request(method, uri, () -> null, "", "");
 
         HttpEntity<String> entity = httpEntityCaptor.getValue();
         assertThat(entity,notNullValue());

@@ -46,9 +46,9 @@ public class HttpGatewayImpl implements HttpGateway {
 
         try {
             HttpHeaders headers = new HttpHeaders();;
-            headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+            headers.setContentType(MediaType.APPLICATION_JSON);
 
-            if (username != null && password != null) {
+            if ((username != null && !username.trim().isEmpty()) || (password != null && !password.trim().isEmpty())) {
                 String encodedCredentials = Base64Utils
                         .encodeToString(format("{0}:{1}", username, password).getBytes());
 
