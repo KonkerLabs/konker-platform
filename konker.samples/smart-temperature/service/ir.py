@@ -6,5 +6,5 @@ def lookup_ir(brand,model,command):
     if not out:
         raise Exception("Command not found for Brand / Model.")
     else:
-        out['cmd'] = "IR"
+        out['command'] = "IR"
         return out

@@ -43,5 +43,5 @@ class LookupIRCodesDao:
 
         if row:
             return {
-                'code': row[0]
+                'value': row[0]
             }

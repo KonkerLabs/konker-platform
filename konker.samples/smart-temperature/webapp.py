@@ -41,10 +41,9 @@ def post_lookup_ir():
     if not request.headers.get('Content-Type') or request.headers.get('Content-Type') != "application/json":
         abort(400, "Invalid Content-Type")
 
-    content = request.json
-    brand = content['brand']
-    model = content['model']
-    command = content['command']
+    brand = request.args['brand']
+    model = request.args['model']
+    command = request.args['command']
 
     if not brand:
         abort(400, "Brand must be provided!")
@@ -55,7 +54,6 @@ def post_lookup_ir():
 
     response = ir_service.lookup_ir(brand,model,command)
     return jsonify(response)
-
 
 @app.route('/act', methods=['POST'])
 def act():
