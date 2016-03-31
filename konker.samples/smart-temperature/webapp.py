@@ -32,9 +32,30 @@ def pid_set_params():
     return ""
 
 @app.route('/lookup/<brand>/<model>/<command>/ircode', methods=['GET'])
-def lookup_ir(brand,model,command):
+def get_lookup_ir(brand,model,command):
     response = ir_service.lookup_ir(brand,model,command)
     return jsonify(response)
+
+@app.route('/lookup/ircode', methods=['POST'])
+def post_lookup_ir():
+    if not request.headers.get('Content-Type') or request.headers.get('Content-Type') != "application/json":
+        abort(400, "Invalid Content-Type")
+
+    content = request.json
+    brand = content['brand']
+    model = content['model']
+    command = content['command']
+
+    if not brand:
+        abort(400, "Brand must be provided!")
+    if not model:
+        abort(400, "Model must be provided!")
+    if not command:
+        abort(400, "Command must be provided!")
+
+    response = ir_service.lookup_ir(brand,model,command)
+    return jsonify(response)
+
 
 @app.route('/act', methods=['POST'])
 def act():
