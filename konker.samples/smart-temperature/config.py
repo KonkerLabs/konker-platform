@@ -4,6 +4,13 @@ PID_CONFIG = {
     'default_kd': 0.125,
 }
 
+ACT_CONFIG = {
+    'range' : {
+        'min' : 18,
+        'max' : 25
+    }
+}
+
 DATABASE_CONFIG = {
     'path': "data/smart.db"
 }

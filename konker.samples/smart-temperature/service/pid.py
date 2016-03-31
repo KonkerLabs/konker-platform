@@ -1,6 +1,5 @@
 import time
 from dao.pid import *
-from dao.lookup_ir import *
 from controller.pid import *
 from config import *
 
@@ -54,12 +53,3 @@ def set(key,kp,ki,kd):
     dao = PidDao()
     dao.reset_pid_memory_for(key)
     dao.update_pid_entry(key,kp,ki,kd)
-
-def lookup_ir(brand,model,command):
-    dao = LookupIRCodesDao()
-    out = dao.get_ir_code_for(brand,model,command)
-    if not out:
-        raise Exception("Command not found for Brand / Model.")
-    else:
-        out['cmd'] = "IR"
-        return out

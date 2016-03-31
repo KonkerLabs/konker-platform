@@ -5,14 +5,14 @@ from config import *
 class LookupIRCodesDao:
 
     SCHEMA = """
-        CREATE TABLE EQUIPMENTS (
-            ID  INT PRIMARY KEY     AUTOINCREMENT
+        CREATE TABLE IF NOT EXISTS EQUIPMENTS (
+            ID INTEGER PRIMARY KEY AUTOINCREMENT,
             BRAND           TEXT    NOT NULL,
             MODEL           TEXT    NOT NULL
         );
 
-        CREATE TABLE CODES (
-            ID  INT PRIMARY KEY     AUTOINCREMENT,
+        CREATE TABLE IF NOT EXISTS CODES (
+            ID INTEGER PRIMARY KEY AUTOINCREMENT,
             EQUIPMENT_ID    INT     NOT NULL,
             COMMAND         TEXT    NOT NULL,
             CODE            TEXT    NOT NULL,
