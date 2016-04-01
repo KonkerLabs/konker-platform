@@ -74,7 +74,7 @@ public class DeviceEventProcessor {
 
             }
 
-            deviceEventService.logEvent(device, event);
+            deviceEventService.logEvent(device, incomingChannel, event);
 
             eventRouteExecutor.execute(event,device.toURI());
         } else {

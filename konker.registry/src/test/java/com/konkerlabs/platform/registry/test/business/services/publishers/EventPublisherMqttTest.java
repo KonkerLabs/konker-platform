@@ -15,6 +15,7 @@ import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.SolrTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -39,6 +40,8 @@ import java.util.Optional;
 
 import static com.konkerlabs.platform.registry.business.services.publishers.EventPublisherMqtt.DEVICE_MQTT_CHANNEL;
 import static org.mockito.Mockito.*;
+import static org.hamcrest.Matchers.*;
+import static org.hamcrest.MatcherAssert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
@@ -85,6 +88,10 @@ public class EventPublisherMqttTest extends BusinessLayerTestSupport {
             "  }";
     private Map<String, String> data;
     private Device device;
+    
+    private static String INPUT_CHANNEL = "input";
+    private static String OUTPUT_CHANNEL = "output";
+    
 
     @Before
     public void setUp() throws Exception {
@@ -94,14 +101,14 @@ public class EventPublisherMqttTest extends BusinessLayerTestSupport {
 
         device = deviceRegisterService.findByTenantDomainNameAndDeviceId(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_ID);
         event = Event.builder()
-            .channel(DEVICE_MQTT_CHANNEL)
+            .channel(INPUT_CHANNEL)
             .payload(eventPayload)
             .timestamp(Instant.now()).build();
 
         destinationUri = new DeviceURIDealer() {}.toDeviceRouteURI(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_ID);
 
         data = new HashMap<String,String>() {{
-            put(DEVICE_MQTT_CHANNEL,event.getChannel());
+            put(DEVICE_MQTT_CHANNEL, OUTPUT_CHANNEL);
         }};
     }
 
@@ -193,13 +200,13 @@ public class EventPublisherMqttTest extends BusinessLayerTestSupport {
         subject.send(event,destinationUri,data,device.getTenant());
 
         verify(mqttMessageGateway,never()).send(anyString(),anyString());
-        verify(deviceEventService,never()).logEvent(device,event);
+        verify(deviceEventService,never()).logEvent(any() ,any(), any());
     }
 
     @Test
     public void shouldSendAnEventThroughGatewayIfDeviceIsEnabled() throws Exception {
         Tenant tenant = tenantRepository.findByName("Konker");
-
+        
         Optional.of(deviceRegisterService.findByTenantDomainNameAndDeviceId(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_ID))
                 .filter(Device::isActive)
                 .orElseGet(() -> deviceRegisterService.switchEnabledDisabled(tenant, THE_DEVICE_ID).getResult());
@@ -210,11 +217,12 @@ public class EventPublisherMqttTest extends BusinessLayerTestSupport {
             .format(MQTT_OUTGOING_TOPIC_TEMPLATE, destinationUri.getPath().replaceAll("/",""),
                     data.get(DEVICE_MQTT_CHANNEL));
 
+        assertThat(event.getChannel(), equalTo(INPUT_CHANNEL));
         subject.send(event,destinationUri,data,device.getTenant());
 
         InOrder inOrder = inOrder(mqttMessageGateway,deviceEventService);
 
         inOrder.verify(mqttMessageGateway).send(event.getPayload(),expectedMqttTopic);
-        inOrder.verify(deviceEventService).logEvent(eq(device),eq(event));
+        inOrder.verify(deviceEventService).logEvent(eq(device), eq(OUTPUT_CHANNEL), eq(event));
     }
 }

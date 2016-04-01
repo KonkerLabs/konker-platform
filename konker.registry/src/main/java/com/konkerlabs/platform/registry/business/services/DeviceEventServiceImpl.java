@@ -26,7 +26,7 @@ public class DeviceEventServiceImpl implements DeviceEventService {
     private EventRepository eventRepository;
 
     @Override
-    public void logEvent(Device device, Event event) throws BusinessException {
+    public void logEvent(Device device, String channel, Event event) throws BusinessException {
         Optional.ofNullable(device)
             .orElseThrow(() -> new BusinessException("Device cannot be null"));
         Optional.ofNullable(deviceRepository.findByApiKey(device.getApiKey()))
@@ -46,6 +46,8 @@ public class DeviceEventServiceImpl implements DeviceEventService {
         if (!Optional.ofNullable(event.getTimestamp()).isPresent())
             event.setTimestamp(Instant.now());
 
+        event.setChannel(channel);
+        
         device.getEvents().add(event);
 
         deviceRepository.save(device);

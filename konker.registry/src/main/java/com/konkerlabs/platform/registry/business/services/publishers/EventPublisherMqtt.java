@@ -78,7 +78,7 @@ public class EventPublisherMqtt implements EventPublisher {
                 String destinationTopic = MessageFormat.format(MQTT_OUTGOING_TOPIC_TEMPLATE,
                         destinationUri.getPath().replaceAll("/",""), data.get(DEVICE_MQTT_CHANNEL));
                 mqttMessageGateway.send(outgoingEvent.getPayload(), destinationTopic);
-                deviceEventService.logEvent(outgoingDevice,outgoingEvent);
+                deviceEventService.logEvent(outgoingDevice, data.get(DEVICE_MQTT_CHANNEL), outgoingEvent);
             } catch (BusinessException e) {
                 LOGGER.error("Failed to forward event to its destination", e);
             }

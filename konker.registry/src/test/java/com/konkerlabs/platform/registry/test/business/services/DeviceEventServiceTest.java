@@ -67,14 +67,15 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
             "    },\n" +
             "    \"time\" : 123\n" +
             "  }";
-    private String channel = MessageFormat.format("iot/{0}/data",apiKey);
+    private String channel = "data";
+    private String topic = MessageFormat.format("iot/{0}/{1}", apiKey, channel);
     private Event event;
     private Device device;
     private Tenant tenant;
 
     @Before
     public void setUp() throws Exception {
-        event = Event.builder().channel(channel).payload(payload).build();
+        event = Event.builder().channel(topic).payload(payload).build();
         tenant = tenantRepository.findByName("Konker");
         device = deviceRegisterService.getByDeviceId(tenant, id).getResult();
     }
@@ -83,14 +84,14 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
         thrown.expect(BusinessException.class);
         thrown.expectMessage("Device cannot be null");
 
-        deviceEventService.logEvent(null, event);
+        deviceEventService.logEvent(null, channel, event);
     }
     @Test
     public void shouldRaiseAnExceptionIfEventIsNull() throws Exception {
         thrown.expect(BusinessException.class);
         thrown.expectMessage("Event cannot be null");
 
-        deviceEventService.logEvent(device, null);
+        deviceEventService.logEvent(device, channel, null);
     }
     @Test
     public void shouldRaiseAnExceptionIfPayloadIsNull() throws Exception {
@@ -99,7 +100,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
         thrown.expect(BusinessException.class);
         thrown.expectMessage("Event payload cannot be null or empty");
 
-        deviceEventService.logEvent(device, event);
+        deviceEventService.logEvent(device, channel, event);
     }
 //    @Test
 //    public void shouldRaiseAnExceptionIfEventTimestampIsAlreadySet() throws Exception {
@@ -117,7 +118,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
         thrown.expect(BusinessException.class);
         thrown.expectMessage("Event payload cannot be null or empty");
 
-        deviceEventService.logEvent(device, event);
+        deviceEventService.logEvent(device, channel, event);
     }
     @Test
     public void shouldRaiseAnExceptionIfDeviceDoesNotExist() throws Exception {
@@ -127,11 +128,12 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
         thrown.expect(BusinessException.class);
         thrown.expectMessage(MessageFormat.format("Device with API Key [{0}] does not exist", apiKey));
 
-        deviceEventService.logEvent(device, event);
+        deviceEventService.logEvent(device, channel, event);
     }
     @Test
     public void shouldLogFirstDeviceEvent() throws Exception {
-        deviceEventService.logEvent(device, event);
+        event.setChannel("otherChannel");
+        deviceEventService.logEvent(device, channel, event);
 
         Device device = deviceRepository.findByApiKey(apiKey);
 
@@ -145,5 +147,6 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
         long gap = Duration.between(last.getTimestamp(), Instant.now()).abs().getSeconds();
 
         assertThat(gap,not(greaterThan(60L)));
+        assertThat(last.getChannel(), equalTo(channel));
     }
 }

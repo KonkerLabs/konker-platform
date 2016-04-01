@@ -5,5 +5,5 @@ import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 
 public interface DeviceEventService {
-    void logEvent(Device device, Event event) throws BusinessException;
+    void logEvent(Device device, String channel, Event event) throws BusinessException;
 }

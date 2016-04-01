@@ -129,7 +129,7 @@ public class DeviceEventProcessorTest {
 
         subject.process(topic, originalPayload);
 
-        verify(deviceEventService).logEvent(device, event);
+        verify(deviceEventService).logEvent(device, incomingChannel, event);
     }
 
     @Test
@@ -152,7 +152,7 @@ public class DeviceEventProcessorTest {
 
         subject.process(topic, originalPayload);
 
-        verify(deviceEventService,never()).logEvent(any(Device.class),any(Event.class));
+        verify(deviceEventService,never()).logEvent(any(), any(), any());
     }
 
     @Test
