@@ -19,6 +19,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -76,6 +77,7 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
             httpGateway.request(
                 eq(HttpMethod.POST),
                 Mockito.any(URI.class),
+                Mockito.any(MediaType.class),
                 Mockito.any(Supplier.class),
                 Mockito.anyString(),
                 Mockito.anyString()

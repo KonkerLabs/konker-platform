@@ -19,6 +19,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -139,6 +140,7 @@ public class EventTransformationServiceTest {
             httpGateway.request(
                 eq(HttpMethod.POST),
                 eq(uri),
+                eq(MediaType.APPLICATION_JSON),
                 bodyCaptor.capture(),
                 eq(transformationServiceUsername),
                 eq(transformationServicePassword))
@@ -155,6 +157,7 @@ public class EventTransformationServiceTest {
             httpGateway.request(
                     eq(HttpMethod.POST),
                     Mockito.any(URI.class),
+                    eq(MediaType.APPLICATION_JSON),
                     bodyCaptor.capture(),
                     eq(transformationServiceUsername),
                     eq(transformationServicePassword))
@@ -170,6 +173,7 @@ public class EventTransformationServiceTest {
                 httpGateway.request(
                         eq(HttpMethod.POST),
                         Mockito.any(URI.class),
+                        eq(MediaType.APPLICATION_JSON),
                         bodyCaptor.capture(),
                         eq(transformationServiceUsername),
                         eq(transformationServicePassword))
@@ -185,6 +189,7 @@ public class EventTransformationServiceTest {
                 httpGateway.request(
                         eq(HttpMethod.POST),
                         Mockito.any(URI.class),
+                        eq(MediaType.APPLICATION_JSON),
                         bodyCaptor.capture(),
                         eq(transformationServiceUsername),
                         eq(transformationServicePassword))
@@ -207,6 +212,7 @@ public class EventTransformationServiceTest {
                 httpGateway.request(
                         eq(HttpMethod.POST),
                         Mockito.any(URI.class),
+                        eq(MediaType.APPLICATION_JSON),
                         bodyCaptor.capture(),
                         eq(transformationServiceUsername),
                         eq(transformationServicePassword))
@@ -242,6 +248,7 @@ public class EventTransformationServiceTest {
             httpGateway.request(
                     eq(HttpMethod.POST),
                     eq(firstURI),
+                    eq(MediaType.APPLICATION_JSON),
                     bodyCaptor.capture(),
                     eq(transformationServiceUsername),
                     eq(transformationServicePassword))
@@ -267,6 +274,7 @@ public class EventTransformationServiceTest {
             httpGateway.request(
                     eq(HttpMethod.POST),
                     eq(secondURI),
+                    eq(MediaType.APPLICATION_JSON),
                     bodyCaptor.capture(),
                     eq(""),
                     eq(""))

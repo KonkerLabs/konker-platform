@@ -48,6 +48,7 @@ public class HttpGatewayTest {
     @Autowired
     private HttpGateway enrichmentGateway;
     private HttpMethod method;
+    private MediaType mediaType = MediaType.APPLICATION_JSON;
 
     @Before
     public void setUp() throws URISyntaxException {
@@ -62,7 +63,7 @@ public class HttpGatewayTest {
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("HTTP method must be provided");
 
-        enrichmentGateway.request(null, null, () -> null, USERNAME, PASSWORD);
+        enrichmentGateway.request(null, null, mediaType, () -> null, USERNAME, PASSWORD);
 
         verifyZeroInteractions(restTemplate);
     }
@@ -72,7 +73,7 @@ public class HttpGatewayTest {
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("Service URI must be provided");
 
-        enrichmentGateway.request(method, null, () -> null, USERNAME, PASSWORD);
+        enrichmentGateway.request(method, null, mediaType, () -> null, USERNAME, PASSWORD);
 
         verifyZeroInteractions(restTemplate);
     }
@@ -82,7 +83,7 @@ public class HttpGatewayTest {
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("Username and Password must be both provided together");
 
-        enrichmentGateway.request(method, uri, () -> null, null, PASSWORD);
+        enrichmentGateway.request(method, uri, mediaType, () -> null, null, PASSWORD);
 
         verifyZeroInteractions(restTemplate);
     }
@@ -92,7 +93,7 @@ public class HttpGatewayTest {
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("Username and Password must be both provided together");
 
-        enrichmentGateway.request(method, uri, () -> null, USERNAME, null);
+        enrichmentGateway.request(method, uri, mediaType, () -> null, USERNAME, null);
 
         verifyZeroInteractions(restTemplate);
     }
@@ -102,7 +103,7 @@ public class HttpGatewayTest {
         when(restTemplate.exchange(eq(uri), eq(HttpMethod.GET), httpEntityCaptor.capture(),
                 eq(String.class))).thenReturn(new ResponseEntity<String>(HttpStatus.OK));
 
-        enrichmentGateway.request(method, uri, () -> null, USERNAME, PASSWORD);
+        enrichmentGateway.request(method, uri, mediaType, () -> null, USERNAME, PASSWORD);
 
         HttpEntity<String> entity = httpEntityCaptor.getValue();
         assertThat(entity,notNullValue());
@@ -118,7 +119,7 @@ public class HttpGatewayTest {
         when(restTemplate.exchange(eq(uri), eq(HttpMethod.GET), httpEntityCaptor.capture(),
                 eq(String.class))).thenReturn(new ResponseEntity<String>(HttpStatus.OK));
 
-        enrichmentGateway.request(method, uri, () -> null, "", PASSWORD);
+        enrichmentGateway.request(method, uri, mediaType, () -> null, "", PASSWORD);
 
         HttpEntity<String> entity = httpEntityCaptor.getValue();
         assertThat(entity,notNullValue());
@@ -134,7 +135,7 @@ public class HttpGatewayTest {
         when(restTemplate.exchange(eq(uri), eq(HttpMethod.GET), httpEntityCaptor.capture(),
                 eq(String.class))).thenReturn(new ResponseEntity<String>(HttpStatus.OK));
 
-        enrichmentGateway.request(method, uri, () -> null, USERNAME, "");
+        enrichmentGateway.request(method, uri, mediaType, () -> null, USERNAME, "");
 
         HttpEntity<String> entity = httpEntityCaptor.getValue();
         assertThat(entity,notNullValue());
@@ -150,7 +151,7 @@ public class HttpGatewayTest {
         when(restTemplate.exchange(eq(uri), eq(HttpMethod.GET), httpEntityCaptor.capture(),
                 eq(String.class))).thenReturn(new ResponseEntity<String>(HttpStatus.OK));
 
-        enrichmentGateway.request(method, uri, () -> null, null, null);
+        enrichmentGateway.request(method, uri, mediaType, () -> null, null, null);
 
         HttpEntity<String> entity = httpEntityCaptor.getValue();
         assertThat(entity,notNullValue());
@@ -166,7 +167,7 @@ public class HttpGatewayTest {
         when(restTemplate.exchange(eq(uri), eq(HttpMethod.GET), httpEntityCaptor.capture(),
                 eq(String.class))).thenReturn(new ResponseEntity<String>(HttpStatus.OK));
 
-        enrichmentGateway.request(method, uri, () -> null, "", "");
+        enrichmentGateway.request(method, uri, mediaType, () -> null, "", "");
 
         HttpEntity<String> entity = httpEntityCaptor.getValue();
         assertThat(entity,notNullValue());
@@ -184,7 +185,7 @@ public class HttpGatewayTest {
         when(restTemplate.exchange(eq(uri), eq(HttpMethod.GET), httpEntityCaptor.capture(),
                 eq(String.class))).thenReturn(new ResponseEntity<String>(HttpStatus.OK));
 
-        enrichmentGateway.request(method, uri, body, USERNAME, PASSWORD);
+        enrichmentGateway.request(method, uri, mediaType, body, USERNAME, PASSWORD);
 
         HttpEntity<String> entity = httpEntityCaptor.getValue();
         assertThat(entity,notNullValue());
@@ -199,7 +200,7 @@ public class HttpGatewayTest {
         when(restTemplate.exchange(eq(uri), eq(method), httpEntityCaptor.capture(),
                 eq(String.class))).thenReturn(new ResponseEntity<String>(HttpStatus.OK));
 
-        enrichmentGateway.request(method, uri, null, USERNAME, PASSWORD);
+        enrichmentGateway.request(method, uri, mediaType, null, USERNAME, PASSWORD);
 
         verify(restTemplate).exchange(eq(uri), eq(method), httpEntityCaptor.capture(),
                 eq(String.class));
@@ -218,6 +219,6 @@ public class HttpGatewayTest {
         when(restTemplate.exchange(eq(uri), eq(method), httpEntityCaptor.capture(),
                 eq(String.class))).thenReturn(new ResponseEntity<String>(errorBody,HttpStatus.INTERNAL_SERVER_ERROR));
 
-        enrichmentGateway.request(method, uri, null, USERNAME, PASSWORD);
+        enrichmentGateway.request(method, uri, mediaType, null, USERNAME, PASSWORD);
     }
 }

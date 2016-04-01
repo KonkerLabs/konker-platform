@@ -28,6 +28,7 @@ public class HttpGatewayImpl implements HttpGateway {
     @Override
     public <T> String request(HttpMethod method,
                           URI uri,
+                          MediaType mediaType,
                           Supplier<T> body,
                           String username,
                           String password) throws IntegrationException {
@@ -46,7 +47,7 @@ public class HttpGatewayImpl implements HttpGateway {
 
         try {
             HttpHeaders headers = new HttpHeaders();;
-            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setContentType(mediaType);
 
             if ((username != null && !username.trim().isEmpty()) || (password != null && !password.trim().isEmpty())) {
                 String encodedCredentials = Base64Utils
@@ -60,21 +61,22 @@ public class HttpGatewayImpl implements HttpGateway {
                 headers
             );
 
-            LOGGER.debug("Requesting GET from {}.", uri);
+            LOGGER.debug("Requesting {} from {}.", method, uri);
 
             ResponseEntity<String> exchange = restTemplate.exchange(uri, method, entity, String.class);
 
             if (exchange.getStatusCode().is2xxSuccessful()) {
                 return exchange.getBody();
             } else
-                throw new IntegrationException(format("Exception while requesting GET from {0}. Status Code: {1}. Message: {2}.",
+                throw new IntegrationException(format("Exception while requesting {0} from {1}. Status Code: {2}. Message: {3}.",
+                        method,
                         uri,
                         exchange.getStatusCode(),
                         exchange.getBody()));
 
         } catch (RestClientException rce) {
             throw new IntegrationException(
-                    format("Exception while requesting GET from {0}", uri), rce);
+                    format("Exception while requesting {0} from {1}", method, uri), rce);
         }
     }
 }

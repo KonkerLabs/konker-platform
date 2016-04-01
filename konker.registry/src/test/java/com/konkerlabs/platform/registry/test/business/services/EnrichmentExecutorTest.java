@@ -20,6 +20,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -94,6 +95,7 @@ public class EnrichmentExecutorTest extends BusinessLayerTestSupport {
                 .name("device_name").build());
 
         when(httpGateway.request(eq(HttpMethod.GET), eq(new URI("https://www.google.com/device/abc123")),
+                eq(MediaType.APPLICATION_JSON),
                 eq(null), eq("user"), eq("pass"))).thenReturn(ENRICHMENT_SERVICE_RESULT);
     }
 

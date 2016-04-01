@@ -28,6 +28,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -166,7 +167,7 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
 
         subject.send(event,destinationUri,null,tenant);
 
-        verify(httpGateway,never()).request(any(),any(),any(),any(),any());
+        verify(httpGateway,never()).request(any(),any(),any(),any(),any(),any());
         verify(eventRepository,never()).push(tenant,event);
     }
 
@@ -176,7 +177,7 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
 
         subject.send(event,destinationUri,null,tenant);
 
-        verify(httpGateway,never()).request(any(),any(),any(),any(),any());
+        verify(httpGateway,never()).request(any(),any(),any(),any(),any(),any());
         verify(eventRepository,never()).push(tenant,event);
     }
 
@@ -189,6 +190,7 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
         inOrder.verify(httpGateway).request(
             eq(HttpMethod.POST),
             eq(URI.create(destination.getServiceURI().replaceAll("\\@\\{.*}", "value"))),
+            eq(MediaType.APPLICATION_JSON),
             argLambda(objectSupplier -> objectSupplier.get().equals(event.getPayload())),
             eq(destination.getServiceUsername()),
             eq(destination.getServicePassword())

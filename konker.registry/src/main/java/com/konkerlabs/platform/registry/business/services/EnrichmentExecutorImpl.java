@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 
 import java.net.URL;
@@ -68,7 +69,8 @@ public class EnrichmentExecutorImpl implements EnrichmentExecutor {
 
                     URL finalUrl = new URL(expressionEvaluationService.evaluateTemplate(url, incomingPayloadMap));
 
-                    String body = httpGateway.request(HttpMethod.GET, finalUrl.toURI(), null, user, password);
+                    String body = httpGateway.request(HttpMethod.GET,
+                            finalUrl.toURI(), MediaType.APPLICATION_JSON, null, user, password);
 
                     Map<String, Object> enrichmentResultMap = jsonParsingService.toMap(body);
 

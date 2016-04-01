@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.expression.EvaluationException;
 import org.springframework.expression.ParseException;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
 import java.net.URI;
@@ -66,7 +67,7 @@ public class EventTransformationServiceImpl implements EventTransformationServic
                             jsonParsingService.toMap(event.getPayload()));
 
             String stepResponse = httpGateway.request(HttpMethod.POST,
-                    new URI(stepUrl),
+                    new URI(stepUrl), MediaType.APPLICATION_JSON,
                     () -> event.getPayload(),
                     step.getAttributes().get(RestTransformationStep.REST_USERNAME_ATTRIBUTE_NAME),
                     step.getAttributes().get(RestTransformationStep.REST_PASSWORD_ATTRIBUTE_NAME));

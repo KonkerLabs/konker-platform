@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
@@ -86,7 +87,7 @@ public class EventPublisherRest implements EventPublisher {
 
                 httpGateway.request(
                     HttpMethod.POST,
-                    URI.create(serviceURI),
+                    URI.create(serviceURI), MediaType.APPLICATION_JSON,
                     () -> outgoingEvent.getPayload(),
                     destination.getResult().getServiceUsername(),
                     destination.getResult().getServicePassword()
