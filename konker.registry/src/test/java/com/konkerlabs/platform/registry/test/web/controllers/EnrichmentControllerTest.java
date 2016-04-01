@@ -166,6 +166,7 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
         getMockMvc().perform(post("/enrichment/save").params(enrichmentData))
                 .andExpect(model().attribute("errors", equalTo(Arrays.asList(new String[]{"Some business exception"}))))
                 .andExpect(model().attribute("dataEnrichmentExtension", equalTo(enrichmentForm)))
+                .andExpect(model().attribute("method", ""))
                 .andExpect(view().name("enrichment/form"));
 
         verify(dataEnrichmentExtensionService).register(eq(tenant), eq(dataEnrichmentExtension));
@@ -213,6 +214,7 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
 
         getMockMvc().perform(put(MessageFormat.format("/enrichment/{0}", enrichmentGuid)).params(enrichmentData))
                 .andExpect(model().attribute("errors", equalTo(Arrays.asList(new String[]{"Some business exception"}))))
+                .andExpect(model().attribute("method","put"))
                 .andExpect(model().attribute("dataEnrichmentExtension", equalTo(enrichmentForm)))
                 .andExpect(view().name("enrichment/form"));
 

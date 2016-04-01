@@ -50,6 +50,7 @@ public class TransformationController {
             case ERROR:
                 return new ModelAndView("/transformations/form")
                         .addObject("errors", serviceResponse.getResponseMessages())
+                        .addObject("method", "")
                         .addObject("transformation", transformationForm);
             default:
                 redirectAttributes.addFlashAttribute("message", "Transformation registered successfully");
@@ -81,6 +82,7 @@ public class TransformationController {
             case ERROR: {
                 return new ModelAndView("transformations/form")
                         .addObject("errors", response.getResponseMessages())
+                        .addObject("method", "put")
                         .addObject("transformation", transformationForm);
             }
             default: {

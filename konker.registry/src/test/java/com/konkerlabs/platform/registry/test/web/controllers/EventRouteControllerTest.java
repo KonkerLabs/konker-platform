@@ -240,6 +240,7 @@ public class EventRouteControllerTest extends WebLayerTestContext {
 
         getMockMvc().perform(post("/routes/save").params(routeData))
                 .andExpect(model().attribute("errors", equalTo(response.getResponseMessages())))
+                .andExpect(model().attribute("method",""))
                 .andExpect(model().attribute("route", equalTo(routeForm))).andExpect(view().name("routes/form"));
 
         verify(eventRouteService).save(eq(tenant), eq(newRoute));
@@ -284,6 +285,7 @@ public class EventRouteControllerTest extends WebLayerTestContext {
 
         getMockMvc().perform(put("/routes/{0}", routeGuid).params(routeData))
                 .andExpect(model().attribute("errors", equalTo(response.getResponseMessages())))
+                .andExpect(model().attribute("method","put"))
                 .andExpect(model().attribute("route", equalTo(routeForm))).andExpect(view().name("routes/form"));
 
         verify(eventRouteService).update(eq(tenant), eq(routeGuid), eq(newRoute));

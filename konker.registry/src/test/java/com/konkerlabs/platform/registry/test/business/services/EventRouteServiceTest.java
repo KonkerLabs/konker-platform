@@ -239,7 +239,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/transformations.json","/fixtures/event-routes.json"})
     public void shouldReturnAValidationMessageIfRouteNameAlreadyExistsWithinTenantWhenUpdating() throws Exception {
-        String existingRouteName = "Device event forwarding route";
+        String existingRouteName = "Device event forwarding route 2";
 
         route.setName(existingRouteName);
 

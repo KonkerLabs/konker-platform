@@ -77,6 +77,7 @@ public class EnrichmentController {
             case ERROR: {
                 return new ModelAndView("enrichment/form")
                         .addObject("errors", response.getResponseMessages())
+                        .addObject("method","")
                         .addObject("dataEnrichmentExtension", enrichmentForm);
             }
             default: {
@@ -112,6 +113,7 @@ public class EnrichmentController {
             case ERROR: {
                 return new ModelAndView("enrichment/form")
                         .addObject("errors", response.getResponseMessages())
+                        .addObject("method","put")
                         .addObject("dataEnrichmentExtension", enrichmentForm);
             }
             default: {

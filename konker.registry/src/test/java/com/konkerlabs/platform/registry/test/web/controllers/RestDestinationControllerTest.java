@@ -133,6 +133,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
         getMockMvc().perform(post("/destinations/rest/save").params(destinationData))
                 .andExpect(model().attribute("errors", equalTo(response.getResponseMessages())))
                 .andExpect(model().attribute("destination", equalTo(destinationForm)))
+                .andExpect(model().attribute("method", ""))
                 .andExpect(view().name("destinations/rest/form"));
 
         verify(restDestinationService).register(eq(tenant),eq(destination));
@@ -199,6 +200,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
         getMockMvc().perform(put(format("/destinations/rest/{0}",savedDestination.getGuid())).params(destinationData))
                 .andExpect(model().attribute("errors", equalTo(response.getResponseMessages())))
                 .andExpect(model().attribute("destination", equalTo(destinationForm)))
+                .andExpect(model().attribute("method", "put"))
                 .andExpect(view().name("destinations/rest/form"));
 
         verify(restDestinationService).update(eq(tenant),eq(savedDestination.getGuid()),eq(destination));

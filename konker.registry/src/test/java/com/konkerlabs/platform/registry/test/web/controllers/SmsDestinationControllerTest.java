@@ -128,6 +128,7 @@ public class SmsDestinationControllerTest extends WebLayerTestContext {
         getMockMvc().perform(post("/destinations/sms/save").params(destinationData))
                 .andExpect(model().attribute("errors", equalTo(response.getResponseMessages())))
                 .andExpect(model().attribute("destination", equalTo(destinationForm)))
+                .andExpect(model().attribute("method", ""))
                 .andExpect(view().name("destinations/sms/form"));
 
         verify(smsDestinationService).register(eq(tenant),eq(destination));
@@ -194,6 +195,7 @@ public class SmsDestinationControllerTest extends WebLayerTestContext {
         getMockMvc().perform(put(format("/destinations/sms/{0}",savedDestination.getGuid())).params(destinationData))
                 .andExpect(model().attribute("errors", equalTo(response.getResponseMessages())))
                 .andExpect(model().attribute("destination", equalTo(destinationForm)))
+                .andExpect(model().attribute("method", "put"))
                 .andExpect(view().name("destinations/sms/form"));
 
         verify(smsDestinationService).update(eq(tenant),eq(savedDestination.getGuid()),eq(destination));

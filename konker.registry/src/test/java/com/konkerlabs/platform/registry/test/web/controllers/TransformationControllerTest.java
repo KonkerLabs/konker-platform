@@ -139,6 +139,7 @@ public class TransformationControllerTest extends WebLayerTestContext {
         getMockMvc().perform(post("/transformation/save").params(transformationData))
                 .andExpect(model().attribute("transformation", transformationForm))
                 .andExpect(model().attribute("errors", Arrays.asList(new String[]{"Any errors"})))
+                .andExpect(model().attribute("method", ""))
                 .andExpect(view().name("/transformations/form"));
 
         verify(transformationService).register(tenant, transformation);
@@ -169,6 +170,7 @@ public class TransformationControllerTest extends WebLayerTestContext {
         getMockMvc().perform(put(MessageFormat.format("/transformation/{0}", "123")).params(transformationData))
                 .andExpect(model().attribute("transformation", transformationForm))
                 .andExpect(model().attribute("errors", Arrays.asList(new String[]{"Any errors"})))
+                .andExpect(model().attribute("method", "put"))
                 .andExpect(view().name("transformations/form"));
 
         verify(transformationService).update(tenant, "123", transformation);

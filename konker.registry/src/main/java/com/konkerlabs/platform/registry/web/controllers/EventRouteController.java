@@ -8,16 +8,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.springframework.web.servlet.view.RedirectView;
 
 import java.text.MessageFormat;
 import java.util.List;
@@ -82,7 +79,7 @@ public class EventRouteController {
         return doSave(() -> {
             eventRouteForm.setAdditionalSupplier(() -> tenant.getDomainName());
             return eventRouteService.save(tenant, eventRouteForm.toModel());
-        },eventRouteForm,redirectAttributes);
+        },eventRouteForm,redirectAttributes, "");
 
     }
 
@@ -107,7 +104,7 @@ public class EventRouteController {
         return doSave(() -> {
             eventRouteForm.setAdditionalSupplier(() -> tenant.getDomainName());
             return eventRouteService.update(tenant, routeGUID, eventRouteForm.toModel());
-        },eventRouteForm,redirectAttributes);
+        },eventRouteForm,redirectAttributes,"put");
 
     }
 
@@ -125,14 +122,15 @@ public class EventRouteController {
 
     private ModelAndView doSave(Supplier<ServiceResponse<EventRoute>> responseSupplier,
                                 EventRouteForm eventRouteForm,
-                                RedirectAttributes redirectAttributes) {
+                                RedirectAttributes redirectAttributes, String method) {
         ServiceResponse<EventRoute> response = responseSupplier.get();
 
         switch (response.getStatus()) {
             case ERROR: {
                 return new ModelAndView("routes/form")
                         .addObject("errors",response.getResponseMessages())
-                        .addObject("route", eventRouteForm);
+                        .addObject("route", eventRouteForm)
+                        .addObject("method",method);
             }
             default: {
                 redirectAttributes.addFlashAttribute("message", "Route registered successfully");

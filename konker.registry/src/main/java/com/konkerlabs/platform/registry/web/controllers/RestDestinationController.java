@@ -48,7 +48,7 @@ public class RestDestinationController {
         return doSave(
                 () -> restDestinationService.register(tenant,destinationForm.toModel()),
                 destinationForm,
-                redirectAttributes);
+                redirectAttributes, "");
     }
 
     @RequestMapping(value = "/{guid}", method = RequestMethod.GET)
@@ -74,12 +74,12 @@ public class RestDestinationController {
         return doSave(
                 () -> restDestinationService.update(tenant,guid,destinationForm.toModel()),
                 destinationForm,
-                redirectAttributes);
+                redirectAttributes, "put");
     }
 
     private ModelAndView doSave(Supplier<ServiceResponse<RestDestination>> responseSupplier,
                                 RestDestinationForm destinationForm,
-                                RedirectAttributes redirectAttributes) {
+                                RedirectAttributes redirectAttributes, String method) {
 
         ServiceResponse<RestDestination> serviceResponse = responseSupplier.get();
 
@@ -87,6 +87,7 @@ public class RestDestinationController {
             case ERROR: {
                 return new ModelAndView("destinations/rest/form")
                         .addObject("errors", serviceResponse.getResponseMessages())
+                        .addObject("method", method)
                         .addObject("destination", destinationForm);
             }
             default: {

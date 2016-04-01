@@ -93,7 +93,9 @@ public class EventRouteServiceImpl implements EventRouteService {
         if (Optional.ofNullable(validations).filter(strings -> !strings.isEmpty()).isPresent())
             return invalidServiceResponse(validations.toArray(new String[validations.size()])).<EventRoute>build();
 
-        if (Optional.ofNullable(eventRouteRepository.findByTenantIdAndRouteName(tenant.getId(),current.getName())).isPresent())
+        if (Optional.ofNullable(eventRouteRepository.findByTenantIdAndRouteName(tenant.getId(),current.getName()))
+                .filter(eventRoute1 -> !eventRoute1.getId().equals(current.getId()))
+                .isPresent())
             return invalidServiceResponse("Event route name is already in use").<EventRoute>build();
 
         EventRoute saved = eventRouteRepository.save(current);

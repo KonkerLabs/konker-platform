@@ -48,7 +48,7 @@ public class SmsDestinationController {
         return doSave(
                 () -> destinationService.register(tenant,destinationForm.toModel()),
                 destinationForm,
-                redirectAttributes);
+                redirectAttributes, "");
     }
 
     @RequestMapping(value = "/{guid}", method = RequestMethod.GET)
@@ -74,12 +74,12 @@ public class SmsDestinationController {
         return doSave(
                 () -> destinationService.update(tenant,guid,destinationForm.toModel()),
                 destinationForm,
-                redirectAttributes);
+                redirectAttributes, "put");
     }
 
     private ModelAndView doSave(Supplier<ServiceResponse<SmsDestination>> responseSupplier,
                                 SmsDestinationForm destinationForm,
-                                RedirectAttributes redirectAttributes) {
+                                RedirectAttributes redirectAttributes, String method) {
 
         ServiceResponse<SmsDestination> serviceResponse = responseSupplier.get();
 
@@ -87,6 +87,7 @@ public class SmsDestinationController {
             case ERROR: {
                 return new ModelAndView("destinations/sms/form")
                         .addObject("errors", serviceResponse.getResponseMessages())
+                        .addObject("method", method)
                         .addObject("destination", destinationForm);
             }
             default: {

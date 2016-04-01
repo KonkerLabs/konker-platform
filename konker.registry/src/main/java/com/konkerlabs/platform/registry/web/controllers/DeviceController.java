@@ -74,7 +74,7 @@ public class DeviceController {
         return doSave(
                 () -> deviceRegisterService.register(tenant, deviceForm.toModel()),
                 deviceForm,
-                redirectAttributes);
+                redirectAttributes, "");
     }
 
     @RequestMapping(path = "/{deviceId}", method = RequestMethod.PUT)
@@ -84,12 +84,12 @@ public class DeviceController {
         return doSave(
                 () -> deviceRegisterService.update(tenant, deviceId, deviceForm.toModel()),
                 deviceForm,
-                redirectAttributes);
+                redirectAttributes,"put");
     }
 
     private ModelAndView doSave(Supplier<ServiceResponse<Device>> responseSupplier,
                                 DeviceRegistrationForm registrationForm,
-                                RedirectAttributes redirectAttributes) {
+                                RedirectAttributes redirectAttributes, String action) {
 
         ServiceResponse<Device> serviceResponse = responseSupplier.get();
 
@@ -98,7 +98,8 @@ public class DeviceController {
             return new ModelAndView(MessageFormat.format("redirect:/devices/{0}", serviceResponse.getResult().getId()));
         } else
             return new ModelAndView("devices/form").addObject("errors", serviceResponse.getResponseMessages())
-                    .addObject("device", registrationForm);
+                    .addObject("device", registrationForm)
+                    .addObject("method", action);
 
     }
 }
