@@ -10,7 +10,9 @@ class PidDao:
             DEVICE_KEY TEXT NOT NULL,
             KP REAL NOT NULL DEFAULT 0.0,
             KI REAL NOT NULL DEFAULT 0.0,
-            KD REAL NOT NULL DEFAULT 0.0
+            KD REAL NOT NULL DEFAULT 0.0,
+            MIN_OUT REAL NOT NULL,
+            MAX_OUT REAL NOT NULL
         );
 
         CREATE TABLE IF NOT EXISTS pid_memory (
@@ -33,21 +35,23 @@ class PidDao:
             conn.executescript(self.SCHEMA)
 
     @on_transaction
-    def create_pid_entry(self,key,kp,ki,kd):
+    def create_pid_entry(self,key,kp,ki,kd,min_output,max_output):
         return """
-            INSERT INTO pid_params (DEVICE_KEY,KP,KI,KD)
-            VALUES ('{0}',{1},{2},{3})
-        """.format(key,kp,ki,kd)
+            INSERT INTO pid_params (DEVICE_KEY,KP,KI,KD,MIN_OUT,MAX_OUT)
+            VALUES ('{0}',{1},{2},{3},{4},{5})
+        """.format(key,kp,ki,kd,min_output,max_output)
 
     @on_transaction
-    def update_pid_entry(self,key,kp,ki,kd):
+    def update_pid_entry(self,key,kp,ki,kd,min_output,max_output):
         return """
             UPDATE pid_params SET
             KP = {1},
             KI = {2},
-            KD = {3}
+            KD = {3},
+            MIN_OUT = {4},
+            MAX_OUT = {5}
             WHERE DEVICE_KEY = '{0}'
-        """.format(key,kp,ki,kd)
+        """.format(key,kp,ki,kd,min_output,max_output)
 
     @on_transaction
     def save_step(self,id,err,Ci,sp,curr_time):
@@ -67,7 +71,7 @@ class PidDao:
 
     def get_pid_entry_for(self,key):
         sql = """
-            SELECT ID, KP, KI, KD
+            SELECT ID, KP, KI, KD, MIN_OUT, MAX_OUT
             FROM pid_params p
             WHERE p.DEVICE_KEY == '{0}'
         """
@@ -80,7 +84,9 @@ class PidDao:
                 'id': row[0],
                 'kp' : row[1],
                 'ki': row[2],
-                'kd': row[3]
+                'kd': row[3],
+                'min_out': row[4],
+                'max_out': row[5]
             }
 
     def get_last_step_for(self,key):

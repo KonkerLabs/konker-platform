@@ -3,15 +3,24 @@ from dao.pid import *
 from controller.pid import *
 from config import *
 
-def control(key,input,Sp):
+def control(key,input,Sp,min_output=None,max_output=None):
     dao = PidDao()
 
     def init_pid():
         if not dao.get_pid_entry_for(key):
-            dao.create_pid_entry(key=key,kp=PID_CONFIG['default_kp'],ki=PID_CONFIG['default_ki'],kd=PID_CONFIG['default_kd'])
+            if not min_output or not max_output:
+                raise Exception("Min and max output must be set!")
+            dao.create_pid_entry(
+                key=key,
+                kp=PID_CONFIG['default_kp'],
+                ki=PID_CONFIG['default_ki'],
+                kd=PID_CONFIG['default_kd'],
+                min_output=float(min_output),
+                max_output=float(max_output))
 
         pid_id = dao.get_pid_entry_for(key)['id']
-        dao.save_step(id=pid_id,err=0.0,Ci=0.0,sp=Sp,curr_time=0)
+        Ci = Sp / PID_CONFIG['default_ki']
+        dao.save_step(id=pid_id,err=0.0,Ci=Ci,sp=Sp,curr_time=0)
 
     def execute(step):
         if not step:
@@ -32,11 +41,23 @@ def control(key,input,Sp):
         return out
 
     def save(new_step):
-        pid_id = dao.get_pid_entry_for(key)['id']
+        def adjust_ci(entry):
+            min_ci = entry['min_out'] / entry['ki']
+            max_ci = entry['max_out'] / entry['ki']
+
+            if new_step['Ci'] < min_ci:
+                return min_ci
+            elif new_step['Ci'] > max_ci:
+                return max_ci
+            else:
+                return new_step['Ci']
+
+        entry = dao.get_pid_entry_for(key)
+        Ci = adjust_ci(entry)
         dao.save_step(
-            id=pid_id,
+            id=entry['id'],
             err=new_step['error'],
-            Ci=new_step['Ci'],
+            Ci=Ci,
             sp=new_step['sp'],
             curr_time=new_step['curr_time']
         )
@@ -49,7 +70,13 @@ def control(key,input,Sp):
         save(new_step)
         return new_step['output']
 
-def set(key,kp,ki,kd):
+def set(key,kp,ki,kd,min_output,max_output):
     dao = PidDao()
     dao.reset_pid_memory_for(key)
-    dao.update_pid_entry(key,kp,ki,kd)
+    dao.update_pid_entry(
+        key,
+        float(kp),
+        float(ki),
+        float(kd),
+        float(min_output),
+        float(max_output))

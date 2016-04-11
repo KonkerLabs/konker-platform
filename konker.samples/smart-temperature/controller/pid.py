@@ -16,7 +16,7 @@ class PID:
         de = error - last_error                 # get delta error
 
         Cp = self.kp * error                    # proportional term
-        Ci += error * dt                        # integral term
+        Ci += error                             # integral term
 
         Cd = 0
         if dt > 0:                              # no div by zero
