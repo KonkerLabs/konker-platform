@@ -43,6 +43,7 @@
             <div class="col-sm-4">
                 <select class="form-control" data-th-field="${dataEnrichmentExtension.incomingAuthority}"
                         id="incomingAuthority" name="incomingAuthority">
+                    <option data-th-text="'Select an option...'" data-th-value="none"></option>
                     <option data-th-each="device : ${allDevices}"
                             data-th-value="${device.deviceId}"
                             data-th-text="${device.deviceId + ' - ' + device.name}"></option>
