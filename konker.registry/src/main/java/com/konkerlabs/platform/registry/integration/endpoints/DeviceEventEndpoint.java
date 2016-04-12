@@ -37,7 +37,7 @@ public class DeviceEventEndpoint {
         try {
             deviceEventProcessor.process(topic.toString(),message.getPayload());
         } catch (BusinessException be) {
-            throw new MessagingException(message,be);
+            LOGGER.error(message.getPayload(),be);
         }
     }
 }
