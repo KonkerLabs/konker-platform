@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html data-layout-decorator="layouts/default">
+<html data-layout-decorate="layouts/default">
 <head>
 </head>
 <body>
@@ -12,7 +12,7 @@
             </button>
             <li data-th-each="error : ${errors}" data-th-text="${error}"></li>
         </div>
-        <form data-th-action="@{{url}(url=${action})}" action="#" data-th-object="${route}"
+        <form data-th-action="@{__${action}__}" action="#" data-th-object="${route}"
               method="post" class="form-horizontal">
             <input type="hidden" name="_method" data-th-value="${method}" data-th-if="${method != null}"/>
             <div class="form-group">
