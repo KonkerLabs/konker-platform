@@ -5,7 +5,7 @@
 <body>
     <div data-layout-fragment="content">
         <fieldset disabled="" class="form-horizontal">
-            <legend>Devices</legend>
+            <legend data-th-text="#{devices.show.legend}"></legend>
             <div class="alert alert-success" role="alert" data-th-if="${message != null}">
                 <span data-th-text="${message}"></span>
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -13,7 +13,9 @@
                 </button>
             </div>
             <div class="form-group">
-                <label class="col-sm-1 control-label" for="deviceId">Device ID</label>
+                <label class="col-sm-1 control-label"
+                       data-th-text="#{devices.show.id}"
+                       for="deviceId"></label>
                 <div class="col-sm-4">
                     <input type="text" data-th-value="${device.deviceId}"
                         class="form-control"
@@ -22,7 +24,9 @@
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-sm-1 control-label" for="name">Device Name</label>
+                <label class="col-sm-1 control-label"
+                       data-th-text="#{devices.show.name}"
+                       for="name"></label>
                 <div class="col-sm-4">
                     <input type="text" data-th-value="${device.name}"
                             class="form-control"
@@ -30,7 +34,9 @@
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-sm-1 control-label" for="description">Description</label>
+                <label class="col-sm-1 control-label"
+                       data-th-text="#{devices.show.description}"
+                       for="description"></label>
                 <div class="col-sm-6">
                     <textarea id="description" class="form-control" name="description"
                         data-th-text="${device.description}">
@@ -38,21 +44,27 @@
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-sm-1 control-label" for="registrationDate">Registration Date and Time</label>
+                <label class="col-sm-1 control-label"
+                       data-th-text="#{devices.show.registration_date_time}"
+                       for="registrationDate"></label>
                 <div class="col-sm-4">
                     <input type="text" id="registrationDate" class="form-control" name="registrationDate"
                         data-th-value="${device.registrationDate.toString()}"/>
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-sm-1 control-label" for="lastUpdate">Last Update</label>
+                <label class="col-sm-1 control-label"
+                       data-th-text="#{devices.show.last_update}"
+                       for="lastUpdate"></label>
                 <div class="col-sm-4">
                     <input type="text" id="lastUpdate" class="form-control" name="lastUpdate"
                         data-th-value="${device.lastEvent != null ? device.lastEvent.timestamp.toString() : 'No updates available'}"/>
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-sm-1 control-label" for="active">Active?</label>
+                <label class="col-sm-1 control-label"
+                       data-th-text="#{devices.show.active}"
+                       for="active"></label>
                 <div class="col-sm-4">
                     <input type="checkbox" data-th-field="${device.active}"
                            id="active"
@@ -60,7 +72,9 @@
                 </div>
             </div>
         </fieldset>
-        <a data-th-href="@{/devices}" class="btn btn-default">Back</a>
+        <a data-th-href="@{/devices}"
+           data-th-text="#{nav.back}"
+           class="btn btn-default"></a>
     </div>
 </body>
 </html>

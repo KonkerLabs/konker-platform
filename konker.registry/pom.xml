@@ -24,6 +24,8 @@
                     <webApp>
                         <contextPath>/registry</contextPath>
                     </webApp>
+                    <reload>manual</reload>
+                    <scanIntervalSeconds>2</scanIntervalSeconds>
                 </configuration>
             </plugin>
             <plugin>

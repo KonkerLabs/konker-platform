@@ -5,9 +5,9 @@
 <body>
     <div data-layout-fragment="content">
         <fieldset disabled="" class="form-horizontal">
-            <legend data-th-text="#{events.legend}">Device Events</legend>
+            <legend data-th-text="#{devices.events.legend}"></legend>
             <div class="form-group">
-                <label class="col-sm-1 control-label" for="deviceId" data-th-text="#{events.deviceid.label}">Device ID</label>
+                <label class="col-sm-1 control-label" for="deviceId" data-th-text="#{devices.events.id}"></label>
                 <div class="col-sm-4">
                     <input type="text" data-th-value="${device.deviceId}"
                             class="form-control"
@@ -19,9 +19,9 @@
                 <table class="table table-bordered" data-th-if="${recentEvents != null and !recentEvents.empty}">
                     <thead>
                         <tr>
-                            <td class="col-md-1" data-th-text="#{events.table.header.dateandtime}">Date and time</td>
-                            <td class="col-md-2" data-th-text="#{events.table.header.channel}">Channel</td>
-                            <td class="col-md-2" data-th-text="#{events.table.header.payload}">Payload</td>
+                            <td class="col-md-1" data-th-text="#{devices.events.date_time}"></td>
+                            <td class="col-md-2" data-th-text="#{devices.events.channel}"></td>
+                            <td class="col-md-2" data-th-text="#{devices.events.payload}"></td>
                         </tr>
                     </thead>
                     <tbody>
@@ -32,10 +32,10 @@
                         </tr>
                     </tbody>
                 </table>
-                <span data-th-if="${recentEvents == null or recentEvents.empty}" data-th-text="#{events.emptymsg}">There are no events available</span>
+                <span data-th-if="${recentEvents == null or recentEvents.empty}" data-th-text="#{devices.events.empty_message}"></span>
             </div>
         </fieldset>
-        <a data-th-href="@{/devices}" class="btn btn-default" data-th-text="#{events.nav.back}">Back</a>
+        <a data-th-href="@{/devices}" class="btn btn-default" data-th-text="#{nav.back}"></a>
     </div>
 </body>
 </html>

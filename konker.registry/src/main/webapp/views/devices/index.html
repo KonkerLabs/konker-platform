@@ -5,21 +5,23 @@
 <body>
     <div data-layout-fragment="content">
         <fieldset>
-            <legend>Devices</legend>
+            <legend data-th-text="#{devices.index.legend}"></legend>
             <div class="alert alert-success" role="alert" data-th-if="${message != null}">
                 <span data-th-text="${message}"></span>
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <a data-th-href="@{/devices/new}" class="btn btn-default action pull-right">New</a>
+            <a data-th-href="@{/devices/new}"
+               data-th-text="#{nav.new}"
+               class="btn btn-default action pull-right"></a>
             <table class="table table-bordered">
                 <thead>
                 <tr>
-                    <td class="col-md-1">ID</td>
-                    <td class="col-md-2">Name</td>
-                    <td class="col-md-1">Active?</td>
-                    <td class="col-md-1 text-center">Actions</td>
+                    <td class="col-md-1" data-th-text="#{devices.index.id}"></td>
+                    <td class="col-md-2" data-th-text="#{devices.index.name}"></td>
+                    <td class="col-md-1" data-th-text="#{devices.index.active}"></td>
+                    <td class="col-md-1 text-center" data-th-text="#{devices.index.actions}"></td>
                 </tr>
                 </thead>
                 <tbody>
@@ -31,15 +33,15 @@
                         <span data-th-if="${not device.active}" class="glyphicon glyphicon-thumbs-down" aria-hidden="true"/>
                     </td>
                     <td class="text-center">
-                        <a data-th-href="@{/devices/{id}(id=${device.id})}" class="btn btn-default">
-                            Show
-                        </a>
-                        <a data-th-href="@{/devices/{id}/edit(id=${device.id})}" class="btn btn-default">
-                            Edit
-                        </a>
-                        <a data-th-href="@{/devices/{id}/events(id=${device.id})}" class="btn btn-default">
-                            Events
-                        </a>
+                        <a data-th-href="@{/devices/{id}(id=${device.id})}"
+                           data-th-text="#{nav.show}"
+                           class="btn btn-default"></a>
+                        <a data-th-href="@{/devices/{id}/edit(id=${device.id})}"
+                           data-th-text="#{nav.edit}"
+                           class="btn btn-default"></a>
+                        <a data-th-href="@{/devices/{id}/events(id=${device.id})}"
+                           data-th-text="#{devices.index.events}"
+                           class="btn btn-default"></a>
                     </td>
                 </tr>
                 </tbody>
