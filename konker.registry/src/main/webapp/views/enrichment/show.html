@@ -5,7 +5,7 @@
 <body>
 <div data-layout-fragment="content">
     <fieldset disabled="" class="form-horizontal">
-        <legend>Enrichment</legend>
+        <legend data-th-text="#{enrichment.show.legend}">Enrichment</legend>
         <div class="alert alert-success" role="alert" data-th-if="${message != null}">
             <span data-th-text="${message}"></span>
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -13,7 +13,7 @@
             </button>
         </div>
         <div class="form-group">
-            <label class="col-sm-1 control-label" for="name">Name</label>
+            <label class="col-sm-1 control-label" for="name" data-th-text="#{enrichment.show.name}">Name</label>
             <div class="col-sm-4">
                 <input type="text" data-th-value="${dataEnrichmentExtension.name}"
                        class="form-control"
@@ -22,7 +22,7 @@
             </div>
         </div>
         <div class="form-group">
-            <label class="col-sm-1 control-label" for="name">Type</label>
+            <label class="col-sm-1 control-label" for="name" data-th-text="#{enrichment.show.type}">Type</label>
             <div class="col-sm-4">
                 <input type="text" data-th-value="${dataEnrichmentExtension.type}"
                        class="form-control"
@@ -31,7 +31,7 @@
             </div>
         </div>
         <div class="form-group">
-            <label class="col-sm-1 control-label" for="description">Description</label>
+            <label class="col-sm-1 control-label" for="description" data-th-text="#{enrichment.show.description}">Description</label>
             <div class="col-sm-6">
                 <textarea id="description" class="form-control" name="description"
                           data-th-text="${dataEnrichmentExtension.description}">
@@ -39,7 +39,7 @@
             </div>
         </div>
         <div class="form-group">
-            <label class="col-sm-1 control-label" for="incomingAuthority">Incoming Device</label>
+            <label class="col-sm-1 control-label" for="incomingAuthority" data-th-text="#{enrichment.show.incoming_device}">Incoming Device</label>
             <div class="col-sm-4">
                 <select class="form-control" data-th-field="${dataEnrichmentExtension.incomingAuthority}"
                         id="incomingAuthority" name="incomingAuthority">
@@ -51,12 +51,12 @@
             </div>
         </div>
         <div class="form-group">
-            <label class="col-sm-1 control-label" for="parameters">Service parameters</label>
+            <label class="col-sm-1 control-label" for="parameters" data-th-text="#{enrichment.show.service_params}">Service parameters</label>
             <div class="col-sm-8">
                 <table id="parameters" class="table">
                     <tbody>
                     <tr data-th-each="parameter : ${dataEnrichmentExtension.parameters}">
-                        <td class="col-sm-1"><label for="parameter" data-th-text="${parameter.key}"/></td>
+                        <td class="col-sm-1"><label for="parameter" data-th-text="#{enrichment.form.service_params[__${parameter.key}__]}"/></td>
                         <td class="col-sm-4"><input type="text" data-th-value="${parameter.value}" class="form-control" name="parameter" id="parameter"/></td>
                     </tr>
                     </tbody>
@@ -64,7 +64,7 @@
             </div>
         </div>
         <div class="form-group">
-            <label class="col-sm-1 control-label" for="containerKey">Container key</label>
+            <label class="col-sm-1 control-label" for="containerKey" data-th-text="#{enrichment.show.container_key}" >Container key</label>
             <div class="col-sm-4">
                 <input type="text" data-th-value="${dataEnrichmentExtension.containerKey}"
                        class="form-control"
@@ -73,7 +73,7 @@
             </div>
         </div>
         <div class="form-group">
-            <label class="col-sm-1 control-label" for="active">Active?</label>
+            <label class="col-sm-1 control-label" for="active" data-th-text="#{enrichment.show.active}">Active?</label>
             <div class="col-sm-4">
                 <input type="checkbox" data-th-checked="${dataEnrichmentExtension.active}"
                        id="active"
@@ -81,7 +81,7 @@
             </div>
         </div>
     </fieldset>
-    <a data-th-href="@{/enrichment}" class="btn btn-default">Back</a>
+    <a data-th-href="@{/enrichment}" class="btn btn-default" data-th-text="#{nav.back}">Back</a>
 </div>
 </body>
 </html>

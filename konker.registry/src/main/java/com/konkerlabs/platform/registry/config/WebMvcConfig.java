@@ -90,6 +90,7 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements Application
             "/WEB-INF/i18n/devices",
             "/WEB-INF/i18n/enrichment",
             "/WEB-INF/i18n/routes",
+            "/WEB-INF/i18n/destinations",
             "/WEB-INF/i18n/transformations"
         );
         messageSource.setDefaultEncoding("UTF-8");

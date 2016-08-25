@@ -66,17 +66,21 @@
 					</div>
 				</div>
 				<div class="form-group">
-					<label class="col-sm-1 control-label" for="parameters" data-th-text="#{enrichment.form.service_parameters}">Service
+					<label class="col-sm-1 control-label" for="parameters" data-th-text="#{enrichment.form.service_params}">Service
 						parameters</label>
 					<div class="col-sm-7">
 						<table id="parameters" class="table">
 							<tbody>
 								<tr data-th-each="pr, stat: *{parameters}">
-									<td class="col-sm-1"><label for="parameter"
-										data-th-text="${pr.key}" /></td>
-									<td class="col-sm-4"><input type="text"
+									<td class="col-sm-1">
+										<label for="parameter"
+											data-th-text="#{enrichment.form.service_params[__${pr.key}__]}" />
+									</td>
+									<td class="col-sm-4">
+										<input type="text"
 										data-th-field="*{parameters[__${pr.key}__]}"
-										class="form-control" id="parameter" /></td>
+										class="form-control" id="parameter" />
+									</td>
 								</tr>
 							</tbody>
 						</table>
