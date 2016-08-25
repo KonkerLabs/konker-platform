@@ -5,7 +5,7 @@
 <body>
 <div data-layout-fragment="content">
     <fieldset disabled="" class="form-horizontal">
-        <legend>Transformation</legend>
+        <legend data-th-text="#{transformations.show.legend}">Transformation</legend>
         <div class="alert alert-success" role="alert" data-th-if="${message != null}">
             <span data-th-text="${message}"></span>
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -13,7 +13,9 @@
             </button>
         </div>
         <div class="form-group">
-            <label class="col-sm-1 control-label" for="name">Name</label>
+            <label class="col-sm-1 control-label"
+                   data-th-text="#{transformations.show.name}"
+                   for="name">Name</label>
             <div class="col-sm-4">
                 <input type="text" data-th-value="${transformation.name}"
                        class="form-control"
@@ -21,7 +23,9 @@
             </div>
         </div>
         <div class="form-group">
-            <label class="col-sm-1 control-label" for="description">Description</label>
+            <label class="col-sm-1 control-label"
+                   data-th-text="#{transformations.show.description}"
+                   for="description">Description</label>
             <div class="col-sm-6">
                     <textarea id="description" class="form-control" name="description"
                               data-th-text="${transformation.description}">
@@ -33,13 +37,13 @@
                 <div class="col-md-10 center-block">
                     <table class="table table-condensed" id="transformationSteps">
                         <caption>
-                            <strong>Transformation steps</strong>
+                            <strong data-th-text="#{transformations.show.steps}">Transformation steps</strong>
                         </caption>
                         <thead>
                         <tr>
-                            <td>URL</td>
-                            <td>Username</td>
-                            <td>Password</td>
+                            <td data-th-text="#{transformations.show.steps.url}">URL</td>
+                            <td data-th-text="#{transformations.show.steps.username}">Username</td>
+                            <td data-th-text="#{transformations.show.steps.password}">Password</td>
                         </tr>
                         </thead>
                         <tbody>
@@ -63,7 +67,9 @@
             </div>
         </div>
     </fieldset>
-    <a data-th-href="@{/transformation}" class="btn btn-default">Back</a>
+    <a data-th-href="@{/transformation}"
+       data-th-text="#{nav.back}"
+       class="btn btn-default">Back</a>
 </div>
 </body>
 </html>
