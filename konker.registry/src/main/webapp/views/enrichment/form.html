@@ -3,109 +3,124 @@
 <head>
 </head>
 <body>
-<div data-layout-fragment="content">
-    <fieldset>
-        <legend>Enrichment</legend>
-        <div class="alert alert-danger" role="alert" data-th-if="${errors != null and !errors.empty}">
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-            <li data-th-each="error : ${errors}" data-th-text="${error}"></li>
-        </div>
-        <form data-th-action="@{__${action}__}" action="#" data-th-object="${dataEnrichmentExtension}"
-              method="post" class="form-horizontal">
-            <input type="hidden" name="_method" data-th-value="${method}" data-th-if="${method != null}"/>
-            <div class="form-group">
-                <label class="col-sm-1 control-label" for="name">Name</label>
-                <div class="col-sm-4">
-                    <input type="text" data-th-field="*{name}"
-                           class="form-control"
-                           id="name"
-                           name="name" placeholder="Type your enrichment name here..."/>
-                </div>
-            </div>
-            <div class="form-group">
-                <label class="col-sm-1 control-label" for="type">Type</label>
-                <div class="col-sm-4">
-                    <select class="form-control" data-th-field="*{type}"
-                            id="type" name="type">
-                        <option data-th-each="enrichmentType : ${enrichmentTypes}"
-                                data-th-value="${enrichmentType}"
-                                data-th-text="${enrichmentType}"></option>
-                    </select>
-                </div>
-            </div>
-            <div class="form-group">
-                <label class="col-sm-1 control-label" for="description">Description</label>
-                <div class="col-sm-6">
-                    <textarea id="description" class="form-control" name="description"
-                              placeholder="Type some about this enrichment (optional)" data-th-field="*{description}">
+	<div data-layout-fragment="content">
+		<fieldset>
+			<legend data-th-text="#{enrichment.form.legend}">Enrichment</legend>
+			<div class="alert alert-danger" role="alert"
+				data-th-if="${errors != null and !errors.empty}">
+				<button type="button" class="close" data-dismiss="alert"
+					aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<li data-th-each="error : ${errors}" data-th-text="${error}"></li>
+			</div>
+			<form data-th-action="@{__${action}__}" action="#"
+				data-th-object="${dataEnrichmentExtension}" method="post"
+				class="form-horizontal">
+				<input type="hidden" name="_method" data-th-value="${method}"
+					data-th-if="${method != null}" />
+				<div class="form-group">
+					<label class="col-sm-1 control-label" for="name"
+						data-th-text="#{enrichment.form.name}">Name</label>
+					<div class="col-sm-4">
+						<input type="text" data-th-field="*{name}" class="form-control"
+							id="name" name="name"
+							data-th-placeholder="#{enrichment.form.name.placeholder}"
+							placeholder="Type your enrichment name here..." />
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-1 control-label" for="type"
+						data-th-text="#{enrichment.form.type}">Type</label>
+					<div class="col-sm-4">
+						<select class="form-control" data-th-field="*{type}" id="type"
+							name="type">
+							<option data-th-each="enrichmentType : ${enrichmentTypes}"
+								data-th-value="${enrichmentType}"
+								data-th-text="${enrichmentType}"></option>
+						</select>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-1 control-label" for="description"
+						data-th-text="#{enrichment.form.description}">Description</label>
+					<div class="col-sm-6">
+						<textarea id="description" class="form-control" name="description"
+							data-th-placeholder="#{enrichment.form.description.placeholder}"
+							placeholder="Type some about this enrichment (optional)"
+							data-th-field="*{description}">
                     </textarea>
-                </div>
-            </div>
-            <div class="form-group">
-                <label class="col-sm-1 control-label" for="incomingURI">Incoming Device</label>
-                <div class="col-sm-4">
-                    <select class="form-control" data-th-field="*{incomingAuthority}"
-                            id="incomingURI" name="incomingAuthority">
-                        <option data-th-text="'Select an option...'" data-th-value="none"></option>
-                        <option data-th-each="device : ${allDevices}"
-                                data-th-value="${device.deviceId}"
-                                data-th-text="${device.deviceId + ' - ' + device.name}"></option>
-                    </select>
-                </div>
-            </div>
-            <div class="form-group">
-                <label class="col-sm-1 control-label" for="parameters">Service parameters</label>
-                <div class="col-sm-7">
-                    <table id="parameters" class="table">
-                        <tbody>
-                        <tr data-th-each="pr, stat: *{parameters}">
-                            <td class="col-sm-1"><label for="parameter" data-th-text="${pr.key}"/></td>
-                            <td class="col-sm-4"><input type="text" data-th-field="*{parameters[__${pr.key}__]}" class="form-control" id="parameter"/></td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <div class="form-group">
-                <label class="col-sm-1 control-label" for="containerKey">Container key</label>
-                <div class="col-sm-4">
-                    <input type="text" data-th-field="*{containerKey}"
-                           class="form-control"
-                           id="containerKey"
-                           name="containerKey" placeholder="Type the placeholder key for enrichment result..."/>
-                </div>
-            </div>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-1 control-label" for="incomingURI" data-th-text="#{enrichment.form.incoming_device}">Incoming
+						Device</label>
+					<div class="col-sm-4">
+						<select class="form-control" data-th-field="*{incomingAuthority}"
+							id="incomingURI" name="incomingAuthority">
+							<option data-th-text="#{enrichment.form.incoming_device.placeholder}" data-th-value="none">Select an option...</option>
+							<option data-th-each="device : ${allDevices}"
+								data-th-value="${device.deviceId}"
+								data-th-text="${device.deviceId + ' - ' + device.name}"></option>
+						</select>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-1 control-label" for="parameters" data-th-text="#{enrichment.form.service_parameters}">Service
+						parameters</label>
+					<div class="col-sm-7">
+						<table id="parameters" class="table">
+							<tbody>
+								<tr data-th-each="pr, stat: *{parameters}">
+									<td class="col-sm-1"><label for="parameter"
+										data-th-text="${pr.key}" /></td>
+									<td class="col-sm-4"><input type="text"
+										data-th-field="*{parameters[__${pr.key}__]}"
+										class="form-control" id="parameter" /></td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-1 control-label" for="containerKey" data-th-text="#{enrichment.form.container_key}">Container
+						key</label>
+					<div class="col-sm-4">
+						<input type="text" data-th-field="*{containerKey}"
+							class="form-control" id="containerKey" name="containerKey"
+							data-th-placeholder="#{enrichment.form.container_key.placeholder}"
+							placeholder="Type the placeholder key for enrichment result..." />
+					</div>
+				</div>
 
-            <div class="form-group">
-                <label class="col-sm-1 control-label" for="active">Active?</label>
-                <div class="col-sm-4">
-                    <input type="checkbox" data-th-field="*{active}"
-                           id="active"
-                           name="active"/>
-                </div>
-            </div>
-            <button type="submit" class="btn btn-success">Save</button>
-            <a data-th-href="@{/enrichment}" class="btn btn-default">Back</a>
-            <a class="btn btn-default confirm-delete" data-th-if="*{id} != null">Remove</a>
+				<div class="form-group">
+					<label class="col-sm-1 control-label" for="active" data-th-text="#{enrichment.form.active}">Active?</label>
+					<div class="col-sm-4">
+						<input type="checkbox" data-th-field="*{active}" id="active"
+							name="active" />
+					</div>
+				</div>
+				<button type="submit" class="btn btn-success" data-th-text="#{nav.save}">Save</button>
+				<a data-th-href="@{/enrichment}" class="btn btn-default" data-th-text="#{nav.back}">Back</a> <a
+					class="btn btn-default confirm-delete" data-th-if="*{id} != null" data-th-text="#{nav.remove}">Remove</a>
 
-            <div id="removeItemModal" class="modal">
-                <div class="modal-content">
-                    <span href="#" data-dismiss="modal" aria-hidden="true" class="close">×</span>
-                    <h3>Remove</h3>
-                    <p>You are about to remove this Enrichment.</p>
-                    <p>Do you want to proceed?</p>
-                    <a id="btnYes" class="btn btn-default">Yes</a>
-                    <a href="#" data-dismiss="modal" aria-hidden="true" class="btn btn-default">No</a>
-                </div>
-            </div>
+				<div id="removeItemModal" class="modal">
+					<div class="modal-content">
+						<span href="#" data-dismiss="modal" aria-hidden="true"
+							class="close">×</span>
+						<h3 data-th-text="#{enrichment.form.remove_confirmation}">Remove</h3>
+						<p data-th-text="#{enrichment.form.remove_confirmation.about_to_remove}">You are about to remove this Enrichment.</p>
+						<p data-th-text="#{enrichment.form.remove_confirmation.proceed}">Do you want to proceed?</p>
+						<a id="btnYes" class="btn btn-default" data-th-text="#{nav.yes}">Yes</a> <a href="#"
+							data-dismiss="modal" aria-hidden="true" class="btn btn-default" data-th-text=#{nav.no}>No</a>
+					</div>
+				</div>
 
-        </form>
-    </fieldset>
-</div>
-<div data-layout-fragment="script">
-    <script data-th-attr="src=@{/resources/js/enrichment/form.js}"></script>
-</div>
+			</form>
+		</fieldset>
+	</div>
+	<div data-layout-fragment="script">
+		<script data-th-attr="src=@{/resources/js/enrichment/form.js}"></script>
+	</div>
 </body>
 </html>
