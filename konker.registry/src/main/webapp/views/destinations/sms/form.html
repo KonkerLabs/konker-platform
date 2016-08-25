@@ -5,7 +5,7 @@
 <body>
 <div data-layout-fragment="content">
     <fieldset>
-        <legend>SMS Destination</legend>
+        <legend data-th-text="#{destinations.sms.form.legend}">SMS Destination</legend>
         <div class="alert alert-danger" role="alert" data-th-if="${errors != null and !errors.empty}">
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
@@ -16,41 +16,43 @@
               method="post" class="form-horizontal">
             <input type="hidden" name="_method" data-th-value="${method}" data-th-if="${method != null}"/>
             <div class="form-group">
-                <label class="col-sm-1 control-label" for="name">Name</label>
+                <label class="col-sm-1 control-label" for="name" data-th-text="#{destinations.sms.form.name}">Name</label>
                 <div class="col-sm-4">
                     <input type="text" data-th-field="*{name}"
                            class="form-control"
                            id="name"
-                           name="name" placeholder="Type a name here..."/>
+                           name="name" data-th-placeholder="#{destinations.sms.form.name.placeholder}" placeholder="Type a name here..."/>
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-sm-1 control-label" for="description">Description</label>
+                <label class="col-sm-1 control-label" for="description" data-th-text="#{destinations.sms.form.description}">Description</label>
                 <div class="col-sm-6">
-                        <textarea id="description" class="form-control" name="description"
+                        <textarea id="description" class="form-control" name="description" data-th-placeholder="#{destinations.sms.form.description.placeholder}"
                                   placeholder="Type some about your destination (optional)" data-th-field="*{description}">
                         </textarea>
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-sm-1 control-label" for="phoneNumber">Phone Number</label>
+                <label class="col-sm-1 control-label" for="phoneNumber" 
+                       data-th-text="#{destinations.sms.form.number}">Phone Number</label>
                 <div class="col-sm-4">
                     <input type="text" data-th-field="*{phoneNumber}"
                            class="form-control"
                            id="phoneNumber"
-                           name="phoneNumber" placeholder="Type the destination phone number here..."/>
+                           name="phoneNumber" data-th-placeholder="#{destinations.sms.form.number.placeholder}" 
+                           placeholder="Type the destination phone number here..."/>
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-sm-1 control-label" for="active">Active?</label>
+                <label class="col-sm-1 control-label" for="active" data-th-text="#{destinations.sms.form.active}">Active?</label>
                 <div class="col-sm-4">
                     <input type="checkbox" data-th-field="*{active}"
                            id="active"
                            name="active"/>
                 </div>
             </div>
-            <button type="submit" class="btn btn-success">Save</button>
-            <a data-th-href="@{/destinations/sms/}" class="btn btn-default">Back</a>
+            <button type="submit" class="btn btn-success" data-th-text="#{nav.save}">Save</button>
+            <a data-th-href="@{/destinations/sms/}" class="btn btn-default" data-th-text="#{nav.back}">Back</a>
         </form>
     </fieldset>
 </div>
