@@ -5,7 +5,7 @@
 <body>
 <div data-layout-fragment="content">
     <fieldset disabled="" class="form-horizontal">
-        <legend>REST Destination</legend>
+        <legend data-th-text="#{destinations.rest.show.legend}">REST Destination</legend>
         <div class="alert alert-success" role="alert" data-th-if="${message != null}">
             <span data-th-text="${message}"></span>
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -13,12 +13,12 @@
             </button>
         </div>
         <div class="form-group">
-            <label class="col-sm-1 control-label" for="name">Name</label>
+            <label class="col-sm-1 control-label" for="name" data-th-text="#{destinations.rest.show.name}">Name</label>
             <div class="col-sm-4">
                 <input type="text" data-th-field="${destination.name}"
                        class="form-control"
                        id="name"
-                       name="name" placeholder="Type a name here..."/>
+                       name="name"/>
             </div>
         </div>
         <div class="center-block">
@@ -26,13 +26,13 @@
                 <div class="col-md-10 center-block">
                     <table class="table table-condensed" id="parameters">
                         <caption>
-                            <strong>Destination Parameters</strong>
+                            <strong data-th-text="#{destinations.rest.show.service_params}">Destination Parameters</strong>
                         </caption>
                         <thead>
                         <tr>
-                            <td>URL</td>
-                            <td>Username</td>
-                            <td>Password</td>
+                            <td data-th-text="#{destinations.rest.show.service_params.URL}">URL</td>
+                            <td data-th-text="#{destinations.rest.show.service_params.username}">Username</td>
+                            <td data-th-text="#{destinations.rest.show.service_params.password}">Password</td>
                         </tr>
                         </thead>
                         <tbody>
@@ -56,7 +56,7 @@
             </div>
         </div>
         <div class="form-group">
-            <label class="col-sm-1 control-label" for="active">Active?</label>
+            <label class="col-sm-1 control-label" for="active" data-th-text="#{destinations.rest.show.active}">Active?</label>
             <div class="col-sm-4">
                 <input type="checkbox" data-th-field="${destination.active}"
                        id="active"
@@ -64,7 +64,7 @@
             </div>
         </div>
     </fieldset>
-    <a data-th-href="@{/destinations/rest/}" class="btn btn-default">Back</a>
+    <a data-th-href="@{/destinations/rest/}" class="btn btn-default" data-th-text="#{nav.back}">Back</a>
 </div>
 </body>
 </html>

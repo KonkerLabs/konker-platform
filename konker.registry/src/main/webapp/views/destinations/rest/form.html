@@ -5,7 +5,7 @@
 <body>
 <div data-layout-fragment="content">
     <fieldset>
-        <legend>REST Destination</legend>
+        <legend data-th-text="#{destinations.rest.form.legend}">REST Destination</legend>
         <div class="alert alert-danger" role="alert" data-th-if="${errors != null and !errors.empty}">
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
@@ -16,12 +16,12 @@
               method="post" class="form-horizontal">
             <input type="hidden" name="_method" data-th-value="${method}" data-th-if="${method != null}"/>
             <div class="form-group">
-                <label class="col-sm-1 control-label" for="name">Name</label>
+                <label class="col-sm-1 control-label" for="name" data-th-text="#{destinations.rest.form.name}">Name</label>
                 <div class="col-sm-4">
                     <input type="text" data-th-field="*{name}"
                            class="form-control"
                            id="name"
-                           name="name" placeholder="Type a name here..."/>
+                           name="name" data-th-placeholder="#{destinations.rest.form.name.placeholder}" placeholder="Type a name here..."/>
                 </div>
             </div>
             <div class="center-block">
@@ -29,13 +29,13 @@
                     <div class="col-md-10 center-block">
                         <table class="table table-condensed" id="parameters">
                             <caption>
-                                <strong>Destination Parameters</strong>
+                                <strong data-th-text="#{destinations.rest.form.service_params}">Destination Parameters</strong>
                             </caption>
                             <thead>
                                 <tr>
-                                    <td>URL</td>
-                                    <td>Username</td>
-                                    <td>Password</td>
+                                    <td data-th-text="#{destinations.rest.form.service_params.URL}">URL</td>
+                                    <td data-th-text="#{destinations.rest.form.service_params.username}">Username</td>
+                                    <td data-th-text="#{destinations.rest.form.service_params.password}">Password</td>
                                 </tr>
                             </thead>
                             <tbody>
@@ -59,15 +59,15 @@
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-sm-1 control-label" for="active">Active?</label>
+                <label class="col-sm-1 control-label" for="active" data-th-text="#{destinations.rest.form.active}">Active?</label>
                 <div class="col-sm-4">
                     <input type="checkbox" data-th-field="*{active}"
                            id="active"
                            name="active"/>
                 </div>
             </div>
-            <button type="submit" class="btn btn-success">Save</button>
-            <a data-th-href="@{/destinations/rest/}" class="btn btn-default">Back</a>
+            <button type="submit" class="btn btn-success" data-th-text="#{nav.save}">Save</button>
+            <a data-th-href="@{/destinations/rest/}" class="btn btn-default" data-th-text="#{nav.back}">Back</a>
         </form>
     </fieldset>
 </div>
