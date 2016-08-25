@@ -5,7 +5,7 @@
 <body>
 <div data-layout-fragment="content">
     <fieldset disabled="" class="form-horizontal">
-        <legend>Routes</legend>
+        <legend data-th-text="#{routes.show.legend}"></legend>
         <div class="alert alert-success" role="alert" data-th-if="${message != null}">
             <span data-th-text="${message}"></span>
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -13,7 +13,9 @@
             </button>
         </div>
         <div class="form-group">
-            <label class="col-sm-1 control-label" for="name">Name</label>
+            <label class="col-sm-1 control-label"
+                   data-th-text="#{routes.show.name}"
+                   for="name"></label>
             <div class="col-sm-4">
                 <input type="text" data-th-value="${route.name}"
                        class="form-control"
@@ -22,7 +24,9 @@
             </div>
         </div>
         <div class="form-group">
-            <label class="col-sm-1 control-label" for="description">Description</label>
+            <label class="col-sm-1 control-label"
+                   data-th-text="#{routes.show.description}"
+                   for="description"></label>
             <div class="col-sm-6">
                 <textarea id="description" class="form-control" name="description"
                           data-th-text="${route.description}">
@@ -30,7 +34,9 @@
             </div>
         </div>
         <div class="form-group">
-            <label class="col-sm-1 control-label" for="incomingAuthority">Incoming Device</label>
+            <label class="col-sm-1 control-label"
+                   data-th-text="#{routes.show.incoming.device}"
+                   for="incomingAuthority"></label>
             <div class="col-sm-4">
                 <select class="form-control" data-th-field="${route.incoming.authorityId}"
                         id="incomingAuthority" name="incomingAuthority">
@@ -41,7 +47,9 @@
             </div>
         </div>
         <div class="form-group">
-            <label class="col-sm-1 control-label" for="incomingChannel">Incoming channel</label>
+            <label class="col-sm-1 control-label"
+                   data-th-text="#{routes.show.incoming.channel}"
+                   for="incomingChannel"></label>
             <div class="col-sm-4">
                 <input type="text" data-th-value="${route.incoming.authorityData['channel']}"
                        class="form-control"
@@ -50,19 +58,23 @@
             </div>
         </div>
         <div class="form-group">
-            <label class="col-sm-1 radio control-label">Outgoing type</label>
+            <label class="col-sm-1 radio control-label"
+                   data-th-text="#{routes.show.outgoing.type}"></label>
             <div class="col-sm-4">
                 <label class="radio-inline">
                     <input type="radio" name="outgoingScheme"
-                           value="device" data-th-checked="${route.outgoingScheme == 'device'}">Devices</input>
+                           data-th-text="#{routes.show.outgoing.type.device}"
+                           value="device" data-th-checked="${route.outgoingScheme == 'device'}"></input>
                 </label>
                 <label class="radio-inline">
                     <input type="radio" name="outgoingScheme"
-                           value="sms" data-th-checked="${route.outgoingScheme == 'sms'}">SMS</input>
+                           data-th-text="#{routes.show.outgoing.type.sms}"
+                           value="sms" data-th-checked="${route.outgoingScheme == 'sms'}"></input>
                 </label>
                 <label class="radio-inline">
                     <input type="radio" name="outgoingScheme"
-                           value="rest" data-th-checked="${route.outgoingScheme == 'rest'}">REST Destinations</input>
+                           data-th-text="#{routes.show.outgoing.type.rest}"
+                           value="rest" data-th-checked="${route.outgoingScheme == 'rest'}"></input>
                 </label>
             </div>
         </div>
@@ -76,7 +88,9 @@
                        data-th-if="${route.outgoingScheme == 'rest'}">
         </data-th-block>
         <div class="form-group">
-            <label class="col-sm-1 control-label" for="filteringExpression">Message filter</label>
+            <label class="col-sm-1 control-label"
+                   data-th-text="#{routes.show.message_filter}"
+                   for="filteringExpression"></label>
             <div class="col-sm-4">
                 <input type="text" data-th-value="${route.filteringExpression}"
                        class="form-control"
@@ -85,7 +99,9 @@
             </div>
         </div>
         <div class="form-group">
-            <label class="col-sm-1 control-label" for="transformation">Transformation chain</label>
+            <label class="col-sm-1 control-label"
+                   data-th-text="#{routes.show.transformation_chain}"
+                   for="transformation"></label>
             <div class="col-sm-4">
                 <select class="form-control" data-th-field="${route.transformation}"
                         id="transformation" name="transformation">
@@ -98,7 +114,9 @@
             </div>
         </div>
         <div class="form-group">
-            <label class="col-sm-1 control-label" for="active">Active?</label>
+            <label class="col-sm-1 control-label"
+                   data-th-text="#{routes.show.active}"
+                   for="active"></label>
             <div class="col-sm-4">
                 <input type="checkbox" data-th-checked="${route.active}"
                        id="active"
@@ -106,7 +124,9 @@
             </div>
         </div>
     </fieldset>
-    <a data-th-href="@{/routes}" class="btn btn-default">Back</a>
+    <a data-th-href="@{/routes}"
+       data-th-text="#{nav.back}"
+       class="btn btn-default"></a>
 </div>
 </body>
 </html>

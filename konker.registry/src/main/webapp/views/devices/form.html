@@ -21,6 +21,7 @@
                            for="deviceId"></label>
                     <div class="col-sm-4">
                         <input data-th-disabled="${isEditing != null}" type="text" data-th-field="*{deviceId}"
+                               data-th-placeholder="#{devices.form.id.placeholder}"
                                class="form-control"
                                id="deviceId"
                                name="deviceId"/>
@@ -33,7 +34,8 @@
                     <div class="col-sm-4">
                         <input type="text" data-th-field="*{name}"
                                class="form-control"
-                               id="name" name="name" placeholder="Type your device name here..."/>
+                               id="name" name="name"
+                               data-th-placeholder="#{devices.form.name.placeholder}"/>
                     </div>
                 </div>
                 <div class="form-group">
@@ -42,7 +44,8 @@
                            for="description"></label>
                     <div class="col-sm-6">
                         <textarea id="description" class="form-control" name="description"
-                                  placeholder="Type some about your device (optional)" data-th-field="*{description}">
+                                  data-th-placeholder="#{devices.form.description.placeholder}"
+                                  data-th-field="*{description}">
                         </textarea>
                     </div>
                 </div>

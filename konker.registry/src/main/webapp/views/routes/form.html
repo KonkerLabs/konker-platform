@@ -5,7 +5,7 @@
 <body>
 <div data-layout-fragment="content">
     <fieldset>
-        <legend>Routes</legend>
+        <legend data-th-text="#{routes.form.legend}"></legend>
         <div class="alert alert-danger" role="alert" data-th-if="${errors != null and !errors.empty}">
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
@@ -16,24 +16,30 @@
               method="post" class="form-horizontal">
             <input type="hidden" name="_method" data-th-value="${method}" data-th-if="${method != null}"/>
             <div class="form-group">
-                <label class="col-sm-1 control-label" for="name">Name</label>
+                <label class="col-sm-1 control-label"
+                       data-th-text="#{routes.form.name}"
+                       for="name"></label>
                 <div class="col-sm-4">
                     <input type="text" data-th-field="*{name}"
                            class="form-control"
                            id="name"
-                           name="name" placeholder="Type your route name here..."/>
+                           name="name" data-th-placeholder="#{routes.form.name.placeholder}"/>
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-sm-1 control-label" for="description">Description</label>
+                <label class="col-sm-1 control-label"
+                       data-th-text="#{routes.form.description}"
+                       for="description"></label>
                 <div class="col-sm-6">
                     <textarea id="description" class="form-control" name="description"
-                              placeholder="Type some about your device (optional)" data-th-field="*{description}">
+                              data-th-placeholder="#{routes.form.description.placeholder}" data-th-field="*{description}">
                     </textarea>
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-sm-1 control-label" for="incomingAuthority">Incoming Device</label>
+                <label class="col-sm-1 control-label"
+                       data-th-text="#{routes.form.incoming.device}"
+                       for="incomingAuthority"></label>
                 <div class="col-sm-4">
                     <select class="form-control" data-th-field="*{incoming.authorityId}"
                         id="incomingAuthority" name="incomingAuthority">
@@ -44,28 +50,34 @@
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-sm-1 control-label" for="incomingChannel">Incoming channel</label>
+                <label class="col-sm-1 control-label"
+                       data-th-text="#{routes.form.incoming.channel}"
+                       for="incomingChannel"></label>
                 <div class="col-sm-4">
                     <input type="text" data-th-field="*{incoming.authorityData['channel']}"
                            class="form-control"
                            id="incomingChannel"
-                           name="incomingChannel" placeholder="Type your incoming device's channel here..."/>
+                           name="incomingChannel" data-th-placeholder="#{routes.form.incoming.channel.placeholder}"/>
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-sm-1 radio control-label">Outgoing type</label>
+                <label class="col-sm-1 radio control-label"
+                       data-th-text="#{routes.form.outgoing.type}"></label>
                 <div class="col-sm-4">
                     <label class="radio-inline">
                         <input type="radio" name="outgoingScheme"
-                               value="device" data-th-checked="*{outgoingScheme == 'device'}">Devices</input>
+                               data-th-text="#{routes.form.outgoing.type.device}"
+                               value="device" data-th-checked="*{outgoingScheme == 'device'}"></input>
                     </label>
                     <label class="radio-inline">
                         <input type="radio" name="outgoingScheme"
-                               value="sms" data-th-checked="*{outgoingScheme == 'sms'}">SMS</input>
+                               data-th-text="#{routes.form.outgoing.type.sms}"
+                               value="sms" data-th-checked="*{outgoingScheme == 'sms'}"></input>
                     </label>
                     <label class="radio-inline">
                         <input type="radio" name="outgoingScheme"
-                               value="rest" data-th-checked="*{outgoingScheme == 'rest'}">REST Destinations</input>
+                               data-th-text="#{routes.form.outgoing.type.rest}"
+                               value="rest" data-th-checked="*{outgoingScheme == 'rest'}"></input>
                     </label>
                     <img data-th-src="@{/resources/konker/images/loading.gif}" id="loading" class="ajax-loading"/>
                 </div>
@@ -82,21 +94,25 @@
                 </data-th-block>
             </div>
             <div class="form-group">
-                <label class="col-sm-1 control-label" for="filteringExpression">Filtering expression</label>
+                <label class="col-sm-1 control-label"
+                       data-th-text="#{routes.form.message_filter}"
+                       for="filteringExpression"></label>
                 <div class="col-sm-7">
                     <input type="text" data-th-field="*{filteringExpression}"
                            class="form-control"
                            id="filteringExpression"
-                           name="filteringExpression" placeholder="Type an Expression Language to filter incoming events. Json payload values can be accessed via: #fieldName]."/>
+                           name="filteringExpression" data-th-placeholder="#{routes.form.message_filter.placeholder}"/>
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-sm-1 control-label" for="transformation">Transformation chain</label>
+                <label class="col-sm-1 control-label"
+                       data-th-text="#{routes.form.transformation_chain}"
+                       for="transformation"></label>
                 <div class="col-sm-4">
                     <select class="form-control" data-th-field="*{transformation}"
                             id="transformation" name="transformation">
                         <option data-th-value="${''}"
-                                data-th-text="${'Select a transformation'}"></option>
+                                data-th-text="#{routes.form.transformation.empty}"></option>
                         <option data-th-each="trans : ${allTransformations}"
                                 data-th-value="${trans.id}"
                                 data-th-text="${trans.name}"></option>
@@ -104,25 +120,35 @@
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-sm-1 control-label" for="active">Active?</label>
+                <label class="col-sm-1 control-label"
+                       data-th-text="#{routes.form.active}"
+                       for="active"></label>
                 <div class="col-sm-4">
                     <input type="checkbox" data-th-field="*{active}"
                            id="active"
                            name="active"/>
                 </div>
             </div>
-            <button type="submit" class="btn btn-success">Save</button>
-            <a data-th-href="@{/routes}" class="btn btn-default">Back</a>
-            <a class="btn btn-default confirm-delete" data-th-if="*{id} != null">Remove</a>
+            <button type="submit"
+                    data-th-text="#{nav.save}"
+                    class="btn btn-success"></button>
+            <a data-th-href="@{/routes}"
+               data-th-text="#{nav.back}"
+               class="btn btn-default"></a>
+            <a class="btn btn-default confirm-delete"
+               data-th-text="#{nav.remove}"
+               data-th-if="*{id} != null"></a>
 
             <div id="removeItemModal" class="modal">
                 <div class="modal-content">
                     <span href="#" data-dismiss="modal" aria-hidden="true" class="close">×</span>
-                    <h3>Remove</h3>
-                    <p>You are about to remove this Route.</p>
-                    <p>Do you want to proceed?</p>
-                    <a id="btnYes" class="btn btn-default">Yes</a>
-                    <a href="#" data-dismiss="modal" aria-hidden="true" class="btn btn-default">No</a>
+                    <h3 data-th-text="#{nav.remove}">Remove</h3>
+                    <p data-th-text="#{routes.form.modal.remove.firstLine}">You are about to remove this Route.</p>
+                    <p data-th-text="#{routes.form.modal.remove.secondLine}">Do you want to proceed?</p>
+                    <a id="btnYes" class="btn btn-default" data-th-text="#{nav.yes}">Yes</a>
+                    <a href="#" data-dismiss="modal" aria-hidden="true"
+                       data-th-text="#{nav.no}"
+                       class="btn btn-default">No</a>
                 </div>
             </div>
 
