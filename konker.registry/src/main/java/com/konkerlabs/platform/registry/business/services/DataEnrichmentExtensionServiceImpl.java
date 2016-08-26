@@ -227,6 +227,8 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
         for (String error : errors)
             invalidBuilder.responseMessage(error);
 
+        invalidBuilder.responseMessages(Arrays.asList(errors));
+
         return invalidBuilder;
     }
 }

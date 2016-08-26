@@ -1,19 +1,20 @@
 package com.konkerlabs.platform.registry.business.services;
 
-import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -27,54 +28,51 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
     private DeviceRepository deviceRepository;
 
     @Override
-    public ServiceResponse<Device> register(Tenant tenant, Device device) {
+    public NewServiceResponse<Device> register(Tenant tenant, Device device) {
 
         if (!Optional.ofNullable(tenant).isPresent())
-            return ServiceResponse.<Device>builder()
-                .status(ServiceResponse.Status.ERROR)
-                .responseMessage("Tenant cannot be null")
-                .<Device>build();
+            return ServiceResponseBuilder.<Device>error()
+                    .withMessage(CommonValidations.TENANT_NULL.getCode(),null)
+                    .build();
 
         if (!Optional.ofNullable(device).isPresent())
-            return ServiceResponse.<Device>builder()
-                    .status(ServiceResponse.Status.ERROR)
-                    .responseMessage("Record cannot be null")
-                    .<Device>build();
+            return ServiceResponseBuilder.<Device>error()
+                    .withMessage(CommonValidations.RECORD_NULL.getCode(),null)
+                    .build();
 
         if (!tenantRepository.exists(tenant.getId()))
-            return ServiceResponse.<Device>builder()
-                    .status(ServiceResponse.Status.ERROR)
-                    .responseMessage("Tenant does not exist")
-                    .<Device>build();
+            return ServiceResponseBuilder.<Device>error()
+                    .withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode(),null)
+                    .build();
 
         device.onRegistration();
 
         device.setTenant(tenant);
 
-        List<String> validations = device.applyValidations();
+        Map<String, Object[]> validations = device.applyValidations();
 
         if (validations != null)
-            return ServiceResponse.<Device>builder()
-                    .responseMessages(validations)
-                    .status(ServiceResponse.Status.ERROR).<Device>build();
+            return ServiceResponseBuilder.<Device>error()
+                    .withMessages(validations)
+                    .build();
 
         if (deviceRepository.findByTenantIdAndDeviceId(tenant.getId(), device.getDeviceId()) != null) {
-            return ServiceResponse.<Device>builder()
-                    .responseMessages(Arrays.asList(new String[] { "Device ID already registered" }))
-                    .status(ServiceResponse.Status.ERROR).<Device>build();
+            return ServiceResponseBuilder.<Device>error()
+                    .withMessage(Validations.DEVICE_ID_ALREADY_REGISTERED.getCode(),null)
+                    .build();
         }
 
         device.setApiKey(device.getDeviceId());
 
         Device saved = deviceRepository.save(device);
 
-        return ServiceResponse.<Device>builder().status(ServiceResponse.Status.OK).result(saved).<Device>build();
+        return ServiceResponseBuilder.<Device>ok().withResult(saved).build();
     }
 
     @Override
-    public ServiceResponse<List<Device>> findAll(Tenant tenant) {
+    public NewServiceResponse<List<Device>> findAll(Tenant tenant) {
         List<Device> all = deviceRepository.findAllByTenant(tenant.getId());
-        return ServiceResponse.<List<Device>>builder().status(ServiceResponse.Status.OK).result(all).<List<Device>>build();
+        return ServiceResponseBuilder.<List<Device>>ok().withResult(all).build();
     }
 
 
@@ -93,48 +91,50 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
 
     @Override
-    public ServiceResponse<Device> switchEnabledDisabled(Tenant tenant, String id) {
+    public NewServiceResponse<Device> switchEnabledDisabled(Tenant tenant, String id) {
         if (!Optional.ofNullable(id).isPresent())
-            return ServiceResponse.<Device>builder()
-                    .status(ServiceResponse.Status.ERROR)
-                    .responseMessage("Device ID cannot be null").<Device>build();
+            return ServiceResponseBuilder.<Device>error()
+                    .withMessage(Validations.DEVICE_ID_NULL.getCode(),null)
+                    .build();
 
         Device found = getByDeviceId(tenant, id).getResult();
 
         if (!Optional.ofNullable(found).isPresent())
-            return ServiceResponse.<Device>builder()
-                    .status(ServiceResponse.Status.ERROR)
-                    .responseMessage("Device ID does not exist").<Device>build();
+            return ServiceResponseBuilder.<Device>error()
+                    .withMessage(Validations.DEVICE_ID_DOES_NOT_EXIST.getCode(),null)
+                    .build();
 
         found.setActive(!found.isActive());
 
         Device updated = deviceRepository.save(found);
 
-        return ServiceResponse.<Device>builder()
-            .status(ServiceResponse.Status.OK)
-            .result(updated)
-            .<Device>build();
+        return ServiceResponseBuilder.<Device>ok()
+                .withResult(updated)
+                .build();
     }
 
     @Override
-    public ServiceResponse<Device> update(Tenant tenant, String id, Device updatingDevice) {
+    public NewServiceResponse<Device> update(Tenant tenant, String id, Device updatingDevice) {
+        if (!Optional.ofNullable(tenant).isPresent())
+            return ServiceResponseBuilder.<Device>error()
+                    .withMessage(CommonValidations.TENANT_NULL.getCode(),null)
+                    .build();
+
         if (!Optional.ofNullable(id).isPresent())
-            return ServiceResponse.<Device>builder()
-                    .status(ServiceResponse.Status.ERROR)
-                    .responseMessage("Cannot update device with null ID")
-                    .<Device>build();
+            return ServiceResponseBuilder.<Device>error()
+                    .withMessage(Validations.DEVICE_ID_NULL.getCode(),null)
+                    .build();
 
         if (!Optional.ofNullable(updatingDevice).isPresent())
-            return ServiceResponse.<Device>builder()
-                    .status(ServiceResponse.Status.ERROR)
-                    .responseMessage("Cannot update null device")
-                    .<Device>build();
+            return ServiceResponseBuilder.<Device>error()
+                    .withMessage(CommonValidations.RECORD_NULL.getCode(),null)
+                    .build();
 
         Device deviceFromDB = getByDeviceId(tenant, id).getResult();
         if (deviceFromDB == null) {
-            return ServiceResponse.<Device>builder()
-                    .responseMessages(Arrays.asList(new String[] { "Device ID does not exists" }))
-                    .status(ServiceResponse.Status.ERROR).<Device>build();
+            return ServiceResponseBuilder.<Device>error()
+                    .withMessage(Validations.DEVICE_ID_DOES_NOT_EXIST.getCode(),null)
+                    .build();
         }
 
         // modify "modifiable" fields
@@ -142,36 +142,50 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         deviceFromDB.setName(updatingDevice.getName());
         deviceFromDB.setActive(updatingDevice.isActive());
 
-        List<String> validations = deviceFromDB.applyValidations();
+        Map<String, Object[]> validations = deviceFromDB.applyValidations();
 
         if (validations != null) {
-            return ServiceResponse.<Device>builder()
-                    .responseMessages(validations).status(ServiceResponse.Status.ERROR).<Device>build();
+            return ServiceResponseBuilder.<Device>error()
+                    .withMessages(validations)
+                    .build();
         }
 
         Device saved = deviceRepository.save(deviceFromDB);
 
-        return ServiceResponse.<Device>builder().status(ServiceResponse.Status.OK).result(saved).<Device>build();
+        return ServiceResponseBuilder.<Device>ok()
+                .withResult(saved)
+                .build();
     }
 
     @Override
-    public ServiceResponse<Device> getByDeviceId(Tenant tenant, String id) {
-        try {
-            Optional.ofNullable(id).orElseThrow(() -> new BusinessException("Id cannot be null"));
-            Optional.ofNullable(tenant).orElseThrow(() -> new BusinessException("Tenant cannot be null"));
+    public NewServiceResponse<Device> getByDeviceId(Tenant tenant, String id) {
+        if (!Optional.ofNullable(tenant).isPresent())
+            return ServiceResponseBuilder.<Device>error()
+                    .withMessage(CommonValidations.TENANT_NULL.getCode(),null)
+                    .build();
 
-            Tenant t = Optional.ofNullable(tenantRepository.findByName(tenant.getName()))
-                    .orElseThrow(() -> new BusinessException("Tenant does not exist"));
+        if (!Optional.ofNullable(id).isPresent())
+            return ServiceResponseBuilder.<Device>error()
+                    .withMessage(Validations.DEVICE_ID_NULL.getCode(),null)
+                    .build();
 
-            Device device = Optional.ofNullable(deviceRepository.findByTenantAndId(t.getId(), id))
-                    .orElseThrow(() -> new BusinessException("Device does not exist"));
+        Tenant t = tenantRepository.findByName(tenant.getName());
 
-            return ServiceResponse.<Device> builder().status(ServiceResponse.Status.OK).result(device)
-                    .<Device>build();
-        } catch (BusinessException be) {
-            return ServiceResponse.<Device> builder().status(ServiceResponse.Status.ERROR)
-                    .responseMessage(be.getMessage()).<Device>build();
+        if (!Optional.ofNullable(tenant).isPresent())
+            return ServiceResponseBuilder.<Device>error()
+                    .withMessage(CommonValidations.TENANT_NULL.getCode(),null)
+                    .build();
+
+        Device device = deviceRepository.findByTenantAndId(t.getId(), id);
+        if (!Optional.ofNullable(device).isPresent()) {
+            return ServiceResponseBuilder.<Device>error()
+                    .withMessage(Validations.DEVICE_ID_DOES_NOT_EXIST.getCode(),null)
+                    .build();
         }
+
+        return ServiceResponseBuilder.<Device>ok()
+                .withResult(device)
+                .build();
     }
 
 }

@@ -4,6 +4,7 @@ import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import org.hamcrest.collection.IsEmptyCollection;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,64 +41,63 @@ public class DeviceTest {
 	public void shouldReturnAValidationMessageIfDeviceIdIsNull() throws Exception {
 	    device.setDeviceId(null);
 
-		String expectedMessage = "Device ID cannot be null or empty";
+		String expectedMessage = Device.Validations.ID_NULL_EMPTY.getCode();
 
-		assertThat(device.applyValidations(), hasItem(expectedMessage));
+		assertThat(device.applyValidations(), hasEntry(expectedMessage,null));
 	}
 
 	@Test
 	public void shouldReturnAValidationMessageIfDeviceIdIsEmpty() throws Exception {
 	    device.setDeviceId("");
 
-	
-	    String expectedMessage = "Device ID cannot be null or empty";
+		String expectedMessage = Device.Validations.ID_NULL_EMPTY.getCode();
 
-		assertThat(device.applyValidations(), hasItem(expectedMessage));
+		assertThat(device.applyValidations(), hasEntry(expectedMessage,null));
 	}
 
 	@Test
 	public void shouldReturnAValidationMessageIfDeviceIdIsGreaterThan16Characters() throws Exception {
 		device.setDeviceId("95c14b36ba2b43f1ac537");
 
-		String expectedMessage = "Device ID cannot be greater than 16 characters";
+		String expectedMessage = Device.Validations.ID_GREATER_THAN_EXPECTED.getCode();
 
-		assertThat(device.applyValidations(), hasItem(expectedMessage));
+		assertThat(device.applyValidations(), hasEntry(expectedMessage,new Object[] {16}));
 	}
 
 	@Test
 	public void shouldReturnAValidationMessageIfNameIsNull() throws Exception {
 		device.setName(null);
 
-		String expectedMessage = "Device name cannot be null or empty";
+		String expectedMessage = Device.Validations.NAME_NULL_EMPTY.getCode();
 
-		assertThat(device.applyValidations(), hasItem(expectedMessage));
+		assertThat(device.applyValidations(), hasEntry(expectedMessage,null));
 	}
 
 	@Test
 	public void shouldReturnAValidationMessageIfNameIsEmpty() throws Exception {
 		device.setName("");
 
-		String expectedMessage = "Device name cannot be null or empty";
+		String expectedMessage = Device.Validations.NAME_NULL_EMPTY.getCode();
 
-		assertThat(device.applyValidations(), hasItem(expectedMessage));
+		assertThat(device.applyValidations(), hasEntry(expectedMessage,null));
 	}
 
 	@Test
 	public void shouldReturnAValidationMessageIfTenantIsNull() throws Exception {
 		device.setTenant(null);
 
-		String expectedMessage = "Tenant cannot be null";
+		String expectedMessage = CommonValidations.TENANT_NULL.getCode();
 
-		assertThat(device.applyValidations(), hasItem(expectedMessage));
+		assertThat(device.applyValidations(), hasEntry(expectedMessage,null));
 	}
 
 	@Test
 	public void shouldReturnAValidationMessageIfRegistrationDateIsNull() throws Exception {
 		device.setRegistrationDate(null);
 
-		String expectedMessage = "Registration date cannot be null";
+		String expectedMessage = Device.Validations.REGISTRATION_DATE_NULL.getCode();
 
-		assertThat(device.applyValidations(), hasItem(expectedMessage));
+		assertThat(device.applyValidations(), hasEntry(expectedMessage,null));
 	}
 
 	@Test

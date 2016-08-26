@@ -91,9 +91,8 @@ public class EventRouteControllerTest extends WebLayerTestContext {
 
         List<Device> devices = new ArrayList<>();
         when(deviceRegisterService.findAll(tenant)).thenReturn(
-                ServiceResponse.<List<Device>>builder()
-                        .status(OK)
-                        .result(devices).<List<Device>>build()
+                ServiceResponseBuilder.<List<Device>>ok()
+                        .withResult(devices).build()
         );
         List<RestDestination> restDestinations = new ArrayList<>();
         when(restDestinationService.findAll(tenant)).thenReturn(

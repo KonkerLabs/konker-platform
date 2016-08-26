@@ -3,9 +3,13 @@ package com.konkerlabs.platform.registry.web.controllers;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.web.forms.DeviceRegistrationForm;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -16,13 +20,37 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.function.Supplier;
 
 @Controller
 @Scope("request")
 @RequestMapping(value = "devices")
-public class DeviceController {
+public class DeviceController implements ApplicationContextAware {
+
+    public enum Messages {
+        DEVICE_REGISTERED_SUCCESSFULLY("controller.device.registered.success");
+
+        public String getCode() {
+            return code;
+        }
+
+        private String code;
+
+        Messages(String code) {
+            this.code = code;
+        }
+    }
+
+    private ApplicationContext applicationContext;
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+    }
 
     private DeviceRegisterService deviceRegisterService;
     private Tenant tenant;
@@ -69,37 +97,45 @@ public class DeviceController {
 
     @RequestMapping(path = "/save", method = RequestMethod.POST)
     public ModelAndView saveNew(@ModelAttribute("deviceForm") DeviceRegistrationForm deviceForm,
-            RedirectAttributes redirectAttributes) {
+                                RedirectAttributes redirectAttributes,
+                                Locale locale) {
 
         return doSave(
                 () -> deviceRegisterService.register(tenant, deviceForm.toModel()),
-                deviceForm,
+                deviceForm, locale,
                 redirectAttributes, "");
     }
 
     @RequestMapping(path = "/{deviceId}", method = RequestMethod.PUT)
     public ModelAndView saveEdit(@PathVariable String deviceId,
-            @ModelAttribute("deviceForm") DeviceRegistrationForm deviceForm, RedirectAttributes redirectAttributes) {
+                                 @ModelAttribute("deviceForm") DeviceRegistrationForm deviceForm,
+                                 RedirectAttributes redirectAttributes, Locale locale) {
 
         return doSave(
                 () -> deviceRegisterService.update(tenant, deviceId, deviceForm.toModel()),
-                deviceForm,
+                deviceForm, locale,
                 redirectAttributes,"put");
     }
 
-    private ModelAndView doSave(Supplier<ServiceResponse<Device>> responseSupplier,
-                                DeviceRegistrationForm registrationForm,
+    private ModelAndView doSave(Supplier<NewServiceResponse<Device>> responseSupplier,
+                                DeviceRegistrationForm registrationForm, Locale locale,
                                 RedirectAttributes redirectAttributes, String action) {
 
-        ServiceResponse<Device> serviceResponse = responseSupplier.get();
+        NewServiceResponse<Device> serviceResponse = responseSupplier.get();
 
         if (serviceResponse.getStatus().equals(ServiceResponse.Status.OK)) {
-            redirectAttributes.addFlashAttribute("message", "Device saved successfully");
+            redirectAttributes.addFlashAttribute("message",
+                    applicationContext.getMessage(Messages.DEVICE_REGISTERED_SUCCESSFULLY.code,null,locale));
             return new ModelAndView(MessageFormat.format("redirect:/devices/{0}", serviceResponse.getResult().getId()));
-        } else
-            return new ModelAndView("devices/form").addObject("errors", serviceResponse.getResponseMessages())
+        } else {
+            List<String> messages = new ArrayList<>();
+            for (Map.Entry<String, Object[]> message : serviceResponse.getResponseMessages().entrySet()) {
+                messages.add(applicationContext.getMessage(message.getKey(),message.getValue(),locale));
+            }
+            return new ModelAndView("devices/form").addObject("errors", messages)
                     .addObject("device", registrationForm)
                     .addObject("method", action);
+        }
 
     }
 }

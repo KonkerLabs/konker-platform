@@ -1,5 +1,7 @@
 package com.konkerlabs.platform.registry.business.model;
 
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.model.validation.Validatable;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
 import lombok.Builder;
 import lombok.Data;
@@ -8,16 +10,30 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.net.URI;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Data
 @Builder
 @Document(collection = "devices")
-public class Device implements DeviceURIDealer {
+public class Device implements DeviceURIDealer, Validatable {
+
+	public enum Validations {
+		ID_NULL_EMPTY("model.device.id.not_null"),
+		ID_GREATER_THAN_EXPECTED("model.device.id.greater_than_expected"),
+		NAME_NULL_EMPTY("model.device.name.not_null"),
+		REGISTRATION_DATE_NULL("model.device.registration_date.not_null");
+
+		public String getCode() {
+			return code;
+		}
+
+		private String code;
+
+		Validations(String code) {
+			this.code = code;
+		}
+	}
 
     private String id;
 	@DBRef
@@ -30,20 +46,20 @@ public class Device implements DeviceURIDealer {
 	private List<Event> events;
 	private boolean active;
 
-	public List<String> applyValidations() {
+	public Map<String, Object[]> applyValidations() {
 
-		List<String> validations = new ArrayList<>();
+		Map<String, Object[]> validations = new HashMap<>();
 
 		if (getDeviceId() == null || getDeviceId().isEmpty())
-			validations.add("Device ID cannot be null or empty");
+			validations.put(Validations.ID_NULL_EMPTY.code,null);
 		if (getDeviceId() != null && getDeviceId().length() > 16)
-			validations.add("Device ID cannot be greater than 16 characters");
+			validations.put(Validations.ID_GREATER_THAN_EXPECTED.code,new Object[]{16});
 		if (getName() == null || getName().isEmpty())
-			validations.add("Device name cannot be null or empty");
+			validations.put(Validations.NAME_NULL_EMPTY.code,null);
 		if (getTenant() == null)
-			validations.add("Tenant cannot be null");
+			validations.put(CommonValidations.TENANT_NULL.getCode(),null);
 		if (getRegistrationDate() == null)
-			validations.add("Registration date cannot be null");
+			validations.put(Validations.REGISTRATION_DATE_NULL.code,null);
 
 		if (validations.isEmpty())
 			return null;

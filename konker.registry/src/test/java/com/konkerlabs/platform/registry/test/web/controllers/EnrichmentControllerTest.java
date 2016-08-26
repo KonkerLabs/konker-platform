@@ -9,6 +9,7 @@ import com.konkerlabs.platform.registry.business.model.enumerations.IntegrationT
 import com.konkerlabs.platform.registry.business.services.api.DataEnrichmentExtensionService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
@@ -74,10 +75,8 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
     @Before
     public void setUp() {
         when(deviceRegisterService.findAll(tenant))
-        .thenReturn(ServiceResponse.<List<Device>>builder()
-                .status(ServiceResponse.Status.OK)
-                .result(Collections.emptyList())
-                .<List<Device>>build());
+        .thenReturn(ServiceResponseBuilder.<List<Device>>ok()
+                .withResult(Collections.emptyList()).build());
         
         incomingDevice = Device.builder().tenant(tenant).deviceId("1").build();
         deviceUriDealer = new DeviceURIDealer() {

@@ -2,12 +2,15 @@ package com.konkerlabs.platform.registry.test.web.controllers;
 
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
 import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
+import com.konkerlabs.platform.registry.web.controllers.DeviceController;
 import com.konkerlabs.platform.registry.web.forms.DeviceRegistrationForm;
 import org.junit.After;
 import org.junit.Before;
@@ -16,6 +19,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
@@ -27,8 +31,8 @@ import org.springframework.util.MultiValueMap;
 import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.equalTo;
@@ -53,12 +57,14 @@ public class DeviceControllerTest extends WebLayerTestContext {
     private static final String DEVICE_ID_95C14B36BA2B43F1 = "95c14b36ba2b43f1";
 
     @Autowired
+    ApplicationContext applicationContext;
+    @Autowired
     DeviceRegisterService deviceRegisterService;
     @Autowired
     private Tenant tenant;
 
     private List<Device> registeredDevices;
-    private ServiceResponse<Device> response;
+    private NewServiceResponse<Device> response;
     MultiValueMap<String, String> deviceData;
     private Device device;
     private DeviceRegistrationForm deviceForm;
@@ -95,10 +101,8 @@ public class DeviceControllerTest extends WebLayerTestContext {
     @Test
     public void shouldListAllRegisteredDevices() throws Exception {
         when(deviceRegisterService.findAll(tenant))
-        .thenReturn(ServiceResponse.<List<Device>>builder()
-                .status(ServiceResponse.Status.OK)
-                .result(registeredDevices)
-                .<List<Device>>build());
+        .thenReturn(ServiceResponseBuilder.<List<Device>>ok()
+                .withResult(registeredDevices).build());
 
         getMockMvc().perform(get("/devices")).andExpect(model().attribute("devices", equalTo(registeredDevices)))
                 .andExpect(view().name("devices/index"));
@@ -114,13 +118,16 @@ public class DeviceControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldBindErrorMessagesWhenRegistrationFailsAndGoBackToRegistrationForm() throws Exception {
-        response = ServiceResponse.<Device>builder().responseMessages(Arrays.asList(new String[] { "Some error" }))
-                .status(ServiceResponse.Status.ERROR).<Device>build();
+        response = ServiceResponseBuilder.<Device>error()
+                .withMessage(CommonValidations.RECORD_NULL.getCode(), null).build();
 
         when(deviceRegisterService.register(eq(tenant),eq(device))).thenReturn(response);
 
         getMockMvc().perform(post("/devices/save").params(deviceData))
-                .andExpect(model().attribute("errors", equalTo(response.getResponseMessages())))
+                .andExpect(model().attribute("errors",
+                    equalTo(new ArrayList() {{
+                        add(applicationContext.getMessage(CommonValidations.RECORD_NULL.getCode(), null, Locale.ENGLISH));
+                    }})))
                 .andExpect(model().attribute("method", ""))
                 .andExpect(model().attribute("device", equalTo(deviceForm))).andExpect(view().name("devices/form"));
 
@@ -129,15 +136,14 @@ public class DeviceControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldRedirectToShowAfterRegistrationSucceed() throws Exception {
-        response = ServiceResponse.<Device>builder()
-                .status(ServiceResponse.Status.OK)
-                .result(savedDevice)
-                .<Device>build();
+        response = ServiceResponseBuilder.<Device>ok()
+                .withResult(savedDevice).build();
 
         when(deviceRegisterService.register(eq(tenant),eq(device))).thenReturn(response);
 
         getMockMvc().perform(post("/devices/save").params(deviceData))
-                .andExpect(flash().attribute("message", "Device saved successfully"))
+                .andExpect(flash().attribute("message",
+                        applicationContext.getMessage(DeviceController.Messages.DEVICE_REGISTERED_SUCCESSFULLY.getCode(),null,Locale.ENGLISH)))
                 .andExpect(redirectedUrl(MessageFormat.format("/devices/{0}", savedDevice.getId())));
 
         verify(deviceRegisterService).register(eq(tenant),eq(device));
@@ -146,8 +152,9 @@ public class DeviceControllerTest extends WebLayerTestContext {
     @Test
     public void shouldShowDeviceDetails() throws Exception {
         savedDevice.setRegistrationDate(Instant.now());
-        when(deviceRegisterService.getByDeviceId(tenant, savedDevice.getId())).thenReturn(
-                ServiceResponse.<Device>builder().status(ServiceResponse.Status.OK).result(savedDevice).<Device>build());
+        when(deviceRegisterService.getByDeviceId(tenant, savedDevice.getId()))
+            .thenReturn(
+                ServiceResponseBuilder.<Device>ok().withResult(savedDevice).build());
 
         getMockMvc().perform(get(MessageFormat.format("/devices/{0}", savedDevice.getId())))
                 .andExpect(model().attribute("device", savedDevice)).andExpect(view().name("devices/show"));
@@ -159,8 +166,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
     public void shouldShowDeviceEventList() throws Exception {
         savedDevice.setRegistrationDate(Instant.now());
         when(deviceRegisterService.getByDeviceId(tenant, savedDevice.getId())).thenReturn(
-                ServiceResponse.<Device>builder().status(ServiceResponse.Status.OK).result(savedDevice)
-                        .<Device>build());
+                ServiceResponseBuilder.<Device>ok().withResult(savedDevice).build());
 
         getMockMvc().perform(get(MessageFormat.format("/devices/{0}/events", savedDevice.getId())))
                 .andExpect(model().attribute("device", savedDevice)).andExpect(view().name("devices/events"));
@@ -170,9 +176,8 @@ public class DeviceControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldShowEditForm() throws Exception {
-        when(deviceRegisterService.getByDeviceId(tenant, savedDevice.getId())).thenReturn(ServiceResponse.<Device>builder()
-                .status(ServiceResponse.Status.OK).result(savedDevice)
-                .<Device>build());
+        when(deviceRegisterService.getByDeviceId(tenant, savedDevice.getId()))
+                .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(savedDevice).build());
 
         getMockMvc().perform(get(MessageFormat.format("/devices/{0}/edit", savedDevice.getId())))
                 .andExpect(model().attribute("device", equalTo(deviceForm)))
@@ -184,13 +189,16 @@ public class DeviceControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldBindErrorMessagesWhenEditFailsAndGoBackToEditForm() throws Exception {
-        response = ServiceResponse.<Device>builder().responseMessages(Arrays.asList(new String[] { "Some error" }))
-                .status(ServiceResponse.Status.ERROR).<Device>build();
+        response = ServiceResponseBuilder.<Device>error()
+                .withMessage(CommonValidations.RECORD_NULL.getCode(), null).build();
 
         when(deviceRegisterService.update(Matchers.anyObject(), Matchers.anyString(), Matchers.anyObject())).thenReturn(response);
 
         getMockMvc().perform(put(MessageFormat.format("/devices/{0}", DEVICE_ID_95C14B36BA2B43F1)).params(deviceData))
-                .andExpect(model().attribute("errors", equalTo(response.getResponseMessages())))
+                .andExpect(model().attribute("errors",
+                    equalTo(new ArrayList() {{
+                        add(applicationContext.getMessage(CommonValidations.RECORD_NULL.getCode(), null, Locale.ENGLISH));
+                    }})))
                 .andExpect(model().attribute("device", equalTo(deviceForm)))
                 .andExpect(model().attribute("method", "put"))
                 .andExpect(view().name("devices/form"));
@@ -200,15 +208,14 @@ public class DeviceControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldRedirectToShowAfterEditSucceed() throws Exception {
-        response = ServiceResponse.<Device>builder()
-                .status(ServiceResponse.Status.OK)
-                .result(savedDevice)
-                .<Device>build();
+        response = ServiceResponseBuilder.<Device>ok()
+                .withResult(savedDevice).build();
 
         when(deviceRegisterService.update(eq(tenant), eq(savedDevice.getId()), eq(device))).thenReturn(response);
 
         getMockMvc().perform(put(MessageFormat.format("/devices/{0}", savedDevice.getId())).params(deviceData))
-                .andExpect(flash().attribute("message", "Device saved successfully"))
+                .andExpect(flash().attribute("message",
+                        applicationContext.getMessage(DeviceController.Messages.DEVICE_REGISTERED_SUCCESSFULLY.getCode(),null,Locale.ENGLISH)))
                 .andExpect(redirectedUrl(MessageFormat.format("/devices/{0}", savedDevice.getId())));
 
         verify(deviceRegisterService).update(eq(tenant), eq(savedDevice.getId()), eq(device));

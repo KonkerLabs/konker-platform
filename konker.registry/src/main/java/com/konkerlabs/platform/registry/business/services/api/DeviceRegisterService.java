@@ -6,6 +6,23 @@ import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 
 public interface DeviceRegisterService {
+
+    enum Validations {
+        DEVICE_ID_NULL("service.device.id.not_null"),
+        DEVICE_ID_ALREADY_REGISTERED("service.device.id.already_registered"),
+        DEVICE_ID_DOES_NOT_EXIST("service.device.id.does_not_exist");
+
+        public String getCode() {
+            return code;
+        }
+
+        private String code;
+
+        Validations(String code) {
+            this.code = code;
+        }
+    }
+
     /**
      * Persists a new Device.
      * 
@@ -15,7 +32,7 @@ public interface DeviceRegisterService {
      * @param device
      * @return
      */
-    ServiceResponse<Device> register(Tenant tenant, Device device);
+    NewServiceResponse<Device> register(Tenant tenant, Device device);
 
     /**
      * Updates an already existent Tenant.
@@ -26,7 +43,7 @@ public interface DeviceRegisterService {
      * @param device
      * @return
      */
-    ServiceResponse<Device> update(Tenant tenant, String id, Device device);
+    NewServiceResponse<Device> update(Tenant tenant, String id, Device device);
 
     /**
      * Returns all devices (enabled or disabled) owned by the provided tenant.
@@ -36,7 +53,7 @@ public interface DeviceRegisterService {
      * @param tenant
      * @return
      */
-    ServiceResponse<List<Device>> findAll(Tenant tenant);
+    NewServiceResponse<List<Device>> findAll(Tenant tenant);
 
     /**
      * Returns a device by its deviceId and tenant.
@@ -47,7 +64,7 @@ public interface DeviceRegisterService {
      * @param id
      * @return
      */
-    ServiceResponse<Device> getByDeviceId(Tenant tenant, String id);
+    NewServiceResponse<Device> getByDeviceId(Tenant tenant, String id);
 
     /**
      * Returns a device associated with the provided API Key.
@@ -74,5 +91,5 @@ public interface DeviceRegisterService {
      * @param id
      * @return
      */
-    ServiceResponse<Device> switchEnabledDisabled(Tenant tenant, String id);
+    NewServiceResponse<Device> switchEnabledDisabled(Tenant tenant, String id);
 }
