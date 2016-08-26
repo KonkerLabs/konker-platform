@@ -5,7 +5,7 @@
 <body>
 <div data-layout-fragment="content">
     <fieldset disabled="" class="form-horizontal">
-        <legend>SMS Destination</legend>
+        <legend data-th-text="#{destinations.sms.show.legend}">SMS Destination</legend>
         <div class="alert alert-success" role="alert" data-th-if="${message != null}">
             <span data-th-text="${message}"></span>
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -13,7 +13,7 @@
             </button>
         </div>
         <div class="form-group">
-            <label class="col-sm-1 control-label" for="name">Name</label>
+            <label class="col-sm-1 control-label" for="name" data-th-text="#{destinations.sms.show.name}">Name</label>
             <div class="col-sm-4">
                 <input type="text" data-th-field="${destination.name}"
                        class="form-control"
@@ -22,7 +22,7 @@
             </div>
         </div>
         <div class="form-group">
-            <label class="col-sm-1 control-label" for="description">Description</label>
+            <label class="col-sm-1 control-label" for="description" data-th-text="#{destinations.sms.show.description}">Description</label>
             <div class="col-sm-6">
                     <textarea id="description" class="form-control" name="description"
                               data-th-field="${destination.description}">
@@ -30,7 +30,7 @@
             </div>
         </div>
         <div class="form-group">
-            <label class="col-sm-1 control-label" for="phoneNumber">Name</label>
+            <label class="col-sm-1 control-label" for="phoneNumber" data-th-text="#{destinations.sms.show.number}">Name</label>
             <div class="col-sm-4">
                 <input type="text" data-th-field="${destination.phoneNumber}"
                        class="form-control"
@@ -39,7 +39,7 @@
             </div>
         </div>
         <div class="form-group">
-            <label class="col-sm-1 control-label" for="active">Active?</label>
+            <label class="col-sm-1 control-label" for="active" data-th-text="#{destinations.sms.show.active}">Active?</label>
             <div class="col-sm-4">
                 <input type="checkbox" data-th-field="${destination.active}"
                        id="active"
@@ -47,7 +47,7 @@
             </div>
         </div>
     </fieldset>
-    <a data-th-href="@{/destinations/sms/}" class="btn btn-default">Back</a>
+    <a data-th-href="@{/destinations/sms/}" class="btn btn-default" data-th-text="#{nav.back}">Back</a>
 </div>
 </body>
 </html>
