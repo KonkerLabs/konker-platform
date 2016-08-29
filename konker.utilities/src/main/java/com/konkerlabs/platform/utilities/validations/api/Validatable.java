@@ -1,4 +1,4 @@
-package com.konkerlabs.platform.registry.business.model.validation;
+package com.konkerlabs.platform.utilities.validations.api;
 
 import java.util.Map;
 import java.util.Optional;
