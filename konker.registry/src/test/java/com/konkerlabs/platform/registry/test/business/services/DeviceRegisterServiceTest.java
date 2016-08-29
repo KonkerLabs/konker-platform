@@ -27,10 +27,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.konkerlabs.platform.registry.test.base.matchers.NewServiceResponseMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -118,7 +115,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         Map<String, Object[]> errorMessages = new HashMap() {{
            put("some.error", new Object[] {"some_value"});
         }};
-        when(device.applyValidations()).thenReturn(errorMessages);
+        when(device.applyValidations()).thenReturn(Optional.of(errorMessages));
 
         NewServiceResponse<Device> response = deviceRegisterService.register(currentTenant, device);
 

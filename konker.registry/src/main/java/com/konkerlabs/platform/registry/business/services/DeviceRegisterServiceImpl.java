@@ -49,11 +49,11 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
         device.setTenant(tenant);
 
-        Map<String, Object[]> validations = device.applyValidations();
+        Optional<Map<String, Object[]>> validations = device.applyValidations();
 
-        if (validations != null)
+        if (validations.isPresent())
             return ServiceResponseBuilder.<Device>error()
-                    .withMessages(validations)
+                    .withMessages(validations.get())
                     .build();
 
         if (deviceRepository.findByTenantIdAndDeviceId(tenant.getId(), device.getDeviceId()) != null) {
@@ -142,11 +142,11 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         deviceFromDB.setName(updatingDevice.getName());
         deviceFromDB.setActive(updatingDevice.isActive());
 
-        Map<String, Object[]> validations = deviceFromDB.applyValidations();
+        Optional<Map<String, Object[]>> validations = deviceFromDB.applyValidations();
 
-        if (validations != null) {
+        if (validations.isPresent()) {
             return ServiceResponseBuilder.<Device>error()
-                    .withMessages(validations)
+                    .withMessages(validations.get())
                     .build();
         }
 

@@ -46,7 +46,7 @@ public class Device implements DeviceURIDealer, Validatable {
 	private List<Event> events;
 	private boolean active;
 
-	public Map<String, Object[]> applyValidations() {
+	public Optional<Map<String, Object[]>> applyValidations() {
 
 		Map<String, Object[]> validations = new HashMap<>();
 
@@ -62,9 +62,9 @@ public class Device implements DeviceURIDealer, Validatable {
 			validations.put(Validations.REGISTRATION_DATE_NULL.code,null);
 
 		if (validations.isEmpty())
-			return null;
+			return Optional.empty();
 		else
-			return validations;
+			return Optional.of(validations);
 	}
 
 	public void onRegistration() {

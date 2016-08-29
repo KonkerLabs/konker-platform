@@ -12,10 +12,7 @@ import org.junit.Test;
 import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -42,8 +39,10 @@ public class DeviceTest {
 	    device.setDeviceId(null);
 
 		String expectedMessage = Device.Validations.ID_NULL_EMPTY.getCode();
+		Optional<Map<String, Object[]>> validations = device.applyValidations();
 
-		assertThat(device.applyValidations(), hasEntry(expectedMessage,null));
+		assertThat(validations, not(sameInstance(Optional.empty())));
+		assertThat(device.applyValidations().get(), hasEntry(expectedMessage,null));
 	}
 
 	@Test
@@ -51,8 +50,10 @@ public class DeviceTest {
 	    device.setDeviceId("");
 
 		String expectedMessage = Device.Validations.ID_NULL_EMPTY.getCode();
+		Optional<Map<String, Object[]>> validations = device.applyValidations();
 
-		assertThat(device.applyValidations(), hasEntry(expectedMessage,null));
+		assertThat(validations, not(sameInstance(Optional.empty())));
+		assertThat(device.applyValidations().get(), hasEntry(expectedMessage,null));
 	}
 
 	@Test
@@ -60,8 +61,10 @@ public class DeviceTest {
 		device.setDeviceId("95c14b36ba2b43f1ac537");
 
 		String expectedMessage = Device.Validations.ID_GREATER_THAN_EXPECTED.getCode();
+		Optional<Map<String, Object[]>> validations = device.applyValidations();
 
-		assertThat(device.applyValidations(), hasEntry(expectedMessage,new Object[] {16}));
+		assertThat(validations, not(sameInstance(Optional.empty())));
+		assertThat(device.applyValidations().get(), hasEntry(expectedMessage,new Object[] {16}));
 	}
 
 	@Test
@@ -69,8 +72,10 @@ public class DeviceTest {
 		device.setName(null);
 
 		String expectedMessage = Device.Validations.NAME_NULL_EMPTY.getCode();
+		Optional<Map<String, Object[]>> validations = device.applyValidations();
 
-		assertThat(device.applyValidations(), hasEntry(expectedMessage,null));
+		assertThat(validations, not(sameInstance(Optional.empty())));
+		assertThat(device.applyValidations().get(), hasEntry(expectedMessage,null));
 	}
 
 	@Test
@@ -78,8 +83,10 @@ public class DeviceTest {
 		device.setName("");
 
 		String expectedMessage = Device.Validations.NAME_NULL_EMPTY.getCode();
+		Optional<Map<String, Object[]>> validations = device.applyValidations();
 
-		assertThat(device.applyValidations(), hasEntry(expectedMessage,null));
+		assertThat(validations, not(sameInstance(Optional.empty())));
+		assertThat(device.applyValidations().get(), hasEntry(expectedMessage,null));
 	}
 
 	@Test
@@ -87,8 +94,10 @@ public class DeviceTest {
 		device.setTenant(null);
 
 		String expectedMessage = CommonValidations.TENANT_NULL.getCode();
+		Optional<Map<String, Object[]>> validations = device.applyValidations();
 
-		assertThat(device.applyValidations(), hasEntry(expectedMessage,null));
+		assertThat(validations, not(sameInstance(Optional.empty())));
+		assertThat(device.applyValidations().get(), hasEntry(expectedMessage,null));
 	}
 
 	@Test
@@ -96,8 +105,10 @@ public class DeviceTest {
 		device.setRegistrationDate(null);
 
 		String expectedMessage = Device.Validations.REGISTRATION_DATE_NULL.getCode();
+		Optional<Map<String, Object[]>> validations = device.applyValidations();
 
-		assertThat(device.applyValidations(), hasEntry(expectedMessage,null));
+		assertThat(validations, not(sameInstance(Optional.empty())));
+		assertThat(device.applyValidations().get(), hasEntry(expectedMessage,null));
 	}
 
 	@Test
@@ -126,7 +137,7 @@ public class DeviceTest {
 	public void shouldHaveNoValidationMessagesIfRecordIsValid() throws Exception {
 		device.onRegistration();
 
-		assertThat(device.applyValidations(), nullValue());
+		assertThat(device.applyValidations(), sameInstance(Optional.empty()));
 	}
 
 	@Test
