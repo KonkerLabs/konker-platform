@@ -3,10 +3,7 @@ package com.konkerlabs.platform.registry.integration.processors;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.EnrichmentExecutor;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.*;
 import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +60,7 @@ public class DeviceEventProcessor {
                     .payload(payload)
                     .build();
 
-            ServiceResponse<Event> serviceResponse = enrichmentExecutor.enrich(event, device);
+            NewServiceResponse<Event> serviceResponse = enrichmentExecutor.enrich(event, device);
             switch (serviceResponse.getStatus()) {
                 case ERROR: {
                     LOGGER.error(MessageFormat.format("Enrichment failed: [Device: {0}] - [Payload: {1}]", device.toURI(), payload));

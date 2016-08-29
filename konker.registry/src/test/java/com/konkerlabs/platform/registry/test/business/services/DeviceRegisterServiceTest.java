@@ -292,7 +292,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
         NewServiceResponse<Device> response = deviceRegisterService.update(currentTenant, THE_DEVICE_ID, device);
         assertThat(response, notNullValue());
-        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+        assertThat(response.getStatus(), equalTo(NewServiceResponse.Status.ERROR));
         assertThat(response.getResponseMessages().isEmpty(), is(false));
 
         // ensure data was not changed
@@ -380,7 +380,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         NewServiceResponse<Device> serviceResponse = deviceRegisterService.getByDeviceId(emptyTenant, THE_DEVICE_ID);
 
         assertThat(serviceResponse,notNullValue());
-        assertThat(serviceResponse.getStatus(),equalTo(ServiceResponse.Status.ERROR));
+        assertThat(serviceResponse.getStatus(),equalTo(NewServiceResponse.Status.ERROR));
         assertThat(serviceResponse.getResponseMessages(),
                 hasEntry(DeviceRegisterService.Validations.DEVICE_ID_DOES_NOT_EXIST.getCode(),null));
         assertThat(serviceResponse.getResult(),nullValue());

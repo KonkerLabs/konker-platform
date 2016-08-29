@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 @Controller
 @Scope("request")
@@ -123,15 +124,15 @@ public class DeviceController implements ApplicationContextAware {
 
         NewServiceResponse<Device> serviceResponse = responseSupplier.get();
 
-        if (serviceResponse.getStatus().equals(ServiceResponse.Status.OK)) {
+        if (serviceResponse.getStatus().equals(NewServiceResponse.Status.OK)) {
             redirectAttributes.addFlashAttribute("message",
-                    applicationContext.getMessage(Messages.DEVICE_REGISTERED_SUCCESSFULLY.code,null,locale));
+                    applicationContext.getMessage(Messages.DEVICE_REGISTERED_SUCCESSFULLY.getCode(),null,locale));
             return new ModelAndView(MessageFormat.format("redirect:/devices/{0}", serviceResponse.getResult().getId()));
         } else {
-            List<String> messages = new ArrayList<>();
-            for (Map.Entry<String, Object[]> message : serviceResponse.getResponseMessages().entrySet()) {
-                messages.add(applicationContext.getMessage(message.getKey(),message.getValue(),locale));
-            }
+            List<String> messages = serviceResponse.getResponseMessages()
+                    .entrySet().stream()
+                    .map(message -> applicationContext.getMessage(message.getKey(), message.getValue(), locale))
+                    .collect(Collectors.toList());
             return new ModelAndView("devices/form").addObject("errors", messages)
                     .addObject("device", registrationForm)
                     .addObject("method", action);

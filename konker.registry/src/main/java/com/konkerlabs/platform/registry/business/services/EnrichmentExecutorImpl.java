@@ -3,9 +3,7 @@ package com.konkerlabs.platform.registry.business.services;
 import com.konkerlabs.platform.registry.business.model.DataEnrichmentExtension;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.services.api.DataEnrichmentExtensionService;
-import com.konkerlabs.platform.registry.business.services.api.EnrichmentExecutor;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.*;
 import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
 import com.konkerlabs.platform.utilities.expressions.ExpressionEvaluationService;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
@@ -40,22 +38,18 @@ public class EnrichmentExecutorImpl implements EnrichmentExecutor {
     private JsonParsingService jsonParsingService;
 
     @Override
-    public ServiceResponse<Event> enrich(Event incomingEvent, Device device) {
+    public NewServiceResponse<Event> enrich(Event incomingEvent, Device device) {
         if (!Optional.ofNullable(incomingEvent).isPresent())
-            return ServiceResponse.<Event>builder()
-                    .status(ServiceResponse.Status.ERROR)
-                    .result(incomingEvent)
-                    .responseMessage("Incoming event can not be null").<Event>build();
+            return ServiceResponseBuilder.<Event>error()
+                    .withMessage(Validations.INCOMING_EVENT_NULL.getCode()).<Event>build();
 
         if (!Optional.ofNullable(device).isPresent())
-            return ServiceResponse.<Event>builder()
-                    .status(ServiceResponse.Status.ERROR)
-                    .result(incomingEvent)
-                    .responseMessage("Incoming device can not be null").<Event>build();
+            return ServiceResponseBuilder.<Event>error()
+                    .withMessage(Validations.INCOMING_DEVICE_NULL.getCode()).<Event>build();
 
-        ServiceResponse<List<DataEnrichmentExtension>> listServiceResponse = dataEnrichmentExtensionService.getByTenantAndByIncomingURI(device.getTenant(), device.toURI());
+        NewServiceResponse<List<DataEnrichmentExtension>> listServiceResponse = dataEnrichmentExtensionService.getByTenantAndByIncomingURI(device.getTenant(), device.toURI());
 
-        if (listServiceResponse.getStatus().equals(ServiceResponse.Status.OK)) {
+        if (listServiceResponse.getStatus().equals(NewServiceResponse.Status.OK)) {
             for (DataEnrichmentExtension dee : listServiceResponse.getResult()) {
                 if (!dee.isActive())
                     continue;
@@ -97,21 +91,16 @@ public class EnrichmentExecutorImpl implements EnrichmentExecutor {
                     incomingEvent.setPayload(jsonParsingService.toJsonString(incomingPayloadMap));
 
                 } catch (Exception e) {
-                    return ServiceResponse.<Event>builder()
-                            .status(ServiceResponse.Status.ERROR)
-                            .result(incomingEvent)
-                            .responseMessage(e.getMessage()).<Event>build();
+                    return ServiceResponseBuilder.<Event>error()
+                            .withMessage(e.getMessage()).<Event>build();
                 }
             }
         } else
-            return ServiceResponse.<Event>builder()
-                    .status(ServiceResponse.Status.ERROR)
-                    .result(incomingEvent)
-                    .responseMessages(listServiceResponse.getResponseMessages()).<Event>build();
+            return ServiceResponseBuilder.<Event>error()
+                    .withMessages(listServiceResponse.getResponseMessages()).build();
 
-        return ServiceResponse.<Event>builder()
-                .status(ServiceResponse.Status.OK)
-                .result(incomingEvent)
-                .<Event>build();
+        return ServiceResponseBuilder.<Event>ok()
+                .withResult(incomingEvent)
+                .build();
     }
 }

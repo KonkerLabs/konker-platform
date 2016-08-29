@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry.business.services.api;
 
 import java.util.Map;
+import java.util.Optional;
 
 public class ServiceResponseBuilder<T> {
 
@@ -12,20 +13,22 @@ public class ServiceResponseBuilder<T> {
 
     public static <T> ServiceResponseBuilder<T> ok() {
         NewServiceResponse<T> response = new NewServiceResponse<T>();
-        response.setStatus(ServiceResponse.Status.OK);
+        response.setStatus(NewServiceResponse.Status.OK);
 
         return new ServiceResponseBuilder<T>(response);
     };
 
     public static <T> ServiceResponseBuilder<T> error() {
         NewServiceResponse<T> response = new NewServiceResponse<T>();
-        response.setStatus(ServiceResponse.Status.ERROR);
+        response.setStatus(NewServiceResponse.Status.ERROR);
 
         return new ServiceResponseBuilder<T>(response);
     };
 
     public ServiceResponseBuilder<T> withMessage(String code, Object... parameters) {
-        this.response.getResponseMessages().put(code, parameters);
+        this.response.getResponseMessages().put(code,
+            parameters == null || parameters.length == 0 ? null : parameters
+        );
         return this;
     }
 

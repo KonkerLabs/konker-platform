@@ -24,7 +24,7 @@ public class NewServiceResponseMatchers {
         return new BaseMatcher<NewServiceResponse>() {
             @Override
             protected boolean matchesSafely(NewServiceResponse item) {
-                return item.getStatus().equals(ServiceResponse.Status.OK) &&
+                return item.getStatus().equals(NewServiceResponse.Status.OK) &&
                        item.getResponseMessages().isEmpty();
             }
 
@@ -41,7 +41,7 @@ public class NewServiceResponseMatchers {
         return new BaseMatcher<NewServiceResponse>() {
             @Override
             protected boolean matchesSafely(NewServiceResponse item) {
-                return item.getStatus().equals(ServiceResponse.Status.ERROR) &&
+                return item.getStatus().equals(NewServiceResponse.Status.ERROR) &&
                        item.getResponseMessages().containsKey(code);
             }
 
@@ -60,7 +60,7 @@ public class NewServiceResponseMatchers {
         return new BaseMatcher<NewServiceResponse>() {
             @Override
             protected boolean matchesSafely(NewServiceResponse item) {
-                return item.getStatus().equals(ServiceResponse.Status.ERROR) &&
+                return item.getStatus().equals(NewServiceResponse.Status.ERROR) &&
                         item.getResponseMessages().equals(messages);
             }
 

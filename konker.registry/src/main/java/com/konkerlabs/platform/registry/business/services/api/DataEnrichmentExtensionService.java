@@ -8,6 +8,24 @@ import java.util.List;
 
 public interface DataEnrichmentExtensionService {
 
+    enum Validations {
+        ENRICHMENT_ID_NULL("service.enrichment.id.not_null"),
+        ENRICHMENT_INCOMING_URI_NULL("service.enrichment.incoming_uri.not_null"),
+        ENRICHMENT_NAME_UNIQUE("service.enrichment.name.in_use"),
+        ENRICHMENT_CONTAINER_KEY_ALREADY_REGISTERED("service.enrichment.container_key.already_registered"),
+        ENRICHMENT_DOES_NOT_EXIST("service.enrichment.not_found");
+
+        private String code;
+
+        public String getCode() {
+            return code;
+        }
+
+        Validations(String code) {
+            this.code = code;
+        }
+    }
+
     /**
      * Creates a {@link DataEnrichmentExtension} and associates it with a
      * {@link Tenant}. This must be a new {@link DataEnrichmentExtension}. If
@@ -26,9 +44,9 @@ public interface DataEnrichmentExtensionService {
      *         returns a {@link ServiceResponse} with an error message, status
      *         code ERROR and null result
      */
-    ServiceResponse<DataEnrichmentExtension> register(Tenant tenant, DataEnrichmentExtension dee);
+    NewServiceResponse<DataEnrichmentExtension> register(Tenant tenant, DataEnrichmentExtension dee);
 
-    ServiceResponse<DataEnrichmentExtension> update(Tenant tenant, String uuid, DataEnrichmentExtension dee);
+    NewServiceResponse<DataEnrichmentExtension> update(Tenant tenant, String uuid, DataEnrichmentExtension dee);
 
     /**
      * Gets all the {@link DataEnrichmentExtension} associated with a
@@ -41,7 +59,7 @@ public interface DataEnrichmentExtensionService {
      *         {@link ServiceResponse} with an error message and status code
      *         ERROR and null result
      */
-    ServiceResponse<List<DataEnrichmentExtension>> getAll(Tenant tenant);
+    NewServiceResponse<List<DataEnrichmentExtension>> getAll(Tenant tenant);
 
     /**
      * Gets a previously registered {@link DataEnrichmentExtension} by
@@ -56,7 +74,7 @@ public interface DataEnrichmentExtensionService {
      *         {@link ServiceResponse} with an error message and status code
      *         ERROR
      */
-    ServiceResponse<DataEnrichmentExtension> getByGUID(Tenant tenant, String guid);
+    NewServiceResponse<DataEnrichmentExtension> getByGUID(Tenant tenant, String guid);
 
     /**
      * Gets a previously registered {@link DataEnrichmentExtension} by
@@ -71,7 +89,7 @@ public interface DataEnrichmentExtensionService {
      *         {@link ServiceResponse} with an error message and status code
      *         ERROR
      */
-    ServiceResponse<List<DataEnrichmentExtension>> getByTenantAndByIncomingURI(Tenant tenant, URI incomingUri);
+    NewServiceResponse<List<DataEnrichmentExtension>> getByTenantAndByIncomingURI(Tenant tenant, URI incomingUri);
 
     /**
      * Removes a previously registered {@link DataEnrichmentExtension} by
@@ -86,5 +104,5 @@ public interface DataEnrichmentExtensionService {
      *         {@link ServiceResponse} with an error message and status code
      *         ERROR
      */
-    ServiceResponse<DataEnrichmentExtension> remove(Tenant tenant, String guid);
+    NewServiceResponse<DataEnrichmentExtension> remove(Tenant tenant, String guid);
 }

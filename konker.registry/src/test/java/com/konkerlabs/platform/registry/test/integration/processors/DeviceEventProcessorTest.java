@@ -4,10 +4,7 @@ import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.EnrichmentExecutor;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.*;
 import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteExecutor;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
 import com.konkerlabs.platform.registry.test.base.IntegrationLayerTestContext;
@@ -49,7 +46,7 @@ public class DeviceEventProcessorTest {
 
     private Event event;
     private Device device;
-    private ServiceResponse<Event> enrichmentResponse;
+    private NewServiceResponse<Event> enrichmentResponse;
 
     @Autowired
     private DeviceEventProcessor subject;
@@ -82,10 +79,9 @@ public class DeviceEventProcessorTest {
             .active(true)
             .name("device_name").build());
 
-        enrichmentResponse = spy(ServiceResponse.<Event>builder()
-                .status(ServiceResponse.Status.OK)
-                .result(event)
-                .<Event>build());
+        enrichmentResponse = spy(ServiceResponseBuilder.<Event>ok()
+                .withResult(event)
+                .build());
     }
 
     @After

@@ -6,11 +6,15 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.enumerations.IntegrationType;
 import com.konkerlabs.platform.registry.business.services.api.DataEnrichmentExtensionService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.web.forms.EnrichmentForm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -21,16 +25,29 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.text.MessageFormat;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Controller
 @Scope("request")
 @RequestMapping("enrichment")
-public class EnrichmentController {
+public class EnrichmentController implements ApplicationContextAware {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EnrichmentController.class);
+
+    public enum Messages {
+        ENRICHMENT_REGISTERED_SUCCESSFULLY("controller.enrichment.registered.successfully"),
+        ENRICHMENT_REMOVED_SUCCESSFULLY("controller.enrichment.removed.successfully");
+
+        private String code;
+
+        public String getCode() {
+            return code;
+        }
+
+        Messages(String code) {
+            this.code = code;
+        }
+    }
 
     @Autowired
     private DeviceRegisterService deviceRegisterService;
@@ -38,6 +55,7 @@ public class EnrichmentController {
     private DataEnrichmentExtensionService dataEnrichmentExtensionService;
     @Autowired
     private Tenant tenant;
+    private ApplicationContext applicationContext;
 
     @ModelAttribute("allDevices")
     public List<Device> allDevices() {
@@ -68,22 +86,28 @@ public class EnrichmentController {
 
     @RequestMapping(value = "save", method = RequestMethod.POST)
     public ModelAndView save(@ModelAttribute("dataEnrichmentExtension") EnrichmentForm enrichmentForm,
-                             RedirectAttributes redirectAttributes) {
+                             RedirectAttributes redirectAttributes, Locale locale) {
 
         enrichmentForm.setTenantDomainSupplier(() -> tenant.getDomainName());
-        ServiceResponse<DataEnrichmentExtension> response = dataEnrichmentExtensionService.register(tenant, enrichmentForm.toModel());
+        NewServiceResponse<DataEnrichmentExtension> serviceResponse = dataEnrichmentExtensionService.register(tenant, enrichmentForm.toModel());
 
-        switch (response.getStatus()) {
+        switch (serviceResponse.getStatus()) {
             case ERROR: {
+                List<String> messages = new ArrayList<>();
+                for (Map.Entry<String, Object[]> message : serviceResponse.getResponseMessages().entrySet()) {
+                    messages.add(applicationContext.getMessage(message.getKey(),message.getValue(),locale));
+                }
                 return new ModelAndView("enrichment/form")
-                        .addObject("errors", response.getResponseMessages())
+                        .addObject("errors", messages)
                         .addObject("method","")
                         .addObject("dataEnrichmentExtension", enrichmentForm);
             }
             default: {
-                redirectAttributes.addFlashAttribute("message", "Enrichment registered successfully");
+                redirectAttributes.addFlashAttribute("message",
+                    applicationContext.getMessage(Messages.ENRICHMENT_REGISTERED_SUCCESSFULLY.getCode(),null,locale)
+                );
                 return new ModelAndView(MessageFormat.format("redirect:/enrichment/{0}",
-                        response.getResult().getGuid()));
+                        serviceResponse.getResult().getGuid()));
             }
         }
     }
@@ -104,34 +128,47 @@ public class EnrichmentController {
     @RequestMapping(path = "/{dataEnrichmentExtensionGUID}", method = RequestMethod.PUT)
     public ModelAndView saveEdit(@PathVariable String dataEnrichmentExtensionGUID,
                                  @ModelAttribute("enrichmentForm") EnrichmentForm enrichmentForm,
-                                 RedirectAttributes redirectAttributes) {
+                                 RedirectAttributes redirectAttributes, Locale locale) {
 
         enrichmentForm.setTenantDomainSupplier(() -> tenant.getDomainName());
-        ServiceResponse<DataEnrichmentExtension> response = dataEnrichmentExtensionService.update(tenant, dataEnrichmentExtensionGUID, enrichmentForm.toModel());
+        NewServiceResponse<DataEnrichmentExtension> serviceResponse = dataEnrichmentExtensionService.update(tenant, dataEnrichmentExtensionGUID, enrichmentForm.toModel());
 
-        switch (response.getStatus()) {
+        switch (serviceResponse.getStatus()) {
             case ERROR: {
+                List<String> messages = new ArrayList<>();
+                for (Map.Entry<String, Object[]> message : serviceResponse.getResponseMessages().entrySet()) {
+                    messages.add(applicationContext.getMessage(message.getKey(),message.getValue(),locale));
+                }
                 return new ModelAndView("enrichment/form")
-                        .addObject("errors", response.getResponseMessages())
+                        .addObject("errors", messages)
                         .addObject("method","put")
                         .addObject("dataEnrichmentExtension", enrichmentForm);
             }
             default: {
-                redirectAttributes.addFlashAttribute("message", "Enrichment updated successfully");
+                redirectAttributes.addFlashAttribute("message",
+                    applicationContext.getMessage(Messages.ENRICHMENT_REGISTERED_SUCCESSFULLY.getCode(),null,locale)
+                );
                 return new ModelAndView(MessageFormat.format("redirect:/enrichment/{0}",
-                        response.getResult().getGuid()));
+                        serviceResponse.getResult().getGuid()));
             }
         }
     }
 
     @RequestMapping(path = "/{dataEnrichmentExtensionGUID}", method = RequestMethod.DELETE)
     public ModelAndView remove(@PathVariable("dataEnrichmentExtensionGUID") String dataEnrichmentExtensionGUID,
-                               RedirectAttributes redirectAttributes) {
-        ServiceResponse<DataEnrichmentExtension> serviceResponse = dataEnrichmentExtensionService.remove(tenant, dataEnrichmentExtensionGUID);
+                               RedirectAttributes redirectAttributes, Locale locale) {
+        NewServiceResponse<DataEnrichmentExtension> serviceResponse = dataEnrichmentExtensionService.remove(tenant, dataEnrichmentExtensionGUID);
 
         redirectAttributes.addFlashAttribute("message",
-                MessageFormat.format("Enrichment {0} was successfully removed", serviceResponse.getResult().getName()));
+            applicationContext.getMessage(Messages.ENRICHMENT_REMOVED_SUCCESSFULLY.getCode(),null,locale)
+        );
+
 
         return new ModelAndView("redirect:/enrichment");
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
     }
 }

@@ -11,7 +11,7 @@ public class NewServiceResponse<T> {
 
     public enum Status { OK, ERROR }
 
-    private ServiceResponse.Status status;
+    private NewServiceResponse.Status status;
     private Map<String, Object[]> responseMessages = new HashMap<>();
     private T result;
 

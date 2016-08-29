@@ -6,14 +6,13 @@ import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
 import com.konkerlabs.platform.registry.business.model.enumerations.IntegrationType;
-import com.konkerlabs.platform.registry.business.services.api.DataEnrichmentExtensionService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.services.api.*;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
 import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
+import com.konkerlabs.platform.registry.web.controllers.EnrichmentController;
 import com.konkerlabs.platform.registry.web.forms.EnrichmentForm;
 import org.junit.After;
 import org.junit.Before;
@@ -21,6 +20,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -31,10 +31,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Matchers.eq;
@@ -58,6 +55,8 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
     private DataEnrichmentExtensionService dataEnrichmentExtensionService;
     @Autowired
     private Tenant tenant;
+    @Autowired
+    private ApplicationContext applicationContext;
 
     @Autowired
     private MockHttpServletRequest request;
@@ -65,8 +64,8 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
     private Device incomingDevice;
     private DeviceURIDealer deviceUriDealer;
     private DataEnrichmentExtension dataEnrichmentExtension;
-    private ServiceResponse<List<DataEnrichmentExtension>> listServiceResponse;
-    private ServiceResponse<DataEnrichmentExtension> serviceResponse;
+    private NewServiceResponse<List<DataEnrichmentExtension>> listServiceResponse;
+    private NewServiceResponse<DataEnrichmentExtension> serviceResponse;
     private EnrichmentForm enrichmentForm;
     private MultiValueMap<String, String> enrichmentData;
 
@@ -118,15 +117,13 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
         enrichmentData.add("parameters['Password']", enrichmentForm.getParameters().get("Password"));
         enrichmentData.add("active", String.valueOf(enrichmentForm.isActive()));
 
-        serviceResponse = ServiceResponse.<DataEnrichmentExtension>builder()
-                .status(ServiceResponse.Status.OK)
-                .result(dataEnrichmentExtension)
-                .<DataEnrichmentExtension>build();
+        serviceResponse = ServiceResponseBuilder.<DataEnrichmentExtension>ok()
+                .withResult(dataEnrichmentExtension)
+                .build();
 
-        listServiceResponse = ServiceResponse.<List<DataEnrichmentExtension>>builder()
-                .status(ServiceResponse.Status.OK)
-                .result(Arrays.asList(new DataEnrichmentExtension[]{dataEnrichmentExtension}))
-                .<List<DataEnrichmentExtension>>build();
+        listServiceResponse = ServiceResponseBuilder.<List<DataEnrichmentExtension>>ok()
+                .withResult(Arrays.asList(new DataEnrichmentExtension[]{dataEnrichmentExtension}))
+                .build();
     }
 
     @After
@@ -153,17 +150,19 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldBindErrorMessagesWhenRegistrationFailsAndGoBackToCreationForm() throws Exception {
-        String exceptionMessage = "Some business exception";
+        String exceptionMessage = CommonValidations.RECORD_NULL.getCode();
 
-        serviceResponse = spy(ServiceResponse.<DataEnrichmentExtension>builder()
-                .status(ServiceResponse.Status.ERROR)
-                .responseMessage(exceptionMessage)
+        serviceResponse = spy(ServiceResponseBuilder.<DataEnrichmentExtension>error()
+                .withMessage(exceptionMessage)
                 .<DataEnrichmentExtension>build());
 
         when(dataEnrichmentExtensionService.register(eq(tenant), eq(dataEnrichmentExtension))).thenReturn(serviceResponse);
 
         getMockMvc().perform(post("/enrichment/save").params(enrichmentData))
-                .andExpect(model().attribute("errors", equalTo(Arrays.asList(new String[]{"Some business exception"}))))
+                .andExpect(model().attribute("errors",
+                    equalTo(Arrays.asList(new String[]{
+                        applicationContext.getMessage(exceptionMessage, null, Locale.ENGLISH)
+                    }))))
                 .andExpect(model().attribute("dataEnrichmentExtension", equalTo(enrichmentForm)))
                 .andExpect(model().attribute("method", ""))
                 .andExpect(view().name("enrichment/form"));
@@ -173,9 +172,8 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldRedirectToShowAfterSuccessfulEnrichmentCreation() throws Exception {
-        serviceResponse = spy(ServiceResponse.<DataEnrichmentExtension>builder()
-                .status(ServiceResponse.Status.OK)
-                .result(dataEnrichmentExtension)
+        serviceResponse = spy(ServiceResponseBuilder.<DataEnrichmentExtension>ok()
+                .withResult(dataEnrichmentExtension)
                 .<DataEnrichmentExtension>build());
 
         when(dataEnrichmentExtensionService.register(eq(tenant), eq(dataEnrichmentExtension))).thenReturn(serviceResponse);
@@ -201,18 +199,19 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldBindErrorMessagesWhenUpdateFailsAndGoBackToEditForm() throws Exception {
-        String exceptionMessage = "Some business exception";
+        String exceptionMessage = CommonValidations.RECORD_NULL.getCode();
 
-        serviceResponse = spy(ServiceResponse.<DataEnrichmentExtension>builder()
-                .status(ServiceResponse.Status.ERROR)
-                .responseMessage(exceptionMessage)
+        serviceResponse = spy(ServiceResponseBuilder.<DataEnrichmentExtension>error()
+                .withMessage(exceptionMessage)
                 .<DataEnrichmentExtension>build());
 
         when(dataEnrichmentExtensionService.update(eq(tenant), eq(enrichmentGuid), eq(dataEnrichmentExtension)))
                 .thenReturn(serviceResponse);
 
         getMockMvc().perform(put(MessageFormat.format("/enrichment/{0}", enrichmentGuid)).params(enrichmentData))
-                .andExpect(model().attribute("errors", equalTo(Arrays.asList(new String[]{"Some business exception"}))))
+                .andExpect(model().attribute("errors",
+                    equalTo(Arrays.asList(new String[]{applicationContext.getMessage(CommonValidations.RECORD_NULL.getCode(),null, Locale.ENGLISH)}))
+                ))
                 .andExpect(model().attribute("method","put"))
                 .andExpect(model().attribute("dataEnrichmentExtension", equalTo(enrichmentForm)))
                 .andExpect(view().name("enrichment/form"));
@@ -222,15 +221,16 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldRedirectToShowAfterSuccessfulEnrichmentEdit() throws Exception {
-        serviceResponse = spy(ServiceResponse.<DataEnrichmentExtension>builder()
-                .status(ServiceResponse.Status.OK)
-                .result(dataEnrichmentExtension)
+        serviceResponse = spy(ServiceResponseBuilder.<DataEnrichmentExtension>ok()
+                .withResult(dataEnrichmentExtension)
                 .<DataEnrichmentExtension>build());
 
         when(dataEnrichmentExtensionService.update(eq(tenant), eq(enrichmentGuid), eq(dataEnrichmentExtension))).thenReturn(serviceResponse);
 
         getMockMvc().perform(put(MessageFormat.format("/enrichment/{0}", enrichmentGuid)).params(enrichmentData))
-                .andExpect(flash().attribute("message", "Enrichment updated successfully"))
+                .andExpect(flash().attribute("message",
+                    applicationContext.getMessage(EnrichmentController.Messages.ENRICHMENT_REGISTERED_SUCCESSFULLY.getCode(),null,Locale.ENGLISH)
+                ))
                 .andExpect(redirectedUrl(MessageFormat.format("/enrichment/{0}", dataEnrichmentExtension.getGuid())));
 
         verify(dataEnrichmentExtensionService).update(eq(tenant), eq(enrichmentGuid), eq(dataEnrichmentExtension));
@@ -257,7 +257,7 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
 
         getMockMvc().perform(delete("/enrichment/{0}", dataEnrichmentExtension.getGuid()))
                 .andExpect(flash().attribute("message",
-                        MessageFormat.format("Enrichment {0} was successfully removed", dataEnrichmentExtension.getName())))
+                    applicationContext.getMessage(EnrichmentController.Messages.ENRICHMENT_REMOVED_SUCCESSFULLY.getCode(),null,Locale.ENGLISH)))
                 .andExpect(redirectedUrl("/enrichment"));
 
         verify(dataEnrichmentExtensionService).remove(tenant, dataEnrichmentExtension.getGuid());
