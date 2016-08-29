@@ -84,7 +84,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 //        assertThat(serviceResponse.getStatus(),equalTo(ServiceResponse.Status.ERROR));
 //        assertThat(serviceResponse.getResponseMessages(),hasItem("Tenant cannot be null"));
 
-        assertThat(serviceResponse,hasErrorMessage(CommonValidations.TENANT_NULL.getCode(),null));
+        assertThat(serviceResponse,hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
     }
     @Test
     public void shouldReturnResponseMessagesIfTenantDoesNotExist() throws Exception {
@@ -95,7 +95,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 //        assertThat(serviceResponse.getStatus(),equalTo(ServiceResponse.Status.ERROR));
 //        assertThat(serviceResponse.getResponseMessages(),hasItem("Tenant does not exist"));
 
-        assertThat(serviceResponse,hasErrorMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode(),null));
+        assertThat(serviceResponse,hasErrorMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()));
     }
     @Test
     @UsingDataSet(locations = "/fixtures/tenants.json")
@@ -106,7 +106,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 //        assertThat(serviceResponse.getStatus(),equalTo(ServiceResponse.Status.ERROR));
 //        assertThat(serviceResponse.getResponseMessages(),hasItem("Record cannot be null"));
 
-        assertThat(serviceResponse,hasErrorMessage(CommonValidations.RECORD_NULL.getCode(),null));
+        assertThat(serviceResponse,hasErrorMessage(CommonValidations.RECORD_NULL.getCode()));
     }
 
     @Test
@@ -252,7 +252,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 //        assertThat(serviceResponse,notNullValue());
 //        assertThat(serviceResponse.getStatus(),equalTo(ServiceResponse.Status.ERROR));
 //        assertThat(serviceResponse.getResponseMessages(),hasItem("Cannot update device with null ID"));
-        assertThat(serviceResponse, hasErrorMessage(DeviceRegisterService.Validations.DEVICE_ID_NULL.getCode(),null));
+        assertThat(serviceResponse, hasErrorMessage(DeviceRegisterService.Validations.DEVICE_ID_NULL.getCode()));
     }
 
     @Test
@@ -264,7 +264,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 //        assertThat(serviceResponse.getStatus(),equalTo(ServiceResponse.Status.ERROR));
 //        assertThat(serviceResponse.getResponseMessages(),hasItem("Cannot update null device"));
 
-        assertThat(serviceResponse,hasErrorMessage(CommonValidations.RECORD_NULL.getCode(),null));
+        assertThat(serviceResponse,hasErrorMessage(CommonValidations.RECORD_NULL.getCode()));
     }
 
     @Test
@@ -341,7 +341,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 //        assertThat(serviceResponse.getStatus(),equalTo(ServiceResponse.Status.ERROR));
 //        assertThat(serviceResponse.getResponseMessages(),hasItem("Device ID cannot be null"));
 
-        assertThat(serviceResponse, hasErrorMessage(DeviceRegisterService.Validations.DEVICE_ID_NULL.getCode(),null));
+        assertThat(serviceResponse, hasErrorMessage(DeviceRegisterService.Validations.DEVICE_ID_NULL.getCode()));
     }
 
     @Test
@@ -352,7 +352,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 //        assertThat(serviceResponse.getStatus(),equalTo(ServiceResponse.Status.ERROR));
 //        assertThat(serviceResponse.getResponseMessages(),hasItem("Device ID does not exist"));
 
-        assertThat(serviceResponse, hasErrorMessage(DeviceRegisterService.Validations.DEVICE_ID_DOES_NOT_EXIST.getCode(),null));
+        assertThat(serviceResponse, hasErrorMessage(DeviceRegisterService.Validations.DEVICE_ID_DOES_NOT_EXIST.getCode()));
     }
 
     @Test

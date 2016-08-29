@@ -1,5 +1,7 @@
 package com.konkerlabs.platform.registry.business.model;
 
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.utilities.validations.api.Validatable;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Singular;
@@ -12,7 +14,22 @@ import java.util.*;
 @Data
 @Builder
 @Document(collection = "transformations")
-public class Transformation {
+public class Transformation implements Validatable {
+
+    public enum Validations {
+        NAME_NULL("model.transformation.name.not_null"),
+        STEPS_EMPTY("model.tranformation.steps.not_empty");
+
+        public String getCode() {
+            return code;
+        }
+
+        private String code;
+
+        Validations(String code) {
+            this.code = code;
+        }
+    }
 
     @Id
     private String id;
@@ -23,22 +40,23 @@ public class Transformation {
     @Singular
     private List<TransformationStep> steps = new LinkedList<>();
 
-    public Set<String> applyValidation() {
-        Set<String> validations = new HashSet<>();
+    public Optional<Map<String, Object[]>> applyValidations() {
+        Map<String, Object[]> validations = new HashMap<>();
 
         if (!Optional.ofNullable(getTenant()).isPresent())
-            validations.add("Tenant cannot be null");
+            validations.put(CommonValidations.TENANT_NULL.getCode(),null);
         if (!Optional.ofNullable(getName()).filter(s -> !s.isEmpty()).isPresent())
-            validations.add("Name cannot be null or empty");
+            validations.put(Validations.NAME_NULL.getCode(),null);
         if (Optional.of(getSteps()).filter(transformationSteps -> transformationSteps.isEmpty()).isPresent())
-            validations.add("At least one transformation step is needed");
+            validations.put(Validations.STEPS_EMPTY.getCode(),null);
 
         steps.stream()
             .forEach(transformationStep -> {
-                Optional.ofNullable(transformationStep.applyValidations())
-                    .ifPresent(strings -> validations.addAll(strings));
+                Optional.of(transformationStep.applyValidations())
+                        .filter(op -> !Optional.empty().equals(op))
+                        .ifPresent(op -> validations.putAll(op.get()));
             });
 
-        return validations;
+        return Optional.of(validations).filter(stringMap -> !stringMap.isEmpty());
     }
 }

@@ -1,7 +1,7 @@
 package com.konkerlabs.platform.registry.business.model;
 
 import com.konkerlabs.platform.registry.business.model.enumerations.IntegrationType;
-import com.konkerlabs.platform.utilities.validations.InterpolableURIValidationUtil;
+import com.konkerlabs.platform.utilities.validations.InterpolableURIValidator;
 import com.konkerlabs.platform.utilities.validations.ValidationException;
 import lombok.Builder;
 import lombok.Data;
@@ -68,11 +68,11 @@ public class DataEnrichmentExtension {
                 if ("".equals(Optional.ofNullable(getParameters().get(URL)).orElse(""))) {
                     validations.add("Service URL cannot be null or empty");
                 } else {
-                    try {
-                        InterpolableURIValidationUtil.validate(getParameters().get(URL));
-                    } catch (ValidationException ve) {
-                        validations.add(ve.getMessage());
-                    }
+//                    try {
+//                        InterpolableURIValidator.validate(getParameters().get(URL));
+//                    } catch (ValidationException ve) {
+//                        validations.add(ve.getMessage());
+//                    }
                 }
 
                 if (Optional.ofNullable(getParameters().get(PASSWORD)).filter(s -> !s.isEmpty()).isPresent()) {

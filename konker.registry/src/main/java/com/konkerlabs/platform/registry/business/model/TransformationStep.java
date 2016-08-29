@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry.business.model;
 
 import com.konkerlabs.platform.registry.business.model.enumerations.IntegrationType;
+import com.konkerlabs.platform.utilities.validations.api.Validatable;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -8,12 +9,11 @@ import lombok.Singular;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 @Getter
 @AllArgsConstructor
 @EqualsAndHashCode
-public abstract class TransformationStep {
+public abstract class TransformationStep implements Validatable {
 
     private IntegrationType type;
     @Singular
@@ -21,6 +21,4 @@ public abstract class TransformationStep {
 
     public TransformationStep() {
     }
-
-    public abstract Set<String> applyValidations();
 }

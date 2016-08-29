@@ -1,7 +1,7 @@
 package com.konkerlabs.platform.registry.business.model;
 
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.registry.business.model.validation.Validatable;
+import com.konkerlabs.platform.utilities.validations.api.Validatable;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
 import lombok.Builder;
 import lombok.Data;
@@ -61,10 +61,7 @@ public class Device implements DeviceURIDealer, Validatable {
 		if (getRegistrationDate() == null)
 			validations.put(Validations.REGISTRATION_DATE_NULL.code,null);
 
-		if (validations.isEmpty())
-			return Optional.empty();
-		else
-			return Optional.of(validations);
+		return Optional.of(validations).filter(map -> !map.isEmpty());
 	}
 
 	public void onRegistration() {

@@ -84,9 +84,8 @@ public class EventRouteControllerTest extends WebLayerTestContext {
     public void setUp() throws Exception {
         List<Transformation> transformations = new ArrayList<>();
         when(transformationService.getAll(tenant)).thenReturn(
-                ServiceResponse.<List<Transformation>>builder()
-                        .status(OK)
-                        .result(transformations).<List<Transformation>>build()
+                ServiceResponseBuilder.<List<Transformation>>ok()
+                        .withResult(transformations).build()
         );
 
         List<Device> devices = new ArrayList<>();

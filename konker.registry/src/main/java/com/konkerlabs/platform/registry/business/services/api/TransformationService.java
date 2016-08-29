@@ -7,11 +7,26 @@ import java.util.List;
 
 public interface TransformationService {
 
-    ServiceResponse<List<Transformation>> getAll(Tenant tenant);
+    enum Validations {
+        TRANSFORMATION_NAME_IN_USE("service.transformation.name.in_use"),
+        TRANSFORMATION_NOT_FOUND("service.transformation.not_found");
 
-    ServiceResponse<Transformation> register(Tenant tenant, Transformation transformation);
+        private String code;
 
-    ServiceResponse<Transformation> get(Tenant tenant, String id);
+        public String getCode() {
+            return code;
+        }
 
-    ServiceResponse<Transformation> update(Tenant tenant, String id, Transformation transformation);
+        Validations(String code) {
+            this.code = code;
+        }
+    }
+
+    NewServiceResponse<List<Transformation>> getAll(Tenant tenant);
+
+    NewServiceResponse<Transformation> register(Tenant tenant, Transformation transformation);
+
+    NewServiceResponse<Transformation> get(Tenant tenant, String id);
+
+    NewServiceResponse<Transformation> update(Tenant tenant, String id, Transformation transformation);
 }

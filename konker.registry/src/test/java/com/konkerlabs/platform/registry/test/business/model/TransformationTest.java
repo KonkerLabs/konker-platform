@@ -3,16 +3,14 @@ package com.konkerlabs.platform.registry.test.business.model;
 import com.konkerlabs.platform.registry.business.model.RestTransformationStep;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.Transformation;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -51,46 +49,59 @@ public class TransformationTest {
     public void shouldReturnAValidationMessageIfTenantIsNull() throws Exception {
         transformation.setTenant(null);
 
-        String expectedMessage = "Tenant cannot be null";
+        String expectedMessage = CommonValidations.TENANT_NULL.getCode();
+        Optional<Map<String, Object[]>> validations = transformation.applyValidations();
 
-        assertThat(transformation.applyValidation(),hasItem(expectedMessage));
+        assertThat(validations, not(sameInstance(Optional.empty())));
+        assertThat(transformation.applyValidations().get(),hasEntry(expectedMessage,null));
     }
 
     @Test
     public void shouldReturnAValidationMessageIfNameIsNull() throws Exception {
         transformation.setName(null);
 
-        String expectedMessage = "Name cannot be null or empty";
+        String expectedMessage = Transformation.Validations.NAME_NULL.getCode();
+        Optional<Map<String, Object[]>> validations = transformation.applyValidations();
 
-        assertThat(transformation.applyValidation(),hasItem(expectedMessage));
+        assertThat(validations, not(sameInstance(Optional.empty())));
+        assertThat(transformation.applyValidations().get(),hasEntry(expectedMessage,null));
     }
 
     @Test
     public void shouldReturnAValidationMessageIfNameIsEmpty() throws Exception {
         transformation.setName("");
 
-        String expectedMessage = "Name cannot be null or empty";
+        String expectedMessage = Transformation.Validations.NAME_NULL.getCode();
+        Optional<Map<String, Object[]>> validations = transformation.applyValidations();
 
-        assertThat(transformation.applyValidation(),hasItem(expectedMessage));
+        assertThat(validations, not(sameInstance(Optional.empty())));
+        assertThat(transformation.applyValidations().get(),hasEntry(expectedMessage,null));
     }
 
     @Test
     public void shouldReturnAValidationMessageIfStepsCollectionIsEmpty() throws Exception {
         transformation.setSteps(Collections.emptyList());
 
-        String expectedMessage = "At least one transformation step is needed";
+        String expectedMessage = Transformation.Validations.STEPS_EMPTY.getCode();
+        Optional<Map<String, Object[]>> validations = transformation.applyValidations();
 
-        assertThat(transformation.applyValidation(),hasItem(expectedMessage));
+        assertThat(validations, not(sameInstance(Optional.empty())));
+        assertThat(transformation.applyValidations().get(),hasEntry(expectedMessage,null));
     }
 
     @Test
     public void shouldForwardValidationMessagesFromAnyOfItsSteps() throws Exception {
-        String expectedStepError = "Some error";
+        Map<String,Object[]> expectedStepErrors = new HashMap() {{
+            put("Some error",null);
+        }};
 
         when(restTransformation.applyValidations()).thenReturn(
-            new HashSet(Arrays.asList(new String[] {expectedStepError}))
+            Optional.of(expectedStepErrors)
         );
 
-        assertThat(transformation.applyValidation(),hasItem(expectedStepError));
+        Optional<Map<String, Object[]>> validations = transformation.applyValidations();
+
+        assertThat(validations, not(sameInstance(Optional.empty())));
+        assertThat(transformation.applyValidations().get(),hasEntry("Some error",null));
     }
 }

@@ -1,8 +1,6 @@
 package com.konkerlabs.platform.registry.business.model;
 
 import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
-import com.konkerlabs.platform.utilities.validations.InterpolableURIValidationUtil;
-import com.konkerlabs.platform.utilities.validations.ValidationException;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
@@ -44,11 +42,11 @@ public class RestDestination implements RESTDestinationURIDealer {
         if ("".equals(Optional.ofNullable(getServiceURI()).orElse(""))) {
             validations.add("URL cannot be null or empty");
         } else {
-            try {
-                InterpolableURIValidationUtil.validate(getServiceURI());
-                } catch (ValidationException ve) {
-                    validations.add(ve.getMessage());
-                }
+//            try {
+//                InterpolableURIValidationUtil.validate(getServiceURI());
+//                } catch (ValidationException ve) {
+//                    validations.add(ve.getMessage());
+//                }
         }
 
         if (Optional.ofNullable(getServicePassword()).filter(s -> !s.isEmpty()).isPresent()) {

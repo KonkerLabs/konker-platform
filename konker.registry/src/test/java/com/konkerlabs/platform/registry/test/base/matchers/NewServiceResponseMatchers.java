@@ -37,7 +37,7 @@ public class NewServiceResponseMatchers {
         };
     }
 
-    public static Matcher<NewServiceResponse> hasErrorMessage(String code, Object[] parameters) {
+    public static Matcher<NewServiceResponse> hasErrorMessage(String code, Object... parameters) {
         return new BaseMatcher<NewServiceResponse>() {
             @Override
             protected boolean matchesSafely(NewServiceResponse item) {
