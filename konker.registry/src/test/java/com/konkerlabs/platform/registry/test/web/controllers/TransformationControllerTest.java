@@ -12,6 +12,7 @@ import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
 import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
+import com.konkerlabs.platform.registry.web.controllers.TransformationController;
 import com.konkerlabs.platform.registry.web.forms.TransformationForm;
 import org.junit.After;
 import org.junit.Before;
@@ -185,7 +186,9 @@ public class TransformationControllerTest extends WebLayerTestContext {
         when(transformationService.update(eq(tenant), eq("123"), eq(transformation))).thenReturn(serviceResponse);
 
         getMockMvc().perform(put(MessageFormat.format("/transformation/{0}", "123")).params(transformationData))
-                .andExpect(flash().attribute("message", "Transformation updated successfully"))
+                .andExpect(flash().attribute("message",
+                    applicationContext.getMessage(TransformationController.Messages.TRANSFORMATION_REGISTERED_SUCCESSFULLY.getCode(),null,Locale.ENGLISH)
+                 ))
                 .andExpect(redirectedUrl(MessageFormat.format("/transformation/{0}", transformation.getId())));
 
         verify(transformationService).update(tenant, "123", transformation);
