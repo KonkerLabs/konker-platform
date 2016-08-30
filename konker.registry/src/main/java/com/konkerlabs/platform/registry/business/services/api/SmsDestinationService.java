@@ -6,13 +6,30 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import java.util.List;
 
 public interface SmsDestinationService {
+    enum Validations {
+        SMSDEST_ID_NULL("service.smsdest.id.not_null"),
+        SMSDEST_NAME_UNIQUE("service.smsdest.name.in_use"),
+        SMSDEST_NOT_FOUND("service.smsdest.not_found");
 
-    ServiceResponse<List<SmsDestination>> findAll(Tenant tenant);
+        private String code;
 
-    ServiceResponse<SmsDestination> register(Tenant tenant, SmsDestination destination);
+        public String getCode() {
+            return code;
+        }
 
-    ServiceResponse<SmsDestination> update(Tenant tenant, String guid, SmsDestination destination);
+        Validations(String code) {
+            this.code = code;
+        }
+    }
 
-    ServiceResponse<SmsDestination> getByGUID(Tenant tenant, String guid);
+    
+    
+    NewServiceResponse<List<SmsDestination>> findAll(Tenant tenant);
+
+    NewServiceResponse<SmsDestination> register(Tenant tenant, SmsDestination destination);
+
+    NewServiceResponse<SmsDestination> update(Tenant tenant, String guid, SmsDestination destination);
+
+    NewServiceResponse<SmsDestination> getByGUID(Tenant tenant, String guid);
 
 }

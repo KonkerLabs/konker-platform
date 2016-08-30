@@ -100,9 +100,8 @@ public class EventRouteControllerTest extends WebLayerTestContext {
         );
         List<SmsDestination> smsDestinations = new ArrayList<>();
         when(smsDestinationService.findAll(tenant)).thenReturn(
-                ServiceResponse.<List<SmsDestination>>builder()
-                        .status(OK)
-                        .result(smsDestinations).<List<SmsDestination>>build()
+                ServiceResponseBuilder.<List<SmsDestination>>ok()
+                        .withResult(smsDestinations).<List<SmsDestination>>build()
         );
 
         incomingDevice = builder().deviceId("0000000000000004").build();

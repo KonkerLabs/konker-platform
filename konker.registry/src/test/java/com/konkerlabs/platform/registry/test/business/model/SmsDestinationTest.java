@@ -3,6 +3,8 @@ package com.konkerlabs.platform.registry.test.business.model;
 import com.konkerlabs.platform.registry.business.model.SmsDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.behaviors.SmsDestinationURIDealer;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -43,50 +45,50 @@ public class SmsDestinationTest {
     public void shouldReturnAValidationMessageIfTenantIsNull() throws Exception {
         subject.setTenant(null);
 
-        String expectedMessage = "Tenant cannot be null";
+        String expectedMessage = CommonValidations.TENANT_NULL.getCode();
 
-        assertThat(subject.applyValidations(), hasItem(expectedMessage));
+        assertThat(subject.applyValidations().get(), hasEntry(expectedMessage, null));
     }
 
     @Test
     public void shouldReturnAValidationMessageIfNameIsNull() throws Exception {
         subject.setName(null);
 
-        String expectedMessage = "Name cannot be null or empty";
+        String expectedMessage = SmsDestination.Validations.NAME_NULL_EMPTY.getCode();
 
-        assertThat(subject.applyValidations(), hasItem(expectedMessage));
+        assertThat(subject.applyValidations().get(), hasEntry(expectedMessage, null));
     }
 
     @Test
     public void shouldReturnAValidationMessageIfNameIsEmpty() throws Exception {
         subject.setName("");
 
-        String expectedMessage = "Name cannot be null or empty";
+        String expectedMessage = SmsDestination.Validations.NAME_NULL_EMPTY.getCode();
 
-        assertThat(subject.applyValidations(), hasItem(expectedMessage));
+        assertThat(subject.applyValidations().get(), hasEntry(expectedMessage, null));
     }
 
     @Test
     public void shouldReturnAValidationMessageIfPhoneNumberIsNull() throws Exception {
         subject.setPhoneNumber(null);
 
-        String expectedMessage = "Phone number cannot be null or empty";
+        String expectedMessage = SmsDestination.Validations.PHONE_NULL_EMPTY.getCode();
 
-        assertThat(subject.applyValidations(), hasItem(expectedMessage));
+        assertThat(subject.applyValidations().get(), hasEntry(expectedMessage, null));
     }
 
     @Test
     public void shouldReturnAValidationMessageIfPhoneNumberIsEmpty() throws Exception {
         subject.setPhoneNumber("");
 
-        String expectedMessage = "Phone number cannot be null or empty";
+        String expectedMessage = SmsDestination.Validations.PHONE_NULL_EMPTY.getCode();
 
-        assertThat(subject.applyValidations(), hasItem(expectedMessage));
+        assertThat(subject.applyValidations().get(), hasEntry(expectedMessage, null));
     }
 
     @Test
     public void shouldReturnAValidationMessageIfPhoneNumberIsInvalid() throws Exception {
-        String expectedMessage = "Phone number is invalid";
+        String expectedMessage = SmsDestination.Validations.PHONE_FORMAT_INVALID.getCode();
 
         List<String> invalidPhoneNumbers = Arrays.asList(new String[] {
             "11987654321",
@@ -96,28 +98,26 @@ public class SmsDestinationTest {
 
         invalidPhoneNumbers.stream().forEach(invalid -> {
             subject.setPhoneNumber(invalid);
-            assertThat(subject.applyValidations(), hasItem(expectedMessage));
+            assertThat(subject.applyValidations().get(), hasEntry(expectedMessage, null));
         });
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfGuidIsNull() throws Exception {
+    public void shouldReturnErrorMessageIfGuidIsNull() throws Exception {
+        String expectedMessage = SmsDestination.Validations.GUID_NULL_EMPTY.getCode();
+
         subject.setGuid(null);
 
-        thrown.expect(IllegalStateException.class);
-        thrown.expectMessage("GUID cannot be null or empty");
-
-        subject.applyValidations();
+        assertThat(subject.applyValidations().get(), hasEntry(expectedMessage, null));
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfGuidIsEmpty() throws Exception {
+    public void shouldReturnErrorMessageIfGuidIsEmpty() throws Exception {
+        String expectedMessage = SmsDestination.Validations.GUID_NULL_EMPTY.getCode();
+
         subject.setGuid("");
 
-        thrown.expect(IllegalStateException.class);
-        thrown.expectMessage("GUID cannot be null or empty");
-
-        subject.applyValidations();
+        assertThat(subject.applyValidations().get(), hasEntry(expectedMessage, null));
     }
 
     @Test

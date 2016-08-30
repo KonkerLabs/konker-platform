@@ -2,8 +2,9 @@ package com.konkerlabs.platform.registry.test.business.services;
 
 import com.konkerlabs.platform.registry.business.model.SmsDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.SmsDestinationService;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
@@ -19,12 +20,15 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
-import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.isResponseOk;
+import static com.konkerlabs.platform.registry.test.base.matchers.NewServiceResponseMatchers.hasErrorMessage;
+import static com.konkerlabs.platform.registry.test.base.matchers.NewServiceResponseMatchers.isResponseOk;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.rules.ExpectedException.none;
@@ -82,26 +86,26 @@ public class SmsDestinationServiceTest extends BusinessLayerTestSupport {
     // ============================== findAll ==============================//
     @Test
     public void shouldReturnEmptyListIfDestinationsDoesNotExistWhenFindAll() {
-        ServiceResponse<List<SmsDestination>> response = subject.findAll(emptyTenant);
+        NewServiceResponse<List<SmsDestination>> response = subject.findAll(emptyTenant);
         assertThat(response, isResponseOk());
         assertThat(response.getResult(), empty());
     }
 
     @Test
     public void shouldReturnErrorMessageIfTenantDoesNotExistWhenFindAll() {
-        ServiceResponse<List<SmsDestination>> response = subject.findAll(inexistentTenant);
-        assertThat(response, hasErrorMessage("Tenant does not exist"));
+        NewServiceResponse<List<SmsDestination>> response = subject.findAll(inexistentTenant);
+        assertThat(response, hasErrorMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()));
     }
 
     @Test
     public void shouldReturnErrorMessageIfTenantIsNullWhenFindAll() {
-        ServiceResponse<List<SmsDestination>> response = subject.findAll(null);
-        assertThat(response, hasErrorMessage("Tenant cannot be null"));
+        NewServiceResponse<List<SmsDestination>> response = subject.findAll(null);
+        assertThat(response, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
     }
 
     @Test
     public void shouldReturnDestinationsWhenFindAll() {
-        ServiceResponse<List<SmsDestination>> response = subject.findAll(tenant);
+        NewServiceResponse<List<SmsDestination>> response = subject.findAll(tenant);
         assertThat(response, isResponseOk());
         assertThat(response.getResult(), hasSize(greaterThan(1)));
 
@@ -112,7 +116,7 @@ public class SmsDestinationServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldReturnDestinationsWhenOtherTenantFindAll() {
-        ServiceResponse<List<SmsDestination>> response = subject.findAll(otherTenant);
+        NewServiceResponse<List<SmsDestination>> response = subject.findAll(otherTenant);
         assertThat(response, isResponseOk());
         assertThat(response.getResult(), not(empty()));
 
@@ -125,40 +129,40 @@ public class SmsDestinationServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldReturnDestinationIfExistsWithinTenantWhenGetByID() {
-        ServiceResponse<SmsDestination> response = subject.getByGUID(tenant, THE_DESTINATION_GUID);
+        NewServiceResponse<SmsDestination> response = subject.getByGUID(tenant, THE_DESTINATION_GUID);
         assertThat(response, isResponseOk());
         assertThat(response.getResult().getName(), equalTo(THE_DESTINATION_NAME));
     }
 
     @Test
     public void shouldReturnOtherDestinationIfExistsWithinOtherTenantWhenGetByID() {
-        ServiceResponse<SmsDestination> response = subject.getByGUID(otherTenant, OTHER_TENANT_DESTINATION_GUID);
+        NewServiceResponse<SmsDestination> response = subject.getByGUID(otherTenant, OTHER_TENANT_DESTINATION_GUID);
         assertThat(response, isResponseOk());
         assertThat(response.getResult().getName(), equalTo(OTHER_TENANT_DESTINATION_NAME));
     }
 
     @Test
     public void shouldReturnErrorIfDestinationIsOwnedByAnotherTenantWhenGetByID() {
-        ServiceResponse<SmsDestination> response = subject.getByGUID(tenant, OTHER_TENANT_DESTINATION_ID);
-        assertThat(response, hasErrorMessage("SMS Destination does not exist"));
+        NewServiceResponse<SmsDestination> response = subject.getByGUID(tenant, OTHER_TENANT_DESTINATION_ID);
+        assertThat(response, hasErrorMessage(SmsDestinationService.Validations.SMSDEST_NOT_FOUND.getCode()));
     }
 
     @Test
     public void shouldReturnErrorIfDestinationDoesNotExistWhenGetByID() {
-        ServiceResponse<SmsDestination> response = subject.getByGUID(tenant, INEXISTENT_DESTINATION_ID);
-        assertThat(response, hasErrorMessage("SMS Destination does not exist"));
+        NewServiceResponse<SmsDestination> response = subject.getByGUID(tenant, INEXISTENT_DESTINATION_ID);
+        assertThat(response, hasErrorMessage(SmsDestinationService.Validations.SMSDEST_NOT_FOUND.getCode()));
     }
 
     @Test
     public void shouldReturnErrorIfTenantIsNullWhenGetByID() {
-        ServiceResponse<SmsDestination> response = subject.getByGUID(null, THE_DESTINATION_ID);
-        assertThat(response, hasErrorMessage("Tenant cannot be null"));
+        NewServiceResponse<SmsDestination> response = subject.getByGUID(null, THE_DESTINATION_ID);
+        assertThat(response, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
     }
 
     @Test
     public void shouldReturnErrorIfIDIsNullWhenGetByID() {
-        ServiceResponse<SmsDestination> response = subject.getByGUID(tenant, null);
-        assertThat(response, hasErrorMessage("SMS Destination ID cannot be null"));
+        NewServiceResponse<SmsDestination> response = subject.getByGUID(tenant, null);
+        assertThat(response, hasErrorMessage(SmsDestinationService.Validations.SMSDEST_ID_NULL.getCode()));
     }
 
     // ============================== register ==============================//
@@ -166,7 +170,7 @@ public class SmsDestinationServiceTest extends BusinessLayerTestSupport {
     @Test
     public void shouldRegisterIfEverythingIsOkWhenRegister() {
         assertThat(newSmsDestination.getId(), nullValue());
-        ServiceResponse<SmsDestination> response = subject.register(tenant, newSmsDestination);
+        NewServiceResponse<SmsDestination> response = subject.register(tenant, newSmsDestination);
         assertThat(response, isResponseOk());
         assertThat(response.getResult().getId(), not(nullValue()));
         assertThat(response.getResult().getTenant(), equalTo(tenant));
@@ -175,45 +179,48 @@ public class SmsDestinationServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldReturnErrorIfValidationsFailWhenRegister() {
-        doReturn(Collections.singletonList("Error Message")).when(newSmsDestination).applyValidations();
-        ServiceResponse<SmsDestination> response = subject.register(tenant, newSmsDestination);
+        Optional<Map<String, Object[]>> errors = Optional.of(new HashMap<String, Object[]>());
+        errors.get().put("Error Message", null);
+
+        doReturn(errors).when(newSmsDestination).applyValidations();
+        NewServiceResponse<SmsDestination> response = subject.register(tenant, newSmsDestination);
         assertThat(response, hasErrorMessage("Error Message"));
         assertThat(newSmsDestination.getId(), nullValue());
     }
 
     @Test
     public void shouldReturnErrorIfTenantIsNullWhenRegister() {
-        ServiceResponse<SmsDestination> response = subject.register(null, newSmsDestination);
-        assertThat(response, hasErrorMessage("Tenant cannot be null"));
+        NewServiceResponse<SmsDestination> response = subject.register(null, newSmsDestination);
+        assertThat(response, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
         assertThat(newSmsDestination.getId(), nullValue());
     }
 
     @Test
     public void shouldReturnErrorIfTenantInexistentWhenRegister() {
-        ServiceResponse<SmsDestination> response = subject.register(inexistentTenant, newSmsDestination);
-        assertThat(response, hasErrorMessage("Tenant does not exist"));
+        NewServiceResponse<SmsDestination> response = subject.register(inexistentTenant, newSmsDestination);
+        assertThat(response, hasErrorMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()));
         assertThat(newSmsDestination.getId(), nullValue());
     }
 
     @Test
     public void shouldReturnErrorIfDestinatioIsNullWhenRegister() {
-        ServiceResponse<SmsDestination> response = subject.register(inexistentTenant, null);
-        assertThat(response, hasErrorMessage("SMS Destination cannot be null"));
+        NewServiceResponse<SmsDestination> response = subject.register(inexistentTenant, null);
+        assertThat(response, hasErrorMessage(CommonValidations.RECORD_NULL.getCode()));
         assertThat(newSmsDestination.getId(), nullValue());
     }
 
     @Test
     public void shouldReturnErrorIfDestinationExistsWhenRegister() {
         newSmsDestination.setName(THE_DESTINATION_NAME);
-        ServiceResponse<SmsDestination> response = subject.register(tenant, newSmsDestination);
-        assertThat(response, hasErrorMessage("Name already exists"));
+        NewServiceResponse<SmsDestination> response = subject.register(tenant, newSmsDestination);
+        assertThat(response, hasErrorMessage(SmsDestinationService.Validations.SMSDEST_NAME_UNIQUE.getCode()));
         assertThat(newSmsDestination.getId(), nullValue());
     }
 
     @Test
     public void shouldGenerateNewIdIfIDAlreadyExistsWhenRegister() {
         newSmsDestination.setId(THE_DESTINATION_ID);
-        ServiceResponse<SmsDestination> response = subject.register(tenant, newSmsDestination);
+        NewServiceResponse<SmsDestination> response = subject.register(tenant, newSmsDestination);
         assertThat(response, isResponseOk());
         assertThat(response.getResult().getId(), not(equalTo(THE_DESTINATION_ID)));
     }
@@ -221,13 +228,13 @@ public class SmsDestinationServiceTest extends BusinessLayerTestSupport {
     @Test
     public void shouldAssociateToNewTenantIfIDAlreadyExistsWhenRegister() {
         newSmsDestination.setTenant(otherTenant);
-        ServiceResponse<SmsDestination> response = subject.register(tenant, newSmsDestination);
+        NewServiceResponse<SmsDestination> response = subject.register(tenant, newSmsDestination);
         assertThat(response, isResponseOk());
         assertThat(response.getResult().getTenant(), equalTo(tenant));
         assertThat(response.getResult().getId(), not(nullValue()));
         assertThat(response.getResult().getGuid(), not(nullValue()));
         assertThat(subject.getByGUID(otherTenant, response.getResult().getGuid()),
-                hasErrorMessage("SMS Destination does not exist"));
+                hasErrorMessage(SmsDestinationService.Validations.SMSDEST_NOT_FOUND.getCode()));
     }
 
     // ============================== update ==============================//
@@ -238,7 +245,7 @@ public class SmsDestinationServiceTest extends BusinessLayerTestSupport {
 
         oldSmsDestination.setName(UPDATED_DESTINATION_NAME);
 
-        ServiceResponse<SmsDestination> response = subject.update(tenant, THE_DESTINATION_GUID, oldSmsDestination);
+        NewServiceResponse<SmsDestination> response = subject.update(tenant, THE_DESTINATION_GUID, oldSmsDestination);
         SmsDestination returned = response.getResult();
         assertThat(response, isResponseOk());
         assertThat(returned.getId(), equalTo(THE_DESTINATION_ID));
@@ -260,7 +267,7 @@ public class SmsDestinationServiceTest extends BusinessLayerTestSupport {
         oldSmsDestination.setGuid(INEXISTENT_DESTINATION_GUID);
         oldSmsDestination.setTenant(otherTenant);
 
-        ServiceResponse<SmsDestination> response = subject.update(tenant, THE_DESTINATION_GUID, oldSmsDestination);
+        NewServiceResponse<SmsDestination> response = subject.update(tenant, THE_DESTINATION_GUID, oldSmsDestination);
         SmsDestination returned = response.getResult();
         assertThat(response, isResponseOk());
         assertThat(returned.getId(), equalTo(THE_DESTINATION_ID));
@@ -280,8 +287,8 @@ public class SmsDestinationServiceTest extends BusinessLayerTestSupport {
         oldSmsDestination.setId(OTHER_TENANT_DESTINATION_ID);
         oldSmsDestination.setName(UPDATED_DESTINATION_NAME);
 
-        ServiceResponse<SmsDestination> response = subject.update(tenant, OTHER_TENANT_DESTINATION_GUID, oldSmsDestination);
-        assertThat(response, hasErrorMessage("SMS Destination does not exist"));
+        NewServiceResponse<SmsDestination> response = subject.update(tenant, OTHER_TENANT_DESTINATION_GUID, oldSmsDestination);
+        assertThat(response, hasErrorMessage(SmsDestinationService.Validations.SMSDEST_NOT_FOUND.getCode()));
 
         SmsDestination after = subject.getByGUID(otherTenant, OTHER_TENANT_DESTINATION_GUID).getResult();
         assertThat(after.getName(), not(equalTo(UPDATED_DESTINATION_NAME)));
@@ -293,9 +300,12 @@ public class SmsDestinationServiceTest extends BusinessLayerTestSupport {
         assertThat(before.getName(), not(equalTo(UPDATED_DESTINATION_NAME)));
 
         oldSmsDestination.setName(UPDATED_DESTINATION_NAME);
-        when(oldSmsDestination.applyValidations()).thenReturn(Collections.singletonList("My Error"));
+        Optional<Map<String, Object[]>> errors = Optional.of(new HashMap<String, Object[]>());
+        errors.get().put("My Error", null);
+        
+        when(oldSmsDestination.applyValidations()).thenReturn(errors);
 
-        ServiceResponse<SmsDestination> response = subject.update(tenant, THE_DESTINATION_GUID, oldSmsDestination);
+        NewServiceResponse<SmsDestination> response = subject.update(tenant, THE_DESTINATION_GUID, oldSmsDestination);
         assertThat(response, hasErrorMessage("My Error"));
 
         SmsDestination after = subject.getByGUID(tenant, THE_DESTINATION_GUID).getResult();
@@ -309,8 +319,8 @@ public class SmsDestinationServiceTest extends BusinessLayerTestSupport {
 
         oldSmsDestination.setName(UPDATED_DESTINATION_NAME);
 
-        ServiceResponse<SmsDestination> response = subject.update(inexistentTenant, THE_DESTINATION_GUID, oldSmsDestination);
-        assertThat(response, hasErrorMessage("Tenant does not exist"));
+        NewServiceResponse<SmsDestination> response = subject.update(inexistentTenant, THE_DESTINATION_GUID, oldSmsDestination);
+        assertThat(response, hasErrorMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()));
 
         SmsDestination after = subject.getByGUID(tenant, THE_DESTINATION_GUID).getResult();
         assertThat(after.getName(), not(equalTo(UPDATED_DESTINATION_NAME)));
@@ -323,8 +333,8 @@ public class SmsDestinationServiceTest extends BusinessLayerTestSupport {
 
         oldSmsDestination.setName(UPDATED_DESTINATION_NAME);
 
-        ServiceResponse<SmsDestination> response = subject.update(null, THE_DESTINATION_GUID, oldSmsDestination);
-        assertThat(response, hasErrorMessage("Tenant cannot be null"));
+        NewServiceResponse<SmsDestination> response = subject.update(null, THE_DESTINATION_GUID, oldSmsDestination);
+        assertThat(response, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
 
         SmsDestination after = subject.getByGUID(tenant, THE_DESTINATION_GUID).getResult();
         assertThat(after.getName(), not(equalTo(UPDATED_DESTINATION_NAME)));
@@ -337,8 +347,8 @@ public class SmsDestinationServiceTest extends BusinessLayerTestSupport {
 
         oldSmsDestination.setName(UPDATED_DESTINATION_NAME);
 
-        ServiceResponse<SmsDestination> response = subject.update(tenant, null, oldSmsDestination);
-        assertThat(response, hasErrorMessage("SMS Destination ID cannot be null"));
+        NewServiceResponse<SmsDestination> response = subject.update(tenant, null, oldSmsDestination);
+        assertThat(response, hasErrorMessage(SmsDestinationService.Validations.SMSDEST_ID_NULL.getCode()));
 
         SmsDestination after = subject.getByGUID(tenant, THE_DESTINATION_GUID).getResult();
         assertThat(after.getName(), not(equalTo(UPDATED_DESTINATION_NAME)));
@@ -352,8 +362,8 @@ public class SmsDestinationServiceTest extends BusinessLayerTestSupport {
 
         oldSmsDestination.setName(UPDATED_DESTINATION_NAME);
 
-        ServiceResponse<SmsDestination> response = subject.update(tenant, INEXISTENT_DESTINATION_ID, oldSmsDestination);
-        assertThat(response, hasErrorMessage("SMS Destination does not exist"));
+        NewServiceResponse<SmsDestination> response = subject.update(tenant, INEXISTENT_DESTINATION_ID, oldSmsDestination);
+        assertThat(response, hasErrorMessage(SmsDestinationService.Validations.SMSDEST_NOT_FOUND.getCode()));
 
         SmsDestination after = subject.getByGUID(tenant, THE_DESTINATION_GUID).getResult();
         assertThat(after.getName(), not(equalTo(UPDATED_DESTINATION_NAME)));
@@ -366,8 +376,8 @@ public class SmsDestinationServiceTest extends BusinessLayerTestSupport {
 
         oldSmsDestination.setName(OTHER_DESTINATION_NAME);
 
-        ServiceResponse<SmsDestination> response = subject.update(tenant, THE_DESTINATION_ID, oldSmsDestination);
-        assertThat(response, hasErrorMessage("SMS Destination Name already exists"));
+        NewServiceResponse<SmsDestination> response = subject.update(tenant, THE_DESTINATION_ID, oldSmsDestination);
+        assertThat(response, hasErrorMessage(SmsDestinationService.Validations.SMSDEST_NAME_UNIQUE.getCode()));
 
         SmsDestination after = subject.getByGUID(tenant, THE_DESTINATION_GUID).getResult();
         assertThat(after.getName(), not(equalTo(OTHER_DESTINATION_NAME)));

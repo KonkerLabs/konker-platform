@@ -1,6 +1,8 @@
 package com.konkerlabs.platform.registry.business.model;
 
 import com.konkerlabs.platform.registry.business.model.behaviors.SmsDestinationURIDealer;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
@@ -8,8 +10,8 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -20,6 +22,26 @@ public class SmsDestination implements SmsDestinationURIDealer {
 
     private static final Pattern PATTERN_INTERNACIONAL_PHONE_NUMBER = Pattern.compile("^\\+(?:[0-9] ?){6,14}[0-9]$");
 
+    
+    public enum Validations {
+        GUID_NULL_EMPTY("model.smsdest.id.not_null"),
+        NAME_NULL_EMPTY("model.smsdest.name.not_null"),
+        PHONE_NULL_EMPTY("model.smsdest.phone.not_null"),
+        PHONE_FORMAT_INVALID("model.smsdest.phone.format_invalid")
+        ;
+
+        public String getCode() {
+            return code;
+        }
+
+        private String code;
+
+        Validations(String code) {
+            this.code = code;
+        }
+    }
+
+    
     @Id
     private String id;
     @DBRef
@@ -30,26 +52,28 @@ public class SmsDestination implements SmsDestinationURIDealer {
     private boolean active;
     private String guid;
 
-    public List<String> applyValidations() {
-        List<String> validations = new ArrayList<>();
+    public Optional<Map<String, Object[]>> applyValidations() {
+        Map<String, Object[]> validations = new HashMap<>();
 
         if (!Optional.ofNullable(getTenant()).isPresent())
-            validations.add("Tenant cannot be null");
+            validations.put(CommonValidations.TENANT_NULL.getCode(), null);
         if (!Optional.ofNullable(getName()).filter(s -> !s.isEmpty()).isPresent())
-            validations.add("Name cannot be null or empty");
+            validations.put(Validations.NAME_NULL_EMPTY.code, null);
         if (!Optional.ofNullable(getPhoneNumber()).filter(s -> !s.isEmpty()).isPresent())
-            validations.add("Phone number cannot be null or empty");
+            validations.put(Validations.PHONE_NULL_EMPTY.code, null);
+        
         Optional.ofNullable(getPhoneNumber())
             .ifPresent(phone -> {
                 if (!PATTERN_INTERNACIONAL_PHONE_NUMBER.matcher(phone).matches())
-                    validations.add("Phone number is invalid");
+                    validations.put(Validations.PHONE_FORMAT_INVALID .code, null);
             });
 
-        Optional.ofNullable(getGuid())
-                .filter(s -> !s.isEmpty())
-                .orElseThrow(() -> new IllegalStateException("GUID cannot be null or empty"));
+        if (!Optional.ofNullable(getGuid())
+                .filter(s -> !s.isEmpty()).isPresent()) {
+            validations.put(Validations.GUID_NULL_EMPTY.code, null);
+        }
 
-        return validations;
+        return Optional.of(validations).filter(map -> !map.isEmpty());
     }
 
     public URI toURI() {
