@@ -41,12 +41,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
-@ContextConfiguration(classes = {
-        WebMvcConfig.class,
-        WebTestConfiguration.class,
-        SecurityTestConfiguration.class,
-        TransformationControllerTest.TransformationTestContextConfig.class
-})
+@ContextConfiguration(classes = { WebMvcConfig.class, WebTestConfiguration.class, SecurityTestConfiguration.class,
+        TransformationControllerTest.TransformationTestContextConfig.class })
 public class TransformationControllerTest extends WebLayerTestContext {
 
     @Autowired
@@ -71,26 +67,23 @@ public class TransformationControllerTest extends WebLayerTestContext {
     @Before
     public void setUp() {
         transformations = new ArrayList<>();
-        transformation = Transformation.builder()
-                .name("TransformationTest")
-                .description("Test transformation")
-                .step(RestTransformationStep.builder().attributes(new HashMap<String, String>() {{
-                    put("url", url);
-                    put("username", username);
-                    put("password", password);
-                }}).build())
-                .build();
+        transformation = Transformation.builder().name("TransformationTest").description("Test transformation")
+                .step(RestTransformationStep.builder().attributes(new HashMap<String, String>() {
+                    {
+                        put("url", url);
+                        put("username", username);
+                        put("password", password);
+                    }
+                }).build()).build();
 
         transformations.add(transformation);
 
         transformationForm = new TransformationForm();
         transformationForm.setName(transformation.getName());
         transformationForm.setDescription(transformation.getDescription());
-        transformationForm.setSteps(
-                transformation.getSteps().stream()
-                        .map(transformationStep -> new TransformationForm.TransformationStepForm(url, username, password))
-                        .collect(Collectors.toList())
-        );
+        transformationForm.setSteps(transformation.getSteps().stream()
+                .map(transformationStep -> new TransformationForm.TransformationStepForm(url, username, password))
+                .collect(Collectors.toList()));
 
         transformationData = new LinkedMultiValueMap<>();
         transformationData.add("name", transformation.getName());
@@ -99,11 +92,11 @@ public class TransformationControllerTest extends WebLayerTestContext {
         transformationData.add("steps[0].username", username);
         transformationData.add("steps[0].password", password);
 
-        serviceResponse = ServiceResponseBuilder.<Transformation>ok()
-                .withResult(transformation).<Transformation>build();
+        serviceResponse = ServiceResponseBuilder.<Transformation> ok().withResult(transformation)
+                .<Transformation> build();
 
-        listServiceResponse = ServiceResponseBuilder.<List<Transformation>>ok()
-                .withResult(transformations).<Transformation>build();
+        listServiceResponse = ServiceResponseBuilder.<List<Transformation>> ok().withResult(transformations)
+                .<Transformation> build();
     }
 
     @After
@@ -114,11 +107,9 @@ public class TransformationControllerTest extends WebLayerTestContext {
     @Test
     public void shouldReturnAllRegisteredTransformations() throws Exception {
         when(transformationService.getAll(tenant))
-                .thenReturn(ServiceResponseBuilder.<List<Transformation>>ok()
-                        .withResult(transformations).build());
+                .thenReturn(ServiceResponseBuilder.<List<Transformation>> ok().withResult(transformations).build());
 
-        getMockMvc().perform(get("/transformation")).andExpect(model()
-                .attribute("transformations", transformations))
+        getMockMvc().perform(get("/transformation")).andExpect(model().attribute("transformations", transformations))
                 .andExpect(view().name("transformations/index"));
     }
 
@@ -132,30 +123,30 @@ public class TransformationControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldBindAnErrorMessageOnSaveTransformationError() throws Exception {
-        when(transformationService.register(eq(tenant), eq(transformation)))
-                .thenReturn(ServiceResponseBuilder.<Transformation>error()
-                        .withMessage(CommonValidations.RECORD_NULL.getCode()).build());
+        when(transformationService.register(eq(tenant), eq(transformation))).thenReturn(ServiceResponseBuilder
+                .<Transformation> error().withMessage(CommonValidations.RECORD_NULL.getCode()).build());
 
         getMockMvc().perform(post("/transformation/save").params(transformationData))
                 .andExpect(model().attribute("transformation", transformationForm))
-                .andExpect(model().attribute("errors", Arrays.asList(new String[]{
-                        applicationContext.getMessage(CommonValidations.RECORD_NULL.getCode(), null, Locale.ENGLISH)
-                })))
-                .andExpect(model().attribute("method", ""))
-                .andExpect(view().name("/transformations/form"));
+                .andExpect(model().attribute("errors",
+                        Arrays.asList(new String[] { applicationContext
+                                .getMessage(CommonValidations.RECORD_NULL.getCode(), null, Locale.ENGLISH) })))
+                .andExpect(model().attribute("method", "")).andExpect(view().name("/transformations/form"));
 
         verify(transformationService).register(tenant, transformation);
     }
 
     @Test
     public void shouldSaveNewTransformationSuccessfully() throws Exception {
-        serviceResponse = spy(ServiceResponseBuilder.<Transformation>ok()
-                .withResult(transformation).build());
+        serviceResponse = spy(ServiceResponseBuilder.<Transformation> ok().withResult(transformation).build());
 
         when(transformationService.register(eq(tenant), eq(transformation))).thenReturn(serviceResponse);
 
         getMockMvc().perform(post("/transformation/save").params(transformationData))
-                .andExpect(flash().attribute("message", "Transformation registered successfully"))
+                .andExpect(flash().attribute("message",
+                        applicationContext.getMessage(
+                                TransformationController.Messages.TRANSFORMATION_REGISTERED_SUCCESSFULLY.getCode(),
+                                null, Locale.ENGLISH)))
                 .andExpect(redirectedUrl(MessageFormat.format("/transformation/{0}", transformation.getId())));
 
         verify(transformationService).register(tenant, transformation);
@@ -163,32 +154,31 @@ public class TransformationControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldBindAnErrorMessageOnEditTransformationError() throws Exception {
-        when(transformationService.update(eq(tenant), eq("123"), eq(transformation)))
-                .thenReturn(ServiceResponseBuilder.<Transformation>error()
-                        .withMessage(CommonValidations.RECORD_NULL.getCode()).build());
+        when(transformationService.update(eq(tenant), eq("123"), eq(transformation))).thenReturn(ServiceResponseBuilder
+                .<Transformation> error().withMessage(CommonValidations.RECORD_NULL.getCode()).build());
 
         getMockMvc().perform(put(MessageFormat.format("/transformation/{0}", "123")).params(transformationData))
                 .andExpect(model().attribute("transformation", transformationForm))
-                .andExpect(model().attribute("errors", Arrays.asList(new String[]{
-                    applicationContext.getMessage(CommonValidations.RECORD_NULL.getCode(), null, Locale.ENGLISH)
-                })))
-                .andExpect(model().attribute("method", "put"))
-                .andExpect(view().name("transformations/form"));
+                .andExpect(model().attribute("errors",
+                        Arrays.asList(new String[] { applicationContext
+                                .getMessage(CommonValidations.RECORD_NULL.getCode(), null, Locale.ENGLISH) })))
+                .andExpect(model().attribute("method", "put")).andExpect(view().name("transformations/form"));
 
         verify(transformationService).update(tenant, "123", transformation);
     }
 
     @Test
     public void shouldUpdateTransformationSuccessfully() throws Exception {
-        serviceResponse = spy(ServiceResponseBuilder.<Transformation>ok()
-                .withResult(transformation).<Transformation>build());
+        serviceResponse = spy(
+                ServiceResponseBuilder.<Transformation> ok().withResult(transformation).<Transformation> build());
 
         when(transformationService.update(eq(tenant), eq("123"), eq(transformation))).thenReturn(serviceResponse);
 
         getMockMvc().perform(put(MessageFormat.format("/transformation/{0}", "123")).params(transformationData))
                 .andExpect(flash().attribute("message",
-                    applicationContext.getMessage(TransformationController.Messages.TRANSFORMATION_REGISTERED_SUCCESSFULLY.getCode(),null,Locale.ENGLISH)
-                 ))
+                        applicationContext.getMessage(
+                                TransformationController.Messages.TRANSFORMATION_REGISTERED_SUCCESSFULLY.getCode(),
+                                null, Locale.ENGLISH)))
                 .andExpect(redirectedUrl(MessageFormat.format("/transformation/{0}", transformation.getId())));
 
         verify(transformationService).update(tenant, "123", transformation);
@@ -197,8 +187,8 @@ public class TransformationControllerTest extends WebLayerTestContext {
     @Test
     public void shouldShowDetailsOfASelectedTransformation() throws Exception {
         transformation.setId("123");
-        serviceResponse = spy(ServiceResponseBuilder.<Transformation>ok()
-                .withResult(transformation).<Transformation>build());
+        serviceResponse = spy(
+                ServiceResponseBuilder.<Transformation> ok().withResult(transformation).<Transformation> build());
 
         when(transformationService.get(tenant, transformation.getId())).thenReturn(serviceResponse);
 
@@ -210,18 +200,17 @@ public class TransformationControllerTest extends WebLayerTestContext {
     @Test
     public void shouldShowEditForm() throws Exception {
         transformation.setId("123");
-        serviceResponse = spy(ServiceResponseBuilder.<Transformation>ok()
-                .withResult(transformation).<Transformation>build());
+        serviceResponse = spy(
+                ServiceResponseBuilder.<Transformation> ok().withResult(transformation).<Transformation> build());
 
         when(transformationService.get(tenant, transformation.getId())).thenReturn(serviceResponse);
 
         getMockMvc().perform(get(MessageFormat.format("/transformation/{0}/edit", transformation.getId())))
                 .andExpect(view().name("transformations/form"))
                 .andExpect(model().attribute("transformation", new TransformationForm().fillFrom(transformation)))
-                .andExpect(model().attribute("method", "put"))
-                .andExpect(model().attribute("action", MessageFormat.format("/transformation/{0}", transformation.getId())));
+                .andExpect(model().attribute("method", "put")).andExpect(model().attribute("action",
+                        MessageFormat.format("/transformation/{0}", transformation.getId())));
     }
-
 
     @Configuration
     public static class TransformationTestContextConfig {
