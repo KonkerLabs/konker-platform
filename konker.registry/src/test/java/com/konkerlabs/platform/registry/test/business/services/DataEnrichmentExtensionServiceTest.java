@@ -9,7 +9,6 @@ import com.konkerlabs.platform.registry.business.repositories.DataEnrichmentExte
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.DataEnrichmentExtensionService;
 import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
@@ -27,7 +26,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -218,7 +216,7 @@ public class DataEnrichmentExtensionServiceTest extends BusinessLayerTestSupport
         assertThat(response.getStatus(), equalTo(NewServiceResponse.Status.ERROR));
         assertThat(response.getResult(), nullValue());
         assertThat(response.getResponseMessages(),
-                hasEntry(DataEnrichmentExtensionService.Validations.ENRICHMENT_DOES_NOT_EXIST.getCode(),null));
+                hasEntry(DataEnrichmentExtensionService.Validations.ENRICHMENT_NOT_FOUND.getCode(),null));
     }
 
     @Test
@@ -345,7 +343,7 @@ public class DataEnrichmentExtensionServiceTest extends BusinessLayerTestSupport
         assertThat(response.getStatus(), equalTo(NewServiceResponse.Status.ERROR));
         assertThat(response.getResult(), nullValue());
         assertThat(response.getResponseMessages(),
-                hasEntry(DataEnrichmentExtensionService.Validations.ENRICHMENT_DOES_NOT_EXIST.getCode(),null));
+                hasEntry(DataEnrichmentExtensionService.Validations.ENRICHMENT_NOT_FOUND.getCode(),null));
     }
 
     // TODO: This test must be reviewed
@@ -454,7 +452,7 @@ public class DataEnrichmentExtensionServiceTest extends BusinessLayerTestSupport
         assertThat(response.getStatus(), equalTo(NewServiceResponse.Status.ERROR));
         assertThat(response.getResult(), nullValue());
         assertThat(response.getResponseMessages(),
-                hasEntry(DataEnrichmentExtensionService.Validations.ENRICHMENT_DOES_NOT_EXIST.getCode(),null));
+                hasEntry(DataEnrichmentExtensionService.Validations.ENRICHMENT_NOT_FOUND.getCode(),null));
     }
 
     @Test

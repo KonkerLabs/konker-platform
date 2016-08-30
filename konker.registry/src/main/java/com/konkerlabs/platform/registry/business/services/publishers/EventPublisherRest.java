@@ -7,6 +7,7 @@ import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
 import com.konkerlabs.platform.registry.business.repositories.solr.EventRepository;
+import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.publishers.api.EventPublisher;
@@ -67,13 +68,13 @@ public class EventPublisherRest implements EventPublisher {
         Optional.ofNullable(tenant)
                 .orElseThrow(() -> new IllegalArgumentException("Tenant cannot be null"));
 
-        ServiceResponse<RestDestination> destination = restDestinationService.getByGUID(
+        NewServiceResponse<RestDestination> destination = restDestinationService.getByGUID(
             tenant,
             destinationUri.getPath().replaceAll("/","")
         );
 
         Optional.ofNullable(destination)
-                .filter(response -> response.getStatus().equals(ServiceResponse.Status.OK))
+                .filter(response -> response.getStatus().equals(NewServiceResponse.Status.OK))
                 .orElseThrow(() -> new IllegalArgumentException(
                         MessageFormat.format("REST Destination is unknown : {0}",destinationUri)
                 ));

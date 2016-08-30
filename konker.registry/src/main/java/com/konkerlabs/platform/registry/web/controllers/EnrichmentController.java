@@ -26,6 +26,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Controller
 @Scope("request")
@@ -135,12 +136,9 @@ public class EnrichmentController implements ApplicationContextAware {
 
         switch (serviceResponse.getStatus()) {
             case ERROR: {
-                List<String> messages = new ArrayList<>();
-                for (Map.Entry<String, Object[]> message : serviceResponse.getResponseMessages().entrySet()) {
-                    messages.add(applicationContext.getMessage(message.getKey(),message.getValue(),locale));
-                }
                 return new ModelAndView("enrichment/form")
-                        .addObject("errors", messages)
+                        .addObject("errors",
+                            serviceResponse.getResponseMessages().entrySet().stream().map(message -> applicationContext.getMessage(message.getKey(), message.getValue(), locale)).collect(Collectors.toList()))
                         .addObject("method","put")
                         .addObject("dataEnrichmentExtension", enrichmentForm);
             }

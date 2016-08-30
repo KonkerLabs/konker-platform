@@ -13,7 +13,7 @@ public interface DataEnrichmentExtensionService {
         ENRICHMENT_INCOMING_URI_NULL("service.enrichment.incoming_uri.not_null"),
         ENRICHMENT_NAME_UNIQUE("service.enrichment.name.in_use"),
         ENRICHMENT_CONTAINER_KEY_ALREADY_REGISTERED("service.enrichment.container_key.already_registered"),
-        ENRICHMENT_DOES_NOT_EXIST("service.enrichment.not_found");
+        ENRICHMENT_NOT_FOUND("service.enrichment.not_found");
 
         private String code;
 

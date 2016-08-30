@@ -3,6 +3,8 @@ package com.konkerlabs.platform.registry.test.business.model;
 import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.utilities.validations.InterpolableURIValidator;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -35,116 +37,135 @@ public class RestDestinationTest {
     public void shouldReturnAValidationMessageIfTenantIsNull() throws Exception {
         subject.setTenant(null);
 
-        String expectedMessage = "Tenant cannot be null";
+        String expectedMessage = CommonValidations.TENANT_NULL.getCode();
 
-        assertThat(subject.applyValidations(), hasItem(expectedMessage));
+        assertThat(subject.applyValidations().get(), hasEntry(expectedMessage,null));
     }
 
     @Test
     public void shouldReturnAValidationMessageIfNameIsNull() throws Exception {
         subject.setName(null);
 
-        String expectedMessage = "Name cannot be null or empty";
+        String expectedMessage = RestDestination.Validations.NAME_NULL.getCode();
 
-        assertThat(subject.applyValidations(), hasItem(expectedMessage));
+        assertThat(subject.applyValidations().get(), hasEntry(expectedMessage,null));
     }
 
     @Test
     public void shouldReturnAValidationMessageIfNameIsEmpty() throws Exception {
         subject.setName("");
 
-        String expectedMessage = "Name cannot be null or empty";
+        String expectedMessage = RestDestination.Validations.NAME_NULL.getCode();
 
-        assertThat(subject.applyValidations(), hasItem(expectedMessage));
+        assertThat(subject.applyValidations().get(), hasEntry(expectedMessage,null));
     }
 
     @Test
     public void shouldReturnAValidationMessageIfURIIsNull() throws Exception {
         subject.setServiceURI(null);
 
-        String expectedMessage = "URL cannot be null or empty";
+        String expectedMessage = RestDestination.Validations.URL_NULL.getCode();
 
-        assertThat(subject.applyValidations(), hasItem(expectedMessage));
+        assertThat(subject.applyValidations().get(), hasEntry(expectedMessage,null));
     }
 
     @Test
     public void shouldReturnAValidationMessageIfURIIsEmpty() throws Exception {
         subject.setServiceURI("");
 
-        String expectedMessage = "URL cannot be null or empty";
+        String expectedMessage = RestDestination.Validations.URL_NULL.getCode();
 
-        assertThat(subject.applyValidations(), hasItem(expectedMessage));
+        assertThat(subject.applyValidations().get(), hasEntry(expectedMessage,null));
     }
 
     @Test
     public void shouldReturnAValidationMessageIfPassowrdIsSetAndUsernameIsNull() throws Exception {
         subject.setServiceUsername(null);
-        assertThat(subject.applyValidations(), hasItem("Password is set but username is empty"));
+
+        String expectedMessage = RestDestination.Validations.SERVICE_USERNAME_WITHOUT_PASSWORD.getCode();
+
+        assertThat(subject.applyValidations().get(), hasEntry(expectedMessage,null));
     }
 
     @Test
     public void shouldReturnAValidationMessageIfPassowrdIsSetAndUsernameIsEmpty() throws Exception {
         subject.setServiceUsername("   ");
-        assertThat(subject.applyValidations(), hasItem("Password is set but username is empty"));
+
+        String expectedMessage = RestDestination.Validations.SERVICE_USERNAME_WITHOUT_PASSWORD.getCode();
+
+        assertThat(subject.applyValidations().get(), hasEntry(expectedMessage,null));
     }
 
     @Test
     public void shouldHaveNoValidationMessagesIfUsernameIsSetButPasswordIsNull() throws Exception {
         subject.setServicePassword(null);
-        assertThat(subject.applyValidations(), empty());
+
+        assertThat(subject.applyValidations().isPresent(), is(false));
     }
 
     // TODO: Reactivate this test on model i18n refactoring
     @Test
-    @Ignore
     public void shouldReturnAValidationMessageIfInterpolatesHost() throws Exception {
-        subject.setServiceURI("http://@{#var}/");
-        assertThat(subject.applyValidations(), not(empty()));
+        String url = "http://@{#var}/";
+        subject.setServiceURI(url);
+
+        String expectedMessage = InterpolableURIValidator.Validations.URI_MALFORMED.getCode();
+
+        assertThat(subject.applyValidations().get(), hasEntry(expectedMessage,new Object[] {url}));
     }
 
     @Test
     public void shouldReturnAValidationMessageIfGUIDIsNull() throws Exception {
         subject.setGuid(null);
 
-        assertThat(subject.applyValidations(), hasItem("GUID cannot be null or empty"));
+        String expectedMessage = RestDestination.Validations.GUID_NOT_EMPTY.getCode();
+
+        assertThat(subject.applyValidations().get(), hasEntry(expectedMessage,null));
     }
 
     @Test
     public void shouldReturnAValidationMessageIfGUIDIsEmpty() throws Exception {
         subject.setGuid("");
 
-        assertThat(subject.applyValidations(), hasItem("GUID cannot be null or empty"));
+        String expectedMessage = RestDestination.Validations.GUID_NOT_EMPTY.getCode();
+
+        assertThat(subject.applyValidations().get(), hasEntry(expectedMessage,null));
     }
 
     @Test
     public void shouldHaveNoValidationMessagesIfInterpolatesPath() throws Exception {
         subject.setServiceURI("http://host/@{#var}/");
-        assertThat(subject.applyValidations(), empty());
+
+        assertThat(subject.applyValidations().isPresent(), is(false));
     }
 
     @Test
     public void shouldHaveNoValidationMessagesIfUsernameIsSetButPasswordIsEmpty() throws Exception {
         subject.setServicePassword("   ");
-        assertThat(subject.applyValidations(), empty());
+
+        assertThat(subject.applyValidations().isPresent(), is(false));
     }
 
     @Test
     public void shouldHaveNoValidationMessagesIfUsernameAndPasswordAreNull() throws Exception {
         subject.setServiceUsername(null);
         subject.setServicePassword(null);
-        assertThat(subject.applyValidations(), empty());
+
+        assertThat(subject.applyValidations().isPresent(), is(false));
     }
 
     @Test
     public void shouldHaveNoValidationMessagesIfUsernameAndPasswordAreEmpty() throws Exception {
         subject.setServiceUsername("");
         subject.setServicePassword("");
-        assertThat(subject.applyValidations(), empty());
+
+        assertThat(subject.applyValidations().isPresent(), is(false));
     }
 
     @Test
     public void shouldHaveNoValidationMessagesIfRecordIsValid() throws Exception {
-        assertThat(subject.applyValidations(), empty());
+
+        assertThat(subject.applyValidations().isPresent(), is(false));
     }
 
     @Test

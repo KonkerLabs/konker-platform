@@ -2,12 +2,16 @@ package com.konkerlabs.platform.registry.test.web.controllers;
 
 import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
 import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
+import com.konkerlabs.platform.registry.web.controllers.RestDestinationController;
 import com.konkerlabs.platform.registry.web.forms.RestDestinationForm;
 import org.junit.After;
 import org.junit.Before;
@@ -15,6 +19,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
@@ -25,6 +30,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import static java.text.MessageFormat.format;
 import static org.hamcrest.Matchers.any;
@@ -50,13 +56,15 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
     private RestDestinationService restDestinationService;
     @Autowired
     private Tenant tenant;
+    @Autowired
+    private ApplicationContext applicationContext;
 
     private List<RestDestination> registeredDestinations;
     private RestDestination destination;
     private LinkedMultiValueMap<String, String> destinationData;
     private RestDestinationForm destinationForm;
 
-    ServiceResponse<RestDestination> response;
+    NewServiceResponse<RestDestination> response;
     private RestDestination savedDestination;
 
     @Before
@@ -104,9 +112,8 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
         when(
             restDestinationService.findAll(tenant)
         ).thenReturn(
-            ServiceResponse.<List<RestDestination>>builder()
-                    .status(ServiceResponse.Status.OK)
-                    .result(registeredDestinations).<List<RestDestination>>build()
+            ServiceResponseBuilder.<List<RestDestination>>ok()
+                    .withResult(registeredDestinations).build()
         );
 
         getMockMvc().perform(get("/destinations/rest"))
@@ -124,14 +131,18 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldBindErrorMessagesWhenRegistrationFailsAndGoBackToRegistrationForm() throws Exception {
-        response = ServiceResponse.<RestDestination>builder()
-                .responseMessages(Arrays.asList(new String[]{"Some error"}))
-                .status(ServiceResponse.Status.ERROR).<RestDestination>build();
+        response = ServiceResponseBuilder.<RestDestination>error()
+                .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
 
         when(restDestinationService.register(eq(tenant),eq(destination))).thenReturn(response);
 
         getMockMvc().perform(post("/destinations/rest/save").params(destinationData))
-                .andExpect(model().attribute("errors", equalTo(response.getResponseMessages())))
+                .andExpect(model().attribute("errors",
+                    equalTo(Arrays.asList(new String[] {
+                            applicationContext.getMessage(
+                                    CommonValidations.TENANT_NULL.getCode(),null, Locale.ENGLISH
+                            )
+                    }))))
                 .andExpect(model().attribute("destination", equalTo(destinationForm)))
                 .andExpect(model().attribute("method", ""))
                 .andExpect(view().name("destinations/rest/form"));
@@ -141,15 +152,16 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldRedirectToShowAfterRegistrationSucceed() throws Exception {
-        response = ServiceResponse.<RestDestination>builder()
-                .status(ServiceResponse.Status.OK)
-                .result(savedDestination)
-                .<RestDestination>build();
+        response = ServiceResponseBuilder.<RestDestination>ok()
+                .withResult(savedDestination)
+                .build();
 
         when(restDestinationService.register(eq(tenant),eq(destination))).thenReturn(response);
 
         getMockMvc().perform(post("/destinations/rest/save").params(destinationData))
-                .andExpect(flash().attribute("message", "Destination saved successfully"))
+                .andExpect(flash().attribute("message",
+                    applicationContext.getMessage(RestDestinationController.Messages.ENRICHMENT_REGISTERED_SUCCESSFULLY.getCode(),null,Locale.ENGLISH)
+                ))
                 .andExpect(redirectedUrl(format("/destinations/rest/{0}", savedDestination.getGuid())));
 
         verify(restDestinationService).register(eq(tenant),eq(destination));
@@ -157,10 +169,9 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldShowDestinationDetails() throws Exception {
-        response = ServiceResponse.<RestDestination>builder()
-                .status(ServiceResponse.Status.OK)
-                .result(savedDestination)
-                .<RestDestination>build();
+        response = ServiceResponseBuilder.<RestDestination>ok()
+                .withResult(savedDestination)
+                .build();
 
         when(restDestinationService.getByGUID(eq(tenant),eq(savedDestination.getGuid()))).thenReturn(response);
 
@@ -173,10 +184,9 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldShowEditForm() throws Exception {
-        response = ServiceResponse.<RestDestination>builder()
-                .status(ServiceResponse.Status.OK)
-                .result(savedDestination)
-                .<RestDestination>build();
+        response = ServiceResponseBuilder.<RestDestination>ok()
+                .withResult(savedDestination)
+                .build();
 
         when(restDestinationService.getByGUID(eq(tenant),eq(savedDestination.getGuid()))).thenReturn(response);
 
@@ -191,14 +201,18 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldBindErrorMessagesWhenEditFailsAndGoBackToEditForm() throws Exception {
-        response = ServiceResponse.<RestDestination>builder()
-                .responseMessages(Arrays.asList(new String[]{"Some error"}))
-                .status(ServiceResponse.Status.ERROR).<RestDestination>build();
+        response = ServiceResponseBuilder.<RestDestination>error()
+                .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
 
         when(restDestinationService.update(eq(tenant),eq(savedDestination.getGuid()),eq(destination))).thenReturn(response);
 
         getMockMvc().perform(put(format("/destinations/rest/{0}",savedDestination.getGuid())).params(destinationData))
-                .andExpect(model().attribute("errors", equalTo(response.getResponseMessages())))
+                .andExpect(model().attribute("errors",
+                    equalTo(Arrays.asList(new String[] {
+                        applicationContext.getMessage(
+                                CommonValidations.TENANT_NULL.getCode(),null, Locale.ENGLISH
+                        )
+                    }))))
                 .andExpect(model().attribute("destination", equalTo(destinationForm)))
                 .andExpect(model().attribute("method", "put"))
                 .andExpect(view().name("destinations/rest/form"));
@@ -208,15 +222,16 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldRedirectToShowAfterEditSucceed() throws Exception {
-        response = ServiceResponse.<RestDestination>builder()
-                .status(ServiceResponse.Status.OK)
-                .result(savedDestination)
-                .<RestDestination>build();
+        response = ServiceResponseBuilder.<RestDestination>ok()
+                .withResult(savedDestination)
+                .build();
 
         when(restDestinationService.update(eq(tenant),eq(savedDestination.getGuid()),eq(destination))).thenReturn(response);
 
         getMockMvc().perform(put(format("/destinations/rest/{0}",savedDestination.getGuid())).params(destinationData))
-                .andExpect(flash().attribute("message", "Destination saved successfully"))
+                .andExpect(flash().attribute("message",
+                    applicationContext.getMessage(RestDestinationController.Messages.ENRICHMENT_REGISTERED_SUCCESSFULLY.getCode(),null,Locale.ENGLISH)
+                ))
                 .andExpect(redirectedUrl(format("/destinations/rest/{0}", savedDestination.getGuid())));
 
         verify(restDestinationService).update(eq(tenant),eq(savedDestination.getGuid()),eq(destination));

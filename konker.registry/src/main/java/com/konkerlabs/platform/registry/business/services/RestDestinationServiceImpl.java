@@ -3,17 +3,20 @@ package com.konkerlabs.platform.registry.business.services;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.RestDestinationRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
+import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -27,113 +30,136 @@ public class RestDestinationServiceImpl implements RestDestinationService {
     private RestDestinationRepository restRepository;
 
     @Override
-    public ServiceResponse<List<RestDestination>> findAll(Tenant tenant) {
-        try {
-            Optional.ofNullable(tenant).orElseThrow(() -> new BusinessException("Tenant cannot be null"));
+    public NewServiceResponse<List<RestDestination>> findAll(Tenant tenant) {
+        if (!Optional.ofNullable(tenant).isPresent())
+            return ServiceResponseBuilder.<List<RestDestination>>error()
+                    .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
 
-            Optional.ofNullable(tenantRepository.findByDomainName(tenant.getDomainName()))
-                    .orElseThrow(() -> new BusinessException("Tenant does not exist"));
+        Tenant existingTenant = tenantRepository.findByDomainName(tenant.getDomainName());
 
-            List<RestDestination> RestList = restRepository.findAllByTenant(tenant.getId());
+        if (!Optional.ofNullable(existingTenant).isPresent())
+            return ServiceResponseBuilder.<List<RestDestination>>error()
+                    .withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();
 
-            return ServiceResponse.<List<RestDestination>> builder().result(RestList).status(ServiceResponse.Status.OK)
-                    .<List<RestDestination>>build();
-        } catch (BusinessException be) {
-            return ServiceResponse.<List<RestDestination>> builder().responseMessage(be.getMessage())
-                    .status(ServiceResponse.Status.ERROR).<List<RestDestination>>build();
-        }
+        List<RestDestination> RestList = restRepository.findAllByTenant(existingTenant.getId());
+
+        return ServiceResponseBuilder.<List<RestDestination>>ok().withResult(RestList).build();
     }
 
     @Override
-    public ServiceResponse<RestDestination> getByGUID(Tenant tenant, String guid) {
-        try {
-            Optional.ofNullable(tenant).orElseThrow(() -> new BusinessException("Tenant cannot be null"));
-            Optional.ofNullable(guid).orElseThrow(() -> new BusinessException("REST Destination ID cannot be null"));
+    public NewServiceResponse<RestDestination> getByGUID(Tenant tenant, String guid) {
+        if (!Optional.ofNullable(tenant).isPresent())
+            return ServiceResponseBuilder.<RestDestination>error()
+                    .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
 
-            RestDestination restDestination = Optional.ofNullable(restRepository.getByTenantAndGUID(tenant.getId(), guid))
-                    .orElseThrow(() -> new BusinessException("REST Destination does not exist"));
+        if (!Optional.ofNullable(guid).filter(s -> !s.isEmpty()).isPresent())
+            return ServiceResponseBuilder.<RestDestination>error()
+                    .withMessage(Validations.GUID_NULL.getCode()).build();
 
-            return ServiceResponse.<RestDestination> builder().result(restDestination).status(ServiceResponse.Status.OK)
-                    .<RestDestination>build();
-        } catch (BusinessException be) {
-            return ServiceResponse.<RestDestination> builder().responseMessage(be.getMessage())
-                    .status(ServiceResponse.Status.ERROR).<RestDestination>build();
-        }
+        Tenant existingTenant = tenantRepository.findByDomainName(tenant.getDomainName());
+
+        if (!Optional.ofNullable(existingTenant).isPresent())
+            return ServiceResponseBuilder.<RestDestination>error()
+                    .withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();
+
+        RestDestination restDestination = restRepository.getByTenantAndGUID(existingTenant.getId(),guid);
+
+        if (!Optional.ofNullable(restDestination).isPresent())
+            return ServiceResponseBuilder.<RestDestination>error()
+                    .withMessage(Validations.DESTINATION_NOT_FOUND.getCode()).build();
+
+        return ServiceResponseBuilder.<RestDestination>ok().withResult(restDestination).build();
     }
 
     @Override
-    public ServiceResponse<RestDestination> register(final Tenant tenant, RestDestination destination) {
-        try {
-            Optional.ofNullable(tenant).orElseThrow(() -> new BusinessException("Tenant cannot be null"));
-            Optional.ofNullable(destination)
-                    .orElseThrow(() -> new BusinessException("REST Destination cannot be null"));
+    public NewServiceResponse<RestDestination> register(final Tenant tenant, RestDestination destination) {
+        if (!Optional.ofNullable(tenant).isPresent())
+            return ServiceResponseBuilder.<RestDestination>error()
+                    .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
 
-            Tenant savedTenant = tenantRepository.findByDomainName(tenant.getDomainName());
-            Optional.ofNullable(savedTenant).orElseThrow(() -> new BusinessException("Tenant does not exist"));
+        if (!Optional.ofNullable(destination).isPresent())
+            return ServiceResponseBuilder.<RestDestination>error()
+                    .withMessage(CommonValidations.RECORD_NULL.getCode()).build();
 
-            if (restRepository.getByTenantAndName(savedTenant.getId(), destination.getName()) != null) {
-                throw new BusinessException("Name already exists");
-            }
+        Tenant existingTenant = tenantRepository.findByDomainName(tenant.getDomainName());
 
-            destination.setId(null);
-            destination.setTenant(savedTenant);
-            destination.setGuid(UUID.randomUUID().toString());
+        if (!Optional.ofNullable(existingTenant).isPresent())
+            return ServiceResponseBuilder.<RestDestination>error()
+                    .withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();
 
-            List<String> validations = Optional.ofNullable(destination.applyValidations())
-                    .orElse(Collections.emptyList());
-            if (!validations.isEmpty()) {
-                return ServiceResponse.<RestDestination> builder().responseMessages(validations)
-                        .status(ServiceResponse.Status.ERROR).<RestDestination>build();
-            }
+        if (Optional.ofNullable(restRepository.getByTenantAndName(existingTenant.getId(),destination.getName())).isPresent())
+            return ServiceResponseBuilder.<RestDestination>error()
+                    .withMessage(Validations.NAME_IN_USE.getCode()).build();
 
-            RestDestination saved = restRepository.save(destination);
+        destination.setId(null);
+        destination.setTenant(existingTenant);
+        destination.setGuid(UUID.randomUUID().toString());
 
-            return ServiceResponse.<RestDestination> builder().result(saved).status(ServiceResponse.Status.OK)
-                    .<RestDestination>build();
-        } catch (BusinessException be) {
-            return ServiceResponse.<RestDestination> builder().responseMessage(be.getMessage())
-                    .status(ServiceResponse.Status.ERROR).<RestDestination>build();
+        Optional<Map<String,Object[]>> validations = destination.applyValidations();
+
+        if (validations.isPresent()) {
+            return ServiceResponseBuilder.<RestDestination>error()
+                    .withMessages(validations.get()).build();
         }
+
+        RestDestination saved = restRepository.save(destination);
+
+        return ServiceResponseBuilder.<RestDestination>ok()
+                .withResult(saved).build();
     }
 
     @Override
-    public ServiceResponse<RestDestination> update(Tenant tenant, String guid, RestDestination destination) {
-        try {
-            Optional.ofNullable(tenant).orElseThrow(() -> new BusinessException("Tenant cannot be null"));
-            Optional.ofNullable(destination)
-                    .orElseThrow(() -> new BusinessException("REST Destination cannot be null"));
-            Optional.ofNullable(guid).orElseThrow(() -> new BusinessException("REST Destination ID cannot be null"));
+    public NewServiceResponse<RestDestination> update(Tenant tenant, String guid, RestDestination destination) {
+        if (!Optional.ofNullable(tenant).isPresent())
+            return ServiceResponseBuilder.<RestDestination>error()
+                    .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
 
-            Tenant savedTenant = tenantRepository.findByDomainName(tenant.getDomainName());
-            Optional.ofNullable(savedTenant).orElseThrow(() -> new BusinessException("Tenant does not exist"));
+        if (!Optional.ofNullable(destination).isPresent())
+            return ServiceResponseBuilder.<RestDestination>error()
+                    .withMessage(CommonValidations.RECORD_NULL.getCode()).build();
 
-            RestDestination byName = restRepository.getByTenantAndName(savedTenant.getId(), destination.getName());
-            if (!guid.equals(Optional.ofNullable(byName).map(RestDestination::getGuid).orElse(guid))) {
-                throw new BusinessException("REST Destination Name already exists");
-            }
+        if (!Optional.ofNullable(guid).filter(s -> !s.isEmpty()).isPresent())
+            return ServiceResponseBuilder.<RestDestination>error()
+                    .withMessage(Validations.GUID_NULL.getCode()).build();
 
-            RestDestination old = restRepository.getByTenantAndGUID(savedTenant.getId(), guid);
-            Optional.ofNullable(old).orElseThrow(() -> new BusinessException("REST Destination does not exist"));
+        Tenant existingTenant = tenantRepository.findByDomainName(tenant.getDomainName());
 
-            destination.setId(old.getId());
-            destination.setGuid(old.getGuid());
-            destination.setTenant(tenant);
+        if (!Optional.ofNullable(existingTenant).isPresent())
+            return ServiceResponseBuilder.<RestDestination>error()
+                    .withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();
 
-            List<String> validations = Optional.ofNullable(destination.applyValidations())
-                    .orElse(Collections.emptyList());
-            if (!validations.isEmpty()) {
-                return ServiceResponse.<RestDestination> builder().responseMessages(validations)
-                        .status(ServiceResponse.Status.ERROR).<RestDestination>build();
-            }
+        RestDestination existingDestination = restRepository.getByTenantAndGUID(existingTenant.getId(),guid);
 
-            RestDestination saved = restRepository.save(destination);
+        if (!Optional.ofNullable(existingDestination).isPresent())
+            return ServiceResponseBuilder.<RestDestination>error()
+                    .withMessage(Validations.DESTINATION_NOT_FOUND.getCode()).build();
 
-            return ServiceResponse.<RestDestination> builder().result(saved).status(ServiceResponse.Status.OK)
-                    .<RestDestination>build();
-        } catch (BusinessException be) {
-            return ServiceResponse.<RestDestination> builder().responseMessage(be.getMessage())
-                    .status(ServiceResponse.Status.ERROR).<RestDestination>build();
+//        RestDestination byName = restRepository.getByTenantAndName(savedTenant.getId(), destination.getName());
+//        if (!guid.equals(Optional.ofNullable(byName).map(RestDestination::getGuid).orElse(guid))) {
+//            throw new BusinessException("REST Destination Name already exists");
+//        }
+
+        if (Optional.ofNullable(restRepository.getByTenantAndName(existingTenant.getId(),destination.getName()))
+                .filter(restDestination -> !restDestination.getGuid().equals(guid))
+                .isPresent())
+            return ServiceResponseBuilder.<RestDestination>error()
+                    .withMessage(Validations.NAME_IN_USE.getCode()).build();
+
+        destination.setId(existingDestination.getId());
+        destination.setGuid(existingDestination.getGuid());
+        destination.setTenant(existingTenant);
+
+        Optional<Map<String,Object[]>> validations = destination.applyValidations();
+
+        if (validations.isPresent()) {
+            return ServiceResponseBuilder.<RestDestination>error()
+                    .withMessages(validations.get()).build();
         }
+
+        RestDestination saved = restRepository.save(destination);
+
+        return ServiceResponseBuilder.<RestDestination>ok()
+                .withResult(saved).build();
     }
 
 }

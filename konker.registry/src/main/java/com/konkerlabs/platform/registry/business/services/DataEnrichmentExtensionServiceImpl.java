@@ -1,6 +1,5 @@
 package com.konkerlabs.platform.registry.business.services;
 
-import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.DataEnrichmentExtension;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
@@ -112,7 +111,7 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
 
         if (!Optional.ofNullable(oldDee).isPresent()) {
             return ServiceResponseBuilder.<DataEnrichmentExtension>error()
-                    .withMessage(Validations.ENRICHMENT_DOES_NOT_EXIST.getCode()).build();
+                    .withMessage(Validations.ENRICHMENT_NOT_FOUND.getCode()).build();
         }
 
         dee.setTenant(existingTenant);
@@ -191,7 +190,7 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
 
         if (!Optional.ofNullable(dee).isPresent())
             return ServiceResponseBuilder.<DataEnrichmentExtension>error()
-                    .withMessage(Validations.ENRICHMENT_DOES_NOT_EXIST.getCode()).build();
+                    .withMessage(Validations.ENRICHMENT_NOT_FOUND.getCode()).build();
 
         return ServiceResponseBuilder.<DataEnrichmentExtension>ok().withResult(dee)
                 .build();
@@ -239,7 +238,7 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
 
         if (!Optional.ofNullable(dee).isPresent())
             return ServiceResponseBuilder.<DataEnrichmentExtension>error()
-                    .withMessage(Validations.ENRICHMENT_DOES_NOT_EXIST.getCode()).build();
+                    .withMessage(Validations.ENRICHMENT_NOT_FOUND.getCode()).build();
 
         repository.delete(dee);
 
