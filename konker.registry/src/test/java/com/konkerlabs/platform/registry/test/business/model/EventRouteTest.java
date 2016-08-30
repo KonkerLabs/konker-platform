@@ -1,10 +1,8 @@
 package com.konkerlabs.platform.registry.test.business.model;
 
-import com.konkerlabs.platform.registry.business.model.EventRoute;
+import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
-import com.konkerlabs.platform.registry.business.model.RestTransformationStep;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.Transformation;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -14,8 +12,7 @@ import java.util.UUID;
 
 import static com.konkerlabs.platform.registry.business.services.publishers.EventPublisherMqtt.DEVICE_MQTT_CHANNEL;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.*;
 
 public class EventRouteTest {
 
@@ -69,108 +66,108 @@ public class EventRouteTest {
     public void shouldReturnAValidationMessageIfTenantIsNull() throws Exception {
         subject.setTenant(null);
 
-        String expectedMessage = "Tenant cannot be null";
+        String expectedMessage = CommonValidations.TENANT_NULL.getCode();
 
-        assertThat(subject.applyValidations(), hasItem(expectedMessage));
+        assertThat(subject.applyValidations().get(), hasEntry(expectedMessage,null));
     }
     @Test
     public void shouldReturnAValidationMessageIfNameIsNull() throws Exception {
         subject.setName(null);
 
-        String expectedMessage = "Name cannot be null or empty";
+        String expectedMessage = EventRoute.Validations.NAME_NULL.getCode();
 
-        assertThat(subject.applyValidations(), hasItem(expectedMessage));
+        assertThat(subject.applyValidations().get(), hasEntry(expectedMessage,null));
     }
     @Test
     public void shouldReturnAValidationMessageIfNameIsEmpty() throws Exception {
         subject.setName("");
 
-        String expectedMessage = "Name cannot be null or empty";
+        String expectedMessage = EventRoute.Validations.NAME_NULL.getCode();
 
-        assertThat(subject.applyValidations(), hasItem(expectedMessage));
+        assertThat(subject.applyValidations().get(), hasEntry(expectedMessage,null));
     }
     @Test
     public void shouldReturnAValidationMessageIfIncomingIsNull() throws Exception {
         subject.setIncoming(null);
 
-        String expectedMessage = "Incoming actor cannot be null";
+        String expectedMessage = EventRoute.Validations.INCOMING_ACTOR_NULL.getCode();
 
-        assertThat(subject.applyValidations(), hasItem(expectedMessage));
+        assertThat(subject.applyValidations().get(), hasEntry(expectedMessage,null));
     }
     @Test
     public void shouldReturnAValidationMessageIfIncomingURIIsNull() throws Exception {
         subject.getIncoming().setUri(null);
 
-        String expectedMessage = "Incoming actor URI cannot be null";
+        String expectedMessage = EventRoute.Validations.INCOMING_ACTOR_URI_NULL.getCode();
 
-        assertThat(subject.applyValidations(), hasItem(expectedMessage));
+        assertThat(subject.applyValidations().get(), hasEntry(expectedMessage,null));
     }
     @Test
     public void shouldReturnAValidationMessageIfIncomingURIIsEmpty() throws Exception {
         subject.getIncoming().setUri(new URI(null,null,null,null,null));
 
-        String expectedMessage = "Incoming actor's URI cannot be empty";
+        String expectedMessage = EventRoute.Validations.INCOMING_ACTOR_URI_NULL.getCode();
 
-        assertThat(subject.applyValidations(), hasItem(expectedMessage));
+        assertThat(subject.applyValidations().get(), hasEntry(expectedMessage,null));
     }
     @Test
     public void shouldReturnAValidationMessageIfOutgoingIsNull() throws Exception {
         subject.setOutgoing(null);
 
-        String expectedMessage = "Outgoing actor cannot be null";
+        String expectedMessage = EventRoute.Validations.OUTGOING_ACTOR_NULL.getCode();
 
-        assertThat(subject.applyValidations(), hasItem(expectedMessage));
+        assertThat(subject.applyValidations().get(), hasEntry(expectedMessage,null));
     }
     @Test
     public void shouldReturnAValidationMessageIfOutgoingURIIsNull() throws Exception {
         subject.getOutgoing().setUri(null);
 
-        String expectedMessage = "Outgoing actor URI cannot be null";
+        String expectedMessage = EventRoute.Validations.OUTGOING_ACTOR_URI_NULL.getCode();
 
-        assertThat(subject.applyValidations(), hasItem(expectedMessage));
+        assertThat(subject.applyValidations().get(), hasEntry(expectedMessage,null));
     }
     @Test
     public void shouldReturnAValidationMessageIfOutgoingURIIsEmpty() throws Exception {
         subject.getOutgoing().setUri(new URI(null,null,null,null,null));
 
-        String expectedMessage = "Outgoing actor's URI cannot be empty";
+        String expectedMessage = EventRoute.Validations.OUTGOING_ACTOR_URI_NULL.getCode();
 
-        assertThat(subject.applyValidations(), hasItem(expectedMessage));
+        assertThat(subject.applyValidations().get(), hasEntry(expectedMessage,null));
     }
     @Test
     public void shouldReturnAValidationMessageIfIncomingChannelIsEmpty() throws Exception {
         subject.getIncoming().setData(new HashMap<>());
 
-        String expectedMessage = "A valid MQTT incoming channel is required";
+        String expectedMessage = EventRoute.Validations.INCOMING_ACTOR_CHANNEL_NULL.getCode();
 
-        assertThat(subject.applyValidations(), hasItem(expectedMessage));
+        assertThat(subject.applyValidations().get(), hasEntry(expectedMessage,null));
     }
     @Test
     public void shouldReturnAValidationMessageIfOutgoingChannelIsEmpty() throws Exception {
         subject.getOutgoing().setData(new HashMap<>());
 
-        String expectedMessage = "A valid MQTT outgoing channel is required";
+        String expectedMessage = EventRoute.Validations.OUTGOING_ACTOR_CHANNEL_NULL.getCode();
 
-        assertThat(subject.applyValidations(), hasItem(expectedMessage));
+        assertThat(subject.applyValidations().get(), hasEntry(expectedMessage,null));
     }
     @Test
     public void shouldReturnAValidationMessageIfGUIDIsNull() throws Exception {
         subject.setGuid(null);
 
-        String expectedMessage = "GUID cannot be null or empty";
+        String expectedMessage = EventRoute.Validations.GUID_NULL.getCode();
 
-        assertThat(subject.applyValidations(), hasItem(expectedMessage));
+        assertThat(subject.applyValidations().get(), hasEntry(expectedMessage,null));
     }
     @Test
     public void shouldReturnAValidationMessageIfGUIDIsEmpty() throws Exception {
         subject.setGuid("");
 
-        String expectedMessage = "GUID cannot be null or empty";
+        String expectedMessage = EventRoute.Validations.GUID_NULL.getCode();
 
-        assertThat(subject.applyValidations(), hasItem(expectedMessage));
+        assertThat(subject.applyValidations().get(), hasEntry(expectedMessage,null));
     }
     @Test
     public void shouldHaveNoValidationMessagesIfRecordIsValid() throws Exception {
-        assertThat(subject.applyValidations(), nullValue());
+        assertThat(subject.applyValidations().isPresent(), is(false));
     }
 }

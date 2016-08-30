@@ -4,6 +4,7 @@ package com.konkerlabs.platform.registry.business.services.routes;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.EventRoute;
+import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.publishers.api.EventPublisher;
 import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteExecutor;
@@ -51,11 +52,11 @@ public class EventRouteExecutorImpl implements EventRouteExecutor {
     @Override
     public Future<List<Event>> execute(Event event, URI uri) {
 
-        ServiceResponse<List<EventRoute>> serviceResponse = eventRouteService.findByIncomingUri(uri);
+        NewServiceResponse<List<EventRoute>> serviceResponse = eventRouteService.findByIncomingUri(uri);
 
         List<Event> outEvents = new ArrayList<Event>();
 
-        if (serviceResponse.getStatus().equals(ServiceResponse.Status.OK)) {
+        if (serviceResponse.isOk()) {
             List<EventRoute> eventRoutes = serviceResponse.getResult();
 
             String incomingPayload = event.getPayload();
