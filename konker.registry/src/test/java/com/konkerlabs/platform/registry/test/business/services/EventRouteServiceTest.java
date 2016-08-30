@@ -5,10 +5,11 @@ import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.Transformation;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.EventRouteRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.TransformationRepository;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
 import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteService;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
@@ -25,13 +26,12 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static com.konkerlabs.platform.registry.business.model.EventRoute.builder;
-import static com.konkerlabs.platform.registry.business.services.api.ServiceResponse.Status.ERROR;
-import static com.konkerlabs.platform.registry.business.services.api.ServiceResponse.Status.OK;
 import static com.konkerlabs.platform.registry.business.services.publishers.EventPublisherMqtt.DEVICE_MQTT_CHANNEL;
-import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
-import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.isResponseOk;
+import static com.konkerlabs.platform.registry.test.base.matchers.NewServiceResponseMatchers.*;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -105,36 +105,38 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/transformations.json"})
     public void shouldReturnValidationMessageTenantIsNull() throws Exception {
-        ServiceResponse<EventRoute> response = subject.save(null, route);
+        NewServiceResponse<EventRoute> response = subject.save(null, route);
 
-        assertThat(response,hasErrorMessage("Tenant cannot be null"));
+        assertThat(response,hasErrorMessage(CommonValidations.TENANT_NULL.getCode(),null));
     }
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/transformations.json"})
     public void shouldReturnValidationMessageIfRecordIsNull() throws Exception {
-        ServiceResponse<EventRoute> response = subject.save(tenant, null);
+        NewServiceResponse<EventRoute> response = subject.save(tenant, null);
 
-        assertThat(response,hasErrorMessage("Record cannot be null"));
+        assertThat(response,hasErrorMessage(CommonValidations.RECORD_NULL.getCode(),null));
     }
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/transformations.json"})
     public void shouldReturnValidationMessageIfRecordIsInvalid() throws Exception {
-        List<String> errorMessages = asList(new String[]{"Some error"});
-        when(route.applyValidations()).thenReturn(errorMessages);
+        Map<String,Object[]> errorMessages = new HashMap() {{
+            put("some_error",new Object[] {"some_value"});
+        }};
+        when(route.applyValidations()).thenReturn(Optional.of(errorMessages));
 
-        ServiceResponse<EventRoute> response = subject.save(tenant, route);
+        NewServiceResponse<EventRoute> response = subject.save(tenant, route);
 
-        assertThat(response,hasErrorMessage("Some error"));
+        assertThat(response,hasErrorMessage("some_error",new Object[] {"some_value"}));
     }
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/transformations.json"})
     public void shouldReturnValidationMessageIfTenantDoesNotExist() throws Exception {
-        ServiceResponse<EventRoute> response = subject.save(Tenant.builder().id("unknown_id").name("name").build(), route);
+        NewServiceResponse<EventRoute> response = subject.save(Tenant.builder().id("unknown_id").name("name").build(), route);
 
-        assertThat(response,hasErrorMessage("Tenant does not exist"));
+        assertThat(response,hasErrorMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode(),null));
     }
 
     @Test
@@ -144,15 +146,15 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
         route.setName(existingRouteName);
 
-        ServiceResponse<EventRoute> response = subject.save(tenant, route);
-        assertThat(response,hasErrorMessage("Event route name is already in use"));
+        NewServiceResponse<EventRoute> response = subject.save(tenant, route);
+        assertThat(response,hasErrorMessage(EventRouteService.Validations.NAME_IN_USE.getCode(),null));
     }
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/transformations.json","/fixtures/event-routes.json"})
     public void shouldPersistIfRouteIsValid() throws Exception {
 
-        ServiceResponse<EventRoute> response = subject.save(tenant, route);
+        NewServiceResponse<EventRoute> response = subject.save(tenant, route);
 
         assertThat(response, isResponseOk());
         assertThat(eventRouteRepository.findByIncomingUri(route.getIncoming().getUri()), notNullValue());
@@ -171,10 +173,10 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 //        route.getOutgoing().getData().put("channel",channel);
 //
 //        List<String> errorMessages = Arrays.asList(new String[] { "Incoming and outgoing device channels cannot be the same" });
-//        ServiceResponse response = subject.save(tenant,route);
+//        NewServiceResponse response = subject.save(tenant,route);
 //
 //        assertThat(response, notNullValue());
-//        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+//        assertThat(response.getStatus(), equalTo(NewServiceResponse.Status.ERROR));
 //        assertThat(response.getResponseMessages(), equalTo(errorMessages));
 //    }
 
@@ -183,47 +185,47 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json"})
     public void shouldReturnValidationMessageTenantIsNullWhenUpdating() throws Exception {
-        ServiceResponse<EventRoute> response = subject.update(null,existingGuid,route);
+        NewServiceResponse<EventRoute> response = subject.update(null,existingGuid,route);
 
-        assertThat(response,hasErrorMessage("Tenant cannot be null"));
+        assertThat(response,hasErrorMessage(CommonValidations.TENANT_NULL.getCode(),null));
     }
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json"})
     public void shouldReturnValidationMessageTenantDoesNotExistWhenUpdating() throws Exception {
-        ServiceResponse<EventRoute> response = subject.update(
+        NewServiceResponse<EventRoute> response = subject.update(
                 Tenant.builder().id("unknown_id").name("name").domainName("unknown_domain").build(),
                 existingGuid,
                 route);
 
-        assertThat(response,hasErrorMessage("Tenant does not exist"));
+        assertThat(response,hasErrorMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode(),null));
     }
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json"})
     public void shouldReturnValidationMessageGuidIsNullWhenUpdating() throws Exception {
-        ServiceResponse<EventRoute> response = subject.update(tenant,null,route);
+        NewServiceResponse<EventRoute> response = subject.update(tenant,null,route);
 
-        assertThat(response,hasErrorMessage("GUID cannot be null or empty"));
+        assertThat(response,hasErrorMessage(EventRouteService.Validations.GUID_NULL.getCode(),null));
     }
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json"})
     public void shouldReturnValidationMessageGuidIsEmptyWhenUpdating() throws Exception {
-        ServiceResponse<EventRoute> response = subject.update(tenant,"",route);
+        NewServiceResponse<EventRoute> response = subject.update(tenant,"",route);
 
-        assertThat(response,hasErrorMessage("GUID cannot be null or empty"));
+        assertThat(response,hasErrorMessage(EventRouteService.Validations.GUID_NULL.getCode(),null));
     }
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/event-routes.json"})
     public void shouldReturnValidationMessageGuidDoesNotExistWhenUpdating() throws Exception {
-        ServiceResponse<EventRoute> response = subject.update(tenant,"unknown_guid",route);
+        NewServiceResponse<EventRoute> response = subject.update(tenant,"unknown_guid",route);
 
-        assertThat(response,hasErrorMessage("Event route GUID does not exists"));
+        assertThat(response,hasErrorMessage(EventRouteService.Validations.EVENT_ROUTE_NOT_FOUND.getCode(),null));
     }
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json"})
     public void shouldReturnValidationMessageIfRecordIsNullWhenUpdating() throws Exception {
-        ServiceResponse<EventRoute> response = subject.update(tenant,existingGuid,null);
+        NewServiceResponse<EventRoute> response = subject.update(tenant,existingGuid,null);
 
-        assertThat(response,hasErrorMessage("Event route record cannot be null"));
+        assertThat(response,hasErrorMessage(CommonValidations.RECORD_NULL.getCode(),null));
     }
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/event-routes.json"})
@@ -231,9 +233,9 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
         //Invalid state
         route.setName(null);
 
-        ServiceResponse<EventRoute> response = subject.update(tenant,existingGuid,route);
+        NewServiceResponse<EventRoute> response = subject.update(tenant,existingGuid,route);
 
-        assertThat(response,hasErrorMessage("Name cannot be null or empty"));
+        assertThat(response,hasErrorMessage(EventRoute.Validations.NAME_NULL.getCode(),null));
     }
 
     @Test
@@ -243,14 +245,14 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
         route.setName(existingRouteName);
 
-        ServiceResponse<EventRoute> response = subject.update(tenant,existingGuid,route);
-        assertThat(response,hasErrorMessage("Event route name is already in use"));
+        NewServiceResponse<EventRoute> response = subject.update(tenant,existingGuid,route);
+        assertThat(response,hasErrorMessage(EventRouteService.Validations.NAME_IN_USE.getCode(),null));
     }
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/event-routes.json"})
     public void shouldUpdateIfRouteIsValid() throws Exception {
-        ServiceResponse<EventRoute> response = subject.update(tenant,existingGuid,route);
+        NewServiceResponse<EventRoute> response = subject.update(tenant,existingGuid,route);
 
         assertThat(response,isResponseOk());
         assertThat(response.getResult(),notNullValue());
@@ -298,10 +300,9 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
         route.setName(editedName);
         route.setActive(false);
 
-        ServiceResponse<EventRoute> response = subject.save(tenant, route);
+        NewServiceResponse<EventRoute> response = subject.save(tenant, route);
 
-        assertThat(response, notNullValue());
-        assertThat(response.getStatus(), equalTo(OK));
+        assertThat(response, isResponseOk());
         assertThat(EventRoute.class.cast(response.getResult()).getName(), equalTo(editedName));
         assertThat(EventRoute.class.cast(response.getResult()).isActive(), equalTo(false));
     }
@@ -309,12 +310,9 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/transformations.json", "/fixtures/event-routes.json"})
     public void shouldReturnErrorMessageIfRouteDoesNotBelongToTenantWhenFindByGUID() throws Exception {
-        ServiceResponse<EventRoute> response = subject.getByGUID(emptyTenant, existingGuid);
+        NewServiceResponse<EventRoute> response = subject.getByGUID(emptyTenant, existingGuid);
 
-        assertThat(response, notNullValue());
-        assertThat(response.getStatus(), equalTo(ERROR));
-        assertThat(response.getResult(), nullValue());
-        assertThat(response.getResponseMessages(), hasItem("Event Route does not exist"));
+        assertThat(response,hasErrorMessage(EventRouteService.Validations.EVENT_ROUTE_NOT_FOUND.getCode(),null));
     }
 
     /* ---------------------- findByIncomingUri ------------------------- */
@@ -322,8 +320,8 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/transformations.json","/fixtures/event-routes.json"})
     public void shouldReturnARegisteredRouteByItsIncomingUri() throws Exception {
-        ServiceResponse<List<EventRoute>> serviceResponse = subject.findByIncomingUri(route.getIncoming().getUri());
-        List<EventRoute> routes = serviceResponse.getResult();
+        NewServiceResponse<List<EventRoute>> NewServiceResponse = subject.findByIncomingUri(route.getIncoming().getUri());
+        List<EventRoute> routes = NewServiceResponse.getResult();
 
         assertThat(routes, notNullValue());
         assertThat(routes, hasSize(5));
@@ -339,51 +337,51 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json"})
     public void shouldReturnValidationMessageTenantIsNullWhenRemoving() throws Exception {
-        ServiceResponse<EventRoute> response = subject.remove(null,existingGuid);
+        NewServiceResponse<EventRoute> response = subject.remove(null,existingGuid);
 
-        assertThat(response,hasErrorMessage("Tenant cannot be null"));
+        assertThat(response,hasErrorMessage(CommonValidations.TENANT_NULL.getCode(),null));
     }
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json"})
     public void shouldReturnValidationMessageTenantDoesNotExistWhenRemoving() throws Exception {
-        ServiceResponse<EventRoute> response = subject.remove(
+        NewServiceResponse<EventRoute> response = subject.remove(
                 Tenant.builder().id("unknown_id").name("name").domainName("unknown_domain").build(),
                 existingGuid);
 
-        assertThat(response,hasErrorMessage("Tenant does not exist"));
+        assertThat(response,hasErrorMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode(),null));
     }
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json"})
     public void shouldReturnValidationMessageGuidIsNullWhenRemoving() throws Exception {
-        ServiceResponse<EventRoute> response = subject.remove(tenant,null);
+        NewServiceResponse<EventRoute> response = subject.remove(tenant,null);
 
-        assertThat(response,hasErrorMessage("GUID cannot be null or empty"));
+        assertThat(response,hasErrorMessage(EventRouteService.Validations.GUID_NULL.getCode(),null));
     }
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json"})
     public void shouldReturnValidationMessageGuidIsEmptyWhenRemoving() throws Exception {
-        ServiceResponse<EventRoute> response = subject.remove(tenant,"");
+        NewServiceResponse<EventRoute> response = subject.remove(tenant,"");
 
-        assertThat(response,hasErrorMessage("GUID cannot be null or empty"));
+        assertThat(response,hasErrorMessage(EventRouteService.Validations.GUID_NULL.getCode(),null));
     }
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/event-routes.json"})
     public void shouldReturnValidationMessageGuidDoesNotExistWhenRemoving() throws Exception {
-        ServiceResponse<EventRoute> response = subject.remove(tenant,"unknown_guid");
+        NewServiceResponse<EventRoute> response = subject.remove(tenant,"unknown_guid");
 
-        assertThat(response,hasErrorMessage("Event Route does not exist"));
+        assertThat(response,hasErrorMessage(EventRouteService.Validations.EVENT_ROUTE_NOT_FOUND.getCode(),null));
     }
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json"})
     public void shouldReturnValidationMessageIfRecordIsNullWhenRemoving() throws Exception {
-        ServiceResponse<EventRoute> response = subject.remove(tenant,existingGuid);
+        NewServiceResponse<EventRoute> response = subject.remove(tenant,existingGuid);
 
-        assertThat(response,hasErrorMessage("Event Route does not exist"));
+        assertThat(response,hasErrorMessage(EventRouteService.Validations.EVENT_ROUTE_NOT_FOUND.getCode(),null));
     }
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/event-routes.json"})
     public void shouldRemoveSuccessfully() throws Exception {
-        ServiceResponse<EventRoute> response = subject.remove(tenant,existingGuid);
+        NewServiceResponse<EventRoute> response = subject.remove(tenant,existingGuid);
 
         EventRoute removedRoute = subject.getByGUID(tenant, existingGuid).getResult();
 

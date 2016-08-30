@@ -6,7 +6,10 @@ import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteS
 import com.konkerlabs.platform.registry.web.forms.EventRouteForm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -18,14 +21,31 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 @Controller
 @Scope("request")
 @RequestMapping("routes")
-public class EventRouteController {
+public class EventRouteController implements ApplicationContextAware {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EventRouteController.class);
+
+    public enum Messages {
+        ROUTE_REGISTERED_SUCCESSFULLY("controller.event_route.registered.succesfully"),
+        ROUTE_REMOVED_SUCCESSFULLY("controller.event_route.removed.succesfully");
+
+        private String code;
+
+        public String getCode() {
+            return code;
+        }
+
+        Messages(String code) {
+            this.code = code;
+        }
+    }
 
     @Autowired
     private EventRouteService eventRouteService;
@@ -39,6 +59,7 @@ public class EventRouteController {
     private TransformationService transformationService;
     @Autowired
     private Tenant tenant;
+    private ApplicationContext applicationContext;
 
     @ModelAttribute("allDevices")
     public List<Device> allDevices() {
@@ -74,12 +95,12 @@ public class EventRouteController {
 
     @RequestMapping(value = "save", method = RequestMethod.POST)
     public ModelAndView save(@ModelAttribute("eventRouteForm") EventRouteForm eventRouteForm,
-                             RedirectAttributes redirectAttributes) {
+                             RedirectAttributes redirectAttributes, Locale locale) {
 
         return doSave(() -> {
             eventRouteForm.setAdditionalSupplier(() -> tenant.getDomainName());
             return eventRouteService.save(tenant, eventRouteForm.toModel());
-        },eventRouteForm,redirectAttributes, "");
+        },eventRouteForm,locale,redirectAttributes, "");
 
     }
 
@@ -99,12 +120,12 @@ public class EventRouteController {
     @RequestMapping(path = "/{routeGUID}", method = RequestMethod.PUT)
     public ModelAndView saveEdit(@PathVariable String routeGUID,
                                  @ModelAttribute("eventRouteForm") EventRouteForm eventRouteForm,
-                                 RedirectAttributes redirectAttributes) {
+                                 RedirectAttributes redirectAttributes, Locale locale) {
 
         return doSave(() -> {
             eventRouteForm.setAdditionalSupplier(() -> tenant.getDomainName());
             return eventRouteService.update(tenant, routeGUID, eventRouteForm.toModel());
-        },eventRouteForm,redirectAttributes,"put");
+        },eventRouteForm,locale,redirectAttributes,"put");
 
     }
 
@@ -120,20 +141,24 @@ public class EventRouteController {
         }
     }
 
-    private ModelAndView doSave(Supplier<ServiceResponse<EventRoute>> responseSupplier,
-                                EventRouteForm eventRouteForm,
+    private ModelAndView doSave(Supplier<NewServiceResponse<EventRoute>> responseSupplier,
+                                EventRouteForm eventRouteForm, Locale locale,
                                 RedirectAttributes redirectAttributes, String method) {
-        ServiceResponse<EventRoute> response = responseSupplier.get();
+        NewServiceResponse<EventRoute> response = responseSupplier.get();
 
         switch (response.getStatus()) {
             case ERROR: {
                 return new ModelAndView("routes/form")
-                        .addObject("errors",response.getResponseMessages())
+                        .addObject("errors",
+                            response.getResponseMessages().entrySet().stream().map(message -> applicationContext.getMessage(message.getKey(), message.getValue(), locale)).collect(Collectors.toList())
+                        )
                         .addObject("route", eventRouteForm)
                         .addObject("method",method);
             }
             default: {
-                redirectAttributes.addFlashAttribute("message", "Route registered successfully");
+                redirectAttributes.addFlashAttribute("message",
+                    applicationContext.getMessage(Messages.ROUTE_REGISTERED_SUCCESSFULLY.getCode(),null,locale)
+                );
                 return new ModelAndView(MessageFormat.format("redirect:/routes/{0}",
                         response.getResult().getGuid()));
             }
@@ -142,16 +167,18 @@ public class EventRouteController {
 
     @RequestMapping(path = "/{routeGUID}", method = RequestMethod.DELETE)
     public ModelAndView remove(@PathVariable("routeGUID") String routeGUID,
-                               RedirectAttributes redirectAttributes) {
-        ServiceResponse<EventRoute> serviceResponse = eventRouteService.remove(tenant, routeGUID);
+                               RedirectAttributes redirectAttributes, Locale locale) {
+        NewServiceResponse<EventRoute> serviceResponse = eventRouteService.remove(tenant, routeGUID);
 
         redirectAttributes.addFlashAttribute("message",
-                MessageFormat.format("Route {0} was successfully removed", serviceResponse.getResult().getName()));
-
-//        RedirectView view = new RedirectView("/registry/routes");
-//        view.setStatusCode(HttpStatus.SEE_OTHER);
+                applicationContext.getMessage(Messages.ROUTE_REMOVED_SUCCESSFULLY.getCode(),null,locale)
+        );
 
         return new ModelAndView("redirect:/routes");
-//        return new ModelAndView(view);
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
     }
 }

@@ -179,7 +179,9 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
         when(dataEnrichmentExtensionService.register(eq(tenant), eq(dataEnrichmentExtension))).thenReturn(serviceResponse);
 
         getMockMvc().perform(post("/enrichment/save").params(enrichmentData))
-                .andExpect(flash().attribute("message", "Enrichment registered successfully"))
+                .andExpect(flash().attribute("message",
+                    applicationContext.getMessage(EnrichmentController.Messages.ENRICHMENT_REGISTERED_SUCCESSFULLY.getCode(),null,Locale.ENGLISH)
+                ))
                 .andExpect(redirectedUrl(MessageFormat.format("/enrichment/{0}", dataEnrichmentExtension.getGuid())));
 
 

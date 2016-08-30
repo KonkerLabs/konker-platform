@@ -1,6 +1,8 @@
 package com.konkerlabs.platform.registry.business.model;
 
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.services.publishers.EventPublisherSms;
+import com.konkerlabs.platform.utilities.validations.api.Validatable;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
@@ -8,15 +10,42 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.net.URI;
-import java.text.MessageFormat;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 import static com.konkerlabs.platform.registry.business.services.publishers.EventPublisherMqtt.DEVICE_MQTT_CHANNEL;
 
 @Document(collection = "eventRoutes")
 @Data
 @Builder
-public class EventRoute {
+public class EventRoute implements Validatable {
+
+    public enum Validations {
+        NAME_NULL("model.event_route.name.not_null"),
+        INCOMING_ACTOR_NULL("model.event_route.incoming_actor.not_null"),
+        INCOMING_ACTOR_URI_NULL("model.event_route.incoming_actor_uri.not_null"),
+        INCOMING_ACTOR_URI_MUST_BE_A_DEVICE("model.event_route.incoming_uri.must_be_a_device"),
+        INCOMING_ACTOR_CHANNEL_NULL("model.event_route.incoming_actor.channel.not_null"),
+        OUTGOING_ACTOR_NULL("model.event_route.outgoing_actor.not_null"),
+        OUTGOING_ACTOR_URI_NULL("model.event_route.outgoing_actor_uri.not_null"),
+        OUTGOING_ACTOR_URI_MUST_BE_A_DEVICE("model.event_route.outgoing_uri.must_be_a_device"),
+        OUTGOING_ACTOR_URI_MUST_BE_A_SMS("model.event_route.outgoing_uri.must_be_a_sms"),
+        OUTGOING_ACTOR_CHANNEL_NULL("model.event_route.outgoing_actor.channel.not_null"),
+        OUTGOING_SMS_CUSTOM_TEXT_MANDATORY("model.event_route.outgoing_sms.custom_text.mandatory"),
+        OUTGOING_SMS_INVALID_STRATEGY("model.event_route.outgoing_sms.invalid_strategy"),
+        GUID_NULL("model.event_route.guid.not_null");
+
+        private String code;
+
+        public String getCode() {
+            return code;
+        }
+
+        Validations(String code) {
+            this.code = code;
+        }
+    }
 
     @Id
     private String id;
@@ -32,27 +61,27 @@ public class EventRoute {
     private String guid;
     private boolean active;
 
-    public List<String> applyValidations() {
-        List<String> validations = new ArrayList<>();
+    public Optional<Map<String,Object[]>> applyValidations() {
+        Map<String,Object[]> validations = new HashMap<>();
 
         if (getTenant() == null)
-            validations.add("Tenant cannot be null");
+            validations.put(CommonValidations.TENANT_NULL.getCode(),null);
         if (getName() == null || getName().isEmpty())
-            validations.add("Name cannot be null or empty");
+            validations.put(Validations.NAME_NULL.getCode(),null);
         if (getIncoming() == null)
-            validations.add("Incoming actor cannot be null");
+            validations.put(Validations.INCOMING_ACTOR_NULL.getCode(),null);
         if (getIncoming() != null && getIncoming().getUri() == null)
-            validations.add("Incoming actor URI cannot be null");
+            validations.put(Validations.INCOMING_ACTOR_URI_NULL.getCode(),null);
         if (getIncoming() != null && getIncoming().getUri() != null && getIncoming().getUri().toString().isEmpty())
-            validations.add("Incoming actor's URI cannot be empty");
+            validations.put(Validations.INCOMING_ACTOR_URI_NULL.getCode(),null);
         if (getOutgoing() == null)
-            validations.add("Outgoing actor cannot be null");
+            validations.put(Validations.OUTGOING_ACTOR_NULL.getCode(),null);
         if (getOutgoing() != null && getOutgoing().getUri() == null)
-            validations.add("Outgoing actor URI cannot be null");
+            validations.put(Validations.OUTGOING_ACTOR_URI_NULL.getCode(),null);
         if (getOutgoing() != null && getOutgoing().getUri() != null && getOutgoing().getUri().toString().isEmpty())
-            validations.add("Outgoing actor's URI cannot be empty");
+            validations.put(Validations.OUTGOING_ACTOR_URI_NULL.getCode(),null);
         if (!Optional.ofNullable(getGuid()).filter(s -> !s.isEmpty()).isPresent())
-            validations.add("GUID cannot be null or empty");
+            validations.put(Validations.GUID_NULL.getCode(),null);
 
         if ("device".equals(Optional.ofNullable(getIncoming()).map(RouteActor::getUri).map(URI::getScheme).orElse(""))) {
             applyDeviceIncomingValidations(validations);
@@ -64,50 +93,45 @@ public class EventRoute {
             applySMSOutgoingValidations(validations);
         }
 
-        if (validations.isEmpty())
-            return null;
-        else
-            return validations;
+        return Optional.of(validations).filter(stringMap -> !stringMap.isEmpty());
     }
 
-    public List<String> applyDeviceIncomingValidations(List<String> validations) {
+    private void applyDeviceIncomingValidations(Map<String,Object[]> validations) {
         Map<String, String> data = getIncoming().getData();
         if (!"device".equals(getIncoming().getUri().getScheme())) {
-            validations.add("Device Incoming URI must be an Device URI");
+            validations.put(Validations.INCOMING_ACTOR_URI_MUST_BE_A_DEVICE.getCode(),null);
         } else {
             if (!Optional.ofNullable(data.get(DEVICE_MQTT_CHANNEL))
                     .filter(s -> !s.trim().isEmpty()).isPresent())
-                validations.add("A valid MQTT incoming channel is required");
+                validations.put(Validations.INCOMING_ACTOR_CHANNEL_NULL.getCode(),null);
         }
-        return validations;
     }
 
-    public List<String> applyDeviceOutgoingValidations(List<String> validations) {
+    public void applyDeviceOutgoingValidations(Map<String,Object[]> validations) {
         Map<String, String> data = getOutgoing().getData();
         if (!"device".equals(getOutgoing().getUri().getScheme())) {
-            validations.add("Device Outgoing URI must be an Device URI");
+            validations.put(Validations.OUTGOING_ACTOR_URI_MUST_BE_A_DEVICE.getCode(),null);
         } else {
             if (!Optional.ofNullable(data.get(DEVICE_MQTT_CHANNEL))
                     .filter(s -> !s.trim().isEmpty()).isPresent())
-                validations.add("A valid MQTT outgoing channel is required");
+                validations.put(Validations.OUTGOING_ACTOR_CHANNEL_NULL.getCode(),null);
         }
-        return validations;
     }
 
-    public List<String> applySMSOutgoingValidations(List<String> validations) {
+    public void applySMSOutgoingValidations(Map<String,Object[]> validations) {
         Map<String, String> data = getOutgoing().getData();
         if (!"sms".equals(getOutgoing().getUri().getScheme())) {
-            validations.add("SMS Outgoing URI must be an SMS URI");
+            validations.put(Validations.OUTGOING_ACTOR_URI_MUST_BE_A_SMS.getCode(),null);
         } else {
             if (EventPublisherSms.SMS_MESSAGE_CUSTOM_STRATEGY_PARAMETER_VALUE.equals(data.get(EventPublisherSms.SMS_MESSAGE_STRATEGY_PARAMETER_NAME))) {
                 if (!Optional.ofNullable(data.get(EventPublisherSms.SMS_MESSAGE_TEMPLATE_PARAMETER_NAME)).filter(t -> !t.trim().isEmpty()).isPresent())
-                    validations.add("Custom Text is Mandatory if SMS Strategy is Custom Text");
+                    validations.put(Validations.OUTGOING_SMS_CUSTOM_TEXT_MANDATORY.getCode(),null);
             } else if (!EventPublisherSms.SMS_MESSAGE_FORWARD_STRATEGY_PARAMETER_VALUE.equals(data.get(EventPublisherSms.SMS_MESSAGE_STRATEGY_PARAMETER_NAME))) {
-                validations.add(MessageFormat.format("Invalid SMS Strategy: {0}", data.get(EventPublisherSms.SMS_MESSAGE_STRATEGY_PARAMETER_NAME)));
+                validations.put(Validations.OUTGOING_SMS_CUSTOM_TEXT_MANDATORY.getCode(),
+                    new Object[]{data.get(EventPublisherSms.SMS_MESSAGE_STRATEGY_PARAMETER_NAME)}
+                );
             }
         }
-        
-        return validations;
     }
 
     @Data

@@ -15,4 +15,7 @@ public class NewServiceResponse<T> {
     private Map<String, Object[]> responseMessages = new HashMap<>();
     private T result;
 
+    public Boolean isOk() {
+        return getStatus().equals(Status.OK);
+    }
 }
