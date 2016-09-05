@@ -4,6 +4,10 @@ import java.util.List;
 
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 public interface DeviceRegisterService {
 
@@ -23,11 +27,22 @@ public interface DeviceRegisterService {
         }
     }
 
+    @RequiredArgsConstructor
+    @Getter
+    class DeviceSecurityCredentials {
+        @NonNull
+        private String deviceId;
+        @NonNull
+        private String apiKey;
+        @NonNull
+        private String password;
+    }
+
     /**
      * Persists a new Device.
-     * 
-     * If the deviceId already exists in this tenant, an error is created. The tenant must exist. 
-     * 
+     *
+     * If the deviceId already exists in this tenant, an error is created. The tenant must exist.
+     *
      * @param tenant
      * @param device
      * @return
@@ -71,8 +86,7 @@ public interface DeviceRegisterService {
      * 
      * If the device does not exist, returns an error
      * 
-     * @param tenant
-     * @param id
+     * @param apiKey
      * @return
      */
     // TODO: should be moved to a KEYs service
@@ -92,4 +106,13 @@ public interface DeviceRegisterService {
      * @return
      */
     NewServiceResponse<Device> switchEnabledDisabled(Tenant tenant, String id);
+
+    /**
+     * Generates a security token for an existing device
+     *
+     * @param tenant
+     * @param id
+     * @return A random password used to create the token
+     */
+    NewServiceResponse<DeviceSecurityCredentials> generateSecurityPassword(Tenant tenant, String id);
 }

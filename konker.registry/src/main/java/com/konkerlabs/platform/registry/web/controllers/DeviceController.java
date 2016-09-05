@@ -2,6 +2,7 @@ package com.konkerlabs.platform.registry.web.controllers;
 
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
@@ -116,6 +117,45 @@ public class DeviceController implements ApplicationContextAware {
                 () -> deviceRegisterService.update(tenant, deviceId, deviceForm.toModel()),
                 deviceForm, locale,
                 redirectAttributes,"put");
+    }
+
+    @RequestMapping(path = "/{deviceId}/password", method = RequestMethod.GET)
+    public ModelAndView password(@PathVariable String deviceId, RedirectAttributes redirectAttributes, Locale locale) {
+        NewServiceResponse<Device> serviceResponse = deviceRegisterService.getByDeviceId(tenant, deviceId);
+
+        if (serviceResponse.isOk()) {
+            Device device = serviceResponse.getResult();
+            return new ModelAndView("devices/password")
+                    .addObject("action", MessageFormat.format("/devices/{0}/password",deviceId))
+                    .addObject("deviceId", device.getDeviceId())
+                    .addObject("apiKey", device.getApiKey());
+        } else {
+            redirectAttributes.addFlashAttribute("message",
+                    applicationContext.getMessage(CommonValidations.RECORD_NULL.getCode(),null,locale));
+            return new ModelAndView("redirect:/devices/");
+        }
+    }
+
+    @RequestMapping(path = "/{deviceId}/password", method = RequestMethod.POST)
+    public ModelAndView generatePassword(@PathVariable String deviceId, RedirectAttributes redirectAttributes, Locale locale) {
+        NewServiceResponse<DeviceRegisterService.DeviceSecurityCredentials> serviceResponse = deviceRegisterService.
+                generateSecurityPassword(tenant,deviceId);
+
+        if (serviceResponse.isOk()) {
+            DeviceRegisterService.DeviceSecurityCredentials credentials = serviceResponse.getResult();
+            return new ModelAndView("devices/password")
+                    .addObject("action", MessageFormat.format("/devices/{0}/password",deviceId))
+                    .addObject("deviceId", credentials.getDeviceId())
+                    .addObject("apiKey", credentials.getApiKey())
+                    .addObject("password", credentials.getPassword());
+        } else {
+            List<String> messages = serviceResponse.getResponseMessages()
+                    .entrySet().stream()
+                    .map(message -> applicationContext.getMessage(message.getKey(), message.getValue(), locale))
+                    .collect(Collectors.toList());
+            redirectAttributes.addFlashAttribute("errors", messages);
+            return new ModelAndView(MessageFormat.format("redirect:/devices/{0}/password", deviceId));
+        }
     }
 
     private ModelAndView doSave(Supplier<NewServiceResponse<Device>> responseSupplier,

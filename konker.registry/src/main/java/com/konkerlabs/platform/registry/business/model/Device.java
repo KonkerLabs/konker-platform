@@ -3,12 +3,14 @@ package com.konkerlabs.platform.registry.business.model;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.utilities.validations.api.Validatable;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.math.BigInteger;
 import java.net.URI;
+import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -22,7 +24,8 @@ public class Device implements DeviceURIDealer, Validatable {
 		ID_NULL_EMPTY("model.device.id.not_null"),
 		ID_GREATER_THAN_EXPECTED("model.device.id.greater_than_expected"),
 		NAME_NULL_EMPTY("model.device.name.not_null"),
-		REGISTRATION_DATE_NULL("model.device.registration_date.not_null");
+		REGISTRATION_DATE_NULL("model.device.registration_date.not_null"),
+		API_KEY_NULL("model.device.api_key.not_null");
 
 		public String getCode() {
 			return code;
@@ -40,6 +43,7 @@ public class Device implements DeviceURIDealer, Validatable {
 	private Tenant tenant;
 	private String deviceId;
     private String apiKey;
+	private String securityHash;
 	private String name;
 	private String description;
 	private Instant registrationDate;
@@ -59,13 +63,16 @@ public class Device implements DeviceURIDealer, Validatable {
 		if (getTenant() == null)
 			validations.put(CommonValidations.TENANT_NULL.getCode(),null);
 		if (getRegistrationDate() == null)
-			validations.put(Validations.REGISTRATION_DATE_NULL.code,null);
+			validations.put(Validations.REGISTRATION_DATE_NULL.getCode(),null);
+		if (getApiKey() == null || getApiKey().isEmpty())
+			validations.put(Validations.API_KEY_NULL.getCode(),null);
 
 		return Optional.of(validations).filter(map -> !map.isEmpty());
 	}
 
 	public void onRegistration() {
 		setRegistrationDate(Instant.now());
+		setApiKey(new BigInteger(60, new Random()).toString(32));
 	}
 
 	public Event getLastEvent() {

@@ -112,6 +112,17 @@ public class DeviceTest {
 	}
 
 	@Test
+	public void shouldReturnAValidationMessageIfApiKeyIsNull() throws Exception {
+		//API Key generation should be performed by onRegistration callback
+
+		String expectedMessage = Device.Validations.API_KEY_NULL.getCode();
+		Optional<Map<String, Object[]>> validations = device.applyValidations();
+
+		assertThat(validations, not(sameInstance(Optional.empty())));
+		assertThat(device.applyValidations().get(), hasEntry(expectedMessage,null));
+	}
+
+	@Test
 	public void shouldReturnAValidationMessageIfRegistrationDateIsMoreThan1MinuteInTheFuture() throws Exception {
 		device.setRegistrationDate(Instant.now().plus(Duration.ofSeconds(61)));
 

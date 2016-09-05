@@ -12,19 +12,20 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
+import com.konkerlabs.platform.security.managers.PasswordManager;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.*;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
+import org.mockito.verification.VerificationMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
@@ -32,6 +33,8 @@ import java.util.*;
 import static com.konkerlabs.platform.registry.test.base.matchers.NewServiceResponseMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -80,20 +83,12 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     public void shouldReturnResponseMessagesIfTenantIsNull() throws Exception {
         NewServiceResponse<Device> serviceResponse = deviceRegisterService.register(null, device);
 
-//        assertThat(serviceResponse,notNullValue());
-//        assertThat(serviceResponse.getStatus(),equalTo(ServiceResponse.Status.ERROR));
-//        assertThat(serviceResponse.getResponseMessages(),hasItem("Tenant cannot be null"));
-
         assertThat(serviceResponse,hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
     }
     @Test
     public void shouldReturnResponseMessagesIfTenantDoesNotExist() throws Exception {
         NewServiceResponse<Device> serviceResponse = deviceRegisterService
                 .register(Tenant.builder().id("unknown_id").build(), device);
-
-//        assertThat(serviceResponse,notNullValue());
-//        assertThat(serviceResponse.getStatus(),equalTo(ServiceResponse.Status.ERROR));
-//        assertThat(serviceResponse.getResponseMessages(),hasItem("Tenant does not exist"));
 
         assertThat(serviceResponse,hasErrorMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()));
     }
@@ -102,10 +97,6 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     public void shouldReturnResponseMessagesIfRecordIsNull() throws Exception {
         NewServiceResponse<Device> serviceResponse = deviceRegisterService.register(currentTenant, null);
 //
-//        assertThat(serviceResponse,notNullValue());
-//        assertThat(serviceResponse.getStatus(),equalTo(ServiceResponse.Status.ERROR));
-//        assertThat(serviceResponse.getResponseMessages(),hasItem("Record cannot be null"));
-
         assertThat(serviceResponse,hasErrorMessage(CommonValidations.RECORD_NULL.getCode()));
     }
 
@@ -118,10 +109,6 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         when(device.applyValidations()).thenReturn(Optional.of(errorMessages));
 
         NewServiceResponse<Device> response = deviceRegisterService.register(currentTenant, device);
-
-//        assertThat(response, notNullValue());
-//        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
-//        assertThat(response.getResponseMessages(), equalTo(errorMessages));
 
         assertThat(response,hasAllErrors(errorMessages));
     }
@@ -136,10 +123,6 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         }};
 
         NewServiceResponse<Device> response = deviceRegisterService.register(currentTenant, device);
-
-//        assertThat(response, notNullValue());
-//        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
-//        assertThat(response.getResponseMessages(), equalTo(errorMessages));
 
         assertThat(response, hasAllErrors(errorMessages));
     }
@@ -160,15 +143,9 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     public void shouldPersistIfDeviceIsValid() throws Exception {
         NewServiceResponse<Device> response = deviceRegisterService.register(currentTenant, rawDevice);
 
-//        assertThat(response, notNullValue());
-//        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
-
         assertThat(response,isResponseOk());
 
         Device saved = deviceRepository.findByTenantIdAndDeviceId(currentTenant.getId(), device.getDeviceId());
-
-//        assertThat(saved, notNullValue());
-//        Assert.assertThat(response.getResult(),equalTo(saved));
 
         assertThat(response.getResult(),equalTo(saved));
     }
@@ -180,10 +157,6 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         device.setTenant(tenant);
 
         NewServiceResponse<Device> response = deviceRegisterService.register(currentTenant, device);
-
-//        assertThat(response, notNullValue());
-//        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
-//        assertThat(response.getResponseMessages(), empty());
 
         assertThat(response, isResponseOk());
     }
@@ -334,6 +307,30 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
+    @UsingDataSet(locations = { "/fixtures/tenants.json", "/fixtures/devices.json" })
+    public void shouldNotSetOrChangeApiKeyWhenUpdating() throws Exception {
+        Device persisted = deviceRepository.findOne(THE_DEVICE_ID);
+
+        persisted.setName(ANOTHER_DEVICE_NAME);
+        persisted.setDescription(ANOTHER_DEVICE_DESCRIPTION);
+        persisted.setRegistrationDate(THE_REGISTRATION_TIME);
+        persisted.setApiKey("changed_api_key");
+        persisted.setActive(false);
+
+        persisted = spy(persisted);
+
+        NewServiceResponse<Device> response = deviceRegisterService.update(currentTenant, THE_DEVICE_ID, persisted);
+
+        InOrder inOrder = Mockito.inOrder(persisted);
+
+        inOrder.verify(persisted, never()).onRegistration();
+        inOrder.verify(persisted, never()).setApiKey(anyString());
+        inOrder.verify(persisted, never()).getApiKey();
+
+        assertThat(response.getResult().getApiKey(),equalTo(THE_DEVICE_API_KEY));
+    }
+
+    @Test
     public void shouldReturnResponseMessageIfDeviceIdIsNullWhenChangingActivation() throws Exception {
         NewServiceResponse<Device> serviceResponse = deviceRegisterService.switchEnabledDisabled(currentTenant, null);
 
@@ -385,4 +382,6 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
                 hasEntry(DeviceRegisterService.Validations.DEVICE_ID_DOES_NOT_EXIST.getCode(),null));
         assertThat(serviceResponse.getResult(),nullValue());
     }
+
+
 }

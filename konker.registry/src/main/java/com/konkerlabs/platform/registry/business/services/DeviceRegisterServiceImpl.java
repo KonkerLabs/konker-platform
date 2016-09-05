@@ -8,6 +8,8 @@ import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.security.exceptions.SecurityException;
+import com.konkerlabs.platform.security.managers.PasswordManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
@@ -47,6 +49,12 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
         device.onRegistration();
 
+        if (Optional.ofNullable(deviceRepository.findByApiKey(device.getApiKey())).isPresent()) {
+            return ServiceResponseBuilder.<Device>error()
+                    .withMessage(CommonValidations.GENERIC_ERROR.getCode(),null)
+                    .build();
+        }
+
         device.setTenant(tenant);
 
         Optional<Map<String, Object[]>> validations = device.applyValidations();
@@ -61,8 +69,6 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .withMessage(Validations.DEVICE_ID_ALREADY_REGISTERED.getCode(),null)
                     .build();
         }
-
-        device.setApiKey(device.getDeviceId());
 
         Device saved = deviceRepository.save(device);
 
@@ -111,6 +117,31 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         return ServiceResponseBuilder.<Device>ok()
                 .withResult(updated)
                 .build();
+    }
+
+    @Override
+    public NewServiceResponse<DeviceSecurityCredentials> generateSecurityPassword(Tenant tenant, String id) {
+        NewServiceResponse<Device> serviceResponse = getByDeviceId(tenant, id);
+
+        if (serviceResponse.isOk()) {
+            try {
+                Device existingDevice = serviceResponse.getResult();
+                PasswordManager passwordManager = new PasswordManager();
+                String randomPassword = passwordManager.generateRandomPassword(12);
+                existingDevice.setSecurityHash(passwordManager.createHash(randomPassword));
+                Device saved = deviceRepository.save(existingDevice);
+                return ServiceResponseBuilder.<DeviceSecurityCredentials>ok()
+                        .withResult(new DeviceSecurityCredentials(saved.getDeviceId(),
+                                saved.getApiKey(),
+                                randomPassword)).build();
+            } catch (SecurityException e) {
+                return ServiceResponseBuilder.<DeviceSecurityCredentials>error()
+                    .withMessage(CommonValidations.GENERIC_ERROR.getCode(),null).build();
+            }
+
+        } else
+            return ServiceResponseBuilder.<DeviceSecurityCredentials>error()
+                    .withMessages(serviceResponse.getResponseMessages()).build();
     }
 
     @Override
@@ -169,14 +200,14 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .withMessage(Validations.DEVICE_ID_NULL.getCode(),null)
                     .build();
 
-        Tenant t = tenantRepository.findByName(tenant.getName());
+        Tenant existingTenant = tenantRepository.findByName(tenant.getName());
 
         if (!Optional.ofNullable(tenant).isPresent())
             return ServiceResponseBuilder.<Device>error()
-                    .withMessage(CommonValidations.TENANT_NULL.getCode(),null)
+                    .withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode(),null)
                     .build();
 
-        Device device = deviceRepository.findByTenantAndId(t.getId(), id);
+        Device device = deviceRepository.findByTenantAndId(existingTenant.getId(), id);
         if (!Optional.ofNullable(device).isPresent()) {
             return ServiceResponseBuilder.<Device>error()
                     .withMessage(Validations.DEVICE_ID_DOES_NOT_EXIST.getCode(),null)

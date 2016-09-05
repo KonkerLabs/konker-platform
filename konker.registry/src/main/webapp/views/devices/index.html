@@ -19,7 +19,7 @@
                 <thead>
                 <tr>
                     <td class="col-md-1" data-th-text="#{devices.index.id}"></td>
-                    <td class="col-md-2" data-th-text="#{devices.index.name}"></td>
+                    <td class="col-md-1" data-th-text="#{devices.index.name}"></td>
                     <td class="col-md-1" data-th-text="#{devices.index.active}"></td>
                     <td class="col-md-1 text-center" data-th-text="#{devices.index.actions}"></td>
                 </tr>
@@ -38,6 +38,9 @@
                            class="btn btn-default"></a>
                         <a data-th-href="@{/devices/{id}/edit(id=${device.id})}"
                            data-th-text="#{nav.edit}"
+                           class="btn btn-default"></a>
+                        <a data-th-href="@{/devices/{id}/password(id=${device.id})}"
+                           data-th-text="#{devices.index.access}"
                            class="btn btn-default"></a>
                         <a data-th-href="@{/devices/{id}/events(id=${device.id})}"
                            data-th-text="#{devices.index.events}"
