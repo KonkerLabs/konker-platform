@@ -8,11 +8,11 @@ function addParameter() {
     row.attr("contenteditable", true);
 
 }
-
-$('.confirm-delete').on('click', function(e) {
-    e.preventDefault();
-    $('#removeItemModal').modal('show');
-});
+//
+//$('.confirm-delete').on('click', function(e) {
+//    e.preventDefault();
+//    $('#removeItemModal').modal('show');
+//});
 
 
 $('#btnYes').click(function() {

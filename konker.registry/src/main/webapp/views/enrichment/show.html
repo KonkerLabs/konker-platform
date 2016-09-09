@@ -57,7 +57,9 @@
                     <tbody>
                     <tr data-th-each="parameter : ${dataEnrichmentExtension.parameters}">
                         <td class="col-sm-1"><label for="parameter" data-th-text="#{enrichment.form.service_params[__${parameter.key}__]}"/></td>
-                        <td class="col-sm-4"><input type="text" data-th-value="${parameter.value}" class="form-control" name="parameter" id="parameter"/></td>
+                        <td class="col-sm-4">
+                            <input data-th-attr="type=__${parameter.key}__ == 'Password'? 'password' : 'text'" data-th-value="${parameter.value}" class="form-control" name="parameter" id="parameter"/>
+                        </td>
                     </tr>
                     </tbody>
                 </table>

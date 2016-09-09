@@ -67,7 +67,7 @@
                        for="lastUpdate"></label>
                 <div class="col-sm-4">
                     <input type="text" id="lastUpdate" class="form-control" name="lastUpdate"
-                        data-th-value="${device.lastEvent != null ? device.lastEvent.timestamp.toString() : 'No updates available'}"/>
+                        data-th-value="${device.lastEvent != null}? ${device.lastEvent.timestamp.toString()} : #{devices.show.updates}"/>
                 </div>
             </div>
             <div class="form-group">

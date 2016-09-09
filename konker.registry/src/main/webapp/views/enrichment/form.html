@@ -14,7 +14,7 @@
 				</button>
 				<li data-th-each="error : ${errors}" data-th-text="${error}"></li>
 			</div>
-			<form data-th-action="@{__${action}__}" action="#"
+			<form data-th-action="@{__${action}__}" action="#" autocomplete="false"
 				data-th-object="${dataEnrichmentExtension}" method="post"
 				class="form-horizontal">
 				<input type="hidden" name="_method" data-th-value="${method}"
@@ -77,7 +77,7 @@
 											data-th-text="#{enrichment.form.service_params[__${pr.key}__]}" />
 									</td>
 									<td class="col-sm-4">
-										<input type="text"
+										<input data-th-attr="type=__${pr.key}__ == 'Password'? 'password' : 'text'"
 										data-th-field="*{parameters[__${pr.key}__]}"
 										class="form-control" id="parameter" />
 									</td>
@@ -96,7 +96,6 @@
 							placeholder="Type the placeholder key for enrichment result..." />
 					</div>
 				</div>
-
 				<div class="form-group">
 					<label class="col-sm-1 control-label" for="active" data-th-text="#{enrichment.form.active}">Active?</label>
 					<div class="col-sm-4">
@@ -106,17 +105,25 @@
 				</div>
 				<button type="submit" class="btn btn-success" data-th-text="#{nav.save}">Save</button>
 				<a data-th-href="@{/enrichment}" class="btn btn-default" data-th-text="#{nav.back}">Back</a> <a
-					class="btn btn-default confirm-delete" data-th-if="*{id} != null" data-th-text="#{nav.remove}">Remove</a>
+					class="btn btn-default" data-th-if="*{id} != null"
+					data-th-text="#{nav.remove}" data-toggle="modal" data-target="#removeItemModal">Remove</a>
 
-				<div id="removeItemModal" class="modal">
-					<div class="modal-content">
-						<span href="#" data-dismiss="modal" aria-hidden="true"
-							class="close">×</span>
-						<h3 data-th-text="#{enrichment.form.remove_confirmation}">Remove</h3>
-						<p data-th-text="#{enrichment.form.remove_confirmation.about_to_remove}">You are about to remove this Enrichment.</p>
-						<p data-th-text="#{enrichment.form.remove_confirmation.proceed}">Do you want to proceed?</p>
-						<a id="btnYes" class="btn btn-default" data-th-text="#{nav.yes}">Yes</a> <a href="#"
-							data-dismiss="modal" aria-hidden="true" class="btn btn-default" data-th-text=#{nav.no}>No</a>
+				<div class="modal" id="removeItemModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+					<div class="modal-dialog" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+								<h3 data-th-text="#{enrichment.form.remove_confirmation}">Remove</h3>
+							</div>
+							<div class="modal-body">
+								<p data-th-text="#{enrichment.form.remove_confirmation.about_to_remove}">You are about to remove this Enrichment.</p>
+								<p data-th-text="#{enrichment.form.remove_confirmation.proceed}">Do you want to proceed?</p>
+							</div>
+							<div class="modal-footer">
+								<button type="button" id="btnYes" class="btn btn-primary" data-th-text="#{nav.yes}">Yes</button>
+								<button type="button" data-dismiss="modal" aria-hidden="true" class="btn btn-default" data-th-text=#{nav.no}>No</button>
+							</div>
+						</div>
 					</div>
 				</div>
 
