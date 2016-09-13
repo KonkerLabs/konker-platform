@@ -13,7 +13,7 @@
             <li data-th-each="error : ${errors}" data-th-text="${error}"></li>
         </div>
         <form data-th-action="@{__${action}__}" action="#" data-th-object="${destination}"
-              method="post" class="form-horizontal">
+              method="post" class="form-horizontal" autocomplete="off">
             <input type="hidden" name="_method" data-th-value="${method}" data-th-if="${method != null}"/>
             <div class="form-group">
                 <label class="col-sm-1 control-label" for="name" data-th-text="#{destinations.rest.form.name}">Name</label>

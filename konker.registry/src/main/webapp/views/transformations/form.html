@@ -13,7 +13,7 @@
             <li data-th-each="error : ${errors}" data-th-text="${error}"></li>
         </div>
         <form data-th-action="@{__${action}__}" action="#" data-th-object="${transformation}"
-              method="post" class="form-horizontal" autocomplete="nope">
+              method="post" class="form-horizontal" autocomplete="off">
             <input type="hidden" name="_method" data-th-value="${method}" data-th-if="${method != null}"/>
             <div class="form-group">
                 <label class="col-sm-1 control-label"
@@ -55,7 +55,7 @@
                             <td data-th-text="#{transformations.form.steps.password}">Password</td>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="table-body">
                         <tr data-th-each="step, stat: *{steps}">
                             <td class="col-sm-6">
                                 <input type="text" data-th-field="*{steps[__${stat.index}__].url}"

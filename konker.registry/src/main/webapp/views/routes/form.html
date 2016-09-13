@@ -13,7 +13,7 @@
             <li data-th-each="error : ${errors}" data-th-text="${error}"></li>
         </div>
         <form data-th-action="@{__${action}__}" action="#" data-th-object="${route}"
-              method="post" class="form-horizontal">
+              method="post" class="form-horizontal" autocomplete="off">
             <input type="hidden" name="_method" data-th-value="${method}" data-th-if="${method != null}"/>
             <div class="form-group">
                 <label class="col-sm-1 control-label"
@@ -139,16 +139,22 @@
                data-th-text="#{nav.remove}"
                data-th-if="*{id} != null"></a>
 
-            <div id="removeItemModal" class="modal">
-                <div class="modal-content">
-                    <span href="#" data-dismiss="modal" aria-hidden="true" class="close">×</span>
-                    <h3 data-th-text="#{nav.remove}">Remove</h3>
-                    <p data-th-text="#{routes.form.modal.remove.firstLine}">You are about to remove this Route.</p>
-                    <p data-th-text="#{routes.form.modal.remove.secondLine}">Do you want to proceed?</p>
-                    <a id="btnYes" class="btn btn-default" data-th-text="#{nav.yes}">Yes</a>
-                    <a href="#" data-dismiss="modal" aria-hidden="true"
-                       data-th-text="#{nav.no}"
-                       class="btn btn-default">No</a>
+            <div class="modal" id="removeItemModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <h3 data-th-text="#{nav.remove}">Remove</h3>
+                        </div>
+                        <div class="modal-body">
+                            <p data-th-text="#{routes.form.modal.remove.firstLine}">You are about to remove this Route.</p>
+                            <p data-th-text="#{routes.form.modal.remove.secondLine}">Do you want to proceed?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" id="btnYes" class="btn btn-primary" data-th-text="#{nav.yes}">Yes</button>
+                            <button type="button" data-dismiss="modal" aria-hidden="true" class="btn btn-default" data-th-text=#{nav.no}>No</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 

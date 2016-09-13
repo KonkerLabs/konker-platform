@@ -20,8 +20,10 @@
             <thead>
             <tr>
                 <td class="col-md-1" data-th-text="#{routes.index.name}"></td>
-                <td class="col-md-1" data-th-text="#{routes.index.incoming}"></td>
-                <td class="col-md-1" data-th-text="#{routes.index.outgoing}"></td>
+                <td class="col-md-1" data-th-text="#{routes.index.incoming.type}"></td>
+                <td class="col-md-1" data-th-text="#{routes.index.incoming.id}"></td>
+                <td class="col-md-1" data-th-text="#{routes.index.outgoing.type}"></td>
+                <td class="col-md-1" data-th-text="#{routes.index.outgoing.id}"></td>
                 <td class="col-md-1" data-th-text="#{routes.index.active}"></td>
                 <td class="col-md-1 text-center" data-th-text="#{routes.index.actions}"></td>
             </tr>
@@ -29,8 +31,10 @@
             <tbody>
             <tr data-th-each="route : ${routes}">
                 <td data-th-text="${route.name}"></td>
-                <td data-th-text="${#strings.toUpperCase(route.incoming.uri.scheme)}"></td>
-                <td data-th-text="${#strings.toUpperCase(route.outgoing.uri.scheme)}"></td>
+                <td data-th-text="#{routes.index.incoming. + __${route.incoming.uri.scheme}__}"></td>
+                <td data-th-text="${#strings.substringAfter(route.incoming.uri.path,'/')}"></td>
+                <td data-th-text="#{routes.index.outgoing. + __${route.outgoing.uri.scheme}__}"></td>
+                <td data-th-text="${#strings.substringAfter(route.outgoing.uri.path,'/')}"></td>
                 <td>
                     <span data-th-if="${route.active}" class="glyphicon glyphicon-thumbs-up" aria-hidden="true"/>
                     <span data-th-if="${not route.active}" class="glyphicon glyphicon-thumbs-down" aria-hidden="true"/>

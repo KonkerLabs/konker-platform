@@ -22,7 +22,6 @@ public interface RESTDestinationURIDealer {
             "REST Destination tenant domain cannot be null or empty"
         ));
 
-
         return URI.create(
                 MessageFormat.format(REST_DESTINATION_URI_TEMPLATE, tenantDomain, guid)
         );

@@ -14,7 +14,7 @@
 				</button>
 				<li data-th-each="error : ${errors}" data-th-text="${error}"></li>
 			</div>
-			<form data-th-action="@{__${action}__}" action="#" autocomplete="false"
+			<form data-th-action="@{__${action}__}" action="#" autocomplete="off"
 				data-th-object="${dataEnrichmentExtension}" method="post"
 				class="form-horizontal">
 				<input type="hidden" name="_method" data-th-value="${method}"
