@@ -23,6 +23,7 @@ import org.thymeleaf.spring4.messageresolver.SpringMessageResolver;
 import org.thymeleaf.spring4.templateresolver.SpringResourceTemplateResolver;
 import org.thymeleaf.spring4.view.ThymeleafViewResolver;
 import org.thymeleaf.templatemode.TemplateMode;
+import org.thymeleaf.templateresolver.ITemplateResolver;
 import org.thymeleaf.templateresolver.ServletContextTemplateResolver;
 
 import java.util.concurrent.TimeUnit;
@@ -47,19 +48,15 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements Application
     }
 
     @Bean
-    public IMessageResolver messageResolver() {
-        IMessageResolver messageResolver = new SpringMessageResolver();
-        return messageResolver;
-    }
-
-    @Bean
-    public SpringResourceTemplateResolver templateResolver() {
+    public ITemplateResolver templateResolver() {
         SpringResourceTemplateResolver  templateResolver = new SpringResourceTemplateResolver();
         templateResolver.setApplicationContext(applicationContext);
-        templateResolver.setPrefix("/views/");
+        templateResolver.setPrefix("views/");
         templateResolver.setSuffix(".html");
         templateResolver.setTemplateMode(TemplateMode.HTML);
         templateResolver.setCharacterEncoding("UTF-8");
+        templateResolver.setOrder(3);
+        templateResolver.setCheckExistence(true);
         templateResolver.setCacheable(webConfig.getBoolean("views.cache"));
         return templateResolver;
     }
@@ -77,6 +74,8 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements Application
     public ViewResolver viewResolver(){
         ThymeleafViewResolver resolver = new ThymeleafViewResolver();
         resolver.setTemplateEngine(templateEngine());
+        resolver.setOrder(1);
+        resolver.setCache(true);
         resolver.setCharacterEncoding("UTF-8");
         return resolver;
     }
