@@ -36,6 +36,7 @@ public class Transformation implements Validatable {
     @DBRef
     private Tenant tenant;
     private String name;
+    private String guid;
     private String description;
     @Singular
     private List<TransformationStep> steps = new LinkedList<>();

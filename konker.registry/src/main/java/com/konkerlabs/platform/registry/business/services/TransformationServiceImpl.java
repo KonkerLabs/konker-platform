@@ -1,8 +1,10 @@
 package com.konkerlabs.platform.registry.business.services;
 
+import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.Transformation;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.repositories.EventRouteRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.TransformationRepository;
 import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
@@ -25,6 +27,8 @@ public class TransformationServiceImpl implements TransformationService {
     private TenantRepository tenantRepository;
     @Autowired
     private TransformationRepository transformationRepository;
+    @Autowired
+    private EventRouteRepository eventRouteRepository;
 
     @Override
     public NewServiceResponse<List<Transformation>> getAll(Tenant tenant) {
@@ -117,4 +121,24 @@ public class TransformationServiceImpl implements TransformationService {
         return ServiceResponseBuilder.<Transformation>ok()
                 .withResult(saved).build();
     }
+
+	@Override
+	public NewServiceResponse<Transformation> remove(Tenant tenant, String id) {
+		List<EventRoute> eventRoutes = eventRouteRepository.findByTenantIdAndTransformationId(tenant.getId(), id);
+		Transformation transformation = transformationRepository.findOne(id);
+		
+		if (!eventRoutes.isEmpty()) {
+			return ServiceResponseBuilder.<Transformation>error()
+					.withMessage(Validations.TRANSFORMATION_HAS_ROUTE.getCode()).build();
+		}
+		
+		if (Optional.ofNullable(transformation).isPresent() && !transformation.getTenant().getId().equals(tenant.getId())) {
+			return ServiceResponseBuilder.<Transformation>error()
+					.withMessage(Validations.TRANSFORMATION_BELONG_ANOTHER_TENANT.getCode()).build();
+		}
+		
+		transformationRepository.delete(transformation);
+		
+		return ServiceResponseBuilder.<Transformation>ok().build();
+	}
 }

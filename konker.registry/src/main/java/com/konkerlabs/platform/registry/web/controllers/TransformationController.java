@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("transformation")
@@ -32,7 +33,8 @@ import java.util.Map;
 public class TransformationController implements ApplicationContextAware {
 
     public enum Messages {
-        TRANSFORMATION_REGISTERED_SUCCESSFULLY("controller.transformation.registered.success");
+        TRANSFORMATION_REGISTERED_SUCCESSFULLY("controller.transformation.registered.success"),
+        TRANSFORMATION_REMOVED_SUCCESSFULLY("controller.transformation.removed.success");
 
         public String getCode() {
             return code;
@@ -131,6 +133,31 @@ public class TransformationController implements ApplicationContextAware {
                         response.getResult().getId()));
             }
         }
+    }
+    
+    @RequestMapping(path = "/{transformationId}", method = RequestMethod.DELETE)
+    public ModelAndView remove(@PathVariable("transformationId")String transformationId, @ModelAttribute("transformation") TransformationForm transformationForm, 
+    		RedirectAttributes redirectAttributes, Locale locale) {
+    	ModelAndView modelAndView;
+    	NewServiceResponse<Transformation> serviceResponse = transformationService.remove(tenant, transformationId);
+    	
+    	switch (serviceResponse.getStatus()) {
+			case ERROR:
+				transformationForm.setId(transformationId);
+				modelAndView = new ModelAndView("transformations/form")
+					.addObject("errors", serviceResponse.getResponseMessages().entrySet().stream().map(message -> applicationContext.getMessage(message.getKey(), message.getValue(), locale)).collect(Collectors.toList()))
+					.addObject("method", "put")
+					.addObject("transformation", transformationForm);
+				break;
+	
+			default:
+				modelAndView = new ModelAndView("redirect:/transformation");
+				redirectAttributes.addFlashAttribute("message", 
+						applicationContext.getMessage(Messages.TRANSFORMATION_REMOVED_SUCCESSFULLY.getCode(), null, locale));
+				break;
+		}
+    	
+    	return modelAndView;
     }
 
     @Override

@@ -86,6 +86,27 @@
             <a data-th-href="@{/transformation}"
                data-th-text="#{nav.back}"
                class="btn btn-default">Back</a>
+            <a class="btn btn-default" data-th-if="*{id} != null"
+					data-th-text="#{nav.remove}" data-toggle="modal" data-target="#removeItemModal">Remove</a>
+					
+			<div class="modal" id="removeItemModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+				<div class="modal-dialog" role="document">
+					<div class="modal-content">
+						<div class="modal-header">
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+							<h3 data-th-text="#{transformation.form.remove_confirmation}">Remove</h3>
+						</div>
+						<div class="modal-body">
+							<p data-th-text="#{transformation.form.remove_confirmation.about_to_remove}">You are about to remove this Transformation.</p>
+							<p data-th-text="#{transformation.form.remove_confirmation.proceed}">Do you want to proceed?</p>
+						</div>
+						<div class="modal-footer">
+							<button type="button" id="btnYes" class="btn btn-primary" data-th-text="#{nav.yes}">Yes</button>
+							<button type="button" data-dismiss="modal" aria-hidden="true" class="btn btn-default" data-th-text=#{nav.no}>No</button>
+						</div>
+					</div>
+				</div>
+			</div>
         </form>
     </fieldset>
 </div>
