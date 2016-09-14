@@ -55,15 +55,6 @@ public class EventRouteServiceImpl implements EventRouteService {
                 .withMessages(validations.get()).build();
         }
 
-        String incomingChannel = route.getIncoming().getData().get("channel");
-        String outgoingChannel = route.getOutgoing().getData().get("channel");
-
-        if (incomingChannel != null && outgoingChannel != null && incomingChannel.equals(outgoingChannel)) {
-            return ServiceResponseBuilder.<EventRoute>error()
-                    .withMessage(Validations.INCOMING_OUTGOING_CHANNELS_SAME.getCode(),null)
-                    .build();
-        }
-
         if (Optional.ofNullable(eventRouteRepository.findByTenantIdAndRouteName(tenant.getId(),route.getName())).isPresent())
             return ServiceResponseBuilder.<EventRoute>error()
                     .withMessage(Validations.NAME_IN_USE.getCode(),null).build();

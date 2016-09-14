@@ -34,7 +34,8 @@ public class EventRoute implements Validatable {
         OUTGOING_ACTOR_CHANNEL_NULL("model.event_route.outgoing_actor.channel.not_null"),
         OUTGOING_SMS_CUSTOM_TEXT_MANDATORY("model.event_route.outgoing_sms.custom_text.mandatory"),
         OUTGOING_SMS_INVALID_STRATEGY("model.event_route.outgoing_sms.invalid_strategy"),
-        GUID_NULL("model.event_route.guid.not_null");
+        GUID_NULL("model.event_route.guid.not_null"),
+        INCOMING_OUTGOING_DEVICE_CHANNELS_SAME("service.event_route.incoming_outgoing_devices_channels.same");
 
         private String code;
 
@@ -93,9 +94,36 @@ public class EventRoute implements Validatable {
             applySMSOutgoingValidations(validations);
         }
 
-        return Optional.of(validations).filter(stringMap -> !stringMap.isEmpty());
-    }
+        
+        
+		// specific validation: incoming and outgoing are devices
+		boolean elegibleToValidateDeviceChannel = getIncoming() != null && getIncoming().getUri() != null
+				&& !getIncoming().getUri().toString().isEmpty() && getIncoming().getData().get("channel") != null
+				&& !getIncoming().getData().get("channel").isEmpty();
+		elegibleToValidateDeviceChannel = elegibleToValidateDeviceChannel && getOutgoing() != null
+				&& getOutgoing().getUri() != null && !getOutgoing().getUri().toString().isEmpty()
+				&& getOutgoing().getData().get("channel") != null && !getOutgoing().getData().get("channel").isEmpty();
+		elegibleToValidateDeviceChannel = elegibleToValidateDeviceChannel
+				&& "device".equals(
+						Optional.ofNullable(getIncoming()).map(RouteActor::getUri).map(URI::getScheme).orElse(""))
+				&& "device".equals(
+						Optional.ofNullable(getOutgoing()).map(RouteActor::getUri).map(URI::getScheme).orElse(""));
+		if (elegibleToValidateDeviceChannel) {
+			// incoming can't have the same pair (device - channel) of the
+			// outgoing
+			applyDeviceIncomingOutgoingSameDeviceAndChannelValidation(validations);
+		}
 
+ 		return Optional.of(validations).filter(stringMap -> !stringMap.isEmpty());
+ 	}
+
+ 	private void applyDeviceIncomingOutgoingSameDeviceAndChannelValidation(Map<String, Object[]> validations) {
+ 		if (getIncoming().getUri().equals(getOutgoing().getUri())
+ 				&& getIncoming().getData().get("channel").equals(getOutgoing().getData().get("channel"))) {
+ 			validations.put(Validations.INCOMING_OUTGOING_DEVICE_CHANNELS_SAME.getCode(), null);
+ 		}
+ 	}
+     	
     private void applyDeviceIncomingValidations(Map<String,Object[]> validations) {
         Map<String, String> data = getIncoming().getData();
         if (!"device".equals(getIncoming().getUri().getScheme())) {
