@@ -95,34 +95,13 @@ public class EventRoute implements Validatable {
         }
 
         
-        
-		// specific validation: incoming and outgoing are devices
-		boolean elegibleToValidateDeviceChannel = getIncoming() != null && getIncoming().getUri() != null
-				&& !getIncoming().getUri().toString().isEmpty() && getIncoming().getData().get("channel") != null
-				&& !getIncoming().getData().get("channel").isEmpty();
-		elegibleToValidateDeviceChannel = elegibleToValidateDeviceChannel && getOutgoing() != null
-				&& getOutgoing().getUri() != null && !getOutgoing().getUri().toString().isEmpty()
-				&& getOutgoing().getData().get("channel") != null && !getOutgoing().getData().get("channel").isEmpty();
-		elegibleToValidateDeviceChannel = elegibleToValidateDeviceChannel
-				&& "device".equals(
-						Optional.ofNullable(getIncoming()).map(RouteActor::getUri).map(URI::getScheme).orElse(""))
-				&& "device".equals(
-						Optional.ofNullable(getOutgoing()).map(RouteActor::getUri).map(URI::getScheme).orElse(""));
-		if (elegibleToValidateDeviceChannel) {
-			// incoming can't have the same pair (device - channel) of the
-			// outgoing
-			applyDeviceIncomingOutgoingSameDeviceAndChannelValidation(validations);
-		}
+		if (getIncoming() != null && getIncoming().verifyIfDevicesAndChannelsAreEqual(getOutgoing()))
+			validations.put(Validations.INCOMING_OUTGOING_DEVICE_CHANNELS_SAME.getCode(), null);
 
  		return Optional.of(validations).filter(stringMap -> !stringMap.isEmpty());
  	}
 
- 	private void applyDeviceIncomingOutgoingSameDeviceAndChannelValidation(Map<String, Object[]> validations) {
- 		if (getIncoming().getUri().equals(getOutgoing().getUri())
- 				&& getIncoming().getData().get("channel").equals(getOutgoing().getData().get("channel"))) {
- 			validations.put(Validations.INCOMING_OUTGOING_DEVICE_CHANNELS_SAME.getCode(), null);
- 		}
- 	}
+ 	
      	
     private void applyDeviceIncomingValidations(Map<String,Object[]> validations) {
         Map<String, String> data = getIncoming().getData();
@@ -162,10 +141,40 @@ public class EventRoute implements Validatable {
         }
     }
 
-    @Data
-    @Builder
-    public static class RouteActor {
-        private URI uri;
-        private Map<String, String> data = new HashMap<>();
-    }
+	@Data
+	@Builder
+	public static class RouteActor {
+		private URI uri;
+		private Map<String, String> data = new HashMap<>();
+		
+
+		public  boolean isDevice() {
+			return "device".equals(Optional.ofNullable(getUri()).map(URI::getScheme).orElse(""));
+		}
+		
+		public boolean verifyIfDevicesAndChannelsAreEqual(RouteActor route) {
+			boolean areEqual = false;
+
+			// check incoming for runtime errors
+			boolean elegibleToValidateDeviceChannel = this.getUri() != null && !this.getUri().toString().isEmpty()
+					&& this.getData().get("channel") != null && !this.getData().get("channel").isEmpty();
+
+			// check outgoing for runtime errors
+			elegibleToValidateDeviceChannel = elegibleToValidateDeviceChannel && route != null && route.getUri() != null
+					&& !route.getUri().toString().isEmpty() && route.getData().get("channel") != null
+					&& !route.getData().get("channel").isEmpty();
+
+			// check if both (incoming and outgoing) are devices
+			elegibleToValidateDeviceChannel = elegibleToValidateDeviceChannel && this.isDevice() && route.isDevice();
+
+			if (elegibleToValidateDeviceChannel) {
+				// incoming and outgoing can't have the same pair (device -
+				// channel)
+				areEqual = this.getUri().equals(route.getUri())
+						&& this.getData().get("channel").equals(route.getData().get("channel"));
+			}
+
+			return areEqual;
+		}
+	}
 }
