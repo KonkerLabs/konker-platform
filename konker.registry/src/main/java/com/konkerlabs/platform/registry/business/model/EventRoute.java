@@ -154,21 +154,20 @@ public class EventRoute implements Validatable {
 		public boolean compareAndCheckIfDevicesChannelsAreEqual(RouteActor route) {
 			boolean areEqual = false;
 
-			// check incoming for runtime errors
+			// check this instance for runtime errors
 			boolean elegibleToValidateDeviceChannel = this.getUri() != null && !this.getUri().toString().isEmpty()
 					&& this.getData().get("channel") != null && !this.getData().get("channel").isEmpty();
 
-			// check outgoing for runtime errors
+			// check parameter for runtime errors
 			elegibleToValidateDeviceChannel = elegibleToValidateDeviceChannel && route != null && route.getUri() != null
 					&& !route.getUri().toString().isEmpty() && route.getData().get("channel") != null
 					&& !route.getData().get("channel").isEmpty();
 
-			// check if both (incoming and outgoing) are devices
+			// check if both (this instance and incoming parameter) are devices
 			elegibleToValidateDeviceChannel = elegibleToValidateDeviceChannel && this.isDevice() && route.isDevice();
 
 			if (elegibleToValidateDeviceChannel) {
-				// incoming and outgoing can't have the same pair (device -
-				// channel)
+				// both can't have the same pair (device - channel)
 				areEqual = this.getUri().equals(route.getUri())
 						&& this.getData().get("channel").equals(route.getData().get("channel"));
 			}
