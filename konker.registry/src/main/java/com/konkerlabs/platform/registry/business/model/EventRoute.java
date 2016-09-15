@@ -95,7 +95,7 @@ public class EventRoute implements Validatable {
         }
 
         
-		if (getIncoming() != null && getIncoming().verifyIfDevicesAndChannelsAreEqual(getOutgoing()))
+		if (getIncoming() != null && getIncoming().compareAndCheckIfDevicesChannelsAreEqual(getOutgoing()))
 			validations.put(Validations.INCOMING_OUTGOING_DEVICE_CHANNELS_SAME.getCode(), null);
 
  		return Optional.of(validations).filter(stringMap -> !stringMap.isEmpty());
@@ -146,13 +146,12 @@ public class EventRoute implements Validatable {
 	public static class RouteActor {
 		private URI uri;
 		private Map<String, String> data = new HashMap<>();
-		
 
-		public  boolean isDevice() {
+		public boolean isDevice() {
 			return "device".equals(Optional.ofNullable(getUri()).map(URI::getScheme).orElse(""));
 		}
-		
-		public boolean verifyIfDevicesAndChannelsAreEqual(RouteActor route) {
+
+		public boolean compareAndCheckIfDevicesChannelsAreEqual(RouteActor route) {
 			boolean areEqual = false;
 
 			// check incoming for runtime errors
