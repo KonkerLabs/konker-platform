@@ -1,6 +1,6 @@
 package com.konkerlabs.platform.registry.test.integration.endpoints;
 
-import com.konkerlabs.platform.registry.integration.endpoints.DeviceEventEndpoint;
+import com.konkerlabs.platform.registry.integration.endpoints.DeviceEventMqttEndpoint;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
 import org.junit.Before;
 import org.junit.Rule;
@@ -16,23 +16,24 @@ import java.text.MessageFormat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-public class DeviceEventEndpointTest {
+public class DeviceEventMqttEndpointTest {
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
-    public DeviceEventEndpoint subject;
+    public DeviceEventMqttEndpoint subject;
     private Message<String> message;
     private DeviceEventProcessor processor;
 
     private String deviceId = "95c14b36ba2b43f1";
+    private String channel = "data";
     private String payload = "message";
-    private String topic = MessageFormat.format("konker/device/{0}/data",deviceId);
+    private String topic = MessageFormat.format("iot/{0}/{1}",deviceId,channel);
 
     @Before
     public void setUp() throws Exception {
         processor = mock(DeviceEventProcessor.class);
-        subject = new DeviceEventEndpoint(processor);
+        subject = new DeviceEventMqttEndpoint(processor);
 
         message = MessageBuilder.withPayload(payload).setHeader(MqttHeaders.TOPIC,topic).build();
     }
@@ -58,6 +59,6 @@ public class DeviceEventEndpointTest {
     public void shouldDelegateEventToItsProcessor() throws Exception {
         subject.onEvent(message);
 
-        verify(processor).process(topic,payload);
+        verify(processor).process(deviceId,channel,payload);
     }
 }

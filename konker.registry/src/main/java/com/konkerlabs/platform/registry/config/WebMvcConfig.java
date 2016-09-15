@@ -30,7 +30,10 @@ import java.util.concurrent.TimeUnit;
 
 @Configuration
 @EnableWebMvc
-@ComponentScan(lazyInit = true, basePackages = {"com.konkerlabs.platform.registry.web"})
+@ComponentScan(lazyInit = true, basePackages = {
+    "com.konkerlabs.platform.registry.web",
+    "com.konkerlabs.platform.registry.integration.endpoints"
+})
 public class WebMvcConfig extends WebMvcConfigurerAdapter implements ApplicationContextAware {
 
     private static final Config webConfig = ConfigFactory.load().getConfig("web");
@@ -90,7 +93,8 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements Application
             "/WEB-INF/i18n/enrichment",
             "/WEB-INF/i18n/routes",
             "/WEB-INF/i18n/destinations",
-            "/WEB-INF/i18n/transformations"
+            "/WEB-INF/i18n/transformations",
+            "/WEB-INF/i18n/integration"
         );
         messageSource.setDefaultEncoding("UTF-8");
         return messageSource;
