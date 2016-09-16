@@ -54,8 +54,9 @@
         <div class="clearfix grpelem" id="u452-4"><!-- content -->
             <p>The server encountered an error.</p>
         </div>
-        <div class="clearfix grpelem" id="u463-4"><!-- content -->
-            <p>Form received.</p>
+        <div class="clearfix grpelem" id="u463-4" th:if="${param.error}" 
+        		th:with="errorMsg=${session['SPRING_SECURITY_LAST_EXCEPTION'].message}"><!-- content -->
+			<span th:text="${errorMsg}">Bad credentials</span> 
         </div>
         <div class="fld-grp clearfix grpelem" id="widgetu465" data-required="false" data-type="radiogroup"><!-- none box -->
             <!--<div class="fld-grp clearfix grpelem" id="widgetu469" data-required="false" data-type="radio">&lt;!&ndash; none box &ndash;&gt;-->
