@@ -256,7 +256,7 @@
 	width: 340px;
 	min-height: 14px;
 	background-color: transparent;
-	opacity: 0;
+	opacity: 1;
 	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
 	filter: alpha(opacity = 0);
 	padding-top: 4px;
@@ -268,7 +268,7 @@
 	position: relative;
 	margin-right: -10000px;
 	margin-top: 90px;
-	left: 645px;
+	left: 625px;
 }
 
 #widgetu447.frm-sub-st #u462-4,#widgetu447.frm-subm-err-st #u452-4,#widgetu447.frm-subm-ok-st #u463-4
