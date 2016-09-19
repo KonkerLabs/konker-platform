@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 @Data
 public class TransformationForm implements ModelBuilder<Transformation,TransformationForm,Void> {
 
+	private String id;
     private String name;
     private String description;
     private List<TransformationStepForm> steps = new LinkedList(){
@@ -38,6 +39,7 @@ public class TransformationForm implements ModelBuilder<Transformation,Transform
     @Override
     public Transformation toModel() {
         return Transformation.builder()
+        	.id(getId())
             .name(getName())
             .description(getDescription())
             .steps(
@@ -55,7 +57,8 @@ public class TransformationForm implements ModelBuilder<Transformation,Transform
 
     @Override
     public TransformationForm fillFrom(Transformation model) {
-        setName(model.getName());
+        setId(model.getId());
+    	setName(model.getName());
         setDescription(model.getDescription());
         getSteps().clear();
         model.getSteps().stream().forEachOrdered(transformationStep ->

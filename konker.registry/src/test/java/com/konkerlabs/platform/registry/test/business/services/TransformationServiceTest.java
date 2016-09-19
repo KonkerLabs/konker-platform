@@ -1,5 +1,28 @@
 package com.konkerlabs.platform.registry.test.business.services;
 
+import static com.konkerlabs.platform.registry.test.base.matchers.NewServiceResponseMatchers.hasAllErrors;
+import static com.konkerlabs.platform.registry.test.base.matchers.NewServiceResponseMatchers.hasErrorMessage;
+import static com.konkerlabs.platform.registry.test.base.matchers.NewServiceResponseMatchers.isResponseOk;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
 import com.konkerlabs.platform.registry.business.model.RestTransformationStep;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.Transformation;
@@ -8,26 +31,11 @@ import com.konkerlabs.platform.registry.business.model.validation.CommonValidati
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.TransformationRepository;
 import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.TransformationService;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import java.util.*;
-
-import static com.konkerlabs.platform.registry.test.base.matchers.NewServiceResponseMatchers.*;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
@@ -38,6 +46,7 @@ public class TransformationServiceTest extends BusinessLayerTestSupport {
 
     private static final String TRANSFORMATION_ID_IN_USE = "2747ec73-6910-43a1-8ddc-5a4a134ebab3";
     private static final String ANOTHER_TENANTS_TRANSFORMATION_ID = "6eed0ed6-8542-40ff-b984-63c914827d24";
+    private static final String TRANSFORMATION_ID_NO_ROUTES = "00d86f6a-648e-43f5-bb12-066d48a667c1";
     private static final String TRANFORMATION_NAME_IN_USE = "Transformation name 01";
     private static final String ANOTHER_TRANSFORMATION_NAME_IN_USE = "Another Transformation name 01";
 
@@ -226,5 +235,32 @@ public class TransformationServiceTest extends BusinessLayerTestSupport {
         assertThat(serviceResponse,isResponseOk());
         assertThat(serviceResponse.getResult().getName(),equalTo(transformation.getName()));
         assertThat(serviceResponse.getResult().getSteps(),equalTo(transformation.getSteps()));
+    }
+    
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/transformations.json", "/fixtures/event-routes.json"})
+    public void shouldReturnAValidationMessageIfTransformationBelongAnotherTenantWhenRemoving() throws Exception {
+    	NewServiceResponse<Transformation> serviceResponse = subject.remove(tenant, ANOTHER_TENANTS_TRANSFORMATION_ID);
+    	
+    	assertThat(serviceResponse, hasErrorMessage(TransformationService.Validations.TRANSFORMATION_BELONG_ANOTHER_TENANT.getCode()));
+    }
+    
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/transformations.json", "/fixtures/event-routes.json"})
+    public void shouldReturnAValidationMessageIfTransformationHasRoutesWhenRemoving() throws Exception {
+    	NewServiceResponse<Transformation> serviceResponse = subject.remove(tenant, TRANSFORMATION_ID_IN_USE);
+    	
+    	assertThat(serviceResponse, hasErrorMessage(TransformationService.Validations.TRANSFORMATION_HAS_ROUTE.getCode()));
+    }
+    
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/transformations.json", "/fixtures/event-routes.json"})
+    public void shouldRemoveSuccessfully() throws Exception {
+    	NewServiceResponse<Transformation> serviceResponse = subject.remove(tenant, TRANSFORMATION_ID_NO_ROUTES);
+    	
+    	Transformation removedTransformation = subject.get(tenant, TRANSFORMATION_ID_NO_ROUTES).getResult();
+    	
+    	assertThat(serviceResponse, isResponseOk());
+    	assertThat(removedTransformation, nullValue());
     }
 }

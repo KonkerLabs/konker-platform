@@ -34,15 +34,12 @@ import static org.mockito.Mockito.*;
 })
 public class DeviceEventProcessorTest {
 
-    private static final String DEVICE_TOPIC_TEMPLATE = "iot/{0}/{1}";
-
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
     private String sourceApiKey = "84399b2e-d99e-11e5-86bc-34238775bac9";
     private String originalPayload = "LEDSwitch";
     private String incomingChannel = "command";
-    private String topic = MessageFormat.format(DEVICE_TOPIC_TEMPLATE, sourceApiKey, incomingChannel);
 
     private Event event;
     private Device device;
@@ -91,31 +88,25 @@ public class DeviceEventProcessorTest {
 
     @Test
     public void shouldRaiseAnExceptionIfDeviceApiKeyIsUnknown() throws Exception {
-        //Device API Key is expected to be found on second level
-        topic = "konker";
-
         thrown.expect(BusinessException.class);
-        thrown.expectMessage("Device API Key cannot be retrieved");
+        thrown.expectMessage(DeviceEventProcessor.Messages.APIKEY_MISSING.getCode());
 
-        subject.process(topic, originalPayload);
+        subject.process(null, incomingChannel,originalPayload);
     }
     @Test
     public void shouldRaiseAnExceptionIfDeviceDoesNotExist() throws Exception {
         thrown.expect(BusinessException.class);
-        thrown.expectMessage("Incoming device does not exist");
+        thrown.expectMessage(DeviceEventProcessor.Messages.DEVICE_NOT_FOUND.getCode());
 
-        subject.process(topic, originalPayload);
+        subject.process(sourceApiKey, incomingChannel, originalPayload);
     }
 
     @Test
     public void shouldRaiseAnExceptionIfEventChannelIsUnknown() throws Exception {
-        //Event incoming channel is expected to be found on third level
-        topic = "konker/device/";
-
         thrown.expect(BusinessException.class);
-        thrown.expectMessage("Event incoming channel cannot be retrieved");
+        thrown.expectMessage(DeviceEventProcessor.Messages.CHANNEL_MISSING.getCode());
 
-        subject.process(topic, originalPayload);
+        subject.process(sourceApiKey, null, originalPayload);
     }
 
     @Test
@@ -123,7 +114,7 @@ public class DeviceEventProcessorTest {
         when(deviceRegisterService.findByApiKey(sourceApiKey)).thenReturn(device);
         when(enrichmentExecutor.enrich(event, device)).thenReturn(enrichmentResponse);
 
-        subject.process(topic, originalPayload);
+        subject.process(sourceApiKey, incomingChannel, originalPayload);
 
         verify(deviceEventService).logEvent(device, incomingChannel, event);
     }
@@ -136,7 +127,7 @@ public class DeviceEventProcessorTest {
         ResultCaptor<URI> returnCaptor = new ResultCaptor<URI>();
 
         doAnswer(returnCaptor).when(device).toURI();
-        subject.process(topic, originalPayload);
+        subject.process(sourceApiKey, incomingChannel, originalPayload);
 
         verify(eventRouteExecutor).execute(eq(event),same(returnCaptor.getResult()));
     }
@@ -146,7 +137,7 @@ public class DeviceEventProcessorTest {
         device.setActive(false);
         when(deviceRegisterService.findByApiKey(sourceApiKey)).thenReturn(device);
 
-        subject.process(topic, originalPayload);
+        subject.process(sourceApiKey, incomingChannel, originalPayload);
 
         verify(deviceEventService,never()).logEvent(any(), any(), any());
     }
@@ -156,7 +147,7 @@ public class DeviceEventProcessorTest {
         device.setActive(false);
         when(deviceRegisterService.findByApiKey(sourceApiKey)).thenReturn(device);
 
-        subject.process(topic, originalPayload);
+        subject.process(sourceApiKey, incomingChannel, originalPayload);
 
         verify(eventRouteExecutor,never()).execute(any(Event.class),any(URI.class));
     }

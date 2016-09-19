@@ -37,6 +37,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -218,5 +219,22 @@ public class TransformationControllerTest extends WebLayerTestContext {
         public TransformationService transformationService() {
             return Mockito.mock(TransformationService.class);
         }
+    }
+    
+    @Test
+    public void shouldRedirectToTransformationIndexAfterRemoval() throws Exception {
+    	transformation.setId("123");
+    	spy(serviceResponse);
+    	spy(listServiceResponse);
+    	
+    	when(transformationService.remove(tenant, transformation.getId())).thenReturn(serviceResponse);
+    	when(transformationService.getAll(tenant)).thenReturn(listServiceResponse);
+    	
+    	getMockMvc().perform(delete("/transformation/{0}", transformation.getId()))
+    		.andExpect(flash().attribute("message", 
+    				applicationContext.getMessage(TransformationController.Messages.TRANSFORMATION_REMOVED_SUCCESSFULLY.getCode(), null, Locale.ENGLISH)))
+    		.andExpect(redirectedUrl("/transformation"));
+    	
+    	verify(transformationService).remove(tenant, transformation.getId());
     }
 }

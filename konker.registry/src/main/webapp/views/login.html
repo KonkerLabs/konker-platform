@@ -26,7 +26,7 @@
         <div class="museBGSize" id="u281"><!-- group -->
             <div class="clearfix" id="u281_align_to_page">
                 <div class="clip_frame grpelem" id="u288"><!-- image -->
-                    <img class="block" id="u288_img" data-th-attr="src=@{/resources/konker/images/login_home.png}" alt="" width="297" height="116"/>
+                    <img class="block" id="u288_img" data-th-attr="src=@{/resources/konker/images/login_home.png}" alt="" width="229" height="83"/>
                 </div>
             </div>
         </div>
@@ -54,10 +54,10 @@
         <div class="clearfix grpelem" id="u452-4"><!-- content -->
             <p>The server encountered an error.</p>
         </div>
-        <div class="clearfix grpelem" id="u463-4"><!-- content -->
-            <p>Form received.</p>
+        <div class="clearfix grpelem" id="u463-4" th:if="${param.error}" 
+        		th:with="errorMsg=${session['SPRING_SECURITY_LAST_EXCEPTION'].message}"><!-- content -->
+			<span th:text="${errorMsg}">Bad credentials</span> 
         </div>
-        <input class="submit-btn NoWrap grpelem" id="u453-17" type="submit" value="#{nav.login}" tabindex="4"/><!-- state-based BG images -->
         <div class="fld-grp clearfix grpelem" id="widgetu465" data-required="false" data-type="radiogroup"><!-- none box -->
             <!--<div class="fld-grp clearfix grpelem" id="widgetu469" data-required="false" data-type="radio">&lt;!&ndash; none box &ndash;&gt;-->
                 <!--<label class="fld-label actAsDiv clearfix grpelem" id="u471-4" for="widgetu469_input">&lt;!&ndash; content &ndash;&gt;<span class="actAsPara">remember userEmail and password</span></label>-->

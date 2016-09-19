@@ -19,6 +19,22 @@ import java.util.Optional;
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
 public class DeviceEventProcessor {
 
+    public enum Messages {
+        APIKEY_MISSING("integration.event_processor.api_key.missing"),
+        CHANNEL_MISSING("integration.event_processor.channel.missing"),
+        DEVICE_NOT_FOUND("integration.event_processor.channel.not_found");
+
+        private String code;
+
+        public String getCode() {
+            return code;
+        }
+
+        Messages(String code) {
+            this.code = code;
+        }
+    }
+
     private static final String EVENT_DROPPED = "Incoming event has been dropped: [Device: {0}] - [Payload: {1}]";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DeviceEventProcessor.class);
@@ -39,24 +55,20 @@ public class DeviceEventProcessor {
         this.enrichmentExecutor = enrichmentExecutor;
     }
 
-    public void process(String topic, String payload) throws BusinessException {
+    public void process(String apiKey, String channel, String payload) throws BusinessException {
 
-        String apiKey = extractFromTopicLevel(topic, 1);
-        if (apiKey == null) {
-            throw new BusinessException("Device API Key cannot be retrieved");
-        }
+        Optional.ofNullable(apiKey).filter(s -> !s.isEmpty())
+                .orElseThrow(() -> new BusinessException(Messages.APIKEY_MISSING.getCode()));
 
-        String incomingChannel = extractFromTopicLevel(topic, 2);
-        if (incomingChannel == null) {
-            throw new BusinessException("Event incoming channel cannot be retrieved");
-        }
+        Optional.ofNullable(channel).filter(s -> !s.isEmpty())
+                .orElseThrow(() -> new BusinessException(Messages.CHANNEL_MISSING.getCode()));
 
         Device device = Optional.ofNullable(deviceRegisterService.findByApiKey(apiKey))
-            .orElseThrow(() -> new BusinessException("Incoming device does not exist"));
+                .orElseThrow(() -> new BusinessException(Messages.DEVICE_NOT_FOUND.getCode()));
 
         if (device.isActive()) {
             Event event = Event.builder()
-                    .channel(incomingChannel)
+                    .channel(channel)
                     .payload(payload)
                     .build();
 
@@ -64,28 +76,22 @@ public class DeviceEventProcessor {
             switch (serviceResponse.getStatus()) {
                 case ERROR: {
                     LOGGER.error(MessageFormat.format("Enrichment failed: [Device: {0}] - [Payload: {1}]", device.toURI(), payload));
+                    break;
                 }
-                default: {
+                case OK: {
                     event.setPayload(serviceResponse.getResult().getPayload());
+                    break;
                 }
-
+                default: break;
             }
 
-            deviceEventService.logEvent(device, incomingChannel, event);
+            deviceEventService.logEvent(device, channel, event);
 
             eventRouteExecutor.execute(event,device.toURI());
         } else {
             LOGGER.debug(MessageFormat.format(EVENT_DROPPED,
                 device.toURI(),
                 payload));
-        }
-    }
-
-    private String extractFromTopicLevel(String channel, int index) {
-        try {
-            return channel.split("/")[index];
-        } catch (ArrayIndexOutOfBoundsException e) {
-            return null;
         }
     }
 }

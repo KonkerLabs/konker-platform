@@ -9,8 +9,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-@Service
-public class MongoUserDetailsService implements UserDetailsService {
+@Service("tenantUserDetails")
+public class TenantUserDetailsService implements UserDetailsService {
 
     @Autowired
     private UserRepository userRepository;

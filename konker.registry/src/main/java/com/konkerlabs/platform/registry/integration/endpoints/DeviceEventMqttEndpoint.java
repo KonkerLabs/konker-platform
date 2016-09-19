@@ -12,14 +12,14 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.MessagingException;
 
 @MessageEndpoint
-public class DeviceEventEndpoint {
+public class DeviceEventMqttEndpoint {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DeviceEventEndpoint.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DeviceEventMqttEndpoint.class);
 
     private DeviceEventProcessor deviceEventProcessor;
 
     @Autowired
-    public DeviceEventEndpoint(DeviceEventProcessor deviceEventProcessor) {
+    public DeviceEventMqttEndpoint(DeviceEventProcessor deviceEventProcessor) {
         this.deviceEventProcessor = deviceEventProcessor;
     }
 
@@ -35,9 +35,19 @@ public class DeviceEventEndpoint {
         }
 
         try {
-            deviceEventProcessor.process(topic.toString(),message.getPayload());
+            deviceEventProcessor.process(extractFromResource(topic.toString(),1),
+                    extractFromResource(topic.toString(),2),
+                    message.getPayload());
         } catch (BusinessException be) {
             LOGGER.error(message.getPayload(),be);
+        }
+    }
+
+    private String extractFromResource(String channel, int index) {
+        try {
+            return channel.split("/")[index];
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return null;
         }
     }
 }

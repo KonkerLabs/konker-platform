@@ -48,7 +48,6 @@ public class EventRouteExecutorImpl implements EventRouteExecutor {
     @Autowired
     private EventTransformationService eventTransformationService;
 
-    @Async
     @Override
     public Future<List<Event>> execute(Event event, URI uri) {
 

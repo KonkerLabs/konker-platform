@@ -1,6 +1,6 @@
 package com.konkerlabs.platform.registry.test.security;
 
-import com.konkerlabs.platform.registry.security.MongoUserDetailsService;
+import com.konkerlabs.platform.registry.security.TenantUserDetailsService;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
@@ -23,9 +23,9 @@ import static org.hamcrest.Matchers.notNullValue;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
         MongoTestConfiguration.class,
-        MongoUserDetailsServiceTest.SecurityConfig.class
+        TenantUserDetailsServiceTest.SecurityConfig.class
 })
-public class MongoUserDetailsServiceTest extends BusinessLayerTestSupport {
+public class TenantUserDetailsServiceTest extends BusinessLayerTestSupport {
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -54,7 +54,7 @@ public class MongoUserDetailsServiceTest extends BusinessLayerTestSupport {
 
         @Bean
         public UserDetailsService userDetailsService() {
-            return new MongoUserDetailsService();
+            return new TenantUserDetailsService();
         }
     }
 

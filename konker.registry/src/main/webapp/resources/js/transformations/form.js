@@ -46,4 +46,10 @@ $(document).ready(function() {
         var row = $(this).closest('tr');
         controller.removeRow(row);
     });
+    
+    $('#btnYes').click(function() {
+    	$('#removeItemModal').modal('hide');
+    	$("input[type=hidden][name=_method]").val('delete');
+    	$('form').submit();
+    });
 });
