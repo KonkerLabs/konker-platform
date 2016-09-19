@@ -28,6 +28,7 @@ import static java.text.MessageFormat.format;
 @Controller
 @Scope("request")
 @RequestMapping("destinations/sms")
+@Conditional(EnableSMSCondition.class)
 public class SmsDestinationController implements ApplicationContextAware {
 
     public enum Messages {
@@ -127,4 +128,12 @@ public class SmsDestinationController implements ApplicationContextAware {
     public void setApplicationContext(final ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
+}
+
+class EnableSMSCondition implements Condition {
+
+	@Override
+	public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
+		return (Boolean)context.getBeanFactory().getBean("enableSms");
+	}
 }
