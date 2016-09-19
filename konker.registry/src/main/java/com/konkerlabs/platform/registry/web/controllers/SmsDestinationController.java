@@ -27,6 +27,7 @@ import com.konkerlabs.platform.registry.business.model.SmsDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.SmsDestinationService;
+import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.web.forms.SmsDestinationForm;
 
 @Controller
@@ -138,6 +139,6 @@ class EnableSMSCondition implements Condition {
 
 	@Override
 	public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
-		return (Boolean)context.getBeanFactory().getBean("enableSms");
+		return (Boolean) WebMvcConfig.webConfig.getBoolean("enableSms");
 	}
 }
