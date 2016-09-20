@@ -1,5 +1,16 @@
 package com.konkerlabs.platform.registry.business.services;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
+
 import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.Transformation;
@@ -8,16 +19,8 @@ import com.konkerlabs.platform.registry.business.repositories.EventRouteReposito
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.TransformationRepository;
 import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.TransformationService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Service;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
@@ -35,6 +38,7 @@ public class TransformationServiceImpl implements TransformationService {
         return ServiceResponseBuilder.<List<Transformation>>ok()
             .withResult(transformationRepository.findAllByTenantId(tenant.getId())).build();
     }
+    
 
     @Override
     public NewServiceResponse<Transformation> register(Tenant tenant, Transformation transformation) {
@@ -51,6 +55,7 @@ public class TransformationServiceImpl implements TransformationService {
                     .withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();
 
         transformation.setTenant(tenant);
+        transformation.setGuid(UUID.randomUUID().toString());
 
         Optional<Map<String, Object[]>> validations = transformation.applyValidations();
 
@@ -70,15 +75,14 @@ public class TransformationServiceImpl implements TransformationService {
                 .withResult(saved).<Transformation>build();
     }
 
-    @Override
-    public NewServiceResponse<Transformation> get(Tenant tenant, String id) {
-        return ServiceResponseBuilder.<Transformation>ok()
-                .withResult(transformationRepository.findByTenantIdAndTransformationId(tenant.getId(),id))
-                .build();
-    }
+	@Override
+	public NewServiceResponse<Transformation> get(Tenant tenant, String guid) {
+		return ServiceResponseBuilder.<Transformation> ok()
+				.withResult(transformationRepository.findByTenantIdAndTransformationGuid(tenant.getId(), guid)).build();
+	}
 
     @Override
-    public NewServiceResponse<Transformation> update(Tenant tenant, String id, Transformation transformation) {
+    public NewServiceResponse<Transformation> update(Tenant tenant, String guid, Transformation transformation) {
         if (!Optional.ofNullable(tenant).isPresent())
             return ServiceResponseBuilder.<Transformation>error()
                     .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
@@ -91,7 +95,7 @@ public class TransformationServiceImpl implements TransformationService {
             return ServiceResponseBuilder.<Transformation>error()
                     .withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();
 
-        Transformation fromDb = get(tenant, id).getResult();
+        Transformation fromDb = get(tenant, guid).getResult();
 
         if (!Optional.ofNullable(fromDb).isPresent())
             return ServiceResponseBuilder.<Transformation>error()

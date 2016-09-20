@@ -208,6 +208,6 @@ public class EventRouteTest {
 		RouteActor incoming = subjectForSameDeviceChannel.getIncoming();
 		RouteActor outgoing = subjectForSameDeviceChannel.getOutgoing();
 
-		assertThat(incoming.compareAndCheckIfDevicesChannelsAreEqual(outgoing), equalTo(expectedResult));
+		assertThat(incoming.compareAndCheckIfDevicesChannelsAreEqual(outgoing), is(expectedResult));
 	}
 }

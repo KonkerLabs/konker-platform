@@ -1,7 +1,6 @@
 package com.konkerlabs.platform.registry.business.services.api;
 
 import java.util.Map;
-import java.util.Optional;
 
 public class ServiceResponseBuilder<T> {
 

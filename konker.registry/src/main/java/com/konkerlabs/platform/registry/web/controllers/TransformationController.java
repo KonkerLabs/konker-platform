@@ -1,11 +1,12 @@
 package com.konkerlabs.platform.registry.web.controllers;
 
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.Transformation;
-import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.TransformationService;
-import com.konkerlabs.platform.registry.web.forms.TransformationForm;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -20,12 +21,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.stream.Collectors;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.Transformation;
+import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.TransformationService;
+import com.konkerlabs.platform.registry.web.forms.TransformationForm;
 
 @Controller
 @RequestMapping("transformation")
@@ -51,6 +51,7 @@ public class TransformationController implements ApplicationContextAware {
 
     @Autowired
     private TransformationService transformationService;
+    
     @Autowired
     private Tenant tenant;
 
@@ -88,29 +89,32 @@ public class TransformationController implements ApplicationContextAware {
                 redirectAttributes.addFlashAttribute("message",
                     applicationContext.getMessage(Messages.TRANSFORMATION_REGISTERED_SUCCESSFULLY.getCode(),null,locale)
                 );
-                return new ModelAndView(MessageFormat.format("redirect:/transformation/{0}", serviceResponse.getResult().getId()));
+                return new ModelAndView(MessageFormat.format("redirect:/transformation/{0}", serviceResponse.getResult().getGuid()));
         }
     }
 
-    @RequestMapping(value = "/{transformationId}", method = RequestMethod.GET)
-    public ModelAndView show(@PathVariable("transformationId") String transformationId) {
-        return new ModelAndView("transformations/show","transformation",new TransformationForm().fillFrom(transformationService.get(tenant, transformationId).getResult()));
-    }
+	@RequestMapping(value = "/{transformationGuid}", method = RequestMethod.GET)
+	public ModelAndView show(@PathVariable("transformationGuid") String transformationGuid) {
+		return new ModelAndView("transformations/show", "transformation",
+				new TransformationForm().fillFrom(transformationService.get(tenant, transformationGuid).getResult()));
+	}
 
-    @RequestMapping("/{transformationId}/edit")
-    public ModelAndView edit(@PathVariable("transformationId") String transformationId) {
-        return new ModelAndView("transformations/form")
-                .addObject("transformation",new TransformationForm().fillFrom(transformationService.get(tenant, transformationId).getResult()))
-                .addObject("action", MessageFormat.format("/transformation/{0}",transformationId))
-                .addObject("method", "put");
-    }
+	@RequestMapping("/{transformationGuid}/edit")
+	public ModelAndView edit(@PathVariable("transformationGuid") String transformationGuid) {
+		return new ModelAndView("transformations/form")
+				.addObject("transformation",
+						new TransformationForm()
+								.fillFrom(transformationService.get(tenant, transformationGuid).getResult()))
+				.addObject("action", MessageFormat.format("/transformation/{0}", transformationGuid))
+				.addObject("method", "put");
+	}
 
-    @RequestMapping(path = "/{transformationId}", method = RequestMethod.PUT)
-    public ModelAndView saveEdit(@PathVariable String transformationId,
+    @RequestMapping(path = "/{transformationGuid}", method = RequestMethod.PUT)
+    public ModelAndView saveEdit(@PathVariable String transformationGuid,
                                  @ModelAttribute("transformation") TransformationForm transformationForm, Locale locale,
                                  RedirectAttributes redirectAttributes) {
 
-        NewServiceResponse<Transformation> response = transformationService.update(tenant, transformationId, transformationForm.toModel());
+        NewServiceResponse<Transformation> response = transformationService.update(tenant, transformationGuid, transformationForm.toModel());
 
         switch (response.getStatus()) {
             case ERROR: {
@@ -130,20 +134,20 @@ public class TransformationController implements ApplicationContextAware {
                     applicationContext.getMessage(Messages.TRANSFORMATION_REGISTERED_SUCCESSFULLY.getCode(),null,locale)
                 );
                 return new ModelAndView(MessageFormat.format("redirect:/transformation/{0}",
-                        response.getResult().getId()));
+                        response.getResult().getGuid()));
             }
         }
     }
     
-    @RequestMapping(path = "/{transformationId}", method = RequestMethod.DELETE)
-    public ModelAndView remove(@PathVariable("transformationId")String transformationId, @ModelAttribute("transformation") TransformationForm transformationForm, 
+    @RequestMapping(path = "/{transformationGuid}", method = RequestMethod.DELETE)
+    public ModelAndView remove(@PathVariable("transformationGuid")String transformationGuid, @ModelAttribute("transformation") TransformationForm transformationForm, 
     		RedirectAttributes redirectAttributes, Locale locale) {
     	ModelAndView modelAndView;
-    	NewServiceResponse<Transformation> serviceResponse = transformationService.remove(tenant, transformationId);
+    	NewServiceResponse<Transformation> serviceResponse = transformationService.remove(tenant, transformationGuid);
     	
     	switch (serviceResponse.getStatus()) {
 			case ERROR:
-				transformationForm.setId(transformationId);
+				transformationForm.setId(transformationGuid);
 				modelAndView = new ModelAndView("transformations/form")
 					.addObject("errors", serviceResponse.getResponseMessages().entrySet().stream().map(message -> applicationContext.getMessage(message.getKey(), message.getValue(), locale)).collect(Collectors.toList()))
 					.addObject("method", "put")

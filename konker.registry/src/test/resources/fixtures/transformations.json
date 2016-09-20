@@ -7,6 +7,7 @@
         "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
         "$ref" : "tenants"
       },
+      "guid" : "2747ec73-6910-43a1-8ddc-5a4a134ebab3",
       "name" : "Transformation name 01",
       "description" : "Description",
       "steps": [
@@ -28,6 +29,7 @@
         "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
         "$ref" : "tenants"
       },
+      "guid" : "00d86f6a-648e-43f5-bb12-066d48a667c1",
       "name" : "Another Transformation name 01",
       "description" : "Description",
       "steps": [
@@ -49,6 +51,7 @@
         "$id" : "33d7cc77-91f2-4d22-ba31-e44c87963347",
         "$ref" : "tenants"
       },
+      "guid" : "6eed0ed6-8542-40ff-b984-63c914827d24",
       "name" : "Transformation name 02",
       "description" : "Description",
       "steps": [
