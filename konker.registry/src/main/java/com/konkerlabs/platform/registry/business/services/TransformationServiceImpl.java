@@ -127,22 +127,26 @@ public class TransformationServiceImpl implements TransformationService {
     }
 
 	@Override
-	public NewServiceResponse<Transformation> remove(Tenant tenant, String id) {
-		List<EventRoute> eventRoutes = eventRouteRepository.findByTenantIdAndTransformationId(tenant.getId(), id);
-		Transformation transformation = transformationRepository.findOne(id);
-		
+	public NewServiceResponse<Transformation> remove(Tenant tenant, String transformationGuid) {
+
+		Transformation transformation = transformationRepository.findByGuid(transformationGuid);
+
+		List<EventRoute> eventRoutes = eventRouteRepository.findByTenantIdAndTransformationId(tenant.getId(),
+				transformation.getId());
+
 		if (!eventRoutes.isEmpty()) {
-			return ServiceResponseBuilder.<Transformation>error()
+			return ServiceResponseBuilder.<Transformation> error()
 					.withMessage(Validations.TRANSFORMATION_HAS_ROUTE.getCode()).build();
 		}
-		
-		if (Optional.ofNullable(transformation).isPresent() && !transformation.getTenant().getId().equals(tenant.getId())) {
-			return ServiceResponseBuilder.<Transformation>error()
+
+		if (Optional.ofNullable(transformation).isPresent()
+				&& !transformation.getTenant().getId().equals(tenant.getId())) {
+			return ServiceResponseBuilder.<Transformation> error()
 					.withMessage(Validations.TRANSFORMATION_BELONG_ANOTHER_TENANT.getCode()).build();
 		}
-		
+
 		transformationRepository.delete(transformation);
-		
-		return ServiceResponseBuilder.<Transformation>ok().build();
+
+		return ServiceResponseBuilder.<Transformation> ok().build();
 	}
 }

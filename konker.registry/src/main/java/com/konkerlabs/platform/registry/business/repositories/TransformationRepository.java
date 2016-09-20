@@ -15,4 +15,7 @@ public interface TransformationRepository extends MongoRepository<Transformation
 
     @Query("{ 'tenant.id' : ?0, 'guid' : ?1 }")
     Transformation findByTenantIdAndTransformationGuid(String id, String guid);
+    
+    @Query("{  'guid' : ?0 }")
+    Transformation findByGuid(String guid);
 }
