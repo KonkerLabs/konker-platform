@@ -36,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 })
 public class WebMvcConfig extends WebMvcConfigurerAdapter implements ApplicationContextAware {
 
-    private static final Config webConfig = ConfigFactory.load().getConfig("web");
+    public static final Config webConfig = ConfigFactory.load().getConfig("web");
 
     private ApplicationContext applicationContext;
 
@@ -98,6 +98,11 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements Application
         );
         messageSource.setDefaultEncoding("UTF-8");
         return messageSource;
+    }
+    
+    @Bean(name = "enableSms")
+    public boolean enableSms() {
+    	return webConfig.getBoolean("enableSms");
     }
 
     @Override

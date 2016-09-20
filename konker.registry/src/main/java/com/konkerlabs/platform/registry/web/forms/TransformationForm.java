@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 @Data
 public class TransformationForm implements ModelBuilder<Transformation,TransformationForm,Void> {
 
+	// colocar guid? TODO
 	private String id;
     private String name;
     private String description;
