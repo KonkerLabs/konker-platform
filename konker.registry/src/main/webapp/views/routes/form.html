@@ -69,7 +69,7 @@
                                data-th-text="#{routes.form.outgoing.type.device}"
                                value="device" data-th-checked="*{outgoingScheme == 'device'}"></input>
                     </label>
-                    <label class="radio-inline">
+                    <label class="radio-inline" th:if="${@enableSms}">
                         <input type="radio" name="outgoingScheme"
                                data-th-text="#{routes.form.outgoing.type.sms}"
                                value="sms" data-th-checked="*{outgoingScheme == 'sms'}"></input>
