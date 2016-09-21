@@ -10,11 +10,8 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.annotation.Condition;
-import org.springframework.context.annotation.ConditionContext;
-import org.springframework.context.annotation.Conditional;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.Scope;
-import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,13 +24,12 @@ import com.konkerlabs.platform.registry.business.model.SmsDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.SmsDestinationService;
-import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.web.forms.SmsDestinationForm;
 
 @Controller
 @Scope("request")
 @RequestMapping("destinations/sms")
-@Conditional(EnableSMSCondition.class)
+@Profile("sms")
 public class SmsDestinationController implements ApplicationContextAware {
 
     public enum Messages {
@@ -133,12 +129,4 @@ public class SmsDestinationController implements ApplicationContextAware {
     public void setApplicationContext(final ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
-}
-
-class EnableSMSCondition implements Condition {
-
-	@Override
-	public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
-		return (Boolean) WebMvcConfig.webConfig.getBoolean("enableSms");
-	}
 }

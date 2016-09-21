@@ -6,6 +6,8 @@ import org.springframework.web.filter.HiddenHttpMethodFilter;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
 import javax.servlet.Filter;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 
 public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
 
@@ -34,5 +36,11 @@ public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherSe
     @Override
     protected Filter[] getServletFilters() {
         return new Filter[] { new HiddenHttpMethodFilter() };
+    }
+    
+    @Override
+    public void onStartup(ServletContext servletContext) throws ServletException {
+    	super.onStartup(servletContext);
+    	servletContext.setInitParameter("spring.profiles.active", "sms");
     }
 }

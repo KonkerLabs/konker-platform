@@ -29,10 +29,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.web.context.support.GenericWebApplicationContext;
 
 import com.konkerlabs.platform.registry.business.model.SmsDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
@@ -51,6 +53,7 @@ import com.konkerlabs.platform.registry.web.forms.SmsDestinationForm;
 @WebAppConfiguration
 @ContextConfiguration(classes = { WebMvcConfig.class, WebTestConfiguration.class, SecurityTestConfiguration.class,
         SmsDestinationControllerTest.SmsDestinationTestContextConfig.class })
+@ActiveProfiles("sms")
 public class SmsDestinationControllerTest extends WebLayerTestContext {
 
     @Autowired

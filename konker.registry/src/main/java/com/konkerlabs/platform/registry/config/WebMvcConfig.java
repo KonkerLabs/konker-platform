@@ -36,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 })
 public class WebMvcConfig extends WebMvcConfigurerAdapter implements ApplicationContextAware {
 
-    public static final Config webConfig = ConfigFactory.load().getConfig("web");
+    private static final Config webConfig = ConfigFactory.load().getConfig("web");
 
     private ApplicationContext applicationContext;
 
