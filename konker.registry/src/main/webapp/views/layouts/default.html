@@ -47,7 +47,8 @@
                         <li><a data-th-href="@{/enrichment}" data-th-text="#{nav.menu.enrichment}"></a></li>
                         <li><a data-th-href="@{/transformation}" data-th-text="#{nav.menu.transformations}"></a></li>
                         <li><a data-th-href="@{/destinations/rest}" data-th-text="#{nav.menu.rest_destinations}"></a></li>
-                        <li><a data-th-href="@{/destinations/sms}" data-th-text="#{nav.menu.sms_destinations}" th:if="${@enableSms}"></a></li>
+                        <li><a data-th-href="@{/destinations/sms}" data-th-text="#{nav.menu.sms_destinations}" 
+                        		th:if="${@environment.getActiveProfiles().length != 0 && @environment.getActiveProfiles()[0] == 'sms'}"></a></li>
                         <li><a data-th-href="@{/dashboards/index.html} + '#dashboard/solr/' + ${@tenant.domainName} + '-events'"
                             target="_blank"
                             data-th-text="#{nav.menu.dashboards}"></a>
