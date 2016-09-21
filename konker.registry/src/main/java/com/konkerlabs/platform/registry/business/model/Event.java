@@ -12,5 +12,6 @@ public class Event {
     private Instant timestamp;
     private String channel;
     private String payload;
+    private Boolean deleted = false;
 
 }

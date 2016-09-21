@@ -49,6 +49,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
 
     @Autowired
     private DeviceEventService deviceEventService;
+
     @Autowired
     private DeviceRegisterService deviceRegisterService;
 

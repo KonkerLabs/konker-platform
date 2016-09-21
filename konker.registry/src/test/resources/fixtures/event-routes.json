@@ -1,6 +1,35 @@
 {
   "eventRoutes" : [
     {
+      "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63aa",
+      "_class" : "com.konkerlabs.platform.registry.model.EventRoute",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
+      },
+      "name" : "Device event forwarding route for device deletion",
+      "guid" : "bd923670-d888-472a-b6d9-b20af31253db",
+      "description" : "Route description",
+      "incoming": {
+        "uri" : "device://konker/95c14b36ba2b43f1",
+        "data" : {
+          "channel" : "data"
+        }
+      },
+      "outgoing": {
+        "uri" : "device://konker/95c14b36ba2b43f1",
+        "data" : {
+          "channel" : "in"
+        }
+      },
+      "filteringExpression" : "#metric == 'temperature' && #value < 40 && #data.sn == 1234",
+      "transformation" : {
+        "$id" : "2747ec73-6910-43a1-8ddc-5a4a134ebab3",
+        "$ref" : "transformations"
+      },
+      "active" : true
+    },
+    {
       "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
       "_class" : "com.konkerlabs.platform.registry.model.EventRoute",
       "tenant" : {

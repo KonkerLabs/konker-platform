@@ -3,53 +3,59 @@
 <head>
 </head>
 <body>
-    <div data-layout-fragment="content">
-        <fieldset>
-            <legend data-th-text="#{devices.index.legend}"></legend>
-            <div class="alert alert-success" role="alert" data-th-if="${message != null}">
-                <span data-th-text="${message}"></span>
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <a data-th-href="@{/devices/new}"
-               data-th-text="#{nav.new}"
-               class="btn btn-default action pull-right"></a>
-            <table class="table table-bordered">
-                <thead>
-                <tr>
-                    <td class="col-md-1" data-th-text="#{devices.index.id}"></td>
-                    <td class="col-md-1" data-th-text="#{devices.index.name}"></td>
-                    <td class="col-md-1" data-th-text="#{devices.index.active}"></td>
-                    <td class="col-md-1 text-center" data-th-text="#{devices.index.actions}"></td>
-                </tr>
-                </thead>
-                <tbody>
-                <tr data-th-each="device : ${devices}">
-                    <td data-th-text="${device.deviceId}"></td>
-                    <td data-th-text="${device.name}"></td>
-                    <td>
-                        <span data-th-if="${device.active}" class="glyphicon glyphicon-thumbs-up" aria-hidden="true"/>
-                        <span data-th-if="${not device.active}" class="glyphicon glyphicon-thumbs-down" aria-hidden="true"/>
-                    </td>
-                    <td class="text-center">
-                        <a data-th-href="@{/devices/{id}(id=${device.id})}"
-                           data-th-text="#{nav.show}"
-                           class="btn btn-default"></a>
-                        <a data-th-href="@{/devices/{id}/edit(id=${device.id})}"
-                           data-th-text="#{nav.edit}"
-                           class="btn btn-default"></a>
-                        <a data-th-href="@{/devices/{id}/password(id=${device.id})}"
-                           data-th-text="#{devices.index.access}"
-                           class="btn btn-default"></a>
-                        <a data-th-href="@{/devices/{id}/events(id=${device.id})}"
-                           data-th-text="#{devices.index.events}"
-                           class="btn btn-default"></a>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </fieldset>
-    </div>
+<div data-layout-fragment="content">
+    <fieldset>
+        <legend data-th-text="#{devices.index.legend}"></legend>
+        <div class="alert alert-success" role="alert" data-th-if="${message != null}">
+            <span data-th-text="${message}"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="alert alert-danger" role="alert" data-th-if="${errors != null and !errors.empty}">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <li data-th-each="error : ${errors}" data-th-text="${error}"></li>
+        </div>
+        <a data-th-href="@{/devices/new}"
+           data-th-text="#{nav.new}"
+           class="btn btn-default action pull-right"></a>
+        <table class="table table-bordered">
+            <thead>
+            <tr>
+                <td class="col-md-1" data-th-text="#{devices.index.id}"></td>
+                <td class="col-md-1" data-th-text="#{devices.index.name}"></td>
+                <td class="col-md-1" data-th-text="#{devices.index.active}"></td>
+                <td class="col-md-1 text-center" data-th-text="#{devices.index.actions}"></td>
+            </tr>
+            </thead>
+            <tbody>
+            <tr data-th-each="device : ${devices}">
+                <td data-th-text="${device.deviceId}"></td>
+                <td data-th-text="${device.name}"></td>
+                <td>
+                    <span data-th-if="${device.active}" class="glyphicon glyphicon-thumbs-up" aria-hidden="true"/>
+                    <span data-th-if="${not device.active}" class="glyphicon glyphicon-thumbs-down" aria-hidden="true"/>
+                </td>
+                <td class="text-center">
+                    <a data-th-href="@{/devices/{id}(id=${device.id})}"
+                       data-th-text="#{nav.show}"
+                       class="btn btn-default"></a>
+                    <a data-th-href="@{/devices/{id}/edit(id=${device.id})}"
+                       data-th-text="#{nav.edit}"
+                       class="btn btn-default"></a>
+                    <a data-th-href="@{/devices/{id}/password(id=${device.id})}"
+                       data-th-text="#{devices.index.access}"
+                       class="btn btn-default"></a>
+                    <a data-th-href="@{/devices/{id}/events(id=${device.id})}"
+                       data-th-text="#{devices.index.events}"
+                       class="btn btn-default"></a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </fieldset>
+</div>
 </body>
 </html>

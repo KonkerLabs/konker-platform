@@ -12,6 +12,7 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
+import com.konkerlabs.platform.registry.web.controllers.DeviceController;
 import com.konkerlabs.platform.security.managers.PasswordManager;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -34,6 +35,8 @@ import static com.konkerlabs.platform.registry.test.base.matchers.NewServiceResp
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -49,6 +52,8 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     private static final String ANOTHER_DEVICE_ID = "eorgh9rgjiod";
     private static final String ANOTHER_DEVICE_NAME = "Another Device Name";
     private static final String ANOTHER_DEVICE_DESCRIPTION = "Another Device Description";
+    private static final String THE_TENANT_ID = "71fb0d48-674b-4f64-a3e5-0256ff3a63af";
+    private static final String ANOTHER_TENANT_ID = "71fb0d48-674b-4f64-a3e5-0256ff3a63ag";
     private static final Instant THE_REGISTRATION_TIME = Instant.now().minus(Duration.ofDays(2));
 
     @Rule
@@ -381,6 +386,63 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         assertThat(serviceResponse.getResponseMessages(),
                 hasEntry(DeviceRegisterService.Validations.DEVICE_ID_DOES_NOT_EXIST.getCode(),null));
         assertThat(serviceResponse.getResult(),nullValue());
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json"})
+    public void shouldReturnErrorMessageIfDeviceBelongsToOtherTenantOnDeletion() throws Exception {
+        NewServiceResponse<Device> serviceResponse = deviceRegisterService
+                .remove(Tenant.builder().id(ANOTHER_TENANT_ID).build(), THE_DEVICE_ID);
+        assertThat(serviceResponse.getStatus(), equalTo(NewServiceResponse.Status.ERROR));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json"})
+    public void shouldReturnErrorMessageIfDeviceDoesNotExistsOnDeletion() throws Exception {
+        NewServiceResponse<Device> serviceResponse = deviceRegisterService
+                .remove(Tenant.builder().id(THE_TENANT_ID).build(), ANOTHER_DEVICE_ID);
+        assertThat(serviceResponse.getStatus(), equalTo(NewServiceResponse.Status.ERROR));
+    }
+
+    @Test
+    @UsingDataSet(locations = {
+            "/fixtures/tenants.json",
+            "/fixtures/devices.json",
+            "/fixtures/event-routes.json"})
+    public void shouldReturnErrorMessageIfDeviceHaveEventRoutesOnDeletion() throws Exception {
+        NewServiceResponse<Device> serviceResponse = deviceRegisterService
+                .remove(Tenant.builder().id(THE_TENANT_ID).build(), THE_DEVICE_ID);
+        assertThat(serviceResponse.getStatus(), equalTo(NewServiceResponse.Status.ERROR));
+        assertThat(serviceResponse.getResponseMessages(),
+                hasEntry(DeviceRegisterService.Validations.DEVICE_HAVE_EVENTROUTES.getCode(), null));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/enrichment-rest.json"})
+    public void shouldReturnErrorMessageIfDeviceHaveEnrichmentsOnDeletion() throws Exception {
+        NewServiceResponse<Device> serviceResponse = deviceRegisterService
+                .remove(Tenant.builder().id(THE_TENANT_ID).build(), THE_DEVICE_ID);
+        assertThat(serviceResponse.getStatus(), equalTo(NewServiceResponse.Status.ERROR));
+        assertThat(serviceResponse.getResponseMessages(),
+                hasEntry(DeviceRegisterService.Validations.DEVICE_HAVE_ENRICHMENTS.getCode(), null));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json"})
+    public void shouldReturnSuccessMessageIfDeviceDeletionSucceed() throws Exception {
+        NewServiceResponse<Device> serviceResponse = deviceRegisterService
+                .remove(Tenant.builder().id(THE_TENANT_ID).build(), THE_DEVICE_ID);
+        assertThat(serviceResponse.getStatus(), equalTo(NewServiceResponse.Status.OK));
+        assertThat(serviceResponse.getResponseMessages(),
+                hasEntry(DeviceController.Messages.DEVICE_REMOVED_SUCCESSFULLY.getCode(), null));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json"})
+    public void shouldDeleteInLogicalWayEachDataIngestedOnDeviceForSucceedDeletion() throws Exception {
+        NewServiceResponse<Device> serviceResponse = deviceRegisterService
+                .remove(Tenant.builder().id(THE_TENANT_ID).build(), THE_DEVICE_ID);
+        assertThat(serviceResponse.getResult().getEvents() != null ? serviceResponse.getResult().getEvents().stream().anyMatch(event-> event.getDeleted()) : false, equalTo(false));
     }
 
 

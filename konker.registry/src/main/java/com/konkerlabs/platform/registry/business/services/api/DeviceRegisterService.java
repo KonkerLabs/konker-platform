@@ -14,7 +14,9 @@ public interface DeviceRegisterService {
     enum Validations {
         DEVICE_ID_NULL("service.device.id.not_null"),
         DEVICE_ID_ALREADY_REGISTERED("service.device.id.already_registered"),
-        DEVICE_ID_DOES_NOT_EXIST("service.device.id.does_not_exist");
+        DEVICE_ID_DOES_NOT_EXIST("service.device.id.does_not_exist"),
+        DEVICE_HAVE_EVENTROUTES("service.device.have_eventroutes"),
+        DEVICE_HAVE_ENRICHMENTS("service.device.have_enrichments");
 
         public String getCode() {
             return code;
@@ -59,6 +61,15 @@ public interface DeviceRegisterService {
      * @return
      */
     NewServiceResponse<Device> update(Tenant tenant, String id, Device device);
+
+
+    /**
+     * TODO @andre implement throwable flow
+     * Remove a device in logical way
+     * @param id
+     * @return NewServiceResponse<Device>
+     */
+    NewServiceResponse<Device> remove(Tenant tenant, String id);
 
     /**
      * Returns all devices (enabled or disabled) owned by the provided tenant.

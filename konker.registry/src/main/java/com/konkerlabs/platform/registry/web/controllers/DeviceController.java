@@ -34,7 +34,8 @@ import java.util.stream.Collectors;
 public class DeviceController implements ApplicationContextAware {
 
     public enum Messages {
-        DEVICE_REGISTERED_SUCCESSFULLY("controller.device.registered.success");
+        DEVICE_REGISTERED_SUCCESSFULLY("controller.device.registered.success"),
+        DEVICE_REMOVED_SUCCESSFULLY("controller.device.removed.succesfully");
 
         public String getCode() {
             return code;
@@ -119,6 +120,28 @@ public class DeviceController implements ApplicationContextAware {
                 redirectAttributes,"put");
     }
 
+    @RequestMapping(path = "/{deviceId}", method = RequestMethod.DELETE)
+    public ModelAndView remove(@PathVariable String deviceId,
+                                 @ModelAttribute("deviceForm") DeviceRegistrationForm deviceForm,
+                                 RedirectAttributes redirectAttributes, Locale locale) {
+
+        NewServiceResponse<Device> serviceResponse = deviceRegisterService.remove(tenant, deviceId);
+        if(serviceResponse.isOk()){
+            redirectAttributes.addFlashAttribute("message",
+                    applicationContext.getMessage(Messages.DEVICE_REMOVED_SUCCESSFULLY.getCode(),null,locale)
+            );
+        } else {
+            List<String> messages = serviceResponse.getResponseMessages()
+                    .entrySet().stream()
+                    .map(message -> applicationContext.getMessage(message.getKey(), message.getValue(), locale))
+                    .collect(Collectors.toList());
+            redirectAttributes.addFlashAttribute("errors", messages);
+        }
+
+
+        return new ModelAndView("redirect:/devices");
+    }
+
     @RequestMapping(path = "/{deviceId}/password", method = RequestMethod.GET)
     public ModelAndView password(@PathVariable String deviceId, RedirectAttributes redirectAttributes, Locale locale) {
         NewServiceResponse<Device> serviceResponse = deviceRegisterService.getByDeviceId(tenant, deviceId);
@@ -157,6 +180,8 @@ public class DeviceController implements ApplicationContextAware {
             return new ModelAndView(MessageFormat.format("redirect:/devices/{0}/password", deviceId));
         }
     }
+
+
 
     private ModelAndView doSave(Supplier<NewServiceResponse<Device>> responseSupplier,
                                 DeviceRegistrationForm registrationForm, Locale locale,
