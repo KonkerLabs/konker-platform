@@ -100,11 +100,6 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements Application
         return messageSource;
     }
     
-    @Bean(name = "enableSms")
-    public boolean enableSms() {
-    	return webConfig.getBoolean("enableSms");
-    }
-
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
