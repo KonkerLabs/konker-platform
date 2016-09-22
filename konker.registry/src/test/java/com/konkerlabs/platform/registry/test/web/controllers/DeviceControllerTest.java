@@ -12,6 +12,7 @@ import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
 import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
 import com.konkerlabs.platform.registry.web.controllers.DeviceController;
 import com.konkerlabs.platform.registry.web.forms.DeviceRegistrationForm;
+import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,11 +38,10 @@ import java.util.Locale;
 import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -219,6 +219,30 @@ public class DeviceControllerTest extends WebLayerTestContext {
                 .andExpect(redirectedUrl(MessageFormat.format("/devices/{0}", savedDevice.getId())));
 
         verify(deviceRegisterService).update(eq(tenant), eq(savedDevice.getId()), eq(device));
+    }
+
+    @Test
+    public void shouldRedirectToListDevicesAndShowSuccessMessageAfterDeletionSucceed() throws Exception {
+        device.setId(DEVICE_ID_95C14B36BA2B43F1);
+        NewServiceResponse<Device> responseRemoval = ServiceResponseBuilder.<Device>ok()
+                .withResult(device).build();
+
+        NewServiceResponse<List<Device>> responseListAll = ServiceResponseBuilder.<List<Device>>ok()
+                .withResult(registeredDevices).build();
+
+        spy(responseRemoval);
+        spy(responseListAll);
+
+        when(deviceRegisterService.remove(tenant, device.getId())).thenReturn(responseRemoval);
+        when(deviceRegisterService.findAll(eq(tenant))).thenReturn(responseListAll);
+
+        getMockMvc().perform(delete("/devices/{0}", device.getId()))
+                .andExpect(flash().attribute("message",
+                        applicationContext.getMessage(DeviceController.Messages.DEVICE_REMOVED_SUCCESSFULLY.getCode(),null,Locale.ENGLISH)
+                ))
+                .andExpect(redirectedUrl("/devices"));
+
+        verify(deviceRegisterService).remove(tenant, device.getId());
     }
 
     @Configuration
