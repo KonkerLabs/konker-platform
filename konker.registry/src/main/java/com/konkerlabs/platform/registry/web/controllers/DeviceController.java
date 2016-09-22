@@ -7,11 +7,15 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterServ
 import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.web.forms.DeviceRegistrationForm;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+import jdk.nashorn.internal.runtime.options.Options;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Scope;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,11 +24,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import javax.servlet.http.HttpServletRequest;
+import java.net.InetAddress;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -79,7 +82,10 @@ public class DeviceController implements ApplicationContextAware {
 
     @RequestMapping("/{deviceId}")
     public ModelAndView show(@PathVariable("deviceId") String deviceId) {
-        return new ModelAndView("devices/show", "device", deviceRegisterService.getByDeviceId(tenant, deviceId).getResult());
+        return new ModelAndView(
+                "devices/show", "device",
+                deviceRegisterService.getByDeviceId(tenant, deviceId).getResult()
+        );
     }
 
     @RequestMapping("/{deviceId}/edit")
@@ -151,7 +157,9 @@ public class DeviceController implements ApplicationContextAware {
             return new ModelAndView("devices/password")
                     .addObject("action", MessageFormat.format("/devices/{0}/password",deviceId))
                     .addObject("deviceId", device.getDeviceId())
-                    .addObject("apiKey", device.getApiKey());
+                    .addObject("apiKey", device.getApiKey())
+                    .addObject("device", device)
+                    .addObject("pubServerInfo", ConfigFactory.load().getConfig("pubServer"));
         } else {
             redirectAttributes.addFlashAttribute("message",
                     applicationContext.getMessage(CommonValidations.RECORD_NULL.getCode(),null,locale));
