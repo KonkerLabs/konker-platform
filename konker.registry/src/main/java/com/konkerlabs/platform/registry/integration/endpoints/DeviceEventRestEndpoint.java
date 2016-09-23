@@ -16,7 +16,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Locale;
 
 @RestController
-@RequestMapping("iot")
+@RequestMapping("pub")
 public class DeviceEventRestEndpoint {
 
     public enum Messages {
