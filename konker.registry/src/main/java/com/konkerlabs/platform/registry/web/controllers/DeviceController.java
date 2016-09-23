@@ -3,6 +3,7 @@ package com.konkerlabs.platform.registry.web.controllers;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
@@ -59,11 +60,13 @@ public class DeviceController implements ApplicationContextAware {
     }
 
     private DeviceRegisterService deviceRegisterService;
+    private DeviceEventService deviceEventService;
     private Tenant tenant;
 
     @Autowired
-    public DeviceController(DeviceRegisterService deviceRegisterService, Tenant tenant) {
+    public DeviceController(DeviceRegisterService deviceRegisterService, DeviceEventService deviceEventService, Tenant tenant) {
         this.deviceRegisterService = deviceRegisterService;
+        this.deviceEventService = deviceEventService;
         this.tenant = tenant;
     }
 
@@ -101,7 +104,7 @@ public class DeviceController implements ApplicationContextAware {
     public ModelAndView deviceEvents(@PathVariable String deviceId) {
         Device device = deviceRegisterService.getByDeviceId(tenant, deviceId).getResult();
         return new ModelAndView("devices/events").addObject("device", device).addObject("recentEvents",
-                /*device.getMostRecentEvents()*/Collections.emptyList());
+                deviceEventService.findEventsBy(tenant,deviceId,null,null,50).getResult());
     }
 
     @RequestMapping(path = "/save", method = RequestMethod.POST)

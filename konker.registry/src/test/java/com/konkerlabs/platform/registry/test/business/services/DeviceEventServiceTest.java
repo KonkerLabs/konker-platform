@@ -88,7 +88,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
 
         tenant = tenantRepository.findByDomainName("konker");
         device = deviceRepository.findByTenantIdAndDeviceId(tenant.getId(), id);
-        event = Event.builder().channel(topic).payload(payload).deviceId(device.getDeviceId()).build();
+        event = Event.builder().channel(topic).payload(payload).deviceId(device.getId()).build();
     }
 
     @Test
@@ -132,7 +132,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
         event.setChannel("otherChannel");
         deviceEventService.logEvent(device, channel, event);
 
-        Event last = eventRepository.findBy(tenant,device.getDeviceId(),event.getTimestamp(), null, 1).get(0);
+        Event last = eventRepository.findBy(tenant,device.getId(),event.getTimestamp(), null, 1).get(0);
 
         assertThat(last,notNullValue());
 
@@ -188,7 +188,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
     public void shouldFindAllRequestEvents() throws Exception {
         NewServiceResponse<List<Event>> serviceResponse = deviceEventService.findEventsBy(
                 tenant,
-                device.getDeviceId(),
+                device.getId(),
                 firstEventTimestamp,
                 null,
                 null

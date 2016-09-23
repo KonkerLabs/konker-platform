@@ -9,6 +9,7 @@ import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
+import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,16 +59,18 @@ public class EventRepositoryMongoImpl implements EventRepository {
 
         Tenant existingTenant = tenantRepository.findByDomainName(tenant.getDomainName());
 
-        Optional.ofNullable(deviceRepository.findByTenantIdAndDeviceId(existingTenant.getId(),event.getDeviceId()))
+        Optional.ofNullable(deviceRepository.findByTenantAndId(existingTenant.getId(),event.getDeviceId()))
                 .orElseThrow(() -> new BusinessException("Device does not exists"));
         Optional.ofNullable(event.getTimestamp())
                 .orElseThrow(() -> new IllegalStateException("Event timestamp cannot be null"));
 
-        DBObject toSave = (DBObject) JSON.parse(event.getPayload());
+        DBObject toSave = new BasicDBObject();
 
         toSave.removeField("ts");
         toSave.put("ts", event.getTimestamp().toEpochMilli());
         toSave.put("deviceId", event.getDeviceId());
+        toSave.put("channel", event.getChannel());
+        toSave.put("payload", event.getPayload());
         toSave.put("tenantDomain", tenant.getDomainName());
 
         mongoTemplate.save(toSave, EVENTS_COLLECTION_NAME);
@@ -107,9 +110,10 @@ public class EventRepositoryMongoImpl implements EventRepository {
             dbObject.removeField("_class");
             return dbObject;
         }).map(dbObject -> Event.builder()
-                .deviceId(deviceId)
-                .payload(JSON.serialize(dbObject))
+                .deviceId(dbObject.get("deviceId").toString())
+                .payload(dbObject.get("payload").toString())
                 .timestamp(Instant.ofEpochMilli((Long) dbObject.get("ts")))
+                .channel(dbObject.get("channel").toString())
                 .build())
         .collect(Collectors.toList());
     }

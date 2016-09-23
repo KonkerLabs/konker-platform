@@ -1,8 +1,10 @@
 package com.konkerlabs.platform.registry.test.web.controllers;
 
 import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
@@ -32,6 +34,7 @@ import org.springframework.util.MultiValueMap;
 import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -60,6 +63,8 @@ public class DeviceControllerTest extends WebLayerTestContext {
     ApplicationContext applicationContext;
     @Autowired
     DeviceRegisterService deviceRegisterService;
+    @Autowired
+    DeviceEventService deviceEventService;
     @Autowired
     private Tenant tenant;
 
@@ -167,11 +172,15 @@ public class DeviceControllerTest extends WebLayerTestContext {
         savedDevice.setRegistrationDate(Instant.now());
         when(deviceRegisterService.getByDeviceId(tenant, savedDevice.getId())).thenReturn(
                 ServiceResponseBuilder.<Device>ok().withResult(savedDevice).build());
+        when(deviceEventService.findEventsBy(tenant,savedDevice.getId(),null,null,50)).thenReturn(
+            ServiceResponseBuilder.<List<Event>>ok().withResult(Collections.emptyList()).build()
+        );
 
         getMockMvc().perform(get(MessageFormat.format("/devices/{0}/events", savedDevice.getId())))
                 .andExpect(model().attribute("device", savedDevice)).andExpect(view().name("devices/events"));
 
         verify(deviceRegisterService).getByDeviceId(tenant, savedDevice.getId());
+        verify(deviceEventService).findEventsBy(tenant, savedDevice.getId(),null,null,50);
     }
 
     @Test
@@ -251,5 +260,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
         public DeviceRegisterService deviceRegisterService() {
             return Mockito.mock(DeviceRegisterService.class);
         }
+        @Bean
+        public DeviceEventService deviceEventService() { return Mockito.mock(DeviceEventService.class); }
     }
 }
