@@ -127,14 +127,4 @@ public interface DeviceRegisterService {
      * @return A random password used to create the token
      */
     NewServiceResponse<DeviceSecurityCredentials> generateSecurityPassword(Tenant tenant, String id);
-
-    /**
-     * Return all existing device events with timestamp greater than provided offset
-     *
-     * @param tenant
-     * @param deviceId
-     * @param offset
-     * @return Found events
-     */
-    NewServiceResponse<List<Event>> findEventsBy(Tenant tenant, String deviceId, Long offset);
 }

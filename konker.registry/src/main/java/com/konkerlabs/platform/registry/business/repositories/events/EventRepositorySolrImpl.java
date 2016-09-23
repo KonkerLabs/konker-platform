@@ -13,6 +13,7 @@ import org.springframework.data.solr.core.SolrTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.text.MessageFormat;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -56,7 +57,7 @@ public class EventRepositorySolrImpl implements EventRepository {
     }
 
     @Override
-    public List<Event> findBy(Tenant tenant, String deviceId, Long startingEpochMillis, Long endEpochMillis) {
+    public List<Event> findBy(Tenant tenant, String deviceId, Instant startInstant, Instant endInstant, Integer limit) {
         return Collections.emptyList();
     }
 }

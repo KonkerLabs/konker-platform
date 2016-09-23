@@ -72,27 +72,29 @@ public class EventRepositoryMongoImpl implements EventRepository {
         mongoTemplate.save(toSave, EVENTS_COLLECTION_NAME);
     }
 
-    @Override
-    public List<Event> findBy(Tenant tenant, String deviceId, Long startingEpochMillis, Long endEpochMillis) {
+    public List<Event> findBy(Tenant tenant, String deviceId, Instant startInstant, Instant endInstant, Integer limit) {
 
         Optional.ofNullable(tenant)
                 .filter(tenant1 -> Optional.ofNullable(tenant1.getDomainName()).filter(s -> !s.isEmpty()).isPresent())
                 .orElseThrow(() -> new IllegalArgumentException("Tenant cannot be null"));
         Optional.ofNullable(deviceId).filter(s -> !s.isEmpty())
                 .orElseThrow(() -> new IllegalArgumentException("Device ID cannot be null or empty"));
-        Optional.ofNullable(startingEpochMillis)
+
+        Optional.ofNullable(startInstant)
                 .orElseThrow(() -> new IllegalArgumentException("Starting offset cannot be null"));
 
         List<Criteria> criterias = new ArrayList<>();
 
         criterias.add(Criteria.where("deviceId").is(deviceId));
-        criterias.add(Criteria.where("ts").gte(startingEpochMillis));
+        criterias.add(Criteria.where("ts").gte(startInstant.toEpochMilli()));
 
-        Optional.ofNullable(endEpochMillis).ifPresent(aLong -> criterias.add(Criteria.where("ts").lte(aLong)));
+        Optional.ofNullable(endInstant).ifPresent(instant -> criterias.add(Criteria.where("ts").lte(instant.toEpochMilli())));
 
         Query query = Query.query(
             Criteria.where("tenantDomain").is(tenant.getDomainName())
             .andOperator(criterias.toArray(new Criteria[criterias.size()])));
+
+        Optional.ofNullable(limit).filter(integer -> integer > 0).ifPresent(integer -> query.limit(limit));
 
         List<DBObject> result = mongoTemplate.find(query.with(new Sort(new Sort.Order(Sort.Direction.ASC, "ts"))),
                 DBObject.class,

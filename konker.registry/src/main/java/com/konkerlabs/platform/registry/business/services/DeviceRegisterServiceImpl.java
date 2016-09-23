@@ -161,34 +161,6 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
     }
 
     @Override
-    public NewServiceResponse<List<Event>> findEventsBy(Tenant tenant, String deviceId, Long offset) {
-        if (!Optional.ofNullable(tenant).isPresent())
-            return ServiceResponseBuilder.<List<Event>>error()
-                    .withMessage(CommonValidations.TENANT_NULL.getCode(), null)
-                    .build();
-
-        if (!Optional.ofNullable(deviceId).isPresent())
-            return ServiceResponseBuilder.<List<Event>>error()
-                    .withMessage(Validations.DEVICE_ID_NULL.getCode(), null)
-                    .build();
-
-//        if (!Optional.ofNullable(offset).isPresent())
-//            return ServiceResponseBuilder.<List<Event>>error()
-//                    .withMessage(Validations.DEVICE_ID_NULL.getCode(), null)
-//                    .build();
-
-        Device deviceFromDB = getByDeviceId(tenant, deviceId).getResult();
-        if (deviceFromDB == null) {
-            return ServiceResponseBuilder.<List<Event>>error()
-                    .withMessage(Validations.DEVICE_ID_DOES_NOT_EXIST.getCode(), null)
-                    .build();
-        }
-
-        return ServiceResponseBuilder.<List<Event>>ok()
-                .withResult(eventRepository.findBy(tenant, deviceId, offset, null)).build();
-    }
-
-    @Override
     public NewServiceResponse<Device> update(Tenant tenant, String id, Device updatingDevice) {
         if (!Optional.ofNullable(tenant).isPresent())
             return ServiceResponseBuilder.<Device>error()

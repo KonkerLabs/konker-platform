@@ -25,6 +25,8 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.List;
 import java.time.Instant;
 
@@ -182,7 +184,9 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json"})
     public void shouldRetrieveLastTwoEventsByTenantAndDevice() throws Exception {
-        List<Event> events = eventRepository.findBy(tenant,deviceId, firstEventTimestamp.toEpochMilli()+1,null);
+        List<Event> events = eventRepository.findBy(tenant,deviceId,
+                firstEventTimestamp.plus(1,ChronoUnit.SECONDS),
+                null,null);
 
         assertThat(events,notNullValue());
         assertThat(events,hasSize(2));
@@ -196,7 +200,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Tenant cannot be null");
 
-        eventRepository.findBy(null,deviceId,firstEventTimestamp.toEpochMilli(),null);
+        eventRepository.findBy(null,deviceId,firstEventTimestamp,null,null);
     }
 
     @Test
@@ -204,7 +208,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Device ID cannot be null or empty");
 
-        eventRepository.findBy(tenant,null,firstEventTimestamp.toEpochMilli(),null);
+        eventRepository.findBy(tenant,null,firstEventTimestamp,null,null);
     }
 
     @Test
@@ -212,7 +216,8 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Starting offset cannot be null");
 
-        eventRepository.findBy(tenant,deviceId,null,null);
+
+        eventRepository.findBy(tenant,deviceId,null,null,null);
     }
 
     @Test
@@ -220,8 +225,24 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
     public void shouldRetrieveTheOnlyFirstEventByTenantAndDevice() throws Exception {
         List<Event> events = eventRepository.findBy(tenant,
                 deviceId,
-                firstEventTimestamp.toEpochMilli(),
-                secondEventTimestamp.toEpochMilli()-1);
+                firstEventTimestamp,
+                secondEventTimestamp.minus(1, ChronoUnit.SECONDS),
+                null);
+
+        assertThat(events,notNullValue());
+        assertThat(events,hasSize(1));
+
+        assertThat(events.get(0).getTimestamp().toEpochMilli(),equalTo(firstEventTimestamp.toEpochMilli()));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json"})
+    public void shouldLimitResultsAccordingToLimitParameterWhenFindingBy() throws Exception {
+        List<Event> events = eventRepository.findBy(tenant,
+                deviceId,
+                firstEventTimestamp,
+                thirdEventTimestamp,
+                1);
 
         assertThat(events,notNullValue());
         assertThat(events,hasSize(1));
