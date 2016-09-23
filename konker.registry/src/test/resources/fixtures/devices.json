@@ -3,6 +3,7 @@
     {
       "_class" : "com.konkerlabs.platform.registry.model.Device",
       "_id" : "71fc0d48-674a-4d62-b3e5-0216abca63af",
+      "guid" : "71fc0d48-674a-4d62-b3e5-0216abca63af",
       "tenant" : {
         "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
         "$ref" : "tenants"

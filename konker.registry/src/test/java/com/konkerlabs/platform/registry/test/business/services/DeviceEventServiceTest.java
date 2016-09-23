@@ -53,7 +53,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
     @Autowired
     private DeviceRegisterService deviceRegisterService;
 
-    private String id = "71fc0d48-674a-4d62-b3e5-0216abca63af";
+    private String guid = "71fc0d48-674a-4d62-b3e5-0216abca63af";
     private String apiKey = "84399b2e-d99e-11e5-86bc-34238775bac9";
     private String payload = "{\n" +
             "    \"ts\" : \"2016-03-03T18:15:00Z\",\n" +
@@ -78,7 +78,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
     public void setUp() throws Exception {
         event = Event.builder().channel(topic).payload(payload).build();
         tenant = tenantRepository.findByName("Konker");
-        device = deviceRegisterService.getByDeviceId(tenant, id).getResult();
+        device = deviceRegisterService.getByDeviceGuid(tenant, guid).getResult();
     }
     @Test
     public void shouldRaiseAnExceptionIfDeviceIsNull() throws Exception {

@@ -48,6 +48,7 @@ public class Device implements DeviceURIDealer, Validatable, UserDetails {
     private String apiKey;
 	private String securityHash;
 	private String name;
+	private String guid;
 	private String description;
 	private Instant registrationDate;
 	private List<Event> events;

@@ -10,6 +10,7 @@ public class DeviceRegistrationForm implements ModelBuilder<Device,DeviceRegistr
     private String deviceId;
     private String name;
     private String description;
+    private String guid;
     private boolean active;
 
     @Override
@@ -18,6 +19,7 @@ public class DeviceRegistrationForm implements ModelBuilder<Device,DeviceRegistr
                 .deviceId(getDeviceId())
                 .name(getName())
                 .description(getDescription())
+                .guid(getGuid())
                 .active(isActive())
                 .build();
     }
@@ -28,6 +30,7 @@ public class DeviceRegistrationForm implements ModelBuilder<Device,DeviceRegistr
         this.setName(model.getName());
         this.setDescription(model.getDescription());
         this.setActive(model.isActive());
+        this.setGuid(model.getGuid());
         return this;
     }
 }

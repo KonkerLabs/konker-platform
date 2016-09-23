@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 @Service
@@ -58,6 +59,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .build();
 
         device.onRegistration();
+        device.setGuid(UUID.randomUUID().toString());
 
         if (Optional.ofNullable(deviceRepository.findByApiKey(device.getApiKey())).isPresent()) {
             return ServiceResponseBuilder.<Device>error()
@@ -107,17 +109,17 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
 
     @Override
-    public NewServiceResponse<Device> switchEnabledDisabled(Tenant tenant, String id) {
-        if (!Optional.ofNullable(id).isPresent())
+    public NewServiceResponse<Device> switchEnabledDisabled(Tenant tenant, String guid) {
+        if (!Optional.ofNullable(guid).isPresent())
             return ServiceResponseBuilder.<Device>error()
-                    .withMessage(Validations.DEVICE_ID_NULL.getCode(), null)
+                    .withMessage(Validations.DEVICE_GUID_NULL.getCode(), null)
                     .build();
 
-        Device found = getByDeviceId(tenant, id).getResult();
+        Device found = getByDeviceGuid(tenant, guid).getResult();
 
         if (!Optional.ofNullable(found).isPresent())
             return ServiceResponseBuilder.<Device>error()
-                    .withMessage(Validations.DEVICE_ID_DOES_NOT_EXIST.getCode(), null)
+                    .withMessage(Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode(), null)
                     .build();
 
         found.setActive(!found.isActive());
@@ -130,8 +132,8 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
     }
 
     @Override
-    public NewServiceResponse<DeviceSecurityCredentials> generateSecurityPassword(Tenant tenant, String id) {
-        NewServiceResponse<Device> serviceResponse = getByDeviceId(tenant, id);
+    public NewServiceResponse<DeviceSecurityCredentials> generateSecurityPassword(Tenant tenant, String guid) {
+        NewServiceResponse<Device> serviceResponse = getByDeviceGuid(tenant, guid);
 
         if (serviceResponse.isOk()) {
             try {
@@ -140,7 +142,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                 String randomPassword = passwordManager.generateRandomPassword(12);
                 existingDevice.setSecurityHash(passwordManager.createHash(randomPassword));
                 Device saved = deviceRepository.save(existingDevice);
-                return ServiceResponseBuilder.<DeviceSecurityCredentials>ok()
+                return ServiceResponseBuilder.<DeviceSecurityCredentials>ok() 
                         .withResult(new DeviceSecurityCredentials(saved.getDeviceId(),
                                 saved.getApiKey(),
                                 randomPassword)).build();
@@ -154,16 +156,17 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .withMessages(serviceResponse.getResponseMessages()).build();
     }
 
+    
     @Override
-    public NewServiceResponse<Device> update(Tenant tenant, String id, Device updatingDevice) {
+    public NewServiceResponse<Device> update(Tenant tenant, String guid, Device updatingDevice) {
         if (!Optional.ofNullable(tenant).isPresent())
             return ServiceResponseBuilder.<Device>error()
                     .withMessage(CommonValidations.TENANT_NULL.getCode(), null)
                     .build();
 
-        if (!Optional.ofNullable(id).isPresent())
+        if (!Optional.ofNullable(guid).isPresent())
             return ServiceResponseBuilder.<Device>error()
-                    .withMessage(Validations.DEVICE_ID_NULL.getCode(), null)
+                    .withMessage(Validations.DEVICE_GUID_NULL.getCode(), null)
                     .build();
 
         if (!Optional.ofNullable(updatingDevice).isPresent())
@@ -171,10 +174,10 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .withMessage(CommonValidations.RECORD_NULL.getCode(), null)
                     .build();
 
-        Device deviceFromDB = getByDeviceId(tenant, id).getResult();
+        Device deviceFromDB = getByDeviceGuid(tenant, guid).getResult();
         if (deviceFromDB == null) {
             return ServiceResponseBuilder.<Device>error()
-                    .withMessage(Validations.DEVICE_ID_DOES_NOT_EXIST.getCode(), null)
+                    .withMessage(Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode(), null)
                     .build();
         }
 
@@ -199,11 +202,11 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
     }
 
     @Override
-    public NewServiceResponse<Device> remove(Tenant tenant, String id) {
+    public NewServiceResponse<Device> remove(Tenant tenant, String guid) {
 
-        if(!Optional.ofNullable(id).isPresent())
+        if(!Optional.ofNullable(guid).isPresent())
             return ServiceResponseBuilder.<Device>error()
-                    .withMessage(Validations.DEVICE_ID_NULL.getCode(), null)
+                    .withMessage(Validations.DEVICE_GUID_NULL.getCode(), null)
                     .build();
 
         if (!Optional.ofNullable(tenant).isPresent())
@@ -212,11 +215,11 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .build();
 
         //find device
-        Device device = deviceRepository.findByTenantAndId(tenant.getId(), id);
+        Device device = deviceRepository.findByTenantAndGuid(tenant.getId(), guid);
 
         if(!Optional.ofNullable(device).isPresent()){
             return ServiceResponseBuilder.<Device>error()
-                    .withMessage(Validations.DEVICE_ID_DOES_NOT_EXIST.getCode())
+                    .withMessage(Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode())
                     .build();
         }
         //find dependencies
@@ -262,42 +265,37 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         }
 
         //delete the device
-        deviceRepository.delete(id);
+        deviceRepository.delete(device);
         return ServiceResponseBuilder.<Device>ok()
                 .withMessage(DeviceController.Messages.DEVICE_REMOVED_SUCCESSFULLY.getCode())
                 .withResult(device)
                 .build();
     }
 
-    @Override
-    public NewServiceResponse<Device> getByDeviceId(Tenant tenant, String id) {
-        if (!Optional.ofNullable(tenant).isPresent())
-            return ServiceResponseBuilder.<Device>error()
-                    .withMessage(CommonValidations.TENANT_NULL.getCode(), null)
-                    .build();
 
-        if (!Optional.ofNullable(id).isPresent())
-            return ServiceResponseBuilder.<Device>error()
-                    .withMessage(Validations.DEVICE_ID_NULL.getCode(), null)
-                    .build();
+	@Override
+	public NewServiceResponse<Device> getByDeviceGuid(Tenant tenant, String guid) {
+		if (!Optional.ofNullable(tenant).isPresent())
+			return ServiceResponseBuilder.<Device> error().withMessage(CommonValidations.TENANT_NULL.getCode(), null)
+					.build();
 
-        Tenant existingTenant = tenantRepository.findByName(tenant.getName());
+		if (!Optional.ofNullable(guid).isPresent())
+			return ServiceResponseBuilder.<Device> error().withMessage(Validations.DEVICE_GUID_NULL.getCode(), null)
+					.build();
 
-        if (!Optional.ofNullable(tenant).isPresent())
-            return ServiceResponseBuilder.<Device>error()
-                    .withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode(), null)
-                    .build();
+		Tenant existingTenant = tenantRepository.findByName(tenant.getName());
 
-        Device device = deviceRepository.findByTenantAndId(existingTenant.getId(), id);
-        if (!Optional.ofNullable(device).isPresent()) {
-            return ServiceResponseBuilder.<Device>error()
-                    .withMessage(Validations.DEVICE_ID_DOES_NOT_EXIST.getCode(), null)
-                    .build();
-        }
+		if (!Optional.ofNullable(tenant).isPresent())
+			return ServiceResponseBuilder.<Device> error()
+					.withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode(), null).build();
 
-        return ServiceResponseBuilder.<Device>ok()
-                .withResult(device)
-                .build();
-    }
+		Device device = deviceRepository.findByTenantAndGuid(existingTenant.getId(), guid);
+		if (!Optional.ofNullable(device).isPresent()) {
+			return ServiceResponseBuilder.<Device> error()
+					.withMessage(Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode(), null).build();
+		}
+
+		return ServiceResponseBuilder.<Device> ok().withResult(device).build();
+	}
 
 }
