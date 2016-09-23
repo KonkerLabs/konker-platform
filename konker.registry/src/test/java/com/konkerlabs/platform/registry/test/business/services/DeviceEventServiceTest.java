@@ -79,10 +79,12 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
     private Device device;
     private Tenant tenant;
     private Instant firstEventTimestamp;
+    private Instant lastEventTimestamp;
 
     @Before
     public void setUp() throws Exception {
         firstEventTimestamp = Instant.ofEpochMilli(1474562670340L);
+        lastEventTimestamp = Instant.ofEpochMilli(1474562674450L);
 
         tenant = tenantRepository.findByDomainName("konker");
         device = deviceRepository.findByTenantIdAndDeviceId(tenant.getId(), id);
@@ -130,7 +132,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
         event.setChannel("otherChannel");
         deviceEventService.logEvent(device, channel, event);
 
-        Event last = eventRepository.findBy(tenant,device.getDeviceId(),event.getTimestamp(), null, null).get(0);
+        Event last = eventRepository.findBy(tenant,device.getDeviceId(),event.getTimestamp(), null, 1).get(0);
 
         assertThat(last,notNullValue());
 
@@ -168,7 +170,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldReturnAnErrorMessageIfStartInstantIsNullWhenFindingBy() throws Exception {
+    public void shouldReturnAnErrorMessageIfStartInstantIsNullAndLimitIsNullWhenFindingBy() throws Exception {
 
         NewServiceResponse<List<Event>> serviceResponse = deviceEventService.findEventsBy(
                 tenant,
@@ -178,7 +180,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
                 null
         );
 
-        assertThat(serviceResponse, hasErrorMessage(DeviceEventService.Validations.START_TIMESTAMP_NULL.getCode()));
+        assertThat(serviceResponse, hasErrorMessage(DeviceEventService.Validations.LIMIT_NULL.getCode()));
     }
 
     @Test
@@ -196,6 +198,6 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
         assertThat(serviceResponse.getResult(),hasSize(3));
 
         assertThat(serviceResponse.getResult().get(0).getTimestamp().toEpochMilli(),
-                equalTo(firstEventTimestamp.toEpochMilli()));
+                equalTo(lastEventTimestamp.toEpochMilli()));
     }
 }

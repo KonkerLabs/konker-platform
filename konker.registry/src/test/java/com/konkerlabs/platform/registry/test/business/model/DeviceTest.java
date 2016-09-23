@@ -151,49 +151,49 @@ public class DeviceTest {
 		assertThat(device.applyValidations(), sameInstance(Optional.empty()));
 	}
 
-	@Test
-	public void shouldReturnItsLastEvent() throws Exception {
-		Event firtEvent = Event.builder().timestamp(Instant.now().minus(Duration.ofMinutes(2))).build();
-		Event lastEvent = Event.builder().timestamp(Instant.now()).build();
+//	@Test
+//	public void shouldReturnItsLastEvent() throws Exception {
+//		Event firtEvent = Event.builder().timestamp(Instant.now().minus(Duration.ofMinutes(2))).build();
+//		Event lastEvent = Event.builder().timestamp(Instant.now()).build();
+//
+//		device.setEvents(Arrays.asList(new Event[] { firtEvent, lastEvent }));
+//
+//		assertThat(device.getLastEvent(), equalTo(lastEvent));
+//	}
 
-		device.setEvents(Arrays.asList(new Event[] { firtEvent, lastEvent }));
+//	@Test
+//	public void shouldReturnNullForLastEventIfThereIsNoEventsYet() throws Exception {
+//		device.setEvents(null);
+//
+//		assertThat(device.getLastEvent(), nullValue());
+//
+//		device.setEvents(Collections.emptyList());
+//
+//		assertThat(device.getLastEvent(), nullValue());
+//	}
 
-		assertThat(device.getLastEvent(), equalTo(lastEvent));
-	}
+//	@Test
+//	public void shouldReturnMostRecentEventsInDescendingOrder() throws Exception {
+//		Event firstEvent = Event.builder().timestamp(Instant.now().minus(Duration.ofMinutes(2))).build();
+//		Event lastEvent = Event.builder().timestamp(Instant.now()).build();
+//
+//		device.setEvents(Arrays.asList(new Event[] { firstEvent, lastEvent }));
+//
+//		List<Event> mostRecentEvents = device.getMostRecentEvents();
+//
+//		assertThat(mostRecentEvents.size(), equalTo(2));
+//		assertThat(mostRecentEvents.get(0), equalTo(lastEvent));
+//		assertThat(mostRecentEvents.get(1), equalTo(firstEvent));
+//	}
 
-	@Test
-	public void shouldReturnNullForLastEventIfThereIsNoEventsYet() throws Exception {
-		device.setEvents(null);
-
-		assertThat(device.getLastEvent(), nullValue());
-
-		device.setEvents(Collections.emptyList());
-
-		assertThat(device.getLastEvent(), nullValue());
-	}
-
-	@Test
-	public void shouldReturnMostRecentEventsInDescendingOrder() throws Exception {
-		Event firstEvent = Event.builder().timestamp(Instant.now().minus(Duration.ofMinutes(2))).build();
-		Event lastEvent = Event.builder().timestamp(Instant.now()).build();
-
-		device.setEvents(Arrays.asList(new Event[] { firstEvent, lastEvent }));
-
-		List<Event> mostRecentEvents = device.getMostRecentEvents();
-
-		assertThat(mostRecentEvents.size(), equalTo(2));
-		assertThat(mostRecentEvents.get(0), equalTo(lastEvent));
-		assertThat(mostRecentEvents.get(1), equalTo(firstEvent));
-	}
-
-	@Test
-	public void shouldReturndEmptyListForMostRecentEventsWhenNullEventList() throws Exception {
-		device.setEvents(null);
-
-		List<Event> mostRecentEvents = device.getMostRecentEvents();
-
-		assertThat(mostRecentEvents, new IsEmptyCollection<Event>());
-	}
+//	@Test
+//	public void shouldReturndEmptyListForMostRecentEventsWhenNullEventList() throws Exception {
+//		device.setEvents(null);
+//
+//		List<Event> mostRecentEvents = device.getMostRecentEvents();
+//
+//		assertThat(mostRecentEvents, new IsEmptyCollection<Event>());
+//	}
 
 	@Test
 	public void shouldGenerateItsOwnURI() throws Exception {

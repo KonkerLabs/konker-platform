@@ -186,13 +186,13 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
     public void shouldRetrieveLastTwoEventsByTenantAndDevice() throws Exception {
         List<Event> events = eventRepository.findBy(tenant,deviceId,
                 firstEventTimestamp.plus(1,ChronoUnit.SECONDS),
-                null,null);
+                null,2);
 
         assertThat(events,notNullValue());
         assertThat(events,hasSize(2));
 
-        assertThat(events.get(0).getTimestamp().toEpochMilli(),equalTo(secondEventTimestamp.toEpochMilli()));
-        assertThat(events.get(1).getTimestamp().toEpochMilli(),equalTo(thirdEventTimestamp.toEpochMilli()));
+        assertThat(events.get(0).getTimestamp().toEpochMilli(),equalTo(thirdEventTimestamp.toEpochMilli()));
+        assertThat(events.get(1).getTimestamp().toEpochMilli(),equalTo(secondEventTimestamp.toEpochMilli()));
     }
 
     @Test
@@ -212,9 +212,9 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfStartingOffsetIsNullWhenFindingBy() throws Exception {
+    public void shouldRaiseAnExceptionIfStartingOffsetAndLimitAreNullWhenFindingBy() throws Exception {
         thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("Starting offset cannot be null");
+        thrown.expectMessage("Limit cannot be null when start instant isn't provided");
 
 
         eventRepository.findBy(tenant,deviceId,null,null,null);
@@ -227,7 +227,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
                 deviceId,
                 firstEventTimestamp,
                 secondEventTimestamp.minus(1, ChronoUnit.SECONDS),
-                null);
+                1);
 
         assertThat(events,notNullValue());
         assertThat(events,hasSize(1));
@@ -247,6 +247,6 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         assertThat(events,notNullValue());
         assertThat(events,hasSize(1));
 
-        assertThat(events.get(0).getTimestamp().toEpochMilli(),equalTo(firstEventTimestamp.toEpochMilli()));
+        assertThat(events.get(0).getTimestamp().toEpochMilli(),equalTo(thirdEventTimestamp.toEpochMilli()));
     }
 }

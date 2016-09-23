@@ -26,8 +26,6 @@ import java.util.Optional;
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
 public class DeviceEventServiceImpl implements DeviceEventService {
 
-//    @Autowired
-//    private DeviceRepository deviceRepository;
     @Autowired
     @Qualifier("mongoEvents")
     private EventRepository eventRepository;
@@ -45,9 +43,6 @@ public class DeviceEventServiceImpl implements DeviceEventService {
             throw new BusinessException("Event cannot be null");
         if (event.getPayload() == null || event.getPayload().isEmpty())
             throw new BusinessException("Event payload cannot be null or empty");
-
-        if (device.getEvents() == null)
-            device.setEvents(new ArrayList<>());
 
         if (!Optional.ofNullable(event.getTimestamp()).isPresent())
             event.setTimestamp(Instant.now());
@@ -71,9 +66,10 @@ public class DeviceEventServiceImpl implements DeviceEventService {
                     .withMessage(DeviceRegisterService.Validations.DEVICE_ID_NULL.getCode(), null)
                     .build();
 
-        if (!Optional.ofNullable(startTimestamp).isPresent())
+        if (!Optional.ofNullable(startTimestamp).isPresent() &&
+            !Optional.ofNullable(limit).isPresent())
             return ServiceResponseBuilder.<List<Event>>error()
-                    .withMessage(Validations.START_TIMESTAMP_NULL.getCode(), null)
+                    .withMessage(Validations.LIMIT_NULL.getCode(), null)
                     .build();
 
         return ServiceResponseBuilder.<List<Event>>ok()

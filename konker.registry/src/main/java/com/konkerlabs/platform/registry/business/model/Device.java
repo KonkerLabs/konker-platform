@@ -50,7 +50,7 @@ public class Device implements DeviceURIDealer, Validatable, UserDetails {
 	private String name;
 	private String description;
 	private Instant registrationDate;
-	private List<Event> events;
+//	private List<Event> events;
 	private boolean active;
 
 	public Optional<Map<String, Object[]>> applyValidations() {
@@ -78,17 +78,17 @@ public class Device implements DeviceURIDealer, Validatable, UserDetails {
 		setApiKey(new BigInteger(60, new Random()).toString(32));
 	}
 
-	public Event getLastEvent() {
-		return getMostRecentEvents().stream().findFirst().orElse(null);
-	}
+//	public Event getLastEvent() {
+//		return getMostRecentEvents().stream().findFirst().orElse(null);
+//	}
 
 	// FIXME Needs performance improvement. Sorting those items on the
 	// application server and returning all of them is not efficient.
-	public List<Event> getMostRecentEvents() {
-		return Optional.ofNullable(getEvents()).orElse(Collections.emptyList()).stream()
-				.sorted((eventA, eventB) -> eventB.getTimestamp().compareTo(eventA.getTimestamp()))
-				.collect(Collectors.toList());
-	}
+//	public List<Event> getMostRecentEvents() {
+//		return Optional.ofNullable(getEvents()).orElse(Collections.emptyList()).stream()
+//				.sorted((eventA, eventB) -> eventB.getTimestamp().compareTo(eventA.getTimestamp()))
+//				.collect(Collectors.toList());
+//	}
 
 	public URI toURI() {
 		return toDeviceRouteURI(getTenant().getDomainName(),getDeviceId());
