@@ -88,8 +88,8 @@ public class EventRepositoryMongoImpl implements EventRepository {
         List<Criteria> criterias = new ArrayList<>();
 
         criterias.add(Criteria.where("deviceId").is(deviceId));
-        criterias.add(Criteria.where("ts").gte(startInstant.toEpochMilli()));
 
+        Optional.ofNullable(startInstant).ifPresent(instant -> criterias.add(Criteria.where("ts").gte(instant.toEpochMilli())));
         Optional.ofNullable(endInstant).ifPresent(instant -> criterias.add(Criteria.where("ts").lte(instant.toEpochMilli())));
 
         Query query = Query.query(
