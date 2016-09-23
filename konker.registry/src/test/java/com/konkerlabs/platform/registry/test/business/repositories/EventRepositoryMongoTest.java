@@ -10,6 +10,7 @@ import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
+import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
 import org.junit.Before;
@@ -71,7 +72,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         secondEventTimestamp = Instant.ofEpochMilli(1474562672395L);
         thirdEventTimestamp = Instant.ofEpochMilli(1474562674450L);
 
-        deviceId = "95c14b36ba2b43f1";
+        deviceId = "71fc0d48-674a-4d62-b3e5-0216abca63af";
         tenant = tenantRepository.findByDomainName("konker");
 
         payload = "{\n" +
@@ -95,10 +96,12 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
                 .timestamp(firstEventTimestamp)
                 .payload(payload).build();
 
-        persisted = (DBObject) JSON.parse(payload);
+        persisted = new BasicDBObject();
         persisted.put("ts", firstEventTimestamp.toEpochMilli());
         persisted.put("deviceId", deviceId);
         persisted.put("tenantDomain", tenant.getDomainName());
+        persisted.put("channel", event.getChannel());
+        persisted.put("payload", event.getPayload());
     }
 
     @Test

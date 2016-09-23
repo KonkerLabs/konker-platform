@@ -1,7 +1,6 @@
 package com.konkerlabs.platform.registry.web.controllers;
 
 import java.text.MessageFormat;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Supplier;
@@ -23,6 +22,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
 import com.konkerlabs.platform.registry.web.forms.DeviceRegistrationForm;
@@ -56,11 +56,13 @@ public class DeviceController implements ApplicationContextAware {
     }
 
     private DeviceRegisterService deviceRegisterService;
+    private DeviceEventService deviceEventService;
     private Tenant tenant;
 
     @Autowired
-    public DeviceController(DeviceRegisterService deviceRegisterService, Tenant tenant) {
+    public DeviceController(DeviceRegisterService deviceRegisterService, DeviceEventService deviceEventService, Tenant tenant) {
         this.deviceRegisterService = deviceRegisterService;
+        this.deviceEventService = deviceEventService;
         this.tenant = tenant;
     }
 
@@ -98,7 +100,7 @@ public class DeviceController implements ApplicationContextAware {
     public ModelAndView deviceEvents(@PathVariable String deviceGuid) {
         Device device = deviceRegisterService.getByDeviceGuid(tenant, deviceGuid).getResult();
         return new ModelAndView("devices/events").addObject("device", device).addObject("recentEvents",
-                /*device.getMostRecentEvents()*/Collections.emptyList());
+                deviceEventService.findEventsBy(tenant,deviceGuid,null,null,50).getResult());
     }
 
     @RequestMapping(path = "/save", method = RequestMethod.POST)
