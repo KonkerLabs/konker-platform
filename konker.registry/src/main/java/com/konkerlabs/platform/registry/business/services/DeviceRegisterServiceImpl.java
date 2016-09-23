@@ -258,12 +258,12 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         if(Optional.ofNullable(response).isPresent()) return response;
 
         //delete ingested data in logical way
-        if(device.getEvents() != null){
-            device.getEvents()
-                    .stream()
-                    .filter(Objects::nonNull)
-                    .forEach(event -> event.setDeleted(true));
-        }
+//        if(device.getEvents() != null){
+//            device.getEvents()
+//                    .stream()
+//                    .filter(Objects::nonNull)
+//                    .forEach(event -> event.setDeleted(true));
+//        }
 
         //delete the device
         deviceRepository.delete(id);

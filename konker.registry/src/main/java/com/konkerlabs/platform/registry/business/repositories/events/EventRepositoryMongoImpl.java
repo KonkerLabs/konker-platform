@@ -23,6 +23,7 @@ import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -80,23 +81,24 @@ public class EventRepositoryMongoImpl implements EventRepository {
         Optional.ofNullable(deviceId).filter(s -> !s.isEmpty())
                 .orElseThrow(() -> new IllegalArgumentException("Device ID cannot be null or empty"));
 
-        Optional.ofNullable(startInstant)
-                .orElseThrow(() -> new IllegalArgumentException("Starting offset cannot be null"));
+        if (!Optional.ofNullable(startInstant).isPresent() &&
+            !Optional.ofNullable(limit).isPresent())
+                throw new IllegalArgumentException("Limit cannot be null when start instant isn't provided");
 
         List<Criteria> criterias = new ArrayList<>();
 
         criterias.add(Criteria.where("deviceId").is(deviceId));
-        criterias.add(Criteria.where("ts").gte(startInstant.toEpochMilli()));
 
+        Optional.ofNullable(startInstant).ifPresent(instant -> criterias.add(Criteria.where("ts").gte(instant.toEpochMilli())));
         Optional.ofNullable(endInstant).ifPresent(instant -> criterias.add(Criteria.where("ts").lte(instant.toEpochMilli())));
 
         Query query = Query.query(
             Criteria.where("tenantDomain").is(tenant.getDomainName())
             .andOperator(criterias.toArray(new Criteria[criterias.size()])));
 
-        Optional.ofNullable(limit).filter(integer -> integer > 0).ifPresent(integer -> query.limit(limit));
+        Optional.ofNullable(limit).filter(integer -> integer > 0).ifPresent(integer -> query.limit(integer));
 
-        List<DBObject> result = mongoTemplate.find(query.with(new Sort(new Sort.Order(Sort.Direction.ASC, "ts"))),
+        List<DBObject> result = mongoTemplate.find(query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "ts"))),
                 DBObject.class,
                 EVENTS_COLLECTION_NAME);
 

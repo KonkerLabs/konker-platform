@@ -11,7 +11,7 @@ import java.util.List;
 public interface DeviceEventService {
 
     enum Validations {
-        START_TIMESTAMP_NULL("service.device_events.start_timestamp.not_null");
+        LIMIT_NULL("service.device_events.limit.not_null");
 
         public String getCode() {
             return code;
