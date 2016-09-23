@@ -3,87 +3,87 @@
 <head>
 </head>
 <body>
-    <div data-layout-fragment="content">
-        <fieldset disabled="" class="form-horizontal">
-            <legend data-th-text="#{devices.show.legend}"></legend>
-            <div class="alert alert-success" role="alert" data-th-if="${message != null}">
-                <span data-th-text="${message}"></span>
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+<div data-layout-fragment="content">
+    <fieldset disabled="" class="form-horizontal">
+        <legend data-th-text="#{devices.show.legend}"></legend>
+        <div class="alert alert-success" role="alert" data-th-if="${message != null}">
+            <span data-th-text="${message}"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-1 control-label"
+                   data-th-text="#{devices.show.id}"
+                   for="deviceId"></label>
+            <div class="col-sm-4">
+                <input type="text" data-th-value="${device.deviceId}"
+                       class="form-control"
+                       id="deviceId"
+                       name="deviceId"/>
             </div>
-            <div class="form-group">
-                <label class="col-sm-1 control-label"
-                       data-th-text="#{devices.show.id}"
-                       for="deviceId"></label>
-                <div class="col-sm-4">
-                    <input type="text" data-th-value="${device.deviceId}"
-                        class="form-control"
-                        id="deviceId"
-                        name="deviceId"/>
-                </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-1 control-label"
+                   data-th-text="#{devices.show.name}"
+                   for="name"></label>
+            <div class="col-sm-4">
+                <input type="text" data-th-value="${device.name}"
+                       class="form-control"
+                       id="name" name="name"/>
             </div>
-            <div class="form-group">
-                <label class="col-sm-1 control-label"
-                       data-th-text="#{devices.show.name}"
-                       for="name"></label>
-                <div class="col-sm-4">
-                    <input type="text" data-th-value="${device.name}"
-                            class="form-control"
-                            id="name" name="name"/>
-                </div>
-            </div>
-            <div class="form-group">
-                <label class="col-sm-1 control-label"
-                       data-th-text="#{devices.show.description}"
-                       for="description"></label>
-                <div class="col-sm-6">
+        </div>
+        <div class="form-group">
+            <label class="col-sm-1 control-label"
+                   data-th-text="#{devices.show.description}"
+                   for="description"></label>
+            <div class="col-sm-6">
                     <textarea id="description" class="form-control" name="description"
-                        data-th-text="${device.description}">
+                              data-th-text="${device.description}">
                     </textarea>
-                </div>
             </div>
-            <div class="form-group">
-                <label class="col-sm-1 control-label"
-                       data-th-text="#{devices.show.registration_date_time}"
-                       for="registrationDate"></label>
-                <div class="col-sm-4">
-                    <input type="text" id="registrationDate" class="form-control" name="registrationDate"
-                        data-th-value="${device.registrationDate.toString()}"/>
-                </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-1 control-label"
+                   data-th-text="#{devices.show.registration_date_time}"
+                   for="registrationDate"></label>
+            <div class="col-sm-4">
+                <input type="text" id="registrationDate" class="form-control" name="registrationDate"
+                       data-th-value="${device.registrationDate.toString()}"/>
             </div>
-            <div class="form-group">
-                <label class="col-sm-1 control-label"
-                       data-th-text="#{devices.show.api_key}"
-                       for="apiKey"></label>
-                <div class="col-sm-4">
-                    <input type="text" id="apiKey" class="form-control" name="apiKey"
-                           data-th-value="${device.apiKey}"/>
-                </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-1 control-label"
+                   data-th-text="#{devices.show.api_key}"
+                   for="apiKey"></label>
+            <div class="col-sm-4">
+                <input type="text" id="apiKey" class="form-control" name="apiKey"
+                       data-th-value="${device.apiKey}"/>
             </div>
-            <div class="form-group">
-                <label class="col-sm-1 control-label"
-                       data-th-text="#{devices.show.last_update}"
-                       for="lastUpdate"></label>
-                <div class="col-sm-4">
-                    <input type="text" id="lastUpdate" class="form-control" name="lastUpdate"
-                        data-th-value="${device.lastEvent != null}? ${device.lastEvent.timestamp.toString()} : #{devices.show.updates}"/>
-                </div>
+        </div>
+        <!--<div class="form-group">-->
+            <!--<label class="col-sm-1 control-label"-->
+                   <!--data-th-text="#{devices.show.last_update}"-->
+                   <!--for="lastUpdate"></label>-->
+            <!--<div class="col-sm-4">-->
+                <!--<input type="text" id="lastUpdate" class="form-control" name="lastUpdate"-->
+                       <!--data-th-value="${device.lastEvent != null}? ${device.lastEvent.timestamp.toString()} : #{devices.show.updates}"/>-->
+            <!--</div>-->
+        <!--</div>-->
+        <div class="form-group">
+            <label class="col-sm-1 control-label"
+                   data-th-text="#{devices.show.active}"
+                   for="active"></label>
+            <div class="col-sm-4">
+                <input type="checkbox" data-th-field="${device.active}"
+                       id="active"
+                       name="active"/>
             </div>
-            <div class="form-group">
-                <label class="col-sm-1 control-label"
-                       data-th-text="#{devices.show.active}"
-                       for="active"></label>
-                <div class="col-sm-4">
-                    <input type="checkbox" data-th-field="${device.active}"
-                           id="active"
-                           name="active"/>
-                </div>
-            </div>
-        </fieldset>
-        <a data-th-href="@{/devices}"
-           data-th-text="#{nav.back}"
-           class="btn btn-default"></a>
-    </div>
+        </div>
+    </fieldset>
+    <a data-th-href="@{/devices}"
+       data-th-text="#{nav.back}"
+       class="btn btn-default"></a>
+</div>
 </body>
 </html>

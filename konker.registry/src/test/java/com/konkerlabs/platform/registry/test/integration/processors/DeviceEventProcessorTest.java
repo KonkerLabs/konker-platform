@@ -60,6 +60,7 @@ public class DeviceEventProcessorTest {
     public void setUp() throws Exception {
         event = Event.builder()
             .channel(incomingChannel)
+            .deviceId("id")
             .payload(originalPayload)
             .build();
 
