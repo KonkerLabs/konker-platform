@@ -4,15 +4,16 @@ import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.events.EventRepository;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.SolrTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import org.junit.Before;
 import org.junit.Rule;
@@ -27,10 +28,11 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.text.MessageFormat;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Optional;
+import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static com.konkerlabs.platform.registry.test.base.matchers.NewServiceResponseMatchers.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
@@ -76,12 +78,15 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
     private Event event;
     private Device device;
     private Tenant tenant;
+    private Instant firstEventTimestamp;
 
     @Before
     public void setUp() throws Exception {
-        event = Event.builder().channel(topic).payload(payload).deviceId(id).build();
-        tenant = tenantRepository.findByName("Konker");
+        firstEventTimestamp = Instant.ofEpochMilli(1474562670340L);
+
+        tenant = tenantRepository.findByDomainName("konker");
         device = deviceRepository.findByTenantIdAndDeviceId(tenant.getId(), id);
+        event = Event.builder().channel(topic).payload(payload).deviceId(device.getDeviceId()).build();
     }
 
     @Test
@@ -125,12 +130,72 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
         event.setChannel("otherChannel");
         deviceEventService.logEvent(device, channel, event);
 
-        Event last = eventRepository.findBy(tenant,device.getDeviceId(),event.getTimestamp().toEpochMilli(), null).get(0);
+        Event last = eventRepository.findBy(tenant,device.getDeviceId(),event.getTimestamp(), null, null).get(0);
 
         assertThat(last,notNullValue());
 
         long gap = Duration.between(last.getTimestamp(), Instant.now()).abs().getSeconds();
 
         assertThat(gap,not(greaterThan(60L)));
+    }
+
+    @Test
+    public void shouldReturnAnErrorMessageIfTenantIsNullWhenFindingBy() throws Exception {
+
+        NewServiceResponse<List<Event>> serviceResponse = deviceEventService.findEventsBy(
+            null,
+            device.getId(),
+            firstEventTimestamp,
+            null,
+            null
+        );
+
+        assertThat(serviceResponse, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
+    }
+
+    @Test
+    public void shouldReturnAnErrorMessageIfDeviceIdIsNullWhenFindingBy() throws Exception {
+
+        NewServiceResponse<List<Event>> serviceResponse = deviceEventService.findEventsBy(
+                tenant,
+                null,
+                firstEventTimestamp,
+                null,
+                null
+        );
+
+        assertThat(serviceResponse, hasErrorMessage(DeviceRegisterService.Validations.DEVICE_ID_NULL.getCode()));
+    }
+
+    @Test
+    public void shouldReturnAnErrorMessageIfStartInstantIsNullWhenFindingBy() throws Exception {
+
+        NewServiceResponse<List<Event>> serviceResponse = deviceEventService.findEventsBy(
+                tenant,
+                device.getId(),
+                null,
+                null,
+                null
+        );
+
+        assertThat(serviceResponse, hasErrorMessage(DeviceEventService.Validations.START_TIMESTAMP_NULL.getCode()));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json"})
+    public void shouldFindAllRequestEvents() throws Exception {
+        NewServiceResponse<List<Event>> serviceResponse = deviceEventService.findEventsBy(
+                tenant,
+                device.getDeviceId(),
+                firstEventTimestamp,
+                null,
+                null
+        );
+
+        assertThat(serviceResponse.getResult(),notNullValue());
+        assertThat(serviceResponse.getResult(),hasSize(3));
+
+        assertThat(serviceResponse.getResult().get(0).getTimestamp().toEpochMilli(),
+                equalTo(firstEventTimestamp.toEpochMilli()));
     }
 }
