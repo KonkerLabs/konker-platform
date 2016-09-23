@@ -3,7 +3,7 @@ package com.konkerlabs.platform.registry.test.business.repositories;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
-import com.konkerlabs.platform.registry.business.repositories.solr.EventRepository;
+import com.konkerlabs.platform.registry.business.repositories.events.EventRepository;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
@@ -20,6 +20,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.solr.core.SolrTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -38,7 +39,7 @@ import static org.mockito.Mockito.when;
     SolrTestConfiguration.class
 })
 @UsingDataSet(locations = {"/fixtures/tenants.json"})
-public class EventRepositoryTest extends BusinessLayerTestSupport {
+public class EventRepositorySolrTest extends BusinessLayerTestSupport {
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -46,6 +47,7 @@ public class EventRepositoryTest extends BusinessLayerTestSupport {
     @Autowired
     private TenantRepository tenantRepository;
     @Autowired
+    @Qualifier("solr")
     private EventRepository eventRepository;
 
     private String payload = "{\n" +

@@ -1,11 +1,13 @@
 package com.konkerlabs.platform.registry.business.services;
 
+import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.DataEnrichmentExtensionRepository;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.EventRouteRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
+import com.konkerlabs.platform.registry.business.repositories.events.EventRepository;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
@@ -13,6 +15,7 @@ import com.konkerlabs.platform.registry.web.controllers.DeviceController;
 import com.konkerlabs.platform.security.exceptions.SecurityException;
 import com.konkerlabs.platform.security.managers.PasswordManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
@@ -38,6 +41,9 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
     @Autowired
     private DataEnrichmentExtensionRepository dataEnrichmentExtensionRepository;
+
+    @Autowired @Qualifier("mongoEvents")
+    private EventRepository eventRepository;
 
     @Override
     public NewServiceResponse<Device> register(Tenant tenant, Device device) {
@@ -152,6 +158,34 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         } else
             return ServiceResponseBuilder.<DeviceSecurityCredentials>error()
                     .withMessages(serviceResponse.getResponseMessages()).build();
+    }
+
+    @Override
+    public NewServiceResponse<List<Event>> findEventsBy(Tenant tenant, String deviceId, Long offset) {
+        if (!Optional.ofNullable(tenant).isPresent())
+            return ServiceResponseBuilder.<List<Event>>error()
+                    .withMessage(CommonValidations.TENANT_NULL.getCode(), null)
+                    .build();
+
+        if (!Optional.ofNullable(deviceId).isPresent())
+            return ServiceResponseBuilder.<List<Event>>error()
+                    .withMessage(Validations.DEVICE_ID_NULL.getCode(), null)
+                    .build();
+
+//        if (!Optional.ofNullable(offset).isPresent())
+//            return ServiceResponseBuilder.<List<Event>>error()
+//                    .withMessage(Validations.DEVICE_ID_NULL.getCode(), null)
+//                    .build();
+
+        Device deviceFromDB = getByDeviceId(tenant, deviceId).getResult();
+        if (deviceFromDB == null) {
+            return ServiceResponseBuilder.<List<Event>>error()
+                    .withMessage(Validations.DEVICE_ID_DOES_NOT_EXIST.getCode(), null)
+                    .build();
+        }
+
+        return ServiceResponseBuilder.<List<Event>>ok()
+                .withResult(eventRepository.findBy(tenant, deviceId, offset, null)).build();
     }
 
     @Override
