@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -31,16 +30,15 @@ public interface DeviceRegisterService {
 		}
 	}
 
-	@RequiredArgsConstructor
-	@Getter
-	class DeviceSecurityCredentials {
-		@NonNull
-		private String deviceId;
-		@NonNull
-		private String apiKey;
-		@NonNull
-		private String password;
-	}
+    @RequiredArgsConstructor
+    @Getter
+    class DeviceSecurityCredentials {
+        @NonNull
+        private Device device;
+        @NonNull
+        private String password;
+
+    }
 
 	/**
 	 * Persists a new Device.

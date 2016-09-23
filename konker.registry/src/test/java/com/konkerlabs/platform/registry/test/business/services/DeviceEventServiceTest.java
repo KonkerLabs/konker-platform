@@ -4,14 +4,16 @@ import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
+import com.konkerlabs.platform.registry.business.repositories.events.EventRepository;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.SolrTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import org.junit.Before;
 import org.junit.Rule;
@@ -19,21 +21,23 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.text.MessageFormat;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static com.konkerlabs.platform.registry.test.base.matchers.NewServiceResponseMatchers.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
     MongoTestConfiguration.class,
     BusinessTestConfiguration.class,
-    SolrTestConfiguration.class
 })
 @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json"})
 public class DeviceEventServiceTest extends BusinessLayerTestSupport {
@@ -42,17 +46,19 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
     public ExpectedException thrown = ExpectedException.none();
 
     @Autowired
-    private DeviceRepository deviceRepository;
-
-    @Autowired
     private TenantRepository tenantRepository;
 
     @Autowired
     private DeviceEventService deviceEventService;
 
     @Autowired
-    private DeviceRegisterService deviceRegisterService;
+    private DeviceRepository deviceRepository;
 
+    @Autowired
+    @Qualifier("mongoEvents")
+    private EventRepository eventRepository;
+
+    private String id = "95c14b36ba2b43f1";
     private String guid = "71fc0d48-674a-4d62-b3e5-0216abca63af";
     private String apiKey = "84399b2e-d99e-11e5-86bc-34238775bac9";
     private String payload = "{\n" +
@@ -73,13 +79,19 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
     private Event event;
     private Device device;
     private Tenant tenant;
+    private Instant firstEventTimestamp;
+    private Instant lastEventTimestamp;
 
     @Before
     public void setUp() throws Exception {
-        event = Event.builder().channel(topic).payload(payload).build();
-        tenant = tenantRepository.findByName("Konker");
-        device = deviceRegisterService.getByDeviceGuid(tenant, guid).getResult();
+        firstEventTimestamp = Instant.ofEpochMilli(1474562670340L);
+        lastEventTimestamp = Instant.ofEpochMilli(1474562674450L);
+
+        tenant = tenantRepository.findByDomainName("konker");
+        device = deviceRepository.findByTenantIdAndDeviceId(tenant.getId(), id);
+        event = Event.builder().channel(topic).payload(payload).deviceId(device.getDeviceId()).build();
     }
+
     @Test
     public void shouldRaiseAnExceptionIfDeviceIsNull() throws Exception {
         thrown.expect(BusinessException.class);
@@ -87,6 +99,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
 
         deviceEventService.logEvent(null, channel, event);
     }
+
     @Test
     public void shouldRaiseAnExceptionIfEventIsNull() throws Exception {
         thrown.expect(BusinessException.class);
@@ -94,6 +107,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
 
         deviceEventService.logEvent(device, channel, null);
     }
+
     @Test
     public void shouldRaiseAnExceptionIfPayloadIsNull() throws Exception {
         event.setPayload(null);
@@ -103,15 +117,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
 
         deviceEventService.logEvent(device, channel, event);
     }
-//    @Test
-//    public void shouldRaiseAnExceptionIfEventTimestampIsAlreadySet() throws Exception {
-//        event.setTimestamp(Instant.now());
-//
-//        thrown.expect(BusinessException.class);
-//        thrown.expectMessage("Event timestamp cannot be already set!");
-//
-//        deviceEventService.logEvent(device, event);
-//    }
+
     @Test
     public void shouldRaiseAnExceptionIfPayloadIsEmpty() throws Exception {
         event.setPayload("");
@@ -121,33 +127,78 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
 
         deviceEventService.logEvent(device, channel, event);
     }
-    @Test
-    public void shouldRaiseAnExceptionIfDeviceDoesNotExist() throws Exception {
-        apiKey = "unknownDevice";
-        device.setApiKey(apiKey);
 
-        thrown.expect(BusinessException.class);
-        thrown.expectMessage(MessageFormat.format("Device with API Key [{0}] does not exist", apiKey));
-
-        deviceEventService.logEvent(device, channel, event);
-    }
     @Test
     public void shouldLogFirstDeviceEvent() throws Exception {
         event.setChannel("otherChannel");
         deviceEventService.logEvent(device, channel, event);
 
-        Device device = deviceRepository.findByApiKey(apiKey);
-
-        assertThat(device,notNullValue());
-
-        Event last = device.getLastEvent();
+        Event last = eventRepository.findBy(tenant,device.getDeviceId(),event.getTimestamp(), null, 1).get(0);
 
         assertThat(last,notNullValue());
-        assertThat(last.getPayload(),equalTo(payload));
 
         long gap = Duration.between(last.getTimestamp(), Instant.now()).abs().getSeconds();
 
         assertThat(gap,not(greaterThan(60L)));
-        assertThat(last.getChannel(), equalTo(channel));
+    }
+
+    @Test
+    public void shouldReturnAnErrorMessageIfTenantIsNullWhenFindingBy() throws Exception {
+
+        NewServiceResponse<List<Event>> serviceResponse = deviceEventService.findEventsBy(
+            null,
+            device.getId(),
+            firstEventTimestamp,
+            null,
+            null
+        );
+
+        assertThat(serviceResponse, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
+    }
+
+    @Test
+    public void shouldReturnAnErrorMessageIfDeviceIdIsNullWhenFindingBy() throws Exception {
+
+        NewServiceResponse<List<Event>> serviceResponse = deviceEventService.findEventsBy(
+                tenant,
+                null,
+                firstEventTimestamp,
+                null,
+                null
+        );
+
+        assertThat(serviceResponse, hasErrorMessage(DeviceRegisterService.Validations.DEVICE_ID_NULL.getCode()));
+    }
+
+    @Test
+    public void shouldReturnAnErrorMessageIfStartInstantIsNullAndLimitIsNullWhenFindingBy() throws Exception {
+
+        NewServiceResponse<List<Event>> serviceResponse = deviceEventService.findEventsBy(
+                tenant,
+                device.getId(),
+                null,
+                null,
+                null
+        );
+
+        assertThat(serviceResponse, hasErrorMessage(DeviceEventService.Validations.LIMIT_NULL.getCode()));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json"})
+    public void shouldFindAllRequestEvents() throws Exception {
+        NewServiceResponse<List<Event>> serviceResponse = deviceEventService.findEventsBy(
+                tenant,
+                device.getDeviceId(),
+                firstEventTimestamp,
+                null,
+                null
+        );
+
+        assertThat(serviceResponse.getResult(),notNullValue());
+        assertThat(serviceResponse.getResult(),hasSize(3));
+
+        assertThat(serviceResponse.getResult().get(0).getTimestamp().toEpochMilli(),
+                equalTo(lastEventTimestamp.toEpochMilli()));
     }
 }

@@ -83,8 +83,8 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
         rawDevice = Device.builder().deviceId("94c32b36cd2b43f1").name("Device name")
                 .description("Description").active(true)
-                .events(Arrays.asList(new Event[]{Event.builder()
-                        .payload("Payload one").timestamp(Instant.ofEpochMilli(1453320973747L)).build()}))
+//                .events(Arrays.asList(new Event[]{Event.builder()
+//                        .payload("Payload one").timestamp(Instant.ofEpochMilli(1453320973747L)).build()}))
                 .build();
         device = spy(rawDevice);
         event = Event.builder()
@@ -312,7 +312,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
         // ensure that data should not be changed didn't change
         assertThat(foundDevice.getRegistrationDate(), not(equalTo(THE_REGISTRATION_TIME)));
-        assertThat(foundDevice.getEvents(), nullValue());
+//        assertThat(foundDevice.getEvents(), nullValue());
     }
 
     @Test
@@ -441,16 +441,16 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
                 hasEntry(DeviceController.Messages.DEVICE_REMOVED_SUCCESSFULLY.getCode(), null));
     }
 
-    @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json"})
-    public void shouldDeleteInLogicalWayEachDataIngestedOnDeviceForSucceedDeletion() throws Exception {
-        Device device = deviceRegisterService
-                .findByTenantDomainNameAndDeviceId(currentTenant.getDomainName(), DEVICE_ID_IN_USE);
-        device.setEvents(Arrays.asList(event));
-        NewServiceResponse<Device> serviceResponse = deviceRegisterService
-                .remove(Tenant.builder().id(THE_TENANT_ID).build(), device.getId());
-        assertThat(serviceResponse.getResult().getEvents() != null ? serviceResponse.getResult().getEvents().stream().anyMatch(event -> event.getDeleted()) : true, equalTo(true));
-    }
+//    @Test
+//    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json"})
+//    public void shouldDeleteInLogicalWayEachDataIngestedOnDeviceForSucceedDeletion() throws Exception {
+//        Device device = deviceRegisterService
+//                .findByTenantDomainNameAndDeviceId(currentTenant.getDomainName(), DEVICE_ID_IN_USE);
+//        device.setEvents(Arrays.asList(event));
+//        NewServiceResponse<Device> serviceResponse = deviceRegisterService
+//                .remove(Tenant.builder().id(THE_TENANT_ID).build(), device.getId());
+//        assertThat(serviceResponse.getResult().getEvents() != null ? serviceResponse.getResult().getEvents().stream().anyMatch(event -> event.getDeleted()) : true, equalTo(true));
+//    }
 
 
 }
