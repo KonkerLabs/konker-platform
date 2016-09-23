@@ -147,9 +147,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                 existingDevice.setSecurityHash(passwordManager.createHash(randomPassword));
                 Device saved = deviceRepository.save(existingDevice);
                 return ServiceResponseBuilder.<DeviceSecurityCredentials>ok()
-                        .withResult(new DeviceSecurityCredentials(saved.getDeviceId(),
-                                saved.getApiKey(),
-                                randomPassword)).build();
+                        .withResult(new DeviceSecurityCredentials(saved,randomPassword)).build();
             } catch (SecurityException e) {
                 return ServiceResponseBuilder.<DeviceSecurityCredentials>error()
                         .withMessage(CommonValidations.GENERIC_ERROR.getCode(), null).build();

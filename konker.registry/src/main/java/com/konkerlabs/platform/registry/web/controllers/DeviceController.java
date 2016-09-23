@@ -176,9 +176,9 @@ public class DeviceController implements ApplicationContextAware {
             DeviceRegisterService.DeviceSecurityCredentials credentials = serviceResponse.getResult();
             return new ModelAndView("devices/password")
                     .addObject("action", MessageFormat.format("/devices/{0}/password",deviceId))
-                    .addObject("deviceId", credentials.getDeviceId())
-                    .addObject("apiKey", credentials.getApiKey())
-                    .addObject("password", credentials.getPassword());
+                    .addObject("password", credentials.getPassword())
+                    .addObject("device", credentials.getDevice())
+                    .addObject("pubServerInfo", ConfigFactory.load().getConfig("pubServer"));
         } else {
             List<String> messages = serviceResponse.getResponseMessages()
                     .entrySet().stream()

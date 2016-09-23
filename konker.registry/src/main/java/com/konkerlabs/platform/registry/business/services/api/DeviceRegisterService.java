@@ -3,9 +3,7 @@ package com.konkerlabs.platform.registry.business.services.api;
 import java.util.List;
 
 import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -34,11 +32,10 @@ public interface DeviceRegisterService {
     @Getter
     class DeviceSecurityCredentials {
         @NonNull
-        private String deviceId;
-        @NonNull
-        private String apiKey;
+        private Device device;
         @NonNull
         private String password;
+
     }
 
     /**

@@ -24,11 +24,11 @@ public class RedisConfig {
         JedisConnectionFactory cf = new JedisConnectionFactory();
         cf.setHostName(config.getString("master.host"));
         cf.setPort(config.getInt("master.port"));
-        cf.setUsePool(true);
+        cf.afterPropertiesSet();
         return cf;
     }
 
-    @Bean
+    @Bean(name = "redisTemplate")
     public RedisTemplate<String, String> redisTemplate() {
         RedisTemplate<String, String> rt = new RedisTemplate<>();
         rt.setConnectionFactory(redisFactory());

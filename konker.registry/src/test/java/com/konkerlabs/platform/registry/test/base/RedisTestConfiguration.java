@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry.test.base;
 
 import com.konkerlabs.platform.registry.config.RedisConfig;
+import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.annotation.Bean;
@@ -27,4 +28,10 @@ public class RedisTestConfiguration extends RedisConfig {
     public RedisTemplate<String, String> redisTemplate() {
         return super.redisTemplate();
     }
+
+    @Test
+    public void shouldGetAValidRedisConnection() {
+
+    }
+
 }
