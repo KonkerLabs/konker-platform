@@ -58,7 +58,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
     @Qualifier("mongoEvents")
     private EventRepository eventRepository;
 
-    private String id = "95c14b36ba2b43f1";
+    private String userDefinedDeviceId = "SN1234567890";
     private String guid = "71fc0d48-674a-4d62-b3e5-0216abca63af";
     private String apiKey = "84399b2e-d99e-11e5-86bc-34238775bac9";
     private String payload = "{\n" +
@@ -88,8 +88,8 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
         lastEventTimestamp = Instant.ofEpochMilli(1474562674450L);
 
         tenant = tenantRepository.findByDomainName("konker");
-        device = deviceRepository.findByTenantIdAndDeviceId(tenant.getId(), id);
-        event = Event.builder().channel(topic).payload(payload).deviceId(device.getId()).build();
+        device = deviceRepository.findByTenantIdAndDeviceId(tenant.getId(), userDefinedDeviceId);
+        event = Event.builder().channel(topic).payload(payload).deviceId(device.getDeviceId()).build();
     }
 
     @Test
@@ -133,7 +133,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
         event.setChannel("otherChannel");
         deviceEventService.logEvent(device, channel, event);
 
-        Event last = eventRepository.findBy(tenant,device.getId(),event.getTimestamp(), null, 1).get(0);
+        Event last = eventRepository.findBy(tenant,device.getDeviceId(),event.getTimestamp(), null, 1).get(0);
 
         assertThat(last,notNullValue());
 
@@ -189,7 +189,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
     public void shouldFindAllRequestEvents() throws Exception {
         NewServiceResponse<List<Event>> serviceResponse = deviceEventService.findEventsBy(
                 tenant,
-                device.getId(),
+                device.getDeviceId(),
                 firstEventTimestamp,
                 null,
                 null

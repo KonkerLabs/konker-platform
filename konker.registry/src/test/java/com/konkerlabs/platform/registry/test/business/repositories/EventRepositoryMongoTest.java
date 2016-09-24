@@ -72,7 +72,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         secondEventTimestamp = Instant.ofEpochMilli(1474562672395L);
         thirdEventTimestamp = Instant.ofEpochMilli(1474562674450L);
 
-        deviceId = "71fc0d48-674a-4d62-b3e5-0216abca63af";
+        deviceId = "SN1234567890";
         tenant = tenantRepository.findByDomainName("konker");
 
         payload = "{\n" +

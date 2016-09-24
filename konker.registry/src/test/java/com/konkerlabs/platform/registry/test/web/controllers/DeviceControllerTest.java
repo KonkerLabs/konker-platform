@@ -63,8 +63,8 @@ import com.konkerlabs.platform.registry.web.forms.DeviceRegistrationForm;
 })
 public class DeviceControllerTest extends WebLayerTestContext {
 
-    private static final String DEVICE_ID_95C14B36BA2B43F1 = "95c14b36ba2b43f1";
-    private static final String DEVICE_GUID = "71fc0d48-674a-4d62-b3e5-0216abca63af";
+    private static final String USER_DEFINED_DEVICE_ID = "SN1234567890";
+    private static final String DEVICE_GUID = "7d51c242-81db-11e6-a8c2-0746f010e945";
     
     @Autowired
     ApplicationContext applicationContext;
@@ -89,7 +89,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
 
         deviceData = new LinkedMultiValueMap<>();
         deviceData.add("name", "Device name");
-        deviceData.add("deviceId", DEVICE_ID_95C14B36BA2B43F1);
+        deviceData.add("deviceId", USER_DEFINED_DEVICE_ID);
         deviceData.add("description", "Some description");
         deviceData.add("guid", DEVICE_GUID);
 
@@ -181,7 +181,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
         savedDevice.setRegistrationDate(Instant.now());
         when(deviceRegisterService.getByDeviceGuid(tenant, savedDevice.getGuid())).thenReturn(
                 ServiceResponseBuilder.<Device>ok().withResult(savedDevice).build());
-        when(deviceEventService.findEventsBy(tenant,savedDevice.getId(),null,null,50)).thenReturn(
+        when(deviceEventService.findEventsBy(tenant,savedDevice.getDeviceId(),null,null,50)).thenReturn(
             ServiceResponseBuilder.<List<Event>>ok().withResult(Collections.emptyList()).build()
         );
 
@@ -189,7 +189,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
                 .andExpect(model().attribute("device", savedDevice)).andExpect(view().name("devices/events"));
 
         verify(deviceRegisterService).getByDeviceGuid(tenant, savedDevice.getGuid());
-        verify(deviceEventService).findEventsBy(tenant, savedDevice.getId(),null,null,50);
+        verify(deviceEventService).findEventsBy(tenant, savedDevice.getDeviceId(),null,null,50);
     }
 
     @Test
@@ -241,7 +241,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldRedirectToListDevicesAndShowSuccessMessageAfterDeletionSucceed() throws Exception {
-        device.setId(DEVICE_ID_95C14B36BA2B43F1);
+        device.setId(USER_DEFINED_DEVICE_ID);
         NewServiceResponse<Device> responseRemoval = ServiceResponseBuilder.<Device>ok()
                 .withResult(device).build();
 

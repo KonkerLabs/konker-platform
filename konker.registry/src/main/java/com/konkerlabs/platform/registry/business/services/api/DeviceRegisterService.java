@@ -62,7 +62,7 @@ public interface DeviceRegisterService {
 	 * @param device
 	 * @return
 	 */
-	NewServiceResponse<Device> update(Tenant tenant, String id, Device device);
+	NewServiceResponse<Device> update(Tenant tenant, String guid, Device device);
 
 	/**
 	 * TODO @andre implement throwable flow Remove a device in logical way

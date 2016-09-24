@@ -52,11 +52,11 @@ import static org.hamcrest.MatcherAssert.*;
 @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json"})
 public class EventPublisherMqttTest extends BusinessLayerTestSupport {
 
-    private static final String THE_DEVICE_ID = "71fc0d48-674a-4d62-b3e5-0216abca63af";
+    private static final String THE_DEVICE_GUID = "7d51c242-81db-11e6-a8c2-0746f010e945";
     private static final String REGISTERED_TENANT_DOMAIN = "konker";
-    private static final String REGISTERED_DEVICE_ID = "95c14b36ba2b43f1";
+    private static final String REGISTERED_DEVICE_ID = "SN1234567890";
 
-    private static final String MQTT_OUTGOING_TOPIC_TEMPLATE = "iot/{0}/{1}";
+    private static final String MQTT_OUTGOING_TOPIC_TEMPLATE = "sub/{0}/{1}";
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -195,7 +195,7 @@ public class EventPublisherMqttTest extends BusinessLayerTestSupport {
         
         Optional.of(deviceRegisterService.findByTenantDomainNameAndDeviceId(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_ID))
             .filter(device -> !device.isActive())
-            .orElseGet(() -> deviceRegisterService.switchEnabledDisabled(tenant, THE_DEVICE_ID).getResult());
+            .orElseGet(() -> deviceRegisterService.switchEnabledDisabled(tenant, THE_DEVICE_GUID).getResult());
 
         subject.send(event,destinationUri,data,device.getTenant());
 
@@ -209,12 +209,12 @@ public class EventPublisherMqttTest extends BusinessLayerTestSupport {
         
         Optional.of(deviceRegisterService.findByTenantDomainNameAndDeviceId(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_ID))
                 .filter(Device::isActive)
-                .orElseGet(() -> deviceRegisterService.switchEnabledDisabled(tenant, THE_DEVICE_ID).getResult());
+                .orElseGet(() -> deviceRegisterService.switchEnabledDisabled(tenant, THE_DEVICE_GUID).getResult());
 
         device = deviceRegisterService.findByTenantDomainNameAndDeviceId(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_ID);
 
         String expectedMqttTopic = MessageFormat
-            .format(MQTT_OUTGOING_TOPIC_TEMPLATE, destinationUri.getPath().replaceAll("/",""),
+            .format(MQTT_OUTGOING_TOPIC_TEMPLATE, device.getApiKey(),
                     data.get(DEVICE_MQTT_CHANNEL));
 
         assertThat(event.getChannel(), equalTo(INPUT_CHANNEL));
