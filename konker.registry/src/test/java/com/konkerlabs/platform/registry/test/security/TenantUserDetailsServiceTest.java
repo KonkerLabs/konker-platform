@@ -3,6 +3,7 @@ package com.konkerlabs.platform.registry.test.security;
 import com.konkerlabs.platform.registry.security.TenantUserDetailsService;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.RedisTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import org.junit.Rule;
 import org.junit.Test;
@@ -11,6 +12,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -23,7 +25,8 @@ import static org.hamcrest.Matchers.notNullValue;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
         MongoTestConfiguration.class,
-        TenantUserDetailsServiceTest.SecurityConfig.class
+        TenantUserDetailsServiceTest.SecurityConfig.class,
+        RedisTestConfiguration.class
 })
 public class TenantUserDetailsServiceTest extends BusinessLayerTestSupport {
 

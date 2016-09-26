@@ -12,7 +12,7 @@ public class BusinessLayerTestSupport {
 
     @SuppressWarnings("unused")
     @Autowired
-    private ApplicationContext applicationContext;
+    protected ApplicationContext applicationContext;
 
     @Rule
     public MongoDbRule mongoDbRule = newMongoDbRule().defaultSpringMongoDb("registry-test");

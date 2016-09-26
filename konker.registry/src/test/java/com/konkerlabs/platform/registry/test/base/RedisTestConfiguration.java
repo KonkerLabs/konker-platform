@@ -4,8 +4,11 @@ import com.konkerlabs.platform.registry.config.RedisConfig;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 
@@ -17,7 +20,7 @@ public class RedisTestConfiguration extends RedisConfig {
 
     @Override
     @Bean
-    public JedisConnectionFactory redisFactory() {
+    public RedisConnectionFactory redisConnectionFactory() {
         return Mockito.mock(
                 JedisConnectionFactory.class,
                 Mockito.withSettings().extraInterfaces(DisposableBean.class));
@@ -25,13 +28,10 @@ public class RedisTestConfiguration extends RedisConfig {
 
     @Override
     @Bean
-    public RedisTemplate<String, String> redisTemplate() {
+    @Scope(BeanDefinition.SCOPE_PROTOTYPE)
+    public RedisTemplate<String, Object> redisTemplate() {
         return super.redisTemplate();
     }
 
-    @Test
-    public void shouldGetAValidRedisConnection() {
-
-    }
 
 }

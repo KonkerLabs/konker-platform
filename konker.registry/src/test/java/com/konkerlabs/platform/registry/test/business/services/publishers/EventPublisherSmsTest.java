@@ -12,10 +12,7 @@ import com.konkerlabs.platform.registry.business.services.publishers.EventPublis
 import com.konkerlabs.platform.registry.business.services.publishers.api.EventPublisher;
 import com.konkerlabs.platform.registry.integration.exceptions.IntegrationException;
 import com.konkerlabs.platform.registry.integration.gateways.SMSMessageGateway;
-import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
-import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.SolrTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.*;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import org.junit.After;
 import org.junit.Before;
@@ -48,7 +45,8 @@ import static org.mockito.Mockito.*;
 @ContextConfiguration(classes = {
         MongoTestConfiguration.class,
         BusinessTestConfiguration.class,
-        SolrTestConfiguration.class
+        SolrTestConfiguration.class,
+        RedisTestConfiguration.class
 })
 @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/sms-destinations.json"})
 public class EventPublisherSmsTest extends BusinessLayerTestSupport {

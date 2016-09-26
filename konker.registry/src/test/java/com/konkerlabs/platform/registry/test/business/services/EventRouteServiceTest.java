@@ -14,6 +14,7 @@ import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteS
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.RedisTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import org.junit.Before;
 import org.junit.Rule;
@@ -40,7 +41,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {MongoTestConfiguration.class, BusinessTestConfiguration.class})
+@ContextConfiguration(classes = {MongoTestConfiguration.class, BusinessTestConfiguration.class, RedisTestConfiguration.class})
 public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     private static final String TRANSFORMATION_ID_IN_USE = "2747ec73-6910-43a1-8ddc-5a4a134ebab3";

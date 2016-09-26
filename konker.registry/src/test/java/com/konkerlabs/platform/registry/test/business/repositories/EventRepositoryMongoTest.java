@@ -9,6 +9,7 @@ import com.konkerlabs.platform.registry.business.repositories.events.EventReposi
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.RedisTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
@@ -19,9 +20,15 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationContext;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.redis.connection.Message;
+import org.springframework.data.redis.connection.MessageListener;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -29,18 +36,18 @@ import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
 import java.util.List;
 import java.time.Instant;
+import java.util.concurrent.CountDownLatch;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
         BusinessTestConfiguration.class,
-        MongoTestConfiguration.class
+        MongoTestConfiguration.class,
+        RedisTestConfiguration.class
 })
-@UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json"})
+@UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json"})
 public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
 
     @Rule
@@ -55,6 +62,11 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
     @Autowired
     private MongoTemplate mongoTemplate;
 
+    @Autowired
+    private RedisConnectionFactory redisConnectionFactory;
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+
     private Tenant tenant;
     private String payload;
     private Event event;
@@ -64,6 +76,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
     private Instant firstEventTimestamp;
     private Instant secondEventTimestamp;
     private Instant thirdEventTimestamp;
+
 
     @Before
     public void setUp() {
@@ -106,7 +119,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Tenant cannot be null");
 
-        eventRepository.push(null,event);
+        eventRepository.push(null, event);
     }
 
     @Test
@@ -114,7 +127,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         thrown.expect(BusinessException.class);
         thrown.expectMessage("Tenant does not exists");
 
-        eventRepository.push(Tenant.builder().domainName("fake").build(),event);
+        eventRepository.push(Tenant.builder().domainName("fake").build(), event);
     }
 
     @Test
@@ -122,7 +135,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Event cannot be null");
 
-        eventRepository.push(tenant,null);
+        eventRepository.push(tenant, null);
     }
 
     @Test
@@ -132,7 +145,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         thrown.expect(BusinessException.class);
         thrown.expectMessage("Device ID cannot be null or empty");
 
-        eventRepository.push(tenant,event);
+        eventRepository.push(tenant, event);
     }
 
     @Test
@@ -142,7 +155,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         thrown.expect(BusinessException.class);
         thrown.expectMessage("Device ID cannot be null or empty");
 
-        eventRepository.push(tenant,event);
+        eventRepository.push(tenant, event);
     }
 
     @Test
@@ -152,7 +165,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         thrown.expect(BusinessException.class);
         thrown.expectMessage("Device does not exists");
 
-        eventRepository.push(tenant,event);
+        eventRepository.push(tenant, event);
     }
 
     @Test
@@ -162,12 +175,12 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("Event timestamp cannot be null");
 
-        eventRepository.push(tenant,event);
+        eventRepository.push(tenant, event);
     }
 
     @Test
     public void shouldPushTheIncomingEvent() throws Exception {
-        eventRepository.push(tenant,event);
+        eventRepository.push(tenant, event);
 
         DBObject saved = mongoTemplate.findOne(
                 Query.query(Criteria.where("deviceId").is(deviceId)
@@ -178,21 +191,21 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         saved.removeField("_id");
         saved.removeField("_class");
 
-        assertThat(saved,equalTo(persisted));
+        assertThat(saved, equalTo(persisted));
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/deviceEvents.json"})
     public void shouldRetrieveLastTwoEventsByTenantAndDevice() throws Exception {
-        List<Event> events = eventRepository.findBy(tenant,deviceId,
-                firstEventTimestamp.plus(1,ChronoUnit.SECONDS),
-                null,2);
+        List<Event> events = eventRepository.findBy(tenant, deviceId,
+                firstEventTimestamp.plus(1, ChronoUnit.SECONDS),
+                null, 2);
 
-        assertThat(events,notNullValue());
-        assertThat(events,hasSize(2));
+        assertThat(events, notNullValue());
+        assertThat(events, hasSize(2));
 
-        assertThat(events.get(0).getTimestamp().toEpochMilli(),equalTo(thirdEventTimestamp.toEpochMilli()));
-        assertThat(events.get(1).getTimestamp().toEpochMilli(),equalTo(secondEventTimestamp.toEpochMilli()));
+        assertThat(events.get(0).getTimestamp().toEpochMilli(), equalTo(thirdEventTimestamp.toEpochMilli()));
+        assertThat(events.get(1).getTimestamp().toEpochMilli(), equalTo(secondEventTimestamp.toEpochMilli()));
     }
 
     @Test
@@ -200,7 +213,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Tenant cannot be null");
 
-        eventRepository.findBy(null,deviceId,firstEventTimestamp,null,null);
+        eventRepository.findBy(null, deviceId, firstEventTimestamp, null, null);
     }
 
     @Test
@@ -208,7 +221,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Device ID cannot be null or empty");
 
-        eventRepository.findBy(tenant,null,firstEventTimestamp,null,null);
+        eventRepository.findBy(tenant, null, firstEventTimestamp, null, null);
     }
 
     @Test
@@ -217,11 +230,11 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         thrown.expectMessage("Limit cannot be null when start instant isn't provided");
 
 
-        eventRepository.findBy(tenant,deviceId,null,null,null);
+        eventRepository.findBy(tenant, deviceId, null, null, null);
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/deviceEvents.json"})
     public void shouldRetrieveTheOnlyFirstEventByTenantAndDevice() throws Exception {
         List<Event> events = eventRepository.findBy(tenant,
                 deviceId,
@@ -229,14 +242,14 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
                 secondEventTimestamp.minus(1, ChronoUnit.SECONDS),
                 1);
 
-        assertThat(events,notNullValue());
-        assertThat(events,hasSize(1));
+        assertThat(events, notNullValue());
+        assertThat(events, hasSize(1));
 
-        assertThat(events.get(0).getTimestamp().toEpochMilli(),equalTo(firstEventTimestamp.toEpochMilli()));
+        assertThat(events.get(0).getTimestamp().toEpochMilli(), equalTo(firstEventTimestamp.toEpochMilli()));
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/deviceEvents.json"})
     public void shouldLimitResultsAccordingToLimitParameterWhenFindingBy() throws Exception {
         List<Event> events = eventRepository.findBy(tenant,
                 deviceId,
@@ -244,9 +257,30 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
                 thirdEventTimestamp,
                 1);
 
-        assertThat(events,notNullValue());
-        assertThat(events,hasSize(1));
+        assertThat(events, notNullValue());
+        assertThat(events, hasSize(1));
 
-        assertThat(events.get(0).getTimestamp().toEpochMilli(),equalTo(thirdEventTimestamp.toEpochMilli()));
+        assertThat(events.get(0).getTimestamp().toEpochMilli(), equalTo(thirdEventTimestamp.toEpochMilli()));
+    }
+
+    /*@Test*/
+    public void shouldReturnAValidConnectionToRedis() throws Exception {
+        String testMessage = "this is a test";
+        String testTopic = "testTopic";
+        assertThat(redisConnectionFactory, notNullValue());
+        RedisMessageListenerContainer redisMessageListenerContainer =
+                applicationContext.getBean(RedisMessageListenerContainer.class,
+                        redisConnectionFactory,
+                        testTopic,
+                        new MessageListener() {
+                            @Override
+                            public void onMessage(Message message, byte[] bytes) {
+                                assertThat(message.toString(), equalTo(testMessage));
+                            }
+                        });
+        redisTemplate.convertAndSend(testTopic, testMessage);
+        while (redisMessageListenerContainer.isRunning()){
+            System.out.println("waiting for redis message...");
+        }
     }
 }

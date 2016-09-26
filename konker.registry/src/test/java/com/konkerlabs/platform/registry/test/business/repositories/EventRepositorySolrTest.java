@@ -4,10 +4,7 @@ import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.events.EventRepository;
-import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
-import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.SolrTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.*;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrInputDocument;
@@ -34,9 +31,10 @@ import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
-    BusinessTestConfiguration.class,
-    MongoTestConfiguration.class,
-    SolrTestConfiguration.class
+        BusinessTestConfiguration.class,
+        MongoTestConfiguration.class,
+        SolrTestConfiguration.class,
+        RedisTestConfiguration.class
 })
 @UsingDataSet(locations = {"/fixtures/tenants.json"})
 public class EventRepositorySolrTest extends BusinessLayerTestSupport {
@@ -80,16 +78,16 @@ public class EventRepositorySolrTest extends BusinessLayerTestSupport {
         tenant = tenantRepository.findByDomainName("konker");
 
         event = Event.builder()
-            .channel(DEVICE_MQTT_CHANNEL)
-            .timestamp(Instant.now())
-            .payload(payload).build();
+                .channel(DEVICE_MQTT_CHANNEL)
+                .timestamp(Instant.now())
+                .payload(payload).build();
 
         toBeSent = new SolrInputDocument();
-        toBeSent.addField("data.channels.0.name","channel_0");
-        toBeSent.addField("command.type","ButtonPressed");
-        toBeSent.addField("time",123L);
-        toBeSent.addField("value",31.0);
-        toBeSent.addField("ts",event.getTimestamp().toString());
+        toBeSent.addField("data.channels.0.name", "channel_0");
+        toBeSent.addField("command.type", "ButtonPressed");
+        toBeSent.addField("time", 123L);
+        toBeSent.addField("value", 31.0);
+        toBeSent.addField("ts", event.getTimestamp().toString());
     }
 
     @Test
@@ -97,7 +95,7 @@ public class EventRepositorySolrTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Tenant cannot be null");
 
-        eventRepository.push(null,event);
+        eventRepository.push(null, event);
     }
 
     @Test
@@ -105,7 +103,7 @@ public class EventRepositorySolrTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Event cannot be null");
 
-        eventRepository.push(tenant,null);
+        eventRepository.push(tenant, null);
     }
 
     @Test
@@ -115,21 +113,21 @@ public class EventRepositorySolrTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("Event timestamp cannot be null");
 
-        eventRepository.push(tenant,event);
+        eventRepository.push(tenant, event);
     }
 
     @Test
     public void shouldPushTheIncomingEvent() throws Exception {
         when(
-            solrTemplate.saveDocument(inputCaptor.capture())
+                solrTemplate.saveDocument(inputCaptor.capture())
         ).thenReturn(new UpdateResponse());
 
-        eventRepository.push(tenant,event);
+        eventRepository.push(tenant, event);
 
         SolrInputDocument saved = inputCaptor.getValue();
 
         saved.getFieldNames().stream().forEach(sent -> {
-            assertThat(saved.getFieldValue(sent),equalTo(toBeSent.getFieldValue(sent)));
+            assertThat(saved.getFieldValue(sent), equalTo(toBeSent.getFieldValue(sent)));
         });
     }
 }
