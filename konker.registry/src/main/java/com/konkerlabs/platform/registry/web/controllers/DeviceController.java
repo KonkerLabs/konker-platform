@@ -1,21 +1,16 @@
 package com.konkerlabs.platform.registry.web.controllers;
 
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.web.forms.DeviceRegistrationForm;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
-import jdk.nashorn.internal.runtime.options.Options;
+import java.text.MessageFormat;
+import java.util.List;
+import java.util.Locale;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Scope;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,12 +19,14 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import javax.servlet.http.HttpServletRequest;
-import java.net.InetAddress;
-import java.text.MessageFormat;
-import java.util.*;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
+import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
+import com.konkerlabs.platform.registry.web.forms.DeviceRegistrationForm;
+import com.typesafe.config.ConfigFactory;
 
 @Controller
 @Scope("request")
@@ -59,11 +56,13 @@ public class DeviceController implements ApplicationContextAware {
     }
 
     private DeviceRegisterService deviceRegisterService;
+    private DeviceEventService deviceEventService;
     private Tenant tenant;
 
     @Autowired
-    public DeviceController(DeviceRegisterService deviceRegisterService, Tenant tenant) {
+    public DeviceController(DeviceRegisterService deviceRegisterService, DeviceEventService deviceEventService, Tenant tenant) {
         this.deviceRegisterService = deviceRegisterService;
+        this.deviceEventService = deviceEventService;
         this.tenant = tenant;
     }
 
@@ -80,28 +79,28 @@ public class DeviceController implements ApplicationContextAware {
             .addObject("action", "/devices/save");
     }
 
-    @RequestMapping("/{deviceId}")
-    public ModelAndView show(@PathVariable("deviceId") String deviceId) {
+    @RequestMapping("/{deviceGuid}")
+    public ModelAndView show(@PathVariable("deviceGuid") String deviceGuid) {
         return new ModelAndView(
                 "devices/show", "device",
-                deviceRegisterService.getByDeviceId(tenant, deviceId).getResult()
+                deviceRegisterService.getByDeviceGuid(tenant, deviceGuid).getResult()
         );
     }
 
-    @RequestMapping("/{deviceId}/edit")
-    public ModelAndView edit(@PathVariable("deviceId") String deviceId) {
+    @RequestMapping("/{deviceGuid}/edit")
+    public ModelAndView edit(@PathVariable("deviceGuid") String deviceGuid) {
         return new ModelAndView("devices/form")
-            .addObject("device", new DeviceRegistrationForm().fillFrom(deviceRegisterService.getByDeviceId(tenant, deviceId).getResult()))
+            .addObject("device", new DeviceRegistrationForm().fillFrom(deviceRegisterService.getByDeviceGuid(tenant, deviceGuid).getResult()))
             .addObject("isEditing", true)
-            .addObject("action", MessageFormat.format("/devices/{0}",deviceId))
+            .addObject("action", MessageFormat.format("/devices/{0}",deviceGuid))
             .addObject("method", "put");
     }
 
-    @RequestMapping("/{deviceId}/events")
-    public ModelAndView deviceEvents(@PathVariable String deviceId) {
-        Device device = deviceRegisterService.getByDeviceId(tenant, deviceId).getResult();
+    @RequestMapping("/{deviceGuid}/events")
+    public ModelAndView deviceEvents(@PathVariable String deviceGuid) {
+        Device device = deviceRegisterService.getByDeviceGuid(tenant, deviceGuid).getResult();
         return new ModelAndView("devices/events").addObject("device", device).addObject("recentEvents",
-                /*device.getMostRecentEvents()*/Collections.emptyList());
+                deviceEventService.findEventsBy(tenant,device.getGuid(),null,null,50).getResult());
     }
 
     @RequestMapping(path = "/save", method = RequestMethod.POST)
@@ -115,23 +114,23 @@ public class DeviceController implements ApplicationContextAware {
                 redirectAttributes, "");
     }
 
-    @RequestMapping(path = "/{deviceId}", method = RequestMethod.PUT)
-    public ModelAndView saveEdit(@PathVariable String deviceId,
+    @RequestMapping(path = "/{deviceGuid}", method = RequestMethod.PUT)
+    public ModelAndView saveEdit(@PathVariable String deviceGuid,
                                  @ModelAttribute("deviceForm") DeviceRegistrationForm deviceForm,
                                  RedirectAttributes redirectAttributes, Locale locale) {
 
         return doSave(
-                () -> deviceRegisterService.update(tenant, deviceId, deviceForm.toModel()),
+                () -> deviceRegisterService.update(tenant, deviceGuid, deviceForm.toModel()),
                 deviceForm, locale,
                 redirectAttributes,"put");
     }
 
-    @RequestMapping(path = "/{deviceId}", method = RequestMethod.DELETE)
-    public ModelAndView remove(@PathVariable String deviceId,
+    @RequestMapping(path = "/{deviceGuid}", method = RequestMethod.DELETE)
+    public ModelAndView remove(@PathVariable String deviceGuid,
                                  @ModelAttribute("deviceForm") DeviceRegistrationForm deviceForm,
                                  RedirectAttributes redirectAttributes, Locale locale) {
 
-        NewServiceResponse<Device> serviceResponse = deviceRegisterService.remove(tenant, deviceId);
+        NewServiceResponse<Device> serviceResponse = deviceRegisterService.remove(tenant, deviceGuid);
         if(serviceResponse.isOk()){
             redirectAttributes.addFlashAttribute("message",
                     applicationContext.getMessage(Messages.DEVICE_REMOVED_SUCCESSFULLY.getCode(),null,locale)
@@ -148,15 +147,15 @@ public class DeviceController implements ApplicationContextAware {
         return new ModelAndView("redirect:/devices");
     }
 
-    @RequestMapping(path = "/{deviceId}/password", method = RequestMethod.GET)
-    public ModelAndView password(@PathVariable String deviceId, RedirectAttributes redirectAttributes, Locale locale) {
-        NewServiceResponse<Device> serviceResponse = deviceRegisterService.getByDeviceId(tenant, deviceId);
+    @RequestMapping(path = "/{deviceGuid}/password", method = RequestMethod.GET)
+    public ModelAndView password(@PathVariable String deviceGuid, RedirectAttributes redirectAttributes, Locale locale) {
+        NewServiceResponse<Device> serviceResponse = deviceRegisterService.getByDeviceGuid(tenant, deviceGuid);
 
         if (serviceResponse.isOk()) {
             Device device = serviceResponse.getResult();
             return new ModelAndView("devices/password")
-                    .addObject("action", MessageFormat.format("/devices/{0}/password",deviceId))
-                    .addObject("deviceId", device.getDeviceId())
+                    .addObject("action", MessageFormat.format("/devices/{0}/password",deviceGuid))
+                    .addObject("deviceGuid", device.getDeviceId())
                     .addObject("apiKey", device.getApiKey())
                     .addObject("device", device)
                     .addObject("pubServerInfo", ConfigFactory.load().getConfig("pubServer"));
@@ -167,15 +166,17 @@ public class DeviceController implements ApplicationContextAware {
         }
     }
 
-    @RequestMapping(path = "/{deviceId}/password", method = RequestMethod.POST)
-    public ModelAndView generatePassword(@PathVariable String deviceId, RedirectAttributes redirectAttributes, Locale locale) {
-        NewServiceResponse<DeviceRegisterService.DeviceSecurityCredentials> serviceResponse = deviceRegisterService.
-                generateSecurityPassword(tenant,deviceId);
+	@RequestMapping(path = "/{deviceGuid}/password", method = RequestMethod.POST)
+	public ModelAndView generatePassword(@PathVariable String deviceGuid, RedirectAttributes redirectAttributes,
+			Locale locale) {
+		NewServiceResponse<DeviceRegisterService.DeviceSecurityCredentials> serviceResponse = deviceRegisterService
+				.generateSecurityPassword(tenant, deviceGuid);
+		
 
         if (serviceResponse.isOk()) {
             DeviceRegisterService.DeviceSecurityCredentials credentials = serviceResponse.getResult();
             return new ModelAndView("devices/password")
-                    .addObject("action", MessageFormat.format("/devices/{0}/password",deviceId))
+                    .addObject("action", MessageFormat.format("/devices/{0}/password",deviceGuid))
                     .addObject("password", credentials.getPassword())
                     .addObject("device", credentials.getDevice())
                     .addObject("pubServerInfo", ConfigFactory.load().getConfig("pubServer"));
@@ -185,10 +186,9 @@ public class DeviceController implements ApplicationContextAware {
                     .map(message -> applicationContext.getMessage(message.getKey(), message.getValue(), locale))
                     .collect(Collectors.toList());
             redirectAttributes.addFlashAttribute("errors", messages);
-            return new ModelAndView(MessageFormat.format("redirect:/devices/{0}/password", deviceId));
+            return new ModelAndView(MessageFormat.format("redirect:/devices/{0}/password", deviceGuid));
         }
     }
-
 
 
     private ModelAndView doSave(Supplier<NewServiceResponse<Device>> responseSupplier,
@@ -200,7 +200,7 @@ public class DeviceController implements ApplicationContextAware {
         if (serviceResponse.getStatus().equals(NewServiceResponse.Status.OK)) {
             redirectAttributes.addFlashAttribute("message",
                     applicationContext.getMessage(Messages.DEVICE_REGISTERED_SUCCESSFULLY.getCode(),null,locale));
-            return new ModelAndView(MessageFormat.format("redirect:/devices/{0}", serviceResponse.getResult().getId()));
+            return new ModelAndView(MessageFormat.format("redirect:/devices/{0}", serviceResponse.getResult().getGuid()));
         } else {
             List<String> messages = serviceResponse.getResponseMessages()
                     .entrySet().stream()

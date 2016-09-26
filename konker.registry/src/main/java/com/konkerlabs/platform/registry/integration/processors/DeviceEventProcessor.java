@@ -70,7 +70,7 @@ public class DeviceEventProcessor {
             Event event = Event.builder()
                     .channel(channel)
                     .payload(payload)
-                    .deviceId(device.getId())
+                    .deviceGuid(device.getGuid())
                     .build();
 
             NewServiceResponse<Event> serviceResponse = enrichmentExecutor.enrich(event, device);

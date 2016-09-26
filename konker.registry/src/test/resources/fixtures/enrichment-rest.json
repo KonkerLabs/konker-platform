@@ -7,7 +7,7 @@
             "name": "REST-from-Prestashop-deviceDeletion",
             "type": "REST",
             "description": "Get REST Data from Prestahop for Device deletion",
-            "incoming": "device://konker/95c14b36ba2b43f1",
+            "incoming": "device://konker/SN1234567890",
             "containerKey": "prestashopData",
             "parameters": {
                 "URL": "https://www.google.com/device/@{#deviceId}",

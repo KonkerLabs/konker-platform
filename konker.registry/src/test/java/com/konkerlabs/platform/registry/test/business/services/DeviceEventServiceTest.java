@@ -60,7 +60,8 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
     @Qualifier("mongoEvents")
     private EventRepository eventRepository;
 
-    private String id = "95c14b36ba2b43f1";
+    private String userDefinedDeviceGuid = "7d51c242-81db-11e6-a8c2-0746f010e945";
+    private String guid = "71fc0d48-674a-4d62-b3e5-0216abca63af";
     private String apiKey = "84399b2e-d99e-11e5-86bc-34238775bac9";
     private String payload = "{\n" +
             "    \"ts\" : \"2016-03-03T18:15:00Z\",\n" +
@@ -89,8 +90,8 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
         lastEventTimestamp = Instant.ofEpochMilli(1474562674450L);
 
         tenant = tenantRepository.findByDomainName("konker");
-        device = deviceRepository.findByTenantIdAndDeviceId(tenant.getId(), id);
-        event = Event.builder().channel(topic).payload(payload).deviceId(device.getDeviceId()).build();
+        device = deviceRepository.findByTenantAndGuid(tenant.getId(), userDefinedDeviceGuid);
+        event = Event.builder().channel(topic).payload(payload).deviceGuid(device.getGuid()).build();
     }
 
     @Test
@@ -134,7 +135,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
         event.setChannel("otherChannel");
         deviceEventService.logEvent(device, channel, event);
 
-        Event last = eventRepository.findBy(tenant, device.getDeviceId(), event.getTimestamp(), null, 1).get(0);
+        Event last = eventRepository.findBy(tenant,device.getDeviceId(),event.getTimestamp(), null, 1).get(0);
 
         assertThat(last, notNullValue());
 
@@ -168,7 +169,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
                 null
         );
 
-        assertThat(serviceResponse, hasErrorMessage(DeviceRegisterService.Validations.DEVICE_ID_NULL.getCode()));
+        assertThat(serviceResponse, hasErrorMessage(DeviceRegisterService.Validations.DEVICE_GUID_NULL.getCode()));
     }
 
     @Test
@@ -186,18 +187,18 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/deviceEvents.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json"})
     public void shouldFindAllRequestEvents() throws Exception {
         NewServiceResponse<List<Event>> serviceResponse = deviceEventService.findEventsBy(
                 tenant,
-                device.getDeviceId(),
+                device.getGuid(),
                 firstEventTimestamp,
                 null,
                 null
         );
 
-        assertThat(serviceResponse.getResult(), notNullValue());
-        assertThat(serviceResponse.getResult(), hasSize(3));
+        assertThat(serviceResponse.getResult(),notNullValue());
+        assertThat(serviceResponse.getResult(),hasSize(3));
 
         assertThat(serviceResponse.getResult().get(0).getTimestamp().toEpochMilli(),
                 equalTo(lastEventTimestamp.toEpochMilli()));

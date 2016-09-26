@@ -27,7 +27,8 @@ import java.util.UUID;
 @IntegrationComponentScan(basePackages = "com.konkerlabs.platform.registry.integration")
 public class IntegrationConfig {
 
-    private static final Config brokerConfig = ConfigFactory.load().getConfig("mqtt");
+    private static final Config inboundBrokerConfig = ConfigFactory.load().getConfig("mqtt").getConfig("subcribe");
+    private static final Config outboundBrokerConfig = ConfigFactory.load().getConfig("mqtt").getConfig("publish");
 
     //MQTT stuff
 
@@ -42,23 +43,32 @@ public class IntegrationConfig {
     }
 
     @Bean
-    public DefaultMqttPahoClientFactory mqttClientFactory() {
+    public DefaultMqttPahoClientFactory mqttInboudClientFactory() {
         DefaultMqttPahoClientFactory factory = new DefaultMqttPahoClientFactory();
-        factory.setServerURIs(brokerConfig.getStringList("uris").toArray(new String[] {}));
-        factory.setUserName(brokerConfig.getString("username"));
-        factory.setPassword(brokerConfig.getString("password"));
+        factory.setServerURIs(inboundBrokerConfig.getStringList("uris").toArray(new String[] {}));
+        factory.setUserName(inboundBrokerConfig.getString("username"));
+        factory.setPassword(inboundBrokerConfig.getString("password"));
+        return factory;
+    }
+
+    @Bean
+    public DefaultMqttPahoClientFactory mqttOutboundClientFactory() {
+        DefaultMqttPahoClientFactory factory = new DefaultMqttPahoClientFactory();
+        factory.setServerURIs(outboundBrokerConfig.getStringList("uris").toArray(new String[] {}));
+        factory.setUserName(outboundBrokerConfig.getString("username"));
+        factory.setPassword(outboundBrokerConfig.getString("password"));
         return factory;
     }
 
     public String[] topicPatternList() {
-        return brokerConfig.getStringList("topics").toArray(new String[] {});
+        return inboundBrokerConfig.getStringList("topics").toArray(new String[] {});
     }
 
     @Bean
     public AbstractMqttMessageDrivenChannelAdapter inbound() {
         MqttPahoMessageDrivenChannelAdapter adapter =
                 new MqttPahoMessageDrivenChannelAdapter(UUID.randomUUID().toString(),
-                        mqttClientFactory(),topicPatternList());
+                        mqttInboudClientFactory(),topicPatternList());
         adapter.setCompletionTimeout(5000);
         adapter.setConverter(new DefaultPahoMessageConverter());
         adapter.setQos(1);
@@ -70,7 +80,7 @@ public class IntegrationConfig {
     @ServiceActivator(inputChannel = "konkerMqttOutputChannel")
     public MessageHandler mqttOutbound() {
         MqttPahoMessageHandler messageHandler =
-                new MqttPahoMessageHandler("konkerPublisher", mqttClientFactory());
+                new MqttPahoMessageHandler(UUID.randomUUID().toString(), mqttOutboundClientFactory());
         messageHandler.setAsync(true);
         messageHandler.setCompletionTimeout(5000);
         messageHandler.setDefaultTopic("testTopic");

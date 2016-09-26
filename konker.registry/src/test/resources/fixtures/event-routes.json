@@ -11,13 +11,13 @@
       "guid" : "bd923670-d888-472a-b6d9-b20af31253db",
       "description" : "Route description",
       "incoming": {
-        "uri" : "device://konker/95c14b36ba2b43f1",
+        "uri" : "device://konker/SN1234567890",
         "data" : {
           "channel" : "data"
         }
       },
       "outgoing": {
-        "uri" : "device://konker/95c14b36ba2b43f1",
+        "uri" : "device://konker/SN1234567890",
         "data" : {
           "channel" : "in"
         }
@@ -46,7 +46,7 @@
         }
       },
       "outgoing": {
-        "uri" : "device://konker/95c14b36ba2b43f1",
+        "uri" : "device://konker/SN1234567890",
         "data" : {
           "channel" : "in"
         }
@@ -134,7 +134,7 @@
         }
       },
       "outgoing": {
-        "uri" : "device://konker/95c14b36ba2b43f1",
+        "uri" : "device://konker/SN1234567890",
         "data" : {
           "channel" : "in"
         }
@@ -163,7 +163,7 @@
         }
       },
       "outgoing": {
-        "uri" : "device://konker/95c14b36ba2b43f1",
+        "uri" : "device://konker/SN1234567890",
         "data" : {
           "channel" : "in"
         }
@@ -192,7 +192,7 @@
         }
       },
       "outgoing": {
-        "uri" : "device://konker/95c14b36ba2b43f1",
+        "uri" : "device://konker/SN1234567890",
         "data" : {
           "channel" : "in"
         }
@@ -221,7 +221,7 @@
         }
       },
       "outgoing": {
-        "uri" : "device://konker/95c14b36ba2b43f1",
+        "uri" : "device://konker/SN1234567890",
         "data" : {
           "channel" : "in"
         }
@@ -250,7 +250,7 @@
         }
       },
       "outgoing": {
-        "uri" : "device://konker/95c14b36ba2b43f1",
+        "uri" : "device://konker/SN1234567890",
         "data" : {
           "channel" : "in"
         }

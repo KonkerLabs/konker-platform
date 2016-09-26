@@ -47,14 +47,14 @@ import static org.hamcrest.MatcherAssert.*;
         SolrTestConfiguration.class,
         RedisTestConfiguration.class
 })
-@UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json"})
+@UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json"})
 public class EventPublisherMqttTest extends BusinessLayerTestSupport {
 
-    private static final String THE_DEVICE_ID = "71fc0d48-674a-4d62-b3e5-0216abca63af";
+    private static final String THE_DEVICE_GUID = "7d51c242-81db-11e6-a8c2-0746f010e945";
     private static final String REGISTERED_TENANT_DOMAIN = "konker";
-    private static final String REGISTERED_DEVICE_ID = "95c14b36ba2b43f1";
+    private static final String REGISTERED_DEVICE_ID = "SN1234567890";
 
-    private static final String MQTT_OUTGOING_TOPIC_TEMPLATE = "iot/{0}/{1}";
+    private static final String MQTT_OUTGOING_TOPIC_TEMPLATE = "sub/{0}/{1}";
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -86,27 +86,26 @@ public class EventPublisherMqttTest extends BusinessLayerTestSupport {
             "  }";
     private Map<String, String> data;
     private Device device;
-
+    
     private static String INPUT_CHANNEL = "input";
     private static String OUTPUT_CHANNEL = "output";
-
+    
 
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
 
-        ((EventPublisherMqtt) subject).setDeviceEventService(deviceEventService);
+        ((EventPublisherMqtt)subject).setDeviceEventService(deviceEventService);
 
-        device = deviceRegisterService.findByTenantDomainNameAndDeviceId(REGISTERED_TENANT_DOMAIN, REGISTERED_DEVICE_ID);
+        device = deviceRegisterService.findByTenantDomainNameAndDeviceId(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_ID);
         event = Event.builder()
-                .channel(INPUT_CHANNEL)
-                .payload(eventPayload)
-                .timestamp(Instant.now()).build();
+            .channel(INPUT_CHANNEL)
+            .payload(eventPayload)
+            .timestamp(Instant.now()).build();
 
-        destinationUri = new DeviceURIDealer() {
-        }.toDeviceRouteURI(REGISTERED_TENANT_DOMAIN, REGISTERED_DEVICE_ID);
+        destinationUri = new DeviceURIDealer() {}.toDeviceRouteURI(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_ID);
 
-        data = new HashMap<String, String>() {{
+        data = new HashMap<String,String>() {{
             put(DEVICE_MQTT_CHANNEL, OUTPUT_CHANNEL);
         }};
     }
@@ -121,7 +120,7 @@ public class EventPublisherMqttTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Event cannot be null");
 
-        subject.send(null, destinationUri, data, device.getTenant());
+        subject.send(null,destinationUri,data,device.getTenant());
     }
 
     @Test
@@ -129,7 +128,7 @@ public class EventPublisherMqttTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Destination URI cannot be null or empty");
 
-        subject.send(event, null, data, device.getTenant());
+        subject.send(event,null,data,device.getTenant());
     }
 
     @Test
@@ -137,7 +136,7 @@ public class EventPublisherMqttTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Destination URI cannot be null or empty");
 
-        subject.send(event, new URI(null, null, null, null, null), data, device.getTenant());
+        subject.send(event,new URI(null,null,null,null,null),data,device.getTenant());
     }
 
     @Test
@@ -145,7 +144,7 @@ public class EventPublisherMqttTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Data cannot be null");
 
-        subject.send(event, destinationUri, null, device.getTenant());
+        subject.send(event,destinationUri,null,device.getTenant());
     }
 
     @Test
@@ -155,17 +154,17 @@ public class EventPublisherMqttTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("A valid MQTT channel is required");
 
-        subject.send(event, destinationUri, data, device.getTenant());
+        subject.send(event,destinationUri,data,device.getTenant());
     }
 
     @Test
     public void shouldRaiseAnExceptionIfMqttChannelIsEmpty() throws Exception {
-        data.put(DEVICE_MQTT_CHANNEL, "");
+        data.put(DEVICE_MQTT_CHANNEL,"");
 
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("A valid MQTT channel is required");
 
-        subject.send(event, destinationUri, data, device.getTenant());
+        subject.send(event,destinationUri,data,device.getTenant());
     }
 
     @Test
@@ -173,56 +172,55 @@ public class EventPublisherMqttTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Tenant cannot be null");
 
-        subject.send(event, destinationUri, data, null);
+        subject.send(event,destinationUri,data,null);
     }
 
     @Test
     public void shouldRaiseAnExceptionIfDeviceIsUnknown() throws Exception {
-        destinationUri = new DeviceURIDealer() {
-        }.toDeviceRouteURI(REGISTERED_TENANT_DOMAIN, "unknown_device");
+        destinationUri = new DeviceURIDealer() {}.toDeviceRouteURI(REGISTERED_TENANT_DOMAIN,"unknown_device");
 
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage(
-                MessageFormat.format("Device is unknown : {0}", destinationUri.getPath())
+            MessageFormat.format("Device is unknown : {0}", destinationUri.getPath())
         );
 
-        subject.send(event, destinationUri, data, device.getTenant());
+        subject.send(event,destinationUri,data,device.getTenant());
     }
 
     @Test
     public void shouldNotSendAnyEventThroughGatewayIfDeviceIsDisabled() throws Exception {
         Tenant tenant = tenantRepository.findByName("Konker");
+        
+        Optional.of(deviceRegisterService.findByTenantDomainNameAndDeviceId(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_ID))
+            .filter(device -> !device.isActive())
+            .orElseGet(() -> deviceRegisterService.switchEnabledDisabled(tenant, THE_DEVICE_GUID).getResult());
 
-        Optional.of(deviceRegisterService.findByTenantDomainNameAndDeviceId(REGISTERED_TENANT_DOMAIN, REGISTERED_DEVICE_ID))
-                .filter(device -> !device.isActive())
-                .orElseGet(() -> deviceRegisterService.switchEnabledDisabled(tenant, THE_DEVICE_ID).getResult());
+        subject.send(event,destinationUri,data,device.getTenant());
 
-        subject.send(event, destinationUri, data, device.getTenant());
-
-        verify(mqttMessageGateway, never()).send(anyString(), anyString());
-        verify(deviceEventService, never()).logEvent(any(), any(), any());
+        verify(mqttMessageGateway,never()).send(anyString(),anyString());
+        verify(deviceEventService,never()).logEvent(any() ,any(), any());
     }
 
     @Test
     public void shouldSendAnEventThroughGatewayIfDeviceIsEnabled() throws Exception {
         Tenant tenant = tenantRepository.findByName("Konker");
-
-        Optional.of(deviceRegisterService.findByTenantDomainNameAndDeviceId(REGISTERED_TENANT_DOMAIN, REGISTERED_DEVICE_ID))
+        
+        Optional.of(deviceRegisterService.findByTenantDomainNameAndDeviceId(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_ID))
                 .filter(Device::isActive)
-                .orElseGet(() -> deviceRegisterService.switchEnabledDisabled(tenant, THE_DEVICE_ID).getResult());
+                .orElseGet(() -> deviceRegisterService.switchEnabledDisabled(tenant, THE_DEVICE_GUID).getResult());
 
-        device = deviceRegisterService.findByTenantDomainNameAndDeviceId(REGISTERED_TENANT_DOMAIN, REGISTERED_DEVICE_ID);
+        device = deviceRegisterService.findByTenantDomainNameAndDeviceId(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_ID);
 
         String expectedMqttTopic = MessageFormat
-                .format(MQTT_OUTGOING_TOPIC_TEMPLATE, destinationUri.getPath().replaceAll("/", ""),
-                        data.get(DEVICE_MQTT_CHANNEL));
+            .format(MQTT_OUTGOING_TOPIC_TEMPLATE, device.getApiKey(),
+                    data.get(DEVICE_MQTT_CHANNEL));
 
         assertThat(event.getChannel(), equalTo(INPUT_CHANNEL));
-        subject.send(event, destinationUri, data, device.getTenant());
+        subject.send(event,destinationUri,data,device.getTenant());
 
-        InOrder inOrder = inOrder(mqttMessageGateway, deviceEventService);
+        InOrder inOrder = inOrder(mqttMessageGateway,deviceEventService);
 
-        inOrder.verify(mqttMessageGateway).send(event.getPayload(), expectedMqttTopic);
+        inOrder.verify(mqttMessageGateway).send(event.getPayload(),expectedMqttTopic);
         inOrder.verify(deviceEventService).logEvent(eq(device), eq(OUTPUT_CHANNEL), eq(event));
     }
 }

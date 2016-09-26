@@ -9,7 +9,7 @@ import java.time.Instant;
 @Builder
 public class Event {
 
-    private String deviceId;
+    private String deviceGuid;
     private Instant timestamp;
     private String channel;
     private String payload;

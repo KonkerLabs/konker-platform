@@ -23,7 +23,9 @@ import java.util.stream.Collectors;
 @Document(collection = "devices")
 public class Device implements DeviceURIDealer, Validatable, UserDetails {
 
-	public enum Validations {
+    private static final long serialVersionUID = -2667977827998418995L;
+
+    public enum Validations {
 		ID_NULL_EMPTY("model.device.id.not_null"),
 		ID_GREATER_THAN_EXPECTED("model.device.id.greater_than_expected"),
 		NAME_NULL_EMPTY("model.device.name.not_null"),
@@ -41,6 +43,7 @@ public class Device implements DeviceURIDealer, Validatable, UserDetails {
 		}
 	}
 
+    
     private String id;
 	@DBRef
 	private Tenant tenant;
@@ -48,6 +51,7 @@ public class Device implements DeviceURIDealer, Validatable, UserDetails {
     private String apiKey;
 	private String securityHash;
 	private String name;
+	private String guid;
 	private String description;
 	private Instant registrationDate;
 //	private List<Event> events;

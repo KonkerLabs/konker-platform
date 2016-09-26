@@ -28,7 +28,7 @@ public class EventPublisherMqtt implements EventPublisher {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EventPublisherMqtt.class);
 
-    private static final String MQTT_OUTGOING_TOPIC_TEMPLATE = "iot/{0}/{1}";
+    private static final String MQTT_OUTGOING_TOPIC_TEMPLATE = "sub/{0}/{1}";
 
     public static final String DEVICE_MQTT_CHANNEL = "channel";
 
@@ -76,7 +76,7 @@ public class EventPublisherMqtt implements EventPublisher {
         if (outgoingDevice.isActive()) {
             try {
                 String destinationTopic = MessageFormat.format(MQTT_OUTGOING_TOPIC_TEMPLATE,
-                        destinationUri.getPath().replaceAll("/",""), data.get(DEVICE_MQTT_CHANNEL));
+                        outgoingDevice.getApiKey(), data.get(DEVICE_MQTT_CHANNEL));
                 mqttMessageGateway.send(outgoingEvent.getPayload(), destinationTopic);
                 deviceEventService.logEvent(outgoingDevice, data.get(DEVICE_MQTT_CHANNEL), outgoingEvent);
             } catch (BusinessException e) {

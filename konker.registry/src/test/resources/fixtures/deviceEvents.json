@@ -3,43 +3,43 @@
     {
       "_id" : "57e40a6e44f4b3a77bdde14e",
       "_class" : "com.mongodb.BasicDBObject",
-      "value" : 31,
-      "command" : {
-        "type" : "ButtonPressed"
-      },
-      "data" : {
-        "channels" : [ { "name" : "channel_0" } ]
-      },
       "ts" : 1474562670340,
-      "deviceId" : "95c14b36ba2b43f1",
+      "deviceGuid" : "7d51c242-81db-11e6-a8c2-0746f010e945",
+      "channel" : "command",
+      "payload" : {
+        "value" : 31.0,
+        "command" : {
+          "type" : "ButtonPressed" },
+          "data" : { "channels" : [{ "name" : "channel_0" }]},
+          "time" : 123},
       "tenantDomain" : "konker"
     },
     {
       "_id" : "57e41a6d44f4b3a77bdde15c",
       "_class" : "com.mongodb.BasicDBObject",
-      "value" : 32,
-      "command" : {
-        "type" : "ButtonPressed"
-      },
-      "data" : {
-        "channels" : [ { "name" : "channel_0" } ]
-      },
       "ts" : 1474562672395,
-      "deviceId" : "95c14b36ba2b43f1",
+      "deviceGuid" : "7d51c242-81db-11e6-a8c2-0746f010e945",
+      "channel" : "command",
+      "payload" : {
+        "value" : 31.0,
+        "command" : {
+          "type" : "ButtonPressed" },
+        "data" : { "channels" : [{ "name" : "channel_0" }]},
+        "time" : 123},
       "tenantDomain" : "konker"
     },
     {
       "_id" : "58e41a6d41f4b3d77bcde17a",
       "_class" : "com.mongodb.BasicDBObject",
-      "value" : 33,
-      "command" : {
-        "type" : "ButtonPressed"
-      },
-      "data" : {
-        "channels" : [ { "name" : "channel_0" } ]
-      },
       "ts" : 1474562674450,
-      "deviceId" : "95c14b36ba2b43f1",
+      "deviceGuid" : "7d51c242-81db-11e6-a8c2-0746f010e945",
+      "channel" : "command",
+      "payload" : {
+        "value" : 31.0,
+        "command" : {
+          "type" : "ButtonPressed" },
+        "data" : { "channels" : [{ "name" : "channel_0" }]},
+        "time" : 123},
       "tenantDomain" : "konker"
     }
   ]

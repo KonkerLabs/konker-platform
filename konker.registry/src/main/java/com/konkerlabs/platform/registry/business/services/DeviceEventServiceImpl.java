@@ -53,7 +53,7 @@ public class DeviceEventServiceImpl implements DeviceEventService {
     }
 
     @Override
-    public NewServiceResponse<List<Event>> findEventsBy(Tenant tenant, String deviceId,
+    public NewServiceResponse<List<Event>> findEventsBy(Tenant tenant, String deviceGuid,
                                                         Instant startTimestamp,
                                                         Instant endTimestamp, Integer limit) {
         if (!Optional.ofNullable(tenant).isPresent())
@@ -61,9 +61,9 @@ public class DeviceEventServiceImpl implements DeviceEventService {
                     .withMessage(CommonValidations.TENANT_NULL.getCode(), null)
                     .build();
 
-        if (!Optional.ofNullable(deviceId).isPresent())
+        if (!Optional.ofNullable(deviceGuid).isPresent())
             return ServiceResponseBuilder.<List<Event>>error()
-                    .withMessage(DeviceRegisterService.Validations.DEVICE_ID_NULL.getCode(), null)
+                    .withMessage(DeviceRegisterService.Validations.DEVICE_GUID_NULL.getCode(), null)
                     .build();
 
         if (!Optional.ofNullable(startTimestamp).isPresent() &&
@@ -73,6 +73,6 @@ public class DeviceEventServiceImpl implements DeviceEventService {
                     .build();
 
         return ServiceResponseBuilder.<List<Event>>ok()
-                .withResult(eventRepository.findBy(tenant, deviceId, startTimestamp, endTimestamp, limit)).build();
+                .withResult(eventRepository.findBy(tenant, deviceGuid, startTimestamp, endTimestamp, limit)).build();
     }
 }

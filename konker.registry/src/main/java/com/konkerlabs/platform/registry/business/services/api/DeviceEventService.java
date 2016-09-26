@@ -30,14 +30,14 @@ public interface DeviceEventService {
      * Return all existing device events with timestamp greater than or equals to provided starting timestamp
      *
      * @param tenant
-     * @param deviceId
+     * @param deviceGuid
      * @param startingTimestamp
      * @param endTimestamp
      * @param limit
      * @return Found events
      */
     NewServiceResponse<List<Event>> findEventsBy(Tenant tenant,
-                                                 String deviceId,
+                                                 String deviceGuid,
                                                  Instant startingTimestamp,
                                                  Instant endTimestamp,
                                                  Integer limit);

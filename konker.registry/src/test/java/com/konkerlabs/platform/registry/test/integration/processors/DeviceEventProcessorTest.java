@@ -60,7 +60,7 @@ public class DeviceEventProcessorTest {
     public void setUp() throws Exception {
         event = Event.builder()
             .channel(incomingChannel)
-            .deviceId("id")
+            .deviceGuid("device_guid")
             .payload(originalPayload)
             .build();
 
@@ -73,6 +73,7 @@ public class DeviceEventProcessorTest {
             )
             .apiKey(originalPayload)
             .id("id")
+            .guid("device_guid")
             .deviceId("device_id")
             .active(true)
             .name("device_name").build());
