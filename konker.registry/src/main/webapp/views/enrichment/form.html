@@ -60,7 +60,7 @@
 							id="incomingURI" name="incomingAuthority">
 							<option data-th-text="#{enrichment.form.incoming_device.placeholder}" data-th-value="none">Select an option...</option>
 							<option data-th-each="device : ${allDevices}"
-								data-th-value="${device.deviceId}"
+								data-th-value="${device.guid}"
 								data-th-text="${device.deviceId + ' - ' + device.name}"></option>
 						</select>
 					</div>

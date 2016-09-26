@@ -61,9 +61,11 @@ public class EnrichmentExecutorTest extends BusinessLayerTestSupport {
     private URI existingUri;
     private URI nonExistingUri;
     private static final String EXISTING_DEVICE_ID = "abc123";
+    private static final String EXISTING_DEVICE_GUID = "8d51c242-81db-11e6-a8c2-0746f010e945";
     private static final String BAD_CONFIGURATION_DEVICE_ID = "abc456";
     private static final String ENRICHMENT_INACTIVE_DEVICE_ID = "abc789";
     private static final String NON_EXISTING_DEVICE_ID = "999";
+    private static final String NON_EXISTING_DEVICE_GUID = "44421842-7438-4c46-8bb2-5a2f56cd8923";
 
     private static final String PAYLOAD = "{\"metric\":\"temperature\",\"deviceId\":\"abc123\",\"value\":30,\"ts\":1454900000,\"prestashopData\":\"\"}";
     private static final String PAYLOAD_WITHOUT_CONTAINER_KEY = "{\"metric\":\"temperature\",\"deviceId\":\"abc123\",\"value\":30,\"ts\":1454900000}";
@@ -79,9 +81,9 @@ public class EnrichmentExecutorTest extends BusinessLayerTestSupport {
         event = spy(Event.builder().channel("data").timestamp(Instant.now()).payload(PAYLOAD).build());
 
         existingUri = new DeviceURIDealer() {
-        }.toDeviceRouteURI(REGISTERED_TENANT_DOMAIN, EXISTING_DEVICE_ID);
+        }.toDeviceRouteURI(REGISTERED_TENANT_DOMAIN, EXISTING_DEVICE_GUID);
         nonExistingUri = new DeviceURIDealer() {
-        }.toDeviceRouteURI(REGISTERED_TENANT_DOMAIN, NON_EXISTING_DEVICE_ID);
+        }.toDeviceRouteURI(REGISTERED_TENANT_DOMAIN, NON_EXISTING_DEVICE_GUID);
 
         device = spy(Device.builder()
                 .tenant(
@@ -93,6 +95,7 @@ public class EnrichmentExecutorTest extends BusinessLayerTestSupport {
                 .apiKey("84399b2e-d99e-11e5-86bc-34238775bac9")
                 .id("id")
                 .deviceId(EXISTING_DEVICE_ID)
+                .guid(EXISTING_DEVICE_GUID)
                 .active(true)
                 .name("device_name").build());
 

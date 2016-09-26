@@ -61,17 +61,17 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
 
     private String inactiveRouteDeviceId = "0000000000000001";
     private String malformedRouteDeviceId = "0000000000000002";
-    private String matchingRouteDeviceId = "0000000000000004";
+    private String matchingRouteDeviceGuid = "1af9be20-441e-419b-84a9-cb84efd4f49d";
     private String nonMatchingFilterDeviceId = "0000000000000007";
     private String nonMatchingRouteDeviceId = "0000000000000009";
 
-    private String payload = "{\"metric\":\"temperature\",\"deviceGuid\":\"0000000000000004\",\"value\":30,\"ts\":1454900000,\"data\":{\"sn\":1234,\"test\":1,\"foo\":2}}";
+    private String payload = "{\"metric\":\"temperature\",\"deviceGuid\":\"1af9be20-441e-419b-84a9-cb84efd4f49d\",\"value\":30,\"ts\":1454900000,\"data\":{\"sn\":1234,\"test\":1,\"foo\":2}}";
     private String transformationResponse = "{\"okToGo\" : true }";
 
     @Before
     public void setUp() throws Exception {
         event = spy(Event.builder().channel("data").timestamp(Instant.now()).payload(payload).build());
-        uri = new DeviceURIDealer() {}.toDeviceRouteURI(REGISTERED_TENANT_DOMAIN,matchingRouteDeviceId);
+        uri = new DeviceURIDealer() {}.toDeviceRouteURI(REGISTERED_TENANT_DOMAIN,matchingRouteDeviceGuid);
 
         when(
             httpGateway.request(
@@ -127,7 +127,7 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = "/fixtures/event-routes.json")
     public void shouldntSendAnyEventsForANonMatchingIncomingChannel() throws ExecutionException, InterruptedException, URISyntaxException {
-        URI nonMatchingDeviceURI = new URI("device",matchingRouteDeviceId,null,null,null);
+        URI nonMatchingDeviceURI = new URI("device",matchingRouteDeviceGuid,null,null,null);
         event.setChannel("non_matching_channel");
         Future<List<Event>> eventFuture = subject.execute(event, nonMatchingDeviceURI);
         assertThat(eventFuture.get(), notNullValue());

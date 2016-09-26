@@ -47,9 +47,9 @@ public class DataEnrichmentExtensionServiceTest extends BusinessLayerTestSupport
     private static final String OLD_ENCHRICHMENT_EXTENSION_ID = "a09b3f34-db24-11e5-8a31-7b3889d9b0eb";
     private static final String INEXISTENT_ENCHRICHMENT_EXTENSION_GUID = "INEXISTENT_GUID";
     private static final String NEW_ENCHRICHMENT_EXTENSION_NAME = "REST-from-Amazon-01";
-    private static final String DEVICE_ID_IN_USE = "abc123";
+    private static final String DEVICE_GUID_IN_USE = "8d51c242-81db-11e6-a8c2-0746f010e945";
     private static final String CONTAINER_KEY_IN_USE = "magentoData";
-    private static final String OLD_INCOMING_URI = "device://konker/abc123";
+    private static final String OLD_INCOMING_URI = "device://konker/8d51c242-81db-11e6-a8c2-0746f010e945";
     private static final String INEXISTENT_INCOMING_URI = "device://konker/999";
     private Tenant inexistentTenant;
 
@@ -143,7 +143,7 @@ public class DataEnrichmentExtensionServiceTest extends BusinessLayerTestSupport
     public void shouldReturnErrorMessageIfContainerKeyIsDuplicatedWhenRegister() {
         newDataEnrichmentExtension.setIncoming(new DeviceURIDealer(){}.toDeviceRouteURI(
             aTenant.getDomainName(),
-            DEVICE_ID_IN_USE
+            DEVICE_GUID_IN_USE
         ));
         newDataEnrichmentExtension.setContainerKey(CONTAINER_KEY_IN_USE);
 

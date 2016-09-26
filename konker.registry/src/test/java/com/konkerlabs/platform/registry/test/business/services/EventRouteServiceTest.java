@@ -79,13 +79,13 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
                 .description("Description")
                 .incoming(RouteActor.builder().uri(
                         new DeviceURIDealer() {
-                        }.toDeviceRouteURI(tenant.getDomainName(), "0000000000000004")
+                        }.toDeviceRouteURI(tenant.getDomainName(), "1af9be20-441e-419b-84a9-cb84efd4f49d")
                 ).data(new HashMap<String,String>(){{
                     put(DEVICE_MQTT_CHANNEL,"data");
                 }}).build())
                 .outgoing(RouteActor.builder().uri(
                         new DeviceURIDealer() {
-                        }.toDeviceRouteURI(tenant.getDomainName(), "0000000000000006")
+                        }.toDeviceRouteURI(tenant.getDomainName(), "1af9be20-441e-419b-84a9-cb84efd4f49d")
                 ).data(new HashMap<String,String>(){{
                     put(DEVICE_MQTT_CHANNEL,"in");
                 }}).build())

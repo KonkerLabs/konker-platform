@@ -63,7 +63,7 @@ public class EventPublisherMqtt implements EventPublisher {
         Optional.ofNullable(tenant)
             .orElseThrow(() -> new IllegalArgumentException("Tenant cannot be null"));
 
-        Device outgoingDevice = deviceRegisterService.findByTenantDomainNameAndDeviceId(
+        Device outgoingDevice = deviceRegisterService.findByTenantDomainNameAndDeviceGuid(
                 destinationUri.getAuthority(),
                 destinationUri.getPath().replaceAll("/","")
         );
