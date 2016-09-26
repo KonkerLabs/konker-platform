@@ -11,8 +11,8 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
-import org.springframework.data.redis.listener.PatternTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 
 /**
  * Factory for Redis connections
@@ -42,25 +42,5 @@ public class RedisConfig {
         return rt;
     }
 
-    /**
-     * Create a  message listener container for a specific topic
-     * @param redisConnectionFactory
-     * @param topic
-     * @param messageListener
-     * @return RedisMessageListernerContainer
-     */
-    @Bean
-    @Scope(BeanDefinition.SCOPE_PROTOTYPE)
-    public RedisMessageListenerContainer redisMessageListenerContainer(
-            RedisConnectionFactory redisConnectionFactory,
-            String topic,
-            MessageListener messageListener) {
-        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
-        container.setConnectionFactory(redisConnectionFactory);
-        container.addMessageListener(messageListener, new ChannelTopic(topic));
-        return container;
-    }
-
-
-
 }
+
