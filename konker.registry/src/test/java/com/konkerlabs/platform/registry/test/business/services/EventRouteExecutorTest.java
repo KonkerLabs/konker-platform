@@ -65,7 +65,7 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
     private String nonMatchingFilterDeviceId = "0000000000000007";
     private String nonMatchingRouteDeviceId = "0000000000000009";
 
-    private String payload = "{\"metric\":\"temperature\",\"deviceId\":\"0000000000000004\",\"value\":30,\"ts\":1454900000,\"data\":{\"sn\":1234,\"test\":1,\"foo\":2}}";
+    private String payload = "{\"metric\":\"temperature\",\"deviceGuid\":\"0000000000000004\",\"value\":30,\"ts\":1454900000,\"data\":{\"sn\":1234,\"test\":1,\"foo\":2}}";
     private String transformationResponse = "{\"okToGo\" : true }";
 
     @Before

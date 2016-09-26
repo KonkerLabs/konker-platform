@@ -181,7 +181,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
         savedDevice.setRegistrationDate(Instant.now());
         when(deviceRegisterService.getByDeviceGuid(tenant, savedDevice.getGuid())).thenReturn(
                 ServiceResponseBuilder.<Device>ok().withResult(savedDevice).build());
-        when(deviceEventService.findEventsBy(tenant,savedDevice.getDeviceId(),null,null,50)).thenReturn(
+        when(deviceEventService.findEventsBy(tenant,savedDevice.getGuid(),null,null,50)).thenReturn(
             ServiceResponseBuilder.<List<Event>>ok().withResult(Collections.emptyList()).build()
         );
 
@@ -189,7 +189,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
                 .andExpect(model().attribute("device", savedDevice)).andExpect(view().name("devices/events"));
 
         verify(deviceRegisterService).getByDeviceGuid(tenant, savedDevice.getGuid());
-        verify(deviceEventService).findEventsBy(tenant, savedDevice.getDeviceId(),null,null,50);
+        verify(deviceEventService).findEventsBy(tenant, savedDevice.getGuid(),null,null,50);
     }
 
     @Test

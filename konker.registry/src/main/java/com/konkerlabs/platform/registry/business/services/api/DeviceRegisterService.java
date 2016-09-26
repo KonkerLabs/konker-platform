@@ -43,7 +43,7 @@ public interface DeviceRegisterService {
 	/**
 	 * Persists a new Device.
 	 *
-	 * If the deviceId already exists in this tenant, an error is created. The
+	 * If the deviceGuid already exists in this tenant, an error is created. The
 	 * tenant must exist.
 	 *
 	 * @param tenant
@@ -55,7 +55,7 @@ public interface DeviceRegisterService {
 	/**
 	 * Updates an already existent Tenant.
 	 * 
-	 * If the deviceId does not exist in this tenant, an error is created. The
+	 * If the deviceGuid does not exist in this tenant, an error is created. The
 	 * tenant must exist.
 	 * 
 	 * @param tenant

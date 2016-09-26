@@ -3,16 +3,17 @@ package com.konkerlabs.platform.registry.test.business.repositories;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.events.EventRepository;
 import com.konkerlabs.platform.registry.business.repositories.events.EventRepositoryMongoImpl;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
-import com.mongodb.util.JSON;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -27,7 +28,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.List;
 import java.time.Instant;
 
@@ -61,7 +61,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
     private Event event;
     private DBObject persisted;
 
-    private String deviceId;
+    private String deviceGuid;
     private Instant firstEventTimestamp;
     private Instant secondEventTimestamp;
     private Instant thirdEventTimestamp;
@@ -72,7 +72,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         secondEventTimestamp = Instant.ofEpochMilli(1474562672395L);
         thirdEventTimestamp = Instant.ofEpochMilli(1474562674450L);
 
-        deviceId = "SN1234567890";
+        deviceGuid = "7d51c242-81db-11e6-a8c2-0746f010e945";
         tenant = tenantRepository.findByDomainName("konker");
 
         payload = "{\n" +
@@ -92,13 +92,13 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
 
         event = Event.builder()
                 .channel("command")
-                .deviceId(deviceId)
+                .deviceGuid(deviceGuid)
                 .timestamp(firstEventTimestamp)
                 .payload(payload).build();
 
         persisted = new BasicDBObject();
         persisted.put("ts", firstEventTimestamp.toEpochMilli());
-        persisted.put("deviceId", deviceId);
+        persisted.put("deviceGuid", deviceGuid);
         persisted.put("tenantDomain", tenant.getDomainName());
         persisted.put("channel", event.getChannel());
         persisted.put("payload", event.getPayload());
@@ -107,7 +107,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
     @Test
     public void shouldRaiseAnExceptionIfTenantIsNull() throws Exception {
         thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("Tenant cannot be null");
+        thrown.expectMessage(CommonValidations.TENANT_NULL.getCode());
 
         eventRepository.push(null,event);
     }
@@ -115,7 +115,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
     @Test
     public void shouldRaiseAnExceptionIfTenantDoesNotExists() throws Exception {
         thrown.expect(BusinessException.class);
-        thrown.expectMessage("Tenant does not exists");
+        thrown.expectMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode());
 
         eventRepository.push(Tenant.builder().domainName("fake").build(),event);
     }
@@ -123,37 +123,37 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
     @Test
     public void shouldRaiseAnExceptionIfEventIsNull() throws Exception {
         thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("Event cannot be null");
+        thrown.expectMessage(CommonValidations.RECORD_NULL.getCode());
 
         eventRepository.push(tenant,null);
     }
 
     @Test
     public void shouldRaiseAnExceptionIfDeviceIdIsNull() throws Exception {
-        event.setDeviceId(null);
+        event.setDeviceGuid(null);
 
         thrown.expect(BusinessException.class);
-        thrown.expectMessage("Device ID cannot be null or empty");
+        thrown.expectMessage(DeviceRegisterService.Validations.DEVICE_GUID_NULL.getCode());
 
         eventRepository.push(tenant,event);
     }
 
     @Test
     public void shouldRaiseAnExceptionIfDeviceIdIsEmpty() throws Exception {
-        event.setDeviceId("");
+        event.setDeviceGuid("");
 
         thrown.expect(BusinessException.class);
-        thrown.expectMessage("Device ID cannot be null or empty");
+        thrown.expectMessage(DeviceRegisterService.Validations.DEVICE_GUID_NULL.getCode());
 
         eventRepository.push(tenant,event);
     }
 
     @Test
     public void shouldRaiseAnExceptionIfDeviceDoesNotExists() throws Exception {
-        event.setDeviceId("unknown_device");
+        event.setDeviceGuid("unknown_device");
 
         thrown.expect(BusinessException.class);
-        thrown.expectMessage("Device does not exists");
+        thrown.expectMessage(DeviceRegisterService.Validations.DEVICE_ID_DOES_NOT_EXIST.getCode());
 
         eventRepository.push(tenant,event);
     }
@@ -163,7 +163,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         event.setTimestamp(null);
 
         thrown.expect(IllegalStateException.class);
-        thrown.expectMessage("Event timestamp cannot be null");
+        thrown.expectMessage(EventRepository.Validations.EVENT_TIMESTAMP_NULL.getCode());
 
         eventRepository.push(tenant,event);
     }
@@ -173,7 +173,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         eventRepository.push(tenant,event);
 
         DBObject saved = mongoTemplate.findOne(
-                Query.query(Criteria.where("deviceId").is(deviceId)
+                Query.query(Criteria.where("deviceGuid").is(deviceGuid)
                         .andOperator(Criteria.where("ts").is(firstEventTimestamp.toEpochMilli()))),
                 DBObject.class,
                 EventRepositoryMongoImpl.EVENTS_COLLECTION_NAME
@@ -187,7 +187,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json"})
     public void shouldRetrieveLastTwoEventsByTenantAndDevice() throws Exception {
-        List<Event> events = eventRepository.findBy(tenant,deviceId,
+        List<Event> events = eventRepository.findBy(tenant, deviceGuid,
                 firstEventTimestamp.plus(1,ChronoUnit.SECONDS),
                 null,2);
 
@@ -203,7 +203,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Tenant cannot be null");
 
-        eventRepository.findBy(null,deviceId,firstEventTimestamp,null,null);
+        eventRepository.findBy(null, deviceGuid,firstEventTimestamp,null,null);
     }
 
     @Test
@@ -220,14 +220,14 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         thrown.expectMessage("Limit cannot be null when start instant isn't provided");
 
 
-        eventRepository.findBy(tenant,deviceId,null,null,null);
+        eventRepository.findBy(tenant, deviceGuid,null,null,null);
     }
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json"})
     public void shouldRetrieveTheOnlyFirstEventByTenantAndDevice() throws Exception {
         List<Event> events = eventRepository.findBy(tenant,
-                deviceId,
+                deviceGuid,
                 firstEventTimestamp,
                 secondEventTimestamp.minus(1, ChronoUnit.SECONDS),
                 1);
@@ -242,7 +242,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json"})
     public void shouldLimitResultsAccordingToLimitParameterWhenFindingBy() throws Exception {
         List<Event> events = eventRepository.findBy(tenant,
-                deviceId,
+                deviceGuid,
                 firstEventTimestamp,
                 thirdEventTimestamp,
                 1);

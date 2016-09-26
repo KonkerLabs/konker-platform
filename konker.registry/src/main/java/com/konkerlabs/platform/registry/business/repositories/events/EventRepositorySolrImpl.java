@@ -57,7 +57,7 @@ public class EventRepositorySolrImpl implements EventRepository {
     }
 
     @Override
-    public List<Event> findBy(Tenant tenant, String deviceId, Instant startInstant, Instant endInstant, Integer limit) {
+    public List<Event> findBy(Tenant tenant, String deviceGuid, Instant startInstant, Instant endInstant, Integer limit) {
         return Collections.emptyList();
     }
 }
