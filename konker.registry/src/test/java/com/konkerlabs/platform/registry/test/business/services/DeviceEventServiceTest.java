@@ -135,7 +135,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
         event.setChannel("otherChannel");
         deviceEventService.logEvent(device, channel, event);
 
-        Event last = eventRepository.findBy(tenant,device.getDeviceId(),event.getTimestamp(), null, 1).get(0);
+        Event last = eventRepository.findBy(tenant,device.getGuid(),event.getTimestamp(), null, 1).get(0);
 
         assertThat(last, notNullValue());
 
