@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry.test.base;
 
 import com.konkerlabs.platform.registry.config.RedisConfig;
+import com.lordofthejars.nosqlunit.redis.embedded.EmbeddedJedis;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.DisposableBean;
@@ -21,9 +22,7 @@ public class RedisTestConfiguration extends RedisConfig {
     @Override
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
-        return Mockito.mock(
-                JedisConnectionFactory.class,
-                Mockito.withSettings().extraInterfaces(DisposableBean.class));
+        return super.redisConnectionFactory();
     }
 
     @Override
@@ -31,6 +30,7 @@ public class RedisTestConfiguration extends RedisConfig {
     @Scope(BeanDefinition.SCOPE_PROTOTYPE)
     public RedisTemplate<String, Object> redisTemplate() {
         return super.redisTemplate();
+
     }
 
 
