@@ -13,6 +13,7 @@ import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.RedisTestConfiguration;
 import com.konkerlabs.platform.utilities.config.UtilitiesConfig;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import org.junit.Before;
@@ -40,7 +41,8 @@ import static org.mockito.Mockito.when;
 @ContextConfiguration(classes = {
         MongoTestConfiguration.class,
         UtilitiesConfig.class,
-        BusinessTestConfiguration.class
+        BusinessTestConfiguration.class,
+        RedisTestConfiguration.class
 })
 public class EnrichmentExecutorTest extends BusinessLayerTestSupport {
 

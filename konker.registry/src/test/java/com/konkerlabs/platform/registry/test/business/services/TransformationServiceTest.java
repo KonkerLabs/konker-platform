@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.konkerlabs.platform.registry.test.base.RedisTestConfiguration;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,8 +40,9 @@ import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
-    MongoTestConfiguration.class,
-    BusinessTestConfiguration.class
+        MongoTestConfiguration.class,
+        BusinessTestConfiguration.class,
+        RedisTestConfiguration.class
 })
 public class TransformationServiceTest extends BusinessLayerTestSupport {
 
@@ -257,7 +259,7 @@ public class TransformationServiceTest extends BusinessLayerTestSupport {
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/transformations.json", "/fixtures/event-routes.json"})
     public void shouldRemoveSuccessfully() throws Exception {
     	NewServiceResponse<Transformation> serviceResponse = subject.remove(tenant, TRANSFORMATION_GUID_NO_ROUTES);
-    	
+
     	Transformation removedTransformation = subject.get(tenant, TRANSFORMATION_GUID_NO_ROUTES).getResult();
     	
     	assertThat(serviceResponse, isResponseOk());

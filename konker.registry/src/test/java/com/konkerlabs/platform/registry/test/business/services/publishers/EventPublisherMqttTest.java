@@ -10,10 +10,7 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterServ
 import com.konkerlabs.platform.registry.business.services.publishers.EventPublisherMqtt;
 import com.konkerlabs.platform.registry.business.services.publishers.api.EventPublisher;
 import com.konkerlabs.platform.registry.integration.gateways.MqttMessageGateway;
-import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
-import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.SolrTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.*;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 
 import org.junit.After;
@@ -45,9 +42,10 @@ import static org.hamcrest.MatcherAssert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
-    MongoTestConfiguration.class,
-    BusinessTestConfiguration.class,
-    SolrTestConfiguration.class
+        MongoTestConfiguration.class,
+        BusinessTestConfiguration.class,
+        SolrTestConfiguration.class,
+        RedisTestConfiguration.class
 })
 @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json"})
 public class EventPublisherMqttTest extends BusinessLayerTestSupport {

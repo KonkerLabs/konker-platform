@@ -12,6 +12,7 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.RedisTestConfiguration;
 import com.konkerlabs.platform.registry.web.controllers.DeviceController;
 import com.konkerlabs.platform.security.managers.PasswordManager;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
@@ -42,7 +43,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {MongoTestConfiguration.class, BusinessTestConfiguration.class})
+@ContextConfiguration(classes = {MongoTestConfiguration.class, BusinessTestConfiguration.class, RedisTestConfiguration.class})
 public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     private static final String EMPTY_DEVICE_NAME = "";

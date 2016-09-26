@@ -12,6 +12,7 @@ import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.RedisTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -38,7 +39,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = { MongoTestConfiguration.class, BusinessTestConfiguration.class })
+@ContextConfiguration(classes = { MongoTestConfiguration.class, BusinessTestConfiguration.class, RedisTestConfiguration.class})
 @UsingDataSet(locations = { "/fixtures/tenants.json", "/fixtures/enrichment-rest.json" })
 public class DataEnrichmentExtensionServiceTest extends BusinessLayerTestSupport {
 

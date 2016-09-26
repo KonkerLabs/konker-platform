@@ -10,10 +10,7 @@ import com.konkerlabs.platform.registry.business.services.api.RestDestinationSer
 import com.konkerlabs.platform.registry.business.services.publishers.EventPublisherRest;
 import com.konkerlabs.platform.registry.business.services.publishers.api.EventPublisher;
 import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
-import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
-import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.SolrTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.*;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import org.junit.After;
 import org.junit.Before;
@@ -47,7 +44,8 @@ import static org.mockito.Mockito.verify;
 @ContextConfiguration(classes = {
         MongoTestConfiguration.class,
         BusinessTestConfiguration.class,
-        SolrTestConfiguration.class
+        SolrTestConfiguration.class,
+        RedisTestConfiguration.class
 })
 @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/rest-destinations.json"})
 public class EventPublisherRestTest extends BusinessLayerTestSupport {

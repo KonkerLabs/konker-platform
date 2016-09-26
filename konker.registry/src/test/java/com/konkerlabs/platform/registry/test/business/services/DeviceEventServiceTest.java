@@ -14,6 +14,7 @@ import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.RedisTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import org.junit.Before;
 import org.junit.Rule;
@@ -36,10 +37,11 @@ import static com.konkerlabs.platform.registry.test.base.matchers.NewServiceResp
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
-    MongoTestConfiguration.class,
-    BusinessTestConfiguration.class,
+        MongoTestConfiguration.class,
+        BusinessTestConfiguration.class,
+        RedisTestConfiguration.class
 })
-@UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json"})
+@UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json"})
 public class DeviceEventServiceTest extends BusinessLayerTestSupport {
 
     @Rule
@@ -135,22 +137,22 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
 
         Event last = eventRepository.findBy(tenant,device.getGuid(),event.getTimestamp(), null, 1).get(0);
 
-        assertThat(last,notNullValue());
+        assertThat(last, notNullValue());
 
         long gap = Duration.between(last.getTimestamp(), Instant.now()).abs().getSeconds();
 
-        assertThat(gap,not(greaterThan(60L)));
+        assertThat(gap, not(greaterThan(60L)));
     }
 
     @Test
     public void shouldReturnAnErrorMessageIfTenantIsNullWhenFindingBy() throws Exception {
 
         NewServiceResponse<List<Event>> serviceResponse = deviceEventService.findEventsBy(
-            null,
-            device.getId(),
-            firstEventTimestamp,
-            null,
-            null
+                null,
+                device.getId(),
+                firstEventTimestamp,
+                null,
+                null
         );
 
         assertThat(serviceResponse, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));

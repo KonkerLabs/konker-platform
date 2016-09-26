@@ -9,6 +9,7 @@ import com.konkerlabs.platform.registry.business.services.api.SmsDestinationServ
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.RedisTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import org.junit.Before;
 import org.junit.Rule;
@@ -35,7 +36,7 @@ import static org.junit.rules.ExpectedException.none;
 import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = { MongoTestConfiguration.class, BusinessTestConfiguration.class })
+@ContextConfiguration(classes = { MongoTestConfiguration.class, BusinessTestConfiguration.class, RedisTestConfiguration.class})
 @UsingDataSet(locations = { "/fixtures/tenants.json", "/fixtures/sms-destinations.json" })
 public class SmsDestinationServiceTest extends BusinessLayerTestSupport {
 

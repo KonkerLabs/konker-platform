@@ -11,9 +11,11 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterServ
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.RedisTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import com.mongodb.util.JSON;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -21,13 +23,20 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationContext;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.redis.connection.Message;
+import org.springframework.data.redis.connection.MessageListener;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.List;
 import java.time.Instant;
 
@@ -39,7 +48,8 @@ import static org.hamcrest.Matchers.notNullValue;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
         BusinessTestConfiguration.class,
-        MongoTestConfiguration.class
+        MongoTestConfiguration.class,
+        RedisTestConfiguration.class
 })
 @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json"})
 public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
@@ -56,6 +66,11 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
     @Autowired
     private MongoTemplate mongoTemplate;
 
+    @Autowired
+    private RedisConnectionFactory redisConnectionFactory;
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+
     private Tenant tenant;
     private String payload;
     private Event event;
@@ -65,6 +80,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
     private Instant firstEventTimestamp;
     private Instant secondEventTimestamp;
     private Instant thirdEventTimestamp;
+
 
     @Before
     public void setUp() {
