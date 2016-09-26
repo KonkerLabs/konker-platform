@@ -6,6 +6,7 @@ import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.*;
 import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteExecutor;
+import com.konkerlabs.platform.registry.config.RedisConfig;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
 import com.konkerlabs.platform.registry.test.base.IntegrationLayerTestContext;
 import org.junit.After;
@@ -21,16 +22,20 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.web.context.request.async.DeferredResult;
 
 import java.net.URI;
 import java.text.MessageFormat;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
     IntegrationLayerTestContext.class,
-    DeviceEventProcessorTest.BusinessLayerConfiguration.class
+    DeviceEventProcessorTest.BusinessLayerConfiguration.class, RedisConfig.class
 })
 public class DeviceEventProcessorTest {
 
@@ -44,6 +49,7 @@ public class DeviceEventProcessorTest {
     private Event event;
     private Device device;
     private NewServiceResponse<Event> enrichmentResponse;
+    private NewServiceResponse<List<Event>> eventResponse;
 
     @Autowired
     private DeviceEventProcessor subject;
@@ -81,6 +87,10 @@ public class DeviceEventProcessorTest {
         enrichmentResponse = spy(ServiceResponseBuilder.<Event>ok()
                 .withResult(event)
                 .build());
+        
+        eventResponse = spy(ServiceResponseBuilder.<List<Event>>ok()
+        		.withResult(Arrays.asList(event))
+        		.build());
     }
 
     @After
@@ -152,6 +162,38 @@ public class DeviceEventProcessorTest {
         subject.process(sourceApiKey, incomingChannel, originalPayload);
 
         verify(eventRouteExecutor,never()).execute(any(Event.class),any(URI.class));
+    }
+    
+    @Test
+    public void shouldThrowABusinessExceptionIfDeviceApiKeyIsUnknown() throws Exception {
+        thrown.expect(BusinessException.class);
+        thrown.expectMessage(DeviceEventProcessor.Messages.APIKEY_MISSING.getCode());
+
+        subject.process(null, incomingChannel, Instant.now(), new Long("30000"), new DeferredResult<>());
+    }
+    @Test
+    public void shouldThrowABusinessExceptionIfDeviceDoesNotExist() throws Exception {
+        thrown.expect(BusinessException.class);
+        thrown.expectMessage(DeviceEventProcessor.Messages.DEVICE_NOT_FOUND.getCode());
+
+        subject.process(sourceApiKey, incomingChannel, Instant.now(), new Long("30000"), new DeferredResult<>());
+    }
+    @Test
+    public void shouldThrowABusinessExceptionIfEventChannelIsUnknown() throws Exception {
+        thrown.expect(BusinessException.class);
+        thrown.expectMessage(DeviceEventProcessor.Messages.CHANNEL_MISSING.getCode());
+
+        subject.process(sourceApiKey, null, Instant.now(), new Long("30000"), new DeferredResult<>());
+    }
+    
+    @Test
+    public void shouldReturnEventList() throws Exception {
+        when(deviceEventService.findEventsBy(device.getTenant(), device.getGuid(), 
+        		Instant.now(), null, null)).thenReturn(eventResponse);
+
+        subject.process(sourceApiKey, incomingChannel, Instant.now(), new Long("30000"), new DeferredResult<>());
+
+        verify(deviceEventService).logEvent(device, incomingChannel, event);
     }
 
     @Configuration
