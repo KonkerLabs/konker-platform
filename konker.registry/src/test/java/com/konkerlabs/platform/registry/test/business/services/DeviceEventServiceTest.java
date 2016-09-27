@@ -26,11 +26,14 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPubSub;
 
 import java.text.MessageFormat;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -58,7 +61,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
     private DeviceRepository deviceRepository;
 
     @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    private RedisTemplate<String, String> redisTemplate;
 
     @Autowired
     @Qualifier("mongoEvents")
@@ -139,7 +142,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
         event.setChannel("otherChannel");
         deviceEventService.logEvent(device, channel, event);
 
-        Event last = eventRepository.findBy(tenant,device.getGuid(),event.getTimestamp(), null, 1).get(0);
+        Event last = eventRepository.findBy(tenant, device.getGuid(), event.getTimestamp(), null, 1).get(0);
 
         assertThat(last, notNullValue());
 
@@ -191,7 +194,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/deviceEvents.json"})
     public void shouldFindAllRequestEvents() throws Exception {
         NewServiceResponse<List<Event>> serviceResponse = deviceEventService.findEventsBy(
                 tenant,
@@ -201,10 +204,41 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
                 null
         );
 
-        assertThat(serviceResponse.getResult(),notNullValue());
-        assertThat(serviceResponse.getResult(),hasSize(3));
+        assertThat(serviceResponse.getResult(), notNullValue());
+        assertThat(serviceResponse.getResult(), hasSize(3));
 
         assertThat(serviceResponse.getResult().get(0).getTimestamp().toEpochMilli(),
                 equalTo(lastEventTimestamp.toEpochMilli()));
+    }
+
+
+    @Test
+    public void shouldPublishOnRedisWhenEventsAreLogged() throws Exception {
+        Jedis jedis = (Jedis) redisTemplate.getConnectionFactory().getConnection().getNativeConnection();
+        ExecutorService executorService = Executors.newFixedThreadPool(1);
+        CompletableFuture<String> completableFuture = new CompletableFuture<>();
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        Future<?> future = executorService.submit(() -> {
+            jedis.subscribe(new JedisPubSub() {
+                @Override
+                public void onMessage(String channel, String message) {
+                    completableFuture.complete(message);
+                    unsubscribe();
+                }
+            }, device.getApiKey() + "." + channel);
+        });
+        countDownLatch.await(1, TimeUnit.SECONDS);
+        try {
+            future.get(3, TimeUnit.SECONDS);
+        } catch (TimeoutException e){
+            future.cancel(true);
+        } finally {
+            executorService.shutdown();
+            deviceEventService.logEvent(device, channel, event);
+            assertThat(device.getGuid(), equalTo(completableFuture.get()));
+        }
+
+
+
     }
 }

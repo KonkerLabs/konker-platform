@@ -17,6 +17,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import redis.clients.jedis.Jedis;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -35,7 +36,7 @@ public class DeviceEventServiceImpl implements DeviceEventService {
     @Autowired
     private DeviceRegisterService deviceRegisterService;
     @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    private RedisTemplate<String, String> redisTemplate;
 
     @Override
     public void logEvent(Device device, String channel, Event event) throws BusinessException {
@@ -53,8 +54,7 @@ public class DeviceEventServiceImpl implements DeviceEventService {
         event.setChannel(channel);
 
         eventRepository.push(device.getTenant(), event);
-
-        redisTemplate.convertAndSend(device.getApiKey() + channel, device.getGuid());
+        redisTemplate.convertAndSend(device.getApiKey() + "." + channel, device.getGuid());
     }
 
     @Override

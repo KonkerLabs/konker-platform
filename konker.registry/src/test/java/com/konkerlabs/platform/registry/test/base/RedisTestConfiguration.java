@@ -28,7 +28,7 @@ public class RedisTestConfiguration extends RedisConfig {
     @Override
     @Bean
     @Scope(BeanDefinition.SCOPE_PROTOTYPE)
-    public RedisTemplate<String, Object> redisTemplate() {
+    public RedisTemplate<String, String> redisTemplate() {
         return super.redisTemplate();
 
     }

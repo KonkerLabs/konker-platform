@@ -2,17 +2,12 @@ package com.konkerlabs.platform.registry.config;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
-import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.listener.ChannelTopic;
-import org.springframework.data.redis.listener.RedisMessageListenerContainer;
-import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 /**
  * Factory for Redis connections
@@ -36,8 +31,8 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedisTemplate<String, Object> redisTemplate() {
-        RedisTemplate<String, Object> rt = new RedisTemplate<>();
+    public RedisTemplate<String, String> redisTemplate() {
+        StringRedisTemplate rt = new StringRedisTemplate();
         rt.setConnectionFactory(redisConnectionFactory());
         return rt;
     }
