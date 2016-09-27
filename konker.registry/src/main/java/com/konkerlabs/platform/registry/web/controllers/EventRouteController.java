@@ -6,8 +6,6 @@ import java.util.Locale;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -39,8 +37,6 @@ import com.konkerlabs.platform.registry.web.forms.EventRouteForm;
 @Scope("request")
 @RequestMapping("routes")
 public class EventRouteController implements ApplicationContextAware {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(EventRouteController.class);
 
     public enum Messages {
         ROUTE_REGISTERED_SUCCESSFULLY("controller.event_route.registered.succesfully"),
@@ -133,7 +129,7 @@ public class EventRouteController implements ApplicationContextAware {
                                  RedirectAttributes redirectAttributes, Locale locale) {
 
         return doSave(() -> {
-            eventRouteForm.setAdditionalSupplier(() -> tenant.getDomainName());
+            eventRouteForm.setAdditionalSupplier(() -> tenant.getDomainName());            
             return eventRouteService.update(tenant, routeGUID, eventRouteForm.toModel());
         },eventRouteForm,locale,redirectAttributes,"put");
 

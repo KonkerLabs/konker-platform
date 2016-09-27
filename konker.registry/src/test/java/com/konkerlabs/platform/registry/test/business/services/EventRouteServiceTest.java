@@ -10,6 +10,7 @@ import com.konkerlabs.platform.registry.business.repositories.EventRouteReposito
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.TransformationRepository;
 import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
+import com.konkerlabs.platform.registry.business.services.publishers.EventPublisherSms;
 import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteService;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
@@ -25,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +46,10 @@ import static org.mockito.Mockito.when;
 public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     private static final String TRANSFORMATION_ID_IN_USE = "2747ec73-6910-43a1-8ddc-5a4a134ebab3";
-
+    private static final String DEVICE_URI_FOR_DISPLAY_NAME = "device://konker/7d51c242-81db-11e6-a8c2-0746f010e945";
+    private static final String SMS_URI_FOR_DISPLAY_NAME = "sms://konker/140307f9-7d50-4f37-ac67-80313776bef4";
+    private static final String REST_URI_FOR_DISPLAY_NAME = "rest://konker/dda64780-eb81-11e5-958b-a73dab8b32ee";
+    
     @Rule
     public ExpectedException thrown = none();
 
@@ -55,8 +60,6 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     private TenantRepository tenantRepository;
     @Autowired
     private EventRouteRepository eventRouteRepository;
-    @Autowired
-    private TransformationRepository transformationRepository;
 
     private EventRoute route;
 
@@ -65,7 +68,6 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     private Tenant tenant;
     private Tenant emptyTenant;
     private Transformation transformation;
-    private RouteActor nonExistingRouteActor;
 
     @Before
     public void setUp() throws Exception {
@@ -94,10 +96,6 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
                 .active(true)
                 .build());
 
-        nonExistingRouteActor = RouteActor.builder()
-                .uri(new DeviceURIDealer(){}.toDeviceRouteURI(tenant.getDomainName(), "999"))
-                .data(new HashMap<>())
-                .build();
     }
 
     /* ----------------------------- save ------------------------------ */
@@ -308,7 +306,155 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
         assertThat(EventRoute.class.cast(response.getResult()).getName(), equalTo(editedName));
         assertThat(EventRoute.class.cast(response.getResult()).isActive(), equalTo(false));
     }
+    
+    @Test
+  	@UsingDataSet(locations = { "/fixtures/tenants.json", "/fixtures/transformations.json", 
+  			"/fixtures/devices.json", "/fixtures/event-routes.json" })
+  	public void shouldSaveEditedRouteAndFillDisplayNameForIncoming() throws Exception {
+  		String expectedDisplayName = "SN1234567890";
+  		EventRoute route = subject.getByGUID(tenant, existingGuid).getResult();
 
+  		route.getIncoming().setUri(URI.create(DEVICE_URI_FOR_DISPLAY_NAME));
+  		 route.setName("Changing Name To Persist");
+
+  		NewServiceResponse<EventRoute> response = subject.save(tenant, route);
+
+  		assertThat(response, isResponseOk());
+  		assertThat(EventRoute.class.cast(response.getResult()).getIncoming().getDisplayName(), equalTo(expectedDisplayName));
+  	}
+
+	@Test
+	@UsingDataSet(locations = { "/fixtures/tenants.json", "/fixtures/transformations.json", "/fixtures/devices.json",
+			"/fixtures/event-routes.json" })
+	public void shouldUpdateRouteAndFillDisplayNameForIncoming() throws Exception {
+		String expectedDisplayName = "SN1234567890";
+		String newRouteName = "Changing Name To Persist";
+		EventRoute route = subject.getByGUID(tenant, existingGuid).getResult();
+
+		route.getIncoming().setUri(URI.create(DEVICE_URI_FOR_DISPLAY_NAME));
+		route.setName(newRouteName);
+
+		NewServiceResponse<EventRoute> response = subject.update(tenant, route.getGuid(), route);
+
+		assertThat(response, isResponseOk());
+		assertThat(EventRoute.class.cast(response.getResult()).getIncoming().getDisplayName(),
+				equalTo(expectedDisplayName));
+		assertThat(EventRoute.class.cast(response.getResult()).getName(), equalTo(newRouteName));
+	}
+
+	@Test
+	@UsingDataSet(locations = { "/fixtures/tenants.json", "/fixtures/transformations.json", "/fixtures/devices.json",
+			"/fixtures/event-routes.json" })
+	public void shouldSaveEditedRouteAndFillDisplayNameForOutgoingDevice() throws Exception {
+		String expectedDisplayName = "SN1234567890";
+		EventRoute route = subject.getByGUID(tenant, existingGuid).getResult();
+
+		route.getOutgoing().setUri(URI.create(DEVICE_URI_FOR_DISPLAY_NAME));
+		route.setName("Changing Name To Persist");
+
+		NewServiceResponse<EventRoute> response = subject.save(tenant, route);
+
+		assertThat(response, isResponseOk());
+		assertThat(EventRoute.class.cast(response.getResult()).getOutgoing().getDisplayName(),
+				equalTo(expectedDisplayName));
+	}
+
+	@Test
+	@UsingDataSet(locations = { "/fixtures/tenants.json", "/fixtures/transformations.json", "/fixtures/devices.json",
+			"/fixtures/event-routes.json" })
+	public void shouldUpdateRouteAndFillDisplayNameForOutgoingDevice() throws Exception {
+		String expectedDisplayName = "SN1234567890";
+		String newRouteName = "Changing Name To Persist";
+		EventRoute route = subject.getByGUID(tenant, existingGuid).getResult();
+
+		route.getOutgoing().setUri(URI.create(DEVICE_URI_FOR_DISPLAY_NAME));
+		route.setName(newRouteName);
+
+		NewServiceResponse<EventRoute> response = subject.update(tenant, route.getGuid(), route);
+
+		assertThat(response, isResponseOk());
+		assertThat(EventRoute.class.cast(response.getResult()).getOutgoing().getDisplayName(),
+				equalTo(expectedDisplayName));
+		assertThat(EventRoute.class.cast(response.getResult()).getName(), equalTo(newRouteName));
+	}
+      
+	
+	@Test
+	@UsingDataSet(locations = { "/fixtures/tenants.json", "/fixtures/transformations.json", "/fixtures/sms-destinations.json",
+			"/fixtures/event-routes.json" })
+	public void shouldSaveEditedRouteAndFillDisplayNameForOutgoingSMS() throws Exception {
+		String expectedDisplayName = "First destination";
+		EventRoute route = subject.getByGUID(tenant, existingGuid).getResult();
+
+		route.getOutgoing().setUri(URI.create(SMS_URI_FOR_DISPLAY_NAME));
+		route.getOutgoing().getData().put(EventPublisherSms.SMS_MESSAGE_STRATEGY_PARAMETER_NAME, EventPublisherSms.SMS_MESSAGE_FORWARD_STRATEGY_PARAMETER_VALUE);
+		route.setName("Changing Name To Persist");
+
+		NewServiceResponse<EventRoute> response = subject.save(tenant, route);
+
+		assertThat(response, isResponseOk());
+		assertThat(EventRoute.class.cast(response.getResult()).getOutgoing().getDisplayName(),
+				equalTo(expectedDisplayName));
+	}
+
+	@Test
+	@UsingDataSet(locations = { "/fixtures/tenants.json", "/fixtures/transformations.json", "/fixtures/sms-destinations.json",
+			"/fixtures/event-routes.json" })
+	public void shouldUpdateRouteAndFillDisplayNameForOutgoingSMS() throws Exception {
+		String expectedDisplayName = "First destination";
+		String newRouteName = "Changing Name To Persist";
+		EventRoute route = subject.getByGUID(tenant, existingGuid).getResult();
+
+		route.getOutgoing().setUri(URI.create(SMS_URI_FOR_DISPLAY_NAME));
+		route.getOutgoing().getData().put(EventPublisherSms.SMS_MESSAGE_STRATEGY_PARAMETER_NAME, EventPublisherSms.SMS_MESSAGE_FORWARD_STRATEGY_PARAMETER_VALUE);
+		route.setName(newRouteName);
+
+		NewServiceResponse<EventRoute> response = subject.update(tenant, route.getGuid(), route);
+
+		assertThat(response, isResponseOk());
+		assertThat(EventRoute.class.cast(response.getResult()).getOutgoing().getDisplayName(),
+				equalTo(expectedDisplayName));
+		assertThat(EventRoute.class.cast(response.getResult()).getName(), equalTo(newRouteName));
+	}
+	
+	
+	@Test
+	@UsingDataSet(locations = { "/fixtures/tenants.json", "/fixtures/transformations.json", "/fixtures/rest-destinations.json",
+			"/fixtures/event-routes.json" })
+	public void shouldSaveEditedRouteAndFillDisplayNameForOutgoingREST() throws Exception {
+		String expectedDisplayName = "a restful destination";
+		EventRoute route = subject.getByGUID(tenant, existingGuid).getResult();
+
+		route.getOutgoing().setUri(URI.create(REST_URI_FOR_DISPLAY_NAME));
+		route.setName("Changing Name To Persist");
+
+		NewServiceResponse<EventRoute> response = subject.save(tenant, route);
+
+		assertThat(response, isResponseOk());
+		assertThat(EventRoute.class.cast(response.getResult()).getOutgoing().getDisplayName(),
+				equalTo(expectedDisplayName));
+	}
+
+	@Test
+	@UsingDataSet(locations = { "/fixtures/tenants.json", "/fixtures/transformations.json", "/fixtures/rest-destinations.json",
+			"/fixtures/event-routes.json" })
+	public void shouldUpdateRouteAndFillDisplayNameForOutgoingREST() throws Exception {
+		String expectedDisplayName = "a restful destination";
+		String newRouteName = "Changing Name To Persist";
+		EventRoute route = subject.getByGUID(tenant, existingGuid).getResult();
+
+		route.getOutgoing().setUri(URI.create(REST_URI_FOR_DISPLAY_NAME));
+		route.setName(newRouteName);
+
+		NewServiceResponse<EventRoute> response = subject.update(tenant, route.getGuid(), route);
+
+		assertThat(response, isResponseOk());
+		assertThat(EventRoute.class.cast(response.getResult()).getOutgoing().getDisplayName(),
+				equalTo(expectedDisplayName));
+		assertThat(EventRoute.class.cast(response.getResult()).getName(), equalTo(newRouteName));
+	}
+      
+	
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/transformations.json", "/fixtures/event-routes.json"})
     public void shouldReturnErrorMessageIfRouteDoesNotBelongToTenantWhenFindByGUID() throws Exception {
