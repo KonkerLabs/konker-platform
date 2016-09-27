@@ -41,4 +41,6 @@ public interface DeviceEventService {
                                                  Instant startingTimestamp,
                                                  Instant endTimestamp,
                                                  Integer limit);
+
+	NewServiceResponse<List<Event>> findLastEventBy(Tenant tenant, String deviceGuid);
 }

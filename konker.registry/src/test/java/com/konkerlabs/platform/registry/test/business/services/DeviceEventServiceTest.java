@@ -142,7 +142,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
         event.setChannel("otherChannel");
         deviceEventService.logEvent(device, channel, event);
 
-        Event last = eventRepository.findBy(tenant, device.getGuid(), event.getTimestamp(), null, 1).get(0);
+        Event last = eventRepository.findBy(tenant,device.getGuid(),event.getTimestamp(), null, 1).get(0);
 
         assertThat(last, notNullValue());
 
@@ -209,6 +209,20 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
 
         assertThat(serviceResponse.getResult().get(0).getTimestamp().toEpochMilli(),
                 equalTo(lastEventTimestamp.toEpochMilli()));
+    }
+
+    @Test
+    public void shouldReturnAnErrorMessageIfTenantIsNullWhenFindingLastEventBy() throws Exception {
+        NewServiceResponse<List<Event>> serviceResponse = deviceEventService.findLastEventBy(null, device.getGuid());
+
+        assertThat(serviceResponse, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
+    }
+
+    @Test
+    public void shouldReturnAnErrorMessageIfDeviceIdIsNullWhenFindingLastEventBy() throws Exception {
+        NewServiceResponse<List<Event>> serviceResponse = deviceEventService.findLastEventBy(tenant, null);
+
+        assertThat(serviceResponse, hasErrorMessage(DeviceRegisterService.Validations.DEVICE_GUID_NULL.getCode()));
     }
 
 

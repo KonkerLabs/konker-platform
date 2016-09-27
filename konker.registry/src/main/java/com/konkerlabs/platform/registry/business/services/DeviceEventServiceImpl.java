@@ -80,4 +80,19 @@ public class DeviceEventServiceImpl implements DeviceEventService {
         return ServiceResponseBuilder.<List<Event>>ok()
                 .withResult(eventRepository.findBy(tenant, deviceGuid, startTimestamp, endTimestamp, limit)).build();
     }
+
+	@Override
+	public NewServiceResponse<List<Event>> findLastEventBy(Tenant tenant, String deviceGuid) {
+		if (!Optional.ofNullable(tenant).isPresent())
+			return ServiceResponseBuilder.<List<Event>>error()
+					.withMessage(CommonValidations.TENANT_NULL.getCode(), null)
+					.build();
+
+		if (!Optional.ofNullable(deviceGuid).isPresent())
+			return ServiceResponseBuilder.<List<Event>>error()
+					.withMessage(DeviceRegisterService.Validations.DEVICE_GUID_NULL.getCode(), null)
+					.build();
+		return ServiceResponseBuilder.<List<Event>>ok()
+                .withResult(eventRepository.findLastBy(tenant, deviceGuid)).build();
+	}
 }
