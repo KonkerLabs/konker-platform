@@ -21,9 +21,7 @@ public class RedisTestConfiguration extends RedisConfig {
     @Override
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
-        return Mockito.mock(
-                JedisConnectionFactory.class,
-                Mockito.withSettings().extraInterfaces(DisposableBean.class));
+        return super.redisConnectionFactory();
     }
 
     @Override
