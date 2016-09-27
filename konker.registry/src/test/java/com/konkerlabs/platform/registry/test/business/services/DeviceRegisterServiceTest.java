@@ -203,13 +203,13 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json"})
-    public void shouldFindADeviceByItsTenantDomainNameAndDeviceId() throws Exception {
+    public void shouldFindADeviceByItsTenantDomainNameAndDeviceGuid() throws Exception {
         Device registeredDevice = deviceRepository.findOne(THE_DEVICE_INTERNAL_MONGO_ID);
         Assert.assertThat(registeredDevice, notNullValue());
 
-        Device found = deviceRegisterService.findByTenantDomainNameAndDeviceId(
+        Device found = deviceRegisterService.findByTenantDomainNameAndDeviceGuid(
                 registeredDevice.getTenant().getDomainName(),
-                registeredDevice.getDeviceId()
+                registeredDevice.getGuid()
         );
 
         assertThat(found, notNullValue());

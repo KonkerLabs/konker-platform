@@ -7,7 +7,7 @@
             "name": "REST-from-Prestashop-deviceDeletion",
             "type": "REST",
             "description": "Get REST Data from Prestahop for Device deletion",
-            "incoming": "device://konker/SN1234567890",
+            "incoming": "device://konker/7d51c242-81db-11e6-a8c2-0746f010e945",
             "containerKey": "prestashopData",
             "parameters": {
                 "URL": "https://www.google.com/device/@{#deviceId}",
@@ -27,7 +27,7 @@
             "name": "REST-from-Prestashop-01",
             "type": "REST",
             "description": "Get REST Data from Prestahop",
-            "incoming": "device://konker/abc123",
+            "incoming": "device://konker/8d51c242-81db-11e6-a8c2-0746f010e945",
             "containerKey": "prestashopData",
             "parameters": {
                 "URL": "https://www.google.com/device/@{#deviceId}",
@@ -47,7 +47,7 @@
             "name": "REST-from-Magento-01",
             "type": "REST",
             "description": "Get REST Data from Magento",
-            "incoming": "device://konker/abc123",
+            "incoming": "device://konker/8d51c242-81db-11e6-a8c2-0746f010e945",
             "containerKey": "magentoData",
             "parameters": {
                 "URL": "https://www.google.com/device/@{#deviceId}",

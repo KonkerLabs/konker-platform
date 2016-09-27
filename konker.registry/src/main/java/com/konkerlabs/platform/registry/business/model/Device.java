@@ -1,22 +1,27 @@
 package com.konkerlabs.platform.registry.business.model;
 
-import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.utilities.validations.api.Validatable;
-import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
-import lombok.*;
-import org.springframework.data.annotation.Transient;
+import java.math.BigInteger;
+import java.net.URI;
+import java.time.Instant;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Random;
+
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.math.BigInteger;
-import java.net.URI;
-import java.security.SecureRandom;
-import java.time.Instant;
-import java.util.*;
-import java.util.stream.Collectors;
+import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.utilities.validations.api.Validatable;
+
+import lombok.Builder;
+import lombok.Data;
 
 @Data
 @Builder
@@ -95,7 +100,7 @@ public class Device implements DeviceURIDealer, Validatable, UserDetails {
 //	}
 
 	public URI toURI() {
-		return toDeviceRouteURI(getTenant().getDomainName(),getDeviceId());
+		return toDeviceRouteURI(getTenant().getDomainName(),getGuid());
 	}
 
 	@Override

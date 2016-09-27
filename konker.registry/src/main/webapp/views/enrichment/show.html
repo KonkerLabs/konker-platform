@@ -45,7 +45,7 @@
                         id="incomingAuthority" name="incomingAuthority">
                     <option data-th-text="'Select an option...'" data-th-value="none"></option>
                     <option data-th-each="device : ${allDevices}"
-                            data-th-value="${device.deviceId}"
+                            data-th-value="${device.guid}"
                             data-th-text="${device.deviceId + ' - ' + device.name}"></option>
                 </select>
             </div>

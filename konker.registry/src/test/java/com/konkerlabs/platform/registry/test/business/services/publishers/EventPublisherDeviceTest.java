@@ -52,7 +52,7 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
 
     private static final String THE_DEVICE_GUID = "7d51c242-81db-11e6-a8c2-0746f010e945";
     private static final String REGISTERED_TENANT_DOMAIN = "konker";
-    private static final String REGISTERED_DEVICE_ID = "SN1234567890";
+    private static final String REGISTERED_DEVICE_GUID = "7d51c242-81db-11e6-a8c2-0746f010e945";
 
     private static final String MQTT_OUTGOING_TOPIC_TEMPLATE = "sub/{0}/{1}";
 
@@ -97,13 +97,13 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
 
         ((EventPublisherDevice)subject).setDeviceEventService(deviceEventService);
 
-        device = deviceRegisterService.findByTenantDomainNameAndDeviceId(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_ID);
+        device = deviceRegisterService.findByTenantDomainNameAndDeviceGuid(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_GUID);
         event = Event.builder()
             .channel(INPUT_CHANNEL)
             .payload(eventPayload)
             .timestamp(Instant.now()).build();
 
-        destinationUri = new DeviceURIDealer() {}.toDeviceRouteURI(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_ID);
+        destinationUri = new DeviceURIDealer() {}.toDeviceRouteURI(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_GUID);
 
         data = new HashMap<String,String>() {{
             put(DEVICE_MQTT_CHANNEL, OUTPUT_CHANNEL);
@@ -191,7 +191,7 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
     public void shouldNotSendAnyEventThroughGatewayIfDeviceIsDisabled() throws Exception {
         Tenant tenant = tenantRepository.findByName("Konker");
         
-        Optional.of(deviceRegisterService.findByTenantDomainNameAndDeviceId(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_ID))
+        Optional.of(deviceRegisterService.findByTenantDomainNameAndDeviceGuid(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_GUID))
             .filter(device -> !device.isActive())
             .orElseGet(() -> deviceRegisterService.switchEnabledDisabled(tenant, THE_DEVICE_GUID).getResult());
 
@@ -205,11 +205,11 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
     public void shouldSendAnEventThroughGatewayIfDeviceIsEnabled() throws Exception {
         Tenant tenant = tenantRepository.findByName("Konker");
         
-        Optional.of(deviceRegisterService.findByTenantDomainNameAndDeviceId(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_ID))
+        Optional.of(deviceRegisterService.findByTenantDomainNameAndDeviceGuid(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_GUID))
                 .filter(Device::isActive)
                 .orElseGet(() -> deviceRegisterService.switchEnabledDisabled(tenant, THE_DEVICE_GUID).getResult());
 
-        device = deviceRegisterService.findByTenantDomainNameAndDeviceId(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_ID);
+        device = deviceRegisterService.findByTenantDomainNameAndDeviceGuid(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_GUID);
 
         String expectedMqttTopic = MessageFormat
             .format(MQTT_OUTGOING_TOPIC_TEMPLATE, device.getApiKey(),

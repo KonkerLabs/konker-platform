@@ -105,9 +105,17 @@ public interface DeviceRegisterService {
 	// TODO: should be moved to a KEYs service
 	Device findByApiKey(String apiKey);
 
-	// TODO This method must be extinguished when event route specialized URI
-	// gets available
-	Device findByTenantDomainNameAndDeviceId(String tenantDomainName, String deviceGuid);
+	
+	/**
+	 * Returns a device by its deviceGuid and tenant name.
+	 * 
+	 * If the device does not exist, returns an error
+	 * 
+	 * @param tenant
+	 * @param guid
+	 * @return
+	 */
+	Device findByTenantDomainNameAndDeviceGuid(String tenantDomainName, String deviceGuid);
 
 	/**
 	 * Enables or disables a device

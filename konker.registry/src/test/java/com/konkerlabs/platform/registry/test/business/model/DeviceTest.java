@@ -1,21 +1,26 @@
 package com.konkerlabs.platform.registry.test.business.model;
 
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
-import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import org.hamcrest.collection.IsEmptyCollection;
-import org.junit.Before;
-import org.junit.Test;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.sameInstance;
 
 import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import org.junit.Before;
+import org.junit.Test;
+
+import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 
 public class DeviceTest {
 
@@ -30,7 +35,11 @@ public class DeviceTest {
                 .domainName("tenant")
                 .build();
 
-		device = Device.builder().deviceId("95c14b36ba2b43f1").name("Device name").description("Description")
+		device = Device.builder()
+				.deviceId("95c14b36ba2b43f1")
+				.guid("22821842-7438-4c46-8bb2-5a2f56cd8923")
+				.name("Device name")
+				.description("Description")
 				.tenant(tenant).build();
 	}
 
@@ -198,7 +207,7 @@ public class DeviceTest {
 	@Test
 	public void shouldGenerateItsOwnURI() throws Exception {
         URI expected = new DeviceURIDealer() {}.toDeviceRouteURI(
-            device.getTenant().getDomainName(),device.getDeviceId()
+            device.getTenant().getDomainName(),device.getGuid()
         );
 
         assertThat(device.toURI(),equalTo(expected));
