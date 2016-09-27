@@ -9,16 +9,13 @@ import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestination
 import com.konkerlabs.platform.registry.business.model.behaviors.SmsDestinationURIDealer;
 import com.konkerlabs.platform.registry.business.services.publishers.EventPublisherSms;
 import com.konkerlabs.platform.registry.web.forms.EventRouteForm;
-import org.apache.commons.collections.map.HashedMap;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.util.Collections;
 import java.util.HashMap;
 
-import static com.konkerlabs.platform.registry.business.services.publishers.EventPublisherMqtt.DEVICE_MQTT_CHANNEL;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 

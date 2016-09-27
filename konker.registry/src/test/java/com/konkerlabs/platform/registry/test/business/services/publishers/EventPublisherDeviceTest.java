@@ -7,7 +7,7 @@ import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.publishers.EventPublisherMqtt;
+import com.konkerlabs.platform.registry.business.services.publishers.EventPublisherDevice;
 import com.konkerlabs.platform.registry.business.services.publishers.api.EventPublisher;
 import com.konkerlabs.platform.registry.integration.gateways.MqttMessageGateway;
 import com.konkerlabs.platform.registry.test.base.*;
@@ -35,7 +35,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.konkerlabs.platform.registry.business.services.publishers.EventPublisherMqtt.DEVICE_MQTT_CHANNEL;
+import static com.konkerlabs.platform.registry.business.services.publishers.EventPublisherDevice.DEVICE_MQTT_CHANNEL;
 import static org.mockito.Mockito.*;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.*;
@@ -48,7 +48,7 @@ import static org.hamcrest.MatcherAssert.*;
         RedisTestConfiguration.class
 })
 @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json"})
-public class EventPublisherMqttTest extends BusinessLayerTestSupport {
+public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
 
     private static final String THE_DEVICE_GUID = "7d51c242-81db-11e6-a8c2-0746f010e945";
     private static final String REGISTERED_TENANT_DOMAIN = "konker";
@@ -95,7 +95,7 @@ public class EventPublisherMqttTest extends BusinessLayerTestSupport {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
 
-        ((EventPublisherMqtt)subject).setDeviceEventService(deviceEventService);
+        ((EventPublisherDevice)subject).setDeviceEventService(deviceEventService);
 
         device = deviceRegisterService.findByTenantDomainNameAndDeviceId(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_ID);
         event = Event.builder()

@@ -1,7 +1,11 @@
 package com.konkerlabs.platform.registry.test.base;
 
 import com.lordofthejars.nosqlunit.mongodb.MongoDbRule;
+import com.lordofthejars.nosqlunit.redis.*;
+import com.lordofthejars.nosqlunit.redis.embedded.EmbeddedJedis;
+import com.lordofthejars.nosqlunit.redis.embedded.EmbeddedRedisBuilder;
 import org.junit.After;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -20,5 +24,6 @@ public class BusinessLayerTestSupport {
     @After
     public void tearDown() throws Exception {
         mongoDbRule.getDatabaseOperation().deleteAll();
+
     }
 }

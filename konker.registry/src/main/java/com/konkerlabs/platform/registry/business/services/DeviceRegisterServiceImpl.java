@@ -1,6 +1,5 @@
 package com.konkerlabs.platform.registry.business.services;
 
-import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.DataEnrichmentExtensionRepository;
@@ -11,21 +10,28 @@ import com.konkerlabs.platform.registry.business.repositories.events.EventReposi
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.config.RedisConfig;
 import com.konkerlabs.platform.registry.web.controllers.DeviceController;
 import com.konkerlabs.platform.security.exceptions.SecurityException;
 import com.konkerlabs.platform.security.managers.PasswordManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
+import org.springframework.data.redis.connection.Message;
+import org.springframework.data.redis.connection.MessageListener;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.stereotype.Service;
+import redis.clients.jedis.JedisPubSub;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Consumer;
+import java.util.concurrent.CountDownLatch;
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
@@ -45,6 +51,12 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
     @Autowired @Qualifier("mongoEvents")
     private EventRepository eventRepository;
+
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+
+    @Autowired
+    private ApplicationContext ctx;
 
     @Override
     public NewServiceResponse<Device> register(Tenant tenant, Device device) {
@@ -279,7 +291,8 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
 	@Override
 	public NewServiceResponse<Device> getByDeviceGuid(Tenant tenant, String guid) {
-		if (!Optional.ofNullable(tenant).isPresent())
+
+        if (!Optional.ofNullable(tenant).isPresent())
 			return ServiceResponseBuilder.<Device> error().withMessage(CommonValidations.TENANT_NULL.getCode(), null)
 					.build();
 
