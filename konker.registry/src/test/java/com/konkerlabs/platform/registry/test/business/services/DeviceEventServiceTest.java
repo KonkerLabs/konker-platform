@@ -217,7 +217,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
         Jedis jedis = (Jedis) redisTemplate.getConnectionFactory().getConnection().getNativeConnection();
         ExecutorService executorService = Executors.newFixedThreadPool(1);
         CompletableFuture<String> completableFuture = new CompletableFuture<>();
-        CountDownLatch countDownLatch = new CountDownLatch(1);
+
         Future<?> future = executorService.submit(() -> {
             jedis.subscribe(new JedisPubSub() {
                 @Override
@@ -227,7 +227,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
                 }
             }, device.getApiKey() + "." + channel);
         });
-        countDownLatch.await(1, TimeUnit.SECONDS);
+
         try {
             future.get(3, TimeUnit.SECONDS);
         } catch (TimeoutException e){
@@ -237,8 +237,5 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
             deviceEventService.logEvent(device, channel, event);
             assertThat(device.getGuid(), equalTo(completableFuture.get()));
         }
-
-
-
     }
 }
