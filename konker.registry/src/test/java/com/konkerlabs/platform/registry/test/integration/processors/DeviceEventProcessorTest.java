@@ -61,7 +61,8 @@ public class DeviceEventProcessorTest {
     private String incomingChannel = "command";
 
     private Event event;
-    private Event eventAtual;
+    private Event eventNewTimestamp;
+    private Event eventOldTimestamp;
     private Device device;
     private NewServiceResponse<Event> enrichmentResponse;
     private NewServiceResponse<List<Event>> eventResponse;
@@ -89,7 +90,6 @@ public class DeviceEventProcessorTest {
             .channel(incomingChannel)
             .deviceGuid("device_guid")
             .payload(originalPayload)
-            .timestamp(firstEventTimestamp)
             .build();
 
         device = spy(Device.builder()
@@ -110,7 +110,14 @@ public class DeviceEventProcessorTest {
                 .withResult(event)
                 .build());
         
-        eventAtual = Event.builder()
+        eventOldTimestamp = Event.builder()
+                .channel(incomingChannel)
+                .deviceGuid("device_guid")
+                .payload(originalPayload)
+                .timestamp(firstEventTimestamp)
+                .build();
+        
+        eventNewTimestamp = Event.builder()
                 .channel(incomingChannel)
                 .deviceGuid("device_guid")
                 .payload(originalPayload)
@@ -118,7 +125,7 @@ public class DeviceEventProcessorTest {
                 .build();
         
         eventResponse = spy(ServiceResponseBuilder.<List<Event>>ok()
-        		.withResult(Arrays.asList(eventAtual, event))
+        		.withResult(Arrays.asList(eventNewTimestamp, eventOldTimestamp))
         		.build());
     }
 
