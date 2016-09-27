@@ -225,7 +225,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
                     completableFuture.complete(message);
                     unsubscribe();
                 }
-            }, device.getApiKey() + "." + channel);
+            }, device.getApiKey() + "   ." + channel);
         });
 
         try {
