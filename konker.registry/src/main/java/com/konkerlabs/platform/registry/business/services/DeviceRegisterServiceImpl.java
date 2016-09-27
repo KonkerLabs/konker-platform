@@ -1,9 +1,6 @@
 package com.konkerlabs.platform.registry.business.services;
 
-import com.konkerlabs.platform.registry.business.model.DataEnrichmentExtension;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.EventRoute;
-import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.DataEnrichmentExtensionRepository;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
@@ -268,16 +265,8 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
         if(Optional.ofNullable(response).isPresent()) return response;
 
-        //delete ingested data in logical way
-//        if(device.getEvents() != null){
-//            device.getEvents()
-//                    .stream()
-//                    .filter(Objects::nonNull)
-//                    .forEach(event -> event.setDeleted(true));
-//        }
-
-        //delete the device
         deviceRepository.delete(device);
+
         return ServiceResponseBuilder.<Device>ok()
                 .withMessage(DeviceController.Messages.DEVICE_REMOVED_SUCCESSFULLY.getCode())
                 .withResult(device)
