@@ -231,7 +231,6 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
         Jedis jedis = (Jedis) redisTemplate.getConnectionFactory().getConnection().getNativeConnection();
         ExecutorService executorService = Executors.newFixedThreadPool(1);
         CompletableFuture<String> completableFuture = new CompletableFuture<>();
-
         Future<?> future = executorService.submit(() -> {
             jedis.subscribe(new JedisPubSub() {
                 @Override
@@ -239,9 +238,8 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
                     completableFuture.complete(message);
                     unsubscribe();
                 }
-            }, device.getApiKey() + "   ." + channel);
+            }, device.getApiKey() + "." + channel);
         });
-
         try {
             future.get(3, TimeUnit.SECONDS);
         } catch (TimeoutException e){

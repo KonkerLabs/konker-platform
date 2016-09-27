@@ -56,14 +56,14 @@ public class DeviceEventProcessor {
     private DeviceRegisterService deviceRegisterService;
     private DeviceEventService deviceEventService;
     private EnrichmentExecutor enrichmentExecutor;
-    private RedisTemplate<String, Object> redisTemplate;
+    private RedisTemplate<String, String> redisTemplate;
 
     @Autowired
     public DeviceEventProcessor(DeviceEventService deviceEventService,
                                 EventRouteExecutor eventRouteExecutor,
                                 DeviceRegisterService deviceRegisterService,
                                 EnrichmentExecutor enrichmentExecutor,
-                                RedisTemplate<String, Object> redisTemplate) {
+                                RedisTemplate<String, String> redisTemplate) {
         this.deviceEventService = deviceEventService;
         this.eventRouteExecutor = eventRouteExecutor;
         this.deviceRegisterService = deviceRegisterService;
