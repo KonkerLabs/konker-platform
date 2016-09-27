@@ -268,4 +268,31 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
 
         assertThat(events.get(0).getTimestamp().toEpochMilli(),equalTo(thirdEventTimestamp.toEpochMilli()));
     }
+    
+    @Test
+    public void shouldThrowAnExceptionIfTenantIsNullWhenFindingLastBy() throws Exception {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Tenant cannot be null");
+
+        eventRepository.findLastBy(null, deviceGuid);
+    }
+
+    @Test
+    public void shouldThrowAnExceptionIfDeviceGuidIsNullWhenFindingLastBy() throws Exception {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Device ID cannot be null or empty");
+
+        eventRepository.findLastBy(tenant, null);
+    }
+    
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json"})
+    public void shouldRetrieveLastEventsByTenantAndDeviceGuid() throws Exception {
+        List<Event> events = eventRepository.findLastBy(tenant, deviceGuid);
+
+        assertThat(events,notNullValue());
+        assertThat(events,hasSize(1));
+
+        assertThat(events.get(0).getTimestamp().toEpochMilli(),equalTo(thirdEventTimestamp.toEpochMilli()));
+    }
 }

@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -98,24 +99,24 @@ public class DeviceEventRestEndpoint {
                   @PathVariable("apiKey") String apiKey, 
                   @PathVariable("channel") String channel,
                   @AuthenticationPrincipal Device principal, 
-                  @RequestParam(name = "offset", required = false) Long offset,
-                  @RequestParam(name = "waitTime", required = false) Long waitTime,
+                  @RequestParam(name = "offset", required = false) Optional<Long> offset,
+                  @RequestParam(name = "waitTime", required = false) Optional<Long> waitTime,
                   Locale locale) {
     	
-    	DeferredResult<List<Event>> deferredResult = new DeferredResult<>(waitTime);
+    	DeferredResult<List<Event>> deferredResult = new DeferredResult<>(waitTime.orElse(new Long("0")));
 
     	if (!principal.getApiKey().equals(apiKey)) {
     		deferredResult.setErrorResult(new Exception(applicationContext.getMessage(Messages.INVALID_RESOURCE.getCode(),null, locale)));
     		return deferredResult;
     	}
     	
-    	if (waitTime != null && waitTime.compareTo(new Long("30000")) > 0) {
+    	if (waitTime.isPresent() && waitTime.get().compareTo(new Long("30000")) > 0) {
     		deferredResult.setErrorResult(new Exception(applicationContext.getMessage(Messages.INVALID_WAITTIME.getCode(),null, locale)));
     		return deferredResult;
     	}
 
     	try {
-    		deviceEventProcessor.process(apiKey, channel, Instant.ofEpochMilli(offset), waitTime, deferredResult);
+    		deviceEventProcessor.process(apiKey, channel, offset, waitTime, deferredResult);
     	} catch (BusinessException e) {
     		deferredResult.setErrorResult(e.getMessage());
     	}

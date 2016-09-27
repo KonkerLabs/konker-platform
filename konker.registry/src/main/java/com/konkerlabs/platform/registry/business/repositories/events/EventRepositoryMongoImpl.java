@@ -113,4 +113,37 @@ public class EventRepositoryMongoImpl implements EventRepository {
                 .build())
         .collect(Collectors.toList());
     }
+
+	@Override
+	public List<Event> findLastBy(Tenant tenant, String deviceGuid) {
+		Optional.ofNullable(tenant)
+			.filter(tenant1 -> Optional.ofNullable(tenant1.getDomainName()).filter(s -> !s.isEmpty()).isPresent())
+			.orElseThrow(() -> new IllegalArgumentException("Tenant cannot be null"));
+		Optional.ofNullable(deviceGuid).filter(s -> !s.isEmpty())
+			.orElseThrow(() -> new IllegalArgumentException("Device ID cannot be null or empty"));
+		
+		List<Criteria> criterias = new ArrayList<>();
+
+        criterias.add(Criteria.where("deviceGuid").is(deviceGuid));
+
+        Query query = Query.query(
+            Criteria.where("tenantDomain").is(tenant.getDomainName())
+            .andOperator(criterias.toArray(new Criteria[criterias.size()]))).limit(1);
+
+        List<DBObject> result = mongoTemplate.find(query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "ts"))),
+                DBObject.class,
+                EVENTS_COLLECTION_NAME);
+
+        return result.stream().map(dbObject -> {
+            dbObject.removeField("_id");
+            dbObject.removeField("_class");
+            return dbObject;
+        }).map(dbObject -> Event.builder()
+                .deviceGuid(dbObject.get("deviceGuid").toString())
+                .payload(dbObject.get("payload").toString())
+                .timestamp(Instant.ofEpochMilli((Long) dbObject.get("ts")))
+                .channel(dbObject.get("channel").toString())
+                .build())
+        .collect(Collectors.toList());
+	}
 }

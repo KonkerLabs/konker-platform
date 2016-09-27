@@ -1,14 +1,22 @@
 package com.konkerlabs.platform.registry.test.integration.processors;
 
-import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.services.api.*;
-import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteExecutor;
-import com.konkerlabs.platform.registry.config.RedisConfig;
-import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
-import com.konkerlabs.platform.registry.test.base.IntegrationLayerTestContext;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.same;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.net.URI;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -24,13 +32,19 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.context.request.async.DeferredResult;
 
-import java.net.URI;
-import java.text.MessageFormat;
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.List;
-
-import static org.mockito.Mockito.*;
+import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
+import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.EnrichmentExecutor;
+import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteExecutor;
+import com.konkerlabs.platform.registry.config.RedisConfig;
+import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
+import com.konkerlabs.platform.registry.test.base.IntegrationLayerTestContext;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
@@ -47,6 +61,7 @@ public class DeviceEventProcessorTest {
     private String incomingChannel = "command";
 
     private Event event;
+    private Event eventAtual;
     private Device device;
     private NewServiceResponse<Event> enrichmentResponse;
     private NewServiceResponse<List<Event>> eventResponse;
@@ -62,12 +77,19 @@ public class DeviceEventProcessorTest {
     @Autowired
     private EnrichmentExecutor enrichmentExecutor;
 
+	private Instant firstEventTimestamp;
+	private Instant secondEventTimestamp;
+
     @Before
     public void setUp() throws Exception {
+    	firstEventTimestamp = Instant.ofEpochMilli(1474562670340L);
+        secondEventTimestamp = Instant.ofEpochMilli(1474562672395L);
+        
         event = Event.builder()
             .channel(incomingChannel)
             .deviceGuid("device_guid")
             .payload(originalPayload)
+            .timestamp(firstEventTimestamp)
             .build();
 
         device = spy(Device.builder()
@@ -77,7 +99,7 @@ public class DeviceEventProcessorTest {
                     .name("tenantName")
                     .build()
             )
-            .apiKey(originalPayload)
+            .apiKey(sourceApiKey)
             .id("id")
             .guid("device_guid")
             .deviceId("device_id")
@@ -88,8 +110,15 @@ public class DeviceEventProcessorTest {
                 .withResult(event)
                 .build());
         
+        eventAtual = Event.builder()
+                .channel(incomingChannel)
+                .deviceGuid("device_guid")
+                .payload(originalPayload)
+                .timestamp(secondEventTimestamp)
+                .build();
+        
         eventResponse = spy(ServiceResponseBuilder.<List<Event>>ok()
-        		.withResult(Arrays.asList(event))
+        		.withResult(Arrays.asList(eventAtual, event))
         		.build());
     }
 
@@ -169,31 +198,37 @@ public class DeviceEventProcessorTest {
         thrown.expect(BusinessException.class);
         thrown.expectMessage(DeviceEventProcessor.Messages.APIKEY_MISSING.getCode());
 
-        subject.process(null, incomingChannel, Instant.now(), new Long("30000"), new DeferredResult<>());
+        Long now = new Long(Instant.now().toEpochMilli());
+		subject.process(null, incomingChannel, Optional.of(now), Optional.of(new Long("30000")), new DeferredResult<>());
     }
     @Test
     public void shouldThrowABusinessExceptionIfDeviceDoesNotExist() throws Exception {
         thrown.expect(BusinessException.class);
         thrown.expectMessage(DeviceEventProcessor.Messages.DEVICE_NOT_FOUND.getCode());
 
-        subject.process(sourceApiKey, incomingChannel, Instant.now(), new Long("30000"), new DeferredResult<>());
+        Long now = new Long(Instant.now().toEpochMilli());
+		subject.process(sourceApiKey, incomingChannel, Optional.of(now), Optional.of(new Long("30000")), new DeferredResult<>());
     }
     @Test
     public void shouldThrowABusinessExceptionIfEventChannelIsUnknown() throws Exception {
         thrown.expect(BusinessException.class);
         thrown.expectMessage(DeviceEventProcessor.Messages.CHANNEL_MISSING.getCode());
 
-        subject.process(sourceApiKey, null, Instant.now(), new Long("30000"), new DeferredResult<>());
+        Long now = new Long(Instant.now().toEpochMilli());
+		subject.process(sourceApiKey, null, Optional.of(now), Optional.of(new Long("30000")), new DeferredResult<>());
     }
     
     @Test
     public void shouldReturnEventList() throws Exception {
-        when(deviceEventService.findEventsBy(device.getTenant(), device.getGuid(), 
-        		Instant.now(), null, null)).thenReturn(eventResponse);
+    	Long timestampLong = new Long(firstEventTimestamp.toEpochMilli());
 
-        subject.process(sourceApiKey, incomingChannel, Instant.now(), new Long("30000"), new DeferredResult<>());
+    	when(deviceRegisterService.findByApiKey(sourceApiKey)).thenReturn(device);
+		when(deviceEventService.findEventsBy(device.getTenant(), device.getDeviceId(), 
+        		firstEventTimestamp, null, 50)).thenReturn(eventResponse);
 
-        verify(deviceEventService).logEvent(device, incomingChannel, event);
+        subject.process(sourceApiKey, incomingChannel, Optional.of(timestampLong), Optional.of(new Long("30000")), new DeferredResult<>());
+
+        verify(deviceEventService).findEventsBy(device.getTenant(), device.getDeviceId(), firstEventTimestamp, null, 50);
     }
 
     @Configuration

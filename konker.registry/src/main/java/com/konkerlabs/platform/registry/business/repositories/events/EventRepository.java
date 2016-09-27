@@ -26,4 +26,6 @@ public interface EventRepository {
     void push(Tenant tenant, Event event) throws BusinessException;
 
     List<Event> findBy(Tenant tenant, String deviceGuid, Instant startInstant, Instant endInstant, Integer limit);
+
+	List<Event> findLastBy(Tenant tenant, String deviceGuid);
 }
