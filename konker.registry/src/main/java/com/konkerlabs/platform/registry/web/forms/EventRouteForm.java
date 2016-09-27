@@ -103,7 +103,7 @@ public class EventRouteForm implements ModelBuilder<EventRoute,EventRouteForm,St
 
     @Data
     public static class EventRouteActorForm {
-        private String authorityId;
+    	private String authorityId;
         private Map<String,String> authorityData = new HashMap<>();
     }
 }

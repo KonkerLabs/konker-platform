@@ -32,9 +32,9 @@
             <tr data-th-each="route : ${routes}">
                 <td data-th-text="${route.name}"></td>
                 <td data-th-text="#{routes.index.incoming. + __${route.incoming.uri.scheme}__}"></td>
-                <td data-th-text="${#strings.substringAfter(route.incoming.uri.path,'/')}"></td>
+                <td data-th-text="${route.incoming.displayName}"></td>
                 <td data-th-text="#{routes.index.outgoing. + __${route.outgoing.uri.scheme}__}"></td>
-                <td data-th-text="${#strings.substringAfter(route.outgoing.uri.path,'/')}"></td>
+                <td data-th-text="${route.outgoing.displayName}"></td>
                 <td>
                     <span data-th-if="${route.active}" class="glyphicon glyphicon-thumbs-up" aria-hidden="true"/>
                     <span data-th-if="${not route.active}" class="glyphicon glyphicon-thumbs-down" aria-hidden="true"/>

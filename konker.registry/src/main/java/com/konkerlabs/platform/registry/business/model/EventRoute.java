@@ -145,6 +145,7 @@ public class EventRoute implements Validatable {
 	@Builder
 	public static class RouteActor {
 		private URI uri;
+		private String displayName;
 		private Map<String, String> data = new HashMap<>();
 
 		public boolean isDevice() {
@@ -175,4 +176,6 @@ public class EventRoute implements Validatable {
 			return areEqual;
 		}
 	}
+
+	
 }
