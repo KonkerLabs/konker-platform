@@ -79,7 +79,10 @@ public class EventTransformationServiceTest {
         MockitoAnnotations.initMocks(this);
 
         event = Event.builder().timestamp(Instant.now())
-            .channel(DEVICE_MQTT_CHANNEL).payload(validPayloadJson).build();
+            .incoming(
+                    Event.EventActor.builder()
+                    .channel(DEVICE_MQTT_CHANNEL).build()
+            ).payload(validPayloadJson).build();
 
         transformation = Transformation.builder()
             .id("id")
@@ -223,7 +226,7 @@ public class EventTransformationServiceTest {
         assertThat(transformed.isPresent(),equalTo(true));
         transformed.ifPresent(e -> {
             assertThat(e.getTimestamp(),equalTo(event.getTimestamp()));
-            assertThat(e.getChannel(),equalTo(event.getChannel()));
+            assertThat(e.getIncoming().getChannel(),equalTo(event.getIncoming().getChannel()));
             assertThat(e.getPayload(),equalTo(firstStepResponseJson));
         });
     }
@@ -285,7 +288,7 @@ public class EventTransformationServiceTest {
         assertThat(transformed.isPresent(),equalTo(true));
         transformed.ifPresent(e -> {
             assertThat(e.getTimestamp(),equalTo(event.getTimestamp()));
-            assertThat(e.getChannel(),equalTo(event.getChannel()));
+            assertThat(e.getIncoming().getChannel(),equalTo(event.getIncoming().getChannel()));
             assertThat(e.getPayload(),equalTo(secondStepResponseJson));
         });
     }

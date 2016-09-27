@@ -80,8 +80,6 @@ public class EnrichmentExecutorTest extends BusinessLayerTestSupport {
 
     @Before
     public void setUp() throws Exception {
-        event = spy(Event.builder().channel("data").timestamp(Instant.now()).payload(PAYLOAD).build());
-
         existingUri = new DeviceURIDealer() {
         }.toDeviceRouteURI(REGISTERED_TENANT_DOMAIN, EXISTING_DEVICE_GUID);
         nonExistingUri = new DeviceURIDealer() {
@@ -100,6 +98,13 @@ public class EnrichmentExecutorTest extends BusinessLayerTestSupport {
                 .guid(EXISTING_DEVICE_GUID)
                 .active(true)
                 .name("device_name").build());
+
+        event = spy(Event.builder()
+                .incoming(
+                        Event.EventActor.builder()
+                        .channel("data")
+                        .deviceGuid(EXISTING_DEVICE_GUID).build()
+                ).timestamp(Instant.now()).payload(PAYLOAD).build());
 
         when(httpGateway.request(eq(HttpMethod.GET), eq(new URI("https://www.google.com/device/abc123")),
                 eq(MediaType.APPLICATION_JSON),

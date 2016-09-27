@@ -44,7 +44,7 @@ public class EventTransformationServiceImpl implements EventTransformationServic
 
         Optional<Event> transformed = Optional.of(
             Event.builder()
-                .channel(original.getChannel())
+                .incoming(original.getIncoming())
                 .payload(original.getPayload())
                 .timestamp(original.getTimestamp())
                 .build()
@@ -74,7 +74,7 @@ public class EventTransformationServiceImpl implements EventTransformationServic
 
             if (isValidResponse(stepResponse))
                 return Event.builder()
-                        .channel(event.getChannel())
+                        .incoming(event.getIncoming())
                         .timestamp(event.getTimestamp())
                         .payload(stepResponse).build();
             else

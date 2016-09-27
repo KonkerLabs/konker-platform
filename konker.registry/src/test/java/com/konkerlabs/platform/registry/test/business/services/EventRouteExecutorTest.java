@@ -68,7 +68,12 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
 
     @Before
     public void setUp() throws Exception {
-        event = spy(Event.builder().channel("data").timestamp(Instant.now()).payload(payload).build());
+        event = spy(Event.builder()
+                .incoming(
+                        Event.EventActor.builder()
+                                .channel("data")
+                                .deviceGuid(matchingRouteDeviceGuid).build()
+                ).timestamp(Instant.now()).payload(payload).build());
         uri = new DeviceURIDealer() {}.toDeviceRouteURI(REGISTERED_TENANT_DOMAIN,matchingRouteDeviceGuid);
 
         when(
@@ -126,7 +131,7 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
     @UsingDataSet(locations = "/fixtures/event-routes.json")
     public void shouldntSendAnyEventsForANonMatchingIncomingChannel() throws ExecutionException, InterruptedException, URISyntaxException {
         URI nonMatchingDeviceURI = new URI("device",matchingRouteDeviceGuid,null,null,null);
-        event.setChannel("non_matching_channel");
+        event.getIncoming().setChannel("non_matching_channel");
         Future<List<Event>> eventFuture = subject.execute(event, nonMatchingDeviceURI);
         assertThat(eventFuture.get(), notNullValue());
         assertThat(eventFuture.get(), hasSize(0));

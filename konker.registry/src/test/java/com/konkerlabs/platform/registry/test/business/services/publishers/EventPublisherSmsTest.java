@@ -113,7 +113,7 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
         destinationUri = new SmsDestinationURIDealer() {}.toSmsURI(tenant.getDomainName(), destination.getGuid());
 
         event = Event.builder()
-                .channel(DEVICE_MQTT_CHANNEL)
+//                .channel(DEVICE_MQTT_CHANNEL)
                 .payload(eventPayload)
                 .timestamp(Instant.now()).build();
     }
@@ -218,7 +218,7 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
         subject.send(event,destinationUri,data,tenant);
 
         verify(smsMessageGateway,never()).send(anyString(),anyString());
-        verify(eventRepository,never()).push(tenant,event);
+        verify(eventRepository,never()).saveIncoming(tenant,event);
     }
 
     @Test
@@ -228,7 +228,7 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
         subject.send(event,destinationUri,data,tenant);
 
         verify(smsMessageGateway,never()).send(anyString(),anyString());
-        verify(eventRepository,never()).push(tenant,event);
+        verify(eventRepository,never()).saveIncoming(tenant,event);
     }
 
     @Test
@@ -240,7 +240,7 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
         InOrder inOrder = Mockito.inOrder(eventRepository,smsMessageGateway);
 
         inOrder.verify(smsMessageGateway).send(eq(expectedMessage),eq(destination.getPhoneNumber()));
-        inOrder.verify(eventRepository).push(tenant,event);
+//        inOrder.verify(eventRepository).saveIncoming(tenant,event);
     }
 
     @Test
@@ -255,7 +255,7 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
         InOrder inOrder = Mockito.inOrder(eventRepository,smsMessageGateway);
 
         inOrder.verify(smsMessageGateway).send(eq(expectedMessage),eq(destination.getPhoneNumber()));
-        inOrder.verify(eventRepository).push(tenant,event);
+//        inOrder.verify(eventRepository).saveIncoming(tenant,event);
     }
 
     @Test
@@ -264,6 +264,6 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
 
         subject.send(event,destinationUri,data,tenant);
 
-        Mockito.verify(eventRepository,never()).push(any(Tenant.class),any(Event.class));
+        Mockito.verify(eventRepository,never()).saveIncoming(any(Tenant.class),any(Event.class));
     }
 }

@@ -27,7 +27,7 @@ public class EventRepositorySolrImpl implements EventRepository {
     private ApplicationContext applicationContext;
 
     @Override
-    public void push(Tenant tenant, Event event) throws BusinessException {
+    public void saveIncoming(Tenant tenant, Event event) throws BusinessException {
         Optional.ofNullable(tenant)
                 .filter(tenant1 -> Optional.ofNullable(tenant1.getDomainName()).filter(s -> !s.isEmpty()).isPresent())
                 .orElseThrow(() -> new IllegalArgumentException("Tenant cannot be null"));
@@ -57,12 +57,17 @@ public class EventRepositorySolrImpl implements EventRepository {
     }
 
     @Override
-    public List<Event> findBy(Tenant tenant, String deviceGuid, Instant startInstant, Instant endInstant, Integer limit) {
+    public void saveOutgoing(Tenant tenant, Event event) throws BusinessException {
+
+    }
+
+    @Override
+    public List<Event> findIncomingBy(Tenant tenant, String deviceGuid, Instant startInstant, Instant endInstant, Integer limit) {
         return Collections.emptyList();
     }
 
-	@Override
-	public List<Event> findLastBy(Tenant tenant, String deviceGuid) {
-		return Collections.emptyList();
-	}
+    @Override
+    public List<Event> findOutgoingBy(Tenant tenant, String deviceGuid, Instant startInstant, Instant endInstant, Integer limit) {
+        return Collections.emptyList();
+    }
 }

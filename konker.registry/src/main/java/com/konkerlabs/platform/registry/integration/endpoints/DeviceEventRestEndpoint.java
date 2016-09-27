@@ -70,15 +70,61 @@ public class DeviceEventRestEndpoint {
         this.deviceEventService = deviceEventService;
     }
 
+//    @RequestMapping(value = "sub/{apiKey}/{channel}", method = RequestMethod.POST,
+//    		consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+//    @ResponseBody
+//    public DeferredResult<List<Event>> subEvent(HttpServletRequest servletRequest,
+//                  @PathVariable("apiKey") String apiKey,
+//                  @PathVariable("channel") String channel,
+//                  @AuthenticationPrincipal Device principal,
+//                  @RequestParam(name = "offset", required = false) Optional<Long> offset,
+//                  @RequestParam(name = "waitTime", required = false) Optional<Long> waitTime,
+//                  Locale locale) {
+//
+//    	DeferredResult<List<Event>> deferredResult = new DeferredResult<>(waitTime.orElse(new Long("0")));
+//
+//    	if (!principal.getApiKey().equals(apiKey)) {
+//    		deferredResult.setErrorResult(new Exception(applicationContext.getMessage(Messages.INVALID_RESOURCE.getCode(),null, locale)));
+//    		return deferredResult;
+//    	}
+//
+//    	if (waitTime.isPresent() && waitTime.get().compareTo(new Long("30000")) > 0) {
+//    		deferredResult.setErrorResult(new Exception(applicationContext.getMessage(Messages.INVALID_WAITTIME.getCode(),null, locale)));
+//    		return deferredResult;
+//    	}
+//
+//    	JedisPubSub jedisPubSub = buildJedisPubSub(principal, Instant.ofEpochMilli(offset.orElse(new Long("0"))), deferredResult);
+////    	try {
+////    		deviceEventProcessor.process(apiKey, channel, offset, waitTime, deferredResult, jedisPubSub);
+////    	} catch (BusinessException e) {
+////    		deferredResult.setErrorResult(e.getMessage());
+////    	}
+//
+//    	deferredResult.onCompletion(() -> {
+//    		if (jedisPubSub.isSubscribed()) {
+//    			jedisPubSub.unsubscribe();
+//    		}
+//    	});
+//		deferredResult.onTimeout(() -> deferredResult.setResult(new ArrayList<>()));
+//
+//    	return deferredResult;
+//    }
+
+    private EventResponse buildResponse(String message, Locale locale) {
+        return EventResponse.builder()
+                .code(message)
+                .message(applicationContext.getMessage(message,null, locale)).build();
+    }
+
     @RequestMapping(value = "pub/{apiKey}/{channel}",
-                    method = RequestMethod.POST,
-                    consumes = MediaType.APPLICATION_JSON_VALUE)
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<EventResponse> onEvent(HttpServletRequest servletRequest,
-                                          @PathVariable("apiKey") String apiKey,
-                                          @PathVariable("channel") String channel,
-                                          @AuthenticationPrincipal Device principal,
-                                          @RequestBody String body,
-                                          Locale locale) {
+                                                 @PathVariable("apiKey") String apiKey,
+                                                 @PathVariable("channel") String channel,
+                                                 @AuthenticationPrincipal Device principal,
+                                                 @RequestBody String body,
+                                                 Locale locale) {
         if (!jsonParsingService.isValid(body))
             return new ResponseEntity<EventResponse>(buildResponse(Messages.INVALID_REQUEST_BODY.getCode(),locale),HttpStatus.BAD_REQUEST);
 
@@ -93,60 +139,13 @@ public class DeviceEventRestEndpoint {
 
         return new ResponseEntity<EventResponse>(HttpStatus.OK);
     }
-    
-    @RequestMapping(value = "sub/{apiKey}/{channel}", method = RequestMethod.POST,
-    		consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    public DeferredResult<List<Event>> subEvent(HttpServletRequest servletRequest,
-                  @PathVariable("apiKey") String apiKey, 
-                  @PathVariable("channel") String channel,
-                  @AuthenticationPrincipal Device principal, 
-                  @RequestParam(name = "offset", required = false) Optional<Long> offset,
-                  @RequestParam(name = "waitTime", required = false) Optional<Long> waitTime,
-                  Locale locale) {
-    	
-    	DeferredResult<List<Event>> deferredResult = new DeferredResult<>(waitTime.orElse(new Long("0")));
 
-    	if (!principal.getApiKey().equals(apiKey)) {
-    		deferredResult.setErrorResult(new Exception(applicationContext.getMessage(Messages.INVALID_RESOURCE.getCode(),null, locale)));
-    		return deferredResult;
-    	}
-    	
-    	if (waitTime.isPresent() && waitTime.get().compareTo(new Long("30000")) > 0) {
-    		deferredResult.setErrorResult(new Exception(applicationContext.getMessage(Messages.INVALID_WAITTIME.getCode(),null, locale)));
-    		return deferredResult;
-    	}
-
-    	JedisPubSub jedisPubSub = buildJedisPubSub(principal, Instant.ofEpochMilli(offset.orElse(new Long("0"))), deferredResult);
-    	try {
-    		deviceEventProcessor.process(apiKey, channel, offset, waitTime, deferredResult, jedisPubSub);
-    	} catch (BusinessException e) {
-    		deferredResult.setErrorResult(e.getMessage());
-    	}
-    	
-    	deferredResult.onCompletion(() -> {
-    		if (jedisPubSub.isSubscribed()) {
-    			jedisPubSub.unsubscribe();
-    		}
-    	});
-		deferredResult.onTimeout(() -> deferredResult.setResult(new ArrayList<>()));
-    	
-    	return deferredResult;
-    }
-
-    private EventResponse buildResponse(String message, Locale locale) {
-        return EventResponse.builder()
-                .code(message)
-                .message(applicationContext.getMessage(message,null, locale)).build();
-    }
-    
     private JedisPubSub buildJedisPubSub(Device device, Instant startTimestamp, DeferredResult<List<Event>> deferredResult) {
     	JedisPubSub jedisPubSub = new JedisPubSub() {
     		@Override
     		public void onMessage(String channel, String message) {
-    			NewServiceResponse<List<Event>> response = deviceEventService.findEventsBy(device.getTenant(), device.getDeviceId(), 
+    			NewServiceResponse<List<Event>> response = deviceEventService.findOutgoingBy(device.getTenant(), device.getDeviceId(),
 						startTimestamp, null, 50);
-				response.getResult().sort((e1, e2) -> e1.getTimestamp().compareTo(e2.getTimestamp()));
 				deferredResult.setResult(response.getResult());
     		}
 		};
