@@ -112,7 +112,8 @@ public class DeviceEventProcessor {
         }
     }
 
-    public void process(String apiKey, String channel, Optional<Long> offset, Optional<Long> waitTime, DeferredResult<List<Event>> deferredResult) throws BusinessException {
+    public void process(String apiKey, String channel, Optional<Long> offset, Optional<Long> waitTime, 
+    		DeferredResult<List<Event>> deferredResult, JedisPubSub jedisPubSub) throws BusinessException {
     	Optional.ofNullable(apiKey).filter(s -> !s.isEmpty())
     			.orElseThrow(() -> new BusinessException(Messages.APIKEY_MISSING.getCode()));
 
@@ -135,16 +136,6 @@ public class DeviceEventProcessor {
     		} else {
     			CompletableFuture.runAsync(() ->  {
     				Jedis jedis = (Jedis) redisTemplate.getConnectionFactory().getConnection().getNativeConnection();
-    				JedisPubSub jedisPubSub = new JedisPubSub() {
-    					@Override
-    					public void onMessage(String channel, String message) {
-    						NewServiceResponse<List<Event>> response = deviceEventService.findEventsBy(device.getTenant(), device.getDeviceId(), 
-    								startTimestamp, null, 50);
-    						response.getResult().sort((e1, e2) -> e1.getTimestamp().compareTo(e2.getTimestamp()));
-    						deferredResult.setResult(response.getResult());
-    						
-    					}
-    				};
     				jedis.subscribe(jedisPubSub, apiKey+"."+channel);
     			});
     		}

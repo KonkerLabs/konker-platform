@@ -206,7 +206,7 @@ public class DeviceEventProcessorTest {
         thrown.expectMessage(DeviceEventProcessor.Messages.APIKEY_MISSING.getCode());
 
         Long now = new Long(Instant.now().toEpochMilli());
-		subject.process(null, incomingChannel, Optional.of(now), Optional.of(new Long("30000")), new DeferredResult<>());
+		subject.process(null, incomingChannel, Optional.of(now), Optional.of(new Long("30000")), new DeferredResult<>(), null);
     }
     @Test
     public void shouldThrowABusinessExceptionIfDeviceDoesNotExist() throws Exception {
@@ -214,7 +214,7 @@ public class DeviceEventProcessorTest {
         thrown.expectMessage(DeviceEventProcessor.Messages.DEVICE_NOT_FOUND.getCode());
 
         Long now = new Long(Instant.now().toEpochMilli());
-		subject.process(sourceApiKey, incomingChannel, Optional.of(now), Optional.of(new Long("30000")), new DeferredResult<>());
+		subject.process(sourceApiKey, incomingChannel, Optional.of(now), Optional.of(new Long("30000")), new DeferredResult<>(), null);
     }
     @Test
     public void shouldThrowABusinessExceptionIfEventChannelIsUnknown() throws Exception {
@@ -222,7 +222,7 @@ public class DeviceEventProcessorTest {
         thrown.expectMessage(DeviceEventProcessor.Messages.CHANNEL_MISSING.getCode());
 
         Long now = new Long(Instant.now().toEpochMilli());
-		subject.process(sourceApiKey, null, Optional.of(now), Optional.of(new Long("30000")), new DeferredResult<>());
+		subject.process(sourceApiKey, null, Optional.of(now), Optional.of(new Long("30000")), new DeferredResult<>(), null);
     }
     
     @Test
@@ -233,7 +233,7 @@ public class DeviceEventProcessorTest {
 		when(deviceEventService.findEventsBy(device.getTenant(), device.getDeviceId(), 
         		firstEventTimestamp, null, 50)).thenReturn(eventResponse);
 
-        subject.process(sourceApiKey, incomingChannel, Optional.of(timestampLong), Optional.of(new Long("30000")), new DeferredResult<>());
+        subject.process(sourceApiKey, incomingChannel, Optional.of(timestampLong), Optional.of(new Long("30000")), new DeferredResult<>(), null);
 
         verify(deviceEventService).findEventsBy(device.getTenant(), device.getDeviceId(), firstEventTimestamp, null, 50);
     }

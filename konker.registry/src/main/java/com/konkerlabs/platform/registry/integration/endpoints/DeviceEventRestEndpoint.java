@@ -27,11 +27,13 @@ import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
+import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 
 import lombok.Builder;
 import lombok.Data;
+import redis.clients.jedis.JedisPubSub;
 
 @RestController
 public class DeviceEventRestEndpoint {
@@ -115,12 +117,18 @@ public class DeviceEventRestEndpoint {
     		return deferredResult;
     	}
 
+    	JedisPubSub jedisPubSub = buildJedisPubSub(principal, Instant.ofEpochMilli(offset.orElse(new Long("0"))), deferredResult);
     	try {
-    		deviceEventProcessor.process(apiKey, channel, offset, waitTime, deferredResult);
+    		deviceEventProcessor.process(apiKey, channel, offset, waitTime, deferredResult, jedisPubSub);
     	} catch (BusinessException e) {
     		deferredResult.setErrorResult(e.getMessage());
     	}
     	
+    	deferredResult.onCompletion(() -> {
+    		if (jedisPubSub.isSubscribed()) {
+    			jedisPubSub.unsubscribe();
+    		}
+    	});
 		deferredResult.onTimeout(() -> deferredResult.setResult(new ArrayList<>()));
     	
     	return deferredResult;
@@ -130,6 +138,19 @@ public class DeviceEventRestEndpoint {
         return EventResponse.builder()
                 .code(message)
                 .message(applicationContext.getMessage(message,null, locale)).build();
+    }
+    
+    private JedisPubSub buildJedisPubSub(Device device, Instant startTimestamp, DeferredResult<List<Event>> deferredResult) {
+    	JedisPubSub jedisPubSub = new JedisPubSub() {
+    		@Override
+    		public void onMessage(String channel, String message) {
+    			NewServiceResponse<List<Event>> response = deviceEventService.findEventsBy(device.getTenant(), device.getDeviceId(), 
+						startTimestamp, null, 50);
+				response.getResult().sort((e1, e2) -> e1.getTimestamp().compareTo(e2.getTimestamp()));
+				deferredResult.setResult(response.getResult());
+    		}
+		};
+    	return jedisPubSub;
     }
 
     @Data
