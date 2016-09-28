@@ -101,7 +101,7 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
         destinationUri = new RESTDestinationURIDealer() {}.toRestDestinationURI(tenant.getDomainName(),destination.getGuid());
 
         event = Event.builder()
-                .channel(DEVICE_MQTT_CHANNEL)
+//                .channel(DEVICE_MQTT_CHANNEL)
                 .payload(validEventPayload)
                 .timestamp(Instant.now()).build();
     }
@@ -166,7 +166,7 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
         subject.send(event,destinationUri,null,tenant);
 
         verify(httpGateway,never()).request(any(),any(),any(),any(),any(),any());
-        verify(eventRepository,never()).push(tenant,event);
+        verify(eventRepository,never()).saveIncoming(tenant,event);
     }
 
     @Test
@@ -176,7 +176,7 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
         subject.send(event,destinationUri,null,tenant);
 
         verify(httpGateway,never()).request(any(),any(),any(),any(),any(),any());
-        verify(eventRepository,never()).push(tenant,event);
+        verify(eventRepository,never()).saveIncoming(tenant,event);
     }
 
     @Test
@@ -193,6 +193,6 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
             eq(destination.getServiceUsername()),
             eq(destination.getServicePassword())
         );
-        inOrder.verify(eventRepository).push(eq(tenant),eq(event));
+//        inOrder.verify(eventRepository).saveIncoming(eq(tenant),eq(event));
     }
 }

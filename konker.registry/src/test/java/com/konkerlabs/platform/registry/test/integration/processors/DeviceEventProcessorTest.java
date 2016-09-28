@@ -1,13 +1,22 @@
 package com.konkerlabs.platform.registry.test.integration.processors;
 
-import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.services.api.*;
-import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteExecutor;
-import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
-import com.konkerlabs.platform.registry.test.base.IntegrationLayerTestContext;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.same;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.net.URI;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -21,16 +30,30 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.web.context.request.async.DeferredResult;
+
+import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
+import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.EnrichmentExecutor;
+import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteExecutor;
+import com.konkerlabs.platform.registry.config.RedisConfig;
+import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
+import com.konkerlabs.platform.registry.test.base.IntegrationLayerTestContext;
 
 import java.net.URI;
-import java.text.MessageFormat;
 
 import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
     IntegrationLayerTestContext.class,
-    DeviceEventProcessorTest.BusinessLayerConfiguration.class
+    DeviceEventProcessorTest.BusinessLayerConfiguration.class, RedisConfig.class
 })
 public class DeviceEventProcessorTest {
 
@@ -42,8 +65,11 @@ public class DeviceEventProcessorTest {
     private String incomingChannel = "command";
 
     private Event event;
+    private Event eventNewTimestamp;
+    private Event eventOldTimestamp;
     private Device device;
     private NewServiceResponse<Event> enrichmentResponse;
+    private NewServiceResponse<List<Event>> eventResponse;
 
     @Autowired
     private DeviceEventProcessor subject;
@@ -56,11 +82,20 @@ public class DeviceEventProcessorTest {
     @Autowired
     private EnrichmentExecutor enrichmentExecutor;
 
+	private Instant firstEventTimestamp;
+	private Instant secondEventTimestamp;
+
     @Before
     public void setUp() throws Exception {
+    	firstEventTimestamp = Instant.ofEpochMilli(1474562670340L);
+        secondEventTimestamp = Instant.ofEpochMilli(1474562672395L);
+        
         event = Event.builder()
-            .channel(incomingChannel)
-            .deviceGuid("device_guid")
+            .incoming(
+                    Event.EventActor.builder()
+                    .channel(incomingChannel)
+                    .deviceGuid("device_guid").build()
+            )
             .payload(originalPayload)
             .build();
 
@@ -71,7 +106,7 @@ public class DeviceEventProcessorTest {
                     .name("tenantName")
                     .build()
             )
-            .apiKey(originalPayload)
+            .apiKey(sourceApiKey)
             .id("id")
             .guid("device_guid")
             .deviceId("device_id")
@@ -81,6 +116,30 @@ public class DeviceEventProcessorTest {
         enrichmentResponse = spy(ServiceResponseBuilder.<Event>ok()
                 .withResult(event)
                 .build());
+        
+        eventOldTimestamp = Event.builder()
+                .incoming(
+                    Event.EventActor.builder()
+                    .channel(incomingChannel)
+                    .deviceGuid("device_guid").build()
+                )
+                .payload(originalPayload)
+                .timestamp(firstEventTimestamp)
+                .build();
+        
+        eventNewTimestamp = Event.builder()
+                .incoming(
+                    Event.EventActor.builder()
+                            .channel(incomingChannel)
+                            .deviceGuid("device_guid").build()
+                )
+                .payload(originalPayload)
+                .timestamp(secondEventTimestamp)
+                .build();
+        
+        eventResponse = spy(ServiceResponseBuilder.<List<Event>>ok()
+        		.withResult(Arrays.asList(eventNewTimestamp, eventOldTimestamp))
+        		.build());
     }
 
     @After
@@ -118,7 +177,7 @@ public class DeviceEventProcessorTest {
 
         subject.process(sourceApiKey, incomingChannel, originalPayload);
 
-        verify(deviceEventService).logEvent(device, incomingChannel, event);
+        verify(deviceEventService).logIncomingEvent(device, event);
     }
 
     @Test
@@ -141,7 +200,7 @@ public class DeviceEventProcessorTest {
 
         subject.process(sourceApiKey, incomingChannel, originalPayload);
 
-        verify(deviceEventService,never()).logEvent(any(), any(), any());
+        verify(deviceEventService,never()).logIncomingEvent(any(), any());
     }
 
     @Test

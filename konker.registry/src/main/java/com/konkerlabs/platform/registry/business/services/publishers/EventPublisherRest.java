@@ -93,8 +93,8 @@ public class EventPublisherRest implements EventPublisher {
                     destination.getResult().getServiceUsername(),
                     destination.getResult().getServicePassword()
                 );
-                eventRepository.push(tenant,outgoingEvent);
-            } catch (JsonProcessingException|BusinessException|IntegrationException e) {
+//                eventRepository.saveIncoming(tenant,outgoingEvent);
+            } catch (JsonProcessingException|IntegrationException e) {
                 LOGGER.error("Failed to forward event to its destination", e);
             }
         } else {
