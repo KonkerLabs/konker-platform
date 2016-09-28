@@ -46,6 +46,10 @@ import com.konkerlabs.platform.registry.config.RedisConfig;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
 import com.konkerlabs.platform.registry.test.base.IntegrationLayerTestContext;
 
+import java.net.URI;
+
+import static org.mockito.Mockito.*;
+
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
     IntegrationLayerTestContext.class,
@@ -87,8 +91,11 @@ public class DeviceEventProcessorTest {
         secondEventTimestamp = Instant.ofEpochMilli(1474562672395L);
         
         event = Event.builder()
-            .channel(incomingChannel)
-            .deviceGuid("device_guid")
+            .incoming(
+                    Event.EventActor.builder()
+                    .channel(incomingChannel)
+                    .deviceGuid("device_guid").build()
+            )
             .payload(originalPayload)
             .build();
 
@@ -111,15 +118,21 @@ public class DeviceEventProcessorTest {
                 .build());
         
         eventOldTimestamp = Event.builder()
-                .channel(incomingChannel)
-                .deviceGuid("device_guid")
+                .incoming(
+                    Event.EventActor.builder()
+                    .channel(incomingChannel)
+                    .deviceGuid("device_guid").build()
+                )
                 .payload(originalPayload)
                 .timestamp(firstEventTimestamp)
                 .build();
         
         eventNewTimestamp = Event.builder()
-                .channel(incomingChannel)
-                .deviceGuid("device_guid")
+                .incoming(
+                    Event.EventActor.builder()
+                            .channel(incomingChannel)
+                            .deviceGuid("device_guid").build()
+                )
                 .payload(originalPayload)
                 .timestamp(secondEventTimestamp)
                 .build();
@@ -164,7 +177,7 @@ public class DeviceEventProcessorTest {
 
         subject.process(sourceApiKey, incomingChannel, originalPayload);
 
-        verify(deviceEventService).logEvent(device, incomingChannel, event);
+        verify(deviceEventService).logIncomingEvent(device, event);
     }
 
     @Test
@@ -187,7 +200,7 @@ public class DeviceEventProcessorTest {
 
         subject.process(sourceApiKey, incomingChannel, originalPayload);
 
-        verify(deviceEventService,never()).logEvent(any(), any(), any());
+        verify(deviceEventService,never()).logIncomingEvent(any(), any());
     }
 
     @Test
@@ -198,44 +211,6 @@ public class DeviceEventProcessorTest {
         subject.process(sourceApiKey, incomingChannel, originalPayload);
 
         verify(eventRouteExecutor,never()).execute(any(Event.class),any(URI.class));
-    }
-    
-    @Test
-    public void shouldThrowABusinessExceptionIfDeviceApiKeyIsUnknown() throws Exception {
-        thrown.expect(BusinessException.class);
-        thrown.expectMessage(DeviceEventProcessor.Messages.APIKEY_MISSING.getCode());
-
-        Long now = new Long(Instant.now().toEpochMilli());
-		subject.process(null, incomingChannel, Optional.of(now), Optional.of(new Long("30000")), new DeferredResult<>(), null);
-    }
-    @Test
-    public void shouldThrowABusinessExceptionIfDeviceDoesNotExist() throws Exception {
-        thrown.expect(BusinessException.class);
-        thrown.expectMessage(DeviceEventProcessor.Messages.DEVICE_NOT_FOUND.getCode());
-
-        Long now = new Long(Instant.now().toEpochMilli());
-		subject.process(sourceApiKey, incomingChannel, Optional.of(now), Optional.of(new Long("30000")), new DeferredResult<>(), null);
-    }
-    @Test
-    public void shouldThrowABusinessExceptionIfEventChannelIsUnknown() throws Exception {
-        thrown.expect(BusinessException.class);
-        thrown.expectMessage(DeviceEventProcessor.Messages.CHANNEL_MISSING.getCode());
-
-        Long now = new Long(Instant.now().toEpochMilli());
-		subject.process(sourceApiKey, null, Optional.of(now), Optional.of(new Long("30000")), new DeferredResult<>(), null);
-    }
-    
-    @Test
-    public void shouldReturnEventList() throws Exception {
-    	Long timestampLong = new Long(firstEventTimestamp.toEpochMilli());
-
-    	when(deviceRegisterService.findByApiKey(sourceApiKey)).thenReturn(device);
-		when(deviceEventService.findEventsBy(device.getTenant(), device.getDeviceId(), 
-        		firstEventTimestamp, null, 50)).thenReturn(eventResponse);
-
-        subject.process(sourceApiKey, incomingChannel, Optional.of(timestampLong), Optional.of(new Long("30000")), new DeferredResult<>(), null);
-
-        verify(deviceEventService).findEventsBy(device.getTenant(), device.getDeviceId(), firstEventTimestamp, null, 50);
     }
 
     @Configuration

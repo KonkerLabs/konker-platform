@@ -64,10 +64,6 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
     private DeviceRepository deviceRepository;
 
     @Autowired
-    private RedisTemplate<String, String> redisTemplate;
-
-
-    @Autowired
     @Qualifier("mongoEvents")
     private EventRepository eventRepository;
 
@@ -102,51 +98,51 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
 
         tenant = tenantRepository.findByDomainName("konker");
         device = deviceRepository.findByTenantAndGuid(tenant.getId(), userDefinedDeviceGuid);
-        event = Event.builder().channel(topic).payload(payload).deviceGuid(device.getGuid()).build();
+        event = Event.builder()
+                    .incoming(
+                        Event.EventActor.builder()
+                            .channel(topic)
+                            .deviceGuid(device.getGuid()).build()
+                    ).payload(payload).build();
     }
 
     @Test
     public void shouldRaiseAnExceptionIfDeviceIsNull() throws Exception {
-        thrown.expect(BusinessException.class);
-        thrown.expectMessage("Device cannot be null");
+        NewServiceResponse<Event> response = deviceEventService.logIncomingEvent(null, event);
 
-        deviceEventService.logEvent(null, channel, event);
+        assertThat(response,hasErrorMessage(DeviceEventService.Validations.DEVICE_NULL.getCode()));
     }
 
     @Test
     public void shouldRaiseAnExceptionIfEventIsNull() throws Exception {
-        thrown.expect(BusinessException.class);
-        thrown.expectMessage("Event cannot be null");
+        NewServiceResponse<Event> response = deviceEventService.logIncomingEvent(device, null);
 
-        deviceEventService.logEvent(device, channel, null);
+        assertThat(response,hasErrorMessage(DeviceEventService.Validations.EVENT_NULL.getCode()));
     }
 
     @Test
     public void shouldRaiseAnExceptionIfPayloadIsNull() throws Exception {
         event.setPayload(null);
 
-        thrown.expect(BusinessException.class);
-        thrown.expectMessage("Event payload cannot be null or empty");
+        NewServiceResponse<Event> response = deviceEventService.logIncomingEvent(device, event);
 
-        deviceEventService.logEvent(device, channel, event);
+        assertThat(response,hasErrorMessage(DeviceEventService.Validations.EVENT_PAYLOAD_NULL.getCode()));
     }
 
     @Test
     public void shouldRaiseAnExceptionIfPayloadIsEmpty() throws Exception {
         event.setPayload("");
 
-        thrown.expect(BusinessException.class);
-        thrown.expectMessage("Event payload cannot be null or empty");
+        NewServiceResponse<Event> response = deviceEventService.logIncomingEvent(device, event);
 
-        deviceEventService.logEvent(device, channel, event);
+        assertThat(response,hasErrorMessage(DeviceEventService.Validations.EVENT_PAYLOAD_NULL.getCode()));
     }
 
     @Test
     public void shouldLogFirstDeviceEvent() throws Exception {
-        event.setChannel("otherChannel");
-        deviceEventService.logEvent(device, channel, event);
+        deviceEventService.logIncomingEvent(device, event);
 
-        Event last = eventRepository.findBy(tenant, device.getGuid(), event.getTimestamp(), null, 1).get(0);
+        Event last = eventRepository.findIncomingBy(tenant,device.getGuid(),event.getTimestamp(), null, false, 1).get(0);
 
         assertThat(last, notNullValue());
 
@@ -158,11 +154,12 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
     @Test
     public void shouldReturnAnErrorMessageIfTenantIsNullWhenFindingBy() throws Exception {
 
-        NewServiceResponse<List<Event>> serviceResponse = deviceEventService.findEventsBy(
+        NewServiceResponse<List<Event>> serviceResponse = deviceEventService.findIncomingBy(
                 null,
                 device.getId(),
                 firstEventTimestamp,
                 null,
+                false,
                 null
         );
 
@@ -172,11 +169,12 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
     @Test
     public void shouldReturnAnErrorMessageIfDeviceIdIsNullWhenFindingBy() throws Exception {
 
-        NewServiceResponse<List<Event>> serviceResponse = deviceEventService.findEventsBy(
+        NewServiceResponse<List<Event>> serviceResponse = deviceEventService.findIncomingBy(
                 tenant,
                 null,
                 firstEventTimestamp,
                 null,
+                false,
                 null
         );
 
@@ -186,11 +184,12 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
     @Test
     public void shouldReturnAnErrorMessageIfStartInstantIsNullAndLimitIsNullWhenFindingBy() throws Exception {
 
-        NewServiceResponse<List<Event>> serviceResponse = deviceEventService.findEventsBy(
+        NewServiceResponse<List<Event>> serviceResponse = deviceEventService.findIncomingBy(
                 tenant,
                 device.getId(),
                 null,
                 null,
+                false,
                 null
         );
 
@@ -198,23 +197,24 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/deviceEvents.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json"})
     public void shouldFindAllRequestEvents() throws Exception {
-        NewServiceResponse<List<Event>> serviceResponse = deviceEventService.findEventsBy(
+        NewServiceResponse<List<Event>> serviceResponse = deviceEventService.findIncomingBy(
                 tenant,
                 device.getGuid(),
                 firstEventTimestamp,
                 null,
+                false,
                 null
         );
 
-        assertThat(serviceResponse.getResult(), notNullValue());
-        assertThat(serviceResponse.getResult(), hasSize(3));
+        assertThat(serviceResponse.getResult(),notNullValue());
+        assertThat(serviceResponse.getResult(),hasSize(3));
 
         assertThat(serviceResponse.getResult().get(0).getTimestamp().toEpochMilli(),
                 equalTo(lastEventTimestamp.toEpochMilli()));
     }
-
+    
     @Test
     public void shouldReturnAnErrorMessageIfTenantIsNullWhenFindingLastEventBy() throws Exception {
         NewServiceResponse<List<Event>> serviceResponse = deviceEventService.findLastEventBy(null, device.getGuid());
@@ -228,7 +228,6 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
 
         assertThat(serviceResponse, hasErrorMessage(DeviceRegisterService.Validations.DEVICE_GUID_NULL.getCode()));
     }
-
 
     @Test
     public void shouldPublishOnRedisWhenEventsAreLogged() throws Exception {
@@ -251,7 +250,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
             future.cancel(true);
         } finally {
             executorService.shutdown();
-            deviceEventService.logEvent(device, channel, event);
+            deviceEventService.logIncomingEvent(device, event);
             assertThat(device.getGuid(), equalTo(completableFuture.get()));
         }
 

@@ -84,9 +84,13 @@ public class DeviceEventProcessor {
 
         if (device.isActive()) {
             Event event = Event.builder()
-                    .channel(channel)
+                    .incoming(
+                        Event.EventActor.builder()
+                            .deviceGuid(device.getGuid())
+                            .channel(channel)
+                            .build()
+                    )
                     .payload(payload)
-                    .deviceGuid(device.getGuid())
                     .build();
 
             NewServiceResponse<Event> serviceResponse = enrichmentExecutor.enrich(event, device);
@@ -102,7 +106,7 @@ public class DeviceEventProcessor {
                 default: break;
             }
 
-            deviceEventService.logEvent(device, channel, event);
+            deviceEventService.logIncomingEvent(device, event);
 
             eventRouteExecutor.execute(event,device.toURI());
         } else {
@@ -112,37 +116,37 @@ public class DeviceEventProcessor {
         }
     }
 
-    public void process(String apiKey, String channel, Optional<Long> offset, Optional<Long> waitTime, 
-    		DeferredResult<List<Event>> deferredResult, JedisPubSub jedisPubSub) throws BusinessException {
-    	Optional.ofNullable(apiKey).filter(s -> !s.isEmpty())
-    			.orElseThrow(() -> new BusinessException(Messages.APIKEY_MISSING.getCode()));
-
-    	Optional.ofNullable(channel).filter(s -> !s.isEmpty())
-    			.orElseThrow(() -> new BusinessException(Messages.CHANNEL_MISSING.getCode()));
-
-    	Device device = Optional.ofNullable(deviceRegisterService.findByApiKey(apiKey))
-    			.orElseThrow(() -> new BusinessException(Messages.DEVICE_NOT_FOUND.getCode()));
-    	
-    	if (offset.isPresent()) {
-    		Instant startTimestamp = Instant.ofEpochMilli(offset.get());
-    		
-			NewServiceResponse<List<Event>> response = deviceEventService.findEventsBy(device.getTenant(), device.getDeviceId(), 
-    				startTimestamp, null, 50);
-    		
-    		if (!response.getResult().isEmpty() || !waitTime.isPresent() || (waitTime.isPresent() && waitTime.get().equals(new Long("0")))) {
-    			response.getResult().sort((e1, e2) -> e1.getTimestamp().compareTo(e2.getTimestamp()));
-    			deferredResult.setResult(response.getResult());
-    			
-    		} else {
-    			CompletableFuture.runAsync(() ->  {
-    				Jedis jedis = (Jedis) redisTemplate.getConnectionFactory().getConnection().getNativeConnection();
-    				jedis.subscribe(jedisPubSub, apiKey+"."+channel);
-    			});
-    		}
-    	} else {
-    		NewServiceResponse<List<Event>> response = deviceEventService.findLastEventBy(device.getTenant(), device.getDeviceId());
-    		response.getResult().sort((e1, e2) -> e1.getTimestamp().compareTo(e2.getTimestamp()));
-    		deferredResult.setResult(response.getResult());
-    	}
-    }
+//    public void process(String apiKey, String channel, Optional<Long> offset, Optional<Long> waitTime,
+//    		DeferredResult<List<Event>> deferredResult, JedisPubSub jedisPubSub) throws BusinessException {
+//    	Optional.ofNullable(apiKey).filter(s -> !s.isEmpty())
+//    			.orElseThrow(() -> new BusinessException(Messages.APIKEY_MISSING.getCode()));
+//
+//    	Optional.ofNullable(channel).filter(s -> !s.isEmpty())
+//    			.orElseThrow(() -> new BusinessException(Messages.CHANNEL_MISSING.getCode()));
+//
+//    	Device device = Optional.ofNullable(deviceRegisterService.findByApiKey(apiKey))
+//    			.orElseThrow(() -> new BusinessException(Messages.DEVICE_NOT_FOUND.getCode()));
+//
+//    	if (offset.isPresent()) {
+//    		Instant startTimestamp = Instant.ofEpochMilli(offset.get());
+//
+//			NewServiceResponse<List<Event>> response = deviceEventService.findEventsBy(device.getTenant(), device.getDeviceId(),
+//    				startTimestamp, null, 50);
+//
+//            if (!response.getResult().isEmpty() || !waitTime.isPresent() || (waitTime.isPresent() && waitTime.get().equals(new Long("0")))) {
+//                response.getResult().sort((e1, e2) -> e1.getTimestamp().compareTo(e2.getTimestamp()));
+//                deferredResult.setResult(response.getResult());
+//
+//            } else {
+//                CompletableFuture.runAsync(() ->  {
+//                    Jedis jedis = (Jedis) redisTemplate.getConnectionFactory().getConnection().getNativeConnection();
+//                    jedis.subscribe(jedisPubSub, apiKey+"."+channel);
+//                });
+//            }
+//        } else {
+//            NewServiceResponse<List<Event>> response = deviceEventService.findLastEventBy(device.getTenant(), device.getDeviceId());
+//            response.getResult().sort((e1, e2) -> e1.getTimestamp().compareTo(e2.getTimestamp()));
+//    		deferredResult.setResult(response.getResult());
+//    	}
+//    }
 }

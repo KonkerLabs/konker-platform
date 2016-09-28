@@ -76,7 +76,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     private Tenant currentTenant;
     private Tenant emptyTenant;
     private Device rawDevice;
-    private Event event;
+//    private Event event;
 
     @Before
     public void setUp() {
@@ -89,12 +89,12 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 //                        .payload("Payload one").timestamp(Instant.ofEpochMilli(1453320973747L)).build()}))
                 .build();
         device = spy(rawDevice);
-        event = Event.builder()
-                .timestamp(Instant.now())
-                .channel("konker")
-                .payload("konker")
-                .deleted(false)
-                .build();
+//        event = Event.builder()
+//                .timestamp(Instant.now())
+//                .channel("konker")
+//                .payload("konker")
+//                .deleted(false)
+//                .build();
 
 
     }
@@ -197,7 +197,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         assertThat(response, isResponseOk());
         all = response.getResult();
         assertThat(all, notNullValue());
-        assertThat(all, hasSize(1));
+        assertThat(all, hasSize(2));
     }
 
 

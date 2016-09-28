@@ -15,7 +15,6 @@ import com.konkerlabs.platform.registry.test.base.RedisTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
-import com.mongodb.util.JSON;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -23,22 +22,18 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.ApplicationContext;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.redis.connection.Message;
-import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.List;
 import java.time.Instant;
+import java.util.function.Supplier;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -72,8 +67,9 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
     private RedisTemplate<String, String> redisTemplate;
 
     private Tenant tenant;
-    private String payload;
-    private Event event;
+    private String incomingPayload;
+    private Event incomingEvent;
+    private Event outgoingEvent;
     private DBObject persisted;
 
     private String deviceGuid;
@@ -91,7 +87,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         deviceGuid = "7d51c242-81db-11e6-a8c2-0746f010e945";
         tenant = tenantRepository.findByDomainName("konker");
 
-        payload = "{\n" +
+        incomingPayload = "{\n" +
                 "    \"value\" : 31.0,\n" +
                 "    \"command\" : {\n" +
                 "      \"type\" : \"ButtonPressed\"\n" +
@@ -106,93 +102,131 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
 
         tenant = tenantRepository.findByDomainName("konker");
 
-        event = Event.builder()
-                .channel("command")
-                .deviceGuid(deviceGuid)
+        incomingEvent = Event.builder()
+                .incoming(
+                        Event.EventActor.builder()
+                                .channel("command")
+                                .deviceGuid(deviceGuid)
+                                .tenantDomain(tenant.getDomainName())
+                                .build())
                 .timestamp(firstEventTimestamp)
-                .payload(payload).build();
+                .payload(incomingPayload).build();
 
         persisted = new BasicDBObject();
-        persisted.put("ts", firstEventTimestamp.toEpochMilli());
-        persisted.put("deviceGuid", deviceGuid);
-        persisted.put("tenantDomain", tenant.getDomainName());
-        persisted.put("channel", event.getChannel());
-        persisted.put("payload", event.getPayload());
+        persisted.put("ts", incomingEvent.getTimestamp().toEpochMilli());
+        persisted.put("incoming", ((Supplier<DBObject>) () -> {
+            DBObject incoming = new BasicDBObject();
+            incoming.put("deviceGuid",incomingEvent.getIncoming().getDeviceGuid());
+            incoming.put("tenantDomain",incomingEvent.getIncoming().getTenantDomain());
+            incoming.put("channel",incomingEvent.getIncoming().getChannel());
+            return incoming;
+        }).get());
+        persisted.put("payload", incomingEvent.getPayload());
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfTenantIsNull() throws Exception {
-        thrown.expect(IllegalArgumentException.class);
+    public void shouldRaiseAnExceptionIfTenantIsNullWhenSavingAnIncomingEvent() throws Exception {
+        thrown.expect(BusinessException.class);
         thrown.expectMessage(CommonValidations.TENANT_NULL.getCode());
 
-        eventRepository.push(null,event);
+        eventRepository.saveIncoming(null, incomingEvent);
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfTenantDoesNotExists() throws Exception {
+    public void shouldRaiseAnExceptionIfTenantDoesNotExistsWhenSavingAnIncomingEvent() throws Exception {
         thrown.expect(BusinessException.class);
         thrown.expectMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode());
 
-        eventRepository.push(Tenant.builder().domainName("fake").build(),event);
+        eventRepository.saveIncoming(Tenant.builder().domainName("fake").build(), incomingEvent);
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfEventIsNull() throws Exception {
-        thrown.expect(IllegalArgumentException.class);
+    public void shouldRaiseAnExceptionIfEventIsNullWhenSavingAnIncomingEvent() throws Exception {
+        thrown.expect(BusinessException.class);
         thrown.expectMessage(CommonValidations.RECORD_NULL.getCode());
 
-        eventRepository.push(tenant,null);
+        eventRepository.saveIncoming(tenant,null);
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfDeviceIdIsNull() throws Exception {
-        event.setDeviceGuid(null);
+    public void shouldRaiseAnExceptionIfEventIncomingActorIsNullWhenSavingAnIncomingEvent() throws Exception {
+        incomingEvent.setIncoming(null);
 
         thrown.expect(BusinessException.class);
-        thrown.expectMessage(DeviceRegisterService.Validations.DEVICE_GUID_NULL.getCode());
+        thrown.expectMessage(EventRepository.Validations.EVENT_INCOMING_NULL.getCode());
 
-        eventRepository.push(tenant,event);
+        eventRepository.saveIncoming(tenant, incomingEvent);
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfDeviceIdIsEmpty() throws Exception {
-        event.setDeviceGuid("");
+    public void shouldRaiseAnExceptionIfDeviceIdIsNullWhenSavingAnIncomingEvent() throws Exception {
+        incomingEvent.getIncoming().setDeviceGuid(null);
 
         thrown.expect(BusinessException.class);
-        thrown.expectMessage(DeviceRegisterService.Validations.DEVICE_GUID_NULL.getCode());
+        thrown.expectMessage(EventRepository.Validations.INCOMING_DEVICE_GUID_NULL.getCode());
 
-        eventRepository.push(tenant,event);
+        eventRepository.saveIncoming(tenant, incomingEvent);
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfDeviceDoesNotExists() throws Exception {
-        event.setDeviceGuid("unknown_device");
+    public void shouldRaiseAnExceptionIfDeviceIdIsEmptyWhenSavingAnIncomingEvent() throws Exception {
+        incomingEvent.getIncoming().setDeviceGuid("");
 
         thrown.expect(BusinessException.class);
-        thrown.expectMessage(DeviceRegisterService.Validations.DEVICE_ID_DOES_NOT_EXIST.getCode());
+        thrown.expectMessage(EventRepository.Validations.INCOMING_DEVICE_GUID_NULL.getCode());
 
-        eventRepository.push(tenant,event);
+        eventRepository.saveIncoming(tenant, incomingEvent);
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfEventTimestampIsNull() throws Exception {
-        event.setTimestamp(null);
+    public void shouldRaiseAnExceptionIfEventIncomingChannelIsNullWhenSavingAnIncomingEvent() throws Exception {
+        incomingEvent.getIncoming().setChannel(null);
 
-        thrown.expect(IllegalStateException.class);
+        thrown.expect(BusinessException.class);
+        thrown.expectMessage(EventRepository.Validations.EVENT_INCOMING_CHANNEL_NULL.getCode());
+
+        eventRepository.saveIncoming(tenant, incomingEvent);
+    }
+
+    @Test
+    public void shouldRaiseAnExceptionIfEventIncomingChannelIsEmptyWhenSavingAnIncomingEvent() throws Exception {
+        incomingEvent.getIncoming().setChannel("");
+
+        thrown.expect(BusinessException.class);
+        thrown.expectMessage(EventRepository.Validations.EVENT_INCOMING_CHANNEL_NULL.getCode());
+
+        eventRepository.saveIncoming(tenant, incomingEvent);
+    }
+
+    @Test
+    public void shouldRaiseAnExceptionIfDeviceDoesNotExistsWhenSavingAnIncomingEvent() throws Exception {
+        incomingEvent.getIncoming().setDeviceGuid("unknown_device");
+
+        thrown.expect(BusinessException.class);
+        thrown.expectMessage(EventRepository.Validations.INCOMING_DEVICE_ID_DOES_NOT_EXIST.getCode());
+
+        eventRepository.saveIncoming(tenant, incomingEvent);
+    }
+
+    @Test
+    public void shouldRaiseAnExceptionIfEventTimestampIsNullWhenSavingAnIncomingEvent() throws Exception {
+        incomingEvent.setTimestamp(null);
+
+        thrown.expect(BusinessException.class);
         thrown.expectMessage(EventRepository.Validations.EVENT_TIMESTAMP_NULL.getCode());
 
-        eventRepository.push(tenant,event);
+        eventRepository.saveIncoming(tenant, incomingEvent);
     }
 
     @Test
-    public void shouldPushTheIncomingEvent() throws Exception {
-        eventRepository.push(tenant,event);
+    public void shouldSaveTheIncomingEvent() throws Exception {
+        eventRepository.saveIncoming(tenant, incomingEvent);
 
         DBObject saved = mongoTemplate.findOne(
-                Query.query(Criteria.where("deviceGuid").is(deviceGuid)
+                Query.query(Criteria.where("incoming.deviceGuid").is(deviceGuid)
                         .andOperator(Criteria.where("ts").is(firstEventTimestamp.toEpochMilli()))),
                 DBObject.class,
-                EventRepositoryMongoImpl.EVENTS_COLLECTION_NAME
+                EventRepositoryMongoImpl.EVENTS_INCOMING_COLLECTION_NAME
         );
         saved.removeField("_id");
         saved.removeField("_class");
@@ -202,10 +236,10 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json"})
-    public void shouldRetrieveLastTwoEventsByTenantAndDevice() throws Exception {
-        List<Event> events = eventRepository.findBy(tenant, deviceGuid,
+    public void shouldRetrieveLastTwoEventsByTenantAndDeviceWhenFindingIncomingBy() throws Exception {
+        List<Event> events = eventRepository.findIncomingBy(tenant, deviceGuid,
                 firstEventTimestamp.plus(1,ChronoUnit.SECONDS),
-                null,2);
+                null,false,2);
 
         assertThat(events,notNullValue());
         assertThat(events,hasSize(2));
@@ -215,37 +249,37 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfTenantIsNullWhenFindingBy() throws Exception {
+    public void shouldRaiseAnExceptionIfTenantIsNullWhenFindingIncomingBy() throws Exception {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Tenant cannot be null");
 
-        eventRepository.findBy(null, deviceGuid,firstEventTimestamp,null,null);
+        eventRepository.findIncomingBy(null,deviceGuid,firstEventTimestamp,null,false,null);
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfDeviceIdWhenFindingBy() throws Exception {
+    public void shouldRaiseAnExceptionIfDeviceIdWhenFindingIncomingBy() throws Exception {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Device ID cannot be null or empty");
 
-        eventRepository.findBy(tenant,null,firstEventTimestamp,null,null);
+        eventRepository.findIncomingBy(tenant,null,firstEventTimestamp,null,false,null);
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfStartingOffsetAndLimitAreNullWhenFindingBy() throws Exception {
+    public void shouldRaiseAnExceptionIfStartingOffsetAndLimitAreNullWhenFindingIncomingBy() throws Exception {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Limit cannot be null when start instant isn't provided");
 
 
-        eventRepository.findBy(tenant, deviceGuid,null,null,null);
+        eventRepository.findIncomingBy(tenant, deviceGuid,null,null,false,null);
     }
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json"})
-    public void shouldRetrieveTheOnlyFirstEventByTenantAndDevice() throws Exception {
-        List<Event> events = eventRepository.findBy(tenant,
+    public void shouldRetrieveTheOnlyFirstEventByTenantAndDeviceWhenFindingIncomingBy() throws Exception {
+        List<Event> events = eventRepository.findIncomingBy(tenant,
                 deviceGuid,
                 firstEventTimestamp,
-                secondEventTimestamp.minus(1, ChronoUnit.SECONDS),
+                secondEventTimestamp.minus(1, ChronoUnit.SECONDS),true,
                 1);
 
         assertThat(events,notNullValue());
@@ -256,39 +290,12 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json"})
-    public void shouldLimitResultsAccordingToLimitParameterWhenFindingBy() throws Exception {
-        List<Event> events = eventRepository.findBy(tenant,
+    public void shouldLimitResultsAccordingToLimitParameterWhenFindingIncomingBy() throws Exception {
+        List<Event> events = eventRepository.findIncomingBy(tenant,
                 deviceGuid,
                 firstEventTimestamp,
-                thirdEventTimestamp,
+                thirdEventTimestamp,false,
                 1);
-
-        assertThat(events,notNullValue());
-        assertThat(events,hasSize(1));
-
-        assertThat(events.get(0).getTimestamp().toEpochMilli(),equalTo(thirdEventTimestamp.toEpochMilli()));
-    }
-    
-    @Test
-    public void shouldThrowAnExceptionIfTenantIsNullWhenFindingLastBy() throws Exception {
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("Tenant cannot be null");
-
-        eventRepository.findLastBy(null, deviceGuid);
-    }
-
-    @Test
-    public void shouldThrowAnExceptionIfDeviceGuidIsNullWhenFindingLastBy() throws Exception {
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("Device ID cannot be null or empty");
-
-        eventRepository.findLastBy(tenant, null);
-    }
-    
-    @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json"})
-    public void shouldRetrieveLastEventsByTenantAndDeviceGuid() throws Exception {
-        List<Event> events = eventRepository.findLastBy(tenant, deviceGuid);
 
         assertThat(events,notNullValue());
         assertThat(events,hasSize(1));

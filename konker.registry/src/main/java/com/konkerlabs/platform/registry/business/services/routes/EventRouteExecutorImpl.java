@@ -61,7 +61,7 @@ public class EventRouteExecutorImpl implements EventRouteExecutor {
             for (EventRoute eventRoute : eventRoutes) {
                 if (!eventRoute.isActive())
                     continue;
-                if (!eventRoute.getIncoming().getData().get(DEVICE_MQTT_CHANNEL).equals(event.getChannel())) {
+                if (!eventRoute.getIncoming().getData().get(DEVICE_MQTT_CHANNEL).equals(event.getIncoming().getChannel())) {
                     LOGGER.debug("Non matching channel for incoming event: {}", event);
                     continue;
                 }

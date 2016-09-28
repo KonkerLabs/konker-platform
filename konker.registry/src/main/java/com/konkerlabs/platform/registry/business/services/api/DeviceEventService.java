@@ -11,6 +11,9 @@ import java.util.List;
 public interface DeviceEventService {
 
     enum Validations {
+        DEVICE_NULL("service.device_events.device.not_null"),
+        EVENT_NULL("service.device_events.event.not_null"),
+        EVENT_PAYLOAD_NULL("service.device_events.event_payload.not_null"),
         LIMIT_NULL("service.device_events.limit.not_null");
 
         public String getCode() {
@@ -24,10 +27,12 @@ public interface DeviceEventService {
         }
     }
 
-    void logEvent(Device device, String channel, Event event) throws BusinessException;
+    NewServiceResponse<Event> logIncomingEvent(Device device, Event event);
+
+    NewServiceResponse<Event> logOutgoingEvent(Device device, Event event);
 
     /**
-     * Return all existing device events with timestamp greater than or equals to provided starting timestamp
+     * Return all existing incoming device events by provided arguments
      *
      * @param tenant
      * @param deviceGuid
@@ -36,11 +41,27 @@ public interface DeviceEventService {
      * @param limit
      * @return Found events
      */
-    NewServiceResponse<List<Event>> findEventsBy(Tenant tenant,
-                                                 String deviceGuid,
-                                                 Instant startingTimestamp,
-                                                 Instant endTimestamp,
-                                                 Integer limit);
+    NewServiceResponse<List<Event>> findIncomingBy(Tenant tenant,
+                                                   String deviceGuid,
+                                                   Instant startingTimestamp,
+                                                   Instant endTimestamp,
+                                                   boolean ascending,
+                                                   Integer limit);
 
-	NewServiceResponse<List<Event>> findLastEventBy(Tenant tenant, String deviceGuid);
+    /**
+     * Return all existing incoming device events by provided arguments
+     *
+     * @param tenant
+     * @param deviceGuid
+     * @param startingTimestamp
+     * @param endTimestamp
+     * @param limit
+     * @return Found events
+     */
+    NewServiceResponse<List<Event>> findOutgoingBy(Tenant tenant,
+                                                   String deviceGuid,
+                                                   Instant startingTimestamp,
+                                                   Instant endTimestamp,
+                                                   boolean ascending,
+                                                   Integer limit);
 }

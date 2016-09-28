@@ -20,14 +20,14 @@
                     <thead>
                         <tr>
                             <td class="col-md-1" data-th-text="#{devices.events.date_time}"></td>
-                            <td class="col-md-2" data-th-text="#{devices.events.channel}"></td>
+                            <td class="col-md-2" data-th-text="#{devices.events.incoming.channel}"></td>
                             <td class="col-md-2" data-th-text="#{devices.events.payload}"></td>
                         </tr>
                     </thead>
                     <tbody>
                         <tr data-th-each="event : ${recentEvents}">
                             <td data-th-text="${event.timestamp.toString()}"></td>
-                            <td data-th-text="${event.channel}"></td>
+                            <td data-th-text="${event.incoming.channel}"></td>
                             <td data-th-text="${event.payload}"></td>
                         </tr>
                     </tbody>

@@ -9,10 +9,17 @@ import java.time.Instant;
 @Builder
 public class Event {
 
-    private String deviceGuid;
     private Instant timestamp;
-    private String channel;
+    private EventActor incoming;
+    private EventActor outgoing;
     private String payload;
     private Boolean deleted = false;
 
+    @Data
+    @Builder
+    public static class EventActor {
+        private String tenantDomain;
+        private String deviceGuid;
+        private String channel;
+    }
 }

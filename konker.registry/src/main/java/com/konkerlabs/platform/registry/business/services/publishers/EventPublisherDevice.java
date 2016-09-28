@@ -6,6 +6,7 @@ import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
 import com.konkerlabs.platform.registry.business.services.publishers.api.EventPublisher;
 import com.konkerlabs.platform.registry.integration.gateways.MqttMessageGateway;
 import org.slf4j.Logger;
@@ -74,14 +75,19 @@ public class EventPublisherDevice implements EventPublisher {
                 ));
 
         if (outgoingDevice.isActive()) {
-            try {
-                String destinationTopic = MessageFormat.format(MQTT_OUTGOING_TOPIC_TEMPLATE,
-                        outgoingDevice.getApiKey(), data.get(DEVICE_MQTT_CHANNEL));
-                mqttMessageGateway.send(outgoingEvent.getPayload(), destinationTopic);
-                deviceEventService.logEvent(outgoingDevice, data.get(DEVICE_MQTT_CHANNEL), outgoingEvent);
-            } catch (BusinessException e) {
-                LOGGER.error("Failed to forward event to its destination", e);
-            }
+            outgoingEvent.setOutgoing(
+                Event.EventActor.builder()
+                    .deviceGuid(outgoingDevice.getGuid())
+                    .channel(data.get(DEVICE_MQTT_CHANNEL))
+                    .tenantDomain(outgoingDevice.getTenant().getDomainName()).build()
+            );
+            String destinationTopic = MessageFormat.format(MQTT_OUTGOING_TOPIC_TEMPLATE,
+                    outgoingDevice.getApiKey(), data.get(DEVICE_MQTT_CHANNEL));
+            mqttMessageGateway.send(outgoingEvent.getPayload(), destinationTopic);
+            NewServiceResponse<Event> response = deviceEventService.logOutgoingEvent(outgoingDevice, outgoingEvent);
+
+            if (!response.isOk())
+                LOGGER.error("Failed to forward event to its destination", response.getResponseMessages());
         } else {
             LOGGER.debug(
                     MessageFormat.format(EVENT_DROPPED,destinationUri,outgoingEvent.getPayload())
