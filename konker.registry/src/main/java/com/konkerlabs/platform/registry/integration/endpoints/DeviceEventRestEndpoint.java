@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -26,14 +28,15 @@ import org.springframework.web.context.request.async.DeferredResult;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.services.JedisTaskService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 
 import lombok.Builder;
 import lombok.Data;
-import redis.clients.jedis.JedisPubSub;
 
 @RestController
 public class DeviceEventRestEndpoint {
@@ -41,7 +44,8 @@ public class DeviceEventRestEndpoint {
     public enum Messages {
         INVALID_REQUEST_BODY("integration.rest.invalid.body"),
         INVALID_RESOURCE("integration.rest.invalid.resource"),
-        INVALID_WAITTIME("integration.rest.invalid.waitTime");
+        INVALID_WAITTIME("integration.rest.invalid.waitTime"),
+    	DEVICE_NOT_FOUND("integration.event_processor.channel.not_found");
 
         private String code;
 
@@ -58,16 +62,25 @@ public class DeviceEventRestEndpoint {
     private DeviceEventProcessor deviceEventProcessor;
     private JsonParsingService jsonParsingService;
     private DeviceEventService deviceEventService;
+    private DeviceRegisterService deviceRegisterService;
+    private Executor executor;
+    private JedisTaskService jedisTaskService;
 
     @Autowired
     public DeviceEventRestEndpoint(ApplicationContext applicationContext,
                                    DeviceEventProcessor deviceEventProcessor,
                                    JsonParsingService jsonParsingService,
-                                   DeviceEventService deviceEventService) {
+                                   DeviceEventService deviceEventService,
+                                   DeviceRegisterService deviceRegisterService,
+                                   Executor executor,
+                                   JedisTaskService jedisTaskService) {
         this.applicationContext = applicationContext;
         this.deviceEventProcessor = deviceEventProcessor;
         this.jsonParsingService = jsonParsingService;
         this.deviceEventService = deviceEventService;
+        this.deviceRegisterService = deviceRegisterService;
+        this.executor = executor;
+        this.jedisTaskService = jedisTaskService;
     }
 
     @RequestMapping(value = "sub/{apiKey}/{channel}", method = RequestMethod.POST,
@@ -82,50 +95,43 @@ public class DeviceEventRestEndpoint {
                   Locale locale) {
 
     	DeferredResult<List<Event>> deferredResult = new DeferredResult<>(waitTime.orElse(new Long("0")), Collections.emptyList());
+    	
+    	Device device = deviceRegisterService.findByApiKey(apiKey);
 
     	if (!principal.getApiKey().equals(apiKey)) {
-    		deferredResult.setErrorResult(new Exception(applicationContext.getMessage(Messages.INVALID_RESOURCE.getCode(),null, locale)));
+    		deferredResult.setErrorResult(new Exception(applicationContext.getMessage(Messages.INVALID_RESOURCE.getCode(), null, locale)));
     		return deferredResult;
     	}
 
     	if (waitTime.isPresent() && waitTime.get().compareTo(new Long("30000")) > 0) {
-    		deferredResult.setErrorResult(new Exception(applicationContext.getMessage(Messages.INVALID_WAITTIME.getCode(),null, locale)));
+    		deferredResult.setErrorResult(new Exception(applicationContext.getMessage(Messages.INVALID_WAITTIME.getCode(), null, locale)));
     		return deferredResult;
     	}
+    	
+    	if (!Optional.of(device).isPresent()) {
+    		deferredResult.setErrorResult(new Exception(applicationContext.getMessage(Messages.DEVICE_NOT_FOUND.getCode(), null, locale)));
+    		return deferredResult;
+    	}
+    	
     	
     	if (offset.isPresent()) {
     		Instant startTimestamp = Instant.ofEpochMilli(offset.get());
 
-			NewServiceResponse<List<Event>> response = deviceEventService.findOutgoingBy(principal.getTenant(), principal.getGuid(),
-    				startTimestamp, null, 50);
+			NewServiceResponse<List<Event>> response = deviceEventService.findOutgoingBy(device.getTenant(), device.getGuid(),
+    				startTimestamp, null, true, 50);
 
             if (!response.getResult().isEmpty() || !waitTime.isPresent() || (waitTime.isPresent() && waitTime.get().equals(new Long("0")))) {
                 deferredResult.setResult(response.getResult());
 
             } else {
-//                CompletableFuture.runAsync(() ->  {
-//                    Jedis jedis = (Jedis) redisTemplate.getConnectionFactory().getConnection().getNativeConnection();
-//                    jedis.subscribe(jedisPubSub, apiKey+"."+channel);
-//                });
+                CompletableFuture.supplyAsync(() -> {return jedisTaskService.subscribeToChannel(apiKey+"."+channel);}, executor)
+                	.whenCompleteAsync((result, throwable) -> deferredResult.setResult(result), executor);
             }
         } else {
-            NewServiceResponse<List<Event>> response = deviceEventService.findOutgoingBy(principal.getTenant(), principal.getGuid(), null, null, 1);
+            NewServiceResponse<List<Event>> response = deviceEventService.findOutgoingBy(device.getTenant(), device.getGuid(), null, null, false,1);
     		deferredResult.setResult(response.getResult());
     	}
 
-    	JedisPubSub jedisPubSub = buildJedisPubSub(principal, Instant.ofEpochMilli(offset.orElse(new Long("0"))), deferredResult);
-//    	try {
-//    		deviceEventProcessor.process(apiKey, channel, offset, waitTime, deferredResult, jedisPubSub);
-//    	} catch (BusinessException e) {
-//    		deferredResult.setErrorResult(e.getMessage());
-//    	}
-
-    	deferredResult.onCompletion(() -> {
-    		if (jedisPubSub.isSubscribed()) {
-    			jedisPubSub.unsubscribe();
-    		}
-    	});
-		
     	return deferredResult;
     }
 
@@ -158,18 +164,6 @@ public class DeviceEventRestEndpoint {
 
         return new ResponseEntity<EventResponse>(HttpStatus.OK);
     }
-
-//    private JedisPubSub buildJedisPubSub(Device device, Instant startTimestamp, DeferredResult<List<Event>> deferredResult) {
-//    	JedisPubSub jedisPubSub = new JedisPubSub() {
-//    		@Override
-//    		public void onMessage(String channel, String message) {
-//    			NewServiceResponse<List<Event>> response = deviceEventService.findOutgoingBy(device.getTenant(), device.getDeviceId(),
-//						startTimestamp, null, 50);
-//				deferredResult.setResult(response.getResult());
-//    		}
-//		};
-//    	return jedisPubSub;
-//    }
 
     @Data
     @Builder
