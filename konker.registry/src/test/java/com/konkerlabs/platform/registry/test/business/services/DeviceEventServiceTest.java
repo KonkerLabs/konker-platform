@@ -11,6 +11,7 @@ import com.konkerlabs.platform.registry.business.repositories.events.EventReposi
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
+import com.konkerlabs.platform.registry.config.RedisSubscriber;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
@@ -23,7 +24,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import redis.clients.jedis.Jedis;
@@ -62,6 +65,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
 
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
+
 
     @Autowired
     @Qualifier("mongoEvents")
@@ -142,7 +146,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
         event.setChannel("otherChannel");
         deviceEventService.logEvent(device, channel, event);
 
-        Event last = eventRepository.findBy(tenant,device.getGuid(),event.getTimestamp(), null, 1).get(0);
+        Event last = eventRepository.findBy(tenant, device.getGuid(), event.getTimestamp(), null, 1).get(0);
 
         assertThat(last, notNullValue());
 
@@ -228,26 +232,28 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldPublishOnRedisWhenEventsAreLogged() throws Exception {
-        Jedis jedis = (Jedis) redisTemplate.getConnectionFactory().getConnection().getNativeConnection();
         ExecutorService executorService = Executors.newFixedThreadPool(1);
         CompletableFuture<String> completableFuture = new CompletableFuture<>();
+
         Future<?> future = executorService.submit(() -> {
-            jedis.subscribe(new JedisPubSub() {
-                @Override
-                public void onMessage(String channel, String message) {
-                    completableFuture.complete(message);
-                    unsubscribe();
-                }
-            }, device.getApiKey() + "." + channel);
+            applicationContext.getBean(RedisSubscriber.class, device.getApiKey() + "." + channel,
+                    new JedisPubSub() {
+                        @Override
+                        public void onMessage(String channel, String message) {
+                            completableFuture.complete(message);
+                        }
+                    });
         });
+
         try {
             future.get(3, TimeUnit.SECONDS);
-        } catch (TimeoutException e){
+        } catch (TimeoutException e) {
             future.cancel(true);
         } finally {
             executorService.shutdown();
             deviceEventService.logEvent(device, channel, event);
             assertThat(device.getGuid(), equalTo(completableFuture.get()));
         }
+
     }
 }
