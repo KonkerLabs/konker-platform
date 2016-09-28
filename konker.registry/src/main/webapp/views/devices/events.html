@@ -3,39 +3,86 @@
 <head>
 </head>
 <body>
-    <div data-layout-fragment="content">
-        <fieldset disabled="" class="form-horizontal">
-            <legend data-th-text="#{devices.events.legend}"></legend>
-            <div class="form-group">
-                <label class="col-sm-1 control-label" for="deviceId" data-th-text="#{devices.events.id}"></label>
-                <div class="col-sm-4">
-                    <input type="text" data-th-value="${device.deviceId}"
-                            class="form-control"
-                            id="deviceId"
-                            name="deviceId"/>
-                </div>
-            </div>
-            <div class="col-sm-4">
-                <table class="table table-bordered" data-th-if="${recentEvents != null and !recentEvents.empty}">
-                    <thead>
-                        <tr>
-                            <td class="col-md-1" data-th-text="#{devices.events.date_time}"></td>
-                            <td class="col-md-2" data-th-text="#{devices.events.channel}"></td>
-                            <td class="col-md-2" data-th-text="#{devices.events.payload}"></td>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr data-th-each="event : ${recentEvents}">
-                            <td data-th-text="${event.timestamp.toString()}"></td>
-                            <td data-th-text="${event.channel}"></td>
-                            <td data-th-text="${event.payload}"></td>
-                        </tr>
-                    </tbody>
-                </table>
-                <span data-th-if="${recentEvents == null or recentEvents.empty}" data-th-text="#{devices.events.empty_message}"></span>
-            </div>
-        </fieldset>
-        <a data-th-href="@{/devices}" class="btn btn-default" data-th-text="#{nav.back}"></a>
-    </div>
+	<div data-layout-fragment="content">
+		<fieldset disabled="" class="form-horizontal">
+			<legend data-th-text="#{devices.events.legend}"></legend>
+			<div class="form-group">
+				<label class="col-sm-1 control-label" for="deviceId"
+					data-th-text="#{devices.events.id}"></label>
+				<div class="col-sm-4">
+					<input type="text" data-th-value="${device.deviceId}"
+						class="form-control" id="deviceId" name="deviceId" />
+				</div>
+			</div>
+
+
+			<ul class="nav nav-tabs nav-justified">
+				<li class="active"><a data-toggle="tab" href="#incoming"
+					data-th-text="#{devices.events.incoming.events}"></a></li>
+				<li><a data-toggle="tab" href="#outgoing"
+					data-th-text="#{devices.events.outgoing.events}"></a></li>
+			</ul>
+			<div class="tab-content">
+				<div id="incoming" class="tab-pane fade in active">
+					<div class="col-sm-4">
+						<table class="table table-bordered"
+							data-th-if="${recentEvents != null and !recentEvents.empty}">
+							<thead>
+								<tr>
+									<td class="col-md-1" data-th-text="#{devices.events.date_time}"></td>
+									<td class="col-md-2" data-th-text="#{devices.events.channel}"></td>
+									<td class="col-md-2" data-th-text="#{devices.events.payload}"></td>
+								</tr>
+							</thead>
+							<tbody>
+								<tr data-th-each="event : ${recentEvents}">
+									<td data-th-text="${event.timestamp.toString()}"></td>
+									<td data-th-text="${event.channel}"></td>
+									<td data-th-text="${event.payload}"></td>
+								</tr>
+							</tbody>
+						</table>
+						<span data-th-if="${recentEvents == null or recentEvents.empty}"
+							data-th-text="#{devices.events.incoming.empty_message}"></span>
+					</div>
+					<!--                     <ul clas	s="list-group" id="http-list"> -->
+					<!--                         <a href="#http-list" class="list-group-item"><b data-th-text="#{devices.show.http.hostname} + ': '"></b></a> -->
+					<!--                         <a href="#http-list" class="list-group-item"><b data-th-text="#{devices.show.http.port} + ': '"></b></a> -->
+					<!--                         <a href="#http-list" class="list-group-item"><b data-th-text="#{devices.show.http.ssl_port} + ': '"></b></a> -->
+					<!--                         <a href="#http-list" class="list-group-item"><b data-th-text="#{devices.show.http.username} + ': '"></b></a> -->
+					<!--                         <a href="#http-list" class="list-group-item"><b data-th-text="#{devices.show.http.publication_url} + ': '"></b> </a> -->
+					<!--                         <a href="#http-list" class="list-group-item"><b data-th-text="#{devices.show.http.subscription_url} + ': '"></b></a> -->
+					<!--                     </ul> -->
+				</div>
+				<div id="outgoing" class="tab-pane fade">
+					<div class="col-sm-4">
+						<table class="table table-bordered"
+							data-th-if="${recentEvents != null and !recentEvents.empty}">
+							<thead>
+								<tr>
+									<td class="col-md-1" data-th-text="#{devices.events.date_time}"></td>
+									<td class="col-md-2" data-th-text="#{devices.events.channel}"></td>
+									<td class="col-md-2" data-th-text="#{devices.events.payload}"></td>
+								</tr>
+							</thead>
+							<tbody>
+								<tr data-th-each="event : ${recentEvents}">
+									<td data-th-text="${event.timestamp.toString()}"></td>
+									<td data-th-text="${event.channel}"></td>
+									<td data-th-text="${event.payload}"></td>
+								</tr>
+							</tbody>
+						</table>
+						<span data-th-if="${recentEvents == null or recentEvents.empty}"
+							data-th-text="#{devices.events.outgoing.empty_message}"></span>
+					</div>
+				</div>
+			</div>
+
+
+		</fieldset>
+		<a data-th-href="@{/devices}" class="btn btn-default"
+			data-th-text="#{nav.back}"></a>
+	</div>
 </body>
 </html>
