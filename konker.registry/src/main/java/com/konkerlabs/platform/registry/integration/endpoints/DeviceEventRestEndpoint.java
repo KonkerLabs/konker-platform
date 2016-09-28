@@ -140,17 +140,17 @@ public class DeviceEventRestEndpoint {
         return new ResponseEntity<EventResponse>(HttpStatus.OK);
     }
 
-    private JedisPubSub buildJedisPubSub(Device device, Instant startTimestamp, DeferredResult<List<Event>> deferredResult) {
-    	JedisPubSub jedisPubSub = new JedisPubSub() {
-    		@Override
-    		public void onMessage(String channel, String message) {
-    			NewServiceResponse<List<Event>> response = deviceEventService.findOutgoingBy(device.getTenant(), device.getDeviceId(),
-						startTimestamp, null, 50);
-				deferredResult.setResult(response.getResult());
-    		}
-		};
-    	return jedisPubSub;
-    }
+//    private JedisPubSub buildJedisPubSub(Device device, Instant startTimestamp, DeferredResult<List<Event>> deferredResult) {
+//    	JedisPubSub jedisPubSub = new JedisPubSub() {
+//    		@Override
+//    		public void onMessage(String channel, String message) {
+//    			NewServiceResponse<List<Event>> response = deviceEventService.findOutgoingBy(device.getTenant(), device.getDeviceId(),
+//						startTimestamp, null, 50);
+//				deferredResult.setResult(response.getResult());
+//    		}
+//		};
+//    	return jedisPubSub;
+//    }
 
     @Data
     @Builder

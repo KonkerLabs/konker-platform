@@ -83,7 +83,9 @@ public class DeviceEventServiceImpl implements DeviceEventService {
     @Override
     public NewServiceResponse<List<Event>> findIncomingBy(Tenant tenant, String deviceGuid,
                                                           Instant startTimestamp,
-                                                          Instant endTimestamp, Integer limit) {
+                                                          Instant endTimestamp,
+                                                          boolean ascending,
+                                                          Integer limit) {
         if (!Optional.ofNullable(tenant).isPresent())
             return ServiceResponseBuilder.<List<Event>>error()
                     .withMessage(CommonValidations.TENANT_NULL.getCode(), null)
@@ -102,7 +104,7 @@ public class DeviceEventServiceImpl implements DeviceEventService {
 
         try {
             return ServiceResponseBuilder.<List<Event>>ok()
-                    .withResult(eventRepository.findIncomingBy(tenant, deviceGuid, startTimestamp, endTimestamp, limit)).build();
+                    .withResult(eventRepository.findIncomingBy(tenant, deviceGuid, startTimestamp, endTimestamp, ascending, limit)).build();
         } catch (BusinessException e) {
             return ServiceResponseBuilder.<List<Event>>error()
                     .withMessage(e.getMessage())
@@ -111,7 +113,12 @@ public class DeviceEventServiceImpl implements DeviceEventService {
     }
 
     @Override
-    public NewServiceResponse<List<Event>> findOutgoingBy(Tenant tenant, String deviceGuid, Instant startingTimestamp, Instant endTimestamp, Integer limit) {
+    public NewServiceResponse<List<Event>> findOutgoingBy(Tenant tenant,
+                                                          String deviceGuid,
+                                                          Instant startingTimestamp,
+                                                          Instant endTimestamp,
+                                                          boolean ascending,
+                                                          Integer limit) {
         if (!Optional.ofNullable(tenant).isPresent())
             return ServiceResponseBuilder.<List<Event>>error()
                     .withMessage(CommonValidations.TENANT_NULL.getCode(), null)
@@ -130,7 +137,7 @@ public class DeviceEventServiceImpl implements DeviceEventService {
 
         try {
             return ServiceResponseBuilder.<List<Event>>ok()
-                    .withResult(eventRepository.findOutgoingBy(tenant, deviceGuid, startingTimestamp, endTimestamp, limit)).build();
+                    .withResult(eventRepository.findOutgoingBy(tenant, deviceGuid, startingTimestamp, endTimestamp, ascending, limit)).build();
         } catch (BusinessException e) {
             return ServiceResponseBuilder.<List<Event>>error()
                     .withMessage(Validations.LIMIT_NULL.getCode())

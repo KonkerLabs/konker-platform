@@ -134,7 +134,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
     public void shouldLogFirstDeviceEvent() throws Exception {
         deviceEventService.logIncomingEvent(device, event);
 
-        Event last = eventRepository.findIncomingBy(tenant,device.getGuid(),event.getTimestamp(), null, 1).get(0);
+        Event last = eventRepository.findIncomingBy(tenant,device.getGuid(),event.getTimestamp(), null, false, 1).get(0);
 
         assertThat(last, notNullValue());
 
@@ -151,6 +151,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
                 device.getId(),
                 firstEventTimestamp,
                 null,
+                false,
                 null
         );
 
@@ -165,6 +166,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
                 null,
                 firstEventTimestamp,
                 null,
+                false,
                 null
         );
 
@@ -179,6 +181,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
                 device.getId(),
                 null,
                 null,
+                false,
                 null
         );
 
@@ -193,6 +196,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
                 device.getGuid(),
                 firstEventTimestamp,
                 null,
+                false,
                 null
         );
 

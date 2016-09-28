@@ -39,11 +39,13 @@ public interface EventRepository {
                                String deviceGuid,
                                Instant startInstant,
                                Instant endInstant,
+                               boolean ascending,
                                Integer limit) throws BusinessException;
 
     List<Event> findOutgoingBy(Tenant tenant,
                                String deviceGuid,
                                Instant startInstant,
                                Instant endInstant,
+                               boolean ascending,
                                Integer limit) throws BusinessException;
 }

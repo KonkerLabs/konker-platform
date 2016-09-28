@@ -239,7 +239,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
     public void shouldRetrieveLastTwoEventsByTenantAndDeviceWhenFindingIncomingBy() throws Exception {
         List<Event> events = eventRepository.findIncomingBy(tenant, deviceGuid,
                 firstEventTimestamp.plus(1,ChronoUnit.SECONDS),
-                null,2);
+                null,false,2);
 
         assertThat(events,notNullValue());
         assertThat(events,hasSize(2));
@@ -253,7 +253,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Tenant cannot be null");
 
-        eventRepository.findIncomingBy(null, deviceGuid,firstEventTimestamp,null,null);
+        eventRepository.findIncomingBy(null,deviceGuid,firstEventTimestamp,null,false,null);
     }
 
     @Test
@@ -261,7 +261,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Device ID cannot be null or empty");
 
-        eventRepository.findIncomingBy(tenant,null,firstEventTimestamp,null,null);
+        eventRepository.findIncomingBy(tenant,null,firstEventTimestamp,null,false,null);
     }
 
     @Test
@@ -270,7 +270,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         thrown.expectMessage("Limit cannot be null when start instant isn't provided");
 
 
-        eventRepository.findIncomingBy(tenant, deviceGuid,null,null,null);
+        eventRepository.findIncomingBy(tenant, deviceGuid,null,null,false,null);
     }
 
     @Test
@@ -279,7 +279,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         List<Event> events = eventRepository.findIncomingBy(tenant,
                 deviceGuid,
                 firstEventTimestamp,
-                secondEventTimestamp.minus(1, ChronoUnit.SECONDS),
+                secondEventTimestamp.minus(1, ChronoUnit.SECONDS),true,
                 1);
 
         assertThat(events,notNullValue());
@@ -294,7 +294,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         List<Event> events = eventRepository.findIncomingBy(tenant,
                 deviceGuid,
                 firstEventTimestamp,
-                thirdEventTimestamp,
+                thirdEventTimestamp,false,
                 1);
 
         assertThat(events,notNullValue());

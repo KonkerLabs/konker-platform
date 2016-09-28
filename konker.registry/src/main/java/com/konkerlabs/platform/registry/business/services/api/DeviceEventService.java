@@ -45,6 +45,7 @@ public interface DeviceEventService {
                                                    String deviceGuid,
                                                    Instant startingTimestamp,
                                                    Instant endTimestamp,
+                                                   boolean ascending,
                                                    Integer limit);
 
     /**
@@ -61,5 +62,6 @@ public interface DeviceEventService {
                                                    String deviceGuid,
                                                    Instant startingTimestamp,
                                                    Instant endTimestamp,
+                                                   boolean ascending,
                                                    Integer limit);
 }

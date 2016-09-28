@@ -29,7 +29,7 @@ public class EventRepositoryMongoImpl implements EventRepository {
     public static final String EVENTS_INCOMING_COLLECTION_NAME = "incomingEvents";
     public static final String EVENTS_OUTGOING_COLLECTION_NAME = "outgoingEvents";
 
-    private enum Direction {
+    private enum Type {
         INCOMING("incoming",EVENTS_INCOMING_COLLECTION_NAME),
         OUTGOING("outgoing",EVENTS_OUTGOING_COLLECTION_NAME);
 
@@ -44,7 +44,7 @@ public class EventRepositoryMongoImpl implements EventRepository {
             return collectionName;
         }
 
-        Direction(String actorFieldName, String collectionName) {
+        Type(String actorFieldName, String collectionName) {
             this.actorFieldName = actorFieldName;
             this.collectionName = collectionName;
         }
@@ -63,15 +63,15 @@ public class EventRepositoryMongoImpl implements EventRepository {
 
     @Override
     public void saveIncoming(Tenant tenant, Event event) throws BusinessException {
-        doSave(tenant,event,Direction.INCOMING);
+        doSave(tenant,event, Type.INCOMING);
     }
 
     @Override
     public void saveOutgoing(Tenant tenant, Event event) throws BusinessException {
-        doSave(tenant,event,Direction.OUTGOING);
+        doSave(tenant,event, Type.OUTGOING);
     }
 
-    private void doSave(Tenant tenant, Event event, Direction direction) throws BusinessException {
+    private void doSave(Tenant tenant, Event event, Type type) throws BusinessException {
         Optional.ofNullable(tenant)
                 .filter(tenant1 -> Optional.ofNullable(tenant1.getDomainName()).filter(s -> !s.isEmpty()).isPresent())
                 .orElseThrow(() -> new BusinessException(CommonValidations.TENANT_NULL.getCode()));
@@ -95,7 +95,7 @@ public class EventRepositoryMongoImpl implements EventRepository {
         Optional.ofNullable(event.getTimestamp())
                 .orElseThrow(() -> new BusinessException(Validations.EVENT_TIMESTAMP_NULL.getCode()));
 
-        if (direction.equals(Direction.OUTGOING)) {
+        if (type.equals(Type.OUTGOING)) {
             Optional.ofNullable(event.getOutgoing())
                     .orElseThrow(() -> new BusinessException(Validations.EVENT_OUTGOING_NULL.getCode()));
             Optional.ofNullable(event.getOutgoing().getDeviceGuid()).filter(s -> !s.isEmpty())
@@ -119,19 +119,19 @@ public class EventRepositoryMongoImpl implements EventRepository {
 
         toSave.removeField("ts");
         toSave.put("ts", event.getTimestamp().toEpochMilli());
-        toSave.put(Direction.INCOMING.getActorFieldName(), incoming);
+        toSave.put(Type.INCOMING.getActorFieldName(), incoming);
         toSave.put("payload", event.getPayload());
 
-        if (direction.equals(Direction.OUTGOING)) {
+        if (type.equals(Type.OUTGOING)) {
             DBObject outgoing = new BasicDBObject();
             outgoing.put("deviceGuid",event.getOutgoing().getDeviceGuid());
             outgoing.put("tenantDomain",event.getOutgoing().getTenantDomain());
             outgoing.put("channel",event.getOutgoing().getChannel());
 
-            toSave.put(Direction.OUTGOING.getActorFieldName(), outgoing);
+            toSave.put(Type.OUTGOING.getActorFieldName(), outgoing);
         }
 
-        mongoTemplate.save(toSave, direction.getCollectionName());
+        mongoTemplate.save(toSave, type.getCollectionName());
     }
 
     @Override
@@ -139,8 +139,9 @@ public class EventRepositoryMongoImpl implements EventRepository {
                                       String deviceGuid,
                                       Instant startInstant,
                                       Instant endInstant,
+                                      boolean ascending,
                                       Integer limit) throws BusinessException {
-        return doFindBy(tenant,deviceGuid,startInstant,endInstant,limit,Direction.INCOMING);
+        return doFindBy(tenant,deviceGuid,startInstant,endInstant,ascending,limit, Type.INCOMING);
     }
 
     @Override
@@ -148,16 +149,18 @@ public class EventRepositoryMongoImpl implements EventRepository {
                                       String deviceGuid,
                                       Instant startInstant,
                                       Instant endInstant,
+                                      boolean ascending,
                                       Integer limit) throws BusinessException {
-        return doFindBy(tenant,deviceGuid,startInstant,endInstant,limit,Direction.OUTGOING);
+        return doFindBy(tenant,deviceGuid,startInstant,endInstant,ascending,limit, Type.OUTGOING);
     }
 
     private List<Event> doFindBy(Tenant tenant,
                                  String deviceGuid,
                                  Instant startInstant,
                                  Instant endInstant,
+                                 boolean ascending,
                                  Integer limit,
-                                 Direction direction) throws BusinessException {
+                                 Type type) throws BusinessException {
 
         Optional.ofNullable(tenant)
                 .filter(tenant1 -> Optional.ofNullable(tenant1.getDomainName()).filter(s -> !s.isEmpty()).isPresent())
@@ -172,7 +175,7 @@ public class EventRepositoryMongoImpl implements EventRepository {
         List<Criteria> criterias = new ArrayList<>();
 
         criterias.add(
-            Criteria.where(MessageFormat.format("{0}.{1}",direction.getActorFieldName(),"deviceGuid"))
+            Criteria.where(MessageFormat.format("{0}.{1}", type.getActorFieldName(),"deviceGuid"))
             .is(deviceGuid)
         );
 
@@ -181,15 +184,17 @@ public class EventRepositoryMongoImpl implements EventRepository {
 
         Query query = Query.query(
                 Criteria.where(
-                        MessageFormat.format("{0}.{1}",direction.getActorFieldName(),"tenantDomain")
+                        MessageFormat.format("{0}.{1}", type.getActorFieldName(),"tenantDomain")
                         ).is(tenant.getDomainName())
                         .andOperator(criterias.toArray(new Criteria[criterias.size()])));
 
         Optional.ofNullable(limit).filter(integer -> integer > 0).ifPresent(integer -> query.limit(integer));
 
-        List<DBObject> result = mongoTemplate.find(query.with(new Sort(new Sort.Order(Sort.Direction.DESC, "ts"))),
+        Sort.Direction sort = ascending ? Sort.Direction.ASC : Sort.Direction.DESC;
+
+        List<DBObject> result = mongoTemplate.find(query.with(new Sort(new Sort.Order(sort, "ts"))),
                 DBObject.class,
-                direction.getCollectionName());
+                type.getCollectionName());
 
         return result.stream().map(dbObject -> {
             dbObject.removeField("_id");
@@ -198,7 +203,7 @@ public class EventRepositoryMongoImpl implements EventRepository {
         }).map(dbObject -> Event.builder()
                 .incoming(
                         ((Supplier<Event.EventActor>) () -> {
-                            DBObject incoming = ((DBObject) dbObject.get(direction.getActorFieldName()));
+                            DBObject incoming = ((DBObject) dbObject.get(type.getActorFieldName()));
                             return Event.EventActor.builder()
                                     .deviceGuid(incoming.get("deviceGuid").toString())
                                     .tenantDomain(incoming.get("tenantDomain").toString())
@@ -207,7 +212,7 @@ public class EventRepositoryMongoImpl implements EventRepository {
                 )
                 .outgoing(
                     ((Supplier<Event.EventActor>) () -> {
-                        return Optional.ofNullable((DBObject)dbObject.get(direction.getActorFieldName()))
+                        return Optional.ofNullable((DBObject)dbObject.get(type.getActorFieldName()))
                             .map(dbObject1 -> {
                                 return Event.EventActor.builder()
                                         .deviceGuid(dbObject1.get("deviceGuid").toString())
