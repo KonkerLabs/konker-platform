@@ -1,7 +1,7 @@
 package com.konkerlabs.platform.registry.integration.endpoints;
 
 import java.time.Instant;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -70,45 +70,64 @@ public class DeviceEventRestEndpoint {
         this.deviceEventService = deviceEventService;
     }
 
-//    @RequestMapping(value = "sub/{apiKey}/{channel}", method = RequestMethod.POST,
-//    		consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-//    @ResponseBody
-//    public DeferredResult<List<Event>> subEvent(HttpServletRequest servletRequest,
-//                  @PathVariable("apiKey") String apiKey,
-//                  @PathVariable("channel") String channel,
-//                  @AuthenticationPrincipal Device principal,
-//                  @RequestParam(name = "offset", required = false) Optional<Long> offset,
-//                  @RequestParam(name = "waitTime", required = false) Optional<Long> waitTime,
-//                  Locale locale) {
-//
-//    	DeferredResult<List<Event>> deferredResult = new DeferredResult<>(waitTime.orElse(new Long("0")));
-//
-//    	if (!principal.getApiKey().equals(apiKey)) {
-//    		deferredResult.setErrorResult(new Exception(applicationContext.getMessage(Messages.INVALID_RESOURCE.getCode(),null, locale)));
-//    		return deferredResult;
+    @RequestMapping(value = "sub/{apiKey}/{channel}", method = RequestMethod.POST,
+    		consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public DeferredResult<List<Event>> subEvent(HttpServletRequest servletRequest,
+                  @PathVariable("apiKey") String apiKey,
+                  @PathVariable("channel") String channel,
+                  @AuthenticationPrincipal Device principal,
+                  @RequestParam(name = "offset", required = false) Optional<Long> offset,
+                  @RequestParam(name = "waitTime", required = false) Optional<Long> waitTime,
+                  Locale locale) {
+
+    	DeferredResult<List<Event>> deferredResult = new DeferredResult<>(waitTime.orElse(new Long("0")), Collections.emptyList());
+
+    	if (!principal.getApiKey().equals(apiKey)) {
+    		deferredResult.setErrorResult(new Exception(applicationContext.getMessage(Messages.INVALID_RESOURCE.getCode(),null, locale)));
+    		return deferredResult;
+    	}
+
+    	if (waitTime.isPresent() && waitTime.get().compareTo(new Long("30000")) > 0) {
+    		deferredResult.setErrorResult(new Exception(applicationContext.getMessage(Messages.INVALID_WAITTIME.getCode(),null, locale)));
+    		return deferredResult;
+    	}
+    	
+    	if (offset.isPresent()) {
+    		Instant startTimestamp = Instant.ofEpochMilli(offset.get());
+
+			NewServiceResponse<List<Event>> response = deviceEventService.findOutgoingBy(principal.getTenant(), principal.getGuid(),
+    				startTimestamp, null, 50);
+
+            if (!response.getResult().isEmpty() || !waitTime.isPresent() || (waitTime.isPresent() && waitTime.get().equals(new Long("0")))) {
+                deferredResult.setResult(response.getResult());
+
+            } else {
+//                CompletableFuture.runAsync(() ->  {
+//                    Jedis jedis = (Jedis) redisTemplate.getConnectionFactory().getConnection().getNativeConnection();
+//                    jedis.subscribe(jedisPubSub, apiKey+"."+channel);
+//                });
+            }
+        } else {
+            NewServiceResponse<List<Event>> response = deviceEventService.findOutgoingBy(principal.getTenant(), principal.getGuid(), null, null, 1);
+    		deferredResult.setResult(response.getResult());
+    	}
+
+    	JedisPubSub jedisPubSub = buildJedisPubSub(principal, Instant.ofEpochMilli(offset.orElse(new Long("0"))), deferredResult);
+//    	try {
+//    		deviceEventProcessor.process(apiKey, channel, offset, waitTime, deferredResult, jedisPubSub);
+//    	} catch (BusinessException e) {
+//    		deferredResult.setErrorResult(e.getMessage());
 //    	}
-//
-//    	if (waitTime.isPresent() && waitTime.get().compareTo(new Long("30000")) > 0) {
-//    		deferredResult.setErrorResult(new Exception(applicationContext.getMessage(Messages.INVALID_WAITTIME.getCode(),null, locale)));
-//    		return deferredResult;
-//    	}
-//
-//    	JedisPubSub jedisPubSub = buildJedisPubSub(principal, Instant.ofEpochMilli(offset.orElse(new Long("0"))), deferredResult);
-////    	try {
-////    		deviceEventProcessor.process(apiKey, channel, offset, waitTime, deferredResult, jedisPubSub);
-////    	} catch (BusinessException e) {
-////    		deferredResult.setErrorResult(e.getMessage());
-////    	}
-//
-//    	deferredResult.onCompletion(() -> {
-//    		if (jedisPubSub.isSubscribed()) {
-//    			jedisPubSub.unsubscribe();
-//    		}
-//    	});
-//		deferredResult.onTimeout(() -> deferredResult.setResult(new ArrayList<>()));
-//
-//    	return deferredResult;
-//    }
+
+    	deferredResult.onCompletion(() -> {
+    		if (jedisPubSub.isSubscribed()) {
+    			jedisPubSub.unsubscribe();
+    		}
+    	});
+		
+    	return deferredResult;
+    }
 
     private EventResponse buildResponse(String message, Locale locale) {
         return EventResponse.builder()
