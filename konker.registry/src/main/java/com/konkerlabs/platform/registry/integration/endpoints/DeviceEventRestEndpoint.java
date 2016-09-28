@@ -113,23 +113,19 @@ public class DeviceEventRestEndpoint {
     		return deferredResult;
     	}
     	
+    	Instant startTimestamp = offset.isPresent() ? Instant.ofEpochMilli(offset.get()) : null;
+    	boolean asc = offset.isPresent();
+    	Integer limit = offset.isPresent() ? 50 : 1;
     	
-    	if (offset.isPresent()) {
-    		Instant startTimestamp = Instant.ofEpochMilli(offset.get());
+    	NewServiceResponse<List<Event>> response = deviceEventService.findOutgoingBy(device.getTenant(), device.getGuid(),
+    			startTimestamp, null, asc, limit);
 
-			NewServiceResponse<List<Event>> response = deviceEventService.findOutgoingBy(device.getTenant(), device.getGuid(),
-    				startTimestamp, null, true, 50);
-
-            if (!response.getResult().isEmpty() || !waitTime.isPresent() || (waitTime.isPresent() && waitTime.get().equals(new Long("0")))) {
-                deferredResult.setResult(response.getResult());
-
-            } else {
-                CompletableFuture.supplyAsync(() -> {return jedisTaskService.subscribeToChannel(apiKey+"."+channel);}, executor)
-                	.whenCompleteAsync((result, throwable) -> deferredResult.setResult(result), executor);
-            }
-        } else {
-            NewServiceResponse<List<Event>> response = deviceEventService.findOutgoingBy(device.getTenant(), device.getGuid(), null, null, false,1);
+    	if (!response.getResult().isEmpty() || !waitTime.isPresent() || (waitTime.isPresent() && waitTime.get().equals(new Long("0")))) {
     		deferredResult.setResult(response.getResult());
+
+    	} else {
+    		CompletableFuture.supplyAsync(() -> {return jedisTaskService.subscribeToChannel(apiKey+"."+channel, startTimestamp, asc, limit);}, executor)
+    		.whenCompleteAsync((result, throwable) -> deferredResult.setResult(result), executor);
     	}
 
     	return deferredResult;

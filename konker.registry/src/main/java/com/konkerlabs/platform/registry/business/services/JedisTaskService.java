@@ -34,14 +34,14 @@ public class JedisTaskService {
 		
 	}
 
-	public List<Event> subscribeToChannel(String channel) {
+	public List<Event> subscribeToChannel(String channel, Instant startTimestamp, boolean asc, Integer limit) {
 		Jedis jedis = (Jedis) redisTemplate.getConnectionFactory().getConnection().getNativeConnection();
 		JedisPubSub jedisPubSub = new JedisPubSub() {
 			@Override
 			public void onMessage(String channel, String message) {
 				Device device = deviceRegisterService.findByApiKey(channel.substring(0, channel.indexOf(".")));
 				response = deviceEventService.findOutgoingBy(device.getTenant(), device.getDeviceId(),
-						Instant.now(), null, true, 50);
+						startTimestamp, null, asc, limit);
 				this.unsubscribe(channel);
 			}
 		};
