@@ -49,15 +49,4 @@ public class RedisConfig {
         rt.setConnectionFactory(redisConnectionFactory());
         return rt;
     }
-
-    @Bean
-    @Scope(BeanDefinition.SCOPE_PROTOTYPE)
-    public RedisSubscriber redisSubscriber(String topic, JedisPubSub jedisPubSub){
-        return RedisSubscriber.builder()
-                .topic(topic)
-                .redisTemplate(redisTemplate())
-                .jedisPubSub(jedisPubSub)
-                .build();
-    }
-
 }
