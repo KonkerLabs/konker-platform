@@ -35,7 +35,8 @@ public class DeviceController implements ApplicationContextAware {
 
     public enum Messages {
         DEVICE_REGISTERED_SUCCESSFULLY("controller.device.registered.success"),
-        DEVICE_REMOVED_SUCCESSFULLY("controller.device.removed.succesfully");
+        DEVICE_REMOVED_SUCCESSFULLY("controller.device.removed.succesfully"),
+        DEVICE_REMOVED_UNSUCCESSFULLY("controller.device.removed.unsuccesfully");
 
         public String getCode() {
             return code;

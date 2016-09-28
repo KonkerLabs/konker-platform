@@ -15,6 +15,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import java.text.MessageFormat;
@@ -141,7 +142,7 @@ public class EventRepositoryMongoImpl implements EventRepository {
                                       Instant endInstant,
                                       boolean ascending,
                                       Integer limit) throws BusinessException {
-        return doFindBy(tenant,deviceGuid,startInstant,endInstant,ascending,limit, Type.INCOMING);
+        return doFindBy(tenant,deviceGuid,startInstant,endInstant,ascending,limit, Type.INCOMING, false);
     }
 
     @Override
@@ -151,7 +152,17 @@ public class EventRepositoryMongoImpl implements EventRepository {
                                       Instant endInstant,
                                       boolean ascending,
                                       Integer limit) throws BusinessException {
-        return doFindBy(tenant,deviceGuid,startInstant,endInstant,ascending,limit, Type.OUTGOING);
+        return doFindBy(tenant,deviceGuid,startInstant,endInstant,ascending,limit, Type.OUTGOING, false);
+    }
+
+    @Override
+    public void removeBy(Tenant tenant, String deviceGuid) throws BusinessException {
+        try {
+            doRemoveBy(tenant, deviceGuid, Type.INCOMING);
+            doRemoveBy(tenant, deviceGuid, Type.OUTGOING);
+        } catch (Exception e){
+            throw new BusinessException(e.getMessage(), e);
+        }
     }
 
     private List<Event> doFindBy(Tenant tenant,
@@ -160,7 +171,8 @@ public class EventRepositoryMongoImpl implements EventRepository {
                                  Instant endInstant,
                                  boolean ascending,
                                  Integer limit,
-                                 Type type) throws BusinessException {
+                                 Type type,
+                                 boolean isDeleted) throws BusinessException {
 
         Optional.ofNullable(tenant)
                 .filter(tenant1 -> Optional.ofNullable(tenant1.getDomainName()).filter(s -> !s.isEmpty()).isPresent())
@@ -181,6 +193,8 @@ public class EventRepositoryMongoImpl implements EventRepository {
 
         Optional.ofNullable(startInstant).ifPresent(instant -> criterias.add(Criteria.where("ts").gte(instant.toEpochMilli())));
         Optional.ofNullable(endInstant).ifPresent(instant -> criterias.add(Criteria.where("ts").lte(instant.toEpochMilli())));
+        Optional.ofNullable(isDeleted)
+                .ifPresent(deleted -> criterias.add(Criteria.where("deleted").exists(deleted)));
 
         Query query = Query.query(
                 Criteria.where(
@@ -227,5 +241,36 @@ public class EventRepositoryMongoImpl implements EventRepository {
                 .build())
         .collect(Collectors.toList());
 
+    }
+
+    /**
+     * Remove events from device in logical way
+     * @param tenant
+     * @param deviceGuid
+     * @param type
+     * @throws Exception
+     */
+    private void doRemoveBy(Tenant tenant, String deviceGuid, Type type) throws Exception {
+        Optional.ofNullable(tenant)
+                .filter(tenant1 -> Optional.ofNullable(tenant1.getDomainName()).filter(s -> !s.isEmpty()).isPresent())
+                .orElseThrow(() -> new IllegalArgumentException("Tenant cannot be null"));
+        Optional.ofNullable(deviceGuid).filter(s -> !s.isEmpty())
+                .orElseThrow(() -> new IllegalArgumentException("Device ID cannot be null or empty"));
+
+        List<Criteria> criterias = new ArrayList<>();
+
+        criterias.add(
+                Criteria.where(MessageFormat.format("{0}.{1}", type.getActorFieldName(),"deviceGuid"))
+                        .is(deviceGuid)
+        );
+        Query query = Query.query(
+                Criteria.where(
+                        MessageFormat.format("{0}.{1}", type.getActorFieldName(),"tenantDomain")
+                ).is(tenant.getDomainName())
+                        .andOperator(criterias.toArray(new Criteria[criterias.size()])));
+
+        Update update = new Update();
+        update.set("deleted", true);
+        mongoTemplate.updateMulti(query, update, DBObject.class, type.getCollectionName());
     }
 }

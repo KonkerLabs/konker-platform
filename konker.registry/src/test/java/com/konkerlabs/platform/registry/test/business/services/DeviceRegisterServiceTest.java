@@ -6,30 +6,28 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
+import com.konkerlabs.platform.registry.business.repositories.events.EventRepository;
+import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.RedisTestConfiguration;
 import com.konkerlabs.platform.registry.web.controllers.DeviceController;
-import com.konkerlabs.platform.security.managers.PasswordManager;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
-import org.mockito.verification.VerificationMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.Temporal;
 import java.util.*;
 
 import static com.konkerlabs.platform.registry.test.base.matchers.NewServiceResponseMatchers.*;
@@ -48,6 +46,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     private static final String EMPTY_DEVICE_NAME = "";
     private static final String THE_TENANT_ID = "71fb0d48-674b-4f64-a3e5-0256ff3a63af";
+    private static final String THE_TENANT_DOMAIN_NAME = "konker";
     private static final String THE_DEVICE_INTERNAL_MONGO_ID = "67014de6-81db-11e6-a5bc-3f99b38315c6";
     private static final String THE_USER_DEFINED_DEVICE_ID = "SN1234567890";
     private static final String THE_DEVICE_GUID = "7d51c242-81db-11e6-a8c2-0746f010e945";
@@ -71,6 +70,8 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     private TenantRepository tenantRepository;
     @Autowired
     private DeviceRepository deviceRepository;
+    @Autowired
+    private DeviceEventService deviceEventService;
 
     private Device device;
     private Tenant currentTenant;
@@ -427,32 +428,40 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/enrichment-rest.json"})
     public void shouldReturnErrorMessageIfDeviceHaveEnrichmentsOnDeletion() throws Exception {
         NewServiceResponse<Device> serviceResponse = deviceRegisterService
-                .remove(Tenant.builder().id(THE_TENANT_ID).build(), THE_DEVICE_GUID);
+                .remove(Tenant.builder().id(THE_TENANT_ID).domainName(THE_TENANT_DOMAIN_NAME).build(),
+                        THE_DEVICE_GUID);
         assertThat(serviceResponse.getStatus(), equalTo(NewServiceResponse.Status.ERROR));
         assertThat(serviceResponse.getResponseMessages(),
                 hasEntry(DeviceRegisterService.Validations.DEVICE_HAVE_ENRICHMENTS.getCode(), null));
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/events-incoming.json", "/fixtures/events-outgoing.json"})
     public void shouldReturnSuccessMessageIfDeviceDeletionSucceed() throws Exception {
         NewServiceResponse<Device> serviceResponse = deviceRegisterService
-                .remove(Tenant.builder().id(THE_TENANT_ID).build(), THE_DEVICE_GUID);
+                .remove(Tenant.builder().id(THE_TENANT_ID).domainName(THE_TENANT_DOMAIN_NAME).build(),
+                        THE_DEVICE_GUID);
         assertThat(serviceResponse.getStatus(), equalTo(NewServiceResponse.Status.OK));
         assertThat(serviceResponse.getResponseMessages(),
                 hasEntry(DeviceController.Messages.DEVICE_REMOVED_SUCCESSFULLY.getCode(), null));
     }
 
-//    @Test
-//    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json"})
-//    public void shouldDeleteInLogicalWayEachDataIngestedOnDeviceForSucceedDeletion() throws Exception {
-//        Device device = deviceRegisterService
-//                .findByTenantDomainNameAndDeviceId(currentTenant.getDomainName(), DEVICE_ID_IN_USE);
-//        device.setEvents(Arrays.asList(event));
-//        NewServiceResponse<Device> serviceResponse = deviceRegisterService
-//                .remove(Tenant.builder().id(THE_TENANT_ID).build(), device.getId());
-//        assertThat(serviceResponse.getResult().getEvents() != null ? serviceResponse.getResult().getEvents().stream().anyMatch(event -> event.getDeleted()) : true, equalTo(true));
-//    }
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/events-incoming.json", "/fixtures/events-outgoing.json"})
+    public void shouldDeleteInLogicalWayEachDataIngestedOnDeviceForSucceedDeletion() throws Exception {
+        Device device = deviceRegisterService
+                .findByTenantDomainNameAndDeviceGuid(currentTenant.getDomainName(), THE_DEVICE_GUID);
+
+        NewServiceResponse<Device> serviceResponse = deviceRegisterService
+                .remove(Tenant.builder().id(THE_TENANT_ID).build(), device.getId());
+        NewServiceResponse<List<Event>> incomingEvents = deviceEventService.findIncomingBy(currentTenant, THE_DEVICE_GUID,
+                Instant.ofEpochMilli(1353320973747l), Instant.ofEpochMilli(1553320973747l), false, 10);
+        NewServiceResponse<List<Event>> outgoingEvents = deviceEventService.findOutgoingBy(currentTenant, THE_DEVICE_GUID,
+                Instant.ofEpochMilli(1353320973747l), Instant.ofEpochMilli(1553320973747l), false, 10);
+
+        assertThat((incomingEvents != null && incomingEvents.getResult().size() > 0) ? incomingEvents.getResult().stream().anyMatch(event -> event.getDeleted()) : true, equalTo(true));
+        assertThat((outgoingEvents != null && outgoingEvents.getResult().size() > 0)? outgoingEvents.getResult().stream().anyMatch(event -> event.getDeleted()) : true, equalTo(true));
+    }
 
 
 }

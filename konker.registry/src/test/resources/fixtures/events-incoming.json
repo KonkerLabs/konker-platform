@@ -1,0 +1,28 @@
+{
+  "incomingEvents": [
+    {
+      "_class" : "com.mongodb.DBObject",
+      "payload":"{}",
+      "deleted":false,
+      "timestamp": 1453320973747,
+      "incoming": {
+        "_class": "com.konkerlabs.platform.registry.business.model.EventActor",
+        "deviceGuid": "7d51c242-81db-11e6-a8c2-0746f010e945",
+        "tenantDomain":"konker",
+        "channel": "e4399b2ed998.testchannel"
+      }
+    },
+    {
+      "_class" : "com.mongodb.DBObject",
+      "payload":"{}",
+      "deleted":false,
+      "timestamp": 1453320973757,
+      "incoming": {
+        "_class": "com.konkerlabs.platform.registry.business.model.EventActor",
+        "deviceGuid": "7d51c242-81db-11e6-a8c2-0746f010e945",
+        "tenantDomain":"konker",
+        "channel": "e4399b2ed998.testchannel"
+      }
+    }
+  ]
+}

@@ -62,6 +62,11 @@ public class EventRepositorySolrImpl implements EventRepository {
     }
 
     @Override
+    public void removeBy(Tenant tenant, String deviceGuid) throws BusinessException {
+        //Nothing todo_here
+    }
+
+    @Override
     public List<Event> findIncomingBy(Tenant tenant,
                                       String deviceGuid,
                                       Instant startInstant,

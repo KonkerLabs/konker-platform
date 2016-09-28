@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.business.services;
 
+import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.DataEnrichmentExtensionRepository;
@@ -47,9 +48,6 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
-
-    @Autowired
-    private ApplicationContext ctx;
 
     @Override
     public NewServiceResponse<Device> register(Tenant tenant, Device device) {
@@ -265,7 +263,15 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
         if(Optional.ofNullable(response).isPresent()) return response;
 
-        deviceRepository.delete(device);
+        try {
+            eventRepository.removeBy(tenant, device.getGuid());
+            deviceRepository.delete(device);
+        } catch (BusinessException e){
+            return ServiceResponseBuilder.<Device>error()
+                    .withMessage(DeviceController.Messages.DEVICE_REMOVED_UNSUCCESSFULLY.getCode())
+                    .withResult(device)
+                    .build();
+        }
 
         return ServiceResponseBuilder.<Device>ok()
                 .withMessage(DeviceController.Messages.DEVICE_REMOVED_SUCCESSFULLY.getCode())

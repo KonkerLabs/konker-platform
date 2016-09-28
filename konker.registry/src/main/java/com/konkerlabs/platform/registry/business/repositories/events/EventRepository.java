@@ -48,4 +48,7 @@ public interface EventRepository {
                                Instant endInstant,
                                boolean ascending,
                                Integer limit) throws BusinessException;
+
+    void removeBy(Tenant tenant, String deviceGuid) throws BusinessException;
+
 }
