@@ -20,7 +20,7 @@ import redis.clients.jedis.JedisPubSub;
 public class JedisTaskService {
 	
 	@Autowired
-	private RedisTemplate<String, Object> redisTemplate;
+	private RedisTemplate<String, String> redisTemplate;
 	
 	@Autowired
 	private DeviceEventService deviceEventService;
