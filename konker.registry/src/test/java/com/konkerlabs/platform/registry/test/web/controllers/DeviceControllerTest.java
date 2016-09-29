@@ -182,8 +182,11 @@ public class DeviceControllerTest extends WebLayerTestContext {
         when(deviceRegisterService.getByDeviceGuid(tenant, savedDevice.getGuid())).thenReturn(
                 ServiceResponseBuilder.<Device>ok().withResult(savedDevice).build());
         when(deviceEventService.findIncomingBy(tenant,savedDevice.getGuid(),null,null,false,50)).thenReturn(
-            ServiceResponseBuilder.<List<Event>>ok().withResult(Collections.emptyList()).build()
-        );
+                ServiceResponseBuilder.<List<Event>>ok().withResult(Collections.emptyList()).build()
+            );
+        when(deviceEventService.findOutgoingBy(tenant,savedDevice.getGuid(),null,null,false,50)).thenReturn(
+                ServiceResponseBuilder.<List<Event>>ok().withResult(Collections.emptyList()).build()
+            );
 
         getMockMvc().perform(get(MessageFormat.format("/devices/{0}/events", savedDevice.getGuid())))
                 .andExpect(model().attribute("device", savedDevice)).andExpect(view().name("devices/events"));

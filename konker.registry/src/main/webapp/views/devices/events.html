@@ -4,7 +4,7 @@
 </head>
 <body>
 	<div data-layout-fragment="content">
-		<fieldset disabled="" class="form-horizontal">
+		<fieldset class="form-horizontal">
 			<legend data-th-text="#{devices.events.legend}"></legend>
 			<div class="form-group">
 				<label class="col-sm-1 control-label" for="deviceId"
@@ -23,7 +23,7 @@
 			<div class="tab-content">
 				<div id="incoming" class="tab-pane fade in active">
 
-					<div class="col-sm-4">
+					<div class="col-sm-6 col-offset-sm-3">
 						<table class="table table-bordered"
 							data-th-if="${recentIncomingEvents != null and !recentIncomingEvents.empty}">
 							<thead>
@@ -49,7 +49,7 @@
 				</div>
 				<div id="outgoing" class="tab-pane fade">
 
-					<div class="col-sm-4">
+					<div class="col-sm-6 col-offset-sm-3">
 						<table class="table table-bordered"
 							data-th-if="${recentOutgoingEvents != null and !recentOutgoingEvents.empty}">
 							<thead>
