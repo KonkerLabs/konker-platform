@@ -50,7 +50,7 @@ public interface DeviceRegisterService {
 	 * @param device
 	 * @return
 	 */
-	NewServiceResponse<Device> register(Tenant tenant, Device device);
+	ServiceResponse<Device> register(Tenant tenant, Device device);
 
 	/**
 	 * Updates an already existent Tenant.
@@ -62,15 +62,15 @@ public interface DeviceRegisterService {
 	 * @param device
 	 * @return
 	 */
-	NewServiceResponse<Device> update(Tenant tenant, String guid, Device device);
+	ServiceResponse<Device> update(Tenant tenant, String guid, Device device);
 
 	/**
 	 * TODO @andre implement throwable flow Remove a device in logical way
 	 * 
 	 * @param guid
-	 * @return NewServiceResponse<Device>
+	 * @return ServiceResponse<Device>
 	 */
-	NewServiceResponse<Device> remove(Tenant tenant, String guid);
+	ServiceResponse<Device> remove(Tenant tenant, String guid);
 
 	/**
 	 * Returns all devices (enabled or disabled) owned by the provided tenant.
@@ -80,7 +80,7 @@ public interface DeviceRegisterService {
 	 * @param tenant
 	 * @return
 	 */
-	NewServiceResponse<List<Device>> findAll(Tenant tenant);
+	ServiceResponse<List<Device>> findAll(Tenant tenant);
 
 
 	/**
@@ -92,7 +92,7 @@ public interface DeviceRegisterService {
 	 * @param guid
 	 * @return
 	 */
-	NewServiceResponse<Device> getByDeviceGuid(Tenant tenant, String guid);
+	ServiceResponse<Device> getByDeviceGuid(Tenant tenant, String guid);
 
 	/**
 	 * Returns a device associated with the provided API Key.
@@ -126,7 +126,7 @@ public interface DeviceRegisterService {
 	 * @param guid
 	 * @return
 	 */
-	NewServiceResponse<Device> switchEnabledDisabled(Tenant tenant, String guid);
+	ServiceResponse<Device> switchEnabledDisabled(Tenant tenant, String guid);
 
 	/**
 	 * Generates a security token for an existing device
@@ -135,5 +135,5 @@ public interface DeviceRegisterService {
 	 * @param guid
 	 * @return A random password used to create the token
 	 */
-	NewServiceResponse<DeviceSecurityCredentials> generateSecurityPassword(Tenant tenant, String guid);
+	ServiceResponse<DeviceSecurityCredentials> generateSecurityPassword(Tenant tenant, String guid);
 }

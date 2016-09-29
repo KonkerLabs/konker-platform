@@ -1,13 +1,12 @@
 package com.konkerlabs.platform.registry.business.services.publishers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
 import com.konkerlabs.platform.registry.business.repositories.events.EventRepository;
-import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.publishers.api.EventPublisher;
 import com.konkerlabs.platform.registry.integration.exceptions.IntegrationException;
@@ -68,13 +67,13 @@ public class EventPublisherRest implements EventPublisher {
         Optional.ofNullable(tenant)
                 .orElseThrow(() -> new IllegalArgumentException("Tenant cannot be null"));
 
-        NewServiceResponse<RestDestination> destination = restDestinationService.getByGUID(
+        ServiceResponse<RestDestination> destination = restDestinationService.getByGUID(
             tenant,
             destinationUri.getPath().replaceAll("/","")
         );
 
         Optional.ofNullable(destination)
-                .filter(response -> response.getStatus().equals(NewServiceResponse.Status.OK))
+                .filter(response -> response.getStatus().equals(ServiceResponse.Status.OK))
                 .orElseThrow(() -> new IllegalArgumentException(
                         MessageFormat.format("REST Destination is unknown : {0}",destinationUri)
                 ));

@@ -24,13 +24,13 @@ public interface TransformationService {
         }
     }
 
-    NewServiceResponse<List<Transformation>> getAll(Tenant tenant);
+    ServiceResponse<List<Transformation>> getAll(Tenant tenant);
 
-    NewServiceResponse<Transformation> register(Tenant tenant, Transformation transformation);
+    ServiceResponse<Transformation> register(Tenant tenant, Transformation transformation);
 
-    NewServiceResponse<Transformation> get(Tenant tenant, String id);
+    ServiceResponse<Transformation> get(Tenant tenant, String id);
 
-    NewServiceResponse<Transformation> update(Tenant tenant, String id, Transformation transformation);
+    ServiceResponse<Transformation> update(Tenant tenant, String id, Transformation transformation);
 
-	NewServiceResponse<Transformation> remove(Tenant tenant, String id);
+	ServiceResponse<Transformation> remove(Tenant tenant, String id);
 }

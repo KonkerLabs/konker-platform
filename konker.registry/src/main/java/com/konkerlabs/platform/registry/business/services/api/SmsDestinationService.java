@@ -24,12 +24,12 @@ public interface SmsDestinationService {
 
     
     
-    NewServiceResponse<List<SmsDestination>> findAll(Tenant tenant);
+    ServiceResponse<List<SmsDestination>> findAll(Tenant tenant);
 
-    NewServiceResponse<SmsDestination> register(Tenant tenant, SmsDestination destination);
+    ServiceResponse<SmsDestination> register(Tenant tenant, SmsDestination destination);
 
-    NewServiceResponse<SmsDestination> update(Tenant tenant, String guid, SmsDestination destination);
+    ServiceResponse<SmsDestination> update(Tenant tenant, String guid, SmsDestination destination);
 
-    NewServiceResponse<SmsDestination> getByGUID(Tenant tenant, String guid);
+    ServiceResponse<SmsDestination> getByGUID(Tenant tenant, String guid);
 
 }

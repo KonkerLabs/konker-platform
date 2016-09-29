@@ -6,7 +6,6 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.enumerations.IntegrationType;
 import com.konkerlabs.platform.registry.business.services.api.DataEnrichmentExtensionService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.web.forms.EnrichmentForm;
 import org.slf4j.Logger;
@@ -90,7 +89,7 @@ public class EnrichmentController implements ApplicationContextAware {
                              RedirectAttributes redirectAttributes, Locale locale) {
 
         enrichmentForm.setTenantDomainSupplier(() -> tenant.getDomainName());
-        NewServiceResponse<DataEnrichmentExtension> serviceResponse = dataEnrichmentExtensionService.register(tenant, enrichmentForm.toModel());
+        ServiceResponse<DataEnrichmentExtension> serviceResponse = dataEnrichmentExtensionService.register(tenant, enrichmentForm.toModel());
 
         switch (serviceResponse.getStatus()) {
             case ERROR: {
@@ -132,7 +131,7 @@ public class EnrichmentController implements ApplicationContextAware {
                                  RedirectAttributes redirectAttributes, Locale locale) {
 
         enrichmentForm.setTenantDomainSupplier(() -> tenant.getDomainName());
-        NewServiceResponse<DataEnrichmentExtension> serviceResponse = dataEnrichmentExtensionService.update(tenant, dataEnrichmentExtensionGUID, enrichmentForm.toModel());
+        ServiceResponse<DataEnrichmentExtension> serviceResponse = dataEnrichmentExtensionService.update(tenant, dataEnrichmentExtensionGUID, enrichmentForm.toModel());
 
         switch (serviceResponse.getStatus()) {
             case ERROR: {
@@ -155,7 +154,7 @@ public class EnrichmentController implements ApplicationContextAware {
     @RequestMapping(path = "/{dataEnrichmentExtensionGUID}", method = RequestMethod.DELETE)
     public ModelAndView remove(@PathVariable("dataEnrichmentExtensionGUID") String dataEnrichmentExtensionGUID,
                                RedirectAttributes redirectAttributes, Locale locale) {
-        NewServiceResponse<DataEnrichmentExtension> serviceResponse = dataEnrichmentExtensionService.remove(tenant, dataEnrichmentExtensionGUID);
+        ServiceResponse<DataEnrichmentExtension> serviceResponse = dataEnrichmentExtensionService.remove(tenant, dataEnrichmentExtensionGUID);
 
         redirectAttributes.addFlashAttribute("message",
             applicationContext.getMessage(Messages.ENRICHMENT_REMOVED_SUCCESSFULLY.getCode(),null,locale)

@@ -1,20 +1,20 @@
 package com.konkerlabs.platform.registry.business.services.api;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.Singular;
+import lombok.*;
 
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
 @Data
-@Builder
 public class ServiceResponse<T> {
 
     public enum Status { OK, ERROR }
 
-    private Status status;
-    @Singular
-    private List<String> responseMessages;
+    private ServiceResponse.Status status;
+    private Map<String, Object[]> responseMessages = new HashMap<>();
     private T result;
+
+    public Boolean isOk() {
+        return getStatus().equals(Status.OK);
+    }
 }

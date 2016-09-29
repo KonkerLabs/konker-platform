@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
@@ -18,7 +19,6 @@ import com.konkerlabs.platform.registry.business.model.validation.CommonValidati
 import com.konkerlabs.platform.registry.business.repositories.EventRouteRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.TransformationRepository;
-import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.TransformationService;
 
@@ -34,14 +34,14 @@ public class TransformationServiceImpl implements TransformationService {
     private EventRouteRepository eventRouteRepository;
 
     @Override
-    public NewServiceResponse<List<Transformation>> getAll(Tenant tenant) {
+    public ServiceResponse<List<Transformation>> getAll(Tenant tenant) {
         return ServiceResponseBuilder.<List<Transformation>>ok()
             .withResult(transformationRepository.findAllByTenantId(tenant.getId())).build();
     }
     
 
     @Override
-    public NewServiceResponse<Transformation> register(Tenant tenant, Transformation transformation) {
+    public ServiceResponse<Transformation> register(Tenant tenant, Transformation transformation) {
         if (!Optional.ofNullable(tenant).isPresent())
             return ServiceResponseBuilder.<Transformation>error()
                     .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
@@ -76,13 +76,13 @@ public class TransformationServiceImpl implements TransformationService {
     }
 
 	@Override
-	public NewServiceResponse<Transformation> get(Tenant tenant, String guid) {
+	public ServiceResponse<Transformation> get(Tenant tenant, String guid) {
 		return ServiceResponseBuilder.<Transformation> ok()
 				.withResult(transformationRepository.findByTenantIdAndTransformationGuid(tenant.getId(), guid)).build();
 	}
 
     @Override
-    public NewServiceResponse<Transformation> update(Tenant tenant, String guid, Transformation transformation) {
+    public ServiceResponse<Transformation> update(Tenant tenant, String guid, Transformation transformation) {
         if (!Optional.ofNullable(tenant).isPresent())
             return ServiceResponseBuilder.<Transformation>error()
                     .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
@@ -127,7 +127,7 @@ public class TransformationServiceImpl implements TransformationService {
     }
 
 	@Override
-	public NewServiceResponse<Transformation> remove(Tenant tenant, String transformationGuid) {
+	public ServiceResponse<Transformation> remove(Tenant tenant, String transformationGuid) {
 
 		Transformation transformation = transformationRepository.findByGuid(transformationGuid);
 

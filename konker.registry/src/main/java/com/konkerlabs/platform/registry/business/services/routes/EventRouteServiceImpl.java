@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
@@ -25,7 +26,6 @@ import com.konkerlabs.platform.registry.business.repositories.EventRouteReposito
 import com.konkerlabs.platform.registry.business.repositories.RestDestinationRepository;
 import com.konkerlabs.platform.registry.business.repositories.SmsDestinationRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
-import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteService;
 
@@ -45,7 +45,7 @@ public class EventRouteServiceImpl implements EventRouteService {
     private SmsDestinationRepository smsDestinationRepository;
 
     @Override
-    public NewServiceResponse<EventRoute> save(Tenant tenant, EventRoute route) {
+    public ServiceResponse<EventRoute> save(Tenant tenant, EventRoute route) {
         if (!Optional.ofNullable(tenant).isPresent())
             return ServiceResponseBuilder.<EventRoute>error()
                     .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
@@ -85,7 +85,7 @@ public class EventRouteServiceImpl implements EventRouteService {
    
 
 	@Override
-    public NewServiceResponse<EventRoute> update(Tenant tenant, String guid, EventRoute eventRoute) {
+    public ServiceResponse<EventRoute> update(Tenant tenant, String guid, EventRoute eventRoute) {
         if (!Optional.ofNullable(tenant).isPresent())
             return ServiceResponseBuilder.<EventRoute>error()
                     .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
@@ -184,7 +184,7 @@ public class EventRouteServiceImpl implements EventRouteService {
 	}
 
     @Override
-    public NewServiceResponse<List<EventRoute>> getAll(Tenant tenant) {
+    public ServiceResponse<List<EventRoute>> getAll(Tenant tenant) {
         if (!Optional.ofNullable(tenant).isPresent())
             return ServiceResponseBuilder.<List<EventRoute>>error()
                     .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
@@ -201,7 +201,7 @@ public class EventRouteServiceImpl implements EventRouteService {
     }
 
     @Override
-    public NewServiceResponse<EventRoute> getByGUID(Tenant tenant, String guid) {
+    public ServiceResponse<EventRoute> getByGUID(Tenant tenant, String guid) {
         if (!Optional.ofNullable(tenant).isPresent())
             return ServiceResponseBuilder.<EventRoute>error()
                     .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
@@ -229,7 +229,7 @@ public class EventRouteServiceImpl implements EventRouteService {
     }
 
     @Override
-    public NewServiceResponse<List<EventRoute>> findByIncomingUri(URI uri) {
+    public ServiceResponse<List<EventRoute>> findByIncomingUri(URI uri) {
         if (!Optional.ofNullable(uri).isPresent())
             return ServiceResponseBuilder.<List<EventRoute>>error()
                     .withMessage(Validations.EVENT_ROUTE_URI_NULL.getCode(),null)
@@ -243,7 +243,7 @@ public class EventRouteServiceImpl implements EventRouteService {
     }
 
     @Override
-    public NewServiceResponse<EventRoute> remove(Tenant tenant, String guid) {
+    public ServiceResponse<EventRoute> remove(Tenant tenant, String guid) {
         if (!Optional.ofNullable(tenant).isPresent())
             return ServiceResponseBuilder.<EventRoute>error()
                     .withMessage(CommonValidations.TENANT_NULL.getCode()).build();

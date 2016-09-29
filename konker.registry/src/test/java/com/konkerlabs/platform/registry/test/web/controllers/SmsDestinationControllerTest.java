@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,12 +35,10 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.web.context.support.GenericWebApplicationContext;
 
 import com.konkerlabs.platform.registry.business.model.SmsDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.SmsDestinationService;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
@@ -68,7 +67,7 @@ public class SmsDestinationControllerTest extends WebLayerTestContext {
     private List<SmsDestination> registeredDestinations;
     private LinkedMultiValueMap<String, String> destinationData;
     private SmsDestinationForm destinationForm;
-    private NewServiceResponse<SmsDestination> responseSingleDestination;
+    private ServiceResponse<SmsDestination> responseSingleDestination;
 
     @Before
     public void setUp() {

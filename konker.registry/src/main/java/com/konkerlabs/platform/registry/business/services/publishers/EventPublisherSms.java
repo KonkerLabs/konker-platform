@@ -1,13 +1,12 @@
 package com.konkerlabs.platform.registry.business.services.publishers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.SmsDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.behaviors.SmsDestinationURIDealer;
 import com.konkerlabs.platform.registry.business.repositories.events.EventRepository;
-import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.SmsDestinationService;
 import com.konkerlabs.platform.registry.business.services.publishers.api.EventPublisher;
 import com.konkerlabs.platform.registry.integration.exceptions.IntegrationException;
@@ -84,13 +83,13 @@ public class EventPublisherSms implements EventPublisher {
         Optional.ofNullable(tenant)
                 .orElseThrow(() -> new IllegalArgumentException("Tenant cannot be null"));
 
-        NewServiceResponse<SmsDestination> destination = smsDestinationService.getByGUID(
+        ServiceResponse<SmsDestination> destination = smsDestinationService.getByGUID(
                 tenant,
                 destinationUri.getPath().replaceAll("/","")
         );
 
         Optional.ofNullable(destination)
-                .filter(response -> response.getStatus().equals(NewServiceResponse.Status.OK))
+                .filter(response -> response.getStatus().equals(ServiceResponse.Status.OK))
                 .orElseThrow(() -> new IllegalArgumentException(
                         MessageFormat.format("SMS Destination is unknown : {0}",destinationUri)
                 ));

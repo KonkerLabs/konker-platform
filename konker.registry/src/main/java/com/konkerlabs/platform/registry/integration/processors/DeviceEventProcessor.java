@@ -16,7 +16,7 @@ import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.EnrichmentExecutor;
-import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteExecutor;
 
 @Component
@@ -81,7 +81,7 @@ public class DeviceEventProcessor {
                     .payload(payload)
                     .build();
 
-            NewServiceResponse<Event> serviceResponse = enrichmentExecutor.enrich(event, device);
+            ServiceResponse<Event> serviceResponse = enrichmentExecutor.enrich(event, device);
             switch (serviceResponse.getStatus()) {
                 case ERROR: {
                     LOGGER.error(MessageFormat.format("Enrichment failed: [Device: {0}] - [Payload: {1}]", device.toURI(), payload));
@@ -118,7 +118,7 @@ public class DeviceEventProcessor {
 //    	if (offset.isPresent()) {
 //    		Instant startTimestamp = Instant.ofEpochMilli(offset.get());
 //
-//			NewServiceResponse<List<Event>> response = deviceEventService.findEventsBy(device.getTenant(), device.getDeviceId(),
+//			ServiceResponse<List<Event>> response = deviceEventService.findEventsBy(device.getTenant(), device.getDeviceId(),
 //    				startTimestamp, null, 50);
 //
 //            if (!response.getResult().isEmpty() || !waitTime.isPresent() || (waitTime.isPresent() && waitTime.get().equals(new Long("0")))) {
@@ -132,7 +132,7 @@ public class DeviceEventProcessor {
 //                });
 //            }
 //        } else {
-//            NewServiceResponse<List<Event>> response = deviceEventService.findLastEventBy(device.getTenant(), device.getDeviceId());
+//            ServiceResponse<List<Event>> response = deviceEventService.findLastEventBy(device.getTenant(), device.getDeviceId());
 //            response.getResult().sort((e1, e2) -> e1.getTimestamp().compareTo(e2.getTimestamp()));
 //    		deferredResult.setResult(response.getResult());
 //    	}

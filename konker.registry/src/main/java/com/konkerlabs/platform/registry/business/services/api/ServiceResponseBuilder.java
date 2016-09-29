@@ -4,22 +4,22 @@ import java.util.Map;
 
 public class ServiceResponseBuilder<T> {
 
-    private NewServiceResponse<T> response;
+    private ServiceResponse<T> response;
 
-    private ServiceResponseBuilder(NewServiceResponse<T> response) {
+    private ServiceResponseBuilder(ServiceResponse<T> response) {
         this.response = response;
     }
 
     public static <T> ServiceResponseBuilder<T> ok() {
-        NewServiceResponse<T> response = new NewServiceResponse<T>();
-        response.setStatus(NewServiceResponse.Status.OK);
+        ServiceResponse<T> response = new ServiceResponse<T>();
+        response.setStatus(ServiceResponse.Status.OK);
 
         return new ServiceResponseBuilder<T>(response);
     };
 
     public static <T> ServiceResponseBuilder<T> error() {
-        NewServiceResponse<T> response = new NewServiceResponse<T>();
-        response.setStatus(NewServiceResponse.Status.ERROR);
+        ServiceResponse<T> response = new ServiceResponse<T>();
+        response.setStatus(ServiceResponse.Status.ERROR);
 
         return new ServiceResponseBuilder<T>(response);
     };
@@ -41,7 +41,7 @@ public class ServiceResponseBuilder<T> {
         return this;
     }
 
-    public NewServiceResponse<T> build() {
+    public ServiceResponse<T> build() {
         return this.response;
     }
 }

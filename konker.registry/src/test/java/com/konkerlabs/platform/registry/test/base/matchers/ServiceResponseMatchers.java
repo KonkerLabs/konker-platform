@@ -1,11 +1,12 @@
 package com.konkerlabs.platform.registry.test.base.matchers;
 
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
 
-import java.util.List;
+import java.util.Map;
 
 public class ServiceResponseMatchers {
 
@@ -27,66 +28,44 @@ public class ServiceResponseMatchers {
             @Override
             public void describeTo(Description description) {
                 description.appendText(
-                    ServiceResponse.builder().status(ServiceResponse.Status.OK).build().toString()
+                    ServiceResponseBuilder.ok().build().toString()
                 );
             }
         };
     }
 
-    public static Matcher<ServiceResponse> hasErrorMessage(String message) {
+    public static Matcher<ServiceResponse> hasErrorMessage(String code, Object... parameters) {
         return new BaseMatcher<ServiceResponse>() {
             @Override
             protected boolean matchesSafely(ServiceResponse item) {
                 return item.getStatus().equals(ServiceResponse.Status.ERROR) &&
-                       item.getResponseMessages().contains(message);
+                       item.getResponseMessages().containsKey(code);
             }
 
             @Override
             public void describeTo(Description description) {
                 description.appendText(
-                    ServiceResponse.builder()
-                        .status(ServiceResponse.Status.ERROR)
-                        .responseMessage(message)
+                    ServiceResponseBuilder.error()
+                        .withMessage(code, parameters)
                         .build().toString()
                 );
             }
         };
     }
 
-    public static Matcher<ServiceResponse> hasNoErrorMessage(String message) {
+    public static Matcher<ServiceResponse> hasAllErrors(Map<String, Object[]> messages) {
         return new BaseMatcher<ServiceResponse>() {
             @Override
             protected boolean matchesSafely(ServiceResponse item) {
                 return item.getStatus().equals(ServiceResponse.Status.ERROR) &&
-                        item.getResponseMessages().contains(message);
+                        item.getResponseMessages().equals(messages);
             }
 
             @Override
             public void describeTo(Description description) {
                 description.appendText(
-                        ServiceResponse.builder()
-                                .status(ServiceResponse.Status.ERROR)
-                                .responseMessage(message)
-                                .build().toString()
-                );
-            }
-        };
-    }
-
-    public static Matcher<ServiceResponse> hasAllErrors(List<String> errors) {
-        return new BaseMatcher<ServiceResponse>() {
-            @Override
-            protected boolean matchesSafely(ServiceResponse item) {
-                return item.getStatus().equals(ServiceResponse.Status.ERROR) &&
-                       item.getResponseMessages().equals(errors);
-            }
-
-            @Override
-            public void describeTo(Description description) {
-                description.appendText(
-                        ServiceResponse.builder()
-                                .status(ServiceResponse.Status.ERROR)
-                                .responseMessages(errors)
+                        ServiceResponseBuilder.error()
+                                .withMessages(messages)
                                 .build().toString()
                 );
             }

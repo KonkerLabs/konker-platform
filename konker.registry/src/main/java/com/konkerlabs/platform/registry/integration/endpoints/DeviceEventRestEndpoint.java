@@ -1,5 +1,26 @@
 package com.konkerlabs.platform.registry.integration.endpoints;
 
+import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
+import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.services.JedisTaskService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
+import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
+import lombok.Builder;
+import lombok.Data;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.async.DeferredResult;
+
+import javax.servlet.http.HttpServletRequest;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
@@ -7,36 +28,6 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.context.request.async.DeferredResult;
-
-import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.services.JedisTaskService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
-import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
-import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
-
-import lombok.Builder;
-import lombok.Data;
 
 @RestController
 public class DeviceEventRestEndpoint {
@@ -87,12 +78,12 @@ public class DeviceEventRestEndpoint {
     		consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public DeferredResult<List<Event>> subEvent(HttpServletRequest servletRequest,
-                  @PathVariable("apiKey") String apiKey,
-                  @PathVariable("channel") String channel,
-                  @AuthenticationPrincipal Device principal,
-                  @RequestParam(name = "offset", required = false) Optional<Long> offset,
-                  @RequestParam(name = "waitTime", required = false) Optional<Long> waitTime,
-                  Locale locale) {
+                                                @PathVariable("apiKey") String apiKey,
+                                                @PathVariable("channel") String channel,
+                                                @AuthenticationPrincipal Device principal,
+                                                @RequestParam(name = "offset", required = false) Optional<Long> offset,
+                                                @RequestParam(name = "waitTime", required = false) Optional<Long> waitTime,
+                                                Locale locale) {
 
     	DeferredResult<List<Event>> deferredResult = new DeferredResult<>(waitTime.orElse(new Long("0")), Collections.emptyList());
     	
@@ -117,7 +108,7 @@ public class DeviceEventRestEndpoint {
     	boolean asc = offset.isPresent();
     	Integer limit = offset.isPresent() ? 50 : 1;
     	
-    	NewServiceResponse<List<Event>> response = deviceEventService.findOutgoingBy(device.getTenant(), device.getGuid(),
+    	ServiceResponse<List<Event>> response = deviceEventService.findOutgoingBy(device.getTenant(), device.getGuid(),
     			startTimestamp, null, asc, limit);
 
     	if (!response.getResult().isEmpty() || !waitTime.isPresent() || (waitTime.isPresent() && waitTime.get().equals(new Long("0")))) {
@@ -147,7 +138,7 @@ public class DeviceEventRestEndpoint {
                                                  @RequestBody String body,
                                                  Locale locale) {
         if (!jsonParsingService.isValid(body))
-            return new ResponseEntity<EventResponse>(buildResponse(Messages.INVALID_REQUEST_BODY.getCode(),locale),HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<EventResponse>(buildResponse(Messages.INVALID_REQUEST_BODY.getCode(),locale), HttpStatus.BAD_REQUEST);
 
         if (!principal.getApiKey().equals(apiKey))
             return new ResponseEntity<EventResponse>(buildResponse(Messages.INVALID_RESOURCE.getCode(),locale),HttpStatus.NOT_FOUND);

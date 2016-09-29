@@ -1,6 +1,5 @@
 package com.konkerlabs.platform.registry.business.services.api;
 
-import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
@@ -27,26 +26,9 @@ public interface DeviceEventService {
         }
     }
 
-    NewServiceResponse<Event> logIncomingEvent(Device device, Event event);
+    ServiceResponse<Event> logIncomingEvent(Device device, Event event);
 
-    NewServiceResponse<Event> logOutgoingEvent(Device device, Event event);
-
-    /**
-     * Return all existing incoming device events by provided arguments
-     *
-     * @param tenant
-     * @param deviceGuid
-     * @param startingTimestamp
-     * @param endTimestamp
-     * @param limit
-     * @return Found events
-     */
-    NewServiceResponse<List<Event>> findIncomingBy(Tenant tenant,
-                                                   String deviceGuid,
-                                                   Instant startingTimestamp,
-                                                   Instant endTimestamp,
-                                                   boolean ascending,
-                                                   Integer limit);
+    ServiceResponse<Event> logOutgoingEvent(Device device, Event event);
 
     /**
      * Return all existing incoming device events by provided arguments
@@ -58,10 +40,27 @@ public interface DeviceEventService {
      * @param limit
      * @return Found events
      */
-    NewServiceResponse<List<Event>> findOutgoingBy(Tenant tenant,
-                                                   String deviceGuid,
-                                                   Instant startingTimestamp,
-                                                   Instant endTimestamp,
-                                                   boolean ascending,
-                                                   Integer limit);
+    ServiceResponse<List<Event>> findIncomingBy(Tenant tenant,
+                                                String deviceGuid,
+                                                Instant startingTimestamp,
+                                                Instant endTimestamp,
+                                                boolean ascending,
+                                                Integer limit);
+
+    /**
+     * Return all existing incoming device events by provided arguments
+     *
+     * @param tenant
+     * @param deviceGuid
+     * @param startingTimestamp
+     * @param endTimestamp
+     * @param limit
+     * @return Found events
+     */
+    ServiceResponse<List<Event>> findOutgoingBy(Tenant tenant,
+                                                String deviceGuid,
+                                                Instant startingTimestamp,
+                                                Instant endTimestamp,
+                                                boolean ascending,
+                                                Integer limit);
 }
