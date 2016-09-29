@@ -63,16 +63,16 @@ public class EventRepositoryMongoImpl implements EventRepository {
     private DeviceRepository deviceRepository;
 
     @Override
-    public void saveIncoming(Tenant tenant, Event event) throws BusinessException {
-        doSave(tenant,event, Type.INCOMING);
+    public Event saveIncoming(Tenant tenant, Event event) throws BusinessException {
+        return doSave(tenant,event, Type.INCOMING);
     }
 
     @Override
-    public void saveOutgoing(Tenant tenant, Event event) throws BusinessException {
-        doSave(tenant,event, Type.OUTGOING);
+    public Event saveOutgoing(Tenant tenant, Event event) throws BusinessException {
+        return doSave(tenant,event, Type.OUTGOING);
     }
 
-    private void doSave(Tenant tenant, Event event, Type type) throws BusinessException {
+    private Event doSave(Tenant tenant, Event event, Type type) throws BusinessException {
         Optional.ofNullable(tenant)
                 .filter(tenant1 -> Optional.ofNullable(tenant1.getDomainName()).filter(s -> !s.isEmpty()).isPresent())
                 .orElseThrow(() -> new BusinessException(CommonValidations.TENANT_NULL.getCode()));
@@ -102,10 +102,10 @@ public class EventRepositoryMongoImpl implements EventRepository {
             Optional.ofNullable(event.getOutgoing().getDeviceGuid()).filter(s -> !s.isEmpty())
                     .orElseThrow(() -> new BusinessException(Validations.OUTGOING_DEVICE_GUID_NULL.getCode()));
             Optional.ofNullable(event.getOutgoing().getChannel()).filter(s -> !s.isEmpty())
-                    .orElseThrow(() -> new BusinessException(Validations.EVENT_INCOMING_CHANNEL_NULL.getCode()));
+                    .orElseThrow(() -> new BusinessException(Validations.EVENT_OUTGOING_CHANNEL_NULL.getCode()));
 
             Optional.ofNullable(
-                    deviceRepository.findByTenantAndGuid(existingTenant.getId(),event.getIncoming().getDeviceGuid())
+                    deviceRepository.findByTenantAndGuid(existingTenant.getId(),event.getOutgoing().getDeviceGuid())
             ).orElseThrow(() -> new BusinessException(Validations.OUTGOING_DEVICE_ID_DOES_NOT_EXIST.getCode()));
         }
 
@@ -133,6 +133,8 @@ public class EventRepositoryMongoImpl implements EventRepository {
         }
 
         mongoTemplate.save(toSave, type.getCollectionName());
+
+        return event;
     }
 
     @Override

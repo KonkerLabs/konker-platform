@@ -27,7 +27,7 @@ public class EventRepositorySolrImpl implements EventRepository {
     private ApplicationContext applicationContext;
 
     @Override
-    public void saveIncoming(Tenant tenant, Event event) throws BusinessException {
+    public Event saveIncoming(Tenant tenant, Event event) throws BusinessException {
         Optional.ofNullable(tenant)
                 .filter(tenant1 -> Optional.ofNullable(tenant1.getDomainName()).filter(s -> !s.isEmpty()).isPresent())
                 .orElseThrow(() -> new IllegalArgumentException("Tenant cannot be null"));
@@ -54,11 +54,13 @@ public class EventRepositorySolrImpl implements EventRepository {
 
         template.saveDocument(toBeSent);
         template.commit();
+
+        return event;
     }
 
     @Override
-    public void saveOutgoing(Tenant tenant, Event event) throws BusinessException {
-
+    public Event saveOutgoing(Tenant tenant, Event event) throws BusinessException {
+        return event;
     }
 
     @Override

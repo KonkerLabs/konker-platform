@@ -31,9 +31,9 @@ public interface EventRepository {
         }
     }
 
-    void saveIncoming(Tenant tenant, Event event) throws BusinessException;
+    Event saveIncoming(Tenant tenant, Event event) throws BusinessException;
 
-    void saveOutgoing(Tenant tenant, Event event) throws BusinessException;
+    Event saveOutgoing(Tenant tenant, Event event) throws BusinessException;
 
     List<Event> findIncomingBy(Tenant tenant,
                                String deviceGuid,
