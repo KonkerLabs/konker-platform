@@ -3,39 +3,81 @@
 <head>
 </head>
 <body>
-    <div data-layout-fragment="content">
-        <fieldset disabled="" class="form-horizontal">
-            <legend data-th-text="#{devices.events.legend}"></legend>
-            <div class="form-group">
-                <label class="col-sm-1 control-label" for="deviceId" data-th-text="#{devices.events.id}"></label>
-                <div class="col-sm-4">
-                    <input type="text" data-th-value="${device.deviceId}"
-                            class="form-control"
-                            id="deviceId"
-                            name="deviceId"/>
-                </div>
-            </div>
-            <div class="col-sm-4">
-                <table class="table table-bordered" data-th-if="${recentEvents != null and !recentEvents.empty}">
-                    <thead>
-                        <tr>
-                            <td class="col-md-1" data-th-text="#{devices.events.date_time}"></td>
-                            <td class="col-md-2" data-th-text="#{devices.events.incoming.channel}"></td>
-                            <td class="col-md-2" data-th-text="#{devices.events.payload}"></td>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr data-th-each="event : ${recentEvents}">
-                            <td data-th-text="${event.timestamp.toString()}"></td>
-                            <td data-th-text="${event.incoming.channel}"></td>
-                            <td data-th-text="${event.payload}"></td>
-                        </tr>
-                    </tbody>
-                </table>
-                <span data-th-if="${recentEvents == null or recentEvents.empty}" data-th-text="#{devices.events.empty_message}"></span>
-            </div>
-        </fieldset>
-        <a data-th-href="@{/devices}" class="btn btn-default" data-th-text="#{nav.back}"></a>
-    </div>
+	<div data-layout-fragment="content">
+		<fieldset class="form-horizontal">
+			<legend data-th-text="#{devices.events.legend}"></legend>
+			<div class="form-group">
+				<label class="col-sm-1 control-label" for="deviceId"
+					data-th-text="#{devices.events.id}"></label>
+				<div class="col-sm-4">
+					<input type="text" data-th-value="${device.deviceId}"
+						class="form-control" id="deviceId" name="deviceId" />
+				</div>
+			</div>
+			<ul class="nav nav-tabs nav-justified col-sm-12" >
+				<li class="active"><a data-toggle="tab" href="#incoming"
+					data-th-text="#{devices.events.incoming.events}"></a></li>
+				<li><a data-toggle="tab" href="#outgoing"
+					data-th-text="#{devices.events.outgoing.events}"></a></li>
+			</ul>
+			<div class="tab-content">
+				<div id="incoming" class="tab-pane fade in active">
+
+					<div class="col-sm-12 list-group" >
+						<table class="table table-bordered table-hover"  
+							data-th-if="${recentIncomingEvents != null and !recentIncomingEvents.empty}">
+							<thead>
+								<tr>
+									<td class="col-md-1" data-th-text="#{devices.events.date_time}"></td>
+									<td class="col-md-2"
+										data-th-text="#{devices.events.incoming.channel}"></td>
+									<td class="col-md-2" data-th-text="#{devices.events.payload}"></td>
+								</tr>
+							</thead>
+							<tbody>
+								<tr data-th-each="event : ${recentIncomingEvents}">
+									<td data-th-text="${event.timestamp.toString()}"></td>
+									<td data-th-text="${event.incoming.channel}"></td>
+									<td data-th-text="${event.payload}"></td>
+								</tr>
+							</tbody>
+						</table>
+						<span data-th-if="${recentIncomingEvents == null or recentIncomingEvents.empty}"
+							data-th-text="#{devices.events.incoming.empty_message}"></span>
+					</div>
+
+				</div>
+				<div id="outgoing" class="tab-pane fade">
+
+					<div class="col-sm-12 list-group">
+						<table class="table table-bordered table-hover"
+							data-th-if="${recentOutgoingEvents != null and !recentOutgoingEvents.empty}">
+							<thead>
+								<tr>
+									<td class="col-md-1" data-th-text="#{devices.events.date_time}"></td>
+									<td class="col-md-2"
+										data-th-text="#{devices.events.incoming.channel}"></td>
+									<td class="col-md-2" data-th-text="#{devices.events.payload}"></td>
+								</tr>
+							</thead>
+							<tbody>
+								<tr data-th-each="event : ${recentOutgoingEvents}">
+									<td data-th-text="${event.timestamp.toString()}"></td>
+									<td data-th-text="${event.incoming.channel}"></td>
+									<td data-th-text="${event.payload}"></td>
+								</tr>
+							</tbody>
+						</table>
+						<span data-th-if="${recentOutgoingEvents == null or recentOutgoingEvents.empty}"
+							data-th-text="#{devices.events.outgoing.empty_message}"></span>
+					</div>
+
+				</div>
+			</div>
+
+		</fieldset>
+		<a data-th-href="@{/devices}" class="btn btn-default"
+			data-th-text="#{nav.back}"></a>
+	</div>
 </body>
 </html>

@@ -40,8 +40,6 @@ import static com.konkerlabs.platform.registry.business.model.Device.builder;
 import static com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer.DEVICE_URI_SCHEME;
 import static com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer.REST_DESTINATION_URI_SCHEME;
 import static com.konkerlabs.platform.registry.business.model.behaviors.SmsDestinationURIDealer.SMS_URI_SCHEME;
-import static com.konkerlabs.platform.registry.business.services.api.ServiceResponse.Status.ERROR;
-import static com.konkerlabs.platform.registry.business.services.api.ServiceResponse.Status.OK;
 import static com.konkerlabs.platform.registry.web.controllers.EventRouteController.Messages.ROUTE_REMOVED_SUCCESSFULLY;
 import static java.text.MessageFormat.format;
 import static java.util.Arrays.asList;
@@ -82,7 +80,7 @@ public class EventRouteControllerTest extends WebLayerTestContext {
     private EventRoute newRoute;
     private EventRoute savedRoute;
     private List<EventRoute> registeredRoutes;
-    private NewServiceResponse<EventRoute> response;
+    private ServiceResponse<EventRoute> response;
     private MultiValueMap<String, String> routeData;
 
     private EventRouteForm routeForm;
@@ -340,9 +338,9 @@ public class EventRouteControllerTest extends WebLayerTestContext {
     public void shoudlRedirectToRouteIndexAfterRouteRemoval() throws Exception {
         newRoute.setGuid(routeGuid);
 
-        NewServiceResponse<EventRoute> responseDelete = ServiceResponseBuilder.<EventRoute>ok()
+        ServiceResponse<EventRoute> responseDelete = ServiceResponseBuilder.<EventRoute>ok()
                 .withResult(newRoute).build();
-        NewServiceResponse<List<EventRoute>> responseGetAll = ServiceResponseBuilder.<List<EventRoute>>ok()
+        ServiceResponse<List<EventRoute>> responseGetAll = ServiceResponseBuilder.<List<EventRoute>>ok()
                 .withResult(registeredRoutes).<List<EventRoute>>build();
         spy(responseDelete);
         spy(responseGetAll);

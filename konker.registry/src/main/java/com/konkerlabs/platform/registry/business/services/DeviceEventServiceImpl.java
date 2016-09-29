@@ -9,7 +9,7 @@ import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.events.EventRepository;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -38,7 +38,7 @@ public class DeviceEventServiceImpl implements DeviceEventService {
     private RedisTemplate<String, String> redisTemplate;
 
     @Override
-    public NewServiceResponse<Event> logIncomingEvent(Device device, Event event) {
+    public ServiceResponse<Event> logIncomingEvent(Device device, Event event) {
         return doLog(device,event,() -> {
             try {
                 eventRepository.saveIncoming(device.getTenant(), event);
@@ -52,7 +52,7 @@ public class DeviceEventServiceImpl implements DeviceEventService {
     }
 
     @Override
-    public NewServiceResponse<Event> logOutgoingEvent(Device device, Event event) {
+    public ServiceResponse<Event> logOutgoingEvent(Device device, Event event) {
         return doLog(device,event,() -> {
             try {
                 eventRepository.saveOutgoing(device.getTenant(), event);
@@ -67,7 +67,7 @@ public class DeviceEventServiceImpl implements DeviceEventService {
         });
     }
 
-    private NewServiceResponse<Event> doLog(Device device, Event event, Supplier<NewServiceResponse<Event>> callable) {
+    private ServiceResponse<Event> doLog(Device device, Event event, Supplier<ServiceResponse<Event>> callable) {
         if (!Optional.ofNullable(device).isPresent())
             return ServiceResponseBuilder.<Event>error()
                     .withMessage(Validations.DEVICE_NULL.getCode()).build();
@@ -86,11 +86,11 @@ public class DeviceEventServiceImpl implements DeviceEventService {
     }
 
     @Override
-    public NewServiceResponse<List<Event>> findIncomingBy(Tenant tenant, String deviceGuid,
-                                                          Instant startTimestamp,
-                                                          Instant endTimestamp,
-                                                          boolean ascending,
-                                                          Integer limit) {
+    public ServiceResponse<List<Event>> findIncomingBy(Tenant tenant, String deviceGuid,
+                                                       Instant startTimestamp,
+                                                       Instant endTimestamp,
+                                                       boolean ascending,
+                                                       Integer limit) {
         if (!Optional.ofNullable(tenant).isPresent())
             return ServiceResponseBuilder.<List<Event>>error()
                     .withMessage(CommonValidations.TENANT_NULL.getCode(), null)
@@ -118,12 +118,12 @@ public class DeviceEventServiceImpl implements DeviceEventService {
     }
 
     @Override
-    public NewServiceResponse<List<Event>> findOutgoingBy(Tenant tenant,
-                                                          String deviceGuid,
-                                                          Instant startingTimestamp,
-                                                          Instant endTimestamp,
-                                                          boolean ascending,
-                                                          Integer limit) {
+    public ServiceResponse<List<Event>> findOutgoingBy(Tenant tenant,
+                                                       String deviceGuid,
+                                                       Instant startingTimestamp,
+                                                       Instant endTimestamp,
+                                                       boolean ascending,
+                                                       Integer limit) {
         if (!Optional.ofNullable(tenant).isPresent())
             return ServiceResponseBuilder.<List<Event>>error()
                     .withMessage(CommonValidations.TENANT_NULL.getCode(), null)

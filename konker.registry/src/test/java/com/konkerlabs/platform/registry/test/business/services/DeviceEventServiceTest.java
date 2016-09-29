@@ -9,7 +9,7 @@ import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.events.EventRepository;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
@@ -34,7 +34,7 @@ import java.util.concurrent.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static com.konkerlabs.platform.registry.test.base.matchers.NewServiceResponseMatchers.*;
+import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
@@ -102,14 +102,14 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldRaiseAnExceptionIfDeviceIsNull() throws Exception {
-        NewServiceResponse<Event> response = deviceEventService.logIncomingEvent(null, event);
+        ServiceResponse<Event> response = deviceEventService.logIncomingEvent(null, event);
 
         assertThat(response,hasErrorMessage(DeviceEventService.Validations.DEVICE_NULL.getCode()));
     }
 
     @Test
     public void shouldRaiseAnExceptionIfEventIsNull() throws Exception {
-        NewServiceResponse<Event> response = deviceEventService.logIncomingEvent(device, null);
+        ServiceResponse<Event> response = deviceEventService.logIncomingEvent(device, null);
 
         assertThat(response,hasErrorMessage(DeviceEventService.Validations.EVENT_NULL.getCode()));
     }
@@ -118,7 +118,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
     public void shouldRaiseAnExceptionIfPayloadIsNull() throws Exception {
         event.setPayload(null);
 
-        NewServiceResponse<Event> response = deviceEventService.logIncomingEvent(device, event);
+        ServiceResponse<Event> response = deviceEventService.logIncomingEvent(device, event);
 
         assertThat(response,hasErrorMessage(DeviceEventService.Validations.EVENT_PAYLOAD_NULL.getCode()));
     }
@@ -127,7 +127,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
     public void shouldRaiseAnExceptionIfPayloadIsEmpty() throws Exception {
         event.setPayload("");
 
-        NewServiceResponse<Event> response = deviceEventService.logIncomingEvent(device, event);
+        ServiceResponse<Event> response = deviceEventService.logIncomingEvent(device, event);
 
         assertThat(response,hasErrorMessage(DeviceEventService.Validations.EVENT_PAYLOAD_NULL.getCode()));
     }
@@ -148,7 +148,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
     @Test
     public void shouldReturnAnErrorMessageIfTenantIsNullWhenFindingBy() throws Exception {
 
-        NewServiceResponse<List<Event>> serviceResponse = deviceEventService.findIncomingBy(
+        ServiceResponse<List<Event>> serviceResponse = deviceEventService.findIncomingBy(
                 null,
                 device.getId(),
                 firstEventTimestamp,
@@ -163,7 +163,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
     @Test
     public void shouldReturnAnErrorMessageIfDeviceIdIsNullWhenFindingBy() throws Exception {
 
-        NewServiceResponse<List<Event>> serviceResponse = deviceEventService.findIncomingBy(
+        ServiceResponse<List<Event>> serviceResponse = deviceEventService.findIncomingBy(
                 tenant,
                 null,
                 firstEventTimestamp,
@@ -178,7 +178,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
     @Test
     public void shouldReturnAnErrorMessageIfStartInstantIsNullAndLimitIsNullWhenFindingBy() throws Exception {
 
-        NewServiceResponse<List<Event>> serviceResponse = deviceEventService.findIncomingBy(
+        ServiceResponse<List<Event>> serviceResponse = deviceEventService.findIncomingBy(
                 tenant,
                 device.getId(),
                 null,
@@ -193,7 +193,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json"})
     public void shouldFindAllRequestEvents() throws Exception {
-        NewServiceResponse<List<Event>> serviceResponse = deviceEventService.findIncomingBy(
+        ServiceResponse<List<Event>> serviceResponse = deviceEventService.findIncomingBy(
                 tenant,
                 device.getGuid(),
                 firstEventTimestamp,

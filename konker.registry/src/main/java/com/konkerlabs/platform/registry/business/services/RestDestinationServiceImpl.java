@@ -1,14 +1,12 @@
 package com.konkerlabs.platform.registry.business.services;
 
-import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.RestDestinationRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
-import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -30,7 +28,7 @@ public class RestDestinationServiceImpl implements RestDestinationService {
     private RestDestinationRepository restRepository;
 
     @Override
-    public NewServiceResponse<List<RestDestination>> findAll(Tenant tenant) {
+    public ServiceResponse<List<RestDestination>> findAll(Tenant tenant) {
         if (!Optional.ofNullable(tenant).isPresent())
             return ServiceResponseBuilder.<List<RestDestination>>error()
                     .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
@@ -47,7 +45,7 @@ public class RestDestinationServiceImpl implements RestDestinationService {
     }
 
     @Override
-    public NewServiceResponse<RestDestination> getByGUID(Tenant tenant, String guid) {
+    public ServiceResponse<RestDestination> getByGUID(Tenant tenant, String guid) {
         if (!Optional.ofNullable(tenant).isPresent())
             return ServiceResponseBuilder.<RestDestination>error()
                     .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
@@ -72,7 +70,7 @@ public class RestDestinationServiceImpl implements RestDestinationService {
     }
 
     @Override
-    public NewServiceResponse<RestDestination> register(final Tenant tenant, RestDestination destination) {
+    public ServiceResponse<RestDestination> register(final Tenant tenant, RestDestination destination) {
         if (!Optional.ofNullable(tenant).isPresent())
             return ServiceResponseBuilder.<RestDestination>error()
                     .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
@@ -109,7 +107,7 @@ public class RestDestinationServiceImpl implements RestDestinationService {
     }
 
     @Override
-    public NewServiceResponse<RestDestination> update(Tenant tenant, String guid, RestDestination destination) {
+    public ServiceResponse<RestDestination> update(Tenant tenant, String guid, RestDestination destination) {
         if (!Optional.ofNullable(tenant).isPresent())
             return ServiceResponseBuilder.<RestDestination>error()
                     .withMessage(CommonValidations.TENANT_NULL.getCode()).build();

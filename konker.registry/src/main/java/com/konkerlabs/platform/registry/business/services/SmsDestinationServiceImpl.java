@@ -6,13 +6,12 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.SmsDestinationRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
-import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.SmsDestinationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -27,7 +26,7 @@ public class SmsDestinationServiceImpl implements SmsDestinationService {
     private SmsDestinationRepository smsDestinationRepository;
 
     @Override
-    public NewServiceResponse<List<SmsDestination>> findAll(Tenant tenant) {
+    public ServiceResponse<List<SmsDestination>> findAll(Tenant tenant) {
         try {
             Optional.ofNullable(tenant).orElseThrow(() -> new BusinessException(CommonValidations.TENANT_NULL.getCode()));
 
@@ -45,7 +44,7 @@ public class SmsDestinationServiceImpl implements SmsDestinationService {
     }
 
     @Override
-    public NewServiceResponse<SmsDestination> register(Tenant tenant, SmsDestination destination) {
+    public ServiceResponse<SmsDestination> register(Tenant tenant, SmsDestination destination) {
         try {
             Optional.ofNullable(tenant).orElseThrow(() -> new BusinessException(CommonValidations.TENANT_NULL.getCode()));
             Optional.ofNullable(destination)
@@ -78,7 +77,7 @@ public class SmsDestinationServiceImpl implements SmsDestinationService {
     }
 
     @Override
-    public NewServiceResponse<SmsDestination> update(Tenant tenant, String guid, SmsDestination destination) {
+    public ServiceResponse<SmsDestination> update(Tenant tenant, String guid, SmsDestination destination) {
         try {
             Optional.ofNullable(tenant).orElseThrow(() -> new BusinessException(CommonValidations.TENANT_NULL.getCode()));
             Optional.ofNullable(destination)
@@ -114,7 +113,7 @@ public class SmsDestinationServiceImpl implements SmsDestinationService {
     }
 
     @Override
-    public NewServiceResponse<SmsDestination> getByGUID(Tenant tenant, String guid) {
+    public ServiceResponse<SmsDestination> getByGUID(Tenant tenant, String guid) {
         try {
             Optional.ofNullable(tenant).orElseThrow(() -> new BusinessException(CommonValidations.TENANT_NULL.getCode()));
             Optional.ofNullable(guid).orElseThrow(() -> new BusinessException(Validations.SMSDEST_ID_NULL.getCode()));

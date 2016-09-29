@@ -4,7 +4,7 @@ import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
-import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
@@ -27,8 +27,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.konkerlabs.platform.registry.business.model.validation.CommonValidations.TENANT_NULL;
-import static com.konkerlabs.platform.registry.test.base.matchers.NewServiceResponseMatchers.hasErrorMessage;
-import static com.konkerlabs.platform.registry.test.base.matchers.NewServiceResponseMatchers.isResponseOk;
+import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
+import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.isResponseOk;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.rules.ExpectedException.none;
@@ -86,27 +86,27 @@ public class RestDestinationServiceTest extends BusinessLayerTestSupport {
     // ============================== findAll ==============================//
     @Test
     public void shouldReturnEmptyListIfDestinationsDoesNotExistWhenFindAll() {
-        NewServiceResponse<List<RestDestination>> response = subject.findAll(emptyTenant);
+        ServiceResponse<List<RestDestination>> response = subject.findAll(emptyTenant);
 
         assertThat(response, isResponseOk());
     }
 
     @Test
     public void shouldReturnErrorMessageIfTenantDoesNotExistWhenFindAll() {
-        NewServiceResponse<List<RestDestination>> response = subject.findAll(inexistentTenant);
+        ServiceResponse<List<RestDestination>> response = subject.findAll(inexistentTenant);
 
         assertThat(response, hasErrorMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()));
     }
 
     @Test
     public void shouldReturnErrorMessageIfTenantIsNullWhenFindAll() {
-        NewServiceResponse<List<RestDestination>> response = subject.findAll(null);
+        ServiceResponse<List<RestDestination>> response = subject.findAll(null);
         assertThat(response, hasErrorMessage(TENANT_NULL.getCode()));
     }
 
     @Test
     public void shouldReturnDestinationsWhenFindAll() {
-        NewServiceResponse<List<RestDestination>> response = subject.findAll(tenant);
+        ServiceResponse<List<RestDestination>> response = subject.findAll(tenant);
         assertThat(response, isResponseOk());
         assertThat(response.getResult(), hasSize(greaterThan(1)));
 
@@ -117,7 +117,7 @@ public class RestDestinationServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldReturnDestinationsWhenOtherTenantFindAll() {
-        NewServiceResponse<List<RestDestination>> response = subject.findAll(otherTenant);
+        ServiceResponse<List<RestDestination>> response = subject.findAll(otherTenant);
         assertThat(response, isResponseOk());
         assertThat(response.getResult(), not(empty()));
 
@@ -130,39 +130,39 @@ public class RestDestinationServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldReturnDestinationIfExistsWithinTenantWhenGetByID() {
-        NewServiceResponse<RestDestination> response = subject.getByGUID(tenant, THE_DESTINATION_GUID);
+        ServiceResponse<RestDestination> response = subject.getByGUID(tenant, THE_DESTINATION_GUID);
         assertThat(response, isResponseOk());
         assertThat(response.getResult().getName(), equalTo(THE_DESTINATION_NAME));
     }
 
     @Test
     public void shouldReturnOtherDestinationIfExistsWithinOtherTenantWhenGetByID() {
-        NewServiceResponse<RestDestination> response = subject.getByGUID(otherTenant, OTHER_TENANT_DESTINATION_GUID);
+        ServiceResponse<RestDestination> response = subject.getByGUID(otherTenant, OTHER_TENANT_DESTINATION_GUID);
         assertThat(response, isResponseOk());
         assertThat(response.getResult().getName(), equalTo(OTHER_TENANT_DESTINATION_NAME));
     }
 
     @Test
     public void shouldReturnErrorIfDestinationIsOwnedByAnotherTenantWhenGetByID() {
-        NewServiceResponse<RestDestination> response = subject.getByGUID(tenant, OTHER_TENANT_DESTINATION_ID);
+        ServiceResponse<RestDestination> response = subject.getByGUID(tenant, OTHER_TENANT_DESTINATION_ID);
         assertThat(response, hasErrorMessage(RestDestinationService.Validations.DESTINATION_NOT_FOUND.getCode()));
     }
 
     @Test
     public void shouldReturnErrorIfDestinationDoesNotExistWhenGetByID() {
-        NewServiceResponse<RestDestination> response = subject.getByGUID(tenant, INEXISTENT_DESTINATION_ID);
+        ServiceResponse<RestDestination> response = subject.getByGUID(tenant, INEXISTENT_DESTINATION_ID);
         assertThat(response, hasErrorMessage(RestDestinationService.Validations.DESTINATION_NOT_FOUND.getCode()));
     }
 
     @Test
     public void shouldReturnErrorIfTenantIsNullWhenGetByID() {
-        NewServiceResponse<RestDestination> response = subject.getByGUID(null, THE_DESTINATION_ID);
+        ServiceResponse<RestDestination> response = subject.getByGUID(null, THE_DESTINATION_ID);
         assertThat(response, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
     }
 
     @Test
     public void shouldReturnErrorIfIDIsNullWhenGetByID() {
-        NewServiceResponse<RestDestination> response = subject.getByGUID(tenant, null);
+        ServiceResponse<RestDestination> response = subject.getByGUID(tenant, null);
         assertThat(response, hasErrorMessage(RestDestinationService.Validations.GUID_NULL.getCode()));
     }
 
@@ -171,7 +171,7 @@ public class RestDestinationServiceTest extends BusinessLayerTestSupport {
     @Test
     public void shouldRegisterIfEverythingIsOkWhenRegister() {
         assertThat(newRestDestination.getId(), nullValue());
-        NewServiceResponse<RestDestination> response = subject.register(tenant, newRestDestination);
+        ServiceResponse<RestDestination> response = subject.register(tenant, newRestDestination);
         assertThat(response, isResponseOk());
         assertThat(response.getResult().getId(), not(nullValue()));
         assertThat(response.getResult().getTenant(), equalTo(tenant));
@@ -185,28 +185,28 @@ public class RestDestinationServiceTest extends BusinessLayerTestSupport {
                 put("some.error",new Object[] {"some_value"});
             }})
         );
-        NewServiceResponse<RestDestination> response = subject.register(tenant, newRestDestination);
+        ServiceResponse<RestDestination> response = subject.register(tenant, newRestDestination);
         assertThat(response, hasErrorMessage("some.error",new Object[] {"some_value"}));
         assertThat(newRestDestination.getId(), nullValue());
     }
 
     @Test
     public void shouldReturnErrorIfTenantIsNullWhenRegister() {
-        NewServiceResponse<RestDestination> response = subject.register(null, newRestDestination);
+        ServiceResponse<RestDestination> response = subject.register(null, newRestDestination);
         assertThat(response, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
         assertThat(newRestDestination.getId(), nullValue());
     }
 
     @Test
     public void shouldReturnErrorIfTenantInexistentWhenRegister() {
-        NewServiceResponse<RestDestination> response = subject.register(inexistentTenant, newRestDestination);
+        ServiceResponse<RestDestination> response = subject.register(inexistentTenant, newRestDestination);
         assertThat(response, hasErrorMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()));
         assertThat(newRestDestination.getId(), nullValue());
     }
 
     @Test
     public void shouldReturnErrorIfDestinatioIsNullWhenRegister() {
-        NewServiceResponse<RestDestination> response = subject.register(inexistentTenant, null);
+        ServiceResponse<RestDestination> response = subject.register(inexistentTenant, null);
         assertThat(response, hasErrorMessage(CommonValidations.RECORD_NULL.getCode()));
         assertThat(newRestDestination.getId(), nullValue());
     }
@@ -214,7 +214,7 @@ public class RestDestinationServiceTest extends BusinessLayerTestSupport {
     @Test
     public void shouldReturnErrorIfDestinationExistsWhenRegister() {
         newRestDestination.setName(THE_DESTINATION_NAME);
-        NewServiceResponse<RestDestination> response = subject.register(tenant, newRestDestination);
+        ServiceResponse<RestDestination> response = subject.register(tenant, newRestDestination);
         assertThat(response, hasErrorMessage(RestDestinationService.Validations.NAME_IN_USE.getCode()));
         assertThat(newRestDestination.getId(), nullValue());
     }
@@ -222,7 +222,7 @@ public class RestDestinationServiceTest extends BusinessLayerTestSupport {
     @Test
     public void shouldGenerateNewIdIfIDAlreadyExistsWhenRegister() {
         newRestDestination.setId(THE_DESTINATION_ID);
-        NewServiceResponse<RestDestination> response = subject.register(tenant, newRestDestination);
+        ServiceResponse<RestDestination> response = subject.register(tenant, newRestDestination);
         assertThat(response, isResponseOk());
         assertThat(response.getResult().getId(), not(equalTo(THE_DESTINATION_ID)));
     }
@@ -230,7 +230,7 @@ public class RestDestinationServiceTest extends BusinessLayerTestSupport {
     @Test
     public void shouldAssociateToNewTenantIfIDAlreadyExistsWhenRegister() {
         newRestDestination.setTenant(otherTenant);
-        NewServiceResponse<RestDestination> response = subject.register(tenant, newRestDestination);
+        ServiceResponse<RestDestination> response = subject.register(tenant, newRestDestination);
         assertThat(response, isResponseOk());
         assertThat(response.getResult().getTenant(), equalTo(tenant));
         assertThat(response.getResult().getId(), not(nullValue()));
@@ -247,7 +247,7 @@ public class RestDestinationServiceTest extends BusinessLayerTestSupport {
        
         oldRestDestination.setName(UPDATED_DESTINATION_NAME);
         
-        NewServiceResponse<RestDestination> response = subject.update(tenant, THE_DESTINATION_GUID, oldRestDestination);
+        ServiceResponse<RestDestination> response = subject.update(tenant, THE_DESTINATION_GUID, oldRestDestination);
         RestDestination returned = response.getResult();
         assertThat(response, isResponseOk());
         assertThat(returned.getId(), equalTo(THE_DESTINATION_ID));
@@ -269,7 +269,7 @@ public class RestDestinationServiceTest extends BusinessLayerTestSupport {
         oldRestDestination.setGuid(INEXISTENT_DESTINATION_GUID);
         oldRestDestination.setTenant(otherTenant);
             
-        NewServiceResponse<RestDestination> response = subject.update(tenant, THE_DESTINATION_GUID, oldRestDestination);
+        ServiceResponse<RestDestination> response = subject.update(tenant, THE_DESTINATION_GUID, oldRestDestination);
         RestDestination returned = response.getResult();
         assertThat(response, isResponseOk());
         assertThat(returned.getId(), equalTo(THE_DESTINATION_ID));
@@ -289,7 +289,7 @@ public class RestDestinationServiceTest extends BusinessLayerTestSupport {
         oldRestDestination.setId(OTHER_TENANT_DESTINATION_ID);
         oldRestDestination.setName(UPDATED_DESTINATION_NAME);
         
-        NewServiceResponse<RestDestination> response = subject.update(tenant, OTHER_TENANT_DESTINATION_GUID, oldRestDestination);
+        ServiceResponse<RestDestination> response = subject.update(tenant, OTHER_TENANT_DESTINATION_GUID, oldRestDestination);
         assertThat(response,hasErrorMessage(RestDestinationService.Validations.DESTINATION_NOT_FOUND.getCode()));
 
         RestDestination after = subject.getByGUID(otherTenant, OTHER_TENANT_DESTINATION_GUID).getResult();
@@ -308,7 +308,7 @@ public class RestDestinationServiceTest extends BusinessLayerTestSupport {
             }})
         );
         
-        NewServiceResponse<RestDestination> response = subject.update(tenant, THE_DESTINATION_GUID, oldRestDestination);
+        ServiceResponse<RestDestination> response = subject.update(tenant, THE_DESTINATION_GUID, oldRestDestination);
         assertThat(response, hasErrorMessage("some.error", new Object[]{"some_value"}));
 
         RestDestination after = subject.getByGUID(tenant, THE_DESTINATION_GUID).getResult();
@@ -322,7 +322,7 @@ public class RestDestinationServiceTest extends BusinessLayerTestSupport {
        
         oldRestDestination.setName(UPDATED_DESTINATION_NAME);
         
-        NewServiceResponse<RestDestination> response = subject.update(inexistentTenant, THE_DESTINATION_GUID, oldRestDestination);
+        ServiceResponse<RestDestination> response = subject.update(inexistentTenant, THE_DESTINATION_GUID, oldRestDestination);
         assertThat(response,hasErrorMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()));
 
         RestDestination after = subject.getByGUID(tenant, THE_DESTINATION_GUID).getResult();
@@ -336,7 +336,7 @@ public class RestDestinationServiceTest extends BusinessLayerTestSupport {
        
         oldRestDestination.setName(UPDATED_DESTINATION_NAME);
         
-        NewServiceResponse<RestDestination> response = subject.update(null, THE_DESTINATION_GUID, oldRestDestination);
+        ServiceResponse<RestDestination> response = subject.update(null, THE_DESTINATION_GUID, oldRestDestination);
         assertThat(response,hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
 
         RestDestination after = subject.getByGUID(tenant, THE_DESTINATION_GUID).getResult();
@@ -350,7 +350,7 @@ public class RestDestinationServiceTest extends BusinessLayerTestSupport {
        
         oldRestDestination.setName(UPDATED_DESTINATION_NAME);
         
-        NewServiceResponse<RestDestination> response = subject.update(tenant, null, oldRestDestination);
+        ServiceResponse<RestDestination> response = subject.update(tenant, null, oldRestDestination);
         assertThat(response,hasErrorMessage(RestDestinationService.Validations.GUID_NULL.getCode()));
 
         RestDestination after = subject.getByGUID(tenant, THE_DESTINATION_GUID).getResult();
@@ -365,7 +365,7 @@ public class RestDestinationServiceTest extends BusinessLayerTestSupport {
        
         oldRestDestination.setName(UPDATED_DESTINATION_NAME);
         
-        NewServiceResponse<RestDestination> response = subject.update(tenant, INEXISTENT_DESTINATION_ID, oldRestDestination);
+        ServiceResponse<RestDestination> response = subject.update(tenant, INEXISTENT_DESTINATION_ID, oldRestDestination);
         assertThat(response,hasErrorMessage(RestDestinationService.Validations.DESTINATION_NOT_FOUND.getCode()));
 
         RestDestination after = subject.getByGUID(tenant, THE_DESTINATION_GUID).getResult();
@@ -379,7 +379,7 @@ public class RestDestinationServiceTest extends BusinessLayerTestSupport {
        
         oldRestDestination.setName(OTHER_DESTINATION_NAME);
         
-        NewServiceResponse<RestDestination> response = subject.update(tenant, THE_DESTINATION_GUID, oldRestDestination);
+        ServiceResponse<RestDestination> response = subject.update(tenant, THE_DESTINATION_GUID, oldRestDestination);
         assertThat(response,hasErrorMessage(RestDestinationService.Validations.NAME_IN_USE.getCode()));
 
         RestDestination after = subject.getByGUID(tenant, THE_DESTINATION_GUID).getResult();

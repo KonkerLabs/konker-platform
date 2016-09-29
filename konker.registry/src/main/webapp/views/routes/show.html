@@ -41,7 +41,7 @@
                 <select class="form-control" data-th-field="${route.incoming.authorityId}"
                         id="incomingAuthority" name="incomingAuthority">
                     <option data-th-each="device : ${allDevices}"
-                            data-th-value="${device.deviceId}"
+                            data-th-value="${device.guid}"
                             data-th-text="${device.deviceId + ' - ' + device.name}"></option>
                 </select>
             </div>

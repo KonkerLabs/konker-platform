@@ -6,6 +6,7 @@ import java.util.Locale;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -22,7 +23,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.konkerlabs.platform.registry.business.model.SmsDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.SmsDestinationService;
 import com.konkerlabs.platform.registry.web.forms.SmsDestinationForm;
 
@@ -103,11 +103,11 @@ public class SmsDestinationController implements ApplicationContextAware {
                 redirectAttributes, "put");
     }
 
-    private ModelAndView doSave(Supplier<NewServiceResponse<SmsDestination>> responseSupplier,
+    private ModelAndView doSave(Supplier<ServiceResponse<SmsDestination>> responseSupplier,
                                 SmsDestinationForm destinationForm, Locale locale,
                                 RedirectAttributes redirectAttributes, String method) {
 
-        NewServiceResponse<SmsDestination> serviceResponse = responseSupplier.get();
+        ServiceResponse<SmsDestination> serviceResponse = responseSupplier.get();
 
         switch (serviceResponse.getStatus()) {
             case ERROR: {

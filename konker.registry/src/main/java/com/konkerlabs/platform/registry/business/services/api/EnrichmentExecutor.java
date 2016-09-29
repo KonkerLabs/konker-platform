@@ -21,5 +21,5 @@ public interface EnrichmentExecutor {
         }
     }
 
-    NewServiceResponse<Event> enrich(Event incomingEvent, Device device);
+    ServiceResponse<Event> enrich(Event incomingEvent, Device device);
 }

@@ -44,9 +44,9 @@ public interface DataEnrichmentExtensionService {
      *         returns a {@link ServiceResponse} with an error message, status
      *         code ERROR and null result
      */
-    NewServiceResponse<DataEnrichmentExtension> register(Tenant tenant, DataEnrichmentExtension dee);
+    ServiceResponse<DataEnrichmentExtension> register(Tenant tenant, DataEnrichmentExtension dee);
 
-    NewServiceResponse<DataEnrichmentExtension> update(Tenant tenant, String uuid, DataEnrichmentExtension dee);
+    ServiceResponse<DataEnrichmentExtension> update(Tenant tenant, String uuid, DataEnrichmentExtension dee);
 
     /**
      * Gets all the {@link DataEnrichmentExtension} associated with a
@@ -59,7 +59,7 @@ public interface DataEnrichmentExtensionService {
      *         {@link ServiceResponse} with an error message and status code
      *         ERROR and null result
      */
-    NewServiceResponse<List<DataEnrichmentExtension>> getAll(Tenant tenant);
+    ServiceResponse<List<DataEnrichmentExtension>> getAll(Tenant tenant);
 
     /**
      * Gets a previously registered {@link DataEnrichmentExtension} by
@@ -74,7 +74,7 @@ public interface DataEnrichmentExtensionService {
      *         {@link ServiceResponse} with an error message and status code
      *         ERROR
      */
-    NewServiceResponse<DataEnrichmentExtension> getByGUID(Tenant tenant, String guid);
+    ServiceResponse<DataEnrichmentExtension> getByGUID(Tenant tenant, String guid);
 
     /**
      * Gets a previously registered {@link DataEnrichmentExtension} by
@@ -89,7 +89,7 @@ public interface DataEnrichmentExtensionService {
      *         {@link ServiceResponse} with an error message and status code
      *         ERROR
      */
-    NewServiceResponse<List<DataEnrichmentExtension>> getByTenantAndByIncomingURI(Tenant tenant, URI incomingUri);
+    ServiceResponse<List<DataEnrichmentExtension>> getByTenantAndByIncomingURI(Tenant tenant, URI incomingUri);
 
     /**
      * Removes a previously registered {@link DataEnrichmentExtension} by
@@ -104,5 +104,5 @@ public interface DataEnrichmentExtensionService {
      *         {@link ServiceResponse} with an error message and status code
      *         ERROR
      */
-    NewServiceResponse<DataEnrichmentExtension> remove(Tenant tenant, String guid);
+    ServiceResponse<DataEnrichmentExtension> remove(Tenant tenant, String guid);
 }

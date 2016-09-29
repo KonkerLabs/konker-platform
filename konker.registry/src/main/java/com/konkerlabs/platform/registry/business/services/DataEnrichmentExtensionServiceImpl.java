@@ -6,7 +6,6 @@ import com.konkerlabs.platform.registry.business.model.validation.CommonValidati
 import com.konkerlabs.platform.registry.business.repositories.DataEnrichmentExtensionRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.DataEnrichmentExtensionService;
-import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +40,7 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
 //    }
 
     @Override
-    public NewServiceResponse<DataEnrichmentExtension> register(Tenant tenant, DataEnrichmentExtension dee) {
+    public ServiceResponse<DataEnrichmentExtension> register(Tenant tenant, DataEnrichmentExtension dee) {
         if (!Optional.ofNullable(dee).isPresent())
             return ServiceResponseBuilder.<DataEnrichmentExtension>error()
                 .withMessage(CommonValidations.RECORD_NULL.getCode()).build();
@@ -88,7 +87,7 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
     }
 
     @Override
-    public NewServiceResponse<DataEnrichmentExtension> update(Tenant tenant, String uuid, DataEnrichmentExtension dee) {
+    public ServiceResponse<DataEnrichmentExtension> update(Tenant tenant, String uuid, DataEnrichmentExtension dee) {
         if (!Optional.ofNullable(dee).isPresent())
             return ServiceResponseBuilder.<DataEnrichmentExtension>error()
                     .withMessage(CommonValidations.RECORD_NULL.getCode()).build();
@@ -153,7 +152,7 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
     }
 
     @Override
-    public NewServiceResponse<List<DataEnrichmentExtension>> getAll(Tenant tenant) {
+    public ServiceResponse<List<DataEnrichmentExtension>> getAll(Tenant tenant) {
         if (!Optional.ofNullable(tenant).isPresent())
             return ServiceResponseBuilder.<List<DataEnrichmentExtension>>error()
                     .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
@@ -171,7 +170,7 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
     }
 
     @Override
-    public NewServiceResponse<DataEnrichmentExtension> getByGUID(Tenant tenant, String guid) {
+    public ServiceResponse<DataEnrichmentExtension> getByGUID(Tenant tenant, String guid) {
         if (!Optional.ofNullable(tenant).isPresent())
             return ServiceResponseBuilder.<DataEnrichmentExtension>error()
                     .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
@@ -197,7 +196,7 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
     }
 
     @Override
-    public NewServiceResponse<List<DataEnrichmentExtension>> getByTenantAndByIncomingURI(Tenant tenant, URI incomingUri) {
+    public ServiceResponse<List<DataEnrichmentExtension>> getByTenantAndByIncomingURI(Tenant tenant, URI incomingUri) {
         if (!Optional.ofNullable(tenant).isPresent())
             return ServiceResponseBuilder.<List<DataEnrichmentExtension>>error()
                     .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
@@ -219,7 +218,7 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
     }
 
     @Override
-    public NewServiceResponse<DataEnrichmentExtension> remove(Tenant tenant, String guid) {
+    public ServiceResponse<DataEnrichmentExtension> remove(Tenant tenant, String guid) {
         if (!Optional.ofNullable(tenant).isPresent())
             return ServiceResponseBuilder.<DataEnrichmentExtension>error()
                     .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
@@ -245,16 +244,5 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
         return ServiceResponseBuilder.<DataEnrichmentExtension>ok()
                 .withResult(dee)
                 .build();
-    }
-
-    private ServiceResponse.ServiceResponseBuilder invalidServiceResponse(String... errors) {
-        ServiceResponse.ServiceResponseBuilder invalidBuilder = ServiceResponse.builder()
-                .status(ServiceResponse.Status.ERROR);
-        for (String error : errors)
-            invalidBuilder.responseMessage(error);
-
-        invalidBuilder.responseMessages(Arrays.asList(errors));
-
-        return invalidBuilder;
     }
 }

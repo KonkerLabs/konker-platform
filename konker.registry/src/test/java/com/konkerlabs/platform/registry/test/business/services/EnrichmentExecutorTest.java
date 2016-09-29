@@ -6,7 +6,6 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.services.api.EnrichmentExecutor;
-import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.integration.exceptions.IntegrationException;
 import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
@@ -113,16 +112,16 @@ public class EnrichmentExecutorTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldReturnErrorMessageIfEventIsNull() {
-        NewServiceResponse<Event> response = subject.enrich(null, device);
-        assertThat(response.getStatus(), equalTo(NewServiceResponse.Status.ERROR));
+        ServiceResponse<Event> response = subject.enrich(null, device);
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
         assertThat(response.getResult(), nullValue());
         assertThat(response.getResponseMessages(), hasEntry(EnrichmentExecutor.Validations.INCOMING_EVENT_NULL.getCode(),null));
     }
 
     @Test
     public void shouldReturnErrorMessageIfDeviceIsNull() {
-        NewServiceResponse<Event> response = subject.enrich(event, null);
-        assertThat(response.getStatus(), equalTo(NewServiceResponse.Status.ERROR));
+        ServiceResponse<Event> response = subject.enrich(event, null);
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
         assertThat(response.getResult(), nullValue());
         assertThat(response.getResponseMessages(), hasEntry(EnrichmentExecutor.Validations.INCOMING_DEVICE_NULL.getCode(),null));
     }
@@ -132,8 +131,8 @@ public class EnrichmentExecutorTest extends BusinessLayerTestSupport {
     public void shouldReturnErrorMessageIfTenantDoesNotExists() {
         device.getTenant().setName("999");
 
-        NewServiceResponse<Event> response = subject.enrich(event, device);
-        assertThat(response.getStatus(), equalTo(NewServiceResponse.Status.ERROR));
+        ServiceResponse<Event> response = subject.enrich(event, device);
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
         assertThat(response.getResult(), nullValue());
         assertThat(response.getResponseMessages(), hasEntry(CommonValidations.TENANT_DOES_NOT_EXIST.getCode(),null));
     }
@@ -143,8 +142,8 @@ public class EnrichmentExecutorTest extends BusinessLayerTestSupport {
     public void shouldNotChangeTheIncomingEventIfThereIsNoEnrichmentRegistered() {
         device.setDeviceId(NON_EXISTING_DEVICE_ID);
 
-        NewServiceResponse<Event> response = subject.enrich(event, device);
-        assertThat(response.getStatus(), equalTo(NewServiceResponse.Status.OK));
+        ServiceResponse<Event> response = subject.enrich(event, device);
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
         assertThat(response.getResult(), notNullValue());
         assertThat(response.getResult(), equalTo(event));
     }
@@ -154,8 +153,8 @@ public class EnrichmentExecutorTest extends BusinessLayerTestSupport {
     public void shouldNotChangeTheIncomingEventIfThereIsNoContainerKeyInEventPayload() {
         event.setPayload(PAYLOAD_WITHOUT_CONTAINER_KEY);
 
-        NewServiceResponse<Event> response = subject.enrich(event, device);
-        assertThat(response.getStatus(), equalTo(NewServiceResponse.Status.OK));
+        ServiceResponse<Event> response = subject.enrich(event, device);
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
         assertThat(response.getResult(), notNullValue());
         assertThat(response.getResult(), equalTo(event));
     }
@@ -166,8 +165,8 @@ public class EnrichmentExecutorTest extends BusinessLayerTestSupport {
         event.setPayload(PAYLOAD_PRE_POPULATED_CONTAINER_KEY);
         String originalPayload = new String(event.getPayload());
 
-        NewServiceResponse<Event> response = subject.enrich(event, device);
-        assertThat(response.getStatus(), equalTo(NewServiceResponse.Status.OK));
+        ServiceResponse<Event> response = subject.enrich(event, device);
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
         assertThat(response.getResult(), notNullValue());
         assertNotEquals(originalPayload, response.getResult().getPayload());
     }
@@ -175,8 +174,8 @@ public class EnrichmentExecutorTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/enrichment-rest.json"})
     public void shouldEnrichSuccessfully() {
-        NewServiceResponse<Event> response = subject.enrich(event, device);
-        assertThat(response.getStatus(), equalTo(NewServiceResponse.Status.OK));
+        ServiceResponse<Event> response = subject.enrich(event, device);
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
         assertThat(response.getResult(), notNullValue());
         assertEquals(ENRICHED_PAYLOAD, response.getResult().getPayload());
     }
@@ -186,8 +185,8 @@ public class EnrichmentExecutorTest extends BusinessLayerTestSupport {
     public void shouldNotEnrichBecauseOfEnrichmentInactive() {
         device.setDeviceId(ENRICHMENT_INACTIVE_DEVICE_ID);
 
-        NewServiceResponse<Event> response = subject.enrich(event, device);
-        assertThat(response.getStatus(), equalTo(NewServiceResponse.Status.OK));
+        ServiceResponse<Event> response = subject.enrich(event, device);
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
         assertThat(response.getResult(), notNullValue());
         assertEquals(event.getPayload(), response.getResult().getPayload());
     }

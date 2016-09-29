@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,7 +45,6 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
@@ -76,7 +76,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
     private Tenant tenant;
 
     private List<Device> registeredDevices;
-    private NewServiceResponse<Device> response;
+    private ServiceResponse<Device> response;
     MultiValueMap<String, String> deviceData;
     private Device device;
     private DeviceRegistrationForm deviceForm;
@@ -182,8 +182,11 @@ public class DeviceControllerTest extends WebLayerTestContext {
         when(deviceRegisterService.getByDeviceGuid(tenant, savedDevice.getGuid())).thenReturn(
                 ServiceResponseBuilder.<Device>ok().withResult(savedDevice).build());
         when(deviceEventService.findIncomingBy(tenant,savedDevice.getGuid(),null,null,false,50)).thenReturn(
-            ServiceResponseBuilder.<List<Event>>ok().withResult(Collections.emptyList()).build()
-        );
+                ServiceResponseBuilder.<List<Event>>ok().withResult(Collections.emptyList()).build()
+            );
+        when(deviceEventService.findOutgoingBy(tenant,savedDevice.getGuid(),null,null,false,50)).thenReturn(
+                ServiceResponseBuilder.<List<Event>>ok().withResult(Collections.emptyList()).build()
+            );
 
         getMockMvc().perform(get(MessageFormat.format("/devices/{0}/events", savedDevice.getGuid())))
                 .andExpect(model().attribute("device", savedDevice)).andExpect(view().name("devices/events"));
@@ -242,10 +245,10 @@ public class DeviceControllerTest extends WebLayerTestContext {
     @Test
     public void shouldRedirectToListDevicesAndShowSuccessMessageAfterDeletionSucceed() throws Exception {
         device.setId(USER_DEFINED_DEVICE_ID);
-        NewServiceResponse<Device> responseRemoval = ServiceResponseBuilder.<Device>ok()
+        ServiceResponse<Device> responseRemoval = ServiceResponseBuilder.<Device>ok()
                 .withResult(device).build();
 
-        NewServiceResponse<List<Device>> responseListAll = ServiceResponseBuilder.<List<Device>>ok()
+        ServiceResponse<List<Device>> responseListAll = ServiceResponseBuilder.<List<Device>>ok()
                 .withResult(registeredDevices).build();
 
         spy(responseRemoval);

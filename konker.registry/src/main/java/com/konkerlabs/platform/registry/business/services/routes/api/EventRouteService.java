@@ -6,7 +6,7 @@ import java.util.List;
 
 import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 
 public interface EventRouteService {
 
@@ -27,12 +27,12 @@ public interface EventRouteService {
         }
     }
 
-    NewServiceResponse<EventRoute> save(Tenant tenant, EventRoute route);
-    NewServiceResponse<EventRoute> update(Tenant tenant, String guid, EventRoute eventRoute);
-    NewServiceResponse<List<EventRoute>> getAll(Tenant tenant);
-    NewServiceResponse<EventRoute> getByGUID(Tenant tenant, String guid);
+    ServiceResponse<EventRoute> save(Tenant tenant, EventRoute route);
+    ServiceResponse<EventRoute> update(Tenant tenant, String guid, EventRoute eventRoute);
+    ServiceResponse<List<EventRoute>> getAll(Tenant tenant);
+    ServiceResponse<EventRoute> getByGUID(Tenant tenant, String guid);
 
-	NewServiceResponse<List<EventRoute>> findByIncomingUri(URI uri);
+	ServiceResponse<List<EventRoute>> findByIncomingUri(URI uri);
 
-	NewServiceResponse<EventRoute> remove(Tenant tenant, String guid);
+	ServiceResponse<EventRoute> remove(Tenant tenant, String guid);
 }
