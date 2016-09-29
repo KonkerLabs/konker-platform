@@ -1,12 +1,11 @@
 package com.konkerlabs.platform.registry.business.services.publishers;
 
-import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.publishers.api.EventPublisher;
 import com.konkerlabs.platform.registry.integration.gateways.MqttMessageGateway;
 import org.slf4j.Logger;
@@ -84,7 +83,7 @@ public class EventPublisherDevice implements EventPublisher {
             String destinationTopic = MessageFormat.format(MQTT_OUTGOING_TOPIC_TEMPLATE,
                     outgoingDevice.getApiKey(), data.get(DEVICE_MQTT_CHANNEL));
             mqttMessageGateway.send(outgoingEvent.getPayload(), destinationTopic);
-            NewServiceResponse<Event> response = deviceEventService.logOutgoingEvent(outgoingDevice, outgoingEvent);
+            ServiceResponse<Event> response = deviceEventService.logOutgoingEvent(outgoingDevice, outgoingEvent);
 
             if (!response.isOk())
                 LOGGER.error("Failed to forward event to its destination", response.getResponseMessages());

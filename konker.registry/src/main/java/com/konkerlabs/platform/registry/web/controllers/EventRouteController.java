@@ -26,7 +26,7 @@ import com.konkerlabs.platform.registry.business.model.SmsDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.Transformation;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.SmsDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.TransformationService;
@@ -147,10 +147,10 @@ public class EventRouteController implements ApplicationContextAware {
         }
     }
 
-    private ModelAndView doSave(Supplier<NewServiceResponse<EventRoute>> responseSupplier,
+    private ModelAndView doSave(Supplier<ServiceResponse<EventRoute>> responseSupplier,
                                 EventRouteForm eventRouteForm, Locale locale,
                                 RedirectAttributes redirectAttributes, String method) {
-        NewServiceResponse<EventRoute> response = responseSupplier.get();
+        ServiceResponse<EventRoute> response = responseSupplier.get();
 
         switch (response.getStatus()) {
             case ERROR: {
@@ -174,7 +174,7 @@ public class EventRouteController implements ApplicationContextAware {
     @RequestMapping(path = "/{routeGUID}", method = RequestMethod.DELETE)
     public ModelAndView remove(@PathVariable("routeGUID") String routeGUID,
                                RedirectAttributes redirectAttributes, Locale locale) {
-        NewServiceResponse<EventRoute> serviceResponse = eventRouteService.remove(tenant, routeGUID);
+        ServiceResponse<EventRoute> serviceResponse = eventRouteService.remove(tenant, routeGUID);
 
         redirectAttributes.addFlashAttribute("message",
                 applicationContext.getMessage(Messages.ROUTE_REMOVED_SUCCESSFULLY.getCode(),null,locale)

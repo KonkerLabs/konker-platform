@@ -2,9 +2,8 @@ package com.konkerlabs.platform.registry.web.controllers;
 
 import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.web.forms.RestDestinationForm;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,11 +97,11 @@ public class RestDestinationController implements ApplicationContextAware {
                 redirectAttributes, "put");
     }
 
-    private ModelAndView doSave(Supplier<NewServiceResponse<RestDestination>> responseSupplier,
+    private ModelAndView doSave(Supplier<ServiceResponse<RestDestination>> responseSupplier,
                                 RestDestinationForm destinationForm, Locale locale,
                                 RedirectAttributes redirectAttributes, String method) {
 
-        NewServiceResponse<RestDestination> serviceResponse = responseSupplier.get();
+        ServiceResponse<RestDestination> serviceResponse = responseSupplier.get();
 
         switch (serviceResponse.getStatus()) {
             case ERROR: {

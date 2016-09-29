@@ -4,7 +4,6 @@ import com.konkerlabs.platform.registry.business.model.RestTransformationStep;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.Transformation;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.TransformationService;
@@ -62,8 +61,8 @@ public class TransformationControllerTest extends WebLayerTestContext {
     private String username = "root";
     private String password = "secret";
 
-    private NewServiceResponse<Transformation> serviceResponse;
-    private NewServiceResponse<List<Transformation>> listServiceResponse;
+    private ServiceResponse<Transformation> serviceResponse;
+    private ServiceResponse<List<Transformation>> listServiceResponse;
 
     @Before
     public void setUp() {

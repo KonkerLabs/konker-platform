@@ -7,6 +7,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -23,7 +24,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.Transformation;
-import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.TransformationService;
 import com.konkerlabs.platform.registry.web.forms.TransformationForm;
 
@@ -71,7 +71,7 @@ public class TransformationController implements ApplicationContextAware {
     public ModelAndView save(@ModelAttribute("transformation") TransformationForm transformationForm,
                              BindingResult bindingResult, RedirectAttributes redirectAttributes, Locale locale) {
 
-        NewServiceResponse<Transformation> serviceResponse = transformationService.register(tenant, transformationForm.toModel());
+        ServiceResponse<Transformation> serviceResponse = transformationService.register(tenant, transformationForm.toModel());
 
         switch (serviceResponse.getStatus()) {
             case ERROR:
@@ -114,7 +114,7 @@ public class TransformationController implements ApplicationContextAware {
                                  @ModelAttribute("transformation") TransformationForm transformationForm, Locale locale,
                                  RedirectAttributes redirectAttributes) {
 
-        NewServiceResponse<Transformation> response = transformationService.update(tenant, transformationGuid, transformationForm.toModel());
+        ServiceResponse<Transformation> response = transformationService.update(tenant, transformationGuid, transformationForm.toModel());
 
         switch (response.getStatus()) {
             case ERROR: {
@@ -143,7 +143,7 @@ public class TransformationController implements ApplicationContextAware {
     public ModelAndView remove(@PathVariable("transformationGuid")String transformationGuid, @ModelAttribute("transformation") TransformationForm transformationForm, 
     		RedirectAttributes redirectAttributes, Locale locale) {
     	ModelAndView modelAndView;
-    	NewServiceResponse<Transformation> serviceResponse = transformationService.remove(tenant, transformationGuid);
+    	ServiceResponse<Transformation> serviceResponse = transformationService.remove(tenant, transformationGuid);
     	
     	switch (serviceResponse.getStatus()) {
 			case ERROR:

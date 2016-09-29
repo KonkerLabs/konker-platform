@@ -3,9 +3,8 @@ package com.konkerlabs.platform.registry.test.web.controllers;
 import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
@@ -64,7 +63,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
     private LinkedMultiValueMap<String, String> destinationData;
     private RestDestinationForm destinationForm;
 
-    NewServiceResponse<RestDestination> response;
+    ServiceResponse<RestDestination> response;
     private RestDestination savedDestination;
 
     @Before

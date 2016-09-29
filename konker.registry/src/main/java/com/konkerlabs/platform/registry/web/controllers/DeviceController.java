@@ -6,6 +6,7 @@ import java.util.Locale;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -24,7 +25,6 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
 import com.konkerlabs.platform.registry.web.forms.DeviceRegistrationForm;
 import com.typesafe.config.ConfigFactory;
 
@@ -133,7 +133,7 @@ public class DeviceController implements ApplicationContextAware {
                                  @ModelAttribute("deviceForm") DeviceRegistrationForm deviceForm,
                                  RedirectAttributes redirectAttributes, Locale locale) {
 
-        NewServiceResponse<Device> serviceResponse = deviceRegisterService.remove(tenant, deviceGuid);
+        ServiceResponse<Device> serviceResponse = deviceRegisterService.remove(tenant, deviceGuid);
         if(serviceResponse.isOk()){
             redirectAttributes.addFlashAttribute("message",
                     applicationContext.getMessage(Messages.DEVICE_REMOVED_SUCCESSFULLY.getCode(),null,locale)
@@ -152,7 +152,7 @@ public class DeviceController implements ApplicationContextAware {
 
     @RequestMapping(path = "/{deviceGuid}/password", method = RequestMethod.GET)
     public ModelAndView password(@PathVariable String deviceGuid, RedirectAttributes redirectAttributes, Locale locale) {
-        NewServiceResponse<Device> serviceResponse = deviceRegisterService.getByDeviceGuid(tenant, deviceGuid);
+        ServiceResponse<Device> serviceResponse = deviceRegisterService.getByDeviceGuid(tenant, deviceGuid);
 
         if (serviceResponse.isOk()) {
             Device device = serviceResponse.getResult();
@@ -172,7 +172,7 @@ public class DeviceController implements ApplicationContextAware {
 	@RequestMapping(path = "/{deviceGuid}/password", method = RequestMethod.POST)
 	public ModelAndView generatePassword(@PathVariable String deviceGuid, RedirectAttributes redirectAttributes,
 			Locale locale) {
-		NewServiceResponse<DeviceRegisterService.DeviceSecurityCredentials> serviceResponse = deviceRegisterService
+		ServiceResponse<DeviceRegisterService.DeviceSecurityCredentials> serviceResponse = deviceRegisterService
 				.generateSecurityPassword(tenant, deviceGuid);
 		
 
@@ -194,13 +194,13 @@ public class DeviceController implements ApplicationContextAware {
     }
 
 
-    private ModelAndView doSave(Supplier<NewServiceResponse<Device>> responseSupplier,
+    private ModelAndView doSave(Supplier<ServiceResponse<Device>> responseSupplier,
                                 DeviceRegistrationForm registrationForm, Locale locale,
                                 RedirectAttributes redirectAttributes, String action) {
 
-        NewServiceResponse<Device> serviceResponse = responseSupplier.get();
+        ServiceResponse<Device> serviceResponse = responseSupplier.get();
 
-        if (serviceResponse.getStatus().equals(NewServiceResponse.Status.OK)) {
+        if (serviceResponse.getStatus().equals(ServiceResponse.Status.OK)) {
             redirectAttributes.addFlashAttribute("message",
                     applicationContext.getMessage(Messages.DEVICE_REGISTERED_SUCCESSFULLY.getCode(),null,locale));
             return new ModelAndView(MessageFormat.format("redirect:/devices/{0}", serviceResponse.getResult().getGuid()));

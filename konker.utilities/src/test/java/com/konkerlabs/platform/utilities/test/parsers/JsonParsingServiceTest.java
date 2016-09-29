@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.utilities.test.parsers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.konkerlabs.platform.utilities.config.UtilitiesConfig;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 import org.junit.Before;
@@ -70,16 +71,31 @@ public class JsonParsingServiceTest {
     })
     public static class FlatMap extends JsonParsingServiceTestBase {
 
-        private HashMap<String, Object> expectedFlattenMap;
+        private HashMap<String, JsonParsingService.JsonPathData> expectedFlattenMap;
 
         @Before
         public void setUp() throws Exception {
             expectedFlattenMap = new HashMap<>();
-            expectedFlattenMap.put("ts", "2016-03-03T18:15:00Z");
-            expectedFlattenMap.put("value", 31.0);
-            expectedFlattenMap.put("command.type", "ButtonPressed");
-            expectedFlattenMap.put("data.channels.0.name", "channel_0");
-            expectedFlattenMap.put("time", 123L);
+            expectedFlattenMap.put("ts",
+                JsonParsingService.JsonPathData.builder()
+                    .value("2016-03-03T18:15:00Z")
+                    .types(Arrays.asList(new JsonNodeType[] {JsonNodeType.OBJECT,JsonNodeType.STRING})).build());
+            expectedFlattenMap.put("value",
+                JsonParsingService.JsonPathData.builder()
+                        .value(31.0)
+                        .types(Arrays.asList(new JsonNodeType[] {JsonNodeType.OBJECT,JsonNodeType.NUMBER})).build());
+            expectedFlattenMap.put("command.type",
+                    JsonParsingService.JsonPathData.builder()
+                            .value("ButtonPressed")
+                            .types(Arrays.asList(new JsonNodeType[] {JsonNodeType.OBJECT,JsonNodeType.OBJECT,JsonNodeType.STRING})).build());
+            expectedFlattenMap.put("data.channels.0.name",
+                    JsonParsingService.JsonPathData.builder()
+                            .value("channel_0")
+                            .types(Arrays.asList(new JsonNodeType[] {JsonNodeType.OBJECT,JsonNodeType.OBJECT,JsonNodeType.ARRAY,JsonNodeType.OBJECT,JsonNodeType.STRING})).build());
+            expectedFlattenMap.put("time",
+                JsonParsingService.JsonPathData.builder()
+                        .value(123L)
+                        .types(Arrays.asList(new JsonNodeType[] {JsonNodeType.OBJECT,JsonNodeType.NUMBER})).build());
         }
 
         @Test
@@ -107,7 +123,7 @@ public class JsonParsingServiceTest {
 
         @Test
         public void shouldCreateAFlatMap() throws Exception {
-            Map<String, Object> actual = service.toFlatMap(validJson);
+            Map<String, JsonParsingService.JsonPathData> actual = service.toFlatMap(validJson);
 
             assertThat(actual, notNullValue());
             assertThat(actual, equalTo(expectedFlattenMap));

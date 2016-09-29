@@ -1,20 +1,18 @@
 package com.konkerlabs.platform.registry.business.services;
 
-import java.time.Instant;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Service;
-
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
-
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Service;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPubSub;
+
+import java.time.Instant;
+import java.util.List;
 
 @Service
 public class JedisTaskService {
@@ -28,7 +26,7 @@ public class JedisTaskService {
 	@Autowired
 	private DeviceRegisterService deviceRegisterService;
 	
-	protected NewServiceResponse<List<Event>> response;
+	protected ServiceResponse<List<Event>> response;
 
 	public JedisTaskService() {
 		
@@ -40,7 +38,7 @@ public class JedisTaskService {
 			@Override
 			public void onMessage(String channel, String message) {
 				Device device = deviceRegisterService.findByApiKey(channel.substring(0, channel.indexOf(".")));
-				response = deviceEventService.findOutgoingBy(device.getTenant(), device.getDeviceId(),
+				response = deviceEventService.findOutgoingBy(device.getTenant(), device.getGuid(),
 						startTimestamp, null, asc, limit);
 				this.unsubscribe(channel);
 			}

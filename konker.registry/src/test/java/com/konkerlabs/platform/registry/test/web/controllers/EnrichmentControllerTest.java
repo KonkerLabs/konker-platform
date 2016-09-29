@@ -64,8 +64,8 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
     private Device incomingDevice;
     private DeviceURIDealer deviceUriDealer;
     private DataEnrichmentExtension dataEnrichmentExtension;
-    private NewServiceResponse<List<DataEnrichmentExtension>> listServiceResponse;
-    private NewServiceResponse<DataEnrichmentExtension> serviceResponse;
+    private ServiceResponse<List<DataEnrichmentExtension>> listServiceResponse;
+    private ServiceResponse<DataEnrichmentExtension> serviceResponse;
     private EnrichmentForm enrichmentForm;
     private MultiValueMap<String, String> enrichmentData;
 

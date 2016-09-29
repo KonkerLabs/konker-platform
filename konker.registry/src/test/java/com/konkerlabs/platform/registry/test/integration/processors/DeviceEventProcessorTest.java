@@ -15,7 +15,6 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import org.junit.After;
 import org.junit.Before;
@@ -30,7 +29,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.web.context.request.async.DeferredResult;
 
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
@@ -39,16 +37,12 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.EnrichmentExecutor;
-import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteExecutor;
 import com.konkerlabs.platform.registry.config.RedisConfig;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
 import com.konkerlabs.platform.registry.test.base.IntegrationLayerTestContext;
-
-import java.net.URI;
-
-import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
@@ -68,8 +62,8 @@ public class DeviceEventProcessorTest {
     private Event eventNewTimestamp;
     private Event eventOldTimestamp;
     private Device device;
-    private NewServiceResponse<Event> enrichmentResponse;
-    private NewServiceResponse<List<Event>> eventResponse;
+    private ServiceResponse<Event> enrichmentResponse;
+    private ServiceResponse<List<Event>> eventResponse;
 
     @Autowired
     private DeviceEventProcessor subject;
