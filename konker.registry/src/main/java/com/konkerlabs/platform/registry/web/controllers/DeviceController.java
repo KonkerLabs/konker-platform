@@ -99,9 +99,12 @@ public class DeviceController implements ApplicationContextAware {
     @RequestMapping("/{deviceGuid}/events")
     public ModelAndView deviceEvents(@PathVariable String deviceGuid) {
         Device device = deviceRegisterService.getByDeviceGuid(tenant, deviceGuid).getResult();
-        return new ModelAndView("devices/events").addObject("device", device).addObject("recentEvents",
-                deviceEventService.findIncomingBy(tenant,device.getGuid(),null,null,false,50).getResult());
-    }
+		return new ModelAndView("devices/events").addObject("device", device)
+				.addObject("recentIncomingEvents",
+						deviceEventService.findIncomingBy(tenant, device.getGuid(), null, null, false, 50).getResult())
+				.addObject("recentOutgoingEvents",
+						deviceEventService.findOutgoingBy(tenant, device.getGuid(), null, null, false, 50).getResult());
+	}
 
     @RequestMapping(path = "/save", method = RequestMethod.POST)
     public ModelAndView saveNew(@ModelAttribute("deviceForm") DeviceRegistrationForm deviceForm,
