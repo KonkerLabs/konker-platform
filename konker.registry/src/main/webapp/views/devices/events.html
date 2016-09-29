@@ -14,17 +14,17 @@
 						class="form-control" id="deviceId" name="deviceId" />
 				</div>
 			</div>
-			<ul class="nav nav-tabs nav-justified">
+			<ul class="nav nav-tabs nav-justified col-sm-12" >
 				<li class="active"><a data-toggle="tab" href="#incoming"
 					data-th-text="#{devices.events.incoming.events}"></a></li>
 				<li><a data-toggle="tab" href="#outgoing"
 					data-th-text="#{devices.events.outgoing.events}"></a></li>
 			</ul>
 			<div class="tab-content">
-				<div id="incoming" class="tab-pane fade in active" align="center">
+				<div id="incoming" class="tab-pane fade in active">
 
-					<div class="col-sm-12" >
-						<table class="table table-bordered "  
+					<div class="col-sm-12 list-group" >
+						<table class="table table-bordered table-hover"  
 							data-th-if="${recentIncomingEvents != null and !recentIncomingEvents.empty}">
 							<thead>
 								<tr>
@@ -47,10 +47,10 @@
 					</div>
 
 				</div>
-				<div id="outgoing" class="tab-pane fade" align="center">
+				<div id="outgoing" class="tab-pane fade">
 
-					<div class="col-sm-12">
-						<table class="table table-bordered"
+					<div class="col-sm-12 list-group">
+						<table class="table table-bordered table-hover"
 							data-th-if="${recentOutgoingEvents != null and !recentOutgoingEvents.empty}">
 							<thead>
 								<tr>
