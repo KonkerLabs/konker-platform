@@ -1,6 +1,5 @@
 package com.konkerlabs.platform.registry.business.services;
 
-import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.DataEnrichmentExtensionRepository;
@@ -17,15 +16,15 @@ import com.konkerlabs.platform.security.managers.PasswordManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Consumer;
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
@@ -45,6 +44,12 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
     @Autowired @Qualifier("mongoEvents")
     private EventRepository eventRepository;
+
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
+
+    @Autowired
+    private ApplicationContext ctx;
 
     @Override
     public NewServiceResponse<Device> register(Tenant tenant, Device device) {
@@ -260,16 +265,8 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
         if(Optional.ofNullable(response).isPresent()) return response;
 
-        //delete ingested data in logical way
-//        if(device.getEvents() != null){
-//            device.getEvents()
-//                    .stream()
-//                    .filter(Objects::nonNull)
-//                    .forEach(event -> event.setDeleted(true));
-//        }
-
-        //delete the device
         deviceRepository.delete(device);
+
         return ServiceResponseBuilder.<Device>ok()
                 .withMessage(DeviceController.Messages.DEVICE_REMOVED_SUCCESSFULLY.getCode())
                 .withResult(device)
@@ -279,7 +276,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
 	@Override
 	public NewServiceResponse<Device> getByDeviceGuid(Tenant tenant, String guid) {
-		if (!Optional.ofNullable(tenant).isPresent())
+        if (!Optional.ofNullable(tenant).isPresent())
 			return ServiceResponseBuilder.<Device> error().withMessage(CommonValidations.TENANT_NULL.getCode(), null)
 					.build();
 

@@ -33,9 +33,8 @@ import java.util.Map;
 import java.util.Optional;
 
 import static com.konkerlabs.platform.registry.business.model.EventRoute.builder;
-import static com.konkerlabs.platform.registry.business.services.publishers.EventPublisherMqtt.DEVICE_MQTT_CHANNEL;
+import static com.konkerlabs.platform.registry.business.services.publishers.EventPublisherDevice.DEVICE_MQTT_CHANNEL;
 import static com.konkerlabs.platform.registry.test.base.matchers.NewServiceResponseMatchers.*;
-import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.rules.ExpectedException.none;

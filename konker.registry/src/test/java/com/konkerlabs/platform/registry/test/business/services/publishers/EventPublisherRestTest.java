@@ -33,7 +33,7 @@ import java.net.URI;
 import java.text.MessageFormat;
 import java.time.Instant;
 
-import static com.konkerlabs.platform.registry.business.services.publishers.EventPublisherMqtt.DEVICE_MQTT_CHANNEL;
+import static com.konkerlabs.platform.registry.business.services.publishers.EventPublisherDevice.DEVICE_MQTT_CHANNEL;
 import static info.solidsoft.mockito.java8.LambdaMatcher.argLambda;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;

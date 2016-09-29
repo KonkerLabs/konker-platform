@@ -1,20 +1,14 @@
 package com.konkerlabs.platform.registry.integration.processors;
 
 import java.text.MessageFormat;
-import java.time.Instant;
-import java.util.Comparator;
-import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.web.context.request.async.DeferredResult;
 
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
@@ -24,9 +18,6 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterServ
 import com.konkerlabs.platform.registry.business.services.api.EnrichmentExecutor;
 import com.konkerlabs.platform.registry.business.services.api.NewServiceResponse;
 import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteExecutor;
-
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPubSub;
 
 @Component
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
@@ -56,19 +47,16 @@ public class DeviceEventProcessor {
     private DeviceRegisterService deviceRegisterService;
     private DeviceEventService deviceEventService;
     private EnrichmentExecutor enrichmentExecutor;
-    private RedisTemplate<String, Object> redisTemplate;
 
     @Autowired
     public DeviceEventProcessor(DeviceEventService deviceEventService,
                                 EventRouteExecutor eventRouteExecutor,
                                 DeviceRegisterService deviceRegisterService,
-                                EnrichmentExecutor enrichmentExecutor,
-                                RedisTemplate<String, Object> redisTemplate) {
+                                EnrichmentExecutor enrichmentExecutor) {
         this.deviceEventService = deviceEventService;
         this.eventRouteExecutor = eventRouteExecutor;
         this.deviceRegisterService = deviceRegisterService;
         this.enrichmentExecutor = enrichmentExecutor;
-        this.redisTemplate = redisTemplate;
     }
 
     public void process(String apiKey, String channel, String payload) throws BusinessException {

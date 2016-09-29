@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -33,6 +34,8 @@ public class DeviceEventServiceImpl implements DeviceEventService {
     private TenantRepository tenantRepository;
     @Autowired
     private DeviceRegisterService deviceRegisterService;
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
 
     @Override
     public NewServiceResponse<Event> logIncomingEvent(Device device, Event event) {
@@ -53,11 +56,13 @@ public class DeviceEventServiceImpl implements DeviceEventService {
         return doLog(device,event,() -> {
             try {
                 eventRepository.saveOutgoing(device.getTenant(), event);
+                redisTemplate.convertAndSend(
+                        device.getApiKey() + "." + event.getOutgoing().getChannel(),
+                        device.getGuid());
             } catch (BusinessException e) {
                 return ServiceResponseBuilder.<Event>error()
                         .withMessage(e.getMessage()).build();
             }
-
             return ServiceResponseBuilder.<Event>ok().build();
         });
     }

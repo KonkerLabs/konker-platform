@@ -64,7 +64,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
     @Autowired
     private RedisConnectionFactory redisConnectionFactory;
     @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    private RedisTemplate<String, String> redisTemplate;
 
     private Tenant tenant;
     private String incomingPayload;

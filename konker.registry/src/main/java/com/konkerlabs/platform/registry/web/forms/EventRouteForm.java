@@ -17,6 +17,12 @@ import com.konkerlabs.platform.registry.web.forms.api.ModelBuilder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Supplier;
+
 @Data
 @EqualsAndHashCode(exclude={"tenantDomainSupplier"})
 public class EventRouteForm implements ModelBuilder<EventRoute,EventRouteForm,String>,

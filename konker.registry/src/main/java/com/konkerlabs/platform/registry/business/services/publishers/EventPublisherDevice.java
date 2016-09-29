@@ -23,11 +23,11 @@ import java.util.Optional;
 
 @Service("device")
 @Scope(BeanDefinition.SCOPE_SINGLETON)
-public class EventPublisherMqtt implements EventPublisher {
+public class EventPublisherDevice implements EventPublisher {
 
     private static final String EVENT_DROPPED = "Outgoing event has been dropped: [URI: {0}] - [Message: {1}]";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EventPublisherMqtt.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(EventPublisherDevice.class);
 
     private static final String MQTT_OUTGOING_TOPIC_TEMPLATE = "sub/{0}/{1}";
 
@@ -38,8 +38,8 @@ public class EventPublisherMqtt implements EventPublisher {
     private DeviceEventService deviceEventService;
 
     @Autowired
-    public EventPublisherMqtt(MqttMessageGateway mqttMessageGateway,
-                              DeviceRegisterService deviceRegisterService) {
+    public EventPublisherDevice(MqttMessageGateway mqttMessageGateway,
+                                DeviceRegisterService deviceRegisterService) {
         this.mqttMessageGateway = mqttMessageGateway;
         this.deviceRegisterService = deviceRegisterService;
     }

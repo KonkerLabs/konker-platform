@@ -167,6 +167,14 @@
             <artifactId>spring-data-redis</artifactId>
             <version>1.7.3.RELEASE</version>
         </dependency>
+        <dependency>
+            <groupId>com.lordofthejars</groupId>
+            <artifactId>nosqlunit-redis</artifactId>
+            <version>0.8.1</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
+
 
 </project>

@@ -24,11 +24,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import redis.clients.jedis.JedisPubSub;
 
 import java.text.MessageFormat;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -91,11 +93,11 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
         tenant = tenantRepository.findByDomainName("konker");
         device = deviceRepository.findByTenantAndGuid(tenant.getId(), userDefinedDeviceGuid);
         event = Event.builder()
-                    .incoming(
+                .incoming(
                         Event.EventActor.builder()
-                            .channel(topic)
-                            .deviceGuid(device.getGuid()).build()
-                    ).payload(payload).build();
+                                .channel(topic)
+                                .deviceGuid(device.getGuid()).build()
+                ).payload(payload).build();
     }
 
     @Test
@@ -206,4 +208,5 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
         assertThat(serviceResponse.getResult().get(0).getTimestamp().toEpochMilli(),
                 equalTo(lastEventTimestamp.toEpochMilli()));
     }
+
 }

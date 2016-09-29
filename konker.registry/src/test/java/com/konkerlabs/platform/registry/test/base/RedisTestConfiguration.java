@@ -1,15 +1,9 @@
 package com.konkerlabs.platform.registry.test.base;
 
 import com.konkerlabs.platform.registry.config.RedisConfig;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 
 /**
@@ -26,9 +20,9 @@ public class RedisTestConfiguration extends RedisConfig {
 
     @Override
     @Bean
-    @Scope(BeanDefinition.SCOPE_PROTOTYPE)
-    public RedisTemplate<String, Object> redisTemplate() {
+    public RedisTemplate<String, String> redisTemplate() {
         return super.redisTemplate();
+
     }
 
 
