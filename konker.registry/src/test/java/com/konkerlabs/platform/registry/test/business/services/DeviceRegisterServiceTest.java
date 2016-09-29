@@ -452,15 +452,25 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         Device device = deviceRegisterService
                 .findByTenantDomainNameAndDeviceGuid(currentTenant.getDomainName(), THE_DEVICE_GUID);
 
-        NewServiceResponse<Device> serviceResponse = deviceRegisterService
-                .remove(Tenant.builder().id(THE_TENANT_ID).build(), device.getId());
-        NewServiceResponse<List<Event>> incomingEvents = deviceEventService.findIncomingBy(currentTenant, THE_DEVICE_GUID,
-                Instant.ofEpochMilli(1353320973747l), Instant.ofEpochMilli(1553320973747l), false, 10);
-        NewServiceResponse<List<Event>> outgoingEvents = deviceEventService.findOutgoingBy(currentTenant, THE_DEVICE_GUID,
-                Instant.ofEpochMilli(1353320973747l), Instant.ofEpochMilli(1553320973747l), false, 10);
 
-        assertThat((incomingEvents != null && incomingEvents.getResult().size() > 0) ? incomingEvents.getResult().stream().anyMatch(event -> event.getDeleted()) : true, equalTo(true));
-        assertThat((outgoingEvents != null && outgoingEvents.getResult().size() > 0)? outgoingEvents.getResult().stream().anyMatch(event -> event.getDeleted()) : true, equalTo(true));
+        NewServiceResponse<List<Event>> incomingEvents = deviceEventService.findIncomingBy(currentTenant, THE_DEVICE_GUID,
+                Instant.ofEpochMilli(1353320973746l), Instant.ofEpochMilli(1553320973748l), false, 10);
+        NewServiceResponse<List<Event>> outgoingEvents = deviceEventService.findOutgoingBy(currentTenant, THE_DEVICE_GUID,
+                Instant.ofEpochMilli(1353320973746l), Instant.ofEpochMilli(1553320973748l), false, 10);
+
+        assertThat((incomingEvents != null && incomingEvents.getResult().size() > 0) ? incomingEvents.getResult().stream().anyMatch(event -> event.getDeleted()) : false, equalTo(false));
+        assertThat((outgoingEvents != null && outgoingEvents.getResult().size() > 0)? outgoingEvents.getResult().stream().anyMatch(event -> event.getDeleted()) : false, equalTo(false));
+
+        deviceRegisterService
+                .remove(Tenant.builder().id(THE_TENANT_ID).build(), device.getId());
+
+        incomingEvents = deviceEventService.findIncomingBy(currentTenant, THE_DEVICE_GUID,
+                Instant.ofEpochMilli(1353320973746l), Instant.ofEpochMilli(1453320973748l), false, 10);
+        outgoingEvents = deviceEventService.findOutgoingBy(currentTenant, THE_DEVICE_GUID,
+                Instant.ofEpochMilli(1353320973746l), Instant.ofEpochMilli(1453320973748l), false, 10);
+
+        assertThat((incomingEvents != null && incomingEvents.getResult().size() > 0) ? incomingEvents.getResult().stream().anyMatch(event -> event.getDeleted()) : false, equalTo(false));
+        assertThat((outgoingEvents != null && outgoingEvents.getResult().size() > 0)? outgoingEvents.getResult().stream().anyMatch(event -> event.getDeleted()) : false, equalTo(false));
     }
 
 
