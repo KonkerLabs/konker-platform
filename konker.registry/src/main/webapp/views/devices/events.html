@@ -21,10 +21,10 @@
 					data-th-text="#{devices.events.outgoing.events}"></a></li>
 			</ul>
 			<div class="tab-content">
-				<div id="incoming" class="tab-pane fade in active">
+				<div id="incoming" class="tab-pane fade in active" align="center">
 
-					<div class="col-sm-6 col-offset-sm-3">
-						<table class="table table-bordered"
+					<div class="col-sm-8 col-sm-offset-2" >
+						<table class="table table-bordered "  
 							data-th-if="${recentIncomingEvents != null and !recentIncomingEvents.empty}">
 							<thead>
 								<tr>
@@ -47,9 +47,9 @@
 					</div>
 
 				</div>
-				<div id="outgoing" class="tab-pane fade">
+				<div id="outgoing" class="tab-pane fade" align="center">
 
-					<div class="col-sm-6 col-offset-sm-3">
+					<div class="col-sm-8 col-sm-offset-2">
 						<table class="table table-bordered"
 							data-th-if="${recentOutgoingEvents != null and !recentOutgoingEvents.empty}">
 							<thead>
