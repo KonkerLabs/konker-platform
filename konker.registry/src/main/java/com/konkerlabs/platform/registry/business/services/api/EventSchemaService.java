@@ -2,6 +2,9 @@ package com.konkerlabs.platform.registry.business.services.api;
 
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.EventSchema;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+
+import java.util.List;
 
 public interface EventSchemaService {
 
@@ -35,5 +38,5 @@ public interface EventSchemaService {
     ServiceResponse<EventSchema> appendOutgoingSchema(Event event);
     ServiceResponse<EventSchema> findIncomingBy(String deviceGuid, String channel);
     ServiceResponse<EventSchema> findOutgoingBy(String deviceGuid, String channel);
-
+    ServiceResponse<List<String>> findKnownIncomingChannelsBy(Tenant tenant, String deviceGuid);
 }

@@ -22,6 +22,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
+import java.util.List;
 
 import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.isResponseOk;
 import static org.hamcrest.MatcherAssert.*;
@@ -121,7 +123,7 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void testSaveIncomingSchema() throws Exception {
+    public void shouldSaveIncomingSchema() throws Exception {
         ServiceResponse<EventSchema> schema = eventSchemaService.appendIncomingSchema(incomingEvent);
 
         assertThat(schema,isResponseOk());
@@ -137,5 +139,16 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
         assertThat(schema,isResponseOk());
         schema.getResult().setId(null);
         assertThat(schema.getResult(),equalTo(secondEventSchema));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/eventSchemas.json"})
+    public void shouldRetrieveAllDistinctChannelByDeviceGuid() throws Exception {
+        List<String> knownChannels = Arrays.asList(new String[]{"command","data"});
+
+        ServiceResponse<List<String>> response = eventSchemaService.findKnownIncomingChannelsBy(tenant,deviceGuid);
+
+        assertThat(response,isResponseOk());
+        assertThat(response.getResult(),equalTo(knownChannels));
     }
 }

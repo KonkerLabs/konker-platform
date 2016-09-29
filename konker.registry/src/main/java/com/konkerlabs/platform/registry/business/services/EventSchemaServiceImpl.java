@@ -1,13 +1,16 @@
 package com.konkerlabs.platform.registry.business.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.EventSchema;
+import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
+import com.mongodb.BasicDBObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
@@ -17,6 +20,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -130,5 +134,21 @@ public class EventSchemaServiceImpl implements EventSchemaService {
     @Override
     public ServiceResponse<EventSchema> findOutgoingBy(String deviceGuid, String channel) {
         return ServiceResponseBuilder.<EventSchema>ok().build();
+    }
+
+    @Override
+    public ServiceResponse<List<String>> findKnownIncomingChannelsBy(Tenant tenant, String deviceGuid) {
+        ServiceResponse<Device> deviceServiceResponse = deviceRegisterService.getByDeviceGuid(tenant,deviceGuid);
+
+        if (deviceServiceResponse.isOk()) {
+            return ServiceResponseBuilder.<List<String>>ok()
+                .withResult(
+                    mongoTemplate.getCollection(INCOMING_COLLECTION_NAME)
+                            .distinct("channel",new BasicDBObject("deviceGuid",deviceGuid))
+                ).build();
+        } else {
+            return ServiceResponseBuilder.<List<String>>error()
+                    .withMessages(deviceServiceResponse.getResponseMessages()).build();
+        }
     }
 }
