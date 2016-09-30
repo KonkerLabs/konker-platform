@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html data-layout-decorate="layouts/default">
+<head>
+</head>
+<body>
+<div data-layout-fragment="content">
+    <fieldset>
+        <legend data-th-text="#{visualization.index.legend}"></legend>
+        <div class="alert alert-success" role="alert" data-th-if="${message != null}">
+            <span data-th-text="${message}"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="alert alert-danger" role="alert" data-th-if="${errors != null and !errors.empty}">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <li data-th-each="error : ${errors}" data-th-text="${error}"></li>
+        </div>
+        
+        <form data-th-action="@{__${action}__}" data-th-object="${visualization}" method="post" class="form-horizontal">
+	        <div id="filter">
+	        	<div class="form-group">
+	                <label class="col-sm-1 control-label"
+	                       data-th-text="#{visualization.index.interval}"></label>
+	                
+	                <label class="col-sm-1 control-label"
+	                       data-th-text="#{visualization.index.date.start}"></label>
+	                <div class="col-sm-2 input-group date" style="float: left;">
+	                    <input type="text" class="form-control" data-th-field="*{dateStart}"/>
+	                    <span class="input-group-addon">
+	                    	<span class="glyphicon glyphicon-calendar"></span>
+	                    </span>
+	                </div>
+	                  
+	                <label class="col-sm-1 control-label"
+	                       data-th-text="#{visualization.index.date.end}"></label>
+	                <div class="col-sm-2 input-group date" style="float: left;">
+	                    <input type="text" class="form-control" data-th-field="*{dateEnd}"/>
+	                    <span class="input-group-addon">
+	                    	<span class="glyphicon glyphicon-calendar"></span>
+	                    </span>
+	                </div>
+	                
+	                <label class="col-sm-1 control-label" 
+	                 		data-th-text="#{visualization.index.online}" for="online"></label>
+                	<div class="col-sm-4">
+	                    <input type="checkbox" data-th-field="*{online}"
+	                           id="online" name="online"/>
+	                </div>
+	                
+	            </div>
+	            
+	        	<div class="form-group">
+	                <label class="col-sm-1 control-label"
+	                       data-th-text="#{visualization.index.device}"
+	                       for="device"></label>
+	                <div class="col-sm-4">
+	                    <select class="form-control" data-th-field="*{deviceGuid}"
+	                        id="device" name="device">
+	                        <option data-th-each="device : ${devices}"
+	                                data-th-value="${device.guid}"
+	                                data-th-text="${device.deviceId + ' - ' + device.name}"></option>
+	                    </select>
+	                </div>
+	            </div>
+	            
+	            <div class="form-group">
+	                <label class="col-sm-1 control-label"
+	                       data-th-text="#{visualization.index.channel}"
+	                       for="channel"></label>
+	                <div class="col-sm-4">
+	                    <select class="form-control" data-th-field="*{channel}"
+	                        id="channel" name="channel">
+	                        <option data-th-each="device : ${devices}"
+	                                data-th-value="${device.guid}"
+	                                data-th-text="${device.deviceId + ' - ' + device.name}"></option>
+	                    </select>
+	                </div>
+	            </div>
+	            
+	            <div class="form-group">
+	                <label class="col-sm-1 control-label"
+	                       data-th-text="#{visualization.index.metric}"
+	                       for="metric"></label>
+	                <div class="col-sm-4">
+	                    <select class="form-control" data-th-field="*{metric}"
+	                        id="metric" name="metric">
+	                        <option data-th-each="device : ${devices}"
+	                                data-th-value="${device.guid}"
+	                                data-th-text="${device.deviceId + ' - ' + device.name}"></option>
+	                    </select>
+	                </div>
+	            </div>
+	            
+	            <div class="form-group col-sm-9">
+	            	<button type="submit" data-th-text="#{visualization.index.btn.apply}" class="btn btn-success  pull-right"></button>
+	            </div>
+	        </div>
+	        
+	        <div id="chart">
+	        </div>
+	        
+	        <div id="data-event">
+	        	<table class="table table-bordered">
+		            <thead>
+			            <tr>
+			                <td class="col-md-1" data-th-text="#{visualization.index.column}"></td>
+			            </tr>
+		            </thead>
+		            <tbody>
+			            <tr data-th-each="device : ${devices}">
+			                <td data-th-text="${device.deviceId}"></td>
+			            </tr>
+		            </tbody>
+		        </table>
+	        </div>
+        </form>
+    </fieldset>
+</div>
+<script type="text/javascript">
+	$(function() {
+		$('.date').datetimepicker();
+	})
+</script>
+</body>
+</html>
