@@ -36,7 +36,7 @@
 							</thead>
 							<tbody>
 								<tr data-th-each="event : ${recentIncomingEvents}">
-									<td data-th-text="${event.timestamp.toString()}"></td>
+									<td data-th-text="${#temporals.format(event.getZonedTimestamp('America/Sao_Paulo'), 'dd/MM/yyyy HH:mm:ss.SSS z')}"></td>
 									<td data-th-text="${event.incoming.channel}"></td>
 									<td data-th-text="${event.payload}"></td>
 								</tr>
