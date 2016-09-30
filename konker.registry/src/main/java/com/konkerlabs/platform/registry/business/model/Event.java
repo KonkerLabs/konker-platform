@@ -4,6 +4,8 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 @Data
 @Builder
@@ -21,5 +23,9 @@ public class Event {
         private String tenantDomain;
         private String deviceGuid;
         private String channel;
+    }
+    
+    public ZonedDateTime getZonedTimestamp(String zoneId) {
+        return timestamp.atZone(ZoneId.of(zoneId));
     }
 }

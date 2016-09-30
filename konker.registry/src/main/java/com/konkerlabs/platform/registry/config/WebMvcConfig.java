@@ -16,6 +16,7 @@ import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.thymeleaf.extras.java8time.dialect.Java8TimeDialect;
 import org.thymeleaf.messageresolver.IMessageResolver;
 import org.thymeleaf.messageresolver.StandardMessageResolver;
 import org.thymeleaf.spring4.SpringTemplateEngine;
@@ -69,6 +70,7 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements Application
         SpringTemplateEngine engine = new SpringTemplateEngine();
         engine.setEnableSpringELCompiler(true);
         engine.addDialect(new LayoutDialect());
+        engine.addDialect(java8TimeDialect());
         engine.setTemplateResolver(templateResolver());
         return engine;
     }
@@ -81,6 +83,11 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements Application
         resolver.setCache(true);
         resolver.setCharacterEncoding("UTF-8");
         return resolver;
+    }
+    
+    @Bean
+    public Java8TimeDialect java8TimeDialect() {
+        return new Java8TimeDialect();
     }
 
     @Bean(name ="messageSource")
