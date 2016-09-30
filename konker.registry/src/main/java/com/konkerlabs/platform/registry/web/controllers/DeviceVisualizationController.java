@@ -8,13 +8,19 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.web.forms.DeviceVisualizationForm;
 
 @Controller
@@ -40,6 +46,7 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     private DeviceEventService deviceEventService;
     private Tenant tenant;
     private ApplicationContext applicationContext;
+    private EventSchemaService eventSchemaService;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -47,15 +54,33 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     }
 
     @Autowired
-    public DeviceVisualizationController(DeviceRegisterService deviceRegisterService, DeviceEventService deviceEventService, Tenant tenant) {
+    public DeviceVisualizationController(DeviceRegisterService deviceRegisterService, DeviceEventService deviceEventService, Tenant tenant,
+    		EventSchemaService eventSchemaService) {
         this.deviceRegisterService = deviceRegisterService;
         this.deviceEventService = deviceEventService;
         this.tenant = tenant;
+        this.eventSchemaService = eventSchemaService;
     }
 
     @RequestMapping
     public ModelAndView index() {
         List<Device> all = deviceRegisterService.findAll(tenant).getResult();
-        return new ModelAndView("visualization/index", "devices", all).addObject("visualization", new DeviceVisualizationForm());
+        DeviceVisualizationForm deviceVisualizationForm = new DeviceVisualizationForm();
+		return new ModelAndView("visualization/index", "devices", all).addObject("visualization", deviceVisualizationForm);
+    }
+    
+    @RequestMapping(path = "/load", method = RequestMethod.POST)
+    public ModelAndView load(@ModelAttribute("visualization") DeviceVisualizationForm deviceVisualizationForm) {
+    	
+		return new ModelAndView("visualization/chart-line", "chart-line", null).addObject("visualization", deviceVisualizationForm);
+    	
+    }
+    
+    @RequestMapping("/loading/channel/{deviceGuid}")
+    public ModelAndView loadChannels(@PathVariable String deviceGuid, 
+    					@ModelAttribute("visualization") DeviceVisualizationForm deviceVisualizationForm) {
+    	ServiceResponse<List<String>> channels = eventSchemaService.findKnownIncomingChannelsBy(tenant, deviceGuid);
+    	
+    	return new ModelAndView("visualization/channels", "channels", channels.getResult()).addObject("visualization", deviceVisualizationForm);
     }
 }

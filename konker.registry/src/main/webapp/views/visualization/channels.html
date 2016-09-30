@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+<div data-th-fragment="outgoing" data-th-object="${visualization}">
+    <select class="form-control" data-th-field="*{channel}"
+	        id="channel" name="channel">
+	    <option data-th-value="${''}"
+                                data-th-text="#{visualization.index.select.empty}"></option>
+		<option data-th-each="channel : ${channels}"
+	    	data-th-value="${channel.guid}"
+	        data-th-text="${channel.deviceId + ' - ' + device.name}"></option>
+	 </select>
+</div>
+</body>
+</html>

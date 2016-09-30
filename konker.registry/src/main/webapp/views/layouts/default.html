@@ -13,6 +13,7 @@
 
     <!-- Bootstrap core CSS -->
     <link data-th-href="@{/resources/bootstrap/css/bootstrap.min.css}" rel="stylesheet" />
+    <link data-th-href="@{/resources/bootstrap/css/bootstrap-datetimepicker.min.css}" rel="stylesheet" />
 
     <!-- Custom styles for this template -->
     <link data-th-href="@{/resources/bootstrap/css/jumbotron.css}" rel="stylesheet" />
@@ -89,6 +90,7 @@
 ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    
     <script data-th-inline="javascript">
         /*<![CDATA[*/
             window.jQuery || document.write('<script src="/resources/bootstrap/js/vendor/jquery.min.js"/>')
@@ -105,6 +107,8 @@
         /*]]>*/
     </script>
     <script data-th-attr="src=@{/resources/bootstrap/js/bootstrap.min.js}"></script>
+    <script data-th-attr="src=@{/resources/bootstrap/js/moment.js}"></script>
+    <script data-th-attr="src=@{/resources/bootstrap/js/bootstrap-datetimepicker.min.js}"></script>
     <div data-layout-fragment="script">
     </div>
 </body>
