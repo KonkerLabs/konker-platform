@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 public class UserContextResolver implements SmartFactoryBean<User> {
 
     @Override
-    public User getObject() throws Exception {
+    public User getObject(){
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return User.class.cast(userDetails);
     }
