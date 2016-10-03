@@ -1,15 +1,21 @@
-$('.date').datetimepicker();
+$('.date').datetimepicker({
+	format: "DD/MM/YYYY HH:mm:ss"
+});
 
 $('#device').change(function() {
 	renderOutgoingFragment($('#visualizationForm').serialize(), '/visualization/loading/channel/', '#div-channel');
 });
 
-$('#channel').change(function() {
-	renderOutgoingFragment($('#visualizationForm').serialize(), '/visualization/loading/metrics/', '#div-metric');
-});
-
 $('button').click(function() {
 	renderOutgoingFragment($('#visualizationForm').serialize(), '/visualization/load/', '#chart');
+});
+
+$('#online').click(function() {
+	if ($(this).is(':checked')) {
+		$('.date input').attr('disabled', true);
+	} else {
+		$('.date input').attr('disabled', false);
+	}
 });
 
 function renderOutgoingFragment(scheme, url, element) {
@@ -31,11 +37,18 @@ function fetchViewFragment(scheme, fetchUrl, element) {
         },
         success : function(data) {
             displayFragment(element, data);
+            applyEventBindingsToChannel();
         },
         complete : function() {
             hideElement('#loading');
         }
     });
+}
+
+function applyEventBindingsToChannel() {
+	$('#channel').change(function() {
+		renderOutgoingFragment($('#visualizationForm').serialize(), '/visualization/loading/metrics/', '#div-metric');
+	});
 }
 
 function displayFragment(element, data) {
