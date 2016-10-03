@@ -286,7 +286,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 			return ServiceResponseBuilder.<Device> error().withMessage(CommonValidations.TENANT_NULL.getCode(), null)
 					.build();
 
-		if (!Optional.ofNullable(guid).isPresent())
+        if (!Optional.ofNullable(guid).isPresent())
 			return ServiceResponseBuilder.<Device> error().withMessage(Validations.DEVICE_GUID_NULL.getCode(), null)
 					.build();
 

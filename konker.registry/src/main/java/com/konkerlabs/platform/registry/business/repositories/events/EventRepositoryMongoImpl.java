@@ -9,6 +9,7 @@ import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Sort;
@@ -122,6 +123,7 @@ public class EventRepositoryMongoImpl implements EventRepository {
         toSave.put("ts", event.getTimestamp().toEpochMilli());
         toSave.put(Type.INCOMING.getActorFieldName(), incoming);
         toSave.put("payload", event.getPayload());
+        toSave  .put("deleted", event.getDeleted() != null ? event.getDeleted() : false);
 
         if (type.equals(Type.OUTGOING)) {
             DBObject outgoing = new BasicDBObject();
@@ -196,7 +198,7 @@ public class EventRepositoryMongoImpl implements EventRepository {
         Optional.ofNullable(startInstant).ifPresent(instant -> criterias.add(Criteria.where("ts").gte(instant.toEpochMilli())));
         Optional.ofNullable(endInstant).ifPresent(instant -> criterias.add(Criteria.where("ts").lte(instant.toEpochMilli())));
         Optional.ofNullable(isDeleted)
-                .ifPresent(deleted -> criterias.add(Criteria.where("deleted").exists(deleted)));
+                .ifPresent(deleted -> criterias.add(Criteria.where("deleted").is(deleted)));
 
         Query query = Query.query(
                 Criteria.where(
@@ -240,6 +242,7 @@ public class EventRepositoryMongoImpl implements EventRepository {
                 )
                 .payload(dbObject.get("payload").toString())
                 .timestamp(Instant.ofEpochMilli((Long) dbObject.get("ts")))
+                .deleted(dbObject.get("deleted") != null ? ((Boolean) dbObject.get("deleted")) : null)
                 .build())
         .collect(Collectors.toList());
 

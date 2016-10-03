@@ -4,7 +4,7 @@
       "_class" : "com.mongodb.DBObject",
       "payload":"{}",
       "deleted":false,
-      "timestamp": 1453320973747,
+      "ts": 1453320973747,
       "outgoing": {
         "_class": "com.konkerlabs.platform.registry.business.model.EventActor",
         "deviceGuid": "7d51c242-81db-11e6-a8c2-0746f010e945",
@@ -16,7 +16,7 @@
       "_class" : "com.mongodb.DBObject",
       "payload":"{}",
       "deleted":false,
-      "timestamp": 1453320973757,
+      "ts": 1453320973757,
       "outgoing": {
         "_class": "com.konkerlabs.platform.registry.business.model.EventActor",
         "deviceGuid": "7d51c242-81db-11e6-a8c2-0746f010e945",
