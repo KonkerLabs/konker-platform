@@ -6,15 +6,17 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.DispatcherServlet;
+import org.springframework.web.servlet.LocaleResolver;
 
 import com.konkerlabs.platform.registry.business.model.User;
+import com.konkerlabs.platform.registry.security.UserContextResolver;
 
 @Component
 public class InstantToStringConverter implements Converter<Instant, String> {
@@ -23,6 +25,10 @@ public class InstantToStringConverter implements Converter<Instant, String> {
 
 	@Autowired
 	private ApplicationContext appContext;
+	@Autowired
+	private UserContextResolver userContextResolver;
+	@Autowired
+	private HttpServletRequest request;
 
 	@Override
 	public String convert(Instant source) {
@@ -32,7 +38,8 @@ public class InstantToStringConverter implements Converter<Instant, String> {
 	}
 
 	private Locale getCurrentLocale() {
-		return LocaleContextHolder.getLocale();
+		LocaleResolver resolver = (LocaleResolver) request.getAttribute(DispatcherServlet.LOCALE_RESOLVER_ATTRIBUTE);
+		return resolver.resolveLocale(request);
 	}
 
 	private String getDateTimeFormatPattern(Locale locale) {
@@ -40,8 +47,7 @@ public class InstantToStringConverter implements Converter<Instant, String> {
 	}
 
 	private User getUser() {
-		UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		return User.class.cast(userDetails);
+		return userContextResolver.getObject();
 	}
 
 }
