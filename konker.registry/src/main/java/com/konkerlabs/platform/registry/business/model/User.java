@@ -22,6 +22,7 @@ public class User implements UserDetails {
     @DBRef
     private Tenant tenant;
     private String password;
+    private final String zoneId = "America/Sao_Paulo"; 
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
