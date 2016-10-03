@@ -4,12 +4,12 @@
 </head>
 <body>
 <div data-th-fragment="outgoing">
-    <select class="form-control" id="channel" name="channel">
+    <select class="form-control" id="metric" name="metric">
 	    <option data-th-value="${''}"
                                 data-th-text="#{visualization.index.select.empty}"></option>
-		<option data-th-each="channel : ${channels}"
-	    	data-th-value="${channel}"
-	        data-th-text="${channel}"></option>
+		<option data-th-each="metric : ${metrics}"
+	    	data-th-value="${metric.guid}"
+	        data-th-text="${metric.deviceId + ' - ' + metric.name}"></option>
 	 </select>
 </div>
 </body>

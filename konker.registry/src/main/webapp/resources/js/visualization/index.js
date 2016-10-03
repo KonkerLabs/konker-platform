@@ -1,7 +1,11 @@
 $('.date').datetimepicker();
 
 $('#device').change(function() {
-	renderOutgoingFragment(this.value, '/visualization/loading/channel/', '#div-channel');
+	renderOutgoingFragment($('#visualizationForm').serialize(), '/visualization/loading/channel/', '#div-channel');
+});
+
+$('#channel').change(function() {
+	renderOutgoingFragment($('#visualizationForm').serialize(), '/visualization/loading/metrics/', '#div-metric');
 });
 
 $('button').click(function() {
@@ -9,8 +13,7 @@ $('button').click(function() {
 });
 
 function renderOutgoingFragment(scheme, url, element) {
-    var base = urlTo(url);
-    var url = base + scheme;
+    var url = urlTo(url);
 
     fetchViewFragment(scheme, url, element);
 }
@@ -22,7 +25,7 @@ function fetchViewFragment(scheme, fetchUrl, element) {
         url : fetchUrl,
         dataType: "html",
         timeout : 100000,
-//        data: scheme,
+        data: scheme,
         beforeSend : function() {
             showElement('#loading');
         },

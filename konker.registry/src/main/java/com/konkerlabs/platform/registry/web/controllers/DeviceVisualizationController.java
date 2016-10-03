@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.web.controllers;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.BeansException;
@@ -7,15 +8,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Scope;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.EventSchema;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
@@ -69,24 +69,30 @@ public class DeviceVisualizationController implements ApplicationContextAware {
 		return new ModelAndView("visualization/index", "devices", all).addObject("visualization", deviceVisualizationForm);
     }
     
-    @RequestMapping(path = "/load/{dateStart}/{dateEnd}/{online}/{deviceGuid}/{channel}/{metric}")
-    public ModelAndView load(@PathVariable String dateStart,
-    		@PathVariable String dateEnd,
-    		@PathVariable String online,
-    		@PathVariable String deviceGuid,
-    		@PathVariable String channel,
-    		@PathVariable String metric,
-    		@ModelAttribute("visualization") DeviceVisualizationForm deviceVisualizationForm) {
+    @RequestMapping(path = "/load/")
+    public ModelAndView load(@RequestParam @DateTimeFormat(pattern = "MM/dd/yyyy hh:mm a") LocalDateTime dateStart,
+				    		@RequestParam @DateTimeFormat(pattern = "MM/dd/yyyy hh:mm a") LocalDateTime dateEnd,
+				    		@RequestParam(required = false) boolean online,
+				    		@RequestParam String deviceGuid,
+				    		@RequestParam String channel,
+				    		@RequestParam String metric) {
     	
-		return new ModelAndView("visualization/chart-line", "chart-line", null).addObject("visualization", deviceVisualizationForm);
+		return new ModelAndView("visualization/chart-line", "chart-line", null);
     	
     }
     
-    @RequestMapping("/loading/channel/{deviceGuid}")
-    public ModelAndView loadChannels(@PathVariable String deviceGuid, 
-    					@ModelAttribute("visualization") DeviceVisualizationForm deviceVisualizationForm) {
+    @RequestMapping("/loading/channel/")
+    public ModelAndView loadChannels(@RequestParam String deviceGuid) {
     	ServiceResponse<List<String>> channels = eventSchemaService.findKnownIncomingChannelsBy(tenant, deviceGuid);
     	
-    	return new ModelAndView("visualization/channels", "channels", channels.getResult()).addObject("visualization", deviceVisualizationForm);
+    	return new ModelAndView("visualization/channels", "channels", channels.getResult());
+    }
+    
+    @RequestMapping("/loading/metrics/")
+    public ModelAndView loadMetrics(@RequestParam String deviceGuid, 
+    								@RequestParam String channel) {
+    	ServiceResponse<EventSchema> metrics = eventSchemaService.findIncomingBy(deviceGuid, channel);
+    	
+    	return new ModelAndView("visualization/metrics", "metrics", metrics.getResult());
     }
 }
