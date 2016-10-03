@@ -1,7 +1,9 @@
 package com.konkerlabs.platform.registry.web.controllers;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +11,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Scope;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -70,8 +73,8 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     }
     
     @RequestMapping(path = "/load/")
-    public ModelAndView load(@RequestParam @DateTimeFormat(pattern = "MM/dd/yyyy hh:mm a") LocalDateTime dateStart,
-				    		@RequestParam @DateTimeFormat(pattern = "MM/dd/yyyy hh:mm a") LocalDateTime dateEnd,
+    public ModelAndView load(@RequestParam(required = false)  @DateTimeFormat(iso = ISO.DATE_TIME)  LocalDateTime dateStart,
+				    		@RequestParam(required = false)  @DateTimeFormat(iso = ISO.DATE_TIME) LocalDateTime dateEnd,
 				    		@RequestParam(required = false) boolean online,
 				    		@RequestParam String deviceGuid,
 				    		@RequestParam String channel,
@@ -93,6 +96,11 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     								@RequestParam String channel) {
     	ServiceResponse<EventSchema> metrics = eventSchemaService.findIncomingBy(deviceGuid, channel);
     	
-    	return new ModelAndView("visualization/metrics", "metrics", metrics.getResult());
+    	if (metrics.getResult() == null) {
+    		return new ModelAndView("visualization/metrics", "metrics", new ArrayList<>());
+    	}
+    	
+    	List<String> map = metrics.getResult().getFields().stream().map(m -> m.getPath()).collect(Collectors.toList());
+    	return new ModelAndView("visualization/metrics", "metrics", map);
     }
 }

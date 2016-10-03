@@ -8,8 +8,8 @@
 	    <option data-th-value="${''}"
                                 data-th-text="#{visualization.index.select.empty}"></option>
 		<option data-th-each="metric : ${metrics}"
-	    	data-th-value="${metric.guid}"
-	        data-th-text="${metric.deviceId + ' - ' + metric.name}"></option>
+	    	data-th-value="${metric}"
+	        data-th-text="${metric}"></option>
 	 </select>
 </div>
 </body>
