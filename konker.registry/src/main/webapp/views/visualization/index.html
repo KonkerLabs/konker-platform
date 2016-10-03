@@ -19,7 +19,7 @@
             <li data-th-each="error : ${errors}" data-th-text="${error}"></li>
         </div>
         
-        <form id="visualizationForm" data-th-action="@{__${action}__}" data-th-object="${visualization}" method="post" class="form-horizontal">
+        <form id="visualizationForm" data-th-object="${visualization}" method="post" class="form-horizontal">
 	        <div id="filter">
 	        	<div class="form-group">
 	                <label class="col-sm-1 control-label"

@@ -5,12 +5,12 @@ $('#device').change(function() {
 });
 
 $('button').click(function() {
-	renderOutgoingFragment($('#visualizationForm').serialize(), '/visualization/load', '#chart');
+	renderOutgoingFragment($('#visualizationForm').serialize(), '/visualization/load/', '#chart');
 });
 
 function renderOutgoingFragment(scheme, url, element) {
     var base = urlTo(url);
-    var url = base;
+    var url = base + scheme;
 
     fetchViewFragment(scheme, url, element);
 }
@@ -18,11 +18,11 @@ function renderOutgoingFragment(scheme, url, element) {
 function fetchViewFragment(scheme, fetchUrl, element) {
     $.ajax({
         context : this,
-        type : "POST",
+        type : "GET",
         url : fetchUrl,
         dataType: "html",
         timeout : 100000,
-        data: scheme,
+//        data: scheme,
         beforeSend : function() {
             showElement('#loading');
         },

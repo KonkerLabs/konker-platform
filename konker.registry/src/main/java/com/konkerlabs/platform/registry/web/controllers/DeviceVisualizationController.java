@@ -69,8 +69,14 @@ public class DeviceVisualizationController implements ApplicationContextAware {
 		return new ModelAndView("visualization/index", "devices", all).addObject("visualization", deviceVisualizationForm);
     }
     
-    @RequestMapping(path = "/load", method = RequestMethod.POST)
-    public ModelAndView load(@ModelAttribute("visualization") DeviceVisualizationForm deviceVisualizationForm) {
+    @RequestMapping(path = "/load/{dateStart}/{dateEnd}/{online}/{deviceGuid}/{channel}/{metric}")
+    public ModelAndView load(@PathVariable String dateStart,
+    		@PathVariable String dateEnd,
+    		@PathVariable String online,
+    		@PathVariable String deviceGuid,
+    		@PathVariable String channel,
+    		@PathVariable String metric,
+    		@ModelAttribute("visualization") DeviceVisualizationForm deviceVisualizationForm) {
     	
 		return new ModelAndView("visualization/chart-line", "chart-line", null).addObject("visualization", deviceVisualizationForm);
     	
