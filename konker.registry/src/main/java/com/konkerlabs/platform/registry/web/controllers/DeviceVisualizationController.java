@@ -118,6 +118,13 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     		return Arrays.asList(message);
     	}
     	
+    	if (online) {
+    		ServiceResponse<List<Event>> response = deviceEventService.findIncomingBy(tenant, deviceGuid, null, 
+        			null, false, 100);
+        	
+    		return response.getResult();
+    	}
+    	
     	LocalDateTime start = LocalDateTime.parse(dateStart, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
     	LocalDateTime end = LocalDateTime.parse(dateEnd, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
     	ZonedDateTime zonedDateStart = ZonedDateTime.of(start, ZoneId.of(user.getZoneId()));
