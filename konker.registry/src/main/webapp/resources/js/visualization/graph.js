@@ -27,13 +27,13 @@ var graphService = {
                     useInteractiveGuideline: true
                 });
 
-//            chart.margin({"bottom":200})
+            chart.margin({"bottom":200})
 
             chart.xAxis
               .axisLabel(controller.xAxisLabel)
-//              .rotateLabels(-45)
+              .rotateLabels(-45)
               .tickFormat(function(d) {
-                return d3.time.format('%x %X')(new Date(d))
+                return d3.time.format('%d/%m/%Y %X')(new Date(d))
               });
             chart.yAxis
                 .axisLabel(controller.field)
@@ -46,7 +46,7 @@ var graphService = {
             ;
             controller.chart = chart;
 
-            d3.select('#graph svg')
+            d3.select('#chart svg')
                 .datum(controller.data)
                 .call(controller.chart);
             nv.utils.windowResize(controller.chart.update);
@@ -56,12 +56,15 @@ var graphService = {
     },
     prepare : function(data) {
         var points = [];
+        data.reverse();
 
         for (var i = 0; i < data.length; i++) {
-            var value = getByPath(data[i].payload,graphService.field)
+            var value = getByPath(JSON.parse(data[i].payload),graphService.field)
 
             if (!isNaN(value)) {
-                points.push({x: new Date(data[i].ts), y: value});
+                var d = new Date(0);
+                d.setUTCSeconds(data[i].timestamp.epochSecond)
+                points.push({x: d, y: value});
             }
         }
 
@@ -81,11 +84,10 @@ var graphService = {
 
         this.data = this.prepare(data);
         // Update the SVG with the new data and call chart
-        d3.select('#graph svg').datum(this.data).call(this.chart);
+        d3.select('#chart svg').datum(this.data).call(this.chart);
         nv.utils.windowResize(this.chart.update);
     },
-    setup : function(fetchUrl,lineColor,xAxisLabel) {
-        this.fetchUrl = fetchUrl;
+    setup : function(lineColor,xAxisLabel) {
         this.lineColor = lineColor;
         this.xAxisLabel = xAxisLabel;
     }

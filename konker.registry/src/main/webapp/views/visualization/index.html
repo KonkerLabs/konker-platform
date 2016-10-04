@@ -1,6 +1,18 @@
 <!DOCTYPE html>
 <html data-layout-decorate="layouts/default">
 <head>
+	<link data-th-href="@{/resources/konker/css/nv.d3.css}" rel="stylesheet" />
+	<style>
+		svg {
+    		display: block;
+		}
+		#chart, svg {
+			margin: 0px;
+			padding: 0px;
+			height: 400px;
+			width: 95%;
+		}
+	</style>
 </head>
 <body>
 <div data-layout-fragment="content">
@@ -89,9 +101,9 @@
 	            </div>
 	        </div>
 	        
-	        <div id="chart">
-				<data-th-block data-th-include="visualization/graph :: graph">
-				</data-th-block>
+	        <div id="chart" class="with-3d-shadow with-transitions">
+				<svg>
+				</svg>
 	        </div>
 	        
 	        <div id="data-event">
@@ -113,6 +125,9 @@
 	<script data-th-attr="src=@{/resources/konker/scripts/nv.d3.min.js}"></script>
 	<script data-th-attr="src=@{/resources/js/visualization/graph.js}"></script>
     <script data-th-attr="src=@{/resources/js/visualization/index.js}"></script>
+	<script>
+		graphService.setup('#7777ff',"Data/Hora");
+	</script>
 </div>
 </body>
 </html>

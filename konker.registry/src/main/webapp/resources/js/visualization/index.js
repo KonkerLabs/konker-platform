@@ -40,6 +40,8 @@ function findAndLoadDataChart(scheme, fetchUrl) {
         		$("#data-event table tbody").html(tableData);
         		
         	}
+
+        	graphService.update('value',result);
         },
         complete : function() {
             hideElement('#loading');
