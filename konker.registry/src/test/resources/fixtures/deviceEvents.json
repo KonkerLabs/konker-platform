@@ -4,7 +4,6 @@
       "_id": "57e40a6e44f4b3a77bdde14e",
       "_class": "com.mongodb.BasicDBObject",
       "ts": 1474562670340,
-      "deleted": false,
       "incoming": {
         "deviceGuid": "7d51c242-81db-11e6-a8c2-0746f010e945",
         "channel": "command",
@@ -29,7 +28,6 @@
       "_id": "57e41a6d44f4b3a77bdde15c",
       "_class": "com.mongodb.BasicDBObject",
       "ts": 1474562672395,
-      "deleted": false,
       "incoming": {
         "deviceGuid": "7d51c242-81db-11e6-a8c2-0746f010e945",
         "channel": "command",
@@ -54,7 +52,6 @@
       "_id": "58e41a6d41f4b3d77bcde17a",
       "_class": "com.mongodb.BasicDBObject",
       "ts": 1474562674450,
-      "deleted": false,
       "incoming": {
         "deviceGuid": "7d51c242-81db-11e6-a8c2-0746f010e945",
         "channel": "command",

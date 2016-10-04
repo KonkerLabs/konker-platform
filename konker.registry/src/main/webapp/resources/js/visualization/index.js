@@ -4,11 +4,48 @@ $('.date').datetimepicker({
 
 $('#device').change(function() {
 	renderOutgoingFragment($('#visualizationForm').serialize(), '/visualization/loading/channel/', '#div-channel');
+	clearMetricSelect();
 });
 
-$('button').click(function() {
-	renderOutgoingFragment($('#visualizationForm').serialize(), '/visualization/load/', '#chart');
+$('button.btn-success').click(function() {
+	findAndLoadDataChart($('#visualizationForm').serialize(), '/visualization/load/');
 });
+
+function findAndLoadDataChart(scheme, fetchUrl) {
+	var url = urlTo(fetchUrl);
+    $.ajax({
+        context : this,
+        type : "GET",
+        url : url,
+        dataType: "html",
+        timeout : 100000,
+        data: scheme,
+        beforeSend : function() {
+            showElement('#loading');
+        },
+        success : function(data) {
+        	var result = jQuery.parseJSON(data);
+        	
+        	if (result.length > 0 && result[0].message != null) {
+        		$('div .alert.alert-danger').removeClass('hide');
+        		$('div .alert.alert-danger li').html(result[0].message);
+        	} else {
+        		$('div .alert.alert-danger').addClass('hide');
+        		$('#dataResult').val(data);
+        		
+        		var tableData = "";
+        		$(result).each(function() {
+        			tableData = tableData + '<tr><td>'+$(this)+'</td></tr>';
+        		})
+        		$("#data-event table tbody").html(tableData);
+        		
+        	}
+        },
+        complete : function() {
+            hideElement('#loading');
+        }
+    });
+}
 
 $('#online').click(function() {
 	if ($(this).is(':checked')) {
@@ -49,6 +86,10 @@ function applyEventBindingsToChannel() {
 	$('#channel').change(function() {
 		renderOutgoingFragment($('#visualizationForm').serialize(), '/visualization/loading/metrics/', '#div-metric');
 	});
+}
+
+function clearMetricSelect() {
+	$('#metric').html('<option value="">Select an option...</option>');
 }
 
 function displayFragment(element, data) {
