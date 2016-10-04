@@ -34,9 +34,9 @@ function findAndLoadDataChart(scheme, fetchUrl) {
         		$('#dataResult').val(data);
         		
         		var tableData = "";
-        		$(result).each(function() {
-        			tableData = tableData + '<tr><td>'+$(this)+'</td></tr>';
-        		})
+        		$.each(result, function(index, value) {
+        			tableData = tableData + '<tr><td>'+JSON.stringify(value.payload)+'</td></tr>';
+        		});
         		$("#data-event table tbody").html(tableData);
         		
         	}

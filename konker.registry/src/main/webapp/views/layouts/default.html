@@ -50,9 +50,7 @@
                         <li><a data-th-href="@{/destinations/rest}" data-th-text="#{nav.menu.rest_destinations}"></a></li>
                         <li><a data-th-href="@{/destinations/sms}" data-th-text="#{nav.menu.sms_destinations}" 
                         		th:if="${@environment.getActiveProfiles().length != 0 && @environment.getActiveProfiles()[0] == 'sms'}"></a></li>
-                        <li><a data-th-href="@{/dashboards/index.html} + '#dashboard/solr/' + ${@tenant.domainName} + '-events'"
-                            target="_blank"
-                            data-th-text="#{nav.menu.dashboards}"></a>
+                        <li><a data-th-href="@{/visualization}" data-th-text="#{nav.menu.dashboards}"></a>
                         </li>
                     </ul>
                 </li>

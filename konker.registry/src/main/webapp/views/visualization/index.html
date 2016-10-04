@@ -69,11 +69,8 @@
 	                       data-th-text="#{visualization.index.channel}"
 	                       for="channel"></label>
 	                <div id="div-channel" class="col-sm-4">
-	                    <select class="form-control" data-th-field="*{channel}"
-	                        id="channel" name="channel">
-	                        <option data-th-value="${''}"
-                                data-th-text="#{visualization.index.select.empty}"></option>
-	                    </select>
+	                    <data-th-block data-th-include="visualization/channels :: channels">
+						</data-th-block>
 	                </div>
 	            </div>
 	            
@@ -82,11 +79,8 @@
 	                       data-th-text="#{visualization.index.metric}"
 	                       for="metric"></label>
 	                <div id="div-metric" class="col-sm-4">
-	                    <select class="form-control" data-th-field="*{metric}"
-	                        id="metric" name="metric">
-	                        <option data-th-value="${''}"
-                                data-th-text="#{visualization.index.select.empty}"></option>
-	                    </select>
+	                    <data-th-block data-th-include="visualization/metrics :: metrics">
+						</data-th-block>
 	                </div>
 	            </div>
 	            
@@ -101,7 +95,7 @@
 	        </div>
 	        
 	        <div id="data-event">
-	        	<table class="table table-bordered">
+	        	<table class="table table-bordered table-hover">
 		            <thead>
 			            <tr>
 			                <td class="col-md-1" data-th-text="#{visualization.index.column}"></td>
