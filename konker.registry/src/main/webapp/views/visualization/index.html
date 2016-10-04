@@ -101,6 +101,8 @@
 	        </div>
 	        
 	        <div id="chart">
+				<data-th-block data-th-include="visualization/graph :: graph">
+				</data-th-block>
 	        </div>
 	        
 	        <div id="data-event">
@@ -121,6 +123,9 @@
     </fieldset>
 </div>
 <div data-layout-fragment="script">
+	<script data-th-attr="src=@{/resources/konker/scripts/d3.min.js}"></script>
+	<script data-th-attr="src=@{/resources/konker/scripts/nv.d3.min.js}"></script>
+	<script data-th-attr="src=@{/resources/js/visualization/graph.js}"></script>
     <script data-th-attr="src=@{/resources/js/visualization/index.js}"></script>
 </div>
 </body>
