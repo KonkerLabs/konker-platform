@@ -31,7 +31,7 @@
                     <span data-th-if="${not destination.active}" class="glyphicon glyphicon-thumbs-down" aria-hidden="true"/>
                 </td>
                 <td class="text-center">
-                    <a data-th-href="@{/destinations/sms/{id}(id=${destination.guid})}" class="btn btn-default" data-th-text="#{nav.back}">
+                    <a data-th-href="@{/destinations/sms/{id}(id=${destination.guid})}" class="btn btn-default" data-th-text="#{nav.show}">
                         Show
                     </a>
                     <a data-th-href="@{/destinations/sms/{id}/edit(id=${destination.guid})}" class="btn btn-default" data-th-text="#{nav.edit}">
