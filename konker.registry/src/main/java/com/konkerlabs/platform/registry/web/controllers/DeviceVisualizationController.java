@@ -1,6 +1,8 @@
 package com.konkerlabs.platform.registry.web.controllers;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.EventSchema;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
@@ -73,12 +76,16 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     }
     
     @RequestMapping(path = "/load/")
-    public ModelAndView load(@RequestParam(required = false)  @DateTimeFormat(iso = ISO.DATE_TIME)  LocalDateTime dateStart,
-				    		@RequestParam(required = false)  @DateTimeFormat(iso = ISO.DATE_TIME) LocalDateTime dateEnd,
+    public ModelAndView load(@RequestParam(required = false) String dateStart,
+				    		@RequestParam(required = false) String dateEnd,
 				    		@RequestParam(required = false) boolean online,
 				    		@RequestParam String deviceGuid,
 				    		@RequestParam String channel,
 				    		@RequestParam String metric) {
+    	LocalDateTime start = LocalDateTime.parse(dateStart, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
+    	LocalDateTime end = LocalDateTime.parse(dateEnd, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
+    	ServiceResponse<List<Event>> response = deviceEventService.findIncomingBy(tenant, deviceGuid, start.toInstant(ZoneOffset.UTC), 
+    			end.toInstant(ZoneOffset.UTC), true, 100);
     	
 		return new ModelAndView("visualization/chart-line", "chart-line", null);
     	
@@ -100,7 +107,7 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     		return new ModelAndView("visualization/metrics", "metrics", new ArrayList<>());
     	}
     	
-    	List<String> map = metrics.getResult().getFields().stream().map(m -> m.getPath()).collect(Collectors.toList());
-    	return new ModelAndView("visualization/metrics", "metrics", map);
+    	List<String> listMetrics = metrics.getResult().getFields().stream().map(m -> m.getPath()).collect(Collectors.toList());
+    	return new ModelAndView("visualization/metrics", "metrics", listMetrics);
     }
 }
