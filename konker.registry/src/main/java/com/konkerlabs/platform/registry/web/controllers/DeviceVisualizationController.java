@@ -1,10 +1,15 @@
 package com.konkerlabs.platform.registry.web.controllers;
 
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.BeansException;
@@ -12,17 +17,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Scope;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.EventSchema;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
@@ -35,7 +40,10 @@ import com.konkerlabs.platform.registry.web.forms.DeviceVisualizationForm;
 public class DeviceVisualizationController implements ApplicationContextAware {
 
     public enum Messages {
-        DEVICE_REGISTERED_SUCCESSFULLY("controller.device.registered.success");
+    	DEVICE_IS_MANDATORY("visualization.device.mandatory"),
+    	CHANNE_IS_MANDATORY("visualization.channel.mandatory"),
+    	DATESTART_IS_MANDATORY("visualization.datestart.mandatory"),
+    	DATEEND_IS_MANDATORY("visualization.dateend.mandatory");
 
         public String getCode() {
             return code;
@@ -53,6 +61,7 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     private Tenant tenant;
     private ApplicationContext applicationContext;
     private EventSchemaService eventSchemaService;
+    private User user;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -61,11 +70,12 @@ public class DeviceVisualizationController implements ApplicationContextAware {
 
     @Autowired
     public DeviceVisualizationController(DeviceRegisterService deviceRegisterService, DeviceEventService deviceEventService, Tenant tenant,
-    		EventSchemaService eventSchemaService) {
+    		EventSchemaService eventSchemaService, User user) {
         this.deviceRegisterService = deviceRegisterService;
         this.deviceEventService = deviceEventService;
         this.tenant = tenant;
         this.eventSchemaService = eventSchemaService;
+        this.user = user;
     }
 
     @RequestMapping
@@ -76,18 +86,48 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     }
     
     @RequestMapping(path = "/load/")
-    public ModelAndView load(@RequestParam(required = false) String dateStart,
+    public @ResponseBody List load(@RequestParam(required = false) String dateStart,
 				    		@RequestParam(required = false) String dateEnd,
 				    		@RequestParam(required = false) boolean online,
 				    		@RequestParam String deviceGuid,
 				    		@RequestParam String channel,
-				    		@RequestParam String metric) {
+				    		@RequestParam String metric,
+				    		Locale locale) {
+    	
+    	if (deviceGuid.isEmpty()) {
+    		Map<String, String> message = new HashMap<>();
+    		message.put("message", applicationContext.getMessage(Messages.DEVICE_IS_MANDATORY.getCode(),null,locale));
+    		return Arrays.asList(message);
+    	}
+    	
+    	if (channel.isEmpty()) {
+    		Map<String, String> message = new HashMap<>();
+    		message.put("message", applicationContext.getMessage(Messages.CHANNE_IS_MANDATORY.getCode(),null,locale));
+    		return Arrays.asList(message);
+    	}
+    	
+    	if (!online && dateStart.isEmpty()) {
+    		Map<String, String> message = new HashMap<>();
+    		message.put("message", applicationContext.getMessage(Messages.DATESTART_IS_MANDATORY.getCode(),null,locale));
+    		return Arrays.asList(message);
+    	}
+    	
+    	if (!online && dateEnd.isEmpty()) {
+    		Map<String, String> message = new HashMap<>();
+    		message.put("message", applicationContext.getMessage(Messages.DATEEND_IS_MANDATORY.getCode(),null,locale));
+    		return Arrays.asList(message);
+    	}
+    	
     	LocalDateTime start = LocalDateTime.parse(dateStart, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
     	LocalDateTime end = LocalDateTime.parse(dateEnd, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
-    	ServiceResponse<List<Event>> response = deviceEventService.findIncomingBy(tenant, deviceGuid, start.toInstant(ZoneOffset.UTC), 
-    			end.toInstant(ZoneOffset.UTC), true, 100);
+    	ZonedDateTime zonedDateStart = ZonedDateTime.of(start, ZoneId.of(user.getZoneId()));
+    	ZonedDateTime zonedDateEnd = ZonedDateTime.of(end, ZoneId.of(user.getZoneId()));
     	
-		return new ModelAndView("visualization/chart-line", "chart-line", null);
+    	ServiceResponse<List<Event>> response = deviceEventService.findIncomingBy(tenant, deviceGuid, zonedDateStart.toInstant(), 
+    			zonedDateEnd.toInstant(), false, 100);
+    	
+    	
+		return response.getResult();
     	
     }
     
