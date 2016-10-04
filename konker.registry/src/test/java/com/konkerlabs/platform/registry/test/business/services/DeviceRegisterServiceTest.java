@@ -458,8 +458,8 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         ServiceResponse<List<Event>> outgoingEvents = deviceEventService.findOutgoingBy(currentTenant, THE_DEVICE_GUID,
                 null, null, false, 100);
 
-        assertThat((incomingEvents != null && incomingEvents.getResult().size() > 0) ? incomingEvents.getResult().stream().anyMatch(event -> event.getDeleted()) : false, equalTo(false));
-        assertThat((outgoingEvents != null && outgoingEvents.getResult().size() > 0)? outgoingEvents.getResult().stream().anyMatch(event -> event.getDeleted()) : false, equalTo(false));
+        assertThat(incomingEvents.getResult().size(), equalTo(2));
+        assertThat(outgoingEvents.getResult().size(), equalTo(2));
 
         deviceRegisterService
                 .remove(currentTenant, device.getGuid());
@@ -469,8 +469,8 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         outgoingEvents = deviceEventService.findOutgoingBy(currentTenant, THE_DEVICE_GUID,
                 null, null, false, 100);
 
-        assertThat((incomingEvents != null && incomingEvents.getResult().size() > 0) ? incomingEvents.getResult().stream().anyMatch(event -> event.getDeleted()) : false, equalTo(false));
-        assertThat((outgoingEvents != null && outgoingEvents.getResult().size() > 0)? outgoingEvents.getResult().stream().anyMatch(event -> event.getDeleted()) : false, equalTo(false));
+        assertThat(incomingEvents.getResult().size(), equalTo(0));
+        assertThat(outgoingEvents.getResult().size(), equalTo(0));
     }
 
 

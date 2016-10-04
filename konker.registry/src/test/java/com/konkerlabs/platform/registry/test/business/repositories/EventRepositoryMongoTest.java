@@ -114,7 +114,6 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
 
         persisted = new BasicDBObject();
         persisted.put("ts", incomingEvent.getTimestamp().toEpochMilli());
-        persisted.put("deleted", false);
         persisted.put("incoming", ((Supplier<DBObject>) () -> {
             DBObject incoming = new BasicDBObject();
             incoming.put("deviceGuid",incomingEvent.getIncoming().getDeviceGuid());
