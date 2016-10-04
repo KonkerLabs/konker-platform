@@ -91,7 +91,6 @@ public class DeviceVisualizationController implements ApplicationContextAware {
 				    		@RequestParam(required = false) boolean online,
 				    		@RequestParam String deviceGuid,
 				    		@RequestParam String channel,
-				    		@RequestParam String metric,
 				    		Locale locale) {
     	
     	if (deviceGuid.isEmpty()) {

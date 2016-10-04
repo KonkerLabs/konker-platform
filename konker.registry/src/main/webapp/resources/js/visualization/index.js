@@ -8,18 +8,18 @@ $('#device').change(function() {
 });
 
 $('button.btn-success').click(function() {
-	findAndLoadDataChart($('#visualizationForm').serialize(), '/visualization/load/');
+	findAndLoadDataChart();
 });
 
-function findAndLoadDataChart(scheme, fetchUrl) {
-	var url = urlTo(fetchUrl);
+function findAndLoadDataChart() {
+	var url = urlTo('/visualization/load/');
     $.ajax({
         context : this,
         type : "GET",
         url : url,
         dataType: "html",
         timeout : 100000,
-        data: scheme,
+        data: $('#visualizationForm').serialize(),
         beforeSend : function() {
             showElement('#loading');
         },
@@ -49,11 +49,15 @@ function findAndLoadDataChart(scheme, fetchUrl) {
     });
 }
 
+var myInterval;
 $('#online').click(function() {
 	if ($(this).is(':checked')) {
 		$('.date input').attr('disabled', true);
+		
+		myInterval = setInterval(findAndLoadDataChart, 5000);
 	} else {
 		$('.date input').attr('disabled', false);
+		clearInterval(myInterval);
 	}
 });
 
