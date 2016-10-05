@@ -90,17 +90,17 @@ public class DeviceEventRestEndpoint {
     	Device device = deviceRegisterService.findByApiKey(apiKey);
 
     	if (!principal.getApiKey().equals(apiKey)) {
-    		deferredResult.setErrorResult(new Exception(applicationContext.getMessage(Messages.INVALID_RESOURCE.getCode(), null, locale)));
+    		deferredResult.setErrorResult(applicationContext.getMessage(Messages.INVALID_RESOURCE.getCode(), null, locale));
     		return deferredResult;
     	}
 
     	if (waitTime.isPresent() && waitTime.get().compareTo(new Long("30000")) > 0) {
-    		deferredResult.setErrorResult(new Exception(applicationContext.getMessage(Messages.INVALID_WAITTIME.getCode(), null, locale)));
+    		deferredResult.setErrorResult(applicationContext.getMessage(Messages.INVALID_WAITTIME.getCode(), null, locale));
     		return deferredResult;
     	}
     	
     	if (!Optional.of(device).isPresent()) {
-    		deferredResult.setErrorResult(new Exception(applicationContext.getMessage(Messages.DEVICE_NOT_FOUND.getCode(), null, locale)));
+    		deferredResult.setErrorResult(applicationContext.getMessage(Messages.DEVICE_NOT_FOUND.getCode(), null, locale));
     		return deferredResult;
     	}
     	
