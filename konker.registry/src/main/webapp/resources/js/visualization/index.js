@@ -95,6 +95,9 @@ function fetchViewFragment(scheme, fetchUrl, element) {
 function applyEventBindingsToChannel() {
 	$('#channel').change(function() {
 		renderOutgoingFragment($('#visualizationForm').serialize(), '/visualization/loading/metrics/', '#div-metric');
+		
+		$('#chart svg').html("")
+		$("#data-event table tbody").html("");
 	});
 }
 
