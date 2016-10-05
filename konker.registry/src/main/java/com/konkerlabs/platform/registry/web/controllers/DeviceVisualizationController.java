@@ -12,6 +12,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.node.JsonNodeType;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -153,7 +154,10 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     		return new ModelAndView("visualization/metrics", "metrics", new ArrayList<>());
     	}
     	
-    	List<String> listMetrics = metrics.getResult().getFields().stream().map(m -> m.getPath()).collect(Collectors.toList());
+    	List<String> listMetrics = metrics.getResult()
+				.getFields().stream()
+				.filter(schemaField -> schemaField.getKnownTypes().contains(JsonNodeType.NUMBER))
+				.map(m -> m.getPath()).collect(Collectors.toList());
     	return new ModelAndView("visualization/metrics", "metrics", listMetrics);
     }
 }

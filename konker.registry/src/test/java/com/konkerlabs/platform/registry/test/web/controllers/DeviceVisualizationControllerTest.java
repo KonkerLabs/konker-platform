@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.node.JsonNodeType;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -121,7 +122,10 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     		.thenReturn(ServiceResponseBuilder.<EventSchema>ok()
     				.withResult(eventSchema).build());
     	
-    	List<String> listMetrics = eventSchema.getFields().stream().map(m -> m.getPath()).collect(java.util.stream.Collectors.toList());
+    	List<String> listMetrics = eventSchema.getFields()
+				.stream()
+				.filter(schemaField -> schemaField.getKnownTypes().contains(JsonNodeType.NUMBER))
+				.map(m -> m.getPath()).collect(java.util.stream.Collectors.toList());
     	getMockMvc().perform(get("/visualization/loading/metrics/").param("deviceGuid", DEVICE_GUID).param("channel", CHANNEL))
     		.andExpect(model().attribute("metrics", equalTo(listMetrics)))
     		.andExpect(view().name("visualization/metrics"));
