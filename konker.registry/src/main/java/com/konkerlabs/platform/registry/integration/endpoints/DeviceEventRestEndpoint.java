@@ -74,8 +74,11 @@ public class DeviceEventRestEndpoint {
         this.jedisTaskService = jedisTaskService;
     }
 
-    @RequestMapping(value = "sub/{apiKey}/{channel}", method = RequestMethod.POST,
-    		consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(
+            value = "sub/{apiKey}/{channel}",
+            method = RequestMethod.GET,
+    		consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public DeferredResult<List<Event>> subEvent(HttpServletRequest servletRequest,
                                                 @PathVariable("apiKey") String apiKey,
