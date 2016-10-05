@@ -112,7 +112,7 @@ public class DeviceEventRestEndpoint {
     	Integer limit = offset.isPresent() ? 50 : 1;
     	
     	ServiceResponse<List<Event>> response = deviceEventService.findOutgoingBy(device.getTenant(), device.getGuid(),
-    			startTimestamp, null, asc, limit);
+    			channel, startTimestamp, null, asc, limit);
 
     	if (!response.getResult().isEmpty() || !waitTime.isPresent() || (waitTime.isPresent() && waitTime.get().equals(new Long("0")))) {
     		deferredResult.setResult(response.getResult());

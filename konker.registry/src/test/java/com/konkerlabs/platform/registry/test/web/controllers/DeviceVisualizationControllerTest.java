@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.node.JsonNodeType;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -85,8 +86,8 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     	
     	eventsList = new ArrayList<>();
     	
-		Event event = Event.builder().timestamp(Instant.ofEpochMilli(1475603097l))
-    			.incoming(EventActor.builder().tenantDomain(TENANT_DOMAIN).deviceGuid(DEVICE_GUID).build())
+		Event event = Event.builder().timestamp(Instant.ofEpochSecond(1475603097l))
+    			.incoming(EventActor.builder().tenantDomain(TENANT_DOMAIN).deviceGuid(DEVICE_GUID).channel(CHANNEL).build())
     			.outgoing(EventActor.builder().tenantDomain(TENANT_DOMAIN).deviceGuid(DEVICE_GUID).channel(CHANNEL).build())
     			.payload("{\"a\": 109, \"b\": 111}").build();
 		eventsList.add(event);
@@ -121,7 +122,10 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     		.thenReturn(ServiceResponseBuilder.<EventSchema>ok()
     				.withResult(eventSchema).build());
     	
-    	List<String> listMetrics = eventSchema.getFields().stream().map(m -> m.getPath()).collect(java.util.stream.Collectors.toList());
+    	List<String> listMetrics = eventSchema.getFields()
+				.stream()
+				.filter(schemaField -> schemaField.getKnownTypes().contains(JsonNodeType.NUMBER))
+				.map(m -> m.getPath()).collect(java.util.stream.Collectors.toList());
     	getMockMvc().perform(get("/visualization/loading/metrics/").param("deviceGuid", DEVICE_GUID).param("channel", CHANNEL))
     		.andExpect(model().attribute("metrics", equalTo(listMetrics)))
     		.andExpect(view().name("visualization/metrics"));
@@ -159,32 +163,34 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     			.andExpect(content().json("[{'message':'Dt/hr end is mandatory'}]"));
     }
     
-//    @Test
+    @Test
     public void shouldReturnDataOnline() throws Exception {
-    	when(deviceEventService.findIncomingBy(tenant, DEVICE_GUID, null, null, false, 100))
+    	when(deviceEventService.findIncomingBy(tenant, DEVICE_GUID, CHANNEL, null, null, false, 100))
 			.thenReturn(ServiceResponseBuilder.<List<Event>>ok()
 				.withResult(eventsList).build());
     	
     	getMockMvc().perform(get("/visualization/load/").param("dateStart", "").param("dateEnd", "").param("online", "true")
     			.param("deviceGuid", DEVICE_GUID).param("channel", CHANNEL))
-    			.andExpect(content().json("[{'timestamp':{'nano':44000000,'epochSecond':1475603097},"
+    			.andExpect(content().json("[{'timestamp':{'nano':0,'epochSecond':1475603097},"
     					+ "'incoming':{"
     					+ "'tenantDomain':'inmetrics.com','deviceGuid':'169897e9-ed44-41d1-978d-d244d78e9a67','channel':'datain'},"
     					+ "'outgoing':{'tenantDomain':'inmetrics.com','deviceGuid':'169897e9-ed44-41d1-978d-d244d78e9a67','channel':'datain'},"
-    					+ "'payload':{'a': 109, 'b': 111},'deleted':null}]"));
+    					+ "'payload':'{\"a\": 109, \"b\": 111}'}]"));
     }
     
-//    @Test
+    @Test
     public void shouldReturnDataByDateRange() throws Exception {
-    	when(deviceEventService.findIncomingBy(tenant, DEVICE_GUID, startingTimestamp, endTimestamp, false, 100))
+    	when(deviceEventService.findIncomingBy(tenant, DEVICE_GUID, CHANNEL, startingTimestamp, endTimestamp, false, 100))
 			.thenReturn(ServiceResponseBuilder.<List<Event>>ok()
 				.withResult(eventsList).build());
     	
     	getMockMvc().perform(get("/visualization/load/").param("dateStart", dateStart).param("dateEnd", dateEnd).param("online", "false")
     			.param("deviceGuid", DEVICE_GUID).param("channel", CHANNEL))
-    			.andExpect(content().json("[{'message':'Dt/hr end is mandatory'}]"));
-//				.andExpect(status().isOk());
-//		.andExpect(jsonPath("", applicationContext.getMessage(DeviceVisualizationController.Messages.DEVICE_IS_MANDATORY.getCode(),null, Locale.ENGLISH)).)
+    			.andExpect(content().json("[{'timestamp':{'nano':0,'epochSecond':1475603097},"
+    					+ "'incoming':{"
+    					+ "'tenantDomain':'inmetrics.com','deviceGuid':'169897e9-ed44-41d1-978d-d244d78e9a67','channel':'datain'},"
+    					+ "'outgoing':{'tenantDomain':'inmetrics.com','deviceGuid':'169897e9-ed44-41d1-978d-d244d78e9a67','channel':'datain'},"
+    					+ "'payload':'{\"a\": 109, \"b\": 111}'}]"));
     }
 
     @Configuration

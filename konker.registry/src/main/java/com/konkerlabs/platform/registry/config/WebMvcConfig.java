@@ -43,8 +43,6 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements Application
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
 		registry.addResourceHandler("/resources/**").addResourceLocations("/resources/")
 				.setCacheControl(CacheControl.maxAge(24, TimeUnit.HOURS).cachePublic());
-		registry.addResourceHandler("/dashboards/**").addResourceLocations("/dashboards/")
-				.setCacheControl(CacheControl.maxAge(24, TimeUnit.HOURS).cachePublic());
 	}
 
 	@Bean

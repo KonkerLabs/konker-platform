@@ -110,7 +110,8 @@
 	        	<table class="table table-bordered table-hover">
 		            <thead>
 			            <tr>
-			                <td class="col-md-1" data-th-text="#{visualization.index.column}"></td>
+			                <td class="col-md-1" data-th-text="#{visualization.index.column.timestamp}"></td>
+			                <td class="col-md-1" data-th-text="#{visualization.index.column.eventsdata}"></td>
 			            </tr>
 		            </thead>
 		            <tbody>
@@ -125,8 +126,8 @@
 	<script data-th-attr="src=@{/resources/konker/scripts/nv.d3.min.js}"></script>
 	<script data-th-attr="src=@{/resources/js/visualization/graph.js}"></script>
     <script data-th-attr="src=@{/resources/js/visualization/index.js}"></script>
-	<script>
-		graphService.setup('#7777ff',"Data/Hora");
+	<script data-th-inline="javascript">
+		graphService.setup('#7777ff',"Data/Hora",[[#{devices.visualization.graph.no_data}]]);
 	</script>
 </div>
 </body>
