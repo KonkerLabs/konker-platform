@@ -27,6 +27,8 @@ var graphService = {
                     useInteractiveGuideline: true
                 });
 
+            chart.noData(controller.noDataMessage);
+
             chart.margin({"bottom":200})
 
             chart.xAxis
@@ -87,8 +89,9 @@ var graphService = {
         d3.select('#chart svg').datum(this.data).call(this.chart);
         nv.utils.windowResize(this.chart.update);
     },
-    setup : function(lineColor,xAxisLabel) {
+    setup : function(lineColor,xAxisLabel,noDataMessage) {
         this.lineColor = lineColor;
         this.xAxisLabel = xAxisLabel;
+        this.noDataMessage = noDataMessage;
     }
 }
