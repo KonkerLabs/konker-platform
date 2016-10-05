@@ -41,7 +41,7 @@ function findAndLoadDataChart() {
         		
         	}
 
-        	graphService.update('value',result);
+        	graphService.update($('#metrics select').val(),result);
         },
         complete : function() {
             hideElement('#loading');
@@ -81,6 +81,7 @@ function fetchViewFragment(scheme, fetchUrl, element) {
         success : function(data) {
             displayFragment(element, data);
             applyEventBindingsToChannel();
+            applyEventBindingsToMetric();
         },
         complete : function() {
             hideElement('#loading');
@@ -91,6 +92,12 @@ function fetchViewFragment(scheme, fetchUrl, element) {
 function applyEventBindingsToChannel() {
 	$('#channel').change(function() {
 		renderOutgoingFragment($('#visualizationForm').serialize(), '/visualization/loading/metrics/', '#div-metric');
+	});
+}
+
+function applyEventBindingsToMetric() {
+	$('#metrics select').change(function() {
+		findAndLoadDataChart();
 	});
 }
 
