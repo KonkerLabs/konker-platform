@@ -89,7 +89,7 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
 		Event event = Event.builder().timestamp(Instant.ofEpochSecond(1475603097l))
     			.incoming(EventActor.builder().tenantDomain(TENANT_DOMAIN).deviceGuid(DEVICE_GUID).channel(CHANNEL).build())
     			.outgoing(EventActor.builder().tenantDomain(TENANT_DOMAIN).deviceGuid(DEVICE_GUID).channel(CHANNEL).build())
-    			.payload("{\"a\": 109, \"b\": 111}").deleted(null).build();
+    			.payload("{\"a\": 109, \"b\": 111}").build();
 		eventsList.add(event);
     	
     	LocalDateTime start = LocalDateTime.parse(dateStart, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
@@ -175,7 +175,7 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     					+ "'incoming':{"
     					+ "'tenantDomain':'inmetrics.com','deviceGuid':'169897e9-ed44-41d1-978d-d244d78e9a67','channel':'datain'},"
     					+ "'outgoing':{'tenantDomain':'inmetrics.com','deviceGuid':'169897e9-ed44-41d1-978d-d244d78e9a67','channel':'datain'},"
-    					+ "'payload':'{\"a\": 109, \"b\": 111}','deleted':null}]"));
+    					+ "'payload':'{\"a\": 109, \"b\": 111}'}]"));
     }
     
     @Test
@@ -190,7 +190,7 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     					+ "'incoming':{"
     					+ "'tenantDomain':'inmetrics.com','deviceGuid':'169897e9-ed44-41d1-978d-d244d78e9a67','channel':'datain'},"
     					+ "'outgoing':{'tenantDomain':'inmetrics.com','deviceGuid':'169897e9-ed44-41d1-978d-d244d78e9a67','channel':'datain'},"
-    					+ "'payload':'{\"a\": 109, \"b\": 111}','deleted':null}]"));
+    					+ "'payload':'{\"a\": 109, \"b\": 111}'}]"));
     }
 
     @Configuration
