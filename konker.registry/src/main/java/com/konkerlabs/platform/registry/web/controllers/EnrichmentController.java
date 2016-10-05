@@ -1,15 +1,14 @@
 package com.konkerlabs.platform.registry.web.controllers;
 
-import com.konkerlabs.platform.registry.business.model.DataEnrichmentExtension;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.enumerations.IntegrationType;
-import com.konkerlabs.platform.registry.business.services.api.DataEnrichmentExtensionService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.web.forms.EnrichmentForm;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -23,16 +22,20 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.text.MessageFormat;
-import java.util.*;
-import java.util.stream.Collectors;
+import com.konkerlabs.platform.registry.business.model.DataEnrichmentExtension;
+import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.enumerations.IntegrationType;
+import com.konkerlabs.platform.registry.business.services.api.DataEnrichmentExtensionService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.web.forms.EnrichmentForm;
 
 @Controller
 @Scope("request")
 @RequestMapping("enrichment")
 public class EnrichmentController implements ApplicationContextAware {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EnrichmentController.class);
 
     public enum Messages {
         ENRICHMENT_REGISTERED_SUCCESSFULLY("controller.enrichment.registered.successfully"),
@@ -154,7 +157,7 @@ public class EnrichmentController implements ApplicationContextAware {
     @RequestMapping(path = "/{dataEnrichmentExtensionGUID}", method = RequestMethod.DELETE)
     public ModelAndView remove(@PathVariable("dataEnrichmentExtensionGUID") String dataEnrichmentExtensionGUID,
                                RedirectAttributes redirectAttributes, Locale locale) {
-        ServiceResponse<DataEnrichmentExtension> serviceResponse = dataEnrichmentExtensionService.remove(tenant, dataEnrichmentExtensionGUID);
+        /*ServiceResponse<DataEnrichmentExtension> serviceResponse =*/ dataEnrichmentExtensionService.remove(tenant, dataEnrichmentExtensionGUID);
 
         redirectAttributes.addFlashAttribute("message",
             applicationContext.getMessage(Messages.ENRICHMENT_REMOVED_SUCCESSFULLY.getCode(),null,locale)

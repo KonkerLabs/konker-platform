@@ -61,6 +61,7 @@ public class DataEnrichmentExtension implements Validatable {
     private String description;
 
     private URI incoming;
+    private String incomingDisplayName;
     private String containerKey;
 
     @Singular

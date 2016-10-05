@@ -1,9 +1,13 @@
 package com.konkerlabs.platform.registry;
 
+import java.util.Optional;
+
 import javax.servlet.Filter;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.context.request.RequestContextListener;
 import org.springframework.web.filter.HiddenHttpMethodFilter;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
@@ -16,8 +20,14 @@ import com.konkerlabs.platform.registry.config.SecurityConfig;
 import com.konkerlabs.platform.registry.config.SolrConfig;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.utilities.config.UtilitiesConfig;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigException;
+import com.typesafe.config.ConfigFactory;
 
 public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
+
+	private static final Config smsConfig = ConfigFactory.load().getConfig("sms");
+	private static final Logger LOGGER = LoggerFactory.getLogger(RegistryAppInitializer.class);
 
 	@Override
 	protected Class<?>[] getRootConfigClasses() {
@@ -42,8 +52,28 @@ public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherSe
 
 	@Override
 	public void onStartup(ServletContext servletContext) throws ServletException {
+
 		super.onStartup(servletContext);
 		servletContext.addListener(new RequestContextListener());
-		servletContext.setInitParameter("spring.profiles.active", "sms");
+
+		// verifying sms configs for sms features activation
+		if (isSmsFeaturesEnabled()) {
+			servletContext.setInitParameter("spring.profiles.active", "sms");
+		}
 	}
+
+	private boolean isSmsFeaturesEnabled() {
+		boolean isEnabled = false;
+
+		try {
+			isEnabled = Optional.ofNullable(smsConfig.getBoolean("enabled")).orElse(false);
+		} catch (ConfigException e) {
+			LOGGER.error(
+					"SMS configuration has no values for key 'enabled'. SMS features are being thoroughly disabled on the platform.",
+					e);
+		}
+		return isEnabled;
+
+	}
+
 }

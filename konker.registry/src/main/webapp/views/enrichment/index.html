@@ -23,7 +23,7 @@
 						<td class="col-md-1" data-th-text="#{enrichment.index.name}">Name</td>
 						<td class="col-md-1" data-th-text="#{enrichment.index.type}">Type</td>
 						<td class="col-md-1"
-							data-th-text="#{enrichment.index.incoming.uri}">Incoming URI</td>
+							data-th-text="#{enrichment.index.incoming.uri}">Incoming Device</td>
 						<td class="col-md-1" data-th-text="#{enrichment.index.active}">Active?</td>
 						<td class="col-md-1 text-center"
 							data-th-text="#{enrichment.index.actions}">Actions</td>
@@ -34,7 +34,7 @@
 						data-th-each="dataEnrichmentExtension : ${dataEnrichmentExtensions}">
 						<td data-th-text="${dataEnrichmentExtension.name}"></td>
 						<td data-th-text="${dataEnrichmentExtension.type}"></td>
-						<td data-th-text="${dataEnrichmentExtension.incoming}"></td>
+						<td data-th-text="${dataEnrichmentExtension.incomingDisplayName}"></td>
 						<td><span data-th-if="${dataEnrichmentExtension.active}"
 							class="glyphicon glyphicon-thumbs-up" aria-hidden="true" /> <span
 							data-th-if="${not dataEnrichmentExtension.active}"
