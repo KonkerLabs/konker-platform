@@ -230,15 +230,20 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .build();
         }
         //find dependencies
-        List<EventRoute> eventRoutes =
+        List<EventRoute> incomingEvents =
                 eventRouteRepository.findByIncomingUri(device.toURI());
+
+        List<EventRoute> outgoingEvents =
+                eventRouteRepository.findByOutgoingUri(device.toURI());
+
         List<DataEnrichmentExtension> enrichmentExtensions =
                 dataEnrichmentExtensionRepository
                         .findByTenantIdAndIncoming(tenant.getId(), device.toURI());
 
         ServiceResponse<Device> response = null;
 
-        if(Optional.ofNullable(eventRoutes).isPresent() && eventRoutes.size() > 0) {
+        if(Optional.ofNullable(incomingEvents).isPresent() && incomingEvents.size() > 0 ||
+                Optional.ofNullable(outgoingEvents).isPresent() && outgoingEvents.size() > 0) {
             if(response == null){
                 response = ServiceResponseBuilder.<Device>error()
                         .withMessage(Validations.DEVICE_HAVE_EVENTROUTES.getCode())

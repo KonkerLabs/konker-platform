@@ -237,7 +237,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json"})
     public void shouldRetrieveLastTwoEventsByTenantAndDeviceWhenFindingIncomingBy() throws Exception {
-        List<Event> events = eventRepository.findIncomingBy(tenant, deviceGuid,
+        List<Event> events = eventRepository.findIncomingBy(tenant, deviceGuid, "command",
                 firstEventTimestamp.plus(1,ChronoUnit.SECONDS),
                 null,false,2);
 
@@ -253,7 +253,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Tenant cannot be null");
 
-        eventRepository.findIncomingBy(null,deviceGuid,firstEventTimestamp,null,false,null);
+        eventRepository.findIncomingBy(null,deviceGuid,null,firstEventTimestamp,null,false,null);
     }
 
     @Test
@@ -261,7 +261,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Device ID cannot be null or empty");
 
-        eventRepository.findIncomingBy(tenant,null,firstEventTimestamp,null,false,null);
+        eventRepository.findIncomingBy(tenant,null,null,firstEventTimestamp,null,false,null);
     }
 
     @Test
@@ -270,14 +270,14 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         thrown.expectMessage("Limit cannot be null when start instant isn't provided");
 
 
-        eventRepository.findIncomingBy(tenant, deviceGuid,null,null,false,null);
+        eventRepository.findIncomingBy(tenant,deviceGuid,null,null,null,false,null);
     }
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json"})
     public void shouldRetrieveTheOnlyFirstEventByTenantAndDeviceWhenFindingIncomingBy() throws Exception {
         List<Event> events = eventRepository.findIncomingBy(tenant,
-                deviceGuid,
+                deviceGuid,"command",
                 firstEventTimestamp,
                 secondEventTimestamp.minus(1, ChronoUnit.SECONDS),true,
                 1);
@@ -292,7 +292,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json"})
     public void shouldLimitResultsAccordingToLimitParameterWhenFindingIncomingBy() throws Exception {
         List<Event> events = eventRepository.findIncomingBy(tenant,
-                deviceGuid,
+                deviceGuid,"command",
                 firstEventTimestamp,
                 thirdEventTimestamp,false,
                 1);

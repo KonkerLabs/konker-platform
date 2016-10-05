@@ -11,6 +11,7 @@ public interface DeviceEventService {
 
     enum Validations {
         DEVICE_NULL("service.device_events.device.not_null"),
+        CHANNEL_NULL("service.device_events.channel.not_null"),
         EVENT_NULL("service.device_events.event.not_null"),
         EVENT_PAYLOAD_NULL("service.device_events.event_payload.not_null"),
         LIMIT_NULL("service.device_events.limit.not_null");
@@ -42,6 +43,7 @@ public interface DeviceEventService {
      */
     ServiceResponse<List<Event>> findIncomingBy(Tenant tenant,
                                                 String deviceGuid,
+                                                String channel,
                                                 Instant startingTimestamp,
                                                 Instant endTimestamp,
                                                 boolean ascending,
@@ -59,6 +61,7 @@ public interface DeviceEventService {
      */
     ServiceResponse<List<Event>> findOutgoingBy(Tenant tenant,
                                                 String deviceGuid,
+                                                String channel,
                                                 Instant startingTimestamp,
                                                 Instant endTimestamp,
                                                 boolean ascending,

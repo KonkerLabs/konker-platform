@@ -95,7 +95,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
         event = Event.builder()
                 .incoming(
                         Event.EventActor.builder()
-                                .channel(topic)
+                                .channel(channel)
                                 .deviceGuid(device.getGuid()).build()
                 ).payload(payload).build();
     }
@@ -136,7 +136,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
     public void shouldLogFirstDeviceEvent() throws Exception {
         deviceEventService.logIncomingEvent(device, event);
 
-        Event last = eventRepository.findIncomingBy(tenant,device.getGuid(),event.getTimestamp(), null, false, 1).get(0);
+        Event last = eventRepository.findIncomingBy(tenant,device.getGuid(),channel,event.getTimestamp(), null, false, 1).get(0);
 
         assertThat(last, notNullValue());
 
@@ -150,7 +150,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
 
         ServiceResponse<List<Event>> serviceResponse = deviceEventService.findIncomingBy(
                 null,
-                device.getId(),
+                device.getId(),channel,
                 firstEventTimestamp,
                 null,
                 false,
@@ -165,7 +165,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
 
         ServiceResponse<List<Event>> serviceResponse = deviceEventService.findIncomingBy(
                 tenant,
-                null,
+                null,channel,
                 firstEventTimestamp,
                 null,
                 false,
@@ -180,7 +180,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
 
         ServiceResponse<List<Event>> serviceResponse = deviceEventService.findIncomingBy(
                 tenant,
-                device.getId(),
+                device.getId(),channel,
                 null,
                 null,
                 false,
@@ -195,7 +195,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
     public void shouldFindAllRequestEvents() throws Exception {
         ServiceResponse<List<Event>> serviceResponse = deviceEventService.findIncomingBy(
                 tenant,
-                device.getGuid(),
+                device.getGuid(),"command",
                 firstEventTimestamp,
                 null,
                 false,

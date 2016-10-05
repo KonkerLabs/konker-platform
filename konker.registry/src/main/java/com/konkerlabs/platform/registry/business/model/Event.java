@@ -15,7 +15,6 @@ public class Event {
     private EventActor incoming;
     private EventActor outgoing;
     private String payload;
-    private Boolean deleted = false;
 
     @Data
     @Builder

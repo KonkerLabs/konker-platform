@@ -141,21 +141,23 @@ public class EventRepositoryMongoImpl implements EventRepository {
     @Override
     public List<Event> findIncomingBy(Tenant tenant,
                                       String deviceGuid,
+                                      String channel,
                                       Instant startInstant,
                                       Instant endInstant,
                                       boolean ascending,
                                       Integer limit) throws BusinessException {
-        return doFindBy(tenant,deviceGuid,startInstant,endInstant,ascending,limit, Type.INCOMING, false);
+        return doFindBy(tenant,deviceGuid,channel,startInstant,endInstant,ascending,limit, Type.INCOMING, false);
     }
 
     @Override
     public List<Event> findOutgoingBy(Tenant tenant,
                                       String deviceGuid,
+                                      String channel,
                                       Instant startInstant,
                                       Instant endInstant,
                                       boolean ascending,
                                       Integer limit) throws BusinessException {
-        return doFindBy(tenant,deviceGuid,startInstant,endInstant,ascending,limit, Type.OUTGOING, false);
+        return doFindBy(tenant,deviceGuid,channel,startInstant,endInstant,ascending,limit, Type.OUTGOING, false);
     }
 
     @Override
@@ -170,6 +172,7 @@ public class EventRepositoryMongoImpl implements EventRepository {
 
     private List<Event> doFindBy(Tenant tenant,
                                  String deviceGuid,
+                                 String channel,
                                  Instant startInstant,
                                  Instant endInstant,
                                  boolean ascending,
@@ -198,6 +201,13 @@ public class EventRepositoryMongoImpl implements EventRepository {
         Optional.ofNullable(endInstant).ifPresent(instant -> criterias.add(Criteria.where("ts").lte(instant.toEpochMilli())));
         Optional.ofNullable(isDeleted)
                 .ifPresent(deleted -> criterias.add(Criteria.where("deleted").exists(deleted)));
+        Optional.ofNullable(channel)
+                .ifPresent(ch -> {
+                    criterias.add(
+                            Criteria.where(MessageFormat.format("{0}.{1}", type.getActorFieldName(),"channel"))
+                                    .is(ch)
+                    );
+                });
 
         Query query = Query.query(
                 Criteria.where(

@@ -12,6 +12,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.node.JsonNodeType;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -118,7 +119,7 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     	}
     	
     	if (online) {
-    		ServiceResponse<List<Event>> response = deviceEventService.findIncomingBy(tenant, deviceGuid, null, 
+    		ServiceResponse<List<Event>> response = deviceEventService.findIncomingBy(tenant, deviceGuid, channel, null,
         			null, false, 100);
         	
     		return response.getResult();
@@ -129,7 +130,8 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     	ZonedDateTime zonedDateStart = ZonedDateTime.of(start, ZoneId.of(user.getZoneId()));
     	ZonedDateTime zonedDateEnd = ZonedDateTime.of(end, ZoneId.of(user.getZoneId()));
     	
-    	ServiceResponse<List<Event>> response = deviceEventService.findIncomingBy(tenant, deviceGuid, zonedDateStart.toInstant(), 
+    	ServiceResponse<List<Event>> response = deviceEventService.findIncomingBy(tenant,
+				deviceGuid, channel, zonedDateStart.toInstant(),
     			zonedDateEnd.toInstant(), false, 100);
     	
     	
@@ -153,7 +155,10 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     		return new ModelAndView("visualization/metrics", "metrics", new ArrayList<>());
     	}
     	
-    	List<String> listMetrics = metrics.getResult().getFields().stream().map(m -> m.getPath()).collect(Collectors.toList());
+    	List<String> listMetrics = metrics.getResult()
+				.getFields().stream()
+				.filter(schemaField -> schemaField.getKnownTypes().contains(JsonNodeType.NUMBER))
+				.map(m -> m.getPath()).collect(Collectors.toList());
     	return new ModelAndView("visualization/metrics", "metrics", listMetrics);
     }
 }

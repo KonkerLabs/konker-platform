@@ -71,6 +71,7 @@ public class EventRepositorySolrImpl implements EventRepository {
     @Override
     public List<Event> findIncomingBy(Tenant tenant,
                                       String deviceGuid,
+                                      String channel,
                                       Instant startInstant,
                                       Instant endInstant,
                                       boolean ascending,
@@ -81,6 +82,7 @@ public class EventRepositorySolrImpl implements EventRepository {
     @Override
     public List<Event> findOutgoingBy(Tenant tenant,
                                       String deviceGuid,
+                                      String channel,
                                       Instant startInstant,
                                       Instant endInstant,
                                       boolean ascending,
