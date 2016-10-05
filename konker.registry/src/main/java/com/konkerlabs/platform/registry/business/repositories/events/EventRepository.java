@@ -37,6 +37,7 @@ public interface EventRepository {
 
     List<Event> findIncomingBy(Tenant tenant,
                                String deviceGuid,
+                               String channel,
                                Instant startInstant,
                                Instant endInstant,
                                boolean ascending,
@@ -44,6 +45,7 @@ public interface EventRepository {
 
     List<Event> findOutgoingBy(Tenant tenant,
                                String deviceGuid,
+                               String channel,
                                Instant startInstant,
                                Instant endInstant,
                                boolean ascending,

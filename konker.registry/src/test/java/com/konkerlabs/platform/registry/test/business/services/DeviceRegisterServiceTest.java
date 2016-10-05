@@ -52,6 +52,8 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     private static final String THE_DEVICE_GUID = "7d51c242-81db-11e6-a8c2-0746f010e945";
     private static final String THE_DEVICE_API_KEY = "e4399b2ed998";
     private static final String DEVICE_ID_IN_USE = "SN1234567890";
+    private static final String INCOMING_CHANNEL = "e4399b2ed998.testchannel";
+    private static final String OUTGOING_CHANNEL = "e4399b2ed998.testchannel";
     private static final String ANOTHER_TENANT_ID = "0b0fd1a4-81e2-11e6-ae1a-8b71ef1bc5b7";
     private static final String ANOTHER_USER_DEFINED_DEVICE_ID = "eorgh9rgjiod";
     private static final String ANOTHER_DEVICE_GUID = "eaf8213c-81e1-11e6-9254-3314e9f85368";
@@ -454,9 +456,9 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
 
         ServiceResponse<List<Event>> incomingEvents = deviceEventService.findIncomingBy(currentTenant, THE_DEVICE_GUID,
-                null, null, false, 100);
+                INCOMING_CHANNEL, null, null, false, 100);
         ServiceResponse<List<Event>> outgoingEvents = deviceEventService.findOutgoingBy(currentTenant, THE_DEVICE_GUID,
-                null, null, false, 100);
+                OUTGOING_CHANNEL, null, null, false, 100);
 
         assertThat(incomingEvents.getResult().size(), equalTo(2));
         assertThat(outgoingEvents.getResult().size(), equalTo(2));
@@ -465,9 +467,9 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
                 .remove(currentTenant, device.getGuid());
 
         incomingEvents = deviceEventService.findIncomingBy(currentTenant, THE_DEVICE_GUID,
-                null, null, false, 100);
+                INCOMING_CHANNEL, null, null, false, 100);
         outgoingEvents = deviceEventService.findOutgoingBy(currentTenant, THE_DEVICE_GUID,
-                null, null, false, 100);
+                OUTGOING_CHANNEL, null, null, false, 100);
 
         assertThat(incomingEvents.getResult().size(), equalTo(0));
         assertThat(outgoingEvents.getResult().size(), equalTo(0));

@@ -119,7 +119,7 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     	}
     	
     	if (online) {
-    		ServiceResponse<List<Event>> response = deviceEventService.findIncomingBy(tenant, deviceGuid, null, 
+    		ServiceResponse<List<Event>> response = deviceEventService.findIncomingBy(tenant, deviceGuid, channel, null,
         			null, false, 100);
         	
     		return response.getResult();
@@ -130,7 +130,8 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     	ZonedDateTime zonedDateStart = ZonedDateTime.of(start, ZoneId.of(user.getZoneId()));
     	ZonedDateTime zonedDateEnd = ZonedDateTime.of(end, ZoneId.of(user.getZoneId()));
     	
-    	ServiceResponse<List<Event>> response = deviceEventService.findIncomingBy(tenant, deviceGuid, zonedDateStart.toInstant(), 
+    	ServiceResponse<List<Event>> response = deviceEventService.findIncomingBy(tenant,
+				deviceGuid, channel, zonedDateStart.toInstant(),
     			zonedDateEnd.toInstant(), false, 100);
     	
     	

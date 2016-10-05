@@ -165,7 +165,7 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     
 //    @Test
     public void shouldReturnDataOnline() throws Exception {
-    	when(deviceEventService.findIncomingBy(tenant, DEVICE_GUID, null, null, false, 100))
+    	when(deviceEventService.findIncomingBy(tenant, DEVICE_GUID, CHANNEL, null, null, false, 100))
 			.thenReturn(ServiceResponseBuilder.<List<Event>>ok()
 				.withResult(eventsList).build());
     	
@@ -180,7 +180,7 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     
 //    @Test
     public void shouldReturnDataByDateRange() throws Exception {
-    	when(deviceEventService.findIncomingBy(tenant, DEVICE_GUID, startingTimestamp, endTimestamp, false, 100))
+    	when(deviceEventService.findIncomingBy(tenant, DEVICE_GUID, CHANNEL, startingTimestamp, endTimestamp, false, 100))
 			.thenReturn(ServiceResponseBuilder.<List<Event>>ok()
 				.withResult(eventsList).build());
     	
