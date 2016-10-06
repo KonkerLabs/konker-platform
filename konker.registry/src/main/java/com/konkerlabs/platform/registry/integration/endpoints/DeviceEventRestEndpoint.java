@@ -35,6 +35,7 @@ import java.util.concurrent.Executor;
 import java.util.regex.Pattern;
 
 @RestController
+@CrossOrigin(origins = "*")
 public class DeviceEventRestEndpoint {
 
     public enum Messages {
