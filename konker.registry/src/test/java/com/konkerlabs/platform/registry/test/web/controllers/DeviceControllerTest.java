@@ -96,14 +96,16 @@ public class DeviceControllerTest extends WebLayerTestContext {
 				.guid(deviceData.getFirst("guid"));
 
 		device = builder.build();
-
-		savedDevice = builder.id("deviceId").build();
+		device.setActive(true);
+		
+		savedDevice = builder.id("deviceId").active(true).build();
 
 		deviceForm = new DeviceRegistrationForm();
 		deviceForm.setDeviceId(device.getDeviceId());
 		deviceForm.setName(device.getName());
 		deviceForm.setDescription(device.getDescription());
 		deviceForm.setGuid(DEVICE_GUID);
+		deviceForm.setActive(Boolean.TRUE);
 	}
 
 	@After

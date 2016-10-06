@@ -24,7 +24,7 @@ public class DeviceRegistrationFormTest {
         model = Device.builder()
                 .deviceId(form.getDeviceId())
                 .name(form.getName())
-                .description(form.getDescription()).build();
+                .description(form.getDescription()).active(true).build();
     }
 
     @Test
