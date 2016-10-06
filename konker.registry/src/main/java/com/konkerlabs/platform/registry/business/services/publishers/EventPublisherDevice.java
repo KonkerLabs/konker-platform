@@ -51,34 +51,36 @@ public class EventPublisherDevice implements EventPublisher {
     @Override
     public void send(Event outgoingEvent, URI destinationUri, Map<String, String> data, Tenant tenant) {
         Optional.ofNullable(outgoingEvent)
-            .orElseThrow(() -> new IllegalArgumentException("Event cannot be null"));
+                .orElseThrow(() -> new IllegalArgumentException("Event cannot be null"));
         Optional.ofNullable(destinationUri)
-            .filter(uri -> !uri.toString().isEmpty())
-            .orElseThrow(() -> new IllegalArgumentException("Destination URI cannot be null or empty"));
+                .filter(uri -> !uri.toString().isEmpty())
+                .orElseThrow(() -> new IllegalArgumentException("Destination URI cannot be null or empty"));
         Optional.ofNullable(data)
-            .orElseThrow(() -> new IllegalArgumentException("Data cannot be null"));
+                .orElseThrow(() -> new IllegalArgumentException("Data cannot be null"));
         Optional.ofNullable(data.get(DEVICE_MQTT_CHANNEL))
-            .filter(s -> !s.isEmpty())
-            .orElseThrow(() -> new IllegalStateException("A valid MQTT channel is required"));
+                .filter(s -> !s.isEmpty())
+                .orElseThrow(() -> new IllegalStateException("A valid MQTT channel is required"));
         Optional.ofNullable(tenant)
-            .orElseThrow(() -> new IllegalArgumentException("Tenant cannot be null"));
+                .orElseThrow(() -> new IllegalArgumentException("Tenant cannot be null"));
 
         Device outgoingDevice = deviceRegisterService.findByTenantDomainNameAndDeviceGuid(
                 destinationUri.getAuthority(),
-                destinationUri.getPath().replaceAll("/","")
+                destinationUri.getPath().replaceAll("/", "")
         );
 
         Optional.ofNullable(outgoingDevice)
                 .orElseThrow(() -> new IllegalArgumentException(
-                        MessageFormat.format("Device is unknown : {0}",destinationUri.getPath())
+                        MessageFormat.format("Device is unknown : {0}", destinationUri.getPath())
                 ));
 
         if (outgoingDevice.isActive()) {
             outgoingEvent.setOutgoing(
-                Event.EventActor.builder()
-                    .deviceGuid(outgoingDevice.getGuid())
-                    .channel(data.get(DEVICE_MQTT_CHANNEL))
-                    .tenantDomain(outgoingDevice.getTenant().getDomainName()).build()
+                    Event.EventActor.builder()
+                            .deviceGuid(outgoingDevice.getGuid())
+                            .channel(data.get(DEVICE_MQTT_CHANNEL))
+                            .tenantDomain(outgoingDevice.getTenant().getDomainName())
+                            .deviceId(outgoingDevice.getDeviceId())
+                            .build()
             );
             String destinationTopic = MessageFormat.format(MQTT_OUTGOING_TOPIC_TEMPLATE,
                     outgoingDevice.getApiKey(), data.get(DEVICE_MQTT_CHANNEL));
@@ -89,7 +91,7 @@ public class EventPublisherDevice implements EventPublisher {
                 LOGGER.error("Failed to forward event to its destination", response.getResponseMessages());
         } else {
             LOGGER.debug(
-                    MessageFormat.format(EVENT_DROPPED,destinationUri,outgoingEvent.getPayload())
+                    MessageFormat.format(EVENT_DROPPED, destinationUri, outgoingEvent.getPayload())
             );
         }
     }

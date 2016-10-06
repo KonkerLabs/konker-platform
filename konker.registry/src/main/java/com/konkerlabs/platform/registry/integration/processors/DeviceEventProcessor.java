@@ -3,10 +3,12 @@ package com.konkerlabs.platform.registry.integration.processors;
 import java.text.MessageFormat;
 import java.util.Optional;
 
+import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -73,10 +75,11 @@ public class DeviceEventProcessor {
         if (device.isActive()) {
             Event event = Event.builder()
                     .incoming(
-                        Event.EventActor.builder()
-                            .deviceGuid(device.getGuid())
-                            .channel(channel)
-                            .build()
+                            Event.EventActor.builder()
+                                    .deviceGuid(device.getGuid())
+                                    .channel(channel)
+                                    .deviceId(device.getDeviceId())
+                                    .build()
                     )
                     .payload(payload)
                     .build();
@@ -91,16 +94,19 @@ public class DeviceEventProcessor {
                     event.setPayload(serviceResponse.getResult().getPayload());
                     break;
                 }
-                default: break;
+                default:
+                    break;
             }
 
             deviceEventService.logIncomingEvent(device, event);
 
-            eventRouteExecutor.execute(event,device.toURI());
+            eventRouteExecutor.execute(event, device.toURI());
         } else {
             LOGGER.debug(MessageFormat.format(EVENT_DROPPED,
-                device.toURI(),
-                payload));
+                    device.toURI(),
+                    payload));
         }
+
+
     }
 }

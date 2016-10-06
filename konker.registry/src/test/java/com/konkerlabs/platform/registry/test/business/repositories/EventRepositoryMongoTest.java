@@ -117,6 +117,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         persisted.put("incoming", ((Supplier<DBObject>) () -> {
             DBObject incoming = new BasicDBObject();
             incoming.put("deviceGuid",incomingEvent.getIncoming().getDeviceGuid());
+            incoming.put("deviceId", incomingEvent.getIncoming().getDeviceId());
             incoming.put("tenantDomain",incomingEvent.getIncoming().getTenantDomain());
             incoming.put("channel",incomingEvent.getIncoming().getChannel());
             return incoming;

@@ -103,4 +103,5 @@ public class EnrichmentExecutorImpl implements EnrichmentExecutor {
                 .withResult(incomingEvent)
                 .build();
     }
+
 }

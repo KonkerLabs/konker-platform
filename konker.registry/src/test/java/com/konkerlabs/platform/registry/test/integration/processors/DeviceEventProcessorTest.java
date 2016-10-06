@@ -46,8 +46,8 @@ import com.konkerlabs.platform.registry.test.base.IntegrationLayerTestContext;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
-    IntegrationLayerTestContext.class,
-    DeviceEventProcessorTest.BusinessLayerConfiguration.class, RedisConfig.class
+        IntegrationLayerTestContext.class,
+        DeviceEventProcessorTest.BusinessLayerConfiguration.class, RedisConfig.class
 })
 public class DeviceEventProcessorTest {
 
@@ -76,69 +76,70 @@ public class DeviceEventProcessorTest {
     @Autowired
     private EnrichmentExecutor enrichmentExecutor;
 
-	private Instant firstEventTimestamp;
-	private Instant secondEventTimestamp;
+    private Instant firstEventTimestamp;
+    private Instant secondEventTimestamp;
 
     @Before
     public void setUp() throws Exception {
-    	firstEventTimestamp = Instant.ofEpochMilli(1474562670340L);
+        firstEventTimestamp = Instant.ofEpochMilli(1474562670340L);
         secondEventTimestamp = Instant.ofEpochMilli(1474562672395L);
-        
+
         event = Event.builder()
-            .incoming(
-                    Event.EventActor.builder()
-                    .channel(incomingChannel)
-                    .deviceGuid("device_guid").build()
-            )
-            .payload(originalPayload)
-            .build();
+                .incoming(
+                        Event.EventActor.builder()
+                                .channel(incomingChannel)
+                                .deviceGuid("device_guid")
+                                .deviceId("device_id").build()
+                )
+                .payload(originalPayload)
+                .build();
 
         device = spy(Device.builder()
-            .tenant(
-                Tenant.builder()
-                    .domainName("tenantDomain")
-                    .name("tenantName")
-                    .build()
-            )
-            .apiKey(sourceApiKey)
-            .id("id")
-            .guid("device_guid")
-            .deviceId("device_id")
-            .active(true)
-            .name("device_name").build());
+                .tenant(
+                        Tenant.builder()
+                                .domainName("tenantDomain")
+                                .name("tenantName")
+                                .build()
+                )
+                .apiKey(sourceApiKey)
+                .id("id")
+                .guid("device_guid")
+                .deviceId("device_id")
+                .active(true)
+                .name("device_name").build());
 
         enrichmentResponse = spy(ServiceResponseBuilder.<Event>ok()
                 .withResult(event)
                 .build());
-        
+
         eventOldTimestamp = Event.builder()
                 .incoming(
-                    Event.EventActor.builder()
-                    .channel(incomingChannel)
-                    .deviceGuid("device_guid").build()
+                        Event.EventActor.builder()
+                                .channel(incomingChannel)
+                                .deviceGuid("device_guid").build()
                 )
                 .payload(originalPayload)
                 .timestamp(firstEventTimestamp)
                 .build();
-        
+
         eventNewTimestamp = Event.builder()
                 .incoming(
-                    Event.EventActor.builder()
-                            .channel(incomingChannel)
-                            .deviceGuid("device_guid").build()
+                        Event.EventActor.builder()
+                                .channel(incomingChannel)
+                                .deviceGuid("device_guid").build()
                 )
                 .payload(originalPayload)
                 .timestamp(secondEventTimestamp)
                 .build();
-        
+
         eventResponse = spy(ServiceResponseBuilder.<List<Event>>ok()
-        		.withResult(Arrays.asList(eventNewTimestamp, eventOldTimestamp))
-        		.build());
+                .withResult(Arrays.asList(eventNewTimestamp, eventOldTimestamp))
+                .build());
     }
 
     @After
     public void tearDown() throws Exception {
-        reset(deviceEventService, eventRouteExecutor,deviceRegisterService);
+        reset(deviceEventService, eventRouteExecutor, deviceRegisterService);
     }
 
     @Test
@@ -146,8 +147,9 @@ public class DeviceEventProcessorTest {
         thrown.expect(BusinessException.class);
         thrown.expectMessage(DeviceEventProcessor.Messages.APIKEY_MISSING.getCode());
 
-        subject.process(null, incomingChannel,originalPayload);
+        subject.process(null, incomingChannel, originalPayload);
     }
+
     @Test
     public void shouldRaiseAnExceptionIfDeviceDoesNotExist() throws Exception {
         thrown.expect(BusinessException.class);
@@ -184,7 +186,7 @@ public class DeviceEventProcessorTest {
         doAnswer(returnCaptor).when(device).toURI();
         subject.process(sourceApiKey, incomingChannel, originalPayload);
 
-        verify(eventRouteExecutor).execute(eq(event),same(returnCaptor.getResult()));
+        verify(eventRouteExecutor).execute(eq(event), same(returnCaptor.getResult()));
     }
 
     @Test
@@ -194,7 +196,7 @@ public class DeviceEventProcessorTest {
 
         subject.process(sourceApiKey, incomingChannel, originalPayload);
 
-        verify(deviceEventService,never()).logIncomingEvent(any(), any());
+        verify(deviceEventService, never()).logIncomingEvent(any(), any());
     }
 
     @Test
@@ -204,7 +206,7 @@ public class DeviceEventProcessorTest {
 
         subject.process(sourceApiKey, incomingChannel, originalPayload);
 
-        verify(eventRouteExecutor,never()).execute(any(Event.class),any(URI.class));
+        verify(eventRouteExecutor, never()).execute(any(Event.class), any(URI.class));
     }
 
     @Configuration
@@ -213,14 +215,17 @@ public class DeviceEventProcessorTest {
         public DeviceEventService deviceEventService() {
             return mock(DeviceEventService.class);
         }
+
         @Bean
         public EventRouteExecutor eventRouteExecutor() {
             return mock(EventRouteExecutor.class);
         }
+
         @Bean
         public DeviceRegisterService deviceRegisterService() {
             return mock(DeviceRegisterService.class);
         }
+
         @Bean
         public EnrichmentExecutor enrichmentExecutor() {
             return mock(EnrichmentExecutor.class);
@@ -229,6 +234,7 @@ public class DeviceEventProcessorTest {
 
     static class ResultCaptor<T> implements Answer {
         private T result = null;
+
         public T getResult() {
             return result;
         }
