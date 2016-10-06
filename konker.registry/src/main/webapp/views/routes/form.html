@@ -71,7 +71,7 @@
                     </label>
                     <label class="radio-inline" th:if="${@environment.getActiveProfiles().length != 0 && @environment.getActiveProfiles()[0] == 'sms'}">
                         <input type="radio" name="outgoingScheme"
-                               data-th-text="#{routes.form.outgoing.type.sms}"
+                               data-th-text="#{routes.form.outgoing.type.sms}" th:if="${@environment.getActiveProfiles().length != 0 && @environment.getActiveProfiles()[0] == 'sms'}"
                                value="sms" data-th-checked="*{outgoingScheme == 'sms'}"></input>
                     </label>
                     <label class="radio-inline">
