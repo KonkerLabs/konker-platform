@@ -35,9 +35,11 @@ function findAndLoadDataChart() {
         		
         		var tableData = "";
         		$.each(result, function(index, value) {
-        			var strTimestamp = value.timestamp.epochSecond.toString()+"000";
-        			var timestamp = new Date(new Date(parseInt(strTimestamp)).toUTCString()).toLocaleString();
-        			tableData = tableData + '<tr><td>'+timestamp+'</td><td>'+JSON.stringify(value.payload).replace(/\\/g, '')+'</td></tr>';
+        			var localeDate = formatLocaleDate(value.timestamp)
+        			var json = JSON.stringify(value.payload).replace(/\\/g, '');
+        			json = json.replace(/\"{/g, '{');
+        			json = json.replace(/\}"/g, '}');
+        			tableData = tableData + '<tr><td>'+localeDate+'</td><td>'+json+'</td></tr>';
         		});
         		$("#data-event table tbody").html(tableData);
         		
@@ -49,6 +51,24 @@ function findAndLoadDataChart() {
             hideElement('#loading');
         }
     });
+}
+
+function formatLocaleDate(timestamp) {
+	var strTimestamp = timestamp.epochSecond.toString() + removeRightZero(timestamp.nano.toString());
+	var date = new Date(parseInt(strTimestamp));
+	var localeDate = date.toLocaleString() +"."+ date.getMilliseconds() +" "+ date.toTimeString().split(' ')[2];
+	
+	return localeDate;
+} 
+
+function removeRightZero(str) {
+	var temp = "";
+	for (i = str.length; i > 0; i--) {
+		if (str.substring(i - 1, i) != "0") { 
+			temp += str.substring(0, i); 
+			return temp;
+		}
+	}
 }
 
 var myInterval;
