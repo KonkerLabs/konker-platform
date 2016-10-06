@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
+import lombok.experimental.Tolerate;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
@@ -48,8 +49,11 @@ public class Device implements DeviceURIDealer, Validatable, UserDetails {
 		}
 	}
 
-    
-    private String id;
+	@Tolerate
+	public Device() {
+	}
+
+	private String id;
 	@DBRef
 	private Tenant tenant;
 	private String deviceId;

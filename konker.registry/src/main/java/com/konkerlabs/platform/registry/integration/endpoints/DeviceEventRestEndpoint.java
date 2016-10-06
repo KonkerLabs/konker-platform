@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
@@ -87,12 +88,13 @@ public class DeviceEventRestEndpoint {
     @ResponseBody
     @JsonView(EventJsonView.class)
     public DeferredResult<List<EventVO>> subEvent(HttpServletRequest servletRequest,
-                                                @PathVariable("apiKey") String apiKey,
-                                                @PathVariable("channel") String channel,
-                                                @AuthenticationPrincipal Device principal,
-                                                @RequestParam(name = "offset", required = false) Optional<Long> offset,
-                                                @RequestParam(name = "waitTime", required = false) Optional<Long> waitTime,
-                                                Locale locale) {
+                                                  @PathVariable("apiKey") String apiKey,
+                                                  @PathVariable("channel") String channel,
+                                                  @AuthenticationPrincipal Device principal,
+                                                  @RequestParam(name = "offset", required = false) Optional<Long> offset,
+                                                  @RequestParam(name = "waitTime", required = false) Optional<Long> waitTime,
+                                                  Locale locale,
+                                                  HttpServletResponse httpResponse) {
 
     	DeferredResult<List<EventVO>> deferredResult = new DeferredResult<>(waitTime.orElse(new Long("0")), Collections.emptyList());
     	
@@ -100,22 +102,26 @@ public class DeviceEventRestEndpoint {
 
     	if (!principal.getApiKey().equals(apiKey)) {
     		deferredResult.setErrorResult(applicationContext.getMessage(Messages.INVALID_RESOURCE.getCode(), null, locale));
-    		return deferredResult;
+            httpResponse.setStatus(HttpStatus.BAD_REQUEST.value());
+            return deferredResult;
     	}
 
     	if (waitTime.isPresent() && waitTime.get().compareTo(new Long("30000")) > 0) {
-    		deferredResult.setErrorResult(applicationContext.getMessage(Messages.INVALID_WAITTIME.getCode(), null, locale));
-    		return deferredResult;
+            deferredResult.setErrorResult(applicationContext.getMessage(Messages.INVALID_WAITTIME.getCode(), null, locale));
+            httpResponse.setStatus(HttpStatus.BAD_REQUEST.value());
+            return deferredResult;
     	}
 
 
     	if(channel == null || channel.length() > 32 || Pattern.compile("[^A-Za-z0-9_-]").matcher(channel).find()){
-            deferredResult.setErrorResult(new Exception(applicationContext.getMessage(Messages.INVALID_CHANNEL_PATTERN.getCode(), null, locale)));
+            deferredResult.setErrorResult(applicationContext.getMessage(Messages.INVALID_CHANNEL_PATTERN.getCode(), null, locale));
+            httpResponse.setStatus(HttpStatus.BAD_REQUEST.value());
             return deferredResult;
         }
     	
     	if (!Optional.of(device).isPresent()) {
     		deferredResult.setErrorResult(applicationContext.getMessage(Messages.DEVICE_NOT_FOUND.getCode(), null, locale));
+            httpResponse.setStatus(HttpStatus.BAD_REQUEST.value());
     		return deferredResult;
     	}
     	
