@@ -1,11 +1,11 @@
 package com.konkerlabs.platform.registry.business.model;
 
-import lombok.Builder;
-import lombok.Data;
-
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+
+import lombok.Builder;
+import lombok.Data;
 
 @Data
 @Builder
@@ -26,5 +26,14 @@ public class Event {
     
     public ZonedDateTime getZonedTimestamp(String zoneId) {
         return timestamp.atZone(ZoneId.of(zoneId));
+    }
+
+    @Data
+    @Builder
+    public static class EventDecorator {
+    	private String timestamp;
+    	private EventActor incoming;
+    	private EventActor outgoing;
+    	private String payload;
     }
 }
