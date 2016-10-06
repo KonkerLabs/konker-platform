@@ -63,12 +63,12 @@
             <div class="col-sm-4">
                 <label class="radio-inline">
                     <input type="radio" name="outgoingScheme"
-                           data-th-text="#{routes.show.outgoing.type.device}"
+                           data-th-text="#{routes.show.outgoing.type.device}" 
                            value="device" data-th-checked="${route.outgoingScheme == 'device'}"></input>
                 </label>
                 <label class="radio-inline">
                     <input type="radio" name="outgoingScheme"
-                           data-th-text="#{routes.show.outgoing.type.sms}"
+                           data-th-text="#{routes.show.outgoing.type.sms}" th:if="${@environment.getActiveProfiles().length != 0 && @environment.getActiveProfiles()[0] == 'sms'}"
                            value="sms" data-th-checked="${route.outgoingScheme == 'sms'}"></input>
                 </label>
                 <label class="radio-inline">
@@ -106,7 +106,7 @@
                 <select class="form-control" data-th-field="${route.transformation}"
                         id="transformation" name="transformation">
                     <option data-th-value="${''}"
-                            data-th-text="${'No transformation specified'}"></option>
+                            data-th-text="#{routes.show.transformation.none}"></option>
                     <option data-th-each="trans : ${allTransformations}"
                             data-th-value="${trans.id}"
                             data-th-text="${trans.name}"></option>
