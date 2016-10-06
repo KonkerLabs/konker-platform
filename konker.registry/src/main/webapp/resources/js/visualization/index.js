@@ -35,7 +35,9 @@ function findAndLoadDataChart() {
         		
         		var tableData = "";
         		$.each(result, function(index, value) {
-        			tableData = tableData + '<tr><td>'+JSON.stringify(value.payload)+'</td></tr>';
+        			var strTimestamp = value.timestamp.epochSecond.toString()+"000";
+        			var timestamp = new Date(new Date(parseInt(strTimestamp)).toUTCString()).toLocaleString();
+        			tableData = tableData + '<tr><td>'+timestamp+'</td><td>'+JSON.stringify(value.payload).replace(/\\/g, '')+'</td></tr>';
         		});
         		$("#data-event table tbody").html(tableData);
         		
@@ -60,6 +62,7 @@ $('#online').click(function() {
 		clearInterval(myInterval);
 	}
 });
+$('#online').click();
 
 function renderOutgoingFragment(scheme, url, element) {
     var url = urlTo(url);
@@ -92,6 +95,9 @@ function fetchViewFragment(scheme, fetchUrl, element) {
 function applyEventBindingsToChannel() {
 	$('#channel').change(function() {
 		renderOutgoingFragment($('#visualizationForm').serialize(), '/visualization/loading/metrics/', '#div-metric');
+		
+		$('#chart svg').html("")
+		$("#data-event table tbody").html("");
 	});
 }
 
