@@ -1,16 +1,17 @@
 package com.konkerlabs.platform.registry.web.forms;
 
-import com.konkerlabs.platform.registry.business.model.DataEnrichmentExtension;
-import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
-import com.konkerlabs.platform.registry.business.model.enumerations.IntegrationType;
-import com.konkerlabs.platform.registry.web.forms.api.ModelBuilder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
+
+import com.konkerlabs.platform.registry.business.model.DataEnrichmentExtension;
+import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
+import com.konkerlabs.platform.registry.business.model.enumerations.IntegrationType;
+import com.konkerlabs.platform.registry.web.forms.api.ModelBuilder;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(exclude={"tenantDomainSupplier"})
@@ -30,6 +31,10 @@ public class EnrichmentForm implements ModelBuilder<DataEnrichmentExtension, Enr
     }};
     private boolean active;
     private Supplier<String> tenantDomainSupplier;
+    
+    public EnrichmentForm() {
+		setActive(Boolean.TRUE);
+	}
 
     @Override
     public DataEnrichmentExtension toModel() {
