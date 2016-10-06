@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Tolerate;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -39,18 +40,23 @@ public class EventVO {
      * @return List<EventVO>
      */
     public static List<EventVO> from(List<Event> events) {
+        ObjectMapper mapper = new ObjectMapper();
         return events.stream()
                 .filter(item -> Optional.ofNullable(item).isPresent())
                 .map(item -> {
-                    return EventVO.builder()
-                            .meta(EventMeta.builder()
-                                    .incoming(item.getIncoming())
-                                    .outgoing(item.getOutgoing())
-                                    .timestamp(Optional.ofNullable(item.getTimestamp()).isPresent() ? item.getTimestamp().toEpochMilli() : null)
-                                    .build()
-                            )
-                            .data(item.getPayload())
-                            .build();
+                    try {
+                        return EventVO.builder()
+                                .meta(EventMeta.builder()
+                                        .incoming(item.getIncoming())
+                                        .outgoing(item.getOutgoing())
+                                        .timestamp(Optional.ofNullable(item.getTimestamp()).isPresent() ? item.getTimestamp().toEpochMilli() : null)
+                                        .build()
+                                )
+                                .data(mapper.readValue(item.getPayload(), HashMap.class))
+                                .build();
+                    } catch (IOException e) {
+                        return null;
+                    }
                 }).collect(Collectors.toList());
     }
 

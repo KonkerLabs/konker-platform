@@ -43,4 +43,13 @@ public class Event {
     public ZonedDateTime getZonedTimestamp(String zoneId) {
         return timestamp.atZone(ZoneId.of(zoneId));
     }
+
+    @Data
+    @Builder
+    public static class EventDecorator {
+    	private String timestamp;
+    	private EventActor incoming;
+    	private EventActor outgoing;
+    	private String payload;
+    }
 }

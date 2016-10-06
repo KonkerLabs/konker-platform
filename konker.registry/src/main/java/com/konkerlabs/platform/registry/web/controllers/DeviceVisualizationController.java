@@ -29,10 +29,12 @@ import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.EventSchema;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
+import com.konkerlabs.platform.registry.business.model.Event.EventDecorator;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.web.converters.InstantToStringConverter;
 import com.konkerlabs.platform.registry.web.forms.DeviceVisualizationForm;
 
 @Controller
@@ -63,6 +65,7 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     private ApplicationContext applicationContext;
     private EventSchemaService eventSchemaService;
     private User user;
+    private InstantToStringConverter instantToStringConverter;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -71,12 +74,13 @@ public class DeviceVisualizationController implements ApplicationContextAware {
 
     @Autowired
     public DeviceVisualizationController(DeviceRegisterService deviceRegisterService, DeviceEventService deviceEventService, Tenant tenant,
-    		EventSchemaService eventSchemaService, User user) {
+    		EventSchemaService eventSchemaService, User user, InstantToStringConverter instantToStringConverter) {
         this.deviceRegisterService = deviceRegisterService;
         this.deviceEventService = deviceEventService;
         this.tenant = tenant;
         this.eventSchemaService = eventSchemaService;
         this.user = user;
+        this.instantToStringConverter = instantToStringConverter;
     }
 
     @RequestMapping
@@ -122,7 +126,8 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     		ServiceResponse<List<Event>> response = deviceEventService.findIncomingBy(tenant, deviceGuid, channel, null,
         			null, false, 100);
         	
-    		return response.getResult();
+    		List<EventDecorator> eventsResult = decorateEventResult(response);
+    		return eventsResult;
     	}
     	
     	LocalDateTime start = LocalDateTime.parse(dateStart, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
@@ -134,10 +139,21 @@ public class DeviceVisualizationController implements ApplicationContextAware {
 				deviceGuid, channel, zonedDateStart.toInstant(),
     			zonedDateEnd.toInstant(), false, 100);
     	
-    	
-		return response.getResult();
+    	List<EventDecorator> eventsResult = decorateEventResult(response);
+		return eventsResult;
     	
     }
+
+	private List<EventDecorator> decorateEventResult(ServiceResponse<List<Event>> response) {
+		List<EventDecorator> eventsResult = new ArrayList<>();
+		response.getResult().forEach(r -> eventsResult.add(EventDecorator.builder()
+				.timestamp(instantToStringConverter.convert(r.getTimestamp()))
+				.incoming(r.getIncoming())
+				.outgoing(r.getOutgoing())
+				.payload(r.getPayload())
+				.build()));
+		return eventsResult;
+	}
     
     @RequestMapping("/loading/channel/")
     public ModelAndView loadChannels(@RequestParam String deviceGuid) {
