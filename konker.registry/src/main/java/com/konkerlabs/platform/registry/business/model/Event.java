@@ -1,7 +1,7 @@
 package com.konkerlabs.platform.registry.business.model;
 
 import com.fasterxml.jackson.annotation.JsonView;
-import com.konkerlabs.platform.registry.web.serializers.EventJson;
+import com.konkerlabs.platform.registry.web.serializers.EventJsonView;
 import lombok.Builder;
 import lombok.Data;
 
@@ -13,19 +13,30 @@ import java.time.ZonedDateTime;
 @Builder
 public class Event {
 
-    /*@JsonView(EventJson.class)*/
     private Instant timestamp;
+
+    @JsonView(EventJsonView.class)
     private EventActor incoming;
+
+    @JsonView(EventJsonView.class)
     private EventActor outgoing;
-    /*@JsonView(EventJson.class)*/
+
+    @JsonView(EventJsonView.class)
     private String payload;
+
+
 
     @Data
     @Builder
     public static class EventActor {
+
         private String tenantDomain;
         private String deviceGuid;
+
+        @JsonView(EventJsonView.class)
         private String deviceId;
+
+        @JsonView(EventJsonView.class)
         private String channel;
     }
     

@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.integration.endpoints;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
@@ -8,6 +9,8 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceEventService
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
+import com.konkerlabs.platform.registry.web.serializers.EventJsonView;
+import com.konkerlabs.platform.registry.web.serializers.EventVO;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 import lombok.Builder;
 import lombok.Data;
@@ -28,6 +31,7 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.regex.Pattern;
 
 @RestController
 public class DeviceEventRestEndpoint {
@@ -36,6 +40,7 @@ public class DeviceEventRestEndpoint {
         INVALID_REQUEST_BODY("integration.rest.invalid.body"),
         INVALID_RESOURCE("integration.rest.invalid.resource"),
         INVALID_WAITTIME("integration.rest.invalid.waitTime"),
+        INVALID_CHANNEL_PATTERN("integration.rest.invalid.channel"),
     	DEVICE_NOT_FOUND("integration.event_processor.channel.not_found");
 
         private String code;
@@ -80,7 +85,8 @@ public class DeviceEventRestEndpoint {
     		consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public DeferredResult<List<Event>> subEvent(HttpServletRequest servletRequest,
+    @JsonView(EventJsonView.class)
+    public DeferredResult<List<EventVO>> subEvent(HttpServletRequest servletRequest,
                                                 @PathVariable("apiKey") String apiKey,
                                                 @PathVariable("channel") String channel,
                                                 @AuthenticationPrincipal Device principal,
@@ -88,7 +94,7 @@ public class DeviceEventRestEndpoint {
                                                 @RequestParam(name = "waitTime", required = false) Optional<Long> waitTime,
                                                 Locale locale) {
 
-    	DeferredResult<List<Event>> deferredResult = new DeferredResult<>(waitTime.orElse(new Long("0")), Collections.emptyList());
+    	DeferredResult<List<EventVO>> deferredResult = new DeferredResult<>(waitTime.orElse(new Long("0")), Collections.emptyList());
     	
     	Device device = deviceRegisterService.findByApiKey(apiKey);
 
@@ -101,6 +107,12 @@ public class DeviceEventRestEndpoint {
     		deferredResult.setErrorResult(new Exception(applicationContext.getMessage(Messages.INVALID_WAITTIME.getCode(), null, locale)));
     		return deferredResult;
     	}
+
+
+    	if(channel == null || channel.length() > 32 || Pattern.compile("[^A-Za-z0-9_-]").matcher(channel).find()){
+            deferredResult.setErrorResult(new Exception(applicationContext.getMessage(Messages.INVALID_CHANNEL_PATTERN.getCode(), null, locale)));
+            return deferredResult;
+        }
     	
     	if (!Optional.of(device).isPresent()) {
     		deferredResult.setErrorResult(new Exception(applicationContext.getMessage(Messages.DEVICE_NOT_FOUND.getCode(), null, locale)));
@@ -115,11 +127,11 @@ public class DeviceEventRestEndpoint {
     			channel, startTimestamp, null, asc, limit);
 
     	if (!response.getResult().isEmpty() || !waitTime.isPresent() || (waitTime.isPresent() && waitTime.get().equals(new Long("0")))) {
-    		deferredResult.setResult(response.getResult());
+            deferredResult.setResult(EventVO.from(response.getResult()));
 
     	} else {
     		CompletableFuture.supplyAsync(() -> {return jedisTaskService.subscribeToChannel(apiKey+"."+channel, startTimestamp, asc, limit);}, executor)
-    		.whenCompleteAsync((result, throwable) -> deferredResult.setResult(result), executor);
+    		.whenCompleteAsync((result, throwable) -> deferredResult.setResult(EventVO.from(result)), executor);
     	}
 
     	return deferredResult;
