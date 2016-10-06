@@ -12,6 +12,10 @@ public class DeviceRegistrationForm implements ModelBuilder<Device,DeviceRegistr
     private String description;
     private String guid;
     private boolean active;
+    
+    public DeviceRegistrationForm() {
+		setActive(Boolean.TRUE);
+	}
 
     @Override
     public Device toModel() {

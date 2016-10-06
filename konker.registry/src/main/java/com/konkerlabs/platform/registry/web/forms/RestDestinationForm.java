@@ -12,6 +12,10 @@ public class RestDestinationForm implements ModelBuilder<RestDestination, RestDe
     private String serviceUsername;
     private String servicePassword;
     private boolean active;
+    
+    public RestDestinationForm() {
+		setActive(Boolean.TRUE);
+	}
 
     @Override
     public RestDestination toModel() {

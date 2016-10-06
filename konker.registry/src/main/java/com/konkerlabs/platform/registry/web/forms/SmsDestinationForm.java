@@ -11,6 +11,10 @@ public class SmsDestinationForm implements ModelBuilder<SmsDestination, SmsDesti
     private String description;
     private String phoneNumber;
     private boolean active;
+    
+    public SmsDestinationForm() {
+		setActive(Boolean.TRUE);
+	}
 
     @Override
     public SmsDestination toModel() {
