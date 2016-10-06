@@ -116,6 +116,7 @@ public class EventRepositoryMongoImpl implements EventRepository {
         incoming.put("deviceGuid",event.getIncoming().getDeviceGuid());
         incoming.put("tenantDomain",event.getIncoming().getTenantDomain());
         incoming.put("channel",event.getIncoming().getChannel());
+        incoming.put("deviceId", event.getIncoming().getDeviceId());
 
         DBObject toSave = new BasicDBObject();
 
@@ -129,6 +130,7 @@ public class EventRepositoryMongoImpl implements EventRepository {
             outgoing.put("deviceGuid",event.getOutgoing().getDeviceGuid());
             outgoing.put("tenantDomain",event.getOutgoing().getTenantDomain());
             outgoing.put("channel",event.getOutgoing().getChannel());
+            outgoing.put("deviceId", event.getOutgoing().getDeviceId());
 
             toSave.put(Type.OUTGOING.getActorFieldName(), outgoing);
         }
@@ -230,21 +232,27 @@ public class EventRepositoryMongoImpl implements EventRepository {
         }).map(dbObject -> Event.builder()
                 .incoming(
                         ((Supplier<Event.EventActor>) () -> {
-                            DBObject incoming = ((DBObject) dbObject.get(type.getActorFieldName()));
-                            return Event.EventActor.builder()
-                                    .deviceGuid(incoming.get("deviceGuid").toString())
-                                    .tenantDomain(incoming.get("tenantDomain").toString())
-                                    .channel(incoming.get("channel").toString()).build();
+                            return Optional.ofNullable((DBObject) dbObject.get(Type.INCOMING.getActorFieldName()))
+                                    .map(dbObject1 -> {
+                                        return Event.EventActor.builder()
+                                                .deviceGuid(Optional.ofNullable(dbObject1.get("deviceGuid")).isPresent() ? dbObject1.get("deviceGuid").toString() : null)
+                                                .tenantDomain(Optional.ofNullable(dbObject1.get("tenantDomain")).isPresent() ? dbObject1.get("tenantDomain").toString() : null)
+                                                .channel(Optional.ofNullable(dbObject1.get("channel")).isPresent() ? dbObject1.get("channel").toString() : null)
+                                                .deviceId(Optional.ofNullable(dbObject1.get("deviceId")).isPresent() ? dbObject1.get("deviceId").toString() : null)
+                                                .build();
+                                    }).orElse(null);
                         }).get()
                 )
                 .outgoing(
                     ((Supplier<Event.EventActor>) () -> {
-                        return Optional.ofNullable((DBObject)dbObject.get(type.getActorFieldName()))
+                        return Optional.ofNullable((DBObject)dbObject.get(Type.OUTGOING.getActorFieldName()))
                             .map(dbObject1 -> {
                                 return Event.EventActor.builder()
-                                        .deviceGuid(dbObject1.get("deviceGuid").toString())
-                                        .tenantDomain(dbObject1.get("tenantDomain").toString())
-                                        .channel(dbObject1.get("channel").toString()).build();
+                                        .deviceGuid(Optional.ofNullable(dbObject1.get("deviceGuid")).isPresent() ? dbObject1.get("deviceGuid").toString() : null)
+                                        .tenantDomain(Optional.ofNullable(dbObject1.get("tenantDomain")).isPresent() ? dbObject1.get("tenantDomain").toString() : null)
+                                        .channel(Optional.ofNullable(dbObject1.get("channel")).isPresent() ? dbObject1.get("channel").toString() : null)
+                                        .deviceId(Optional.ofNullable(dbObject1.get("deviceId")).isPresent() ? dbObject1.get("deviceId").toString() : null)
+                                        .build();
                             })
                             .orElse(null);
                     }).get()

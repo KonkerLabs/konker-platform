@@ -35,9 +35,10 @@ function findAndLoadDataChart() {
         		
         		var tableData = "";
         		$.each(result, function(index, value) {
-        			var strTimestamp = value.timestamp.epochSecond.toString()+"000";
-        			var timestamp = new Date(new Date(parseInt(strTimestamp)).toUTCString()).toLocaleString();
-        			tableData = tableData + '<tr><td>'+timestamp+'</td><td>'+JSON.stringify(value.payload).replace(/\\/g, '')+'</td></tr>';
+        			var json = JSON.stringify(value.payload).replace(/\\/g, '');
+        			json = json.replace(/\"{/g, '{');
+        			json = json.replace(/\}"/g, '}');
+        			tableData = tableData + '<tr><td>'+value.timestamp+'</td><td>'+json+'</td></tr>';
         		});
         		$("#data-event table tbody").html(tableData);
         		

@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.node.JsonNodeType;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,16 +29,19 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
+import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Event.EventActor;
 import com.konkerlabs.platform.registry.business.model.EventSchema;
 import com.konkerlabs.platform.registry.business.model.EventSchema.SchemaField;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
+import com.konkerlabs.platform.registry.security.UserContextResolver;
 import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
 import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
@@ -68,7 +70,11 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     DeviceEventService deviceEventService;
     @Autowired
     private Tenant tenant;
-
+    @Autowired
+    private UserContextResolver userContextResolver;
+    @Autowired
+    private User user;
+    
     private List<String> channels;
 	private EventSchema eventSchema;
 	private List<Event> eventsList;
@@ -165,13 +171,16 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     
     @Test
     public void shouldReturnDataOnline() throws Exception {
+    	when(userContextResolver.getObject()).thenReturn(user);
+    	
     	when(deviceEventService.findIncomingBy(tenant, DEVICE_GUID, CHANNEL, null, null, false, 100))
 			.thenReturn(ServiceResponseBuilder.<List<Event>>ok()
 				.withResult(eventsList).build());
     	
+    	
     	getMockMvc().perform(get("/visualization/load/").param("dateStart", "").param("dateEnd", "").param("online", "true")
     			.param("deviceGuid", DEVICE_GUID).param("channel", CHANNEL))
-    			.andExpect(content().json("[{'timestamp':{'nano':0,'epochSecond':1475603097},"
+    			.andExpect(content().json("[{'timestamp': '10/04/2016 14:44:57.000 BRT',"
     					+ "'incoming':{"
     					+ "'tenantDomain':'inmetrics.com','deviceGuid':'169897e9-ed44-41d1-978d-d244d78e9a67','channel':'datain'},"
     					+ "'outgoing':{'tenantDomain':'inmetrics.com','deviceGuid':'169897e9-ed44-41d1-978d-d244d78e9a67','channel':'datain'},"
@@ -180,13 +189,15 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     
     @Test
     public void shouldReturnDataByDateRange() throws Exception {
+    	when(userContextResolver.getObject()).thenReturn(user);
+    	
     	when(deviceEventService.findIncomingBy(tenant, DEVICE_GUID, CHANNEL, startingTimestamp, endTimestamp, false, 100))
 			.thenReturn(ServiceResponseBuilder.<List<Event>>ok()
 				.withResult(eventsList).build());
     	
     	getMockMvc().perform(get("/visualization/load/").param("dateStart", dateStart).param("dateEnd", dateEnd).param("online", "false")
     			.param("deviceGuid", DEVICE_GUID).param("channel", CHANNEL))
-    			.andExpect(content().json("[{'timestamp':{'nano':0,'epochSecond':1475603097},"
+    			.andExpect(content().json("[{'timestamp':'10/04/2016 14:44:57.000 BRT',"
     					+ "'incoming':{"
     					+ "'tenantDomain':'inmetrics.com','deviceGuid':'169897e9-ed44-41d1-978d-d244d78e9a67','channel':'datain'},"
     					+ "'outgoing':{'tenantDomain':'inmetrics.com','deviceGuid':'169897e9-ed44-41d1-978d-d244d78e9a67','channel':'datain'},"

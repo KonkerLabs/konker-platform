@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.integration.endpoints;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
@@ -8,6 +9,8 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceEventService
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
+import com.konkerlabs.platform.registry.integration.serializers.EventJsonView;
+import com.konkerlabs.platform.registry.integration.serializers.EventVO;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 import lombok.Builder;
 import lombok.Data;
@@ -21,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
@@ -28,6 +32,7 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.regex.Pattern;
 
 @RestController
 public class DeviceEventRestEndpoint {
@@ -36,6 +41,7 @@ public class DeviceEventRestEndpoint {
         INVALID_REQUEST_BODY("integration.rest.invalid.body"),
         INVALID_RESOURCE("integration.rest.invalid.resource"),
         INVALID_WAITTIME("integration.rest.invalid.waitTime"),
+        INVALID_CHANNEL_PATTERN("integration.rest.invalid.channel"),
     	DEVICE_NOT_FOUND("integration.event_processor.channel.not_found");
 
         private String code;
@@ -74,33 +80,48 @@ public class DeviceEventRestEndpoint {
         this.jedisTaskService = jedisTaskService;
     }
 
-    @RequestMapping(value = "sub/{apiKey}/{channel}", method = RequestMethod.POST,
-    		consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(
+            value = "sub/{apiKey}/{channel}",
+            method = RequestMethod.GET,
+    		consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public DeferredResult<List<Event>> subEvent(HttpServletRequest servletRequest,
-                                                @PathVariable("apiKey") String apiKey,
-                                                @PathVariable("channel") String channel,
-                                                @AuthenticationPrincipal Device principal,
-                                                @RequestParam(name = "offset", required = false) Optional<Long> offset,
-                                                @RequestParam(name = "waitTime", required = false) Optional<Long> waitTime,
-                                                Locale locale) {
+    @JsonView(EventJsonView.class)
+    public DeferredResult<List<EventVO>> subEvent(HttpServletRequest servletRequest,
+                                                  @PathVariable("apiKey") String apiKey,
+                                                  @PathVariable("channel") String channel,
+                                                  @AuthenticationPrincipal Device principal,
+                                                  @RequestParam(name = "offset", required = false) Optional<Long> offset,
+                                                  @RequestParam(name = "waitTime", required = false) Optional<Long> waitTime,
+                                                  Locale locale,
+                                                  HttpServletResponse httpResponse) {
 
-    	DeferredResult<List<Event>> deferredResult = new DeferredResult<>(waitTime.orElse(new Long("0")), Collections.emptyList());
+    	DeferredResult<List<EventVO>> deferredResult = new DeferredResult<>(waitTime.orElse(new Long("0")), Collections.emptyList());
     	
     	Device device = deviceRegisterService.findByApiKey(apiKey);
 
     	if (!principal.getApiKey().equals(apiKey)) {
     		deferredResult.setErrorResult(applicationContext.getMessage(Messages.INVALID_RESOURCE.getCode(), null, locale));
-    		return deferredResult;
+            httpResponse.setStatus(HttpStatus.BAD_REQUEST.value());
+            return deferredResult;
     	}
 
     	if (waitTime.isPresent() && waitTime.get().compareTo(new Long("30000")) > 0) {
-    		deferredResult.setErrorResult(applicationContext.getMessage(Messages.INVALID_WAITTIME.getCode(), null, locale));
-    		return deferredResult;
+            deferredResult.setErrorResult(applicationContext.getMessage(Messages.INVALID_WAITTIME.getCode(), null, locale));
+            httpResponse.setStatus(HttpStatus.BAD_REQUEST.value());
+            return deferredResult;
     	}
+
+
+    	if(channel == null || channel.length() > 32 || Pattern.compile("[^A-Za-z0-9_-]").matcher(channel).find()){
+            deferredResult.setErrorResult(applicationContext.getMessage(Messages.INVALID_CHANNEL_PATTERN.getCode(), null, locale));
+            httpResponse.setStatus(HttpStatus.BAD_REQUEST.value());
+            return deferredResult;
+        }
     	
     	if (!Optional.of(device).isPresent()) {
     		deferredResult.setErrorResult(applicationContext.getMessage(Messages.DEVICE_NOT_FOUND.getCode(), null, locale));
+            httpResponse.setStatus(HttpStatus.BAD_REQUEST.value());
     		return deferredResult;
     	}
     	
@@ -112,11 +133,11 @@ public class DeviceEventRestEndpoint {
     			channel, startTimestamp, null, asc, limit);
 
     	if (!response.getResult().isEmpty() || !waitTime.isPresent() || (waitTime.isPresent() && waitTime.get().equals(new Long("0")))) {
-    		deferredResult.setResult(response.getResult());
+            deferredResult.setResult(EventVO.from(response.getResult()));
 
     	} else {
     		CompletableFuture.supplyAsync(() -> {return jedisTaskService.subscribeToChannel(apiKey+"."+channel, startTimestamp, asc, limit);}, executor)
-    		.whenCompleteAsync((result, throwable) -> deferredResult.setResult(result), executor);
+    		.whenCompleteAsync((result, throwable) -> deferredResult.setResult(EventVO.from(result)), executor);
     	}
 
     	return deferredResult;
