@@ -47,7 +47,8 @@ public class Event {
     @Data
     @Builder
     public static class EventDecorator {
-    	private String timestamp;
+    	private String timestampFormated;
+    	private Instant timestamp;
     	private EventActor incoming;
     	private EventActor outgoing;
     	private String payload;
