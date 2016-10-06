@@ -1,7 +1,7 @@
 package com.konkerlabs.platform.registry.business.model;
 
 import com.fasterxml.jackson.annotation.JsonView;
-import com.konkerlabs.platform.registry.web.serializers.EventJsonView;
+import com.konkerlabs.platform.registry.integration.serializers.EventJsonView;
 import lombok.Builder;
 import lombok.Data;
 

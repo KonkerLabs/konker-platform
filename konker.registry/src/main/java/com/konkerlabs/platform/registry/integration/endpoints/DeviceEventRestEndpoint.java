@@ -9,8 +9,8 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceEventService
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
-import com.konkerlabs.platform.registry.web.serializers.EventJsonView;
-import com.konkerlabs.platform.registry.web.serializers.EventVO;
+import com.konkerlabs.platform.registry.integration.serializers.EventJsonView;
+import com.konkerlabs.platform.registry.integration.serializers.EventVO;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 import lombok.Builder;
 import lombok.Data;
