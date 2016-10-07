@@ -2,12 +2,14 @@ package com.konkerlabs.platform.registry.config;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.annotation.IntegrationComponentScan;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.channel.DirectChannel;
+import org.springframework.integration.channel.ExecutorChannel;
 import org.springframework.integration.config.EnableIntegration;
 import org.springframework.integration.gateway.GatewayProxyFactoryBean;
 import org.springframework.integration.mqtt.core.DefaultMqttPahoClientFactory;
@@ -20,6 +22,7 @@ import org.springframework.messaging.MessageHandler;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.UUID;
+import java.util.concurrent.Executor;
 
 @Configuration
 @EnableIntegration
@@ -32,9 +35,12 @@ public class IntegrationConfig {
 
     //MQTT stuff
 
+    @Autowired
+    private Executor executor;
+
     @Bean(name = "konkerMqttInputChannel")
     public MessageChannel inputChannel() {
-        return new DirectChannel();
+        return new ExecutorChannel(executor);
     }
 
     @Bean(name = "konkerMqttOutputChannel")
