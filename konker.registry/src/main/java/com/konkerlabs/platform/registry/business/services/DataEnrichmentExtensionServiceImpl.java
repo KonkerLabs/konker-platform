@@ -17,12 +17,14 @@ import com.konkerlabs.platform.registry.business.model.validation.CommonValidati
 import com.konkerlabs.platform.registry.business.repositories.DataEnrichmentExtensionRepository;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
+import com.konkerlabs.platform.registry.business.services.api.AbstractURLBlacklistValidation;
 import com.konkerlabs.platform.registry.business.services.api.DataEnrichmentExtensionService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 
 @Service
-public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensionService {
+public class DataEnrichmentExtensionServiceImpl extends AbstractURLBlacklistValidation
+		implements DataEnrichmentExtensionService {
 
 	@Autowired
 	private TenantRepository tenantRepository;
@@ -85,6 +87,14 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
 					.withMessage(Validations.ENRICHMENT_CONTAINER_KEY_ALREADY_REGISTERED.getCode()).build();
 		}
 
+		Optional<Map<String, Object[]>> blacklistValidations = verifyIfUrlMatchesBlacklist(
+				dee.getParameters().get("URL"));
+
+		if (blacklistValidations.isPresent()) {
+			return ServiceResponseBuilder.<DataEnrichmentExtension> error().withMessages(blacklistValidations.get())
+					.build();
+		}
+
 		fillDataEnrichmentExtensionDisplayName(tenant.getId(), dee);
 		DataEnrichmentExtension saved = repository.save(dee);
 
@@ -144,6 +154,14 @@ public class DataEnrichmentExtensionServiceImpl implements DataEnrichmentExtensi
 
 		dee.setId(oldDee.getId());
 		dee.setGuid(oldDee.getGuid());
+
+		Optional<Map<String, Object[]>> blacklistValidations = verifyIfUrlMatchesBlacklist(
+				dee.getParameters().get("URL"));
+
+		if (blacklistValidations.isPresent()) {
+			return ServiceResponseBuilder.<DataEnrichmentExtension> error().withMessages(blacklistValidations.get())
+					.build();
+		}
 
 		fillDataEnrichmentExtensionDisplayName(tenant.getId(), dee);
 		DataEnrichmentExtension saved = repository.save(dee);
