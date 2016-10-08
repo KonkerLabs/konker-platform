@@ -3,7 +3,7 @@ jQuery(document).ready(function() {
     /*
         Fullscreen background
     */
-    $.backstretch("/resources/konker/images/login-background.jpg");
+    $.backstretch(urlTo("/resources/konker/images/login-background.jpg"));
     
     /*
         Form validation
