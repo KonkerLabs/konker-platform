@@ -20,7 +20,7 @@
 
     <link data-th-href="@{/resources/bootstrap/css/konker.css}" rel="stylesheet" />
     
-    <link rel="icon" data-th-href="@{/resources/konker/images/favicon.ico}" sizes="16x16 32x32 48x48 56x56"
+    <link rel="icon" data-th-href="@{/resources/konker/images/favicon.png}" sizes="16x16 32x32 48x48 56x56"
           type="image/vnd.microsoft.icon" />
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
@@ -34,14 +34,9 @@
     <nav class="navbar navbar-inverse navbar-fixed-top">
         <div class="container-fluid">
 
-            <div class="navbar-header">
-
-                <img id="konker-header-logo" data-th-src="@{/resources/konker/images/logo_konker_header.png}" src="../../resources/konker/images/logo_konker_header.png" />
-            </div>
-
-            <ul class="nav navbar-nav">
+            <ul class="nav navbar-nav menu">
                 <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Menu<span class="caret"></span></a>
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="caret"></span></a>
                     <ul class="dropdown-menu">
                         <li><a data-th-href="@{/devices}" data-th-text="#{nav.menu.devices}"></a></li>
                         <li><a data-th-href="@{/routes}" data-th-text="#{nav.menu.routes}"></a></li>
@@ -57,7 +52,7 @@
             </ul>
 
 
-            <ul class="nav navbar-nav navbar-right collapsable">
+            <ul class="nav navbar-nav navbar-right collapsable options">
                 <li><a class="navbar-link" href="#" data-th-text="${@user.email}"></a></li>
 <!--                 <li><a class="navbar-link" href="#"><span class="glyphicon glyphicon-wrench"></span></a></li> -->
 <!--                 <li><a class="navbar-link" href="#"><span class="glyphicon glyphicon-search"></span></a></li> -->

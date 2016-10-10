@@ -3,10 +3,40 @@ html,body {
 }
 
 .navbar-fixed-top {
-    background-image: url(../../konker/images/topo.png);
-    background-size: 100% 100%;
-    background-repeat: no-repeat;
-    background-position: center;
+	z-index: 2;
+    min-height: 59px;
+    padding-bottom: 18px;
+    background: transparent url(../../konker/images/topo.png) no-repeat center center;
+    background-size: cover;
+    border-color: rgba(255, 255, 255, 0);
+    height: 77px;
+}
+
+.menu {
+    left: -100px;
+    background: transparent url(../../konker/images/icon1.png) no-repeat center center;
+    background-size: contain;
+    margin: 14px;
+}
+
+.navbar-inverse .navbar-nav>li>a:focus, .navbar-inverse .navbar-nav>li>a:hover {
+    color: #fff !important;
+    background-color: transparent !important;
+}
+
+.menu:hover {
+    left: -100px;
+    background: transparent url(../../konker/images/icon1-u570-r-fr.png) no-repeat center center;
+    background-size: contain;
+    margin: 14px;
+}
+
+.options {
+	margin: 14px;
+}
+
+.caret {
+	border-top: 4px;
 }
 
 /* Wrapper for page content to push down footer */
@@ -16,7 +46,7 @@ html,body {
   /* Negative indent footer by its height */
   margin: 0 auto -60px;
   /* Pad bottom by footer height */
-  padding: 0 0 60px;
+  padding: 15px 0 60px;
 }
 
 .container {
