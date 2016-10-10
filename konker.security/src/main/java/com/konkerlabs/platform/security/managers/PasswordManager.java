@@ -108,17 +108,22 @@ public class PasswordManager {
     public boolean validatePassword(char[] password, String goodHash)
             throws NoSuchAlgorithmException, InvalidKeySpecException
     {
-        // Decode the hash into its parameters
-        String[] params = goodHash.split("\\"+STORAGE_PATTERN_DELIMITER);
-        int iterations = Integer.parseInt(params[ITERATION_INDEX]);
-        byte[] salt = fromBase64(params[SALT_INDEX]);
-        byte[] hash = fromBase64(params[PBKDF2_INDEX]);
-        // Compute the hash of the provided password, using the same salt,
-        // iteration count, and hash length
-        byte[] testHash = pbkdf2(password, salt, iterations, hash.length);
-        // Compare the hashes in constant time. The password is correct if
-        // both hashes match.
-        return slowEquals(hash, testHash);
+    	if ("userNotFoundPassword".equals(goodHash)) {
+    		return false;
+    		
+    	} else {
+    		// Decode the hash into its parameters
+    		String[] params = goodHash.split("\\"+STORAGE_PATTERN_DELIMITER);
+    		int iterations = Integer.parseInt(params[ITERATION_INDEX]);
+    		byte[] salt = fromBase64(params[SALT_INDEX]);
+    		byte[] hash = fromBase64(params[PBKDF2_INDEX]);
+    		// Compute the hash of the provided password, using the same salt,
+    		// iteration count, and hash length
+    		byte[] testHash = pbkdf2(password, salt, iterations, hash.length);
+    		// Compare the hashes in constant time. The password is correct if
+    		// both hashes match.
+    		return slowEquals(hash, testHash);
+    	}
     }
 
     /**

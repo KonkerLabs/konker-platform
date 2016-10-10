@@ -96,4 +96,11 @@ public class PasswordManagerTest {
 
         assertThat(subject.validatePassword(password,hash),is(true));
     }
+    
+    @Test
+    public void givenAnInvalidHashItShouldInvalidateAPassword() throws Exception {
+        String hash = "userNotFoundPassword";
+
+        assertThat(subject.validatePassword(password,hash),is(false));
+    }
 }
