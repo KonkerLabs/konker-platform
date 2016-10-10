@@ -39,7 +39,7 @@ public class JedisTaskService {
 			public void onMessage(String channel, String message) {
 				Device device = deviceRegisterService.findByApiKey(channel.substring(0, channel.indexOf(".")));
 				response = deviceEventService.findOutgoingBy(device.getTenant(), device.getGuid(),
-						channel, startTimestamp, null, asc, limit);
+						channel.substring(channel.indexOf(".") + 1), startTimestamp, null, asc, limit);
 				this.unsubscribe(channel);
 			}
 		};
