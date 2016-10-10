@@ -84,7 +84,6 @@ public class DeviceEventRestEndpoint {
     @RequestMapping(
             value = "sub/{apiKey}/{channel}",
             method = RequestMethod.GET,
-    		consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @JsonView(EventJsonView.class)
