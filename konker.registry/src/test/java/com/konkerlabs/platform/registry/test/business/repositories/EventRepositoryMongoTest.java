@@ -286,7 +286,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         assertThat(events,notNullValue());
         assertThat(events,hasSize(1));
 
-        assertThat(events.get(0).getTimestamp().toEpochMilli(),equalTo(firstEventTimestamp.toEpochMilli()));
+        assertThat(events.get(0).getTimestamp().toEpochMilli(),equalTo(firstEventTimestamp.toEpochMilli() + 1));
     }
 
     @Test

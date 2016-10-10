@@ -136,7 +136,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
     public void shouldLogFirstDeviceEvent() throws Exception {
         deviceEventService.logIncomingEvent(device, event);
 
-        Event last = eventRepository.findIncomingBy(tenant,device.getGuid(),channel,event.getTimestamp(), null, false, 1).get(0);
+        Event last = eventRepository.findIncomingBy(tenant,device.getGuid(),channel,event.getTimestamp().minusSeconds(1l), null, false, 1).get(0);
 
         assertThat(last, notNullValue());
 

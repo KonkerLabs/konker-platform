@@ -199,7 +199,7 @@ public class EventRepositoryMongoImpl implements EventRepository {
             .is(deviceGuid)
         );
 
-        Optional.ofNullable(startInstant).ifPresent(instant -> criterias.add(Criteria.where("ts").gte(instant.toEpochMilli())));
+        Optional.ofNullable(startInstant).ifPresent(instant -> criterias.add(Criteria.where("ts").gt(instant.toEpochMilli())));
         Optional.ofNullable(endInstant).ifPresent(instant -> criterias.add(Criteria.where("ts").lte(instant.toEpochMilli())));
         Optional.ofNullable(isDeleted)
                 .ifPresent(deleted -> criterias.add(Criteria.where("deleted").exists(deleted)));
