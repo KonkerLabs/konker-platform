@@ -171,7 +171,10 @@ public class DeviceEventRestEndpoint {
             return new ResponseEntity<EventResponse>(buildResponse(e.getMessage(),locale),HttpStatus.BAD_REQUEST);
         }
 
-        return new ResponseEntity<EventResponse>(HttpStatus.OK);
+        return new ResponseEntity<EventResponse>(
+        		EventResponse.builder().code(String.valueOf(HttpStatus.OK.value()))
+        		.message(HttpStatus.OK.name()).build(), 
+        		HttpStatus.OK);
     }
 
     @Data
