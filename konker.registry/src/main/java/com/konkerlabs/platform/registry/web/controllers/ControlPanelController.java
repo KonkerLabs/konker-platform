@@ -11,7 +11,7 @@ public class ControlPanelController {
 
     @RequestMapping
     public String panelPage() {
-        return "panel/index";
+        return "redirect:/devices";
     }
 
 }
