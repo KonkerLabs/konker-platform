@@ -23,7 +23,7 @@ public class ControlPanelControllerTest extends WebLayerTestContext {
     @Test
     public void shouldShowControlPanelHome() throws Exception {
         getMockMvc().perform(get("/"))
-                .andExpect(view().name("panel/index"));
+                .andExpect(view().name("redirect:/devices"));
     }
 
 }
