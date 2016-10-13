@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Base64Utils;
 import org.springframework.web.client.RestClientException;
@@ -91,8 +92,8 @@ public class HttpGatewayImpl implements HttpGateway {
                         Integer.parseInt(config.getObjectList("timeout").get(0).get("default").render());
 
         Optional.ofNullable(restTemplate.getRequestFactory()).ifPresent (item -> {
-            ((HttpComponentsClientHttpRequestFactory) item).setReadTimeout(clientTimeout);
-            ((HttpComponentsClientHttpRequestFactory) item).setConnectTimeout(clientTimeout);
+            ((SimpleClientHttpRequestFactory) item).setReadTimeout(clientTimeout);
+            ((SimpleClientHttpRequestFactory) item).setConnectTimeout(clientTimeout);
         });
     }
 }
