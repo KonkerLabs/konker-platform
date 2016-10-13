@@ -1,10 +1,13 @@
 package com.konkerlabs.platform.registry.integration.gateways;
 
 import com.konkerlabs.platform.registry.integration.exceptions.IntegrationException;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Base64Utils;
 import org.springframework.web.client.RestClientException;
@@ -21,6 +24,7 @@ import static java.text.MessageFormat.format;
 public class HttpGatewayImpl implements HttpGateway {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpGatewayImpl.class);
+    private static Config config = ConfigFactory.load().getConfig("integration");
 
     @Autowired
     private RestTemplate restTemplate;
@@ -62,7 +66,7 @@ public class HttpGatewayImpl implements HttpGateway {
             );
 
             LOGGER.debug("Requesting {} from {}.", method, uri);
-
+            warmUp(null);
             ResponseEntity<String> exchange = restTemplate.exchange(uri, method, entity, String.class);
 
             if (exchange.getStatusCode().is2xxSuccessful()) {
@@ -78,5 +82,17 @@ public class HttpGatewayImpl implements HttpGateway {
             throw new IntegrationException(
                     format("Exception while requesting {0} from {1}", method, uri), rce);
         }
+    }
+
+    private void warmUp(Optional<Integer> timeout) {
+        Integer clientTimeout =
+                Optional.ofNullable(timeout).isPresent() ?
+                        timeout.get() :
+                        Integer.parseInt(config.getObjectList("timeout").get(0).get("default").render());
+
+        Optional.ofNullable(restTemplate.getRequestFactory()).ifPresent (item -> {
+            ((HttpComponentsClientHttpRequestFactory) item).setReadTimeout(clientTimeout);
+            ((HttpComponentsClientHttpRequestFactory) item).setConnectTimeout(clientTimeout);
+        });
     }
 }
