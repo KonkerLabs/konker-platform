@@ -65,7 +65,7 @@ var graphService = {
 
             if (!isNaN(value)) {
                 var d = new Date(0);
-                d.setUTCSeconds(data[i].timestamp.epochSecond)
+                d.setUTCSeconds(data[i].timestamp / 1000)
                 points.push({x: d, y: value});
             }
         }
