@@ -18,7 +18,7 @@ public class TenantUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         return Optional
-            .ofNullable(userRepository.findOne(email))
+            .ofNullable(userRepository.findOne(Optional.of(email).orElse("").trim().toLowerCase()))
             .orElseThrow(() -> new UsernameNotFoundException("authentication.credentials.invalid"));
     }
 }
