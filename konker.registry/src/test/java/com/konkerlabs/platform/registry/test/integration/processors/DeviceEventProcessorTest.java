@@ -33,10 +33,12 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.EventSchema;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.EnrichmentExecutor;
+import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteExecutor;
@@ -76,6 +78,7 @@ public class DeviceEventProcessorTest {
     @Autowired
     private EnrichmentExecutor enrichmentExecutor;
 
+    
     private Instant firstEventTimestamp;
     private Instant secondEventTimestamp;
 
@@ -170,6 +173,8 @@ public class DeviceEventProcessorTest {
     public void shouldLogIncomingEvent() throws Exception {
         when(deviceRegisterService.findByApiKey(sourceApiKey)).thenReturn(device);
         when(enrichmentExecutor.enrich(event, device)).thenReturn(enrichmentResponse);
+        when(deviceEventService.logIncomingEvent(device, event)).thenReturn(ServiceResponseBuilder.<Event>ok().withResult(event).build());
+        
 
         subject.process(sourceApiKey, incomingChannel, originalPayload);
 
@@ -180,6 +185,7 @@ public class DeviceEventProcessorTest {
     public void shouldForwardIncomingMessageToDestinationDevice() throws Exception {
         when(deviceRegisterService.findByApiKey(sourceApiKey)).thenReturn(device);
         when(enrichmentExecutor.enrich(event, device)).thenReturn(enrichmentResponse);
+        when(deviceEventService.logIncomingEvent(device, event)).thenReturn(ServiceResponseBuilder.<Event>ok().withResult(event).build());
 
         ResultCaptor<URI> returnCaptor = new ResultCaptor<URI>();
 
@@ -230,6 +236,7 @@ public class DeviceEventProcessorTest {
         public EnrichmentExecutor enrichmentExecutor() {
             return mock(EnrichmentExecutor.class);
         }
+
     }
 
     static class ResultCaptor<T> implements Answer {

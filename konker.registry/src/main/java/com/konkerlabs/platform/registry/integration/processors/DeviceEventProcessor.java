@@ -28,7 +28,8 @@ public class DeviceEventProcessor {
     public enum Messages {
         APIKEY_MISSING("integration.event_processor.api_key.missing"),
         CHANNEL_MISSING("integration.event_processor.channel.missing"),
-        DEVICE_NOT_FOUND("integration.event_processor.channel.not_found");
+        DEVICE_NOT_FOUND("integration.event_processor.channel.not_found"),
+        INVALID_PAYLOAD("integration.event_processor.payload.invalid");
 
         private String code;
 
@@ -98,9 +99,14 @@ public class DeviceEventProcessor {
                     break;
             }
 
-            deviceEventService.logIncomingEvent(device, event);
+            ServiceResponse<Event> logResponse = deviceEventService.logIncomingEvent(device, event);
+            if (logResponse.isOk()) {
+                eventRouteExecutor.execute(event, device.toURI());
+            } else {
+                LOGGER.error(MessageFormat.format("Could not log incoming message. Probably invalid payload.: [Device: {0}] - [Payload: {1}]", device.toURI(), payload));
+                throw new BusinessException(Messages.INVALID_PAYLOAD.getCode());
+            }
 
-            eventRouteExecutor.execute(event, device.toURI());
         } else {
             LOGGER.debug(MessageFormat.format(EVENT_DROPPED,
                     device.toURI(),
