@@ -5,11 +5,33 @@ $('.date').datetimepicker({
 $('#device').change(function() {
 	renderOutgoingFragment($('#visualizationForm').serialize(), '/visualization/loading/channel/', '#div-channel');
 	clearMetricSelect();
+	clearChartTableHideCsvButton();
 });
 
 $('button.btn-success').click(function() {
 	findAndLoadDataChart();
 });
+
+function loadCSV() {
+	$.ajax({
+		context : this,
+        type : "POST",
+        url : urlTo('/visualization/csv/download'),
+        contentType: "application/json",
+        dataType: "json",
+        timeout : 100000,
+        data: $('#dataResult').val(),
+        beforeSend : function(xhrObj) {
+        },
+        success : function(data) {
+        },
+        complete : function(data) {
+        	$('#exportCsv').removeClass('hide');
+        	$('#exportCsv').attr('href', 'data:text/csv;charset=utf8,' + encodeURIComponent(data.responseText))
+        		.attr('download', 'Events.csv');
+        }
+    });
+}
 
 function findAndLoadDataChart() {
 	var url = urlTo('/visualization/load/');
@@ -41,7 +63,7 @@ function findAndLoadDataChart() {
         			tableData = tableData + '<tr><td>'+value.timestampFormated+'</td><td>'+json+'</td></tr>';
         		});
         		$("#data-event table tbody").html(tableData);
-        		
+        		loadCSV();
         	}
 
         	graphService.update($('#metrics select').val(),result);
@@ -97,8 +119,7 @@ function applyEventBindingsToChannel() {
 	$('#channel').change(function() {
 		renderOutgoingFragment($('#visualizationForm').serialize(), '/visualization/loading/metrics/', '#div-metric');
 		
-		$('#chart svg').html("")
-		$("#data-event table tbody").html("");
+		clearChartTableHideCsvButton();
 	});
 }
 
@@ -106,6 +127,12 @@ function applyEventBindingsToMetric() {
 	$('#metrics select').change(function() {
 		findAndLoadDataChart();
 	});
+}
+
+function clearChartTableHideCsvButton() {
+	$('#chart svg').html("")
+	$("#data-event table tbody").html("");
+	$('#exportCsv').addClass('hide');
 }
 
 function clearMetricSelect() {

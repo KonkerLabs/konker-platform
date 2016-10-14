@@ -181,7 +181,7 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     	getMockMvc().perform(get("/visualization/load/").param("dateStart", "").param("dateEnd", "").param("online", "true")
     			.param("deviceGuid", DEVICE_GUID).param("channel", CHANNEL))
     			.andExpect(content().json("[{'timestampFormated': '10/04/2016 14:44:57.000 BRT',"
-    					+ "'timestamp': {'nano':0,'epochSecond':1475603097},"
+    					+ "'timestamp': 1475603097000,"
     					+ "'incoming':{"
     					+ "'tenantDomain':'inmetrics.com','deviceGuid':'169897e9-ed44-41d1-978d-d244d78e9a67','channel':'datain'},"
     					+ "'outgoing':{'tenantDomain':'inmetrics.com','deviceGuid':'169897e9-ed44-41d1-978d-d244d78e9a67','channel':'datain'},"
@@ -199,13 +199,13 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     	getMockMvc().perform(get("/visualization/load/").param("dateStart", dateStart).param("dateEnd", dateEnd).param("online", "false")
     			.param("deviceGuid", DEVICE_GUID).param("channel", CHANNEL))
     			.andExpect(content().json("[{'timestampFormated': '10/04/2016 14:44:57.000 BRT',"
-    					+ "'timestamp':{'nano':0,'epochSecond':1475603097},"
+    					+ "'timestamp': 1475603097000,"
     					+ "'incoming':{"
     					+ "'tenantDomain':'inmetrics.com','deviceGuid':'169897e9-ed44-41d1-978d-d244d78e9a67','channel':'datain'},"
     					+ "'outgoing':{'tenantDomain':'inmetrics.com','deviceGuid':'169897e9-ed44-41d1-978d-d244d78e9a67','channel':'datain'},"
     					+ "'payload':'{\"a\": 109, \"b\": 111}'}]"));
     }
-
+    
     @Configuration
     static class DeviceTestContextConfig {
     	@Bean

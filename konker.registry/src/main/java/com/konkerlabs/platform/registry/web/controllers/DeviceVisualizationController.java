@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.web.controllers;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -12,36 +13,44 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.node.JsonNodeType;
+import javax.servlet.http.HttpServletResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.Event.EventDecorator;
 import com.konkerlabs.platform.registry.business.model.EventSchema;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
-import com.konkerlabs.platform.registry.business.model.Event.EventDecorator;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.web.converters.InstantToStringConverter;
+import com.konkerlabs.platform.registry.web.csv.CsvDownload;
 import com.konkerlabs.platform.registry.web.forms.DeviceVisualizationForm;
 
 @Controller
 @Scope("request")
 @RequestMapping(value = "visualization")
 public class DeviceVisualizationController implements ApplicationContextAware {
-
+	private static final Logger LOGGER = LoggerFactory.getLogger(DeviceVisualizationController.class);
+	
     public enum Messages {
     	DEVICE_IS_MANDATORY("visualization.device.mandatory"),
     	CHANNE_IS_MANDATORY("visualization.channel.mandatory"),
@@ -148,7 +157,7 @@ public class DeviceVisualizationController implements ApplicationContextAware {
 		List<EventDecorator> eventsResult = new ArrayList<>();
 		response.getResult().forEach(r -> eventsResult.add(EventDecorator.builder()
 				.timestampFormated(instantToStringConverter.convert(r.getTimestamp()))
-				.timestamp(r.getTimestamp())
+				.timestamp(r.getTimestamp().toEpochMilli())
 				.incoming(r.getIncoming())
 				.outgoing(r.getOutgoing())
 				.payload(r.getPayload())
@@ -177,5 +186,16 @@ public class DeviceVisualizationController implements ApplicationContextAware {
 				.filter(schemaField -> schemaField.getKnownTypes().contains(JsonNodeType.NUMBER))
 				.map(m -> m.getPath()).collect(Collectors.toList());
     	return new ModelAndView("visualization/metrics", "metrics", listMetrics);
+    }
+    
+    @RequestMapping(path = "/csv/download", method = RequestMethod.POST, consumes = "application/json")
+    public void download(@RequestBody List<EventDecorator> events,
+    					 Locale locale, HttpServletResponse response) {
+    	
+    	try  {
+			new CsvDownload<EventDecorator>().download(events, "events.csv", response, EventDecorator.class);
+		} catch (IOException | SecurityException | NoSuchMethodException e) {
+			LOGGER.error("Error to generate CSV", e);
+		}
     }
 }
