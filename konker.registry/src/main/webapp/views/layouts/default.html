@@ -58,8 +58,8 @@
                         <li><a data-th-href="@{/destinations/rest}" data-th-text="#{nav.menu.rest_destinations}"></a></li>
                         <li><a data-th-href="@{/destinations/sms}" data-th-text="#{nav.menu.sms_destinations}" 
                         		th:if="${@environment.getActiveProfiles().length != 0 && @environment.getActiveProfiles()[0] == 'sms'}"></a></li>
-                        <li><a data-th-href="@{/visualization}" data-th-text="#{nav.menu.dashboards}"></a>
-                        </li>
+                        <li><a data-th-href="@{/visualization}" data-th-text="#{nav.menu.dashboards}"></a></li>
+                        <li><a href="https://konker.atlassian.net/wiki/display/DEV/Guia+de+Uso+da+Plataforma+Konker" target="help">Help</a></li>li>
                     </ul>
                 </li>
             </ul>
