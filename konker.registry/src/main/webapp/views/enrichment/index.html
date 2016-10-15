@@ -39,9 +39,9 @@
 							class="glyphicon glyphicon-thumbs-up" aria-hidden="true" /> <span
 							data-th-if="${not dataEnrichmentExtension.active}"
 							class="glyphicon glyphicon-thumbs-down" aria-hidden="true" /></td>
-						<td class="text-center"><a
+						<td class="text-center"> <!--  <a
 							data-th-href="@{/enrichment/{id}(id=${dataEnrichmentExtension.guid})}"
-							class="btn btn-default" data-th-text="#{nav.show}">Show</a> <a
+							class="btn btn-default" data-th-text="#{nav.show}">Show</a> --><a
 							data-th-href="@{/enrichment/{id}/edit(id=${dataEnrichmentExtension.guid})}"
 							class="btn btn-default" data-th-text="#{nav.edit}"> Edit </a></td>
 					</tr>

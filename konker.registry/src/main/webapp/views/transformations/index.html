@@ -26,11 +26,11 @@
             <tr data-th-each="transformation : ${transformations}">
                 <td data-th-text="${transformation.name}"></td>
                 <td class="text-center">
-                    <a data-th-href="@{/transformation/{guid}(guid=${transformation.guid})}"
+                   <!--   <a data-th-href="@{/transformation/{guid}(guid=${transformation.guid})}"
                        data-th-text="#{nav.show}"
                        class="btn btn-default">
                         Show
-                    </a>
+                    </a> -->
                     <a data-th-href="@{/transformation/{guid}/edit(guid=${transformation.guid})}"
                        data-th-text="#{nav.edit}"
                        class="btn btn-default">
