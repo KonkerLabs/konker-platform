@@ -86,3 +86,6 @@ img.ajax-loading {
   margin-right: auto;
   float: none;
 }
+.device-pwd {
+    font-family: monospace;
+}
