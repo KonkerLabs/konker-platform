@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.context.request.RequestContextListener;
 import org.springframework.web.filter.HiddenHttpMethodFilter;
+import org.springframework.web.servlet.resource.ResourceUrlEncodingFilter;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
 import com.konkerlabs.platform.registry.config.BusinessConfig;
@@ -47,7 +48,7 @@ public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherSe
 
 	@Override
 	protected Filter[] getServletFilters() {
-		return new Filter[] { new HiddenHttpMethodFilter() };
+		return new Filter[] { new HiddenHttpMethodFilter(), new ResourceUrlEncodingFilter() };
 	}
 
 	@Override
