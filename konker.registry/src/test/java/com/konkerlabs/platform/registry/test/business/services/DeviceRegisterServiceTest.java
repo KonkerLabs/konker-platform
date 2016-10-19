@@ -60,6 +60,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     private static final String ANOTHER_DEVICE_NAME = "Another Device Name";
     private static final String ANOTHER_DEVICE_DESCRIPTION = "Another Device Description";
     private static final Instant THE_REGISTRATION_TIME = Instant.now().minus(Duration.ofDays(2));
+    private static final String THE_DEVICE_PASSWORD = "vKyCY2VXjHWC";
 
 
     @Rule
@@ -473,6 +474,26 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
         assertThat(incomingEvents.getResult().size(), equalTo(0));
         assertThat(outgoingEvents.getResult().size(), equalTo(0));
+    }
+
+    @Test
+    public void shouldGetAValidQrCodeForCredentials() {
+        DeviceRegisterService.DeviceSecurityCredentials credentials
+                = new DeviceRegisterService.DeviceSecurityCredentials(device, THE_DEVICE_PASSWORD);
+        ServiceResponse<String> qrCode =
+                deviceRegisterService.generateQrCodeAccess(credentials, 200, 200);
+        assertThat(qrCode.getStatus(), equalTo(ServiceResponse.Status.OK));
+        assertThat(qrCode.getResult().trim().replaceAll("\n","").replaceAll("\\r",""), equalTo("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADIAQAAAACFI5MzAAAB+ElEQVR42u2Y0WpjMQxEDfotgX7d" +
+                "oN8SuDPjm6Rd2DfpYZfeJoH6BGzLI42cdf72rF/y75K9lp2ybbmXJR4N9JPEC8MVO8628kiN9RMM" +
+                "Y2eYGWO53e7ACNEKkkuI11dHCPZHHlmWY0SwrHBgeEf+EesuQkHk9+eHdvqIHmwOy5Aa42cutBHo" +
+                "HK/iX5Tb2e4eA+RgAMzXch5bQis1QXZwi7UwbbkvqmPbBFncGfiK7dQi5TJAbiHirEwu46nlGSCY" +
+                "OxRHHJkxufj/AMHRIZ/KKUGIHWLxt+I7CTW+GUyNoPQxiwdIsRgdlr2U/E/Zk1m95KgcAUKHJhVu" +
+                "txFCp6A8GFrkV9SKAVJMXY5zciiF0AYIj2rJmbAQRLM+taqVpDxDZs4CiCW42wBh0WMlglIYTSTX" +
+                "K6K9RPtjEkvxKrWRAwQuIZMompOzLr2cqZdcTy9ZRugg387US1T4GE3JkD74dCi9RB1JaadyjPg4" +
+                "RjOpl2PQcI2fMUC2yhAzq2jp5D5BWLudPR2ECKmsm1gDhG0qp4ejU/LfItpLbmJdj/Wn/RogaiB1" +
+                "TylV2vw4RithA3wvEME6we54xwBRfb2OcVvw9wqayftm9DRDt2IMkZtZp+xp7oYIHUM2qHq0Y4I8" +
+                "t1a8VcS52xwguoHB9ChzxXXpctROfn+r+c/IF4dOPKgYMz9IAAAAAElFTkSuQmCC"));
+
     }
 
 

@@ -19,6 +19,7 @@ public interface DeviceRegisterService {
 		DEVICE_HAVE_EVENTROUTES("service.device.have_eventroutes"), 
 		DEVICE_HAVE_ENRICHMENTS("service.device.have_enrichments");
 
+
 		public String getCode() {
 			return code;
 		}
@@ -37,7 +38,6 @@ public interface DeviceRegisterService {
         private Device device;
         @NonNull
         private String password;
-
     }
 
 	/**
@@ -111,8 +111,8 @@ public interface DeviceRegisterService {
 	 * 
 	 * If the device does not exist, returns an error
 	 * 
-	 * @param tenant
-	 * @param guid
+	 * @param tenantDomainName
+	 * @param deviceGuid
 	 * @return
 	 */
 	Device findByTenantDomainNameAndDeviceGuid(String tenantDomainName, String deviceGuid);
@@ -136,4 +136,14 @@ public interface DeviceRegisterService {
 	 * @return A random password used to create the token
 	 */
 	ServiceResponse<DeviceSecurityCredentials> generateSecurityPassword(Tenant tenant, String guid);
+
+	/**
+	 * Generates a security token for an existing device
+	 *
+	 * @param credentials
+	 * @param width
+	 * @param height
+	 * @return A random password used to create the token
+	 */
+	ServiceResponse<String> generateQrCodeAccess(DeviceSecurityCredentials credentials, int width, int height);
 }

@@ -1,5 +1,10 @@
 package com.konkerlabs.platform.registry.business.services;
 
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
@@ -14,6 +19,9 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBui
 import com.konkerlabs.platform.registry.web.controllers.DeviceController;
 import com.konkerlabs.platform.security.exceptions.SecurityException;
 import com.konkerlabs.platform.security.managers.PasswordManager;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+import org.apache.commons.codec.binary.Base64OutputStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -22,10 +30,10 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.io.ByteArrayOutputStream;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
@@ -45,6 +53,8 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
     @Autowired @Qualifier("mongoEvents")
     private EventRepository eventRepository;
+
+    public Config publicServerConfig = ConfigFactory.load().getConfig("pubServer");
 
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
@@ -309,5 +319,43 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
 		return ServiceResponseBuilder.<Device> ok().withResult(device).build();
 	}
+
+    /**
+     * Generate an encoded base64 String with qrcode image
+     * @param credentials
+     * @param width
+     * @param height
+     * @return String
+     * @throws Exception
+     */
+    @Override
+    public ServiceResponse<String> generateQrCodeAccess(DeviceSecurityCredentials credentials, int width, int height) {
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            Base64OutputStream encoded = new Base64OutputStream(baos);
+            StringBuilder content = new StringBuilder();
+            content.append("{\"username\": \"" + credentials.getDevice().getUsername());
+            content.append("\",\"password\": \"" + credentials.getPassword());
+            content.append("\",\"uri\": \"" + publicServerConfig.getString("httpHostname"));
+            content.append("\",\"http-port\":\"" + publicServerConfig.getString("httpPort") + "|" + publicServerConfig.getString("httpsPort"));
+            content.append("\",\"mqtt-port\":\"" + publicServerConfig.getString("mqttPort") + "|" + publicServerConfig.getString("mqttTslPort")+"\"}");
+            BitMatrix bitMatrix = new QRCodeWriter().encode(
+                    content.toString(),
+                    BarcodeFormat.QR_CODE, width, height,
+                    Collections.unmodifiableMap(
+                            Stream.of(
+                                    new AbstractMap.SimpleEntry<>(EncodeHintType.MARGIN, 0),
+                                    new AbstractMap.SimpleEntry<>(EncodeHintType.CHARACTER_SET, "UTF-8")
+                            ).collect(Collectors.toMap((item) ->item.getKey(), (item) -> item.getValue()))));
+
+            MatrixToImageWriter.writeToStream(bitMatrix, "png", encoded);
+            String result = "data:image/png;base64," + new String(baos.toByteArray(), 0, baos.size(), "UTF-8");
+            return ServiceResponseBuilder.<String> ok().withResult(result).build();
+        } catch (Exception e){
+            return ServiceResponseBuilder.<String> error()
+                    .withMessage(DeviceController.Messages.DEVICE_QRCODE_ERROR.getCode())
+                    .build();
+        }
+    }
 
 }
