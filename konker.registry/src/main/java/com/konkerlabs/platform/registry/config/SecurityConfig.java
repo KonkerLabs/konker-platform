@@ -83,35 +83,41 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
-            http.csrf().disable().authorizeRequests()
+            /*http.csrf().disable()
+                    .requestMatchers()
                     .antMatchers(HttpMethod.OPTIONS)
+                    .anyRequest()
                     .permitAll()
-                    .antMatchers("/sub/**,/pub/**").denyAll()
-                    .antMatchers(HttpMethod.GET, "/sub/**")
-                    .hasAuthority("DEVICE")
-                    .antMatchers(HttpMethod.POST, "/pub/**")
-                    .hasAuthority("DEVICE")
-                    .and().httpBasic()
-                    .and().headers()
-                    .addHeaderWriter((HttpServletRequest httpServletRequest,
-                                      HttpServletResponse httpServletResponse) -> {
+                    .antMatchers("/sub*//**,/pub*//**//**").denyAll()
+             .antMatchers(HttpMethod.GET, "/sub*//**//**")
+             .hasAuthority("DEVICE")
+             .antMatchers(HttpMethod.POST, "/pub*//**//**")
+             .hasAuthority("DEVICE")
+             .and().httpBasic()
+             .and().headers()
+             .addHeaderWriter((HttpServletRequest httpServletRequest,
+             HttpServletResponse httpServletResponse) -> {
 
-                        CORS_HEADERS.entrySet().stream().forEach(item -> {
-                            if (item.getValue().matches("\\{(.*?)\\}")) {
-                                httpServletResponse.addHeader(
-                                        item.getKey(),
-                                        Optional.ofNullable(httpServletRequest
-                                                .getHeader(item.getValue().replaceAll("[\\{\\}]", "")))
-                                                .map(origin -> origin)
-                                                .orElse("*"));
-                            } else {
-                                httpServletResponse.addHeader(
-                                        item.getKey(),
-                                        item.getValue());
-                            }
-                        });
-                    });
+             CORS_HEADERS.entrySet().stream().forEach(item -> {
+             if (item.getValue().matches("\\{(.*?)\\}")) {
+             httpServletResponse.addHeader(
+             item.getKey(),
+             Optional.ofNullable(httpServletRequest
+             .getHeader(item.getValue().replaceAll("[\\{\\}]", "")))
+             .map(origin -> origin)
+             .orElse("*"));
+             } else {
+             httpServletResponse.addHeader(
+             item.getKey(),
+             item.getValue());
+             }
+             });
+             });
 
+             http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+             }*/
+            http.csrf().disable().requestMatchers().antMatchers("/pub*", "/sub*").and().authorizeRequests()
+                    .anyRequest().hasAuthority("DEVICE").and().httpBasic();
             http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         }
     }
