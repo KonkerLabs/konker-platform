@@ -1,7 +1,9 @@
 package com.konkerlabs.platform.registry.config;
 
-import java.util.concurrent.TimeUnit;
-
+import com.konkerlabs.platform.registry.web.converters.InstantToStringConverter;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+import nz.net.ultraq.thymeleaf.LayoutDialect;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -13,11 +15,11 @@ import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.format.FormatterRegistry;
 import org.springframework.http.CacheControl;
 import org.springframework.web.servlet.ViewResolver;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 import org.springframework.web.servlet.resource.CssLinkResourceTransformer;
-import org.springframework.web.servlet.resource.ResourceUrlEncodingFilter;
 import org.springframework.web.servlet.resource.VersionResourceResolver;
 import org.thymeleaf.extras.java8time.dialect.Java8TimeDialect;
 import org.thymeleaf.spring4.SpringTemplateEngine;
@@ -26,11 +28,7 @@ import org.thymeleaf.spring4.view.ThymeleafViewResolver;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ITemplateResolver;
 
-import com.konkerlabs.platform.registry.web.converters.InstantToStringConverter;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
-
-import nz.net.ultraq.thymeleaf.LayoutDialect;
+import java.util.concurrent.TimeUnit;
 
 @Configuration
 @EnableWebMvc
@@ -114,4 +112,8 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements Application
         this.applicationContext = applicationContext;
     }
 
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**");
+    }
 }

@@ -2,7 +2,14 @@ package com.konkerlabs.platform.registry.config;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.AbstractMap;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import com.sun.javafx.collections.UnmodifiableObservableMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,8 +17,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.authentication.encoding.PlaintextPasswordEncoder;
+import org.springframework.security.config.annotation.ObjectPostProcessor;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -23,73 +32,113 @@ import com.konkerlabs.platform.registry.security.TenantUserDetailsService;
 import com.konkerlabs.platform.security.managers.PasswordManager;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
+import org.springframework.web.bind.annotation.CrossOrigin;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 @Configuration
 @EnableWebSecurity
 @ComponentScan(basePackageClasses = TenantUserDetailsService.class)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(SecurityConfig.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SecurityConfig.class);
 
-	private static final Config securityConfig = ConfigFactory.load().getConfig("security");
+    private static final Config securityConfig = ConfigFactory.load().getConfig("security");
 
-	@Configuration
-	@Order(1)
-	public static class ApiWebSecurityConfig extends WebSecurityConfigurerAdapter {
+    private static final Map<String, String> CORS_HEADERS = new HashMap<String, String>() {{
+        put("Access-Control-Allow-Origin", "{Origin}");
+        put("Access-Control-Allow-Methods", "GET,POST");
+        put("Access-Control-Allow-Credentials", "true");
+        put("Access-Control-Allow-Headers", "Authorization");
+    }};
 
-		@Autowired
-		@Qualifier("deviceDetails")
-		private UserDetailsService detailsService;
 
-		@Override
-		protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-			DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-			authenticationProvider.setUserDetailsService(detailsService);
-			authenticationProvider.setPasswordEncoder(new PlaintextPasswordEncoder() {
-				@Override
-				public boolean isPasswordValid(String encPass, String rawPass, Object salt) {
-					try {
-						return new PasswordManager().validatePassword(rawPass, encPass);
-					} catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-						LOGGER.error(e.getMessage(), e);
-						return false;
-					}
-				}
-			});
-			auth.authenticationProvider(authenticationProvider);
-		}
+    @Configuration
+    @Order(1)
+    public static class ApiWebSecurityConfig extends WebSecurityConfigurerAdapter {
 
-		@Override
-		protected void configure(HttpSecurity http) throws Exception {
-			http.csrf().disable().requestMatchers().antMatchers("/pub/**", "/sub/**").and().authorizeRequests()
-					.anyRequest().hasAuthority("DEVICE").and().httpBasic();
-			http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-		}
-	}
+        @Autowired
+        @Qualifier("deviceDetails")
+        private UserDetailsService detailsService;
 
-	@Configuration
-	@Order(2)
-	public static class FormWebSecurityConfig extends WebSecurityConfigurerAdapter {
+        @Override
+        protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+            DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+            authenticationProvider.setUserDetailsService(detailsService);
+            authenticationProvider.setPasswordEncoder(new PlaintextPasswordEncoder() {
+                @Override
+                public boolean isPasswordValid(String encPass, String rawPass, Object salt) {
+                    try {
+                        return new PasswordManager().validatePassword(rawPass, encPass);
+                    } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+                        LOGGER.error(e.getMessage(), e);
+                        return false;
+                    }
+                }
+            });
+            auth.authenticationProvider(authenticationProvider);
+        }
 
-		@Autowired
-		@Qualifier("tenantUserDetails")
-		private UserDetailsService userDetailsService;
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+            http.csrf().disable().authorizeRequests()
+                    .antMatchers(HttpMethod.OPTIONS)
+                    .permitAll()
+                    .antMatchers("/sub/**,/pub/**").denyAll()
+                    .antMatchers(HttpMethod.GET, "/sub/**")
+                    .hasAuthority("DEVICE")
+                    .antMatchers(HttpMethod.POST, "/pub/**")
+                    .hasAuthority("DEVICE")
+                    .and().httpBasic()
+                    .and().headers()
+                    .addHeaderWriter((HttpServletRequest httpServletRequest,
+                                      HttpServletResponse httpServletResponse) -> {
 
-		@Override
-		protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-			DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-			authenticationProvider.setUserDetailsService(userDetailsService);
-			authenticationProvider.setPasswordEncoder(new PlaintextPasswordEncoder());
-			auth.authenticationProvider(authenticationProvider);
-		}
+                        CORS_HEADERS.entrySet().stream().forEach(item -> {
+                            if (item.getValue().matches("\\{(.*?)\\}")) {
+                                httpServletResponse.addHeader(
+                                        item.getKey(),
+                                        Optional.ofNullable(httpServletRequest
+                                                .getHeader(item.getValue().replaceAll("[\\{\\}]", "")))
+                                                .map(origin -> origin)
+                                                .orElse("*"));
+                            } else {
+                                httpServletResponse.addHeader(
+                                        item.getKey(),
+                                        item.getValue());
+                            }
+                        });
+                    });
 
-		@Override
-		protected void configure(HttpSecurity http) throws Exception {
-			http.headers().frameOptions().sameOrigin().and().authorizeRequests().antMatchers("/resources/**")
-					.permitAll().anyRequest().hasAuthority("USER").and().formLogin()
-					.loginPage(securityConfig.getString("loginPage"))
-					.defaultSuccessUrl(securityConfig.getString("successLoginUrl")).permitAll().and().logout()
-					.logoutSuccessUrl(securityConfig.getString("loginPage")).and().csrf().disable();
-		}
-	}
+            http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        }
+    }
+
+    @Configuration
+    @Order(2)
+    public static class FormWebSecurityConfig extends WebSecurityConfigurerAdapter {
+
+        @Autowired
+        @Qualifier("tenantUserDetails")
+        private UserDetailsService userDetailsService;
+
+        @Override
+        protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+            DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+            authenticationProvider.setUserDetailsService(userDetailsService);
+            authenticationProvider.setPasswordEncoder(new PlaintextPasswordEncoder());
+            auth.authenticationProvider(authenticationProvider);
+        }
+
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+            http.headers().frameOptions().sameOrigin().and().authorizeRequests().antMatchers("/resources/**")
+                    .permitAll().anyRequest().hasAuthority("USER").and().formLogin()
+                    .loginPage(securityConfig.getString("loginPage"))
+                    .defaultSuccessUrl(securityConfig.getString("successLoginUrl")).permitAll().and().logout()
+                    .logoutSuccessUrl(securityConfig.getString("loginPage")).and().csrf().disable();
+        }
+    }
 }
