@@ -23,6 +23,7 @@ import org.springframework.security.authentication.encoding.PlaintextPasswordEnc
 import org.springframework.security.config.annotation.ObjectPostProcessor;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -83,41 +84,29 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
-            /*http.csrf().disable()
-                    .requestMatchers()
-                    .antMatchers(HttpMethod.OPTIONS)
-                    .anyRequest()
-                    .permitAll()
-                    .antMatchers("/sub*//**,/pub*//**//**").denyAll()
-             .antMatchers(HttpMethod.GET, "/sub*//**//**")
-             .hasAuthority("DEVICE")
-             .antMatchers(HttpMethod.POST, "/pub*//**//**")
-             .hasAuthority("DEVICE")
-             .and().httpBasic()
-             .and().headers()
-             .addHeaderWriter((HttpServletRequest httpServletRequest,
-             HttpServletResponse httpServletResponse) -> {
+           http.csrf().disable()
+                    .requestMatchers().antMatchers("/pub/**", "/sub/**").and().authorizeRequests()
+                    .anyRequest().hasAuthority("DEVICE").and().httpBasic()
+                    .and().headers()
+                    .addHeaderWriter((HttpServletRequest httpServletRequest,
+                                      HttpServletResponse httpServletResponse) -> {
 
-             CORS_HEADERS.entrySet().stream().forEach(item -> {
-             if (item.getValue().matches("\\{(.*?)\\}")) {
-             httpServletResponse.addHeader(
-             item.getKey(),
-             Optional.ofNullable(httpServletRequest
-             .getHeader(item.getValue().replaceAll("[\\{\\}]", "")))
-             .map(origin -> origin)
-             .orElse("*"));
-             } else {
-             httpServletResponse.addHeader(
-             item.getKey(),
-             item.getValue());
-             }
-             });
-             });
+                        CORS_HEADERS.entrySet().stream().forEach(item -> {
+                            if (item.getValue().matches("\\{(.*?)\\}")) {
+                                httpServletResponse.addHeader(
+                                        item.getKey(),
+                                        Optional.ofNullable(httpServletRequest
+                                                .getHeader(item.getValue().replaceAll("[\\{\\}]", "")))
+                                                .map(origin -> origin)
+                                                .orElse("*"));
+                            } else {
+                                httpServletResponse.addHeader(
+                                        item.getKey(),
+                                        item.getValue());
+                            }
+                        });
+                    });
 
-             http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-             }*/
-            http.csrf().disable().requestMatchers().antMatchers("/pub*", "/sub*").and().authorizeRequests()
-                    .anyRequest().hasAuthority("DEVICE").and().httpBasic();
             http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         }
     }
@@ -136,6 +125,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             authenticationProvider.setUserDetailsService(userDetailsService);
             authenticationProvider.setPasswordEncoder(new PlaintextPasswordEncoder());
             auth.authenticationProvider(authenticationProvider);
+        }
+
+        @Override
+        public void configure(WebSecurity web) throws Exception {
+            //web.ignoring().anyRequest().antMatchers(HttpMethod.OPTIONS);
         }
 
         @Override
