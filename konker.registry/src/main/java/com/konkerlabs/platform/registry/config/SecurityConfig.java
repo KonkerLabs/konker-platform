@@ -84,8 +84,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
-           http.csrf().disable()
-                    .requestMatchers().antMatchers("/pub/**", "/sub/**").and().authorizeRequests()
+            http.csrf().disable()
+                    .authorizeRequests().antMatchers(HttpMethod.OPTIONS).permitAll()
+                    .and().requestMatchers()
+                    .antMatchers("/pub/**", "/sub/**").and().authorizeRequests()
                     .anyRequest().hasAuthority("DEVICE").and().httpBasic()
                     .and().headers()
                     .addHeaderWriter((HttpServletRequest httpServletRequest,
@@ -125,11 +127,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             authenticationProvider.setUserDetailsService(userDetailsService);
             authenticationProvider.setPasswordEncoder(new PlaintextPasswordEncoder());
             auth.authenticationProvider(authenticationProvider);
-        }
-
-        @Override
-        public void configure(WebSecurity web) throws Exception {
-            //web.ignoring().anyRequest().antMatchers(HttpMethod.OPTIONS);
         }
 
         @Override
