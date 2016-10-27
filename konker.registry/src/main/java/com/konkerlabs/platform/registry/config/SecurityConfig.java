@@ -40,7 +40,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private static final Map<String, String> CORS_HEADERS = new HashMap<String, String>() {{
         put("Access-Control-Allow-Origin", "{Origin}");
-        put("Access-Control-Allow-Methods", "GET,POST");
+        put("Access-Control-Allow-Methods", "GET,POST,DELETE");
         put("Access-Control-Allow-Credentials", "true");
         put("Access-Control-Allow-Headers", "Authorization");
     }};
