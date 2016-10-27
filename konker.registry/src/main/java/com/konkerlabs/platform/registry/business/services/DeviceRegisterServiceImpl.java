@@ -334,11 +334,16 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             Base64OutputStream encoded = new Base64OutputStream(baos);
             StringBuilder content = new StringBuilder();
-            content.append("{\"username\": \"" + credentials.getDevice().getUsername());
-            content.append("\",\"password\": \"" + credentials.getPassword());
+            content.append("{\"user\": \"" + credentials.getDevice().getUsername());
+            content.append("\",\"pass\": \"" + credentials.getPassword());
             content.append("\",\"uri\": \"" + publicServerConfig.getString("httpHostname"));
-            content.append("\",\"http-port\":\"" + publicServerConfig.getString("httpPort") + "|" + publicServerConfig.getString("httpsPort"));
-            content.append("\",\"mqtt-port\":\"" + publicServerConfig.getString("mqttPort") + "|" + publicServerConfig.getString("mqttTslPort")+"\"}");
+            content.append("\",\"http\":\"" + publicServerConfig.getString("httpPort"));
+            content.append("\",\"https\":\"" + publicServerConfig.getString("httpsPort"));
+            content.append("\",\"mqtt\":\"" + publicServerConfig.getString("mqttPort"));
+            content.append("\",\"mqtt-tls\":\"" + publicServerConfig.getString("mqttTslPort"));
+            content.append("\",\"pub\":\" pub/"+ credentials.getDevice().getUsername());
+            content.append("\",\"sub\":\" sub/"+ credentials.getDevice().getUsername() +" \"}");
+
             BitMatrix bitMatrix = new QRCodeWriter().encode(
                     content.toString(),
                     BarcodeFormat.QR_CODE, width, height,
