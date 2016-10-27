@@ -1,8 +1,7 @@
 package com.konkerlabs.platform.registry.web.controllers;
 
 import java.text.MessageFormat;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -157,12 +156,15 @@ public class DeviceController implements ApplicationContextAware {
         ServiceResponse<Device> serviceResponse = deviceRegisterService.getByDeviceGuid(tenant, deviceGuid);
         if (serviceResponse.isOk()) {
             Device device = serviceResponse.getResult();
+
             return new ModelAndView("devices/password")
                     .addObject("action", MessageFormat.format("/devices/{0}/password", deviceGuid))
                     .addObject("deviceGuid", device.getDeviceId())
                     .addObject("apiKey", device.getApiKey())
                     .addObject("device", device)
                     .addObject("pubServerInfo", ConfigFactory.load().getConfig("pubServer"));
+
+
         } else {
             redirectAttributes.addFlashAttribute("message",
                     applicationContext.getMessage(CommonValidations.RECORD_NULL.getCode(), null, locale));
