@@ -89,6 +89,4 @@ img.ajax-loading {
 .avoid-missundertand {
     font-family: monospace;
 }
-.password-qrcode {
-    margin-top: -10pt
-}
+.password-qrcode {}
