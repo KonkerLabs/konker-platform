@@ -39,8 +39,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private static final Config securityConfig = ConfigFactory.load().getConfig("security");
 
     private static final Map<String, String> CORS_HEADERS = new HashMap<String, String>() {{
-        put("Access-Control-Allow-Origin", "{Origin}");
-        put("Access-Control-Allow-Methods", "GET,POST,DELETE");
+        put("Access-Control-Allow-Origin", "*");
+        put("Access-Control-Allow-Methods", "GET,POST");
         put("Access-Control-Allow-Credentials", "true");
         put("Access-Control-Allow-Headers", "Authorization");
     }};
@@ -74,17 +74,22 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
-            http.csrf().disable()
+            http.csrf().disable().requestMatchers().antMatchers("/pub/**", "/sub/**").and().authorizeRequests()
+                    .anyRequest().hasAuthority("DEVICE").and().httpBasic();
+            http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        }
+
+           /* http.csrf().disable()
                     .authorizeRequests().antMatchers(HttpMethod.OPTIONS).permitAll()
                     .and().requestMatchers()
-                    .antMatchers("/pub/**", "/sub/**").and().authorizeRequests()
+                    .antMatchers("/pub*//**", "/sub*//**").and().authorizeRequests()
                     .anyRequest().hasAuthority("DEVICE").and().httpBasic()
                     .and().headers()
                     .addHeaderWriter((HttpServletRequest httpServletRequest,
                                       HttpServletResponse httpServletResponse) -> {
 
                         CORS_HEADERS.entrySet().stream().forEach(item -> {
-                            if (item.getValue().matches("\\{(.*?)\\}")) {
+                            *//*if (item.getValue().matches("\\{(.*?)\\}")) {
                                 httpServletResponse.addHeader(
                                         item.getKey(),
                                         Optional.ofNullable(httpServletRequest
@@ -95,12 +100,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                                 httpServletResponse.addHeader(
                                         item.getKey(),
                                         item.getValue());
-                            }
+                            }*//*
+                            httpServletResponse.addHeader(
+                                    item.getKey(),
+                                    item.getValue());
                         });
                     });
 
             http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-        }
+        }*/
     }
 
     @Configuration
