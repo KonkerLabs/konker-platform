@@ -74,22 +74,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
-            http.csrf().disable().requestMatchers().antMatchers("/pub/**", "/sub/**").and().authorizeRequests()
-                    .anyRequest().hasAuthority("DEVICE").and().httpBasic();
-            http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-        }
-
-           /* http.csrf().disable()
+            http.csrf().disable()
                     .authorizeRequests().antMatchers(HttpMethod.OPTIONS).permitAll()
                     .and().requestMatchers()
-                    .antMatchers("/pub*//**", "/sub*//**").and().authorizeRequests()
+                    .antMatchers("/pub*", "/sub*").and().authorizeRequests()
                     .anyRequest().hasAuthority("DEVICE").and().httpBasic()
                     .and().headers()
                     .addHeaderWriter((HttpServletRequest httpServletRequest,
                                       HttpServletResponse httpServletResponse) -> {
 
                         CORS_HEADERS.entrySet().stream().forEach(item -> {
-                            *//*if (item.getValue().matches("\\{(.*?)\\}")) {
+                            if (item.getValue().matches("\\{(.*?)\\}")) {
                                 httpServletResponse.addHeader(
                                         item.getKey(),
                                         Optional.ofNullable(httpServletRequest
@@ -100,7 +95,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                                 httpServletResponse.addHeader(
                                         item.getKey(),
                                         item.getValue());
-                            }*//*
+                            }
                             httpServletResponse.addHeader(
                                     item.getKey(),
                                     item.getValue());
@@ -108,7 +103,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     });
 
             http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-        }*/
+        }
     }
 
     @Configuration
