@@ -1,15 +1,9 @@
 package com.konkerlabs.platform.registry.config;
 
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-import java.util.AbstractMap;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import com.sun.javafx.collections.UnmodifiableObservableMap;
+import com.konkerlabs.platform.registry.security.TenantUserDetailsService;
+import com.konkerlabs.platform.security.managers.PasswordManager;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,24 +14,20 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.authentication.encoding.PlaintextPasswordEncoder;
-import org.springframework.security.config.annotation.ObjectPostProcessor;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
-import com.konkerlabs.platform.registry.security.TenantUserDetailsService;
-import com.konkerlabs.platform.security.managers.PasswordManager;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
-import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
-import org.springframework.web.bind.annotation.CrossOrigin;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 @Configuration
 @EnableWebSecurity
