@@ -484,20 +484,24 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
                 deviceRegisterService.generateQrCodeAccess(credentials, 200, 200);
         assertThat(qrCode.getStatus(), equalTo(ServiceResponse.Status.OK));
         assertThat(qrCode.getResult().trim().replaceAll("\n","").replaceAll("\\r",""),
-                equalTo("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADIAQAAAACFI5MzAAACl0l" +
-                        "EQVR42rWYbYrcMBBEBX0tga4u0LUEnXql2QQC+RNqZmZZu5/Barn6y6P/9Rn/JnuMOn3XuWOu" +
-                        "3nNW98EYJoeDkr0atsfiVMY00X8d6J5LC5myr1sYv0GOTs6Vo6P2rLu+RFqkD3YtZtfzPU38o" +
-                        "Ka+8lS+lq/8vdcxYoX8/fmjnRhB3PJz12YFbOZiAZ9YyJG9dt05cJD7Xv3pgsnaouQc7+mSGB" +
-                        "VZR6EliUwpMk6untlB63JZS7BdIR0muu/lnkTW9RqAujZNxlIwSebHApR1KCnJFCZSx2U7eV6" +
-                        "LfKH4ukumMGkfyaqNFVrXAtFhmODfnsMOwqX83iwjTLYLxvCdNw/RPsuYJuwestAiJnl2kM1R" +
-                        "fJYgCSoEq/AaypmjO0y2FUK2m+8Jovgmk6eJGFupKjuJMiihHCZ3GpS9kyznw1JimAznVL6Ih" +
-                        "aBSfA0iOEooeFa4KwbZlt/b0TCh0paruPO424hdYcL9YKtf7+BuSGs6YYK10MTyjrrwakeV+b" +
-                        "LEolDGc0xZ+66FqhhZQmv6k8hfQ0z6u6+WBAlNnZLE9gN7fbHTYIfJSwyOXIrhcJViQWGiEjH" +
-                        "dlVAz8PP9XGmjhICdn2GF0WU70Z4OE9p76t+iwML6nZ4w2R5PXq9KH0lppymqNHEb52wxyOeT" +
-                        "HS7n+CyRCLebU8KpqVEekNKEdvFVJzu5PMCQbNOEeEXmjHduttpOd5rQ0NEQc4r4XadcaaMEH" +
-                        "yftAsonT5Tr1OkwIXUf91ruvj3FugcPkzd2FRnpFY93MFeYfCZkxhVPE8x91fvnTUmOEMLLXj" +
-                        "o1Ec0e/b9APi0KM7mafbQoeX6BeNSjt/c7E79cYGLJEicHd/bwn9p0Tpjg33up9EKLxOfuO0z" +
-                        "+493gL/GWraNvgmE/AAAAAElFTkSuQmCC"));
+                equalTo("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADIAQAAAACFI5MzA" +
+                        "AADLElEQVR42u2YvY3kMAyFaThQZjcgQG0oU0t2A/5pYNySMrUhwA3ImQLDvMfZnb29" +
+                        "4A4YOrwdOJjxR0Ay+fRID/HfPvRD/i9SiCa/b9GVwGvlhzmJnJocfA6GL+PWaDtE0Tn" +
+                        "zDRLtnHJf7WDsFLh4BN4iQ3APrJN4MbZP9iaZiBfaCyGEj3TeIsiBz2O0I7uL8AR/ZO" +
+                        "ddgvqMyX6/vlXubSKfeHaUG7aTd0f6Q1XvEjw6EfVRJPPArrl9eD05koNwitlXtg0WS" +
+                        "VJzNSmUJ+MWkpCt2rm2i9ETTigRDeHsKw3ebZIDpybFY5tnkxzHnSNC8vDagYIcdV88" +
+                        "b7w/vB0IIaiSnpSAA+cW30LaUCIKXkhPrrBzbTf4SrAN4/Dtx2cONATaGaNwCYmWAnV" +
+                        "flXufHBFHrYXzrRXmlzuDZd0NcpJ3nNo1MjjuNZHVpEgiswgHJhpEO0d1aoJj0VdeI0" +
+                        "7JDueb69lHVhMcjof0igzHGjx+7pe/QXDPZFhUk3IHP6gfBqMkz1yKV3UGVgqb35fg1" +
+                        "KQYFES8aiDYjMV3ermLgiAH6LEfXoV1oKCXrjXk8qJr1AchDGMOOMd6UoJDdx0ZF82S" +
+                        "EvcMUZIjUVN58VAimi2NlZpX5RSkGDG/PuUZTTJICPkbhNBpxatWhsG0Wzp/O8X7BCr" +
+                        "enl61yVL7g1AopyZos2j7MKqV2zWdIpyXrhXk8ji44lWM2cSfOMEj6wn00gXxqitIy8" +
+                        "XFUU9K2EuAwchB6dltkGTVk4tgTri9F4PbSGrLn0rUkOKfxakEaTdQN6JeO1AQJLILM" +
+                        "o5h9tykzuhCTk0OCBCzMMwv5hHGjKGs6skV8uQlnTMePdk5fgwpSgKjuuhjFsM6eY7n" +
+                        "WG8Qj/eSTJINDGXS0B5GTy6DpgEt515GbORjL96pCeP2U4OFMCHC/OiVURV52jxLp4X" +
+                        "Zw67ccYPI7M/YaSst18jLxECsJngvmULLGAQYIZjv3PGlRAVBIlOeAjSIRTCIfZuEVG" +
+                        "Qg20OAVVrHszHeIsiBvLmmHbAz51cONARtBwOFp85bdJ7LiAWqybM+eJ/GkIjxhLqAi" +
+                        "ZjV5Oefkh/yD/ILpTl1Kuf8VpkAAAAASUVORK5C"));
 
     }
 

@@ -336,8 +336,9 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
             StringBuilder content = new StringBuilder();
             content.append("{\"user\":\"" + credentials.getDevice().getUsername());
             content.append("\",\"pass\":\"" + credentials.getPassword());
-            content.append("\",\"uri\":\"" + publicServerConfig.getString("httpHostname"));
-            content.append("\",\"uri-mqtt\":\"" + publicServerConfig.getString("mqttHostName"));
+            content.append("\",\"host\":\"" + publicServerConfig.getString("httpHostname"));
+            content.append("\",\"ctx\":\"" + publicServerConfig.getString("httpCtx"));
+            content.append("\",\"host-mqtt\":\"" + publicServerConfig.getString("mqttHostName"));
             content.append("\",\"http\":\"" + publicServerConfig.getString("httpPort"));
             content.append("\",\"https\":\"" + publicServerConfig.getString("httpsPort"));
             content.append("\",\"mqtt\":\"" + publicServerConfig.getString("mqttPort"));
