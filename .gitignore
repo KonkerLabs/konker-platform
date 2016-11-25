@@ -4,3 +4,5 @@ target
 /.settings/
 /.gitignore
 /.project
+konker.scripts/docker/env/*
+konker.scripts/docker/build/*
