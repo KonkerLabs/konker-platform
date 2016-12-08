@@ -16,7 +16,7 @@ def provision_tenant(name,domainName,db):
 def provision_user(tenant_id,email,db):
     user = db.users.find_one({"_id" : email})
     if not user:
-        db.users.insert({"_id" : email, "tenant" : DBRef("tenants", tenant_id), "password" : "abc123$$" })
+        db.users.insert({"_id" : email, "tenant" : DBRef("tenants", tenant_id), "password" : "konker123++" })
         return True
 
 tenants = []
