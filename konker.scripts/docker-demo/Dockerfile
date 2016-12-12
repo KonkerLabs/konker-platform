@@ -170,8 +170,7 @@ RUN chmod 777 /docker-entrypoint.sh
 #start
 EXPOSE 8080 80 443 6379 27017 28017 1883
 
-
-
+VOLUME /data/db
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["java","-jar","/usr/local/jetty/start.jar"]
