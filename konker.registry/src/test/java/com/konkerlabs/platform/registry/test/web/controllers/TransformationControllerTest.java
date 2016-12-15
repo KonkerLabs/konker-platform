@@ -131,7 +131,7 @@ public class TransformationControllerTest extends WebLayerTestContext {
                 .andExpect(model().attribute("errors",
                         Arrays.asList(new String[] { applicationContext
                                 .getMessage(CommonValidations.RECORD_NULL.getCode(), null, Locale.ENGLISH) })))
-                .andExpect(model().attribute("method", "")).andExpect(view().name("/transformations/form"));
+                .andExpect(model().attribute("method", "")).andExpect(view().name("transformations/form"));
 
         verify(transformationService).register(tenant, transformation);
     }
