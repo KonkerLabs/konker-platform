@@ -81,7 +81,7 @@ public class TransformationController implements ApplicationContextAware {
                     messages.add(applicationContext.getMessage(message.getKey(),message.getValue(),locale));
                 }
 
-                return new ModelAndView("/transformations/form")
+                return new ModelAndView("transformations/form")
                         .addObject("errors", messages)
                         .addObject("method", "")
                         .addObject("transformation", transformationForm);
