@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.http.CacheControl;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -32,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 
 @Configuration
 @EnableWebMvc
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 @ComponentScan(lazyInit = true, basePackages = { "com.konkerlabs.platform.registry.web",
         "com.konkerlabs.platform.registry.integration.endpoints" })
 public class WebMvcConfig extends WebMvcConfigurerAdapter implements ApplicationContextAware {

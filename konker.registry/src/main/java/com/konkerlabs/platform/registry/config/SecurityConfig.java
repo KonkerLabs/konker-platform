@@ -1,17 +1,24 @@
 package com.konkerlabs.platform.registry.config;
 
-import com.konkerlabs.platform.registry.security.TenantUserDetailsService;
-import com.konkerlabs.platform.security.managers.PasswordManager;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.authentication.encoding.PlaintextPasswordEncoder;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -21,13 +28,10 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import com.konkerlabs.platform.registry.security.TenantUserDetailsService;
+import com.konkerlabs.platform.security.managers.PasswordManager;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 
 @Configuration
 @EnableWebSecurity
@@ -127,5 +131,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .defaultSuccessUrl(securityConfig.getString("successLoginUrl")).permitAll().and().logout()
                     .logoutSuccessUrl(securityConfig.getString("loginPage")).and().csrf().disable();
         }
+    }
+    
+    @Bean
+    @Override
+    protected AuthenticationManager authenticationManager() throws Exception {
+    	return super.authenticationManager();
     }
 }
