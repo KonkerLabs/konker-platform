@@ -22,6 +22,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.authentication.encoding.PlaintextPasswordEncoder;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -109,6 +110,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Configuration
     @Order(2)
+    @EnableWebSecurity
+    @EnableGlobalMethodSecurity(prePostEnabled = true)
     public static class FormWebSecurityConfig extends WebSecurityConfigurerAdapter {
 
         @Autowired
@@ -126,16 +129,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         @Override
         protected void configure(HttpSecurity http) throws Exception {
             http.headers().frameOptions().sameOrigin().and().authorizeRequests().antMatchers("/resources/**")
-                    .permitAll().anyRequest().hasAuthority("USER").and().formLogin()
+                    .permitAll().anyRequest().hasAuthority("LOGIN").and().formLogin()
                     .loginPage(securityConfig.getString("loginPage"))
                     .defaultSuccessUrl(securityConfig.getString("successLoginUrl")).permitAll().and().logout()
                     .logoutSuccessUrl(securityConfig.getString("loginPage")).and().csrf().disable();
         }
+
+        @Bean
+        @Override
+        protected AuthenticationManager authenticationManager() throws Exception {
+        	return super.authenticationManager();
+        }
     }
     
-    @Bean
-    @Override
-    protected AuthenticationManager authenticationManager() throws Exception {
-    	return super.authenticationManager();
-    }
 }

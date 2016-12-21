@@ -1,7 +1,6 @@
 package com.konkerlabs.platform.registry.security;
 
-import com.konkerlabs.platform.registry.business.repositories.UserRepository;
-import com.konkerlabs.platform.registry.config.SecurityConfig;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +10,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import com.konkerlabs.platform.registry.business.repositories.UserRepository;
 
 @Service("tenantUserDetails")
 public class TenantUserDetailsService implements UserDetailsService {
