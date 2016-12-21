@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Scope;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -93,6 +94,7 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     }
 
     @RequestMapping
+    @PreAuthorize("hasAuthority('VIEW_DEVICE_CHART')")
     public ModelAndView index() {
         List<Device> all = deviceRegisterService.findAll(tenant).getResult();
         DeviceVisualizationForm deviceVisualizationForm = new DeviceVisualizationForm();
@@ -100,6 +102,7 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     }
     
     @RequestMapping(path = "/load/")
+    @PreAuthorize("hasAuthority('VIEW_DEVICE_CHART')")
     public @ResponseBody List load(@RequestParam(required = false) String dateStart,
 				    		@RequestParam(required = false) String dateEnd,
 				    		@RequestParam(required = false) boolean online,
@@ -166,6 +169,7 @@ public class DeviceVisualizationController implements ApplicationContextAware {
 	}
     
     @RequestMapping("/loading/channel/")
+    @PreAuthorize("hasAuthority('VIEW_DEVICE_CHART')")
     public ModelAndView loadChannels(@RequestParam String deviceGuid) {
     	ServiceResponse<List<String>> channels = eventSchemaService.findKnownIncomingChannelsBy(tenant, deviceGuid);
     	
@@ -173,6 +177,7 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     }
     
     @RequestMapping("/loading/metrics/")
+    @PreAuthorize("hasAuthority('VIEW_DEVICE_CHART')")
     public ModelAndView loadMetrics(@RequestParam String deviceGuid, 
     								@RequestParam String channel) {
     	ServiceResponse<EventSchema> metrics = eventSchemaService.findIncomingBy(deviceGuid, channel);
@@ -189,6 +194,7 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     }
     
     @RequestMapping(path = "/csv/download", method = RequestMethod.POST, consumes = "application/json")
+    @PreAuthorize("hasAuthority('EXPORT_DEVICE_CSV')")
     public void download(@RequestBody List<EventDecorator> events,
     					 Locale locale, HttpServletResponse response) {
     	

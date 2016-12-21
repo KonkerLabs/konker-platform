@@ -1,41 +1,5 @@
 package com.konkerlabs.platform.registry.test.web.controllers;
 
-import com.konkerlabs.platform.registry.business.model.*;
-import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
-import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
-import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
-import com.konkerlabs.platform.registry.business.model.behaviors.SmsDestinationURIDealer;
-import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.registry.business.services.api.*;
-import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteService;
-import com.konkerlabs.platform.registry.config.WebMvcConfig;
-import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
-import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
-import com.konkerlabs.platform.registry.web.controllers.EventRouteController;
-import com.konkerlabs.platform.registry.web.forms.EventRouteForm;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-
-import java.net.URI;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.function.Supplier;
-
 import static com.konkerlabs.platform.registry.business.model.Device.builder;
 import static com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer.DEVICE_URI_SCHEME;
 import static com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer.REST_DESTINATION_URI_SCHEME;
@@ -45,9 +9,68 @@ import static java.text.MessageFormat.format;
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+
+import java.net.URI;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import java.util.function.Supplier;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+
+import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.EventRoute;
+import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
+import com.konkerlabs.platform.registry.business.model.RestDestination;
+import com.konkerlabs.platform.registry.business.model.SmsDestination;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.Transformation;
+import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
+import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
+import com.konkerlabs.platform.registry.business.model.behaviors.SmsDestinationURIDealer;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.business.services.api.SmsDestinationService;
+import com.konkerlabs.platform.registry.business.services.api.TransformationService;
+import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteService;
+import com.konkerlabs.platform.registry.config.WebMvcConfig;
+import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
+import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
+import com.konkerlabs.platform.registry.web.controllers.EventRouteController;
+import com.konkerlabs.platform.registry.web.forms.EventRouteForm;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
@@ -71,7 +94,7 @@ public class EventRouteControllerTest extends WebLayerTestContext {
     private SmsDestinationService smsDestinationService;
     @Autowired
     private ApplicationContext applicationContext;
-
+    
     @Autowired
     private Tenant tenant;
 
@@ -187,17 +210,21 @@ public class EventRouteControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"LIST_ROUTES"})
     public void shouldListAllRegisteredRoutes() throws Exception {
         when(eventRouteService.getAll(eq(tenant))).thenReturn(
             ServiceResponseBuilder.<List<EventRoute>>ok()
                 .withResult(registeredRoutes).build()
         );
-
-        getMockMvc().perform(get("/routes")).andExpect(model().attribute("routes", equalTo(registeredRoutes)))
-                .andExpect(view().name("routes/index"));
+        
+        getMockMvc().perform(get("/routes"))
+        	.andDo(print())
+        	.andExpect(model().attribute("routes", equalTo(registeredRoutes)))
+            .andExpect(view().name("routes/index"));
     }
 
     @Test
+    @WithMockUser(authorities={"CREATE_DEVICE_ROUTE"})
     public void shouldShowCreationForm() throws Exception {
         getMockMvc().perform(get("/routes/new"))
                 .andExpect(view().name("routes/form"))
@@ -233,6 +260,7 @@ public class EventRouteControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"CREATE_DEVICE_ROUTE"})
     public void shouldBindErrorMessagesWhenRegistrationFailsAndGoBackToCreationForm() throws Exception {
         response = ServiceResponseBuilder.<EventRoute>error().
                 withMessage(CommonValidations.TENANT_NULL.getCode()).build();
@@ -252,6 +280,7 @@ public class EventRouteControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"CREATE_DEVICE_ROUTE"})
     public void shouldRedirectToShowAfterSuccessfulRouteCreation() throws Exception {
         response = spy(ServiceResponseBuilder.<EventRoute>ok()
                 .withResult(savedRoute)
@@ -269,6 +298,7 @@ public class EventRouteControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"EDIT_DEVICE_ROUTE"})
     public void shouldShowEditForm() throws Exception {
         routeForm.setAdditionalSupplier(null);
 
@@ -283,6 +313,7 @@ public class EventRouteControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"EDIT_DEVICE_ROUTE"})
     public void shouldBindErrorMessagesWhenUpdateFailsAndGoBackToEditForm() throws Exception {
         response = ServiceResponseBuilder.<EventRoute>error()
                 .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
@@ -302,6 +333,7 @@ public class EventRouteControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"EDIT_DEVICE_ROUTE"})
     public void shouldRedirectToShowAfterSuccessfulRouteEdit() throws Exception {
         response = spy(ServiceResponseBuilder.<EventRoute>ok()
                 .withResult(newRoute).build());
@@ -318,6 +350,7 @@ public class EventRouteControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"SHOW_DEVICE_ROUTE"})
     public void shouldShowRouteDetails() throws Exception {
         routeForm.setAdditionalSupplier(null);
 
@@ -335,6 +368,7 @@ public class EventRouteControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"REMOVE_DEVICE_ROUTE"})
     public void shoudlRedirectToRouteIndexAfterRouteRemoval() throws Exception {
         newRoute.setGuid(routeGuid);
 

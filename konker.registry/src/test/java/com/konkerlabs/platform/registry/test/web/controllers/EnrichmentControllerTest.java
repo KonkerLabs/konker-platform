@@ -24,6 +24,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -133,6 +134,7 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"LIST_ENRICHMENT"})
     public void shouldListAllSavedEnrichmentRegisters() throws Exception {
         when(dataEnrichmentExtensionService.getAll(tenant)).thenReturn(listServiceResponse);
 
@@ -141,6 +143,7 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"CREATE_ENRICHMENT"})
     public void shouldShowCreationForm() throws Exception {
         getMockMvc().perform(get("/enrichment/new"))
                 .andExpect(view().name("enrichment/form"))
@@ -149,6 +152,7 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"CREATE_ENRICHMENT"})
     public void shouldBindErrorMessagesWhenRegistrationFailsAndGoBackToCreationForm() throws Exception {
         String exceptionMessage = CommonValidations.RECORD_NULL.getCode();
 
@@ -171,6 +175,7 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"CREATE_ENRICHMENT"})
     public void shouldRedirectToShowAfterSuccessfulEnrichmentCreation() throws Exception {
         serviceResponse = spy(ServiceResponseBuilder.<DataEnrichmentExtension>ok()
                 .withResult(dataEnrichmentExtension)
@@ -239,6 +244,7 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"SHOW_ENRICHMENT"})
     public void shouldShowEnrichmentDetails() throws Exception {
         when(dataEnrichmentExtensionService.getByGUID(tenant, dataEnrichmentExtension.getName())).thenReturn(serviceResponse);
 
@@ -248,6 +254,7 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"REMOVE_ENRICHMENT"})
     public void shoudlRedirectToRouteIndexAfterRouteRemoval() throws Exception {
         dataEnrichmentExtension.setGuid(enrichmentGuid);
 

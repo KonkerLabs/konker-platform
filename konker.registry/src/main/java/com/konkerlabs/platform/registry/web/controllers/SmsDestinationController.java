@@ -13,6 +13,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.Scope;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -56,12 +57,14 @@ public class SmsDestinationController implements ApplicationContextAware {
 
 
     @RequestMapping
+    @PreAuthorize("hasAuthority('LIST_SMS_DESTINATIONS')")
     public ModelAndView index() {
         return new ModelAndView("destinations/sms/index")
                 .addObject("allDestinations", destinationService.findAll(tenant).getResult());
     }
 
     @RequestMapping("new")
+    @PreAuthorize("hasAuthority('CREATE_SMS_DESTINATION')")
     public ModelAndView newDestination() {
         return new ModelAndView("destinations/sms/form")
                 .addObject("destination", new SmsDestinationForm())
@@ -69,6 +72,7 @@ public class SmsDestinationController implements ApplicationContextAware {
     }
 
     @RequestMapping(value = "save", method = RequestMethod.POST)
+    @PreAuthorize("hasAuthority('CREATE_SMS_DESTINATION')")
     public ModelAndView saveNew(@ModelAttribute("destinationForm") SmsDestinationForm destinationForm,
                                 RedirectAttributes redirectAttributes, Locale locale) {
         return doSave(
@@ -78,6 +82,7 @@ public class SmsDestinationController implements ApplicationContextAware {
     }
 
     @RequestMapping(value = "/{guid}", method = RequestMethod.GET)
+    @PreAuthorize("hasAuthority('SHOW_SMS_DESTINATION')")
     public ModelAndView show(@PathVariable("guid") String guid) {
         return new ModelAndView("destinations/sms/show")
                 .addObject("destination",new SmsDestinationForm()

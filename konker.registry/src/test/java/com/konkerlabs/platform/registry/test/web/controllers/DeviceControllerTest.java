@@ -33,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -114,6 +115,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
 	}
 
 	@Test
+	@WithMockUser(authorities={"LIST_DEVICES"})
 	public void shouldListAllRegisteredDevices() throws Exception {
 		when(deviceRegisterService.findAll(tenant))
 				.thenReturn(ServiceResponseBuilder.<List<Device>> ok().withResult(registeredDevices).build());
@@ -123,6 +125,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
 	}
 
 	@Test
+	@WithMockUser(authorities={"ADD_DEVICE"})
 	public void shouldShowRegistrationForm() throws Exception {
 		getMockMvc().perform(get("/devices/new")).andExpect(view().name("devices/form"))
 				.andExpect(model().attribute("device", any(DeviceRegistrationForm.class)))
@@ -130,6 +133,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
 	}
 
 	@Test
+	@WithMockUser(authorities={"ADD_DEVICE"})
 	public void shouldBindErrorMessagesWhenRegistrationFailsAndGoBackToRegistrationForm() throws Exception {
 		response = ServiceResponseBuilder.<Device> error().withMessage(CommonValidations.RECORD_NULL.getCode(), null)
 				.build();
@@ -149,6 +153,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
 	}
 
 	@Test
+	@WithMockUser(authorities={"ADD_DEVICE"})
 	public void shouldRedirectToShowAfterRegistrationSucceed() throws Exception {
 		response = ServiceResponseBuilder.<Device> ok().withResult(savedDevice).build();
 
@@ -163,6 +168,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
 	}
 
 	@Test
+	@WithMockUser(authorities={"SHOW_DEVICE"})
 	public void shouldShowDeviceDetails() throws Exception {
 		savedDevice.setRegistrationDate(Instant.now());
 		when(deviceRegisterService.getByDeviceGuid(tenant, savedDevice.getGuid()))
@@ -175,6 +181,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
 	}
 
 	@Test
+	@WithMockUser(authorities={"VIEW_DEVICE_LOG"})
 	public void shouldShowDeviceEventList() throws Exception {
 		savedDevice.setRegistrationDate(Instant.now());
 		when(deviceRegisterService.getByDeviceGuid(tenant, savedDevice.getGuid()))
@@ -192,6 +199,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
 	}
 
 	@Test
+	@WithMockUser(authorities={"EDIT_DEVICE"})
 	public void shouldShowEditForm() throws Exception {
 		when(deviceRegisterService.getByDeviceGuid(tenant, savedDevice.getGuid()))
 				.thenReturn(ServiceResponseBuilder.<Device> ok().withResult(savedDevice).build());
@@ -204,6 +212,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
 	}
 
 	@Test
+	@WithMockUser(authorities={"EDIT_DEVICE"})
 	public void shouldBindErrorMessagesWhenEditFailsAndGoBackToEditForm() throws Exception {
 		response = ServiceResponseBuilder.<Device> error().withMessage(CommonValidations.RECORD_NULL.getCode(), null)
 				.build();
@@ -224,6 +233,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
 	}
 
 	@Test
+	@WithMockUser(authorities={"EDIT_DEVICE"})
 	public void shouldRedirectToShowAfterEditSucceed() throws Exception {
 		response = ServiceResponseBuilder.<Device> ok().withResult(savedDevice).build();
 
@@ -238,6 +248,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
 	}
 
 	@Test
+	@WithMockUser(authorities={"REMOVE_DEVICE"})
 	public void shouldRedirectToListDevicesAndShowSuccessMessageAfterDeletionSucceed() throws Exception {
 		device.setId(USER_DEFINED_DEVICE_ID);
 		ServiceResponse<Device> responseRemoval = ServiceResponseBuilder.<Device> ok().withResult(device).build();
