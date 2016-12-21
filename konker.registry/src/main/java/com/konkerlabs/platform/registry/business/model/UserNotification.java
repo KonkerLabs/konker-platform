@@ -1,24 +1,33 @@
 package com.konkerlabs.platform.registry.business.model;
 
+import java.io.Serializable;
 import java.time.Instant;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.CompoundIndexes;
-import org.springframework.data.mongodb.core.index.IndexDirection;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Value;
+import lombok.experimental.NonFinal;
 
 @Document(collection = "userNotifications")
-@Data
-@Builder
 @CompoundIndexes({
-    @CompoundIndex(name = "user_notications_ts", def = "{'destination': 1, 'date': -1}", unique = true)
+    @CompoundIndex(name = "user_notications_ts", def = "{'destination': 1, 'date': -1}", unique = false)
 })
-public class UserNotification {
+@EqualsAndHashCode(of={"uuid", "subject", "date", "destination", "unread"})
+@Value
+@Builder
+public class UserNotification implements Serializable {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 641917038573358275L;
+
     @Id
     private String id;
     
@@ -36,6 +45,7 @@ public class UserNotification {
     private Instant date;
 
     
+    @Getter
     private String subject;
     private String body;
     
@@ -47,10 +57,13 @@ public class UserNotification {
     /**
      * Language of the message
      */
-    private String lang;
+    private String contentLanguage;
     
-    
+    @NonFinal
     private Boolean unread = Boolean.TRUE;
+    
+    @NonFinal
+    private Instant lastReadDate;
 
     /**
      * Groups messages so they can be correlated later. Suppose we have sent 

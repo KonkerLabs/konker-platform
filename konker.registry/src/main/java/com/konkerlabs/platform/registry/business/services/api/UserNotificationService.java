@@ -7,8 +7,9 @@ import com.konkerlabs.platform.registry.business.model.UserNotification;
 
 public interface UserNotificationService {
     enum Validations {
-        TRANSFORMATION_NAME_IN_USE("service.usernotifications.not_found");
-        
+        USER_NOT_FOUND("service.usernotifications.not_found"),
+        USER_NULL("service.usernotifications.user_null");
+
         private String code;
 
         public String getCode() {
@@ -20,15 +21,17 @@ public interface UserNotificationService {
         }
     }
     
+    ServiceResponse<Boolean> hasNewNotifications(User user);
+
     ServiceResponse<List<UserNotification>> getAll(User user);
 
     ServiceResponse<List<UserNotification>> getUnread(User user);
+
+    ServiceResponse<List<UserNotification>> markAllRead(User user);
 
     ServiceResponse<UserNotification> markRead(User user, String notificationUuid);
 
     ServiceResponse<UserNotification> markUnRead(User user, String notificationUuid);
 
     ServiceResponse<UserNotification> postNotification(User user, UserNotification notification);
-
-    ServiceResponse<Boolean> hasNewNotifications(User user);
 }
