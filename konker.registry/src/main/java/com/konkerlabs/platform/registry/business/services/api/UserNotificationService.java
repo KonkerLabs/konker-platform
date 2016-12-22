@@ -7,8 +7,13 @@ import com.konkerlabs.platform.registry.business.model.UserNotification;
 
 public interface UserNotificationService {
     enum Validations {
-        USER_NOT_FOUND("service.usernotifications.not_found"),
-        USER_NULL("service.usernotifications.user_null");
+        USER_NOTIFICATION_NOT_FOUND("service.usernotifications.not_found"),
+        USER_NULL("service.usernotifications.user_null"),
+        USER_NOTIFICATION_NULL_UUID("service.usernotifications.null_uuid"),
+        USER_NOTIFICATION_NULL("service.usernotifications.null"),
+        USER_NOTIFICATION_POST_LAST_READ("service.usernotifications.post.last_read_not_null"),
+        USER_NOTIFICATION_POST_READ("service.usernotifications.post.read")
+        ;
 
         private String code;
 
@@ -23,15 +28,19 @@ public interface UserNotificationService {
     
     ServiceResponse<Boolean> hasNewNotifications(User user);
 
-    ServiceResponse<List<UserNotification>> getAll(User user);
+    ServiceResponse<Boolean> unmarkHasNewNotifications(User user);
 
-    ServiceResponse<List<UserNotification>> getUnread(User user);
+    ServiceResponse<List<UserNotification>> findAll(User user);
 
-    ServiceResponse<List<UserNotification>> markAllRead(User user);
+    ServiceResponse<List<UserNotification>> findUnread(User user);
+    
+    ServiceResponse<UserNotification> getUserNotification(User user, String notificationUuid);
+
+    ServiceResponse<Boolean> markAllRead(User user);
 
     ServiceResponse<UserNotification> markRead(User user, String notificationUuid);
 
-    ServiceResponse<UserNotification> markUnRead(User user, String notificationUuid);
+    ServiceResponse<UserNotification> markUnread(User user, String notificationUuid);
 
     ServiceResponse<UserNotification> postNotification(User user, UserNotification notification);
 }
