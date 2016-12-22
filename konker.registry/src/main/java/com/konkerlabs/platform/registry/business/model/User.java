@@ -1,7 +1,9 @@
 package com.konkerlabs.platform.registry.business.model;
 
-import lombok.Builder;
-import lombok.Data;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -9,8 +11,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-import java.util.Collections;
+import lombok.Builder;
+import lombok.Data;
 
 @Document(collection = "users")
 @Data
@@ -23,10 +25,16 @@ public class User implements UserDetails {
     private Tenant tenant;
     private String password;
     private final String zoneId = "America/Sao_Paulo"; 
+    
+    @DBRef
+    private List<Role> roles;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singletonList(new SimpleGrantedAuthority("USER"));
+    	List<GrantedAuthority> authorities = new ArrayList<>();
+    	roles.forEach(r -> authorities.add(new SimpleGrantedAuthority(r.getName())));
+    	roles.forEach(r -> r.getPrivileges().forEach(p -> authorities.add(new SimpleGrantedAuthority(p.getName()))));
+        return authorities;
     }
 
     @Override

@@ -1,9 +1,7 @@
 package com.konkerlabs.platform.registry.config;
 
-import com.konkerlabs.platform.registry.web.converters.InstantToStringConverter;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
-import nz.net.ultraq.thymeleaf.LayoutDialect;
+import java.util.concurrent.TimeUnit;
+
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -11,6 +9,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.http.CacheControl;
@@ -22,18 +21,24 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import org.springframework.web.servlet.resource.CssLinkResourceTransformer;
 import org.springframework.web.servlet.resource.VersionResourceResolver;
 import org.thymeleaf.extras.java8time.dialect.Java8TimeDialect;
+import org.thymeleaf.extras.springsecurity4.dialect.SpringSecurityDialect;
 import org.thymeleaf.spring4.SpringTemplateEngine;
 import org.thymeleaf.spring4.templateresolver.SpringResourceTemplateResolver;
 import org.thymeleaf.spring4.view.ThymeleafViewResolver;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ITemplateResolver;
 
-import java.util.concurrent.TimeUnit;
+import com.konkerlabs.platform.registry.web.converters.InstantToStringConverter;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+
+import nz.net.ultraq.thymeleaf.LayoutDialect;
 
 @Configuration
 @EnableWebMvc
 @ComponentScan(lazyInit = true, basePackages = { "com.konkerlabs.platform.registry.web",
         "com.konkerlabs.platform.registry.integration.endpoints" })
+@Import({SecurityConfig.class})
 public class WebMvcConfig extends WebMvcConfigurerAdapter implements ApplicationContextAware {
 
     private static final Config webConfig = ConfigFactory.load().getConfig("web");
@@ -68,6 +73,7 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements Application
         engine.setEnableSpringELCompiler(true);
         engine.addDialect(new LayoutDialect());
         engine.addDialect(java8TimeDialect());
+        engine.addDialect(new SpringSecurityDialect());
         engine.setTemplateResolver(templateResolver());
         return engine;
     }

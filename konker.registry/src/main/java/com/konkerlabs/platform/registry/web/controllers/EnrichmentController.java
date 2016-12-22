@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Scope;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -75,12 +76,14 @@ public class EnrichmentController implements ApplicationContextAware {
     }
 
     @RequestMapping
+    @PreAuthorize("hasAuthority('LIST_ENRICHMENT')")
     public ModelAndView index() {
 
         return new ModelAndView("enrichment/index", "dataEnrichmentExtensions", dataEnrichmentExtensionService.getAll(tenant).getResult());
     }
 
     @RequestMapping("new")
+    @PreAuthorize("hasAuthority('CREATE_ENRICHMENT')")
     public ModelAndView newDataEnrichmentExtension() {
         return new ModelAndView("enrichment/form")
                 .addObject("dataEnrichmentExtension", new EnrichmentForm())
@@ -88,6 +91,7 @@ public class EnrichmentController implements ApplicationContextAware {
     }
 
     @RequestMapping(value = "save", method = RequestMethod.POST)
+    @PreAuthorize("hasAuthority('CREATE_ENRICHMENT')")
     public ModelAndView save(@ModelAttribute("dataEnrichmentExtension") EnrichmentForm enrichmentForm,
                              RedirectAttributes redirectAttributes, Locale locale) {
 
@@ -116,11 +120,13 @@ public class EnrichmentController implements ApplicationContextAware {
     }
 
     @RequestMapping(value = "/{dataEnrichmentExtensionGUID}", method = RequestMethod.GET)
+    @PreAuthorize("hasAuthority('SHOW_ENRICHMENT')")
     public ModelAndView show(@PathVariable("dataEnrichmentExtensionGUID") String dataEnrichmentExtensionGUID) {
         return new ModelAndView("enrichment/show","dataEnrichmentExtension",new EnrichmentForm().fillFrom(dataEnrichmentExtensionService.getByGUID(tenant, dataEnrichmentExtensionGUID).getResult()));
     }
 
     @RequestMapping("/{dataEnrichmentExtensionGUID}/edit")
+    @PreAuthorize("hasAuthority('EDIT_ENRICHMENT')")
     public ModelAndView edit(@PathVariable("dataEnrichmentExtensionGUID") String dataEnrichmentExtensionGUID) {
         return new ModelAndView("enrichment/form")
                 .addObject("dataEnrichmentExtension",new EnrichmentForm().fillFrom(dataEnrichmentExtensionService.getByGUID(tenant, dataEnrichmentExtensionGUID).getResult()))
@@ -129,6 +135,7 @@ public class EnrichmentController implements ApplicationContextAware {
     }
 
     @RequestMapping(path = "/{dataEnrichmentExtensionGUID}", method = RequestMethod.PUT)
+    @PreAuthorize("hasAuthority('EDIT_ENRICHMENT')")
     public ModelAndView saveEdit(@PathVariable String dataEnrichmentExtensionGUID,
                                  @ModelAttribute("enrichmentForm") EnrichmentForm enrichmentForm,
                                  RedirectAttributes redirectAttributes, Locale locale) {
@@ -155,6 +162,7 @@ public class EnrichmentController implements ApplicationContextAware {
     }
 
     @RequestMapping(path = "/{dataEnrichmentExtensionGUID}", method = RequestMethod.DELETE)
+    @PreAuthorize("hasAuthority('REMOVE_ENRICHMENT')")
     public ModelAndView remove(@PathVariable("dataEnrichmentExtensionGUID") String dataEnrichmentExtensionGUID,
                                RedirectAttributes redirectAttributes, Locale locale) {
         /*ServiceResponse<DataEnrichmentExtension> serviceResponse =*/ dataEnrichmentExtensionService.remove(tenant, dataEnrichmentExtensionGUID);

@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -107,6 +108,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"LIST_REST_DESTINATIONS"})
     public void shouldListAllRegisteredDestinations() throws Exception {
         when(
             restDestinationService.findAll(tenant)
@@ -121,6 +123,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"CREATE_REST_DESTINATION"})
     public void shouldShowRegistrationForm() throws Exception {
         getMockMvc().perform(get("/destinations/rest/new"))
                 .andExpect(view().name("destinations/rest/form"))
@@ -129,6 +132,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"CREATE_REST_DESTINATION"})
     public void shouldBindErrorMessagesWhenRegistrationFailsAndGoBackToRegistrationForm() throws Exception {
         response = ServiceResponseBuilder.<RestDestination>error()
                 .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
@@ -150,6 +154,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"CREATE_REST_DESTINATION"})
     public void shouldRedirectToShowAfterRegistrationSucceed() throws Exception {
         response = ServiceResponseBuilder.<RestDestination>ok()
                 .withResult(savedDestination)
@@ -167,6 +172,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"SHOW_REST_DESTINATION"})
     public void shouldShowDestinationDetails() throws Exception {
         response = ServiceResponseBuilder.<RestDestination>ok()
                 .withResult(savedDestination)
@@ -182,6 +188,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"EDIT_REST_DESTINATION"})
     public void shouldShowEditForm() throws Exception {
         response = ServiceResponseBuilder.<RestDestination>ok()
                 .withResult(savedDestination)
@@ -199,6 +206,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"EDIT_REST_DESTINATION"})
     public void shouldBindErrorMessagesWhenEditFailsAndGoBackToEditForm() throws Exception {
         response = ServiceResponseBuilder.<RestDestination>error()
                 .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
@@ -220,6 +228,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"EDIT_REST_DESTINATION"})
     public void shouldRedirectToShowAfterEditSucceed() throws Exception {
         response = ServiceResponseBuilder.<RestDestination>ok()
                 .withResult(savedDestination)

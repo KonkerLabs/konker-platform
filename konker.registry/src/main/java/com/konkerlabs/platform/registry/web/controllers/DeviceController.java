@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Scope;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -68,12 +69,14 @@ public class DeviceController implements ApplicationContextAware {
     }
 
     @RequestMapping
+    @PreAuthorize("hasAuthority('LIST_DEVICES')")
     public ModelAndView index() {
         List<Device> all = deviceRegisterService.findAll(tenant).getResult();
         return new ModelAndView("devices/index", "devices", all);
     }
 
     @RequestMapping("/new")
+    @PreAuthorize("hasAuthority('ADD_DEVICE')")
     public ModelAndView newDevice() {
         return new ModelAndView("devices/form")
                 .addObject("device", new DeviceRegistrationForm())
@@ -81,6 +84,7 @@ public class DeviceController implements ApplicationContextAware {
     }
 
     @RequestMapping("/{deviceGuid}")
+    @PreAuthorize("hasAuthority('SHOW_DEVICE')")
     public ModelAndView show(@PathVariable("deviceGuid") String deviceGuid) {
         return new ModelAndView(
                 "devices/show", "device",
@@ -89,6 +93,7 @@ public class DeviceController implements ApplicationContextAware {
     }
 
     @RequestMapping("/{deviceGuid}/edit")
+    @PreAuthorize("hasAuthority('EDIT_DEVICE')")
     public ModelAndView edit(@PathVariable("deviceGuid") String deviceGuid) {
         return new ModelAndView("devices/form")
                 .addObject("device", new DeviceRegistrationForm().fillFrom(deviceRegisterService.getByDeviceGuid(tenant, deviceGuid).getResult()))
@@ -98,6 +103,7 @@ public class DeviceController implements ApplicationContextAware {
     }
 
     @RequestMapping("/{deviceGuid}/events")
+    @PreAuthorize("hasAuthority('VIEW_DEVICE_LOG')")
     public ModelAndView deviceEvents(@PathVariable String deviceGuid) {
         Device device = deviceRegisterService.getByDeviceGuid(tenant, deviceGuid).getResult();
         return new ModelAndView("devices/events").addObject("device", device)
@@ -108,6 +114,7 @@ public class DeviceController implements ApplicationContextAware {
     }
 
     @RequestMapping(path = "/save", method = RequestMethod.POST)
+    @PreAuthorize("hasAuthority('ADD_DEVICE')")
     public ModelAndView saveNew(@ModelAttribute("deviceForm") DeviceRegistrationForm deviceForm,
                                 RedirectAttributes redirectAttributes,
                                 Locale locale) {
@@ -119,6 +126,7 @@ public class DeviceController implements ApplicationContextAware {
     }
 
     @RequestMapping(path = "/{deviceGuid}", method = RequestMethod.PUT)
+    @PreAuthorize("hasAuthority('EDIT_DEVICE')")
     public ModelAndView saveEdit(@PathVariable String deviceGuid,
                                  @ModelAttribute("deviceForm") DeviceRegistrationForm deviceForm,
                                  RedirectAttributes redirectAttributes, Locale locale) {
@@ -130,6 +138,7 @@ public class DeviceController implements ApplicationContextAware {
     }
 
     @RequestMapping(path = "/{deviceGuid}", method = RequestMethod.DELETE)
+    @PreAuthorize("hasAuthority('REMOVE_DEVICE')")
     public ModelAndView remove(@PathVariable String deviceGuid,
                                @ModelAttribute("deviceForm") DeviceRegistrationForm deviceForm,
                                RedirectAttributes redirectAttributes, Locale locale) {
@@ -152,6 +161,7 @@ public class DeviceController implements ApplicationContextAware {
     }
 
     @RequestMapping(path = "/{deviceGuid}/password", method = RequestMethod.GET)
+    @PreAuthorize("hasAuthority('CREATE_DEVICE_KEYS')")
     public ModelAndView password(@PathVariable String deviceGuid, RedirectAttributes redirectAttributes, Locale locale) {
         ServiceResponse<Device> serviceResponse = deviceRegisterService.getByDeviceGuid(tenant, deviceGuid);
         if (serviceResponse.isOk()) {
@@ -173,6 +183,7 @@ public class DeviceController implements ApplicationContextAware {
     }
 
     @RequestMapping(path = "/{deviceGuid}/password", method = RequestMethod.POST)
+    @PreAuthorize("hasAuthority('CREATE_DEVICE_KEYS')")
     public ModelAndView generatePassword(@PathVariable String deviceGuid,
                                          RedirectAttributes redirectAttributes,
                                          Locale locale) {

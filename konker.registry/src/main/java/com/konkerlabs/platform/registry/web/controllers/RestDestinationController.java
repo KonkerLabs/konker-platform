@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Scope;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -50,12 +51,14 @@ public class RestDestinationController implements ApplicationContextAware {
     private ApplicationContext applicationContext;
 
     @RequestMapping
+    @PreAuthorize("hasAuthority('LIST_REST_DESTINATIONS')")
     public ModelAndView index() {
         return new ModelAndView("destinations/rest/index")
             .addObject("allDestinations", restDestinationService.findAll(tenant).getResult());
     }
 
     @RequestMapping("new")
+    @PreAuthorize("hasAuthority('CREATE_REST_DESTINATION')")
     public ModelAndView newDestination() {
         return new ModelAndView("destinations/rest/form")
                 .addObject("destination", new RestDestinationForm())
@@ -63,6 +66,7 @@ public class RestDestinationController implements ApplicationContextAware {
     }
 
     @RequestMapping(value = "save", method = RequestMethod.POST)
+    @PreAuthorize("hasAuthority('CREATE_REST_DESTINATION')")
     public ModelAndView saveNew(@ModelAttribute("destinationForm") RestDestinationForm destinationForm,
                                 RedirectAttributes redirectAttributes, Locale locale) {
         return doSave(
@@ -72,6 +76,7 @@ public class RestDestinationController implements ApplicationContextAware {
     }
 
     @RequestMapping(value = "/{guid}", method = RequestMethod.GET)
+    @PreAuthorize("hasAuthority('SHOW_REST_DESTINATION')")
     public ModelAndView show(@PathVariable("guid") String guid) {
         return new ModelAndView("destinations/rest/show")
             .addObject("destination",new RestDestinationForm()
@@ -79,6 +84,7 @@ public class RestDestinationController implements ApplicationContextAware {
     }
 
     @RequestMapping("/{guid}/edit")
+    @PreAuthorize("hasAuthority('EDIT_REST_DESTINATION')")
     public ModelAndView edit(@PathVariable("guid") String guid) {
         return new ModelAndView("destinations/rest/form")
                 .addObject("destination",new RestDestinationForm()
@@ -88,6 +94,7 @@ public class RestDestinationController implements ApplicationContextAware {
     }
 
     @RequestMapping(value = "/{guid}", method = RequestMethod.PUT)
+    @PreAuthorize("hasAuthority('EDIT_REST_DESTINATION')")
     public ModelAndView saveEdit(@PathVariable String guid,
                                 @ModelAttribute("destinationForm") RestDestinationForm destinationForm,
                                 RedirectAttributes redirectAttributes, Locale locale) {

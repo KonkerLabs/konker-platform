@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Scope;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -88,11 +89,13 @@ public class EventRouteController implements ApplicationContextAware {
     }
 
     @RequestMapping
+    @PreAuthorize("hasAuthority('LIST_ROUTES')")
     public ModelAndView index() {
         return new ModelAndView("routes/index","routes", eventRouteService.getAll(tenant).getResult());
     }
 
     @RequestMapping("new")
+    @PreAuthorize("hasAuthority('CREATE_DEVICE_ROUTE')")
     public ModelAndView newRoute() {
         return new ModelAndView("routes/form")
             .addObject("route",new EventRouteForm())
@@ -100,6 +103,7 @@ public class EventRouteController implements ApplicationContextAware {
     }
 
     @RequestMapping(value = "save", method = RequestMethod.POST)
+    @PreAuthorize("hasAuthority('CREATE_DEVICE_ROUTE')")
     public ModelAndView save(@ModelAttribute("eventRouteForm") EventRouteForm eventRouteForm,
                              RedirectAttributes redirectAttributes, Locale locale) {
 
@@ -111,11 +115,13 @@ public class EventRouteController implements ApplicationContextAware {
     }
 
     @RequestMapping(value = "/{routeGUID}", method = RequestMethod.GET)
+    @PreAuthorize("hasAuthority('SHOW_DEVICE_ROUTE')")
     public ModelAndView show(@PathVariable("routeGUID") String routeGUID) {
         return new ModelAndView("routes/show","route",new EventRouteForm().fillFrom(eventRouteService.getByGUID(tenant, routeGUID).getResult()));
     }
 
     @RequestMapping("/{routeId}/edit")
+    @PreAuthorize("hasAuthority('EDIT_DEVICE_ROUTE')")
     public ModelAndView edit(@PathVariable String routeId) {
         return new ModelAndView("routes/form")
             .addObject("route",new EventRouteForm().fillFrom(eventRouteService.getByGUID(tenant, routeId).getResult()))
@@ -124,6 +130,7 @@ public class EventRouteController implements ApplicationContextAware {
     }
 
     @RequestMapping(path = "/{routeGUID}", method = RequestMethod.PUT)
+    @PreAuthorize("hasAuthority('EDIT_DEVICE_ROUTE')")
     public ModelAndView saveEdit(@PathVariable String routeGUID,
                                  @ModelAttribute("eventRouteForm") EventRouteForm eventRouteForm,
                                  RedirectAttributes redirectAttributes, Locale locale) {
@@ -172,6 +179,7 @@ public class EventRouteController implements ApplicationContextAware {
     }
 
     @RequestMapping(path = "/{routeGUID}", method = RequestMethod.DELETE)
+    @PreAuthorize("hasAuthority('REMOVE_DEVICE_ROUTE')")
     public ModelAndView remove(@PathVariable("routeGUID") String routeGUID,
                                RedirectAttributes redirectAttributes, Locale locale) {
         ServiceResponse<EventRoute> serviceResponse = eventRouteService.remove(tenant, routeGUID);

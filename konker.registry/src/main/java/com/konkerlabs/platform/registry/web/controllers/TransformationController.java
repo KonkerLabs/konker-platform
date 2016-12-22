@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Scope;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -56,11 +57,13 @@ public class TransformationController implements ApplicationContextAware {
     private Tenant tenant;
 
     @RequestMapping
+    @PreAuthorize("hasAuthority('LIST_TRANSFORMATION')")
     public ModelAndView index() {
         return new ModelAndView("transformations/index").addObject("transformations", transformationService.getAll(tenant).getResult());
     }
 
     @RequestMapping("new")
+    @PreAuthorize("hasAuthority('CREATE_TRANSFORMATION')")
     public ModelAndView newTransformation() {
         return new ModelAndView("transformations/form")
                 .addObject("transformation", new TransformationForm())
@@ -68,6 +71,7 @@ public class TransformationController implements ApplicationContextAware {
     }
 
     @RequestMapping(value = "save", method = RequestMethod.POST)
+    @PreAuthorize("hasAuthority('CREATE_TRANSFORMATION')")
     public ModelAndView save(@ModelAttribute("transformation") TransformationForm transformationForm,
                              BindingResult bindingResult, RedirectAttributes redirectAttributes, Locale locale) {
 
@@ -94,12 +98,14 @@ public class TransformationController implements ApplicationContextAware {
     }
 
 	@RequestMapping(value = "/{transformationGuid}", method = RequestMethod.GET)
+	@PreAuthorize("hasAuthority('SHOW_TRANSFORMATION')")
 	public ModelAndView show(@PathVariable("transformationGuid") String transformationGuid) {
 		return new ModelAndView("transformations/show", "transformation",
 				new TransformationForm().fillFrom(transformationService.get(tenant, transformationGuid).getResult()));
 	}
 
 	@RequestMapping("/{transformationGuid}/edit")
+	@PreAuthorize("hasAuthority('EDIT_TRANSFORMATION')")
 	public ModelAndView edit(@PathVariable("transformationGuid") String transformationGuid) {
 		return new ModelAndView("transformations/form")
 				.addObject("transformation",
@@ -110,6 +116,7 @@ public class TransformationController implements ApplicationContextAware {
 	}
 
     @RequestMapping(path = "/{transformationGuid}", method = RequestMethod.PUT)
+    @PreAuthorize("hasAuthority('EDIT_TRANSFORMATION')")
     public ModelAndView saveEdit(@PathVariable String transformationGuid,
                                  @ModelAttribute("transformation") TransformationForm transformationForm, Locale locale,
                                  RedirectAttributes redirectAttributes) {
@@ -140,6 +147,7 @@ public class TransformationController implements ApplicationContextAware {
     }
     
     @RequestMapping(path = "/{transformationGuid}", method = RequestMethod.DELETE)
+    @PreAuthorize("hasAuthority('REMOVE_TRANSFORMATION')")
     public ModelAndView remove(@PathVariable("transformationGuid")String transformationGuid, @ModelAttribute("transformation") TransformationForm transformationForm, 
     		RedirectAttributes redirectAttributes, Locale locale) {
     	ModelAndView modelAndView;

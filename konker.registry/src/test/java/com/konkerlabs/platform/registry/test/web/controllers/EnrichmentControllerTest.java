@@ -1,19 +1,28 @@
 package com.konkerlabs.platform.registry.test.web.controllers;
 
 
-import com.konkerlabs.platform.registry.business.model.DataEnrichmentExtension;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
-import com.konkerlabs.platform.registry.business.model.enumerations.IntegrationType;
-import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.registry.business.services.api.*;
-import com.konkerlabs.platform.registry.config.WebMvcConfig;
-import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
-import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
-import com.konkerlabs.platform.registry.web.controllers.EnrichmentController;
-import com.konkerlabs.platform.registry.web.forms.EnrichmentForm;
+import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+
+import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,20 +33,29 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import java.text.MessageFormat;
-import java.util.*;
-
-import static org.hamcrest.Matchers.equalTo;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import com.konkerlabs.platform.registry.business.model.DataEnrichmentExtension;
+import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
+import com.konkerlabs.platform.registry.business.model.enumerations.IntegrationType;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.services.api.DataEnrichmentExtensionService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.config.WebMvcConfig;
+import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
+import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
+import com.konkerlabs.platform.registry.web.controllers.EnrichmentController;
+import com.konkerlabs.platform.registry.web.forms.EnrichmentForm;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
@@ -133,6 +151,7 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"LIST_ENRICHMENT"})
     public void shouldListAllSavedEnrichmentRegisters() throws Exception {
         when(dataEnrichmentExtensionService.getAll(tenant)).thenReturn(listServiceResponse);
 
@@ -141,6 +160,7 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"CREATE_ENRICHMENT"})
     public void shouldShowCreationForm() throws Exception {
         getMockMvc().perform(get("/enrichment/new"))
                 .andExpect(view().name("enrichment/form"))
@@ -149,6 +169,7 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"CREATE_ENRICHMENT"})
     public void shouldBindErrorMessagesWhenRegistrationFailsAndGoBackToCreationForm() throws Exception {
         String exceptionMessage = CommonValidations.RECORD_NULL.getCode();
 
@@ -171,6 +192,7 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"CREATE_ENRICHMENT"})
     public void shouldRedirectToShowAfterSuccessfulEnrichmentCreation() throws Exception {
         serviceResponse = spy(ServiceResponseBuilder.<DataEnrichmentExtension>ok()
                 .withResult(dataEnrichmentExtension)
@@ -189,6 +211,7 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"EDIT_ENRICHMENT"})
     public void shouldShowEditForm() throws Exception {
         when(dataEnrichmentExtensionService.getByGUID(tenant, dataEnrichmentExtension.getName())).thenReturn(serviceResponse);
 
@@ -200,6 +223,7 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"EDIT_ENRICHMENT"})
     public void shouldBindErrorMessagesWhenUpdateFailsAndGoBackToEditForm() throws Exception {
         String exceptionMessage = CommonValidations.RECORD_NULL.getCode();
 
@@ -222,6 +246,7 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"EDIT_ENRICHMENT"})
     public void shouldRedirectToShowAfterSuccessfulEnrichmentEdit() throws Exception {
         serviceResponse = spy(ServiceResponseBuilder.<DataEnrichmentExtension>ok()
                 .withResult(dataEnrichmentExtension)
@@ -239,6 +264,7 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"SHOW_ENRICHMENT"})
     public void shouldShowEnrichmentDetails() throws Exception {
         when(dataEnrichmentExtensionService.getByGUID(tenant, dataEnrichmentExtension.getName())).thenReturn(serviceResponse);
 
@@ -248,6 +274,7 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"REMOVE_ENRICHMENT"})
     public void shoudlRedirectToRouteIndexAfterRouteRemoval() throws Exception {
         dataEnrichmentExtension.setGuid(enrichmentGuid);
 
