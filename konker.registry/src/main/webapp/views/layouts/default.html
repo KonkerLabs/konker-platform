@@ -50,20 +50,25 @@
             <ul class="nav navbar-nav menu">
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="caret"></span></a>
-                    <ul class="dropdown-menu" th:if="${!#lists.contains(@environment.getActiveProfiles(), 'konkerAnalytics')}">
-                        <li><a data-th-href="@{/devices}" data-th-text="#{nav.menu.devices}"></a></li>
-                        <li><a data-th-href="@{/routes}" data-th-text="#{nav.menu.routes}"></a></li>
-                        <li><a data-th-href="@{/enrichment}" data-th-text="#{nav.menu.enrichment}"></a></li>
-                        <li><a data-th-href="@{/transformation}" data-th-text="#{nav.menu.transformations}"></a></li>
-                        <li><a data-th-href="@{/destinations/rest}" data-th-text="#{nav.menu.rest_destinations}"></a></li>
-                        <li><a data-th-href="@{/destinations/sms}" data-th-text="#{nav.menu.sms_destinations}" 
+                    <ul class="dropdown-menu">
+                        <li th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'')')}">
+                        	<a data-th-href="@{/devices}" data-th-text="#{nav.menu.devices}"></a></li>
+                        <li th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'')')}">
+                        	<a data-th-href="@{/routes}" data-th-text="#{nav.menu.routes}"></a></li>
+                        <li th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'')')}">
+                        	<a data-th-href="@{/enrichment}" data-th-text="#{nav.menu.enrichment}"></a></li>
+                        <li th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'')')}">
+                        	<a data-th-href="@{/transformation}" data-th-text="#{nav.menu.transformations}"></a></li>
+                        <li th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'')')}">
+                        	<a data-th-href="@{/destinations/rest}" data-th-text="#{nav.menu.rest_destinations}"></a></li>
+                        <li th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'')')}">
+                        	<a data-th-href="@{/destinations/sms}" data-th-text="#{nav.menu.sms_destinations}" 
                         		th:if="${@environment.getActiveProfiles().length != 0 && #lists.contains(@environment.getActiveProfiles(), 'sms')}"></a></li>
                         <li><a data-th-href="@{/visualization}" data-th-text="#{nav.menu.dashboards}"></a></li>
-                        <li><a href="https://konker.atlassian.net/wiki/display/DEV/Guia+de+Uso+da+Plataforma+Konker" target="help">Help</a></li>
-                    </ul>
-                    <ul class="dropdown-menu" th:if="${#lists.contains(@environment.getActiveProfiles(), 'konkerAnalytics')}">
-                        <li><a data-th-href="@{/dashboards}" data-th-text="#{nav.menu.dashboards}"></a></li>
-                        <li><a data-th-href="@{/notebooks}" data-th-text="#{nav.menu.notebooks}"></a></li>
+                        <li th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_ANALYTICS_USER'')')}">
+                        	<a data-th-href="@{/dashboards}" data-th-text="#{nav.menu.dashboards}"></a></li>
+                        <li th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_ANALYTICS_USER'')')}">
+                        	<a data-th-href="@{/notebooks}" data-th-text="#{nav.menu.notebooks}"></a></li>
                         <li><a href="https://konker.atlassian.net/wiki/display/DEV/Guia+de+Uso+da+Plataforma+Konker" target="help">Help</a></li>
                     </ul>
                 </li>

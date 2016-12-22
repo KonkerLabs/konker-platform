@@ -1,7 +1,5 @@
 package com.konkerlabs.platform.registry.config;
 
-import com.konkerlabs.platform.registry.business.model.enumerations.Language;
-import com.konkerlabs.platform.registry.interceptor.RequestHandlerInterceptor;
 import com.konkerlabs.platform.registry.web.converters.InstantToStringConverter;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -13,6 +11,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.http.CacheControl;
@@ -24,11 +23,18 @@ import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 import org.springframework.web.servlet.resource.CssLinkResourceTransformer;
 import org.springframework.web.servlet.resource.VersionResourceResolver;
 import org.thymeleaf.extras.java8time.dialect.Java8TimeDialect;
+import org.thymeleaf.extras.springsecurity4.dialect.SpringSecurityDialect;
 import org.thymeleaf.spring4.SpringTemplateEngine;
 import org.thymeleaf.spring4.templateresolver.SpringResourceTemplateResolver;
 import org.thymeleaf.spring4.view.ThymeleafViewResolver;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ITemplateResolver;
+
+import com.konkerlabs.platform.registry.web.converters.InstantToStringConverter;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+
+import nz.net.ultraq.thymeleaf.LayoutDialect;
 
 import java.util.concurrent.TimeUnit;
 
@@ -36,6 +42,7 @@ import java.util.concurrent.TimeUnit;
 @EnableWebMvc
 @ComponentScan(lazyInit = true, basePackages = { "com.konkerlabs.platform.registry.web",
         "com.konkerlabs.platform.registry.integration.endpoints" })
+@Import({SecurityConfig.class})
 public class WebMvcConfig extends WebMvcConfigurerAdapter implements ApplicationContextAware {
 
     private static final Config webConfig = ConfigFactory.load().getConfig("web");
@@ -48,34 +55,6 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements Application
                 .setCacheControl(CacheControl.maxAge(72, TimeUnit.HOURS).cachePublic())
                 .resourceChain(true)
                 .addResolver(new VersionResourceResolver().addContentVersionStrategy("/**")).addTransformer(new CssLinkResourceTransformer());
-    }
-
-    @Bean
-    public LocaleResolver localeResolver() {
-        final SessionLocaleResolver ret = new SessionLocaleResolver();
-        ret.setDefaultLocale(Language.EN.getLocale());
-        return ret;
-    }
-
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(localeChangeInterceptor());
-        registry.addInterceptor(new RequestHandlerInterceptor());
-        super.addInterceptors(registry);
-    }
-
-
-
-    @Override
-    public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
-        super.configureDefaultServletHandling(configurer);
-    }
-
-    @Bean
-    public LocaleChangeInterceptor localeChangeInterceptor(){
-        LocaleChangeInterceptor localeChangeInterceptor= new LocaleChangeInterceptor();
-        localeChangeInterceptor.setParamName(SessionLocaleResolver.LOCALE_SESSION_ATTRIBUTE_NAME);
-        return localeChangeInterceptor;
     }
     
     @Bean
@@ -98,8 +77,8 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements Application
         engine.setEnableSpringELCompiler(true);
         engine.addDialect(new LayoutDialect());
         engine.addDialect(java8TimeDialect());
+        engine.addDialect(new SpringSecurityDialect());
         engine.setTemplateResolver(templateResolver());
-
         return engine;
     }
 

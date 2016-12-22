@@ -25,6 +25,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -99,13 +104,16 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
                 .description("test")
                 .deviceId("device_id")
                 .guid("67014de6-81db-11e6-a5bc-3f99b38315c6").build();
+        
+        SecurityContext context = SecurityContextHolder.getContext();
+        Authentication auth = new UsernamePasswordAuthenticationToken(device, null);
+        context.setAuthentication(auth);
 
         getMockMvc().perform(
                 get("/sub/"+ DEVICE_USER +"/"+ INVALID_CHANNEL_CHAR)
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("offset", String.valueOf(OFFSET))
-                        .param("waitTime", String.valueOf(waitTime))
-                        .flashAttr("principal", device))
+                        .param("waitTime", String.valueOf(waitTime)))
                 .andExpect(status().isBadRequest());
 
 

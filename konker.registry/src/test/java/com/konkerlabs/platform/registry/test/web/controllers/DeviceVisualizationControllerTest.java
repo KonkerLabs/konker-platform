@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -125,6 +126,7 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     }
     
     @Test
+    @WithMockUser(authorities={"VIEW_DEVICE_CHART"})
     public void shouldLoadChannels() throws Exception {
     	when(eventSchemaService.findKnownIncomingChannelsBy(tenant, DEVICE_GUID))
     		.thenReturn(ServiceResponseBuilder.<List<String>>ok()
@@ -136,6 +138,7 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     }
     
     @Test
+    @WithMockUser(authorities={"VIEW_DEVICE_CHART"})
     public void shouldLoadMetrics() throws Exception {
     	when(eventSchemaService.findIncomingBy(DEVICE_GUID, CHANNEL))
     		.thenReturn(ServiceResponseBuilder.<EventSchema>ok()
@@ -151,6 +154,7 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     }
     
     @Test
+    @WithMockUser(authorities={"VIEW_DEVICE_CHART"})
     public void shouldReturnDeviceIsMandatoryMessage() throws Exception {
     	
     	getMockMvc().perform(get("/visualization/load/").param("dateStart", "").param("dateEnd", "").param("online", "false")
@@ -159,6 +163,7 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     }
     
     @Test
+    @WithMockUser(authorities={"VIEW_DEVICE_CHART"})
     public void shouldReturnChannelIsMandatoryMessage() throws Exception {
     	
     	getMockMvc().perform(get("/visualization/load/").param("dateStart", "").param("dateEnd", "").param("online", "false")
@@ -167,6 +172,7 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     }
     
     @Test
+    @WithMockUser(authorities={"VIEW_DEVICE_CHART"})
     public void shouldReturnDateStartIsMandatoryMessage() throws Exception {
     	
     	getMockMvc().perform(get("/visualization/load/").param("dateStart", "").param("dateEnd", "").param("online", "false")
@@ -175,6 +181,7 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     }
     
     @Test
+    @WithMockUser(authorities={"VIEW_DEVICE_CHART"})
     public void shouldReturnDateEndIsMandatoryMessage() throws Exception {
     	
     	getMockMvc().perform(get("/visualization/load/").param("dateStart", dateStart).param("dateEnd", "").param("online", "false")
@@ -183,6 +190,7 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     }
     
     @Test
+    @WithMockUser(authorities={"VIEW_DEVICE_CHART"})
     public void shouldReturnDataOnline() throws Exception {
     	when(userContextResolver.getObject()).thenReturn(user);
     	
@@ -202,6 +210,7 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     }
     
     @Test
+    @WithMockUser(authorities={"VIEW_DEVICE_CHART"})
     public void shouldReturnDataByDateRange() throws Exception {
     	when(userContextResolver.getObject()).thenReturn(user);
 

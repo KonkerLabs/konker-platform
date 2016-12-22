@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -105,6 +106,7 @@ public class TransformationControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"LIST_TRANSFORMATION"})
     public void shouldReturnAllRegisteredTransformations() throws Exception {
         when(transformationService.getAll(tenant))
                 .thenReturn(ServiceResponseBuilder.<List<Transformation>> ok().withResult(transformations).build());
@@ -114,6 +116,7 @@ public class TransformationControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"CREATE_TRANSFORMATION"})
     public void shouldOpenNewTransformationForm() throws Exception {
         getMockMvc().perform(get("/transformation/new"))
                 .andExpect(model().attribute("transformation", new TransformationForm()))
@@ -122,6 +125,7 @@ public class TransformationControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"CREATE_TRANSFORMATION"})
     public void shouldBindAnErrorMessageOnSaveTransformationError() throws Exception {
         when(transformationService.register(eq(tenant), eq(transformation))).thenReturn(ServiceResponseBuilder
                 .<Transformation> error().withMessage(CommonValidations.RECORD_NULL.getCode()).build());
@@ -131,12 +135,13 @@ public class TransformationControllerTest extends WebLayerTestContext {
                 .andExpect(model().attribute("errors",
                         Arrays.asList(new String[] { applicationContext
                                 .getMessage(CommonValidations.RECORD_NULL.getCode(), null, Locale.ENGLISH) })))
-                .andExpect(model().attribute("method", "")).andExpect(view().name("/transformations/form"));
+                .andExpect(model().attribute("method", "")).andExpect(view().name("transformations/form"));
 
         verify(transformationService).register(tenant, transformation);
     }
 
     @Test
+    @WithMockUser(authorities={"CREATE_TRANSFORMATION"})
     public void shouldSaveNewTransformationSuccessfully() throws Exception {
         serviceResponse = spy(ServiceResponseBuilder.<Transformation> ok().withResult(transformation).build());
 
@@ -153,6 +158,7 @@ public class TransformationControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"EDIT_TRANSFORMATION"})
     public void shouldBindAnErrorMessageOnEditTransformationError() throws Exception {
         when(transformationService.update(eq(tenant), eq("123"), eq(transformation))).thenReturn(ServiceResponseBuilder
                 .<Transformation> error().withMessage(CommonValidations.RECORD_NULL.getCode()).build());
@@ -168,6 +174,7 @@ public class TransformationControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"EDIT_TRANSFORMATION"})
     public void shouldUpdateTransformationSuccessfully() throws Exception {
         serviceResponse = spy(
                 ServiceResponseBuilder.<Transformation> ok().withResult(transformation).<Transformation> build());
@@ -185,6 +192,7 @@ public class TransformationControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"SHOW_TRANSFORMATION"})
     public void shouldShowDetailsOfASelectedTransformation() throws Exception {
         transformation.setId("123");
         serviceResponse = spy(
@@ -198,6 +206,7 @@ public class TransformationControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"EDIT_TRANSFORMATION"})
     public void shouldShowEditForm() throws Exception {
         transformation.setId("123");
         serviceResponse = spy(
@@ -221,6 +230,7 @@ public class TransformationControllerTest extends WebLayerTestContext {
     }
     
     @Test
+    @WithMockUser(authorities={"REMOVE_TRANSFORMATION"})
     public void shouldRedirectToTransformationIndexAfterRemoval() throws Exception {
     	transformation.setId("123");
     	spy(serviceResponse);

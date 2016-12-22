@@ -1,5 +1,5 @@
 var controller = {
-    tableRowCount : 1,
+    tableRowCount : $('#transformationSteps > tbody > tr').length,
     addNewRow : function() {
         trLast = this.tableBody.find("tr:last"),
         trNew = trLast.clone();
@@ -7,12 +7,11 @@ var controller = {
 
         this.tableRowCount += 1;
 
-        this.applyNewIndex(trNew);
+        this.applyNewIndex(trNew, this.tableRowCount - 1);
     },
-    applyNewIndex : function(row) {
-        var index = this.tableRowCount - 1;
+    applyNewIndex : function(row, index) {
 
-        row.find('input').each(function() {
+    	row.find('input').each(function() {
             var input = $(this);
             var newId = input.attr('id').replace(/\d+/gi,index);
             var newName = input.attr('name').replace(/\d+/gi,index);
@@ -30,7 +29,7 @@ var controller = {
     reindexRows : function() {
         var tableRows = $('#transformationSteps > tbody > tr');
         tableRows.each( function(index) {
-            controller.applyNewIndex($(this));
+            controller.applyNewIndex($(this), index);
         });
     },
 }

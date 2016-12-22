@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -99,6 +100,7 @@ public class SmsDestinationControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"LIST_SMS_DESTINATIONS"})
     public void shouldListAllRegisteredDestinations() throws Exception {
         when(smsDestinationService.findAll(tenant)).thenReturn(ServiceResponseBuilder.<List<SmsDestination>> ok()
                 .withResult(registeredDestinations).<List<SmsDestination>> build());
@@ -109,6 +111,7 @@ public class SmsDestinationControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"CREATE_SMS_DESTINATION"})
     public void shouldShowRegistrationForm() throws Exception {
         getMockMvc().perform(get("/destinations/sms/new")).andExpect(view().name("destinations/sms/form"))
                 .andExpect(model().attribute("destination", any(SmsDestinationForm.class)))
@@ -116,6 +119,7 @@ public class SmsDestinationControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"CREATE_SMS_DESTINATION"})
     public void shouldBindErrorMessagesWhenRegistrationFailsAndGoBackToRegistrationForm() throws Exception {
         responseSingleDestination = ServiceResponseBuilder.<SmsDestination> error()
                 .withMessage(CommonValidations.TENANT_NULL.getCode()).<SmsDestination> build();
@@ -133,6 +137,7 @@ public class SmsDestinationControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"CREATE_SMS_DESTINATION"})
     public void shouldRedirectToShowAfterRegistrationSucceed() throws Exception {
         responseSingleDestination = ServiceResponseBuilder.<SmsDestination> ok().withResult(savedDestination)
                 .<SmsDestination> build();
@@ -150,6 +155,7 @@ public class SmsDestinationControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"SHOW_SMS_DESTINATION"})
     public void shouldShowDestinationDetails() throws Exception {
         responseSingleDestination = ServiceResponseBuilder.<SmsDestination> ok().withResult(savedDestination)
                 .<SmsDestination> build();
@@ -166,6 +172,7 @@ public class SmsDestinationControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"EDIT_SMS_DESTINATION"})
     public void shouldShowEditForm() throws Exception {
         responseSingleDestination = ServiceResponseBuilder.<SmsDestination> ok().withResult(savedDestination)
                 .<SmsDestination> build();
@@ -183,6 +190,7 @@ public class SmsDestinationControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"EDIT_SMS_DESTINATION"})
     public void shouldBindErrorMessagesWhenEditFailsAndGoBackToEditForm() throws Exception {
         responseSingleDestination = ServiceResponseBuilder.<SmsDestination> error()
                 .withMessage(CommonValidations.TENANT_NULL.getCode()).<SmsDestination> build();
@@ -201,6 +209,7 @@ public class SmsDestinationControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"EDIT_SMS_DESTINATION"})
     public void shouldRedirectToShowAfterEditSucceed() throws Exception {
         responseSingleDestination = ServiceResponseBuilder.<SmsDestination> ok().withResult(savedDestination)
                 .<SmsDestination> build();
@@ -219,6 +228,7 @@ public class SmsDestinationControllerTest extends WebLayerTestContext {
     }
     
     @Test
+    @WithMockUser(authorities={"LIST_SMS_DESTINATIONS"})
     public void shouldCheckSmsIsEnable() throws Exception {
         when(smsDestinationService.findAll(tenant)).thenReturn(ServiceResponseBuilder.<List<SmsDestination>> ok()
                 .withResult(registeredDestinations).<List<SmsDestination>> build());
