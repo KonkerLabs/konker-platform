@@ -1,5 +1,7 @@
 package com.konkerlabs.platform.registry.config;
 
+import com.konkerlabs.platform.registry.business.model.enumerations.Language;
+import com.konkerlabs.platform.registry.interceptor.RequestHandlerInterceptor;
 import com.konkerlabs.platform.registry.web.converters.InstantToStringConverter;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -106,6 +108,34 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements Application
                 "/WEB-INF/i18n/users", "/WEB-INF/i18n/languages", "/WEB-INF/i18n/timezones", "/WEB-INF/i18n/dateformats");
         messageSource.setDefaultEncoding("UTF-8");
         return messageSource;
+    }
+
+    @Bean
+    public LocaleResolver localeResolver() {
+        final SessionLocaleResolver ret = new SessionLocaleResolver();
+        ret.setDefaultLocale(Language.EN.getLocale());
+        return ret;
+    }
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(localeChangeInterceptor());
+        registry.addInterceptor(new RequestHandlerInterceptor());
+        super.addInterceptors(registry);
+    }
+
+
+
+    @Override
+    public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
+        super.configureDefaultServletHandling(configurer);
+    }
+
+    @Bean
+    public LocaleChangeInterceptor localeChangeInterceptor(){
+        LocaleChangeInterceptor localeChangeInterceptor= new LocaleChangeInterceptor();
+        localeChangeInterceptor.setParamName(SessionLocaleResolver.LOCALE_SESSION_ATTRIBUTE_NAME);
+        return localeChangeInterceptor;
     }
 
     @Override
