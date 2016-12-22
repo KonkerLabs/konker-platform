@@ -76,6 +76,7 @@ public class RestDestinationController implements ApplicationContextAware {
     }
 
     @RequestMapping(value = "/{guid}", method = RequestMethod.GET)
+    @PreAuthorize("hasAuthority('SHOW_REST_DESTINATION')")
     public ModelAndView show(@PathVariable("guid") String guid) {
         return new ModelAndView("destinations/rest/show")
             .addObject("destination",new RestDestinationForm()

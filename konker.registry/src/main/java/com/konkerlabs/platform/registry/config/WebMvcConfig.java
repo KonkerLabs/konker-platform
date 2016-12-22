@@ -21,6 +21,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import org.springframework.web.servlet.resource.CssLinkResourceTransformer;
 import org.springframework.web.servlet.resource.VersionResourceResolver;
 import org.thymeleaf.extras.java8time.dialect.Java8TimeDialect;
+import org.thymeleaf.extras.springsecurity4.dialect.SpringSecurityDialect;
 import org.thymeleaf.spring4.SpringTemplateEngine;
 import org.thymeleaf.spring4.templateresolver.SpringResourceTemplateResolver;
 import org.thymeleaf.spring4.view.ThymeleafViewResolver;
@@ -72,6 +73,7 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements Application
         engine.setEnableSpringELCompiler(true);
         engine.addDialect(new LayoutDialect());
         engine.addDialect(java8TimeDialect());
+        engine.addDialect(new SpringSecurityDialect());
         engine.setTemplateResolver(templateResolver());
         return engine;
     }

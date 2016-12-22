@@ -90,6 +90,7 @@ public class SmsDestinationController implements ApplicationContextAware {
     }
 
     @RequestMapping("/{guid}/edit")
+    @PreAuthorize("hasAuthority('EDIT_SMS_DESTINATION')")
     public ModelAndView edit(@PathVariable("guid") String guid) {
         return new ModelAndView("destinations/sms/form")
                 .addObject("destination",new SmsDestinationForm()
@@ -99,6 +100,7 @@ public class SmsDestinationController implements ApplicationContextAware {
     }
 
     @RequestMapping(value = "/{guid}", method = RequestMethod.PUT)
+    @PreAuthorize("hasAuthority('EDIT_SMS_DESTINATION')")
     public ModelAndView saveEdit(@PathVariable String guid,
                                  @ModelAttribute("destinationForm") SmsDestinationForm destinationForm,
                                  RedirectAttributes redirectAttributes, Locale locale) {

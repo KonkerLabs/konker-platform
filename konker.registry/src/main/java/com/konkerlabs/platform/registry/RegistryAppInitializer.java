@@ -31,7 +31,6 @@ import com.typesafe.config.ConfigFactory;
 public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
 
 	private static final Config smsConfig = ConfigFactory.load().getConfig("sms");
-    private static final Config analyticsConfig = ConfigFactory.load().getConfig("konkerAnalytics");
 	private static final Logger LOGGER = LoggerFactory.getLogger(RegistryAppInitializer.class);
 
 	@Override
@@ -66,9 +65,6 @@ public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherSe
 		if (isSmsFeaturesEnabled()) {
             profiles.add("sms");
 		}
-		if (isKonkerAnalyticsEnabled()) {
-            profiles.add("konkerAnalytics");
-        }
         servletContext.setInitParameter("spring.profiles.active", StringUtils.arrayToCommaDelimitedString(profiles.toArray()));
 	}
 
@@ -85,19 +81,4 @@ public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherSe
 		return isEnabled;
 
 	}
-
-    private boolean isKonkerAnalyticsEnabled() {
-        boolean isEnabled = false;
-
-        try {
-            isEnabled = Optional.ofNullable(analyticsConfig.getBoolean("enabled")).orElse(false);
-        } catch (ConfigException e) {
-            LOGGER.error(
-                    "Konker Analytics configuration has no values for key 'enabled'. Platform menu is being built for IoT features.",
-                    e);
-        }
-        return isEnabled;
-
-    }
-
 }

@@ -192,6 +192,7 @@ public class TransformationControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"SHOW_TRANSFORMATION"})
     public void shouldShowDetailsOfASelectedTransformation() throws Exception {
         transformation.setId("123");
         serviceResponse = spy(

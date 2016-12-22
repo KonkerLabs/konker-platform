@@ -172,6 +172,7 @@ public class SmsDestinationControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"EDIT_SMS_DESTINATION"})
     public void shouldShowEditForm() throws Exception {
         responseSingleDestination = ServiceResponseBuilder.<SmsDestination> ok().withResult(savedDestination)
                 .<SmsDestination> build();
@@ -189,6 +190,7 @@ public class SmsDestinationControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"EDIT_SMS_DESTINATION"})
     public void shouldBindErrorMessagesWhenEditFailsAndGoBackToEditForm() throws Exception {
         responseSingleDestination = ServiceResponseBuilder.<SmsDestination> error()
                 .withMessage(CommonValidations.TENANT_NULL.getCode()).<SmsDestination> build();
@@ -207,6 +209,7 @@ public class SmsDestinationControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"EDIT_SMS_DESTINATION"})
     public void shouldRedirectToShowAfterEditSucceed() throws Exception {
         responseSingleDestination = ServiceResponseBuilder.<SmsDestination> ok().withResult(savedDestination)
                 .<SmsDestination> build();

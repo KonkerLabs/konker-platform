@@ -98,6 +98,7 @@ public class TransformationController implements ApplicationContextAware {
     }
 
 	@RequestMapping(value = "/{transformationGuid}", method = RequestMethod.GET)
+	@PreAuthorize("hasAuthority('SHOW_TRANSFORMATION')")
 	public ModelAndView show(@PathVariable("transformationGuid") String transformationGuid) {
 		return new ModelAndView("transformations/show", "transformation",
 				new TransformationForm().fillFrom(transformationService.get(tenant, transformationGuid).getResult()));

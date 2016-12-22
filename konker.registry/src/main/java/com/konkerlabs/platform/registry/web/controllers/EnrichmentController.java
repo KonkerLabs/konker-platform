@@ -126,6 +126,7 @@ public class EnrichmentController implements ApplicationContextAware {
     }
 
     @RequestMapping("/{dataEnrichmentExtensionGUID}/edit")
+    @PreAuthorize("hasAuthority('EDIT_ENRICHMENT')")
     public ModelAndView edit(@PathVariable("dataEnrichmentExtensionGUID") String dataEnrichmentExtensionGUID) {
         return new ModelAndView("enrichment/form")
                 .addObject("dataEnrichmentExtension",new EnrichmentForm().fillFrom(dataEnrichmentExtensionService.getByGUID(tenant, dataEnrichmentExtensionGUID).getResult()))
@@ -134,6 +135,7 @@ public class EnrichmentController implements ApplicationContextAware {
     }
 
     @RequestMapping(path = "/{dataEnrichmentExtensionGUID}", method = RequestMethod.PUT)
+    @PreAuthorize("hasAuthority('EDIT_ENRICHMENT')")
     public ModelAndView saveEdit(@PathVariable String dataEnrichmentExtensionGUID,
                                  @ModelAttribute("enrichmentForm") EnrichmentForm enrichmentForm,
                                  RedirectAttributes redirectAttributes, Locale locale) {

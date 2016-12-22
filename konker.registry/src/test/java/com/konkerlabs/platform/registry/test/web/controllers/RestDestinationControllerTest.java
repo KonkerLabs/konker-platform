@@ -172,6 +172,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    @WithMockUser(authorities={"SHOW_REST_DESTINATION"})
     public void shouldShowDestinationDetails() throws Exception {
         response = ServiceResponseBuilder.<RestDestination>ok()
                 .withResult(savedDestination)
