@@ -127,14 +127,4 @@ public class UserController implements ApplicationContextAware {
         return new ModelAndView("redirect:/me");
     }
 
-
-    /*public LocaleResolver getLocaleResolver(HttpServletRequest request, HttpServletResponse response, User loggedUser) {
-        LocaleResolver localeResolver = RequestContextUtils.getLocaleResolver(request);
-        localeResolver.setLocale(request, response,
-                new Locale(
-                        loggedUser.getLanguage().name(),
-                        loggedUser.getZoneId().name())
-        );
-        return localeResolver;
-    }*/
 }
