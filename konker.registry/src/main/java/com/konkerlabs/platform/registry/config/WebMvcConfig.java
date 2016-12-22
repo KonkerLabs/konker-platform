@@ -1,5 +1,7 @@
 package com.konkerlabs.platform.registry.config;
 
+import com.konkerlabs.platform.registry.business.model.enumerations.Language;
+import com.konkerlabs.platform.registry.interceptor.RequestHandlerInterceptor;
 import com.konkerlabs.platform.registry.web.converters.InstantToStringConverter;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -14,11 +16,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.http.CacheControl;
+import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.ViewResolver;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.config.annotation.*;
+import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
+import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 import org.springframework.web.servlet.resource.CssLinkResourceTransformer;
 import org.springframework.web.servlet.resource.VersionResourceResolver;
 import org.thymeleaf.extras.java8time.dialect.Java8TimeDialect;
@@ -47,6 +49,34 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements Application
                 .resourceChain(true)
                 .addResolver(new VersionResourceResolver().addContentVersionStrategy("/**")).addTransformer(new CssLinkResourceTransformer());
     }
+
+    @Bean
+    public LocaleResolver localeResolver() {
+        final SessionLocaleResolver ret = new SessionLocaleResolver();
+        ret.setDefaultLocale(Language.EN.getLocale());
+        return ret;
+    }
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(localeChangeInterceptor());
+        registry.addInterceptor(new RequestHandlerInterceptor());
+        super.addInterceptors(registry);
+    }
+
+
+
+    @Override
+    public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
+        super.configureDefaultServletHandling(configurer);
+    }
+
+    @Bean
+    public LocaleChangeInterceptor localeChangeInterceptor(){
+        LocaleChangeInterceptor localeChangeInterceptor= new LocaleChangeInterceptor();
+        localeChangeInterceptor.setParamName(SessionLocaleResolver.LOCALE_SESSION_ATTRIBUTE_NAME);
+        return localeChangeInterceptor;
+    }
     
     @Bean
     public ITemplateResolver templateResolver() {
@@ -69,6 +99,7 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements Application
         engine.addDialect(new LayoutDialect());
         engine.addDialect(java8TimeDialect());
         engine.setTemplateResolver(templateResolver());
+
         return engine;
     }
 
@@ -92,7 +123,8 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements Application
         ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
         messageSource.addBasenames("/WEB-INF/i18n/global", "/WEB-INF/i18n/menu", "/WEB-INF/i18n/devices",
                 "/WEB-INF/i18n/enrichment", "/WEB-INF/i18n/routes", "/WEB-INF/i18n/destinations",
-                "/WEB-INF/i18n/transformations", "/WEB-INF/i18n/integration", "/WEB-INF/i18n/visualization");
+                "/WEB-INF/i18n/transformations", "/WEB-INF/i18n/integration", "/WEB-INF/i18n/visualization",
+                "/WEB-INF/i18n/users", "/WEB-INF/i18n/languages", "/WEB-INF/i18n/timezones", "/WEB-INF/i18n/dateformats");
         messageSource.setDefaultEncoding("UTF-8");
         return messageSource;
     }

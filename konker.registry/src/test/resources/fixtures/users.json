@@ -8,7 +8,12 @@
         "name" : "Konker"
       },
       "_class" : "com.konkerlabs.platform.registry.model.User",
-      "password" : "password"
+      "password" : "PBKDF2WithHmac$SHA256$10000$Ssrhh8AflmSv8FvTN1hILw==$vPJFFlOE1CBxmjMSw2TrCBiQZXjLgYZQKDso9k/T59Y=",
+      "name":"Konker Admin",
+      "language": "EN",
+      "zoneId": "AMERICA_SAO_PAULO",
+      "dateFormat":"YYYYMMDD"
+
     }
   ]
 }

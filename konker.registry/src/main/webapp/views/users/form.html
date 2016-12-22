@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html data-layout-decorate="layouts/default">
+<head>
+</head>
+<body>
+<div data-layout-fragment="content">
+    <fieldset>
+        <legend data-th-text="#{users.form.title}"></legend>
+        <div class="alert alert-danger" role="alert" data-th-if="${errors != null and !errors.empty}">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <li data-th-each="error : ${errors}" data-th-text="${error}"></li>
+        </div>
+        <div class="alert alert-success" role="alert" data-th-if="${message != null}">
+            <span data-th-text="${message}"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    </fieldset>
+    <form data-th-action="@{__${action}__}" data-th-object="${user}"
+          method="post" class="form-horizontal">
+        <input type="hidden" name="_method" data-th-value="${method}" data-th-if="${method != null}"/>
+
+        <fieldset>
+            <legend data-th-text="#{users.form.account}"></legend>
+
+            <div class="show" id="user-account-edit">
+                <div class="form-group">
+                    <div class="items">
+                        <label class="col-sm-1 control-label"
+                               data-th-text="#{users.form.email}"
+                               for="email-show"></label>
+                        <div class="col-sm-4">
+                            <input data-th-disabled=true class="form-control"
+                                   type="text"
+                                   id="email-show"
+                                   name="email-show"
+                                   data-th-value="*{email}"/>
+                            <input type="hidden" data-th-value="*{email}" name="email">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="items">
+                        <label class="col-sm-1 control-label"
+                               data-th-text="#{users.form.name}"
+                               for="name"></label>
+                        <div class="col-sm-4">
+                            <input class="form-control"
+                                   type="text"
+                                   id="name"
+                                   name="name"
+                                   data-th-value="*{name}"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="items">
+                        <label class="col-sm-1 control-label"
+                               data-th-text="#{users.form.phone}"
+                               for="phone"></label>
+                        <div class="col-sm-4">
+                            <input class="form-control"
+                                   type="text"
+                                   id="phone"
+                                   name="phone"
+                                   data-th-value="*{phone}"/>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </fieldset>
+        <fieldset>
+            <legend data-th-text="#{users.form.password}"></legend>
+
+            <div class="show" id="user-password-edit">
+                <div class="items">
+                    <div class="form-group">
+                        <label class="col-sm-1 control-label"
+                               data-th-text="#{users.form.password-old}"
+                               for="old-password"></label>
+                        <div class="col-sm-4">
+                            <input type="password"
+                                   class="form-control"
+                                   id="old-password"
+                                   name="oldPassword"/>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-1 control-label"
+                               data-th-text="#{users.form.password-new}"
+                               for="new-password"></label>
+                        <div class="col-sm-4">
+                            <input type="password"
+                                   class="form-control"
+                                   id="new-password"
+                                   name="newPassword"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-1 control-label"
+                               data-th-text="#{users.form.password-confirm}"
+                               for="password-confirmation"></label>
+                        <div class="col-sm-4">
+                            <input type="password"
+                                   class="form-control"
+                                   id="password-confirmation"
+                                   name="newPasswordConfirmation"/>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </fieldset>
+        <fieldset>
+            <legend data-th-text="#{users.form.preferences.title}"></legend>
+            <div class="form-group">
+                <label class="col-sm-1 control-label"
+                       data-th-text="#{users.form.preferences.language}"
+                       for="language"></label>
+                <div class="col-sm-4">
+                    <select data-th-field="*{language}"
+                            class="form-control"
+                            id="language"
+                            name="language"
+                            data-th-placeholder="#{users.form.preferences.language.placeholder}">
+                        <option data-th-each="language: ${languages}" data-th-text="#{${language.code}}"
+                                data-th-value="${language}"
+                        data-th-sele></option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-1 control-label"
+                       data-th-text="#{users.form.preferences.timezone}"
+                       for="timezone"></label>
+                <div class="col-sm-4">
+                    <select data-th-field="*{zoneId}"
+                            class="form-control"
+                            id="timezone"
+                            name="timezone"
+                            data-th-placeholder="#{users.form.preferences.timezone.placeholder}">
+
+                        <option data-th-each="timezone: ${timezones}" data-th-text="#{${timezone.code}}"
+                                data-th-value="${{timezone}}"></option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-1 control-label"
+                       data-th-text="#{users.form.preferences.dateformat}"
+                       for="dateformat"></label>
+                <div class="col-sm-4">
+                    <select data-th-field="*{dateFormat}"
+                            class="form-control"
+                            id="dateformat"
+                            name="dateformat"
+                            data-th-placeholder="#{users.form.preferences.dateformat.placeholder}">
+
+                        <option data-th-each="dateformat: ${dateformats}" data-th-text="#{${dateformat.code}}"
+                                data-th-value="${dateformat}"></option>
+                    </select>
+                </div>
+            </div>
+            <br/>
+            <button type="submit"
+                    data-th-text="#{nav.save}"
+                    class="btn btn-success"></button>
+            <a data-th-href="@{/devices}"
+               data-th-text="#{nav.back}"
+               class="btn btn-default">Back</a>
+        </fieldset>
+    </form>
+</div>
+<div data-layout-fragment="script">
+    <script data-th-attr="src=@{/resources/js/users/form.js}"></script>
+</div>
+</body>
+</html>

@@ -13,6 +13,7 @@ import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.text.MessageFormat;
 import java.util.Base64;
+import java.util.Optional;
 
 public class PasswordManager {
 
@@ -65,6 +66,46 @@ public class PasswordManager {
         return createHash(password.toCharArray());
     }
 
+
+    /**
+     * Returns a salted PBKDF2 hash of the password.
+     *
+     * @param   password    the password to hash
+     * @param   iterations cicles to enforce
+     * @return              a salted PBKDF2 hash of the password
+     * @throws SecurityException
+     */
+    public String createHash(String password, Optional<Integer> iterations) throws SecurityException {
+        return createHash(password.toCharArray(), iterations);
+    }
+
+
+
+    /**
+     * Returns a salted PBKDF2 hash of the password.
+     * @param   password    the password to hash
+     * @param   iterations cicles to enforce
+     * @return              a salted PBKDF2 hash of the password
+     */
+    public String createHash(char[] password, Optional<Integer> iterations) throws SecurityException {
+        try {
+            // Generate a random salt
+            byte[] salt = generateSalt();
+
+            // Hash the password
+            byte[] hash = pbkdf2(
+                    password,
+                    salt,
+                    iterations.isPresent() ? iterations.get() : ITERATIONS,
+                    HASH_BYTES
+            );
+
+            return MessageFormat.format(STORAGE_PATTERN,QUALIFIER,HASH_ALGORITHM,ITERATIONS,toBase64(salt),toBase64(hash));
+        } catch (NoSuchAlgorithmException|InvalidKeySpecException e) {
+            throw new SecurityException(e);
+        }
+    }
+
     /**
      * Returns a salted PBKDF2 hash of the password.
      *
@@ -72,17 +113,7 @@ public class PasswordManager {
      * @return              a salted PBKDF2 hash of the password
      */
     public String createHash(char[] password) throws SecurityException {
-        try {
-            // Generate a random salt
-            byte[] salt = generateSalt();
-
-            // Hash the password
-            byte[] hash = pbkdf2(password, salt, ITERATIONS, HASH_BYTES);
-
-            return MessageFormat.format(STORAGE_PATTERN,QUALIFIER,HASH_ALGORITHM,ITERATIONS,toBase64(salt),toBase64(hash));
-        } catch (NoSuchAlgorithmException|InvalidKeySpecException e) {
-            throw new SecurityException(e);
-        }
+        return createHash(password, Optional.empty());
     }
 
     /**

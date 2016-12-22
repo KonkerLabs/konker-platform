@@ -1,6 +1,8 @@
 package com.konkerlabs.platform.registry.test.web.controllers;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -15,7 +17,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
+import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
+import com.konkerlabs.platform.registry.business.model.enumerations.Language;
+import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
+import com.konkerlabs.platform.registry.web.converters.utils.ConverterUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,6 +52,7 @@ import com.konkerlabs.platform.registry.security.UserContextResolver;
 import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
 import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
+import org.springframework.web.servlet.LocaleResolver;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
@@ -74,6 +82,7 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     private UserContextResolver userContextResolver;
     @Autowired
     private User user;
+
     
     private List<String> channels;
 	private EventSchema eventSchema;
@@ -85,6 +94,10 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
 	
     @Before
     public void setUp() {
+
+		user.setDateFormat(DateFormat.DDMMYYYY);
+		user.setLanguage(Language.PT_BR);
+		user.setZoneId(TimeZone.AMERICA_SAO_PAULO);
     	channels = Arrays.asList("channelin", "channelout", "channelin2");
 
     	eventSchema = EventSchema.builder().channel(CHANNEL).deviceGuid(DEVICE_GUID)
@@ -180,7 +193,7 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     	
     	getMockMvc().perform(get("/visualization/load/").param("dateStart", "").param("dateEnd", "").param("online", "true")
     			.param("deviceGuid", DEVICE_GUID).param("channel", CHANNEL))
-    			.andExpect(content().json("[{'timestampFormated': '10/04/2016 14:44:57.000 BRT',"
+    			.andExpect(content().json("[{'timestampFormated': '04/10/2016 14:44:57.000 BRT',"
     					+ "'timestamp': 1475603097000,"
     					+ "'incoming':{"
     					+ "'tenantDomain':'inmetrics.com','deviceGuid':'169897e9-ed44-41d1-978d-d244d78e9a67','channel':'datain'},"
@@ -191,14 +204,14 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     @Test
     public void shouldReturnDataByDateRange() throws Exception {
     	when(userContextResolver.getObject()).thenReturn(user);
-    	
+
     	when(deviceEventService.findIncomingBy(tenant, DEVICE_GUID, CHANNEL, startingTimestamp, endTimestamp, false, 100))
 			.thenReturn(ServiceResponseBuilder.<List<Event>>ok()
 				.withResult(eventsList).build());
-    	
-    	getMockMvc().perform(get("/visualization/load/").param("dateStart", dateStart).param("dateEnd", dateEnd).param("online", "false")
+
+		getMockMvc().perform(get("/visualization/load/").param("dateStart", dateStart).param("dateEnd", dateEnd).param("online", "false")
     			.param("deviceGuid", DEVICE_GUID).param("channel", CHANNEL))
-    			.andExpect(content().json("[{'timestampFormated': '10/04/2016 14:44:57.000 BRT',"
+    			.andExpect(content().json("[{'timestampFormated': '04/10/2016 14:44:57.000 BRT',"
     					+ "'timestamp': 1475603097000,"
     					+ "'incoming':{"
     					+ "'tenantDomain':'inmetrics.com','deviceGuid':'169897e9-ed44-41d1-978d-d244d78e9a67','channel':'datain'},"

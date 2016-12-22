@@ -115,8 +115,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         protected void configure(AuthenticationManagerBuilder auth) throws Exception {
             DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
             authenticationProvider.setUserDetailsService(userDetailsService);
-            authenticationProvider.setPasswordEncoder(new PlaintextPasswordEncoder());
+            authenticationProvider.setPasswordEncoder(new PlaintextPasswordEncoder() {
+                @Override
+                public boolean isPasswordValid(String encPass, String rawPass, Object salt) {
+                    try {
+                        return new PasswordManager().validatePassword(rawPass, encPass);
+                    } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+                        LOGGER.error(e.getMessage(), e);
+                        return false;
+                    }
+                }
+            });
             auth.authenticationProvider(authenticationProvider);
+
         }
 
         @Override

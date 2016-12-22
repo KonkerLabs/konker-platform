@@ -1,6 +1,9 @@
 package com.konkerlabs.platform.registry.security;
 
+import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
+import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.repositories.UserRepository;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.config.SecurityConfig;
 
 import org.slf4j.Logger;
