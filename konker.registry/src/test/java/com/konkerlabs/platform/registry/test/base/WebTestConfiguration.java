@@ -18,6 +18,8 @@ import com.konkerlabs.platform.registry.business.repositories.UserRepository;
 import com.konkerlabs.platform.registry.security.DeviceUserDetailsService;
 import com.konkerlabs.platform.registry.security.TenantUserDetailsService;
 import com.konkerlabs.platform.registry.security.UserContextResolver;
+import org.springframework.web.servlet.LocaleResolver;
+import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 
 @Configuration
 public class WebTestConfiguration {
@@ -73,4 +75,8 @@ public class WebTestConfiguration {
     	return Mockito.mock(UserRepository.class);
     }
 
+    @Bean
+    public LocaleResolver localeResolver(){
+        return new SessionLocaleResolver();
+    }
 }
