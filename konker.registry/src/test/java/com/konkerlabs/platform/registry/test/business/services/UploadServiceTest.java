@@ -61,8 +61,7 @@ public class UploadServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldUploadInputStreamFile() throws Exception {
-        InputStream is = null;
-        is = new ByteArrayInputStream(Base64.decode(base64Img.getBytes()));
+        InputStream is = new ByteArrayInputStream(Base64.decode(base64Img.getBytes()));
         ServiceResponse<String> response = service.upload(is, fileName, "jpg", true);
         Assert.assertNotNull(response);
     }
