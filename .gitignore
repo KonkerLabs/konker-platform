@@ -7,3 +7,4 @@ target
 konker.scripts/docker/env/*
 konker.scripts/docker/build/*
 konker.scripts/docker-demo/env/*
+*.pydevproject
