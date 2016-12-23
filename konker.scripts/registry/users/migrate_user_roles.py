@@ -351,9 +351,9 @@ def update_user_roles(db):
             "tenant": user[u'tenant'],
             "name": user[u'name'],
             "password": user[u'password'],
-            "language": user[u'language'],
-            "dateFormat": user[u'dateFormat'],
-            "zoneId": user[u'zoneId'],
+            "language": "PT_BR",
+            "dateformat": "DDMMYYYY",
+            "zoneId": "AMERICA_SAO_PAULO",
             "roles": [
                 DBRef("roles", ObjectId("58542d56861bd736c42a0202"))
             ]
