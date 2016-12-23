@@ -385,7 +385,7 @@ public class UserNotificationServiceTest extends BusinessLayerTestSupport {
 
         assertThat("Should be marked as read", isReadNotification.test(afterSearched));
         assertThat("Should be marked read in the past, not in the future", afterSearched.getLastReadDate(),
-                lessThan(Instant.now()));
+                lessThanOrEqualTo(Instant.now()));
         assertThat("Should be marked read in the recent past, not in the distant past", afterSearched.getLastReadDate(),
                 greaterThan(Instant.now().minusMillis(10000)));
         assertThat(afterSearched.getUuid(), equalTo(SCHEDULED_MAINTENANCE_NOTIFICATION_UUID));
