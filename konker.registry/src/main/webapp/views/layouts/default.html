@@ -64,7 +64,8 @@
                         <li th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'')')}">
                         	<a data-th-href="@{/destinations/sms}" data-th-text="#{nav.menu.sms_destinations}" 
                         		th:if="${@environment.getActiveProfiles().length != 0 && #lists.contains(@environment.getActiveProfiles(), 'sms')}"></a></li>
-                        <li><a data-th-href="@{/visualization}" data-th-text="#{nav.menu.dashboards}"></a></li>
+                        <li th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'')')}">
+                        	<a data-th-href="@{/visualization}" data-th-text="#{nav.menu.dashboards}"></a></li>
                         <li th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_ANALYTICS_USER'')')}">
                         	<a data-th-href="@{/dashboards}" data-th-text="#{nav.menu.dashboards}"></a></li>
                         <li th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_ANALYTICS_USER'')')}">
