@@ -349,7 +349,6 @@ def update_user_roles(db):
         db.users.save({
             "_id": user[u'_id'],
             "tenant": user[u'tenant'],
-            "name": user[u'name'],
             "password": user[u'password'],
             "language": "PT_BR",
             "dateformat": "DDMMYYYY",
