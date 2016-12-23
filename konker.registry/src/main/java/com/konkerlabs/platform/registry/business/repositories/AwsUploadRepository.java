@@ -29,8 +29,6 @@ public class AwsUploadRepository {
     @Autowired
     private S3Credentials credentials;
 
-    private String prefix = "/";
-
     private static Config config = ConfigFactory.load().getConfig("cdn");
 
     private AmazonS3 s3Client;
@@ -112,6 +110,7 @@ public class AwsUploadRepository {
             if(filePath.contains("/")){
                 filePath = filePath.split("/")[filePath.split("/").length-1];
             }
+
             S3Object object = s3Client.getObject(
                     new GetObjectRequest(config.getString("name"), filePath));
             return object.getObjectContent();
@@ -149,9 +148,9 @@ public class AwsUploadRepository {
                                 fileName + "." + sufix,
                                 new ByteArrayInputStream(bytes),
                                 S3ObjectMetadata.getObjectMetadata(bytes)
-                        ).withCannedAcl(isPublic ? CannedAccessControlList.PublicRead : CannedAccessControlList.BucketOwnerRead)
+                        ).withCannedAcl(isPublic ? CannedAccessControlList.PublicRead : CannedAccessControlList.AuthenticatedRead)
                 );
-                return prefix + config.getString("name") + "/" + fileName + "." + sufix;
+                return fileName + "." + sufix;
             } catch (AmazonServiceException | IOException e) {
                 throw new BusinessException(Validations.INVALID_S3_BUCKET_CREDENTIALS.getCode());
             } finally {
