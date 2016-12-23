@@ -69,7 +69,8 @@
                                data-th-text="#{routes.form.outgoing.type.device}"
                                value="device" data-th-checked="*{outgoingScheme == 'device'}"></input>
                     </label>
-                    <label class="radio-inline" th:if="${@environment.getActiveProfiles().length != 0 && @environment.getActiveProfiles()[0] == 'sms'}">
+                    <label class="radio-inline" th:if="${@environment.getActiveProfiles().length != 0 && @environment.getActiveProfiles()[0] == 'sms'
+                    								&& #authorization.expression('hasAnyRole(''ROLE_SUPER_USER'')')}">
                         <input type="radio" name="outgoingScheme"
                                data-th-text="#{routes.form.outgoing.type.sms}" th:if="${@environment.getActiveProfiles().length != 0 && @environment.getActiveProfiles()[0] == 'sms'}"
                                value="sms" data-th-checked="*{outgoingScheme == 'sms'}"></input>
