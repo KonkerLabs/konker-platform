@@ -1,6 +1,6 @@
 package com.konkerlabs.platform.registry.business.services;
 
-import com.konkerlabs.platform.registry.business.repositories.AwsUploadRepository;
+import com.konkerlabs.platform.registry.business.repositories.upload.AwsUploadRepository;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.UploadService;

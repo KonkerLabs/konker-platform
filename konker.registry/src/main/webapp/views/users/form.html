@@ -21,6 +21,24 @@
     </fieldset>
     <form data-th-action="@{__${action}__}" data-th-object="${user}"
           method="post" class="form-horizontal">
+
+        <fieldset>
+            <div class="form-group ">
+                <img data-th-src="*{avatar}"
+                     class="profile-image img-circle user-avatar pull-left" />
+                <input type="file"
+                       class="btn btn-default btn-file"
+                       id="filePicker"
+                       />
+                <input type="hidden"
+                       name="avatar"
+                       data-th-value="*{avatar}"
+                       id="avatar"
+                />
+            </div>
+
+        </fieldset>
+
         <input type="hidden" name="_method" data-th-value="${method}" data-th-if="${method != null}"/>
 
         <fieldset>
@@ -137,7 +155,7 @@
                             data-th-placeholder="#{users.form.preferences.language.placeholder}">
                         <option data-th-each="language: ${languages}" data-th-text="#{${language.code}}"
                                 data-th-value="${language}"
-                        data-th-sele></option>
+                                data-th-sele></option>
                     </select>
                 </div>
             </div>

@@ -90,3 +90,13 @@ img.ajax-loading {
     font-family: monospace;
 }
 .password-qrcode {}
+
+.user-avatar {
+    max-width: 100px;
+    max-height: 100px;
+    margin-left: 1%;
+}
+#filePicker {
+    margin-top: 2%;
+    margin-left: 10%;
+}

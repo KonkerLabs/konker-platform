@@ -10,6 +10,8 @@ import com.konkerlabs.platform.registry.business.services.api.UserService;
 import com.konkerlabs.platform.registry.security.TenantUserDetailsService;
 import com.konkerlabs.platform.registry.web.converters.utils.ConverterUtils;
 import com.konkerlabs.platform.registry.web.forms.UserForm;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -76,6 +78,7 @@ public class UserController implements ApplicationContextAware {
 
     @RequestMapping(value = "", method = RequestMethod.GET)
     public ModelAndView userPage(HttpServletRequest request, HttpServletResponse response, Locale locale) {
+
         ModelAndView mv = new ModelAndView("users/form")
                 .addObject("user", new UserForm().fillFrom(user))
                 .addObject("action", "/me")

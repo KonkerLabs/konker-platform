@@ -1,7 +1,7 @@
 package com.konkerlabs.platform.registry.test.business.services;
 
 import com.amazonaws.util.Base64;
-import com.konkerlabs.platform.registry.business.repositories.AwsUploadRepository;
+import com.konkerlabs.platform.registry.business.repositories.upload.AwsUploadRepository;
 import com.konkerlabs.platform.registry.business.services.UploadServiceImpl;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.UploadService;
@@ -16,6 +16,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -43,6 +44,7 @@ public class UploadServiceTest extends BusinessLayerTestSupport {
     private static String fileName;
     private static String base64Img;
 
+    @Autowired
     private UploadService service;
 
     private AwsUploadRepository awsUploadRepository;

@@ -39,11 +39,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private PasswordBlacklistRepository passwordBlacklistRepository;
 
-
     private PasswordManager passwordManager;
 
     private Config passwordConfig = ConfigFactory.load().getConfig("password.user");
-
 
     public UserServiceImpl() {
         passwordManager = new PasswordManager();
@@ -106,9 +104,10 @@ public class UserServiceImpl implements UserService {
                     .build();
         }
 
-        Optional.ofNullable(user.getAvatar()).ifPresent(avatar -> {
-            avatar = uploadService.uploadBase64Img(avatar, false).getResult();
-        });
+        if(!StringUtils.isEmpty(user.getAvatar())
+                && user.getAvatar().contains("data:image")) {
+            user.setAvatar(uploadService.uploadBase64Img(user.getAvatar(), true).getResult());
+        }
 
         if (!StringUtils.isEmpty(newPassword)) {
             try {
