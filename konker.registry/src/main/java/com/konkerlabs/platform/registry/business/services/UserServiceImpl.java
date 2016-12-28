@@ -106,7 +106,15 @@ public class UserServiceImpl implements UserService {
 
         if(!StringUtils.isEmpty(user.getAvatar())
                 && user.getAvatar().contains("data:image")) {
-            user.setAvatar(uploadService.uploadBase64Img(user.getAvatar(), true).getResult());
+            ServiceResponse<String> response = uploadService.uploadBase64Img(user.getAvatar(), true);
+            if(!response.getStatus().equals(ServiceResponse.Status.OK)){
+                return ServiceResponseBuilder.<User>error()
+                        .withMessages(response.getResponseMessages())
+                        .build();
+            }
+            user.setAvatar(response.getResult());
+        } else {
+            user.setAvatar(fromStorage.getAvatar());
         }
 
         if (!StringUtils.isEmpty(newPassword)) {

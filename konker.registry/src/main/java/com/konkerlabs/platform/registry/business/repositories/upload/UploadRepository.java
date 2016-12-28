@@ -13,8 +13,8 @@ public interface UploadRepository {
         INVALID_PATH("service.upload.s3.file.delete.path.invalid"),
         INVALID_S3_BUCKET_CREDENTIALS("service.upload.s3.bucket.invalid"),
         INVALID_PARAMETERS("service.upload.s3.parameters.invalid"),
-        INVALID_FILE_TYPE("service.upload.s3.file-type.invalid"),
-        INVALID_FILE_SIZE("service.upload.s3.file-size.invalid");
+        INVALID_FILE_TYPE("service.user.validation.upload.type.invalid"),
+        INVALID_FILE_SIZE("service.user.validation.upload.size.invalid");
 
         private String code;
 

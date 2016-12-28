@@ -32,6 +32,8 @@ public class UserForm implements ModelBuilder<User,UserForm,Void> {
     private Tenant tenant;
     private static Config config = ConfigFactory.load().getConfig("cdn");
     public static String DEFAULT_AVATAR = "/resources/konker/images/default-avatat.jpeg";
+    private Boolean avatarUploadEnabled = Boolean.FALSE;
+
 
 
     @Tolerate
@@ -68,6 +70,7 @@ public class UserForm implements ModelBuilder<User,UserForm,Void> {
         this.setZoneId(model.getZoneId());
         this.setEmail(model.getEmail());
         this.setTenant(model.getTenant());
+        this.setAvatarUploadEnabled(Boolean.parseBoolean(config.getString("enabled")));
         return this;
     }
 

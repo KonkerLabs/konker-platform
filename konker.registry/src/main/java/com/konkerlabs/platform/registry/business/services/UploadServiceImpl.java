@@ -53,7 +53,7 @@ public class UploadServiceImpl implements UploadService {
         } catch (Exception e) {
             return ServiceResponseBuilder
                     .<String>error()
-                    .withMessage("Error in upload process")
+                    .withMessage(e.getMessage())
                     .build();
         }
     }

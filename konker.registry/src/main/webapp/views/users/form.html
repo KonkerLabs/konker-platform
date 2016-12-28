@@ -25,15 +25,17 @@
         <fieldset>
             <div class="form-group ">
                 <img data-th-src="*{avatar}"
-                     class="profile-image img-circle user-avatar pull-left" />
+                     class="profile-image user-avatar pull-left"
+                     data-th-if="*{avatarUploadEnabled}"/>
                 <input type="file"
                        class="btn btn-default btn-file"
                        id="filePicker"
+                       data-th-if="*{avatarUploadEnabled}"
                        />
                 <input type="hidden"
                        name="avatar"
-                       data-th-value="*{avatar}"
                        id="avatar"
+                       data-th-if="*{avatarUploadEnabled}"
                 />
             </div>
 
