@@ -69,8 +69,7 @@
 						        		th:with="errorMsg=${session['SPRING_SECURITY_LAST_EXCEPTION'].message}">
 									<p th:text="${errorMsg}">Bad credentials</p>
 						        </div>
-			                    <div class="form-top-center" 
-						        		>
+			                    <div class="form-top-center">
 									<p><span data-th-text="#{login.license.text}">Ao efetuar login, declaro que estou de acordo com os</span> <a data-th-text="#{login.license.link_description}" th:href="@{/resources/konker/pdf/termos_de_uso_20161014a.pdf}" href="#">Termos de Uso</a></p>
 						        </div>
 			                    <button type="submit" class="btn"><p data-th-text="#{nav.login}"></p></button>

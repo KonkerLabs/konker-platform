@@ -22,6 +22,7 @@ import com.konkerlabs.platform.registry.config.MongoConfig;
 import com.konkerlabs.platform.registry.config.RedisConfig;
 import com.konkerlabs.platform.registry.config.SecurityConfig;
 import com.konkerlabs.platform.registry.config.SolrConfig;
+import com.konkerlabs.platform.registry.config.SpringMailConfig;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.utilities.config.UtilitiesConfig;
 import com.typesafe.config.Config;
@@ -36,7 +37,7 @@ public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherSe
 	@Override
 	protected Class<?>[] getRootConfigClasses() {
 		return new Class<?>[] { SecurityConfig.class, BusinessConfig.class, MongoConfig.class, IntegrationConfig.class,
-				SolrConfig.class, UtilitiesConfig.class, RedisConfig.class };
+				SolrConfig.class, UtilitiesConfig.class, RedisConfig.class, SpringMailConfig.class };
 	}
 
 	@Override
