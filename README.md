@@ -1,5 +1,3 @@
-https://jenkins.gedmin.as/buildStatus/icon?job=check-manifest
-
 # konker-platform
 
 ## Dependencies
