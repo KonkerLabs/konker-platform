@@ -1,11 +1,7 @@
 package com.konkerlabs.platform.registry.config;
 
-import com.konkerlabs.platform.registry.business.model.enumerations.Language;
-import com.konkerlabs.platform.registry.interceptor.RequestHandlerInterceptor;
-import com.konkerlabs.platform.registry.web.converters.InstantToStringConverter;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
-import nz.net.ultraq.thymeleaf.LayoutDialect;
+import java.util.concurrent.TimeUnit;
+
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -19,7 +15,12 @@ import org.springframework.format.FormatterRegistry;
 import org.springframework.http.CacheControl;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.ViewResolver;
-import org.springframework.web.servlet.config.annotation.*;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 import org.springframework.web.servlet.resource.CssLinkResourceTransformer;
@@ -32,13 +33,13 @@ import org.thymeleaf.spring4.view.ThymeleafViewResolver;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ITemplateResolver;
 
+import com.konkerlabs.platform.registry.business.model.enumerations.Language;
+import com.konkerlabs.platform.registry.interceptor.RequestHandlerInterceptor;
 import com.konkerlabs.platform.registry.web.converters.InstantToStringConverter;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
 import nz.net.ultraq.thymeleaf.LayoutDialect;
-
-import java.util.concurrent.TimeUnit;
 
 @Configuration
 @EnableWebMvc
@@ -105,7 +106,8 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements Application
         messageSource.addBasenames("/WEB-INF/i18n/global", "/WEB-INF/i18n/menu", "/WEB-INF/i18n/devices",
                 "/WEB-INF/i18n/enrichment", "/WEB-INF/i18n/routes", "/WEB-INF/i18n/destinations",
                 "/WEB-INF/i18n/transformations", "/WEB-INF/i18n/integration", "/WEB-INF/i18n/visualization",
-                "/WEB-INF/i18n/users", "/WEB-INF/i18n/languages", "/WEB-INF/i18n/timezones", "/WEB-INF/i18n/dateformats");
+                "/WEB-INF/i18n/users", "/WEB-INF/i18n/languages", "/WEB-INF/i18n/timezones", "/WEB-INF/i18n/dateformats",
+                "/WEB-INF/i18n/email");
         messageSource.setDefaultEncoding("UTF-8");
         return messageSource;
     }
