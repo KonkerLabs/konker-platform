@@ -23,11 +23,11 @@ import com.konkerlabs.platform.registry.business.repositories.UserRepository;
 import com.konkerlabs.platform.registry.business.services.api.EmailService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse.Status;
-import com.konkerlabs.platform.registry.config.SpringMailConfig;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.RedisTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.SpringMailTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -35,7 +35,7 @@ import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
         MongoTestConfiguration.class,
         BusinessTestConfiguration.class,
         RedisTestConfiguration.class,
-        SpringMailConfig.class
+        SpringMailTestConfiguration.class
 })
 @UsingDataSet(locations = {"/fixtures/users.json"})
 public class EmailServiceTest extends BusinessLayerTestSupport {
