@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html data-layout-decorate="layouts/default">
+
+<head>
+    <style>
+    html,
+    body {
+        height: 100%;
+    }
+    
+    .container {
+        height: 100%;
+    }
+    
+    .fill-height {
+        height: 100%;
+        max-height: 100%;
+        min-height: 100%;
+    }
+    </style>
+</head>
+
+<body>
+    <div data-layout-fragment="content">
+        <div class="container">
+            <legend>Notifications</legend>
+            <div class="row fill-height">
+                <div class="col-md-4 sidebar pre-scrollable fill-height">
+                    <button>Mark All Read</button>
+                    <div class="list-group" id="notification-summary">
+                    <!-- 
+                        <a href="#" class="list-group-item active notification-summary-item">
+                            <p>{{ subject }}</p>
+                            <p><small>{{ date }} </small></p>
+                        </a>
+                        <a href="#" class="list-group-item">
+                            <p><b>Change your password</b></p>
+                            <p><small>31/12/2016 19:53</small></p>
+                        </a> -->
+                    </div>
+                </div>
+                <div class="col-md-8 main fill-height">
+                    <div class="row" id="notification-header">
+                        <h2 class="sub-header" id="notification-subject">Your account will expire</h2>
+                        <p class="small">Date: <span id="notification-date">31/12/2016 20:53</span>
+                            <input type="button" class="btn" id="mark-read-btn" value="Mark Read"/>
+                            <input type="button" class="btn" id="mark-unread-btn" value="Mark Unread"/>
+                        </p>
+                    </div>
+                    <div class="row">
+                        <p id="notification-body">Your Trial account will expire in 15 days. Please contact your support channel.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div data-layout-fragment="script">
+    <script data-th-attr="src=@{/resources/js/notifications/index.js}"></script>
+    </div>
+    
+</body>
+
+</html>

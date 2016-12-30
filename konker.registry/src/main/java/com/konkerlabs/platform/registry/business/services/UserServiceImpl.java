@@ -1,5 +1,16 @@
 package com.konkerlabs.platform.registry.business.services;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.util.Optional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.repositories.PasswordBlacklistRepository;
@@ -8,24 +19,9 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.UploadService;
 import com.konkerlabs.platform.registry.business.services.api.UserService;
-import com.konkerlabs.platform.security.exceptions.SecurityException;
 import com.konkerlabs.platform.security.managers.PasswordManager;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.MessageSource;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-import org.springframework.web.servlet.i18n.SessionLocaleResolver;
-
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -265,4 +261,15 @@ public class UserServiceImpl implements UserService {
             throw new BusinessException(Validations.INVALID_PASSWORD_BLACKLISTED.getCode());
         }
     }
+
+	@Override
+	public ServiceResponse<User> findByEmail(String email) {
+		if (!Optional.ofNullable(email).isPresent()) {
+			return ServiceResponseBuilder.<User>error()
+                    .withMessage(Validations.NO_EXIST_USER.getCode()).build();
+		}
+		
+		User user = userRepository.findOne(email);
+		return ServiceResponseBuilder.<User>ok().withResult(user).build();
+	}
 }
