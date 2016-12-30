@@ -20,17 +20,20 @@ import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import org.thymeleaf.templateresolver.ITemplateResolver;
 
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+
 @Configuration
-@PropertySource("classpath:mail/emailconfig.properties")
 public class SpringMailConfig implements ApplicationContextAware, EnvironmentAware {
 	
 	private static final String JAVA_MAIL_FILE = "classpath:mail/javamail.properties";
 	
-	private static final String HOST = "mail.server.host";
-	private static final String PORT = "mail.server.port";
-	private static final String PROTOCOL = "mail.server.protocol";
-	private static final String USERNAME = "mail.server.username";
-	private static final String PASSWORD = "mail.server.password";
+	private static Config config = ConfigFactory.load().getConfig("email");
+	private static final String HOST = config.getString("host");
+	private static final String PORT = config.getString("port");
+	private static final String PROTOCOL = config.getString("protocol");
+	private static final String USERNAME = config.getString("username");
+	private static final String PASSWORD = config.getString("password");
 	
 	private ApplicationContext applicationContext;
 	private Environment environment;
@@ -49,11 +52,11 @@ public class SpringMailConfig implements ApplicationContextAware, EnvironmentAwa
 	public JavaMailSender mailSender() throws IOException {
 		final JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
 		
-		mailSender.setHost(this.environment.getProperty(HOST));
-		mailSender.setPort(Integer.parseInt(this.environment.getProperty(PORT)));
-		mailSender.setProtocol(this.environment.getProperty(PROTOCOL));
-		mailSender.setUsername(this.environment.getProperty(USERNAME));
-		mailSender.setPassword(this.environment.getProperty(PASSWORD));
+		mailSender.setHost(HOST);
+		mailSender.setPort(Integer.parseInt(PORT));
+		mailSender.setProtocol(PROTOCOL);
+		mailSender.setUsername(USERNAME);
+		mailSender.setPassword(PASSWORD);
 		
 		final Properties javaMailProperties = new Properties();
 		javaMailProperties.load(this.applicationContext.getResource(JAVA_MAIL_FILE).getInputStream());
