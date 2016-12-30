@@ -21,9 +21,9 @@ import java.util.UUID;
 @Service
 public class TokenServiceImpl implements TokenService {
     @Autowired
-    private TokenRepository _tokenRepository;
+    private TokenRepository tokenRepository;
     @Autowired
-    private UserRepository _userRepository;
+    private UserRepository userRepository;
 
     public TokenServiceImpl() {
     }
@@ -32,7 +32,7 @@ public class TokenServiceImpl implements TokenService {
     public ServiceResponse<Token> getToken(String token) {
         Token result = null;
         if (token != null) {
-            result = _tokenRepository.findOne(token);
+            result = tokenRepository.findOne(token);
             if (result != null) {
                 return ServiceResponseBuilder.<Token>ok().withResult(result).build();
             } else {
@@ -51,9 +51,9 @@ public class TokenServiceImpl implements TokenService {
     public ServiceResponse<String> generateToken(Purpose purpose, User user, TemporalAmount temporalAmount) {
         Token token;
         if (user != null && purpose != null && temporalAmount != null &&
-                _userRepository.findOne(user.getEmail()) != null) {
+                userRepository.findOne(user.getEmail()) != null) {
             String userEmail = user.getEmail();
-            token = _tokenRepository.findByUserEmail(userEmail, purpose.getName());
+            token = tokenRepository.findByUserEmail(userEmail, purpose.getName());
             if (token != null) {
                 return ServiceResponseBuilder.<String>ok().withResult(token.getToken()).build();
             } else {
@@ -67,7 +67,7 @@ public class TokenServiceImpl implements TokenService {
                 token.setIsExpired(false);
                 token.setUserEmail(userEmail);
                 token.setPurpose(purpose.getName());
-                _tokenRepository.save(token);
+                tokenRepository.save(token);
 
                 return ServiceResponseBuilder.<String>ok().withResult(uuid.toString()).build();
             }
@@ -80,7 +80,7 @@ public class TokenServiceImpl implements TokenService {
     @Override
     public ServiceResponse<Boolean> isValidToken(String token) {
         if (token != null) {
-            Token result = _tokenRepository.findOne(token);
+            Token result = tokenRepository.findOne(token);
             if (result.getIsExpired() || result.getExpirationDateTime().isBefore(Instant.now())) {
                 return ServiceResponseBuilder.<Boolean>error()
                         .withMessage(Validations.INVALID_TOKEN.getCode())
@@ -99,11 +99,11 @@ public class TokenServiceImpl implements TokenService {
     @Override
     public ServiceResponse<Boolean> invalidateToken(String token) {
         if (token != null) {
-            Token result = _tokenRepository.findOne(token);
+            Token result = tokenRepository.findOne(token);
             if (result != null && !result.getIsExpired()) {
                 result.setUseDateTime(Instant.now());
                 result.setIsExpired(true);
-                _tokenRepository.save(result);
+                tokenRepository.save(result);
                 return ServiceResponseBuilder.<Boolean>ok()
                         .withResult(true).build();
             } else {
