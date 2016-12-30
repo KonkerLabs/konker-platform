@@ -247,4 +247,23 @@ public class UserServiceTest extends BusinessLayerTestSupport {
         User updated = userRepository.findOne(user.getEmail());
         assertThat(updated.getDateFormat().getCode(), !equals(user.getDateFormat().getCode()));
     }
+    
+    @Test
+    public void shouldRaiseAnExceptionIfEmailNull() {
+        ServiceResponse<User> serviceResponse = userService.findByEmail(null);
+        
+        Assert.assertNotNull(serviceResponse);
+        assertThat(serviceResponse, hasErrorMessage(UserService.Validations.NO_EXIST_USER.getCode()));
+
+    }
+    
+    @Test
+    public void shouldReturnUser() {
+        ServiceResponse<User> serviceResponse = userService.findByEmail("admin@konkerlabs.com");
+        
+        Assert.assertNotNull(serviceResponse);
+        assertThat(serviceResponse, isResponseOk());
+        Assert.assertEquals(user, serviceResponse.getResult());
+
+    }
 }
