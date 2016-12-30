@@ -57,7 +57,7 @@ public class Transformation implements URIDealer, Validatable {
 
     @Override
     public String getGuid() {
-        return id;
+        return guid;
     }
 
     public Optional<Map<String, Object[]>> applyValidations() {
