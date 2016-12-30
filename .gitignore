@@ -5,7 +5,6 @@ target
 /.gitignore
 /.project
 **/application.conf
-**/application.conf
 **/env/*
 **/build/*
 *.pydevproject
