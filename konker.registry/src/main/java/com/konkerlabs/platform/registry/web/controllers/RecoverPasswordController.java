@@ -1,7 +1,9 @@
 package com.konkerlabs.platform.registry.web.controllers;
 
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -73,18 +75,21 @@ public class RecoverPasswordController implements ApplicationContextAware {
     	}
     	
     	ServiceResponse<User> response = userService.findByEmail(email);
-    	if(!Optional.ofNullable(response).isPresent()) {
+    	User user = response.getResult();
+    	if(!Optional.ofNullable(user).isPresent()) {
     		return Boolean.FALSE;
     	}
     	
-    	User user = response.getResult();
     	ServiceResponse<String> responseToken = tokenService.generateToken(TokenService.Purpose.RESET_PASSWORD, user, Duration.ofMinutes(60));
     	
     	Map<String, Object> templateParam = new HashMap<>();
     	templateParam.put("link", responseToken.getResult());
+    	templateParam.put("name", "Konker Labs");
+    	templateParam.put("subscriptionDate", new Date());
+    	templateParam.put("hobbies", Arrays.asList("Cinema", "Sports"));
     	
 		try {
-			emailService.send("", 
+			emailService.send("no-reply@konkerlab.com", 
 					Collections.singletonList(user), 
 					Collections.emptyList(), 
 					"Recover Password", 

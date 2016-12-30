@@ -109,9 +109,9 @@ public class RecoverPasswordControllerTest extends WebLayerTestContext {
     
     @Test
     public void shouldReturnFalseIfEmailInvalid() throws Exception {
-    	when(userService.findByEmail(USER_EMAIL))
-    		.thenReturn(ServiceResponseBuilder.<User>ok()
-    		.withResult(user).build());
+    	when(userService.findByEmail(USER_EMAIL_INVALID))
+    		.thenReturn(ServiceResponseBuilder.<User>error()
+    		.withResult(null).build());
     	
     	getMockMvc().perform(get("/recoverpassword").param("email", USER_EMAIL_INVALID))
     		.andDo(print())
