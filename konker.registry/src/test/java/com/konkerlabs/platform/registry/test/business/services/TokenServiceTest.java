@@ -54,6 +54,19 @@ public class TokenServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldReturnValidToken(){
+        ServiceResponse<String> response = _tokenService.generateToken(
+                TokenService.Purpose.RESET_PASSWORD, _user, Duration.ofSeconds(10));
+        Assert.assertTrue(_tokenService.getToken(response.getResult()).isOk());
+    }
+
+    @Test
+    public void shouldNotReturnValidToken(){
+        Assert.assertTrue(_tokenService.getToken(null).getStatus() == ServiceResponse.Status.ERROR);
+        Assert.assertTrue(_tokenService.getToken("").getStatus() == ServiceResponse.Status.ERROR);
+    }
+
+    @Test
+    public void shouldGenerateValidToken(){
        ServiceResponse<String> response = _tokenService.generateToken(
                TokenService.Purpose.RESET_PASSWORD, _user, Duration.ofSeconds(10));
        Assert.assertTrue(response.isOk());
@@ -61,7 +74,7 @@ public class TokenServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldNotReturnValidToken(){
+    public void shouldNotGenerateValidToken(){
         ServiceResponse<String> response = _tokenService.generateToken(
                 TokenService.Purpose.RESET_PASSWORD, null, Duration.ofSeconds(10));
         Assert.assertTrue(response.getStatus() == ServiceResponse.Status.ERROR);
