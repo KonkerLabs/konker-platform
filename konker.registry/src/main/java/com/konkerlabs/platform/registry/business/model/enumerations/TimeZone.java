@@ -1,5 +1,7 @@
 package com.konkerlabs.platform.registry.business.model.enumerations;
 
+import java.time.ZoneId;
+
 public enum TimeZone {
     AMERICA_SAO_PAULO("timezones.america_sao_paulo", "America/Sao_Paulo"),
     AMERICA_LOS_ANGELES("timezones.america_los_angeles", "America/Los_Angeles");
@@ -22,5 +24,9 @@ public enum TimeZone {
 
     public String getCode(){
         return code;
+    }
+    
+    public ZoneId getZoneId() {
+        return ZoneId.of(id);
     }
 }

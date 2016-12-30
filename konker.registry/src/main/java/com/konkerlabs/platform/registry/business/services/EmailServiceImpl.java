@@ -1,9 +1,8 @@
 package com.konkerlabs.platform.registry.business.services;
 
-import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -25,6 +24,11 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse.Status;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 
+/**
+ * @author Douglas Apolinario
+ * @since 28/12/2016
+ *
+ */
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
 public class EmailServiceImpl implements EmailService {
@@ -40,7 +44,8 @@ public class EmailServiceImpl implements EmailService {
 									List<User> recipients, 
 									List<User> recipientsCopied, 
 									String subject,
-									String body,
+									String templateName, 
+									Map<String, Object> templateParam,
 									Locale locale) throws MessagingException {
 		
 		if (!Optional.ofNullable(sender).isPresent() || sender.isEmpty()) {
@@ -52,14 +57,12 @@ public class EmailServiceImpl implements EmailService {
 		if (!Optional.ofNullable(subject).isPresent() || subject.isEmpty()) {
 			return ServiceResponseBuilder.<Status>error().withMessage(Validations.SUBJECT_EMPTY.getCode()).build();
 		}
-		if (!Optional.ofNullable(body).isPresent() || body.isEmpty()) {
+		if (!Optional.ofNullable(templateName).isPresent() || templateName.isEmpty()) {
 			return ServiceResponseBuilder.<Status>error().withMessage(Validations.BODY_EMPTY.getCode()).build();
 		}
 		
 		final Context ctx = new Context(locale);
-		ctx.setVariable("name", "Douglas");
-		ctx.setVariable("subscriptionDate", new Date());
-		ctx.setVariable("hobbies", Arrays.asList("Cinema", "Sports"));
+		ctx.setVariables(templateParam);
 		
 		final MimeMessage mimeMessage = this.mailSender.createMimeMessage();
 		final MimeMessageHelper message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
@@ -71,7 +74,7 @@ public class EmailServiceImpl implements EmailService {
 			message.setCc(recipientsCopied.stream().map(r -> r.getEmail()).collect(Collectors.toList()).toArray(new String[0]));
 		}
 		
-		final String htmlContent = this.templateEngine.process("html/email-recover-pass", ctx);
+		final String htmlContent = this.templateEngine.process("html/".concat(templateName), ctx);
 		message.setText(htmlContent, true);
 		
 		this.mailSender.send(mimeMessage);

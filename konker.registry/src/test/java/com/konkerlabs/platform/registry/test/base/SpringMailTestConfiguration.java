@@ -9,7 +9,6 @@ import java.util.Collections;
 import javax.mail.internet.MimeMessage;
 
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
@@ -18,10 +17,6 @@ import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 
 @Configuration
-@ComponentScan(basePackages = {
-    "com.konkerlabs.platform.registry.business",
-    "com.konkerlabs.platform.utilities",
-},lazyInit = true)
 public class SpringMailTestConfiguration {
 
     @Bean

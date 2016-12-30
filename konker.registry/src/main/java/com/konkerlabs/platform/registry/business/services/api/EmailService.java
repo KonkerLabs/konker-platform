@@ -2,12 +2,19 @@ package com.konkerlabs.platform.registry.business.services.api;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import javax.mail.MessagingException;
 
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse.Status;
 
+
+/**
+ * @author Douglas Apolinario
+ * @since 28/12/2016
+ *
+ */
 public interface EmailService {
 	
 	enum Validations {
@@ -27,5 +34,11 @@ public interface EmailService {
         }
     }
 	
-	ServiceResponse<Status> send(String sender, List<User> recipients, List<User> recipientsCopied, String subject, String body, Locale locale) throws MessagingException;
+	ServiceResponse<Status> send(String sender, 
+					List<User> recipients, 
+					List<User> recipientsCopied, 
+					String subject, 
+					String templateName, 
+					Map<String, Object> templateParam, 
+					Locale locale) throws MessagingException;
 }
