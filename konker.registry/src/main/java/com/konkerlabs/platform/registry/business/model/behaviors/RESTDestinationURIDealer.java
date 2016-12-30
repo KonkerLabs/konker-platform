@@ -4,7 +4,7 @@ import java.net.URI;
 import java.text.MessageFormat;
 import java.util.Optional;
 
-public interface RESTDestinationURIDealer {
+public interface RESTDestinationURIDealer extends URIDealer {
 
     String REST_DESTINATION_URI_SCHEME = "rest";
     String REST_DESTINATION_URI_TEMPLATE = REST_DESTINATION_URI_SCHEME + "://{0}/{1}";

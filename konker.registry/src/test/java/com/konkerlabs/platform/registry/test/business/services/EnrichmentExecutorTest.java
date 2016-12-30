@@ -4,6 +4,7 @@ import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
+import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.services.api.EnrichmentExecutor;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
@@ -79,10 +80,38 @@ public class EnrichmentExecutorTest extends BusinessLayerTestSupport {
 
     @Before
     public void setUp() throws Exception {
-        existingUri = new DeviceURIDealer() {
-        }.toDeviceRouteURI(REGISTERED_TENANT_DOMAIN, EXISTING_DEVICE_GUID);
-        nonExistingUri = new DeviceURIDealer() {
-        }.toDeviceRouteURI(REGISTERED_TENANT_DOMAIN, NON_EXISTING_DEVICE_GUID);
+        existingUri = new URIDealer() {
+            @Override
+            public String getUriScheme() {
+                return Device.URI_SCHEME;
+            }
+
+            @Override
+            public String getContext() {
+                return REGISTERED_TENANT_DOMAIN;
+            }
+
+            @Override
+            public String getGuid() {
+                return EXISTING_DEVICE_GUID;
+            }
+        }.toURI() ;
+        nonExistingUri = new URIDealer() {
+            @Override
+            public String getUriScheme() {
+                return Device.URI_SCHEME;
+            }
+
+            @Override
+            public String getContext() {
+                return REGISTERED_TENANT_DOMAIN;
+            }
+
+            @Override
+            public String getGuid() {
+                return NON_EXISTING_DEVICE_GUID;
+            }
+        }.toURI();
 
         device = spy(Device.builder()
                 .tenant(

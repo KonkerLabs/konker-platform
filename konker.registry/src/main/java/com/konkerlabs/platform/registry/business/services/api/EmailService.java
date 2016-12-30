@@ -27,5 +27,9 @@ public interface EmailService {
         }
     }
 	
-	ServiceResponse<Status> send(String sender, List<User> recipients, List<User> recipientsCopied, String subject, String body, Locale locale) throws MessagingException;
+	ServiceResponse<Status> send(
+	        String sender,
+            List<User> recipients,
+            List<User> recipientsCopied,
+            String subject, String body, Locale locale) throws MessagingException;
 }

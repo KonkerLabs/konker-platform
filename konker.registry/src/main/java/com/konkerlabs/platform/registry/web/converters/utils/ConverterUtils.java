@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.web.converters.utils;
 
+import java.text.MessageFormat;
 import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
@@ -51,8 +52,7 @@ public class ConverterUtils {
 
 	public String getDateTimeFormatPattern() {
 		String date = userContextResolver.getObject().getDateFormat().getId();
-		String time = appContext.getMessage(GLOBAL_TIME_FORMAT_PATTERN, null, userContextResolver.getObject().getLanguage().getLocale());
-		return date + " " + time;
+		return MessageFormat.format(GLOBAL_DATETIME_FORMAT_PATTERN, date);
 	}
 
 	public String getUserZoneID() {

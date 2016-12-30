@@ -4,6 +4,7 @@ package com.konkerlabs.platform.registry.test.web.forms;
 import com.konkerlabs.platform.registry.business.model.DataEnrichmentExtension;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
+import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.registry.business.model.enumerations.IntegrationType;
 import com.konkerlabs.platform.registry.web.forms.EnrichmentForm;
 import org.junit.Before;
@@ -23,7 +24,7 @@ public class EnrichmentFormTest {
 
     private EnrichmentForm form;
     private DataEnrichmentExtension model;
-    private DeviceURIDealer deviceUriDealer;
+    private URIDealer deviceUriDealer;
     private Tenant tenant;
     private String deviceId = "1";
 
@@ -43,13 +44,28 @@ public class EnrichmentFormTest {
 
         form.setAdditionalSupplier(() -> tenant.getDomainName());
 
-        deviceUriDealer = new DeviceURIDealer() {};
+        deviceUriDealer = new DeviceURIDealer() {
+            @Override
+            public String getUriScheme() {
+                return DEVICE_URI_SCHEME;
+            }
+
+            @Override
+            public String getContext() {
+                return tenant.getDomainName();
+            }
+
+            @Override
+            public String getGuid() {
+                return deviceId;
+            }
+        };
 
         model = DataEnrichmentExtension.builder()
                 .name(form.getName())
                 .description(form.getDescription())
                 .type(IntegrationType.REST)
-                .incoming(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(), deviceId))
+                .incoming(deviceUriDealer.toURI())
                 .parameters(form.getParameters())
                 .containerKey(form.getContainerKey())
                 .active(form.isActive())

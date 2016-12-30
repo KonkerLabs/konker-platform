@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry.business.model;
 
 import com.fasterxml.jackson.databind.node.JsonNodeType;
+import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 import lombok.Builder;
 import lombok.Data;
@@ -12,6 +13,7 @@ import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.net.URI;
 import java.util.*;
 
 @Data
@@ -20,7 +22,7 @@ import java.util.*;
 @CompoundIndexes({
         @CompoundIndex(name = "device_channel_idx", def = "{'deviceGuid': 1, 'channel': 1}", unique = true)
 })
-public class EventSchema {
+public class EventSchema implements URIDealer {
 
     @Id
     private String id;
@@ -29,6 +31,30 @@ public class EventSchema {
     private String channel;
     @Singular
     private Set<SchemaField> fields = new HashSet<>();
+
+    public static final String URI_SCHEME = "eventschema";
+
+
+    public URI toURI() {
+        return URI.create(
+                getRoutUriTemplate()
+        );
+    }
+
+    @Override
+    public String getUriScheme() {
+        return URI_SCHEME;
+    }
+
+    @Override
+    public String getContext() {
+        return (deviceGuid + "_" + channel).toLowerCase();
+    }
+
+    @Override
+    public String getGuid() {
+        return id;
+    }
 
     public Optional<SchemaField> getByPath(String path) {
         return getFields().stream().filter(schemaField -> schemaField.getPath().equals(path)).findFirst();

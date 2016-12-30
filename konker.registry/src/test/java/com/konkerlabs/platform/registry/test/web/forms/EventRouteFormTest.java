@@ -1,12 +1,11 @@
 package com.konkerlabs.platform.registry.test.web.forms;
 
-import com.konkerlabs.platform.registry.business.model.EventRoute;
+import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.Transformation;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.SmsDestinationURIDealer;
+import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.registry.business.services.publishers.EventPublisherSms;
 import com.konkerlabs.platform.registry.web.forms.EventRouteForm;
 import org.junit.Before;
@@ -26,9 +25,6 @@ public class EventRouteFormTest {
 
     private EventRouteForm form;
     private EventRoute model;
-    private DeviceURIDealer deviceUriDealer;
-    private SmsDestinationURIDealer smsDestinationUriDealer;
-    private RESTDestinationURIDealer restDestinationURIDealer;
     private Tenant tenant;
 
     @Before
@@ -37,7 +33,7 @@ public class EventRouteFormTest {
         form.setName("route_name");
         form.setDescription("route_description");
         form.getIncoming().setAuthorityId("0000000000000004");
-        form.getIncoming().getAuthorityData().put("channel","command");
+        form.getIncoming().getAuthorityData().put("channel", "command");
         form.setFilteringExpression("#command.type == 'ButtonPressed'");
         form.setTransformation("trans_id");
         form.setActive(true);
@@ -53,9 +49,7 @@ public class EventRouteFormTest {
                 .transformation(Transformation.builder().id("trans_id").build())
                 .active(form.isActive()).build();
 
-        deviceUriDealer = new DeviceURIDealer() {};
-        smsDestinationUriDealer = new SmsDestinationURIDealer() {};
-        restDestinationURIDealer = new RESTDestinationURIDealer() {};
+
     }
 
     @Test
@@ -92,43 +86,104 @@ public class EventRouteFormTest {
     public void shouldTranslateFromDeviceRouteFormToModel() throws Exception {
         form.setOutgoingScheme("device");
         form.getOutgoing().setAuthorityId("0000000000000005");
-        form.getOutgoing().getAuthorityData().put("channel","in");
+        form.getOutgoing().getAuthorityData().put("channel", "in");
 
         model.setIncoming(
                 RouteActor.builder()
-                        .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncoming().getAuthorityId()))
+                        .uri(new URIDealer() {
+                            @Override
+                            public String getUriScheme() {
+                                return Device.URI_SCHEME;
+                            }
+
+                            @Override
+                            public String getContext() {
+                                return tenant.getDomainName();
+                            }
+
+                            @Override
+                            public String getGuid() {
+                                return form.getIncoming().getAuthorityId();
+                            }
+                        }.toURI())
                         .data(form.getIncoming().getAuthorityData())
                         .build()
         );
         model.setOutgoing(
                 RouteActor.builder()
-                        .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getOutgoing().getAuthorityId()))
+                        .uri(new URIDealer() {
+                            @Override
+                            public String getUriScheme() {
+                                return Device.URI_SCHEME;
+                            }
+
+                            @Override
+                            public String getContext() {
+                                return tenant.getDomainName();
+                            }
+
+                            @Override
+                            public String getGuid() {
+                                return form.getOutgoing().getAuthorityId();
+                            }
+                        }.toURI())
                         .data(form.getOutgoing().getAuthorityData())
                         .build()
         );
 
-        assertThat(form.toModel(),equalTo(model));
+        assertThat(form.toModel(), equalTo(model));
     }
+
     @Test
     public void shouldTranslateFromSMSRouteFormToModel() throws Exception {
         form.setOutgoingScheme("sms");
         form.getOutgoing().setAuthorityId("407902f6-5b85-4767-ad83-b8b3e847bd92");
-        form.getOutgoing().getAuthorityData().put("messageStrategy","custom");
-        form.getOutgoing().getAuthorityData().put("messageTemplate","A given message template");
+        form.getOutgoing().getAuthorityData().put("messageStrategy", "custom");
+        form.getOutgoing().getAuthorityData().put("messageTemplate", "A given message template");
 
         model.setIncoming(RouteActor.builder()
-                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncoming().getAuthorityId()))
+                .uri(new URIDealer() {
+                    @Override
+                    public String getUriScheme() {
+                        return Device.URI_SCHEME;
+                    }
+
+                    @Override
+                    public String getContext() {
+                        return tenant.getDomainName();
+                    }
+
+                    @Override
+                    public String getGuid() {
+                        return form.getIncoming().getAuthorityId();
+                    }
+                }.toURI())
                 .data(form.getIncoming().getAuthorityData())
                 .build());
         model.setOutgoing(RouteActor.builder()
-                .uri(smsDestinationUriDealer.toSmsURI(tenant.getDomainName(), form.getOutgoing().getAuthorityId()))
-                .data(new HashMap<String, String>(){{
+                .uri(new URIDealer() {
+                    @Override
+                    public String getUriScheme() {
+                        return Device.URI_SCHEME;
+                    }
+
+                    @Override
+                    public String getContext() {
+                        return tenant.getDomainName();
+                    }
+
+                    @Override
+                    public String getGuid() {
+                        return form.getOutgoing().getAuthorityId();
+                    }
+                }.toURI())
+                .data(new HashMap<String, String>() {{
                     put(EventPublisherSms.SMS_MESSAGE_STRATEGY_PARAMETER_NAME, "custom");
                     put(EventPublisherSms.SMS_MESSAGE_TEMPLATE_PARAMETER_NAME, "A given message template");
                 }})
                 .build());
 
-        assertThat(form.toModel(),equalTo(model));
+        assertThat(form.toModel(), equalTo(model));
     }
 
     @Test
@@ -137,79 +192,199 @@ public class EventRouteFormTest {
         form.getOutgoing().setAuthorityId("dda64780-eb81-11e5-958b-a73dab8b32ee");
 
         model.setIncoming(RouteActor.builder()
-                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncoming().getAuthorityId()))
+                .uri(new URIDealer() {
+                    @Override
+                    public String getUriScheme() {
+                        return Device.URI_SCHEME;
+                    }
+
+                    @Override
+                    public String getContext() {
+                        return tenant.getDomainName();
+                    }
+
+                    @Override
+                    public String getGuid() {
+                        return form.getIncoming().getAuthorityId();
+                    }
+                }.toURI())
                 .data(form.getIncoming().getAuthorityData())
                 .build());
         model.setOutgoing(RouteActor.builder()
-                .uri(restDestinationURIDealer.toRestDestinationURI(tenant.getDomainName(), form.getOutgoing().getAuthorityId()))
+                .uri(new URIDealer() {
+                    @Override
+                    public String getUriScheme() {
+                        return Device.URI_SCHEME;
+                    }
+
+                    @Override
+                    public String getContext() {
+                        return tenant.getDomainName();
+                    }
+
+                    @Override
+                    public String getGuid() {
+                        return form.getOutgoing().getAuthorityId();
+                    }
+                }.toURI())
                 .data(form.getOutgoing().getAuthorityData())
                 .build());
 
-        assertThat(form.toModel(),equalTo(model));
+        assertThat(form.toModel(), equalTo(model));
     }
 
     @Test
     public void shouldTranslateToModelWithOptionalTransformation() throws Exception {
         form.setOutgoingScheme("device");
         form.getOutgoing().setAuthorityId("0000000000000005");
-        form.getOutgoing().getAuthorityData().put("channel","in");
+        form.getOutgoing().getAuthorityData().put("channel", "in");
 
         model.setIncoming(RouteActor.builder()
-                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncoming().getAuthorityId()))
+                .uri(new URIDealer() {
+                    @Override
+                    public String getUriScheme() {
+                        return Device.URI_SCHEME;
+                    }
+
+                    @Override
+                    public String getContext() {
+                        return tenant.getDomainName();
+                    }
+
+                    @Override
+                    public String getGuid() {
+                        return form.getIncoming().getAuthorityId();
+                    }
+                }.toURI())
                 .data(form.getIncoming().getAuthorityData())
                 .build()
         );
         model.setOutgoing(RouteActor.builder()
-                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getOutgoing().getAuthorityId()))
+                .uri(new URIDealer() {
+                    @Override
+                    public String getUriScheme() {
+                        return Device.URI_SCHEME;
+                    }
+
+                    @Override
+                    public String getContext() {
+                        return tenant.getDomainName();
+                    }
+
+                    @Override
+                    public String getGuid() {
+                        return form.getOutgoing().getAuthorityId();
+                    }
+                }.toURI())
                 .data(form.getOutgoing().getAuthorityData())
                 .build()
         );
 
-        assertThat(form.toModel(),equalTo(model));
+        assertThat(form.toModel(), equalTo(model));
 
         //No transformation is selected
 
         form.setTransformation(null);
         model.setTransformation(null);
 
-        assertThat(form.toModel(),equalTo(model));
+        assertThat(form.toModel(), equalTo(model));
     }
 
     @Test
     public void shouldTranslateFromDeviceRouteModelToForm() throws Exception {
         form.setOutgoingScheme("device");
         form.getOutgoing().setAuthorityId("0000000000000005");
-        form.getOutgoing().getAuthorityData().put("channel","in");
+        form.getOutgoing().getAuthorityData().put("channel", "in");
 
         model.setIncoming(RouteActor.builder()
-                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncoming().getAuthorityId()))
+                .uri(new URIDealer() {
+                    @Override
+                    public String getUriScheme() {
+                        return Device.URI_SCHEME;
+                    }
+
+                    @Override
+                    public String getContext() {
+                        return tenant.getDomainName();
+                    }
+
+                    @Override
+                    public String getGuid() {
+                        return form.getIncoming().getAuthorityId();
+                    }
+                }.toURI())
                 .data(form.getIncoming().getAuthorityData())
                 .build());
         model.setOutgoing(RouteActor.builder()
-                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getOutgoing().getAuthorityId()))
+                .uri(new URIDealer() {
+                    @Override
+                    public String getUriScheme() {
+                        return Device.URI_SCHEME;
+                    }
+
+                    @Override
+                    public String getContext() {
+                        return tenant.getDomainName();
+                    }
+
+                    @Override
+                    public String getGuid() {
+                        return form.getOutgoing().getAuthorityId();
+                    }
+                }.toURI())
                 .data(form.getOutgoing().getAuthorityData())
                 .build());
 
-        assertThat(new EventRouteForm().fillFrom(model),equalTo(form));
+        assertThat(new EventRouteForm().fillFrom(model), equalTo(form));
     }
 
     @Test
     public void shouldTranslateFromSMSRouteModelToForm() throws Exception {
         form.setOutgoingScheme("sms");
         form.getOutgoing().setAuthorityId("407902f6-5b85-4767-ad83-b8b3e847bd92");
-        form.getOutgoing().getAuthorityData().put("smsMessageStrategy","custom");
-        form.getOutgoing().getAuthorityData().put("smsMessageTemplate","A given message template");
+        form.getOutgoing().getAuthorityData().put("smsMessageStrategy", "custom");
+        form.getOutgoing().getAuthorityData().put("smsMessageTemplate", "A given message template");
 
         model.setIncoming(RouteActor.builder()
-                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncoming().getAuthorityId()))
+                .uri(new URIDealer() {
+                    @Override
+                    public String getUriScheme() {
+                        return Device.URI_SCHEME;
+                    }
+
+                    @Override
+                    public String getContext() {
+                        return tenant.getDomainName();
+                    }
+
+                    @Override
+                    public String getGuid() {
+                        return form.getIncoming().getAuthorityId();
+                    }
+                }.toURI())
                 .data(form.getIncoming().getAuthorityData())
                 .build());
         model.setOutgoing(RouteActor.builder()
-                .uri(smsDestinationUriDealer.toSmsURI(tenant.getDomainName(),form.getOutgoing().getAuthorityId()))
+                .uri(new URIDealer() {
+                    @Override
+                    public String getUriScheme() {
+                        return SmsDestination.URI_SCHEME;
+                    }
+
+                    @Override
+                    public String getContext() {
+                        return tenant.getDomainName();
+                    }
+
+                    @Override
+                    public String getGuid() {
+                        return form.getOutgoing().getAuthorityId();
+                    }
+                }.toURI())
                 .data(form.getOutgoing().getAuthorityData())
                 .build());
 
-        assertThat(new EventRouteForm().fillFrom(model),equalTo(form));
+        assertThat(new EventRouteForm().fillFrom(model), equalTo(form));
     }
 
     @Test
@@ -218,39 +393,99 @@ public class EventRouteFormTest {
         form.getOutgoing().setAuthorityId("dda64780-eb81-11e5-958b-a73dab8b32ee");
 
         model.setIncoming(RouteActor.builder()
-                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncoming().getAuthorityId()))
+                .uri(new URIDealer() {
+                    @Override
+                    public String getUriScheme() {
+                        return Device.URI_SCHEME;
+                    }
+
+                    @Override
+                    public String getContext() {
+                        return tenant.getDomainName();
+                    }
+
+                    @Override
+                    public String getGuid() {
+                        return form.getIncoming().getAuthorityId();
+                    }
+                }.toURI())
                 .data(form.getIncoming().getAuthorityData())
                 .build());
         model.setOutgoing(RouteActor.builder()
-                .uri(restDestinationURIDealer.toRestDestinationURI(tenant.getDomainName(), form.getOutgoing().getAuthorityId()))
+                .uri(new URIDealer() {
+                    @Override
+                    public String getUriScheme() {
+                        return RestDestination.URI_SCHEME;
+                    }
+
+                    @Override
+                    public String getContext() {
+                        return tenant.getDomainName();
+                    }
+
+                    @Override
+                    public String getGuid() {
+                        return form.getOutgoing().getAuthorityId();
+                    }
+                }.toURI())
                 .data(form.getOutgoing().getAuthorityData())
                 .build());
 
-        assertThat(new EventRouteForm().fillFrom(model),equalTo(form));
+        assertThat(new EventRouteForm().fillFrom(model), equalTo(form));
     }
 
     @Test
     public void shouldTranslateFromModelToFormWithOptionalTransformation() throws Exception {
         form.setOutgoingScheme("device");
         form.getOutgoing().setAuthorityId("0000000000000005");
-        form.getOutgoing().getAuthorityData().put("channel","in");
+        form.getOutgoing().getAuthorityData().put("channel", "in");
 
         model.setIncoming(RouteActor.builder()
-                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getIncoming().getAuthorityId()))
+                .uri(new URIDealer() {
+                    @Override
+                    public String getUriScheme() {
+                        return Device.URI_SCHEME;
+                    }
+
+                    @Override
+                    public String getContext() {
+                        return tenant.getDomainName();
+                    }
+
+                    @Override
+                    public String getGuid() {
+                        return form.getIncoming().getAuthorityId();
+                    }
+                }.toURI())
                 .data(form.getIncoming().getAuthorityData())
                 .build());
         model.setOutgoing(RouteActor.builder()
-                .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(),form.getOutgoing().getAuthorityId()))
+                .uri(new URIDealer() {
+                    @Override
+                    public String getUriScheme() {
+                        return Device.URI_SCHEME;
+                    }
+
+                    @Override
+                    public String getContext() {
+                        return tenant.getDomainName();
+                    }
+
+                    @Override
+                    public String getGuid() {
+                        return form.getOutgoing().getAuthorityId();
+                    }
+                }.toURI())
                 .data(form.getOutgoing().getAuthorityData())
                 .build());
 
-        assertThat(new EventRouteForm().fillFrom(model),equalTo(form));
+        assertThat(new EventRouteForm().fillFrom(model), equalTo(form));
 
         //There is no transformation associated with this route
 
         model.setTransformation(null);
         form.setTransformation(null);
 
-        assertThat(new EventRouteForm().fillFrom(model),equalTo(form));
+        assertThat(new EventRouteForm().fillFrom(model), equalTo(form));
     }
 }

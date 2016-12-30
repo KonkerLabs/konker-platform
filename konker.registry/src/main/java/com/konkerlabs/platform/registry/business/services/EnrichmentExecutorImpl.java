@@ -47,7 +47,11 @@ public class EnrichmentExecutorImpl implements EnrichmentExecutor {
             return ServiceResponseBuilder.<Event>error()
                     .withMessage(Validations.INCOMING_DEVICE_NULL.getCode()).<Event>build();
 
-        ServiceResponse<List<DataEnrichmentExtension>> listServiceResponse = dataEnrichmentExtensionService.getByTenantAndByIncomingURI(device.getTenant(), device.toURI());
+        ServiceResponse<List<DataEnrichmentExtension>> listServiceResponse =
+                dataEnrichmentExtensionService.getByTenantAndByIncomingURI(
+                        device.getTenant(),
+                        device.toURI()
+                );
 
         if (listServiceResponse.getStatus().equals(ServiceResponse.Status.OK)) {
             for (DataEnrichmentExtension dee : listServiceResponse.getResult()) {

@@ -96,7 +96,8 @@ public class EnrichmentController implements ApplicationContextAware {
                              RedirectAttributes redirectAttributes, Locale locale) {
 
         enrichmentForm.setTenantDomainSupplier(() -> tenant.getDomainName());
-        ServiceResponse<DataEnrichmentExtension> serviceResponse = dataEnrichmentExtensionService.register(tenant, enrichmentForm.toModel());
+        ServiceResponse<DataEnrichmentExtension> serviceResponse =
+                dataEnrichmentExtensionService.register(tenant, enrichmentForm.toModel());
 
         switch (serviceResponse.getStatus()) {
             case ERROR: {

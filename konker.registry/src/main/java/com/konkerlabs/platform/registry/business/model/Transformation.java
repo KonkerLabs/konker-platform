@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.business.model;
 
+import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.utilities.validations.api.Validatable;
 import lombok.Builder;
@@ -14,7 +15,7 @@ import java.util.*;
 @Data
 @Builder
 @Document(collection = "transformations")
-public class Transformation implements Validatable {
+public class Transformation implements URIDealer, Validatable {
 
     public enum Validations {
         NAME_NULL("model.transformation.name.not_null"),
@@ -40,6 +41,24 @@ public class Transformation implements Validatable {
     private String description;
     @Singular
     private List<TransformationStep> steps = new LinkedList<>();
+
+
+    public static final String URI_SCHEME = "transformation";
+
+    @Override
+    public String getUriScheme() {
+        return URI_SCHEME;
+    }
+
+    @Override
+    public String getContext() {
+        return getTenant() != null ? getTenant().getDomainName() : null;
+    }
+
+    @Override
+    public String getGuid() {
+        return id;
+    }
 
     public Optional<Map<String, Object[]>> applyValidations() {
         Map<String, Object[]> validations = new HashMap<>();

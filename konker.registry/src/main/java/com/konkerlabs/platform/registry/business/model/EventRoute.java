@@ -1,10 +1,13 @@
 package com.konkerlabs.platform.registry.business.model;
 
+import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.services.publishers.EventPublisherSms;
 import com.konkerlabs.platform.utilities.validations.api.Validatable;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
+import lombok.experimental.Tolerate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -20,7 +23,7 @@ import static com.konkerlabs.platform.registry.business.services.publishers.Even
 @Document(collection = "eventRoutes")
 @Data
 @Builder
-public class EventRoute implements Validatable {
+public class EventRoute implements URIDealer, Validatable {
 
     public enum Validations {
         NAME_NULL("model.event_route.name.not_null"),
@@ -62,6 +65,23 @@ public class EventRoute implements Validatable {
     private Transformation transformation;
     private String guid;
     private boolean active;
+
+    public static final String URI_SCHEME = "eventroute";
+
+    @Override
+    public String getUriScheme() {
+        return URI_SCHEME;
+    }
+
+    @Override
+    public String getContext() {
+        return getTenant() != null ? getTenant().getDomainName() : null;
+    }
+
+    @Override
+    public String getGuid() {
+        return guid;
+    }
 
     public Optional<Map<String,Object[]>> applyValidations() {
         Map<String,Object[]> validations = new HashMap<>();

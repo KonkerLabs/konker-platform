@@ -180,7 +180,7 @@ public class RestDestinationTest {
     @Test
     public void shouldThrowExceptionIfTenantIsNullWhenToURI() throws Exception {
         thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("tenant domain");
+        thrown.expectMessage("CONTEXT cannot be null or empty");
 
         subject.setTenant(null);
         URI uri = subject.toURI();
@@ -190,7 +190,7 @@ public class RestDestinationTest {
     @Test
     public void shouldThrowExceptionIfTenantDomainIsNullWhenToURI() throws Exception {
         thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("tenant domain");
+        thrown.expectMessage("CONTEXT cannot be null or empty");
 
         subject.getTenant().setDomainName(null);;
         URI uri = subject.toURI();
@@ -200,7 +200,7 @@ public class RestDestinationTest {
     @Test
     public void shouldThrowExceptionIfTenantDomainIsEmptyWhenToURI() throws Exception {
         thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("tenant domain");
+        thrown.expectMessage("CONTEXT cannot be null or empty");
 
         subject.getTenant().setDomainName("");;
         URI uri = subject.toURI();
@@ -210,7 +210,7 @@ public class RestDestinationTest {
     @Test
     public void shouldThrowExceptionIfNameIsNullWhenToURI() throws Exception {
         thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("REST Destination ID");
+        thrown.expectMessage("GUID cannot be null or empty");
 
         subject.setGuid(null);
         URI uri = subject.toURI();
@@ -220,7 +220,7 @@ public class RestDestinationTest {
     @Test
     public void shouldThrowExceptionIfGUIDIsEmptyWhenToURI() throws Exception {
         thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("REST Destination ID");
+        thrown.expectMessage("GUID cannot be null or empty");
 
         subject.setGuid("");;
         URI uri = subject.toURI();

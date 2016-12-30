@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.business.model;
 
+import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.registry.business.model.enumerations.IntegrationType;
 import com.konkerlabs.platform.utilities.validations.api.Validatable;
 import lombok.AllArgsConstructor;
@@ -13,7 +14,7 @@ import java.util.Map;
 @Getter
 @AllArgsConstructor
 @EqualsAndHashCode
-public abstract class TransformationStep implements Validatable {
+public abstract class TransformationStep implements URIDealer, Validatable {
 
     private IntegrationType type;
     @Singular

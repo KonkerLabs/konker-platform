@@ -1,11 +1,13 @@
 package com.konkerlabs.platform.registry.business.model;
 
+import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.registry.business.model.enumerations.IntegrationType;
 import com.konkerlabs.platform.utilities.validations.InterpolableURIValidator;
 import com.konkerlabs.platform.utilities.validations.ValidationException;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 
+import java.net.URI;
 import java.text.MessageFormat;
 import java.util.*;
 
@@ -32,6 +34,23 @@ public class RestTransformationStep extends TransformationStep {
     public static final String REST_URL_ATTRIBUTE_NAME = "url";
     public static final String REST_USERNAME_ATTRIBUTE_NAME = "username";
     public static final String REST_PASSWORD_ATTRIBUTE_NAME = "password";
+    public static final String URI_SCHEME = "resttransformationstep";
+
+
+    @Override
+    public String getUriScheme() {
+        return URI_SCHEME;
+    }
+
+    @Override
+    public String getContext() {
+        return this.getAttributes().get(REST_URL_ATTRIBUTE_NAME);
+    }
+
+    @Override
+    public String getGuid() {
+        return getAttributes().get(REST_USERNAME_ATTRIBUTE_NAME);
+    }
 
     @Builder
     public RestTransformationStep(Map<String, String> attributes) {

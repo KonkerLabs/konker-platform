@@ -4,6 +4,7 @@ import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
+import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
@@ -105,7 +106,22 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
             .payload(eventPayload)
             .timestamp(Instant.now()).build();
 
-        destinationUri = new DeviceURIDealer() {}.toDeviceRouteURI(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_GUID);
+        destinationUri = new URIDealer() {
+            @Override
+            public String getUriScheme() {
+                return Device.URI_SCHEME;
+            }
+
+            @Override
+            public String getContext() {
+                return REGISTERED_TENANT_DOMAIN;
+            }
+
+            @Override
+            public String getGuid() {
+                return REGISTERED_DEVICE_GUID;
+            }
+        }.toURI();
 
         data = new HashMap<String,String>() {{
             put(DEVICE_MQTT_CHANNEL, OUTPUT_CHANNEL);
@@ -179,7 +195,25 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldRaiseAnExceptionIfDeviceIsUnknown() throws Exception {
-        destinationUri = new DeviceURIDealer() {}.toDeviceRouteURI(REGISTERED_TENANT_DOMAIN,"unknown_device");
+        destinationUri = new URIDealer(
+
+        ) {
+            @Override
+            public String getUriScheme() {
+                return Device.URI_SCHEME;
+            }
+
+            @Override
+            public String getContext() {
+                return REGISTERED_TENANT_DOMAIN;
+            }
+
+            @Override
+            public String getGuid() {
+                return "unknown_device";
+            }
+        }.toURI();
+
 
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage(

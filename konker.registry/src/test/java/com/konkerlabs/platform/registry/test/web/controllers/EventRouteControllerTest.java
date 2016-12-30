@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.Supplier;
 
+import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -162,31 +163,93 @@ public class EventRouteControllerTest extends WebLayerTestContext {
         routeData.add("transformation", routeForm.getTransformation());
         routeData.add("active", "true");
 
-        DeviceURIDealer deviceUriDealer = new DeviceURIDealer() {
+        URIDealer deviceURI = new URIDealer() {
+            @Override
+            public String getUriScheme() {
+                return EventRouteForm.URI_SCHEME;
+            }
+
+            @Override
+            public String getContext() {
+                return tenant.getDomainName();
+            }
+
+            @Override
+            public String getGuid() {
+                return routeForm.getOutgoing().getAuthorityId();
+            }
         };
-        SmsDestinationURIDealer smsURIDealer = new SmsDestinationURIDealer() {
+
+        URIDealer smsURI = new URIDealer() {
+            @Override
+            public String getUriScheme() {
+                return SmsDestination.URI_SCHEME;
+            }
+
+            @Override
+            public String getContext() {
+                return tenant.getDomainName();
+            }
+
+            @Override
+            public String getGuid() {
+                return routeForm.getOutgoing().getAuthorityId();
+            }
         };
-        RESTDestinationURIDealer restDestinationURIDealer = new RESTDestinationURIDealer() {
+
+        URIDealer restDestinationURI = new URIDealer() {
+            @Override
+            public String getUriScheme() {
+                return RestDestination.URI_SCHEME;
+            }
+
+            @Override
+            public String getContext() {
+                return tenant.getDomainName();
+            }
+
+            @Override
+            public String getGuid() {
+                return routeForm.getOutgoing().getAuthorityId();
+            }
         };
+
+
 
         Supplier<URI> outgoingUriSupplier = () -> {
             switch (routeForm.getOutgoingScheme()) {
                 case DEVICE_URI_SCHEME:
-                    return deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(), routeForm.getOutgoing().getAuthorityId());
+                    return deviceURI.toURI();
                 case SMS_URI_SCHEME:
-                    return smsURIDealer.toSmsURI(tenant.getDomainName(), routeForm.getOutgoing().getAuthorityId());
+                    return smsURI.toURI();
                 case REST_DESTINATION_URI_SCHEME:
-                    return restDestinationURIDealer.toRestDestinationURI(tenant.getDomainName(), routeForm.getOutgoing().getAuthorityId());
+                    return restDestinationURI.toURI();
                 default:
                     return null;
             }
         };
 
+
         EventRoute.EventRouteBuilder routeBuilder = EventRoute.builder()
                 .name(routeForm.getName())
                 .description(routeForm.getDescription())
                 .incoming(RouteActor.builder()
-                        .uri(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(), routeForm.getIncoming().getAuthorityId()))
+                        .uri(new URIDealer() {
+                            @Override
+                            public String getUriScheme() {
+                                return Device.URI_SCHEME;
+                            }
+
+                            @Override
+                            public String getContext() {
+                                return tenant.getDomainName();
+                            }
+
+                            @Override
+                            public String getGuid() {
+                                return routeForm.getIncoming().getAuthorityId();
+                            }
+                        }.toURI())
                         .data(routeForm.getIncoming().getAuthorityData())
                         .build())
                 .outgoing(RouteActor.builder()

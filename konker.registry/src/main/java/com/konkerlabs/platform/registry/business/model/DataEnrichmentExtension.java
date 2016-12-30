@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.business.model;
 
+import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.registry.business.model.enumerations.IntegrationType;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.utilities.validations.InterpolableURIValidator;
@@ -20,11 +21,12 @@ import java.util.Optional;
 @Document(collection = "dataEnrichmentExtensions")
 @Data
 @Builder
-public class DataEnrichmentExtension implements Validatable {
+public class DataEnrichmentExtension implements URIDealer, Validatable {
 
     public static final String URL = "URL";
     public static final String USERNAME = "User";
     public static final String PASSWORD = "Password";
+    public static final String URI_SCHEME = "dataenrichmentextension";
 
     public enum Validations {
         NAME_NULL("model.enrichment.name.not_null"),
@@ -66,6 +68,16 @@ public class DataEnrichmentExtension implements Validatable {
 
     @Singular
     private Map<String, String> parameters = new HashMap<>();
+
+    @Override
+    public String getUriScheme() {
+        return URI_SCHEME;
+    }
+
+    @Override
+    public String getContext() {
+        return getTenant() != null ? getTenant().getDomainName() : null;
+    }
 
     private boolean active;
 

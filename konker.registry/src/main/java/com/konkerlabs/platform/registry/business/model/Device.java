@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
+import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import lombok.experimental.Tolerate;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -17,7 +18,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.utilities.validations.api.Validatable;
 
@@ -27,11 +27,23 @@ import lombok.Data;
 @Data
 @Builder
 @Document(collection = "devices")
-public class Device implements DeviceURIDealer, Validatable, UserDetails {
+public class Device implements URIDealer, Validatable, UserDetails {
 
     private static final long serialVersionUID = -2667977827998418995L;
 
-    public enum Validations {
+	public static final String URI_SCHEME = "device";
+
+	@Override
+	public String getUriScheme() {
+		return URI_SCHEME;
+	}
+
+	@Override
+	public String getContext() {
+		return getTenant() != null ? getTenant().getDomainName() : null;
+	}
+
+	public enum Validations {
 		ID_NULL_EMPTY("model.device.id.not_null"),
 		ID_GREATER_THAN_EXPECTED("model.device.id.greater_than_expected"),
 		NAME_NULL_EMPTY("model.device.name.not_null"),
@@ -103,9 +115,6 @@ public class Device implements DeviceURIDealer, Validatable, UserDetails {
 //				.collect(Collectors.toList());
 //	}
 
-	public URI toURI() {
-		return toDeviceRouteURI(getTenant().getDomainName(),getGuid());
-	}
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {

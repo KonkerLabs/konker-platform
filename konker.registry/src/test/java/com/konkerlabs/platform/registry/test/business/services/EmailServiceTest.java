@@ -119,7 +119,8 @@ public class EmailServiceTest extends BusinessLayerTestSupport {
     
     @Test
     public void shouldSendAnEmail() throws Exception {
-    	ServiceResponse<Status> response = emailService.send(sender, receivers, receiversCopied, subject, body, Locale.ENGLISH);
+    	ServiceResponse<Status> response =
+                emailService.send(sender, receivers, receiversCopied, subject, body, Locale.ENGLISH);
     	
     	assertThat(response, isResponseOk());
     }

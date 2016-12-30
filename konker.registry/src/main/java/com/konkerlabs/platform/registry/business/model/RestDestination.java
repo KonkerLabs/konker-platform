@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry.business.model;
 
 import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
+import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.utilities.validations.InterpolableURIValidator;
 import com.konkerlabs.platform.utilities.validations.api.Validatable;
@@ -16,7 +17,7 @@ import java.util.*;
 @Data
 @Builder
 @Document(collection = "restDestinations")
-public class RestDestination implements RESTDestinationURIDealer, Validatable {
+public class RestDestination implements URIDealer, Validatable {
 
     public enum Validations {
         NAME_NULL("model.rest_destination.name.not_null"),
@@ -46,40 +47,54 @@ public class RestDestination implements RESTDestinationURIDealer, Validatable {
     private String servicePassword;
     private boolean active;
 
-    public Optional<Map<String,Object[]>> applyValidations() {
-        Map<String,Object[]> validations = new HashMap<>();
+    public static final String URI_SCHEME = "rest";
+
+
+    @Override
+    public String getUriScheme() {
+        return URI_SCHEME;
+    }
+
+    @Override
+    public String getContext() {
+        return getTenant() != null ? getTenant().getDomainName() : null;
+    }
+
+    @Override
+    public String getGuid() {
+        return guid;
+    }
+
+    public Optional<Map<String, Object[]>> applyValidations() {
+        Map<String, Object[]> validations = new HashMap<>();
 
         if (tenant == null) {
-            validations.put(CommonValidations.TENANT_NULL.getCode(),null);
+            validations.put(CommonValidations.TENANT_NULL.getCode(), null);
         }
 
         if ("".equals(Optional.ofNullable(getName()).orElse("").trim())) {
-            validations.put(Validations.NAME_NULL.getCode(),null);
+            validations.put(Validations.NAME_NULL.getCode(), null);
         }
 
         if ("".equals(Optional.ofNullable(getServiceURI()).orElse(""))) {
-            validations.put(Validations.URL_NULL.getCode(),null);
+            validations.put(Validations.URL_NULL.getCode(), null);
         } else {
             InterpolableURIValidator.to(getServiceURI())
-                .applyValidations()
-                .ifPresent(violations -> {
-                    validations.putAll(violations);
-                });
+                    .applyValidations()
+                    .ifPresent(violations -> {
+                        validations.putAll(violations);
+                    });
         }
 
         if (Optional.ofNullable(getServicePassword()).filter(s -> !s.isEmpty()).isPresent()) {
             if ("".equals(Optional.ofNullable(getServiceUsername()).orElse("").trim())) {
-                validations.put(Validations.SERVICE_USERNAME_WITHOUT_PASSWORD.getCode(),null);
+                validations.put(Validations.SERVICE_USERNAME_WITHOUT_PASSWORD.getCode(), null);
             }
         }
 
         if (!Optional.ofNullable(getGuid()).filter(s -> !s.isEmpty()).isPresent())
-            validations.put(Validations.GUID_NOT_EMPTY.getCode(),null);
+            validations.put(Validations.GUID_NOT_EMPTY.getCode(), null);
 
         return Optional.of(validations).filter(stringMap -> !stringMap.isEmpty());
-    }
-
-    public URI toURI() {
-        return toRestDestinationURI(Optional.ofNullable(tenant).map(Tenant::getDomainName).orElse(null), this.getGuid());
     }
 }

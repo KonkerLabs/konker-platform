@@ -4,6 +4,7 @@ import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
+import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.events.EventRepository;
 import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
@@ -98,7 +99,22 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
         tenant = tenantRepository.findByDomainName("konker");
         destination = destinationService.getByGUID(tenant, REGISTERED_AND_ACTIVE_DESTINATION_GUID).getResult();
 
-        destinationUri = new RESTDestinationURIDealer() {}.toRestDestinationURI(tenant.getDomainName(),destination.getGuid());
+        destinationUri = new URIDealer() {
+            @Override
+            public String getUriScheme() {
+                return RestDestination.URI_SCHEME;
+            }
+
+            @Override
+            public String getContext() {
+                return tenant.getDomainName();
+            }
+
+            @Override
+            public String getGuid() {
+                return destination.getGuid();
+            }
+        }.toURI();
 
         event = Event.builder()
 //                .channel(DEVICE_MQTT_CHANNEL)
@@ -145,9 +161,22 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldRaiseAnExceptionIfDestinationIsUnknown() throws Exception {
-        destinationUri = new RESTDestinationURIDealer() {}.toRestDestinationURI(
-            tenant.getDomainName(),"unknown_guid"
-        );
+        destinationUri = new URIDealer() {
+            @Override
+            public String getUriScheme() {
+                return RestDestination.URI_SCHEME;
+            }
+
+            @Override
+            public String getContext() {
+                return tenant.getDomainName();
+            }
+
+            @Override
+            public String getGuid() {
+                return "unknown_guid";
+            }
+        }.toURI();
 
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage(
@@ -159,9 +188,22 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldNotSendAnyEventThroughGatewayIfDestinationIsDisabled() throws Exception {
-        destinationUri = new RESTDestinationURIDealer() {}.toRestDestinationURI(
-                tenant.getDomainName(),REGISTERED_AND_INACTIVE_DESTINATION_GUID
-        );
+        destinationUri = new URIDealer() {
+            @Override
+            public String getUriScheme() {
+                return RestDestination.URI_SCHEME;
+            }
+
+            @Override
+            public String getContext() {
+                return tenant.getDomainName();
+            }
+
+            @Override
+            public String getGuid() {
+                return REGISTERED_AND_INACTIVE_DESTINATION_GUID;
+            }
+        }.toURI();
 
         subject.send(event,destinationUri,null,tenant);
 

@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry.business.model;
 
 import com.konkerlabs.platform.registry.business.model.behaviors.SmsDestinationURIDealer;
+import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 
 import lombok.Builder;
@@ -18,7 +19,7 @@ import java.util.regex.Pattern;
 @Data
 @Builder
 @Document(collection = "smsDestinations")
-public class SmsDestination implements SmsDestinationURIDealer {
+public class SmsDestination implements URIDealer {
 
     private static final Pattern PATTERN_INTERNACIONAL_PHONE_NUMBER = Pattern.compile("^\\+(?:[0-9] ?){6,14}[0-9]$");
 
@@ -52,6 +53,24 @@ public class SmsDestination implements SmsDestinationURIDealer {
     private boolean active;
     private String guid;
 
+    public static final String URI_SCHEME = "sms";
+
+    @Override
+    public String getUriScheme() {
+        return URI_SCHEME;
+    }
+
+    @Override
+    public String getContext() {
+        return getTenant() != null ? getTenant().getDomainName() : null;
+    }
+
+    @Override
+    public String getGuid() {
+        return guid;
+    }
+
+
     public Optional<Map<String, Object[]>> applyValidations() {
         Map<String, Object[]> validations = new HashMap<>();
 
@@ -74,9 +93,5 @@ public class SmsDestination implements SmsDestinationURIDealer {
         }
 
         return Optional.of(validations).filter(map -> !map.isEmpty());
-    }
-
-    public URI toURI() {
-        return toSmsURI(Optional.ofNullable(getTenant()).orElse(Tenant.builder().build()).getDomainName(),getGuid());
     }
 }

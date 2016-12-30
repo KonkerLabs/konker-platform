@@ -4,7 +4,7 @@ import java.net.URI;
 import java.text.MessageFormat;
 import java.util.Optional;
 
-public interface DeviceURIDealer {
+public interface DeviceURIDealer extends  URIDealer {
 
     String DEVICE_URI_SCHEME = "device";
     String DEVICE_ROUTE_URI_TEMPLATE = DEVICE_URI_SCHEME + "://{0}/{1}";
