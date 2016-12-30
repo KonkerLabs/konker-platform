@@ -36,6 +36,7 @@ public interface TokenService {
             return code;
         }
     }
+    ServiceResponse<Token> getToken(String token);
     ServiceResponse<String> generateToken(Purpose purpose, User user, TemporalAmount temporalAmount);
     ServiceResponse<Boolean> isValidToken(String token);
     ServiceResponse<Boolean> invalidateToken(String token);

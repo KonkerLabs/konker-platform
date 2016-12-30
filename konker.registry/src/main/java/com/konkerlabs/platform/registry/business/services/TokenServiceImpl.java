@@ -29,6 +29,25 @@ public class TokenServiceImpl implements TokenService {
     }
 
     @Override
+    public ServiceResponse<Token> getToken(String token) {
+        Token result = null;
+        if (token != null) {
+            result = _tokenRepository.findOne(token);
+            if (result != null) {
+                return ServiceResponseBuilder.<Token>ok().withResult(result).build();
+            } else {
+                return ServiceResponseBuilder.<Token>error()
+                        .withMessage(Validations.INVALID_TOKEN.getCode())
+                        .withResult(result).build();
+            }
+        } else {
+            return ServiceResponseBuilder.<Token>error()
+                    .withMessage(Validations.INVALID_TOKEN.getCode())
+                    .withResult(result).build();
+        }
+    }
+
+    @Override
     public ServiceResponse<String> generateToken(Purpose purpose, User user, TemporalAmount temporalAmount) {
         Token token;
         if (user != null && purpose != null && temporalAmount != null &&
