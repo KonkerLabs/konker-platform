@@ -126,7 +126,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 @Override
                 public boolean isPasswordValid(String encPass, String rawPass, Object salt) {
                     try {
-                        return new PasswordManager().validatePassword(rawPass, encPass);
+                        Boolean result = new PasswordManager().validatePassword(rawPass, encPass);
+                        return result;
                     } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
                         LOGGER.error(e.getMessage(), e);
                         return false;
@@ -134,17 +135,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 }
             });
             auth.authenticationProvider(authenticationProvider);
-
         }
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
-            http.headers().frameOptions().sameOrigin().and().authorizeRequests().antMatchers("/resources/**")
+            http.headers().frameOptions().sameOrigin().and().authorizeRequests()
+                    .antMatchers("/resources/**", "/recoverpassword")
                     .permitAll().anyRequest().hasAuthority("LOGIN").and().formLogin()
                     .loginPage(securityConfig.getString("loginPage"))
                     .defaultSuccessUrl(securityConfig.getString("successLoginUrl")).permitAll().and().logout()
                     .logoutSuccessUrl(securityConfig.getString("loginPage")).and().csrf().disable();
         }
+
 
         @Bean
         @Override

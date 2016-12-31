@@ -64,7 +64,7 @@
 			                    	<label class="sr-only" for="form-password">Password</label>
 			                        <input type="password" name="password" th:placeholder="#{login.password.placeholder}" 
 			                        	   class="form-password form-control" id="form-password" />
-			                       	<a id="recoverPassword" href="#"><span data-th-text="#{user.forgot.password}">Forgot password</span></a>
+			                       	<a id="recovery-password" th:href="@{/recoverpassword}"><span data-th-text="#{user.forgot.password}">Forgot password</span></a>
 			                    </div>
 			                    <div class="form-top-center" th:if="${param.error}" 
 						        		th:with="errorMsg=${session['SPRING_SECURITY_LAST_EXCEPTION'].message}">

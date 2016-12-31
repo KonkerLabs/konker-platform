@@ -17,10 +17,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -64,10 +61,17 @@ public class RecoverPasswordController implements ApplicationContextAware {
 
     private ApplicationContext applicationContext;
 
-    @RequestMapping(method = RequestMethod.GET)
-    public @ResponseBody Boolean sendEmailRecover(@RequestParam String email, 
-    							Locale locale) {
+	@RequestMapping(method = RequestMethod.GET)
+	public String recoveryPasswordPage() {
+		return "recover-password";
+	}
 
+	@RequestMapping(method = RequestMethod.POST)
+//	@RequestMapping(method = RequestMethod.GET)
+//    public @ResponseBody Boolean sendEmailRecover(@RequestParam String email,
+//    							Locale locale) {
+	public @ResponseBody Boolean sendEmailRecover(@RequestBody String email,
+												  Locale locale) {
     	if (!Optional.ofNullable(email).isPresent()) {
     		return Boolean.FALSE;
     	}
@@ -98,15 +102,14 @@ public class RecoverPasswordController implements ApplicationContextAware {
         return Boolean.TRUE;
     }
 
-    @RequestMapping(method = RequestMethod.POST)
-    public ModelAndView resetPassword(UserForm userForm,
-                             RedirectAttributes redirectAttributes,
-                             Locale locale) {
+//	@RequestMapping(method = RequestMethod.POST)
+//    public ModelAndView resetPassword(UserForm userForm,
+//                             RedirectAttributes redirectAttributes,
+//                             Locale locale) {
+//
+//        return new ModelAndView("redirect:/me");
+//    }
 
-        
-        return new ModelAndView("redirect:/me");
-    }
-    
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
