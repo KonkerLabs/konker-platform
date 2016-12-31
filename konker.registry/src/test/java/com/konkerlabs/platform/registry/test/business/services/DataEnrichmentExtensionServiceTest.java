@@ -1,8 +1,10 @@
 package com.konkerlabs.platform.registry.test.business.services;
 
 import com.konkerlabs.platform.registry.business.model.DataEnrichmentExtension;
+import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
+import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.registry.business.model.enumerations.IntegrationType;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.DataEnrichmentExtensionRepository;
@@ -96,7 +98,22 @@ public class DataEnrichmentExtensionServiceTest extends BusinessLayerTestSupport
                 .parameter(DataEnrichmentExtension.URL,"http://host/path")
                 .parameter(DataEnrichmentExtension.USERNAME,"")
                 .parameter(DataEnrichmentExtension.PASSWORD,"")
-                .incoming(new DeviceURIDealer(){}.toDeviceRouteURI(aTenant.getDomainName(),"xx")).build());
+                .incoming(new URIDealer() {
+                    @Override
+                    public String getUriScheme() {
+                        return Device.URI_SCHEME;
+                    }
+
+                    @Override
+                    public String getContext() {
+                        return aTenant.getDomainName();
+                    }
+
+                    @Override
+                    public String getGuid() {
+                        return "xx";
+                    }
+                }.toURI()).build());
 
         oldIncomingUri = new URI(OLD_INCOMING_URI);
         inexistentIncomingUri = new URI(INEXISTENT_INCOMING_URI);
@@ -142,10 +159,26 @@ public class DataEnrichmentExtensionServiceTest extends BusinessLayerTestSupport
 
     @Test
     public void shouldReturnErrorMessageIfContainerKeyIsDuplicatedWhenRegister() {
-        newDataEnrichmentExtension.setIncoming(new DeviceURIDealer(){}.toDeviceRouteURI(
-            aTenant.getDomainName(),
-            DEVICE_GUID_IN_USE
-        ));
+        newDataEnrichmentExtension.setIncoming(
+                new URIDealer(){
+
+                    @Override
+                    public String getUriScheme() {
+                        return Device.URI_SCHEME;
+                    }
+
+                    @Override
+                    public String getContext() {
+                        return  aTenant.getDomainName();
+                    }
+
+                    @Override
+                    public String getGuid() {
+                        return DEVICE_GUID_IN_USE;
+                    }
+                }.toURI()
+        );
+
         newDataEnrichmentExtension.setContainerKey(CONTAINER_KEY_IN_USE);
 
         ServiceResponse<DataEnrichmentExtension> response = service.register(aTenant, newDataEnrichmentExtension);

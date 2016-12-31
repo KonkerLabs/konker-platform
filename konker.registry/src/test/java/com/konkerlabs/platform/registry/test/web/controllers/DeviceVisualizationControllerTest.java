@@ -70,13 +70,13 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     private static final String TENANT_DOMAIN = "inmetrics.com";
     
     @Autowired
-    ApplicationContext applicationContext;
+	private ApplicationContext applicationContext;
     @Autowired
-    EventSchemaService eventSchemaService;
+	private EventSchemaService eventSchemaService;
     @Autowired
-    DeviceRegisterService deviceRegisterService;
+	private DeviceRegisterService deviceRegisterService;
     @Autowired
-    DeviceEventService deviceEventService;
+    private DeviceEventService deviceEventService;
     @Autowired
     private Tenant tenant;
     @Autowired

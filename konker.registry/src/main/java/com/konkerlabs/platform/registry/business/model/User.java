@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry.business.model;
 
 
+import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
 import com.konkerlabs.platform.registry.business.model.enumerations.Language;
 import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
@@ -24,7 +25,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Document(collection = "users")
 @Data
 @Builder
-public class User implements UserDetails {
+public class User implements URIDealer, UserDetails {
 
     @Id
     private String email;
@@ -44,9 +45,25 @@ public class User implements UserDetails {
 
     }
 
-
     @DBRef
     private List<Role> roles;
+
+    public static final String URI_SCHEME = "user";
+
+    @Override
+    public String getUriScheme() {
+        return URI_SCHEME;
+    }
+
+    @Override
+    public String getContext() {
+        return tenant.getDomainName();
+    }
+
+    @Override
+    public String getGuid() {
+        return email;
+    }
 
 
     @Override

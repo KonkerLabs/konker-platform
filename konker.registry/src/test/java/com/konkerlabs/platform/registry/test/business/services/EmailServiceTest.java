@@ -4,13 +4,7 @@ import static com.konkerlabs.platform.registry.test.base.matchers.ServiceRespons
 import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.isResponseOk;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -58,12 +52,12 @@ public class EmailServiceTest extends BusinessLayerTestSupport {
     private List<User> receivers;
     private List<User> receiversCopied;
     private Map<String, Object> templateParam = new HashMap<>();
-    
+
     @Before
     public void setUp() throws Exception {
     	receivers = userRepository.findAll();
     	receiversCopied = Arrays.asList(userRepository.findOne("admin@konkerlabs.com"));
-    	
+
     	templateParam.put("name", "Konker Labs");
     	templateParam.put("subscriptionDate", new Date());
     	templateParam.put("hobbies", Arrays.asList("Cinema", "Sports"));

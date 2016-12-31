@@ -14,14 +14,18 @@ import com.konkerlabs.platform.registry.web.converters.utils.ConverterUtils;
 @Component
 public class InstantToStringConverter implements Converter<Instant, String> {
 
-	@Autowired
-	private ConverterUtils utils;
+    @Autowired
+    private ConverterUtils utils;
 
-	@Override
-	public String convert(Instant source) {
-		ZonedDateTime zonedTime = source.atZone(ZoneId.of(utils.getUserZoneID()));
-		return zonedTime
-				.format(DateTimeFormatter.ofPattern(utils.getDateTimeFormatPattern(), utils.getCurrentLocale()));
-	}
+    @Override
+    public String convert(Instant source) {
+        ZonedDateTime zonedTime = source.atZone(ZoneId.of(utils.getUserZoneID()));
+        return zonedTime
+                .format(DateTimeFormatter.ofPattern(
+                        utils.getDateTimeFormatPattern(),
+                        utils.getCurrentLocale()
+                        )
+                );
+    }
 
 }

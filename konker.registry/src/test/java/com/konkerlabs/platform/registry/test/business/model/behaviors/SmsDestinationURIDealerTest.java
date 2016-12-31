@@ -1,6 +1,8 @@
 package com.konkerlabs.platform.registry.test.business.model.behaviors;
 
+import com.konkerlabs.platform.registry.business.model.SmsDestination;
 import com.konkerlabs.platform.registry.business.model.behaviors.SmsDestinationURIDealer;
+import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -17,13 +19,9 @@ public class SmsDestinationURIDealerTest {
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
-
-    String SMS_URI_SCHEME = "sms";
-    String SMS_URI_TEMPLATE = SMS_URI_SCHEME + "://{0}/{1}";
-
     private String guid;
     private URI uri;
-    private SmsDestinationURIDealer subject;
+    private URIDealer subject;
     private String tenantDomain;
 
     @Before
@@ -33,28 +31,46 @@ public class SmsDestinationURIDealerTest {
         guid = UUID.randomUUID().toString();
 
         uri = URI.create(
-            MessageFormat.format(SMS_URI_TEMPLATE,tenantDomain, guid)
+            MessageFormat.format(
+                    SmsDestination.URI_TEMPLATE,
+                    SmsDestination.URI_SCHEME, tenantDomain,
+                    guid)
         );
 
-        subject = new SmsDestinationURIDealer() {};
+        subject = new URIDealer() {
+            @Override
+            public String getUriScheme() {
+                return SmsDestination.URI_SCHEME;
+            }
+
+            @Override
+            public String getContext() {
+                return tenantDomain;
+            }
+
+            @Override
+            public String getGuid() {
+                return guid;
+            }
+        };
     }
     @Test
     public void shouldRaiseAnExceptionIfPhoneNumberIsNull() throws Exception {
         guid = null;
 
         thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("SMS GUID cannot be null or empty");
+        thrown.expectMessage("GUID cannot be null or empty");
 
-        subject.toSmsURI(tenantDomain, guid);
+        subject.toURI();
     }
     @Test
     public void shouldRaiseAnExceptionIfPhoneNumberIsEmpty() throws Exception {
         guid = "";
 
         thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("SMS GUID cannot be null or empty");
+        thrown.expectMessage("GUID cannot be null or empty");
 
-        subject.toSmsURI(tenantDomain, guid);
+        subject.toURI();
     }
 
     @Test
@@ -62,23 +78,23 @@ public class SmsDestinationURIDealerTest {
         tenantDomain = null;
 
         thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("SMS Destination tenant domain cannot be null or empty");
+        thrown.expectMessage("CONTEXT cannot be null or empty");
 
-        subject.toSmsURI(tenantDomain, guid);
+        subject.toURI();
     }
     @Test
     public void shouldRaiseAnExceptionIfTenantDomainIsEmpty() throws Exception {
         tenantDomain = "";
 
         thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("SMS Destination tenant domain cannot be null or empty");
+        thrown.expectMessage("CONTEXT cannot be null or empty");
 
-        subject.toSmsURI(tenantDomain, guid);
+        subject.toURI();
     }
 
     @Test
     public void shouldGenerateTheSmsURI() throws Exception {
-        assertThat(subject.toSmsURI(tenantDomain, guid),equalTo(uri));
+        assertThat(subject.toURI(),equalTo(uri));
     }
 
 }

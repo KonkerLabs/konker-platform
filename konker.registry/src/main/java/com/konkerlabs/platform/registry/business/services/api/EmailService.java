@@ -34,11 +34,11 @@ public interface EmailService {
         }
     }
 	
-	ServiceResponse<Status> send(String sender, 
-					List<User> recipients, 
-					List<User> recipientsCopied, 
-					String subject, 
-					String templateName, 
-					Map<String, Object> templateParam, 
+	ServiceResponse<Status> send(String sender,
+					List<User> recipients,
+					List<User> recipientsCopied,
+					String subject,
+					String templateName,
+					Map<String, Object> templateParam,
 					Locale locale) throws MessagingException;
 }

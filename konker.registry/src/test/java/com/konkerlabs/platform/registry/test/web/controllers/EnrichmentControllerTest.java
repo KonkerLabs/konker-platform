@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
+import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -80,7 +81,7 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
     private MockHttpServletRequest request;
 
     private Device incomingDevice;
-    private DeviceURIDealer deviceUriDealer;
+    private URIDealer deviceUriDealer;
     private DataEnrichmentExtension dataEnrichmentExtension;
     private ServiceResponse<List<DataEnrichmentExtension>> listServiceResponse;
     private ServiceResponse<DataEnrichmentExtension> serviceResponse;
@@ -97,6 +98,20 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
         
         incomingDevice = Device.builder().tenant(tenant).deviceId("1").build();
         deviceUriDealer = new DeviceURIDealer() {
+            @Override
+            public String getUriScheme() {
+                return DEVICE_URI_SCHEME;
+            }
+
+            @Override
+            public String getContext() {
+                return tenant.getDomainName();
+            }
+
+            @Override
+            public String getGuid() {
+                return "1";
+            }
         };
 
         enrichmentForm = new EnrichmentForm();
@@ -117,7 +132,7 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
         dataEnrichmentExtension = DataEnrichmentExtension.builder()
                 .name(enrichmentForm.getName())
                 .description(enrichmentForm.getDescription())
-                .incoming(deviceUriDealer.toDeviceRouteURI(tenant.getDomainName(), "1"))
+                .incoming(deviceUriDealer.toURI())
                 .type(IntegrationType.REST)
                 .parameters(enrichmentForm.getParameters())
                 .containerKey(enrichmentForm.getContainerKey())
@@ -177,7 +192,8 @@ public class EnrichmentControllerTest extends WebLayerTestContext {
                 .withMessage(exceptionMessage)
                 .<DataEnrichmentExtension>build());
 
-        when(dataEnrichmentExtensionService.register(eq(tenant), eq(dataEnrichmentExtension))).thenReturn(serviceResponse);
+        when(dataEnrichmentExtensionService.register(eq(tenant), eq(dataEnrichmentExtension)))
+                .thenReturn(serviceResponse);
 
         getMockMvc().perform(post("/enrichment/save").params(enrichmentData))
                 .andExpect(model().attribute("errors",

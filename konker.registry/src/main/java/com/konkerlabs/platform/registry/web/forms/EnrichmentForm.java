@@ -1,12 +1,16 @@
 package com.konkerlabs.platform.registry.web.forms;
 
+import java.net.URI;
+import java.text.MessageFormat;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
 import com.konkerlabs.platform.registry.business.model.DataEnrichmentExtension;
+import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
+import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.registry.business.model.enumerations.IntegrationType;
 import com.konkerlabs.platform.registry.web.forms.api.ModelBuilder;
 
@@ -15,7 +19,7 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(exclude={"tenantDomainSupplier"})
-public class EnrichmentForm implements ModelBuilder<DataEnrichmentExtension, EnrichmentForm, String>, DeviceURIDealer {
+public class EnrichmentForm implements ModelBuilder<DataEnrichmentExtension, EnrichmentForm, String>, URIDealer {
 
     private String id;
     private String name;
@@ -31,6 +35,29 @@ public class EnrichmentForm implements ModelBuilder<DataEnrichmentExtension, Enr
     }};
     private boolean active;
     private Supplier<String> tenantDomainSupplier;
+
+    public static final String URI_SCHEME = Device.URI_SCHEME;
+
+    @Override
+    public String getUriScheme() {
+        return URI_SCHEME;
+    }
+
+    @Override
+    public String getContext() {
+        return name;
+    }
+
+    @Override
+    public String getGuid() {
+        return id;
+    }
+
+    private URI toURI(String ctx, String guid) {
+        return URI.create(
+                MessageFormat.format(URI_TEMPLATE, getUriScheme(), ctx, guid)
+        );
+    }
     
     public EnrichmentForm() {
 		setActive(Boolean.TRUE);
@@ -50,7 +77,7 @@ public class EnrichmentForm implements ModelBuilder<DataEnrichmentExtension, Enr
                 .name(getName())
                 .type(IntegrationType.valueOf(getType()))
                 .description(getDescription())
-                .incoming(toDeviceRouteURI(tenantDomainSupplier.get(), getIncomingAuthority()))
+                .incoming(toURI(tenantDomainSupplier.get(), getIncomingAuthority()))
                 .containerKey(getContainerKey())
                 .parameters(getParameters())
                 .active(isActive())

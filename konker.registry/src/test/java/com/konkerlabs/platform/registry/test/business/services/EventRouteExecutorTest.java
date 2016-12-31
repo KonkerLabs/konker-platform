@@ -1,7 +1,9 @@
 package com.konkerlabs.platform.registry.test.business.services;
 
+import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
+import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteExecutor;
 import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
 import com.konkerlabs.platform.registry.test.base.*;
@@ -74,7 +76,22 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
                                 .channel("data")
                                 .deviceGuid(matchingRouteDeviceGuid).build()
                 ).timestamp(Instant.now()).payload(payload).build());
-        uri = new DeviceURIDealer() {}.toDeviceRouteURI(REGISTERED_TENANT_DOMAIN,matchingRouteDeviceGuid);
+        uri = new URIDealer() {
+            @Override
+            public String getUriScheme() {
+                return Device.URI_SCHEME;
+            }
+
+            @Override
+            public String getContext() {
+                return REGISTERED_TENANT_DOMAIN;
+            }
+
+            @Override
+            public String getGuid() {
+                return matchingRouteDeviceGuid;
+            }
+        }.toURI();
 
         when(
             httpGateway.request(

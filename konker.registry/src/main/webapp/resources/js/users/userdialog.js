@@ -1,20 +1,24 @@
 $('#recoverPassword').on('click', function(e) {
     e.preventDefault();
     var url = urlTo('/recoverpassword');
-    var email = $('input[name=username]').serialize();
+    var email = $('input[name=username]').val();
+    url = url + "?email=" + email;
     $.ajax({
         context : this,
         type : "GET",
         url : url,
         dataType: "html",
         timeout : 100000,
-        data: email,
         beforeSend : function() {
         },
         success : function(data) {
         	var result = jQuery.parseJSON(data);
         	
-        	$('#sendMailModal').modal('show');
+        	if (result == true) {
+        		$('#sendMailModal').modal('show');
+        	} else {
+        		$('#noExistUserModal').modal('show');
+        	}
 
         },
         complete : function() {

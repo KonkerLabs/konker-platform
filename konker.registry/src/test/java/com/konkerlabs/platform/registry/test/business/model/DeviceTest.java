@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -206,9 +207,22 @@ public class DeviceTest {
 
 	@Test
 	public void shouldGenerateItsOwnURI() throws Exception {
-        URI expected = new DeviceURIDealer() {}.toDeviceRouteURI(
-            device.getTenant().getDomainName(),device.getGuid()
-        );
+        URI expected = new URIDealer() {
+			@Override
+			public String getUriScheme() {
+				return Device.URI_SCHEME;
+			}
+
+			@Override
+			public String getContext() {
+				return device.getTenant().getDomainName();
+			}
+
+			@Override
+			public String getGuid() {
+				return device.getGuid();
+			}
+		}.toURI();
 
         assertThat(device.toURI(),equalTo(expected));
 	}

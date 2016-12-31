@@ -6,6 +6,9 @@ import static org.mockito.Mockito.when;
 import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
 import com.konkerlabs.platform.registry.business.model.enumerations.Language;
 import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
+import com.konkerlabs.platform.registry.config.WebMvcConfig;
+import com.konkerlabs.platform.registry.web.converters.utils.ConverterUtils;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,6 +23,8 @@ import com.konkerlabs.platform.registry.security.TenantUserDetailsService;
 import com.konkerlabs.platform.registry.security.UserContextResolver;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.SessionLocaleResolver;
+
+import java.util.Locale;
 
 @Configuration
 public class WebTestConfiguration {
@@ -79,4 +84,17 @@ public class WebTestConfiguration {
     public LocaleResolver localeResolver(){
         return new SessionLocaleResolver();
     }
+
+    @Bean
+    public ConverterUtils converterUtils(){
+        ConverterUtils converterUtils = Mockito.mock(ConverterUtils.class);
+        when(converterUtils.getUserZoneID()).thenReturn("America/Sao_Paulo");
+        when(converterUtils.getCurrentLocale()).thenReturn(
+                new Locale("pt", "BR")
+        );
+        when(converterUtils.getDateTimeFormatPattern())
+                .thenReturn("dd/MM/yyyy HH:mm:ss.SSS zzz");
+        return converterUtils;
+    }
+
 }

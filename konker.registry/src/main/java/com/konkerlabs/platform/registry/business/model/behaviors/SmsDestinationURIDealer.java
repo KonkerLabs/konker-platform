@@ -4,7 +4,7 @@ import java.net.URI;
 import java.text.MessageFormat;
 import java.util.Optional;
 
-public interface SmsDestinationURIDealer {
+public interface SmsDestinationURIDealer extends URIDealer {
 
     String SMS_URI_SCHEME = "sms";
     String SMS_URI_TEMPLATE = SMS_URI_SCHEME + "://{0}/{1}";

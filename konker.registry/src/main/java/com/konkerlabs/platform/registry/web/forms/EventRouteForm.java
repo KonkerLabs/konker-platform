@@ -1,17 +1,20 @@
 package com.konkerlabs.platform.registry.web.forms;
 
 import java.net.URI;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
 import com.konkerlabs.platform.registry.business.model.Transformation;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.SmsDestinationURIDealer;
+import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.registry.web.forms.api.ModelBuilder;
 
 import lombok.Data;
@@ -19,16 +22,14 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(exclude={"tenantDomainSupplier"})
-public class EventRouteForm implements ModelBuilder<EventRoute,EventRouteForm,String>,
-        DeviceURIDealer,
-        SmsDestinationURIDealer,
-        RESTDestinationURIDealer {
+public class EventRouteForm
+        implements ModelBuilder<EventRoute,EventRouteForm,String>, URIDealer {
 
     private String id;
     private String name;
     private String description;
     private EventRouteActorForm incoming = new EventRouteActorForm();
-    private String outgoingScheme = DeviceURIDealer.DEVICE_URI_SCHEME;
+    private String outgoingScheme = Device.URI_SCHEME;
     private EventRouteActorForm outgoing = new EventRouteActorForm();
     private String filteringExpression;
     private String transformation;
@@ -54,7 +55,7 @@ public class EventRouteForm implements ModelBuilder<EventRoute,EventRouteForm,St
                 .id(id)
                 .name(getName())
                 .description(getDescription())
-                .incoming(RouteActor.builder().uri(toDeviceRouteURI(tenantDomainSupplier.get(),
+                .incoming(RouteActor.builder().uri(toURI(URI_TEMPLATE, tenantDomainSupplier.get(),
                         getIncoming().getAuthorityId())).data(getIncoming().getAuthorityData()).build())
                 .outgoing(RouteActor.builder().uri(buildOutgoingURI()).data(getOutgoing().getAuthorityData()).build())
                 .filteringExpression(getFilteringExpression())
@@ -70,15 +71,34 @@ public class EventRouteForm implements ModelBuilder<EventRoute,EventRouteForm,St
     }
 
     private URI buildOutgoingURI() {
-        switch (getOutgoingScheme()) {
-            case DeviceURIDealer.DEVICE_URI_SCHEME : return
-                toDeviceRouteURI(tenantDomainSupplier.get(),getOutgoing().getAuthorityId());
-            case SmsDestinationURIDealer.SMS_URI_SCHEME : return
-                toSmsURI(tenantDomainSupplier.get(), getOutgoing().getAuthorityId());
-            case RESTDestinationURIDealer.REST_DESTINATION_URI_SCHEME : return
-                toRestDestinationURI(tenantDomainSupplier.get(),getOutgoing().getAuthorityId());
-            default: return null;
-        }
+        return toURI(
+                URI_TEMPLATE,
+                tenantDomainSupplier.get(),
+                getOutgoing().getAuthorityId()
+        );
+    }
+
+    private URI toURI(String tpl, String ctx, String guid) {
+        return URI.create(
+            MessageFormat.format(tpl, getUriScheme(), ctx, guid)
+        );
+    }
+
+    public static final String URI_SCHEME = Device.URI_SCHEME;
+
+    @Override
+    public String getUriScheme() {
+        return URI_SCHEME;
+    }
+
+    @Override
+    public String getContext() {
+        return name;
+    }
+
+    @Override
+    public String getGuid() {
+        return id;
     }
 
     @Override
