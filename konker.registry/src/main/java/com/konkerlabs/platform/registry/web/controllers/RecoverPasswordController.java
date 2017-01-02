@@ -29,6 +29,8 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.TokenService;
 import com.konkerlabs.platform.registry.business.services.api.UserService;
 import com.konkerlabs.platform.registry.web.forms.UserForm;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 
 
 @Controller()
@@ -37,6 +39,9 @@ import com.konkerlabs.platform.registry.web.forms.UserForm;
 public class RecoverPasswordController implements ApplicationContextAware {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(RecoverPasswordController.class);
+	
+	private static Config config = ConfigFactory.load().getConfig("email");
+	private static final String URL = config.getString("baseurl");
 
 	public enum Messages {
         USER_DOES_NOT_EXIST("controller.recover.user.does.not.exist");
@@ -87,7 +92,7 @@ public class RecoverPasswordController implements ApplicationContextAware {
     	ServiceResponse<String> responseToken = tokenService.generateToken(TokenService.Purpose.RESET_PASSWORD, user, Duration.ofMinutes(60));
     	
     	Map<String, Object> templateParam = new HashMap<>();
-    	templateParam.put("link", responseToken.getResult());
+    	templateParam.put("link", URL.concat(responseToken.getResult()));
     	templateParam.put("name", "Konker Labs");
     	templateParam.put("subscriptionDate", new Date());
     	templateParam.put("hobbies", Arrays.asList("Cinema", "Sports"));

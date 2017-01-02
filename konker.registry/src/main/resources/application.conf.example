@@ -101,4 +101,5 @@ email {
 	protocol="smtp"
 	username="noreply@seudominio.com"
 	password="admin123"
+	baseurl="http://localhost:8080/"
 }
