@@ -19,16 +19,16 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.services.api.EmailService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.TokenService;
 import com.konkerlabs.platform.registry.business.services.api.UserService;
-import com.konkerlabs.platform.registry.web.forms.UserForm;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
@@ -68,17 +68,14 @@ public class RecoverPasswordController implements ApplicationContextAware {
 
     private ApplicationContext applicationContext;
 
-	@RequestMapping(method = RequestMethod.GET)
+//	@RequestMapping(method = RequestMethod.GET)
 	public String recoveryPasswordPage() {
 		return "recover-password";
 	}
 
-	@RequestMapping(method = RequestMethod.POST)
-//	@RequestMapping(method = RequestMethod.GET)
-//    public @ResponseBody Boolean sendEmailRecover(@RequestParam String email,
-//    							Locale locale) {
-	public @ResponseBody Boolean sendEmailRecover(@RequestBody String email,
-												  Locale locale) {
+	@RequestMapping(method = RequestMethod.GET)
+    public @ResponseBody Boolean sendEmailRecover(@RequestParam String email,
+    							Locale locale) {
     	if (!Optional.ofNullable(email).isPresent()) {
     		return Boolean.FALSE;
     	}
