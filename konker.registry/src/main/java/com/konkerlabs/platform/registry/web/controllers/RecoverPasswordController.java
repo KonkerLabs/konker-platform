@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.web.controllers;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
@@ -18,12 +19,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Scope;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.konkerlabs.platform.registry.business.model.Token;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.services.api.EmailService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
@@ -68,33 +75,36 @@ public class RecoverPasswordController implements ApplicationContextAware {
 
     private ApplicationContext applicationContext;
 
-//	@RequestMapping(method = RequestMethod.GET)
+	@RequestMapping(method = RequestMethod.GET)
 	public String recoveryPasswordPage() {
 		return "recover-password";
 	}
 
-	@RequestMapping(method = RequestMethod.GET)
-    public @ResponseBody Boolean sendEmailRecover(@RequestParam String email,
+	@RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody Boolean sendEmailRecover(@RequestBody String body,
     							Locale locale) {
-    	if (!Optional.ofNullable(email).isPresent()) {
-    		return Boolean.FALSE;
-    	}
-    	
-    	ServiceResponse<User> response = userService.findByEmail(email);
-    	User user = response.getResult();
-    	if(!Optional.ofNullable(user).isPresent()) {
-    		return Boolean.FALSE;
-    	}
-    	
-    	ServiceResponse<String> responseToken = tokenService.generateToken(TokenService.Purpose.RESET_PASSWORD, user, Duration.ofMinutes(60));
-    	
-    	Map<String, Object> templateParam = new HashMap<>();
-    	templateParam.put("link", URL.concat(responseToken.getResult()));
-    	templateParam.put("name", "Konker Labs");
-    	templateParam.put("subscriptionDate", new Date());
-    	templateParam.put("hobbies", Arrays.asList("Cinema", "Sports"));
-    	
 		try {
+			HashMap<String, Object> mapEmail = new ObjectMapper().readValue(body, HashMap.class);
+			String email = (String) mapEmail.get("email");
+			
+			if (!Optional.ofNullable(email).isPresent()) {
+				return Boolean.FALSE;
+			}
+			
+			ServiceResponse<User> response = userService.findByEmail(email);
+			User user = response.getResult();
+			if(!Optional.ofNullable(user).isPresent()) {
+				return Boolean.FALSE;
+			}
+			
+			ServiceResponse<String> responseToken = tokenService.generateToken(TokenService.Purpose.RESET_PASSWORD, user, Duration.ofMinutes(60));
+			
+			Map<String, Object> templateParam = new HashMap<>();
+			templateParam.put("link", URL.concat("recoverpassword/").concat(responseToken.getResult()));
+			templateParam.put("name", "Konker Labs");
+			templateParam.put("subscriptionDate", new Date());
+			templateParam.put("hobbies", Arrays.asList("Cinema", "Sports"));
+			
 			emailService.send("no-reply@konkerlab.com", 
 					Collections.singletonList(user), 
 					Collections.emptyList(), 
@@ -102,20 +112,28 @@ public class RecoverPasswordController implements ApplicationContextAware {
 					"email-recover-pass", 
 					templateParam, 
 					locale);
-		} catch (MessagingException e) {
+		} catch (MessagingException | IOException e) {
 			LOGGER.equals(e);
 		}
     	
         return Boolean.TRUE;
     }
 
-//	@RequestMapping(method = RequestMethod.POST)
-//    public ModelAndView resetPassword(UserForm userForm,
-//                             RedirectAttributes redirectAttributes,
-//                             Locale locale) {
-//
-//        return new ModelAndView("redirect:/me");
-//    }
+	@RequestMapping(value = "/{token}", method = RequestMethod.GET)
+    public ModelAndView resetPassword(@PathVariable("token") String token,
+                             Locale locale) {
+		
+		ServiceResponse<Token> serviceResponse = tokenService.getToken(token);
+		
+		if (!Optional.ofNullable(serviceResponse).isPresent() || 
+				!Optional.ofNullable(serviceResponse.getResult()).isPresent() ||
+				serviceResponse.getResult().getIsExpired()) {
+			
+		}
+		
+		
+        return new ModelAndView("redirect:/login");
+    }
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
