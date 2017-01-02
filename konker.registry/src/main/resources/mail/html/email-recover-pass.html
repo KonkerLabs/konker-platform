@@ -8,6 +8,9 @@
         <p th:text="#{greeting(${name})}">
             Hello, Peter Static!
         </p>
+        <p th:text="#{${link}}">
+            Link
+        </p>
         <p th:if="${name.length() gt 10}">
             Wow! You've got a long name (more than 10 chars)! <br />
         </p>

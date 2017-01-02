@@ -57,7 +57,8 @@ public class EmailServiceTest extends BusinessLayerTestSupport {
     public void setUp() throws Exception {
     	receivers = userRepository.findAll();
     	receiversCopied = Arrays.asList(userRepository.findOne("admin@konkerlabs.com"));
-
+    	
+    	templateParam.put("link", "http://localhost:8080/8a4fd7bd-503e-4e4a-b85e-5501305c7a98");
     	templateParam.put("name", "Konker Labs");
     	templateParam.put("subscriptionDate", new Date());
     	templateParam.put("hobbies", Arrays.asList("Cinema", "Sports"));
