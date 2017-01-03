@@ -2,13 +2,16 @@ package com.konkerlabs.platform.registry.web.controllers;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.mail.MessagingException;
 
@@ -21,6 +24,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,6 +40,7 @@ import com.konkerlabs.platform.registry.business.services.api.EmailService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.TokenService;
 import com.konkerlabs.platform.registry.business.services.api.UserService;
+import com.konkerlabs.platform.registry.web.forms.UserForm;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
@@ -80,7 +85,7 @@ public class RecoverPasswordController implements ApplicationContextAware {
 		return "recover-password";
 	}
 
-	@RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "/email", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody Boolean sendEmailRecover(@RequestBody String body,
     							Locale locale) {
 		try {
@@ -120,20 +125,57 @@ public class RecoverPasswordController implements ApplicationContextAware {
     }
 
 	@RequestMapping(value = "/{token}", method = RequestMethod.GET)
-    public ModelAndView resetPassword(@PathVariable("token") String token,
-                             Locale locale) {
-		
+    public ModelAndView showResetPage(@PathVariable("token") String token,
+                             Locale locale) {		
 		ServiceResponse<Token> serviceResponse = tokenService.getToken(token);
 		
 		if (!Optional.ofNullable(serviceResponse).isPresent() || 
-				!Optional.ofNullable(serviceResponse.getResult()).isPresent() ||
-				serviceResponse.getResult().getIsExpired()) {
+				!Optional.ofNullable(serviceResponse.getResult()).isPresent()) {
 			
+			List<String> messages = serviceResponse.getResponseMessages()
+					.entrySet()
+					.stream()
+					.map(message -> applicationContext.getMessage(message.getKey(), message.getValue(), locale))
+					.collect(Collectors.toList());
+			
+			return new ModelAndView("reset-password")
+				.addObject("errors", messages)
+				.addObject("isExpired", true);
+		} 
+		
+		if (serviceResponse.getResult().getIsExpired()) {
+			List<String> messages = new ArrayList<>();
+			messages.add(applicationContext.getMessage(TokenService.Validations.EXPIRED_TOKEN.getCode(), null, locale));
+			
+			return new ModelAndView("reset-password")
+				.addObject("errors", messages)
+				.addObject("isExpired", true);
 		}
 		
+		ServiceResponse<User> responseUser = userService.findByEmail(serviceResponse.getResult().getUserEmail());
 		
-        return new ModelAndView("redirect:/login");
+        return new ModelAndView("reset-password")
+        		.addObject("user", responseUser.getResult());
     }
+	
+	@RequestMapping(method = RequestMethod.POST)
+	public ModelAndView resetPassword(@ModelAttribute("userForm") UserForm userForm, Locale locale) {
+		ServiceResponse<User> response = userService.findByEmail(userForm.getEmail());
+		
+		if (!Optional.ofNullable(response.getResult()).isPresent()) {
+			List<String> messages = new ArrayList<>();
+			messages.add(applicationContext.getMessage(Messages.USER_DOES_NOT_EXIST.getCode(), null, locale));
+			return new ModelAndView("reset-password")
+	        		.addObject("errors", messages);
+		}
+		
+		User user = response.getResult();
+		
+		userService.save(user, user.getPassword(), userForm.getNewPassword(), userForm.getNewPasswordConfirmation());
+		tokenService.invalidateToken(userForm.getToken());
+		
+		return new ModelAndView("redirect:/login");
+	}
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
