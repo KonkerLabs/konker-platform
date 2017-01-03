@@ -92,7 +92,10 @@ public class DeviceEventProcessorTest {
                         Event.EventActor.builder()
                                 .channel(incomingChannel)
                                 .deviceGuid("device_guid")
-                                .deviceId("device_id").build()
+                                .deviceId("device_id")
+                                .tenantDomain("tenantDomain")
+                                .build()
+
                 )
                 .payload(originalPayload)
                 .build();

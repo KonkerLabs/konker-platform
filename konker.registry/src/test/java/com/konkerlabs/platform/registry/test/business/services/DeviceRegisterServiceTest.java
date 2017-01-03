@@ -113,7 +113,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     @Test
     public void shouldReturnResponseMessagesIfTenantDoesNotExist() throws Exception {
         ServiceResponse<Device> serviceResponse = deviceRegisterService
-                .register(Tenant.builder().id("unknown_id").build(), device);
+                .register(Tenant.builder().id("unknown_id").domainName("unknown_domain").build(), device);
 
         assertThat(serviceResponse, hasErrorMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()));
     }

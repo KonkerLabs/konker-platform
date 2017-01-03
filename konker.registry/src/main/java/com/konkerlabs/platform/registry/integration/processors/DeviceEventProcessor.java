@@ -73,22 +73,29 @@ public class DeviceEventProcessor {
         Device device = Optional.ofNullable(deviceRegisterService.findByApiKey(apiKey))
                 .orElseThrow(() -> new BusinessException(Messages.DEVICE_NOT_FOUND.getCode()));
 
+        Event event = Event.builder()
+                .incoming(
+                        Event.EventActor.builder()
+                                .deviceGuid(device.getGuid())
+                                .channel(channel)
+                                .deviceId(device.getDeviceId())
+                                .tenantDomain(Optional.ofNullable(device.getTenant()).isPresent()
+                                        ? device.getTenant().getDomainName() : null)
+                                .build()
+                )
+                .payload(payload)
+                .build();
         if (device.isActive()) {
-            Event event = Event.builder()
-                    .incoming(
-                            Event.EventActor.builder()
-                                    .deviceGuid(device.getGuid())
-                                    .channel(channel)
-                                    .deviceId(device.getDeviceId())
-                                    .build()
-                    )
-                    .payload(payload)
-                    .build();
 
             ServiceResponse<Event> serviceResponse = enrichmentExecutor.enrich(event, device);
             switch (serviceResponse.getStatus()) {
                 case ERROR: {
-                    LOGGER.error(MessageFormat.format("Enrichment failed: [Device: {0}] - [Payload: {1}]", device.toURI(), payload));
+                    LOGGER.error(
+                            MessageFormat.format("Enrichment failed: [Device: {0}] - [Payload: {1}]",
+                                    device.toURI(),
+                                    payload),
+                            event.getIncoming().toURI()
+                    );
                     break;
                 }
                 case OK: {
@@ -103,14 +110,19 @@ public class DeviceEventProcessor {
             if (logResponse.isOk()) {
                 eventRouteExecutor.execute(event, device.toURI());
             } else {
-                LOGGER.error(MessageFormat.format("Could not log incoming message. Probably invalid payload.: [Device: {0}] - [Payload: {1}]", device.toURI(), payload));
+                LOGGER.error(MessageFormat.format("Could not log incoming message. Probably invalid payload.: [Device: {0}] - [Payload: {1}]",
+                        device.toURI(),
+                        payload),
+                        event.getIncoming().toURI()
+                );
                 throw new BusinessException(Messages.INVALID_PAYLOAD.getCode());
             }
 
         } else {
             LOGGER.debug(MessageFormat.format(EVENT_DROPPED,
                     device.toURI(),
-                    payload));
+                    payload),
+                    event.getIncoming().toURI());
         }
 
 

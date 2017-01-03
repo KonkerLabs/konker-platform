@@ -8,6 +8,8 @@
         </encoder>
     </appender>
 
+
+
     <!--<appender name="fileAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">-->
         <!--<file>${user.home}/file.log</file>-->
         <!--<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">-->
