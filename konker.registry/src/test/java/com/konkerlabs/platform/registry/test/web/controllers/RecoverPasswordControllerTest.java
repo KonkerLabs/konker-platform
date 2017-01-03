@@ -1,6 +1,6 @@
 package com.konkerlabs.platform.registry.test.web.controllers;
 
-import static org.mockito.Matchers.anyString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -8,8 +8,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
-import static org.hamcrest.Matchers.equalTo;
-
 
 import java.time.Duration;
 import java.time.Instant;
@@ -34,12 +32,18 @@ import org.springframework.util.MultiValueMap;
 
 import com.konkerlabs.platform.registry.business.model.Token;
 import com.konkerlabs.platform.registry.business.model.User;
+import com.konkerlabs.platform.registry.business.services.api.EmailService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.business.services.api.TokenService;
+import com.konkerlabs.platform.registry.business.services.api.UserService;
 import com.konkerlabs.platform.registry.business.services.api.UserService.Validations;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
 import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
 import com.konkerlabs.platform.registry.web.controllers.RecoverPasswordController;
+
+import groovy.transform.WithReadLock;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
@@ -68,7 +72,7 @@ public class RecoverPasswordControllerTest extends WebLayerTestContext {
 
     @Autowired
     CaptchaService captchaService;
-    
+
     @Autowired
     UserService userService;
     
@@ -220,7 +224,11 @@ public class RecoverPasswordControllerTest extends WebLayerTestContext {
     	when(userService.findByEmail("user@domain.com"))
     		.thenReturn(ServiceResponseBuilder.<User>ok()
     		.withResult(user).build());
-    	
+
+    	when(userService.save(user, "qwertyqwertyqwerty", "qwertyqwertyqwerty"))
+			.thenReturn(ServiceResponseBuilder.<User>ok()
+			.withResult(user).build());
+
 		getMockMvc().perform(post("/recoverpassword").params(userData))
     		.andDo(print())
 			.andExpect(view().name("redirect:/login"));

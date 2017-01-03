@@ -51,19 +51,38 @@ public class UserServiceImpl implements UserService {
 
         User fromStorage = userRepository.findOne(user.getEmail());
 
-        if (!Optional.ofNullable(fromStorage).isPresent() ||
-                !Optional.ofNullable(user.getEmail()).isPresent()
-                || !user.getEmail().equals(fromStorage.getEmail())) {
-            return ServiceResponseBuilder.<User>error()
-                    .withMessage(Validations.INVALID_USER_EMAIL.getCode())
-                    .build();
-        }
-
         if (!Optional.ofNullable(oldPassword).isPresent() ||
                 !Optional.ofNullable(newPassword).isPresent() ||
                 !Optional.ofNullable(newPasswordConfirmation).isPresent()) {
             return ServiceResponseBuilder.<User>error()
                     .withMessage(Validations.INVALID_PASSWORD_CONFIRMATION.getCode())
+                    .build();
+        }
+
+        if (!StringUtils.isEmpty(newPassword)) {
+            try {
+                validateOldPassword(oldPassword, fromStorage);
+            } catch (BusinessException e) {
+                return ServiceResponseBuilder.<User>error()
+                        .withMessage(e.getMessage())
+                        .build();
+
+            }
+        }
+
+        return save(user, newPassword, newPasswordConfirmation);
+
+    }
+    
+    @Override
+	public ServiceResponse<User> save(User user, String newPassword, String newPasswordConfirmation) {
+    	User fromStorage = userRepository.findOne(user.getEmail());
+
+        if (!Optional.ofNullable(fromStorage).isPresent() ||
+                !Optional.ofNullable(user.getEmail()).isPresent()
+                || !user.getEmail().equals(fromStorage.getEmail())) {
+            return ServiceResponseBuilder.<User>error()
+                    .withMessage(Validations.INVALID_USER_EMAIL.getCode())
                     .build();
         }
 
@@ -115,7 +134,7 @@ public class UserServiceImpl implements UserService {
 
         if (!StringUtils.isEmpty(newPassword)) {
             try {
-                validatePassword(user, fromStorage, oldPassword, newPassword, newPasswordConfirmation);
+                validatePassword(user, fromStorage, newPassword, newPasswordConfirmation);
             } catch (BusinessException e) {
                 return ServiceResponseBuilder.<User>error()
                         .withMessage(e.getMessage())
@@ -143,7 +162,10 @@ public class UserServiceImpl implements UserService {
             userRepository.save(fromStorage);
             Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
                     .ifPresent(authentication -> {
-                        fillFrom(fromStorage, (User) authentication.getPrincipal());
+                        User principal = (User) Optional.ofNullable(authentication.getPrincipal())
+                        		.filter(p -> !p.equals("anonymousUser")).orElse(User.builder().build());
+                        
+						fillFrom(fromStorage, principal);
                     });
 
             return ServiceResponseBuilder.<User>ok().withResult(fromStorage).build();
@@ -151,8 +173,7 @@ public class UserServiceImpl implements UserService {
             return ServiceResponseBuilder.<User>error()
                     .withMessage(Errors.ERROR_SAVE_USER.getCode()).build();
         }
-
-    }
+	}
 
 
     /**
@@ -195,12 +216,11 @@ public class UserServiceImpl implements UserService {
      * @param fromStorage
      * @throws BusinessException
      */
-    private void validatePassword(User fromForm, User fromStorage, String oldPassword,
+    private void validatePassword(User fromForm, User fromStorage,
                                   String newPassword,
                                   String newPasswordConfirmation
     ) throws BusinessException {
 
-        validateOldPassword(oldPassword, fromStorage);
         validatePasswordConfirmation(newPassword, newPasswordConfirmation);
         validatePasswordLenght(newPasswordConfirmation);
         validatePasswordPattern(fromForm.getUsername(), newPasswordConfirmation);
@@ -272,4 +292,5 @@ public class UserServiceImpl implements UserService {
 		User user = userRepository.findOne(email);
 		return ServiceResponseBuilder.<User>ok().withResult(user).build();
 	}
+
 }
