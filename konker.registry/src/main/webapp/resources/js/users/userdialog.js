@@ -30,4 +30,3 @@ $('#btnSend').on('click', function(e) {
         }
     });
 });
-});
