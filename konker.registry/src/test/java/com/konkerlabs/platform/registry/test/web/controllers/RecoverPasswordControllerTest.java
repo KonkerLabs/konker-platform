@@ -60,8 +60,8 @@ public class RecoverPasswordControllerTest extends WebLayerTestContext {
     private static final String USER_EMAIL = "user@testdomain.com";
     private static final String USER_EMAIL_INVALID = "common@testdomain.com";
     
-    private static final String JSON = "{\"email\" : \"user@testdomain.com\"}";
-    private static final String JSON_INVALID_USER = "{\"email\" : \"common@testdomain.com\"}";
+    private static final String JSON = "{\"email\" : \"user@testdomain.com\", \"recaptcha\" : \"abc123456\"}";
+    private static final String JSON_INVALID_USER = "{\"email\" : \"common@testdomain.com\", \"recaptcha\" : \"abc123456\"}";
 
     @Autowired
     ApplicationContext applicationContext;

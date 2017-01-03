@@ -1,9 +1,10 @@
 $('#btnSend').on('click', function(e) {
     e.preventDefault();
     var url = urlTo('/recoverpassword');
-    
+
+    var recaptcha = grecaptcha.getResponse();
     var email = $('input[name=username]').val();
-    var json = {"email" : email}
+    var json = {"email" : email, "recaptcha": recaptcha}
     
     $.ajax({
         context : this,
