@@ -1,7 +1,6 @@
 package com.konkerlabs.platform.registry.web.controllers;
 
 import java.io.*;
-import java.net.URLEncoder;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,11 +15,8 @@ import java.util.stream.Collectors;
 
 import javax.mail.MessagingException;
 
+import com.konkerlabs.platform.registry.business.services.api.*;
 import com.konkerlabs.platform.registry.web.forms.UserForm;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -36,10 +32,6 @@ import org.springframework.web.servlet.ModelAndView;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.konkerlabs.platform.registry.business.model.Token;
 import com.konkerlabs.platform.registry.business.model.User;
-import com.konkerlabs.platform.registry.business.services.api.EmailService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.TokenService;
-import com.konkerlabs.platform.registry.business.services.api.UserService;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
@@ -81,6 +73,9 @@ public class RecoverPasswordController implements ApplicationContextAware {
     @Autowired
     private TokenService tokenService;
 
+    @Autowired
+    private CaptchaService captchaService;
+
     private ApplicationContext applicationContext;
 
     @RequestMapping(method = RequestMethod.GET)
@@ -96,8 +91,7 @@ public class RecoverPasswordController implements ApplicationContextAware {
         try {
             requestMap = new ObjectMapper().readValue(body, HashMap.class);
             String recaptchaResponse = (String) requestMap.get("recaptcha");
-            recaptchaValidationMap = getRecaptchaValidationMap(
-                    secretKey, recaptchaResponse , host);
+            recaptchaValidationMap = captchaService.validateCaptcha(secretKey, recaptchaResponse , host).getResult();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -196,41 +190,5 @@ public class RecoverPasswordController implements ApplicationContextAware {
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
-    }
-
-    private Map<String, Object> getRecaptchaValidationMap(String secret, String response, String host) {
-        String charset = java.nio.charset.StandardCharsets.UTF_8.name();
-        String url = "https://www.google.com/recaptcha/api/siteverify";
-        String query = null;
-        try {
-            query = String.format("secret=%s&response=%s&remoteip=%s",
-                    URLEncoder.encode(secret, charset),
-                    URLEncoder.encode(response, charset),
-                    URLEncoder.encode(host, charset));
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-
-        HttpClient client = new DefaultHttpClient();
-        HttpPost post = new HttpPost(url + "?" + query);
-
-        HttpResponse httpResponse;
-        try {
-            httpResponse = client.execute(post);
-            BufferedReader bufferedReader = new BufferedReader(
-                    new InputStreamReader(httpResponse.getEntity().getContent()));
-
-            StringBuffer result = new StringBuffer();
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                result.append(line);
-            }
-
-            return new ObjectMapper().readValue(result.toString(), HashMap.class);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return Collections.emptyMap();
     }
 }

@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.test.web.controllers;
 
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -12,10 +13,9 @@ import static org.hamcrest.Matchers.equalTo;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
+import com.konkerlabs.platform.registry.business.services.api.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,18 +34,12 @@ import org.springframework.util.MultiValueMap;
 
 import com.konkerlabs.platform.registry.business.model.Token;
 import com.konkerlabs.platform.registry.business.model.User;
-import com.konkerlabs.platform.registry.business.services.api.EmailService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
-import com.konkerlabs.platform.registry.business.services.api.TokenService;
-import com.konkerlabs.platform.registry.business.services.api.UserService;
 import com.konkerlabs.platform.registry.business.services.api.UserService.Validations;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
 import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
 import com.konkerlabs.platform.registry.web.controllers.RecoverPasswordController;
-
-import groovy.transform.WithReadLock;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
@@ -71,6 +65,9 @@ public class RecoverPasswordControllerTest extends WebLayerTestContext {
     
     @Autowired
     TokenService tokenService;
+
+    @Autowired
+    CaptchaService captchaService;
     
     @Autowired
     UserService userService;
@@ -127,15 +124,22 @@ public class RecoverPasswordControllerTest extends WebLayerTestContext {
     
     @Test
     public void shouldReturnTrueIfUserEmailValid() throws Exception {
-    	when(userService.findByEmail(USER_EMAIL))
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", Boolean.TRUE);
+
+        when(captchaService.validateCaptcha(anyString(), anyString(), anyString()))
+                .thenReturn(ServiceResponseBuilder.<Map<String, Object>>ok()
+                        .withResult(response).build());
+
+        when(userService.findByEmail(USER_EMAIL))
     		.thenReturn(ServiceResponseBuilder.<User>ok()
     		.withResult(user).build());
     	
     	when(tokenService.generateToken(TokenService.Purpose.RESET_PASSWORD, user, Duration.ofMinutes(60)))
     		.thenReturn(ServiceResponseBuilder.<String>ok()
     		.withResult(token.getToken()).build());
-    	
-    	getMockMvc().perform(post("/recoverpassword/email")
+
+        getMockMvc().perform(post("/recoverpassword/email")
     			.contentType(MediaType.APPLICATION_JSON)
     			.content(JSON))
     		.andDo(print())
@@ -236,6 +240,11 @@ public class RecoverPasswordControllerTest extends WebLayerTestContext {
         @Bean
         public UserService userSer() {
         	return Mockito.mock(UserService.class);
+        }
+
+        @Bean
+        public CaptchaService captchaService() {
+            return Mockito.mock(CaptchaService.class);
         }
     }
 }
