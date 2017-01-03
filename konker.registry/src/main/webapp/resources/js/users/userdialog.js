@@ -1,6 +1,6 @@
 $('#btnSend').on('click', function(e) {
     e.preventDefault();
-    var url = urlTo('/recoverpassword');
+    var url = urlTo('/recoverpassword/email');
 
     var recaptcha = grecaptcha.getResponse();
     var email = $('input[name=username]').val();
@@ -30,10 +30,4 @@ $('#btnSend').on('click', function(e) {
         }
     });
 });
-
-
-$('#btnYes').click(function() {
-  	$('#removeItemModal').modal('hide');
-    $("input[type=hidden][name=_method]").val('delete');
-    $('form').submit();
 });

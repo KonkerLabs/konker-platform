@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.test.web.controllers;
 
+import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -7,8 +8,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
-import static org.hamcrest.Matchers.equalTo;
-
 
 import java.time.Duration;
 import java.time.Instant;
@@ -44,8 +43,6 @@ import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
 import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
 import com.konkerlabs.platform.registry.web.controllers.RecoverPasswordController;
-
-import groovy.transform.WithReadLock;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
@@ -105,6 +102,8 @@ public class RecoverPasswordControllerTest extends WebLayerTestContext {
     	userData.add("name", user.getName());
     	userData.add("username", user.getUsername());
     	userData.add("token", "8a4fd7bd-503e-4e4a-b85e-5501305c7a98");
+    	userData.add("newPassword", "qwertyqwertyqwerty");
+    	userData.add("newPasswordConfirmation", "qwertyqwertyqwerty");
     }
 
     @After
@@ -216,6 +215,10 @@ public class RecoverPasswordControllerTest extends WebLayerTestContext {
     	when(userService.findByEmail("user@domain.com"))
     		.thenReturn(ServiceResponseBuilder.<User>ok()
     		.withResult(user).build());
+    	
+    	when(userService.save(user, "qwertyqwertyqwerty", "qwertyqwertyqwerty"))
+			.thenReturn(ServiceResponseBuilder.<User>ok()
+			.withResult(user).build());
     	
 		getMockMvc().perform(post("/recoverpassword").params(userData))
     		.andDo(print())
