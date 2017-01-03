@@ -1,7 +1,6 @@
 package com.konkerlabs.platform.registry.web.controllers;
 
 import java.io.*;
-import java.net.URLEncoder;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -103,7 +102,7 @@ public class RecoverPasswordController implements ApplicationContextAware {
     		requestMap = new ObjectMapper().readValue(body, HashMap.class);
     		String recaptchaResponse = (String) requestMap.get("recaptcha");
     		recaptchaValidationMap = captchaService.validateCaptcha(
-    				secretKey, recaptchaResponse , host);
+    				secretKey, recaptchaResponse , host).getResult();
     	} catch (IOException e) {
     		e.printStackTrace();
     	}

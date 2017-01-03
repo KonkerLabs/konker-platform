@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry.test.web.controllers;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -214,24 +215,24 @@ public class RecoverPasswordControllerTest extends WebLayerTestContext {
     		.andDo(print())
 			.andExpect(model().attribute("errors", equalTo(errors)));
     }
-    
+
     @Test
     public void shouldResetPassword() throws Exception {
-    	when(tokenService.getToken("8a4fd7bd-503e-4e4a-b85e-5501305c7a98"))
-			.thenReturn(ServiceResponseBuilder.<Token>ok()
-			.withResult(token).build());
-    	
-    	when(userService.findByEmail("user@domain.com"))
-    		.thenReturn(ServiceResponseBuilder.<User>ok()
-    		.withResult(user).build());
+        when(tokenService.getToken("8a4fd7bd-503e-4e4a-b85e-5501305c7a98"))
+                .thenReturn(ServiceResponseBuilder.<Token>ok()
+                        .withResult(token).build());
 
-    	when(userService.save(user, "qwertyqwertyqwerty", "qwertyqwertyqwerty"))
-			.thenReturn(ServiceResponseBuilder.<User>ok()
-			.withResult(user).build());
+        when(userService.findByEmail("user@domain.com"))
+                .thenReturn(ServiceResponseBuilder.<User>ok()
+                        .withResult(user).build());
 
-		getMockMvc().perform(post("/recoverpassword").params(userData))
-    		.andDo(print())
-			.andExpect(view().name("redirect:/login"));
+        when(userService.save(user, "qwertyqwertyqwerty", "qwertyqwertyqwerty"))
+                .thenReturn(ServiceResponseBuilder.<User>ok()
+                        .withResult(user).build());
+
+        getMockMvc().perform(post("/recoverpassword").params(userData))
+                .andDo(print())
+                .andExpect(view().name("redirect:/login"));
     }
     
     @Configuration
