@@ -27,6 +27,13 @@ import com.konkerlabs.platform.registry.business.services.api.UserNotificationSe
 @Scope(scopeName = "request")
 public class UserNotificationController {
 
+    /**
+     * This class is a wrapper over the user notification meant to expose 
+     * only attributes related to the header of the messagem via JSON
+     *  
+     * @author wmariusso
+     *
+     */
     private static class UserNotificationHeaderDecoration {
         protected UserNotification un;
         protected User user;
@@ -68,6 +75,13 @@ public class UserNotificationController {
         }
     }
 
+    /**
+     * This is a wrapper over the UserNotification meant to expose only relevant
+     * attributes via JSON
+     * 
+     * @author wmariusso
+     *
+     */
     private static class UserNotificationDecoration extends UserNotificationHeaderDecoration {
         public UserNotificationDecoration(UserNotification un, User u) {
             super(un, u);
@@ -89,6 +103,18 @@ public class UserNotificationController {
     @Autowired
     private UserNotificationService userNotificationService;
 
+    
+    /**
+     * This is the only method on this class that produces HTML. It delivers the HTML template used to
+     * build the page. All the other methods return JSON.
+     * @return
+     */
+    @RequestMapping(value = "", method = RequestMethod.GET)
+    public ModelAndView index() {
+        return new ModelAndView("notifications/index").addObject("messageCount", userNotificationService.findAll(user).getResult().size());
+    }
+
+    
     @RequestMapping(value = "", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody List<UserNotificationHeaderDecoration> list(
             @RequestParam(name = "unreadOnly", defaultValue = "false", required = false) Boolean unreadOnly,
@@ -131,16 +157,12 @@ public class UserNotificationController {
                 return UserNotificationDecoration.decorate(userNotificationService.markUnread(user, uuid).getResult(),
                         user);
             } else {
-                    return UserNotificationDecoration.decorate(userNotificationService.markRead(user, uuid).getResult(),
-                            user);
+                return UserNotificationDecoration.decorate(userNotificationService.markRead(user, uuid).getResult(),
+                        user);
             }
         } else {
             return null;
         }
     }
 
-    @RequestMapping(value = "", method = RequestMethod.GET)
-    public ModelAndView index() {
-        return new ModelAndView("notifications/index");
-    }
 }
