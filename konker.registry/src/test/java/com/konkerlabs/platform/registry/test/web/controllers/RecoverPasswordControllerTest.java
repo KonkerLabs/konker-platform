@@ -25,6 +25,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -54,6 +55,7 @@ import groovy.transform.WithReadLock;
         SecurityTestConfiguration.class,
         RecoverPasswordControllerTest.RecoverTestContextConfig.class
 })
+@ActiveProfiles("email")
 public class RecoverPasswordControllerTest extends WebLayerTestContext {
 
     private static final String USER_EMAIL = "user@testdomain.com";
