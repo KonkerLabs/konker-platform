@@ -121,7 +121,7 @@ public class RecoverPasswordController implements ApplicationContextAware {
     				return Boolean.FALSE;
     			}
 
-    			ServiceResponse<String> responseToken = tokenService.generateToken(TokenService.Purpose.RESET_PASSWORD, user, Duration.ofMinutes(60));
+    			ServiceResponse<String> responseToken = tokenService.generateToken(TokenService.Purpose.RESET_PASSWORD, user, Duration.ofMinutes(15));
 
     			Map<String, Object> templateParam = new HashMap<>();
     			templateParam.put("link", URL.concat("recoverpassword/").concat(responseToken.getResult()));

@@ -12,9 +12,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
-import com.konkerlabs.platform.registry.business.services.api.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,6 +37,7 @@ import org.springframework.util.MultiValueMap;
 
 import com.konkerlabs.platform.registry.business.model.Token;
 import com.konkerlabs.platform.registry.business.model.User;
+import com.konkerlabs.platform.registry.business.services.api.CaptchaService;
 import com.konkerlabs.platform.registry.business.services.api.EmailService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.TokenService;
@@ -44,8 +48,6 @@ import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
 import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
 import com.konkerlabs.platform.registry.web.controllers.RecoverPasswordController;
-
-import groovy.transform.WithReadLock;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
@@ -144,7 +146,7 @@ public class RecoverPasswordControllerTest extends WebLayerTestContext {
     		.thenReturn(ServiceResponseBuilder.<User>ok()
     		.withResult(user).build());
     	
-    	when(tokenService.generateToken(TokenService.Purpose.RESET_PASSWORD, user, Duration.ofMinutes(60)))
+    	when(tokenService.generateToken(TokenService.Purpose.RESET_PASSWORD, user, Duration.ofMinutes(15)))
     		.thenReturn(ServiceResponseBuilder.<String>ok()
     		.withResult(token.getToken()).build());
 
