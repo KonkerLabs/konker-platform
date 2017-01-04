@@ -4,6 +4,7 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
 import com.konkerlabs.platform.registry.business.model.enumerations.Language;
+import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
 import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
 import com.konkerlabs.platform.registry.web.forms.api.ModelBuilder;
 import com.typesafe.config.Config;
@@ -30,6 +31,7 @@ public class UserForm implements ModelBuilder<User,UserForm,Void> {
     private TimeZone zoneId;
     private String avatar;
     private DateFormat dateFormat;
+    private LogLevel logLevel;
     private Tenant tenant;
     private static Config config = ConfigFactory.load().getConfig("cdn");
     public static String DEFAULT_AVATAR = "/resources/konker/images/default-avatat.jpeg";
@@ -71,6 +73,7 @@ public class UserForm implements ModelBuilder<User,UserForm,Void> {
         this.setZoneId(model.getZoneId());
         this.setEmail(model.getEmail());
         this.setTenant(model.getTenant());
+        this.setLogLevel(model.getTenant().getLogLevel());
         this.setAvatarUploadEnabled(Boolean.parseBoolean(config.getString("enabled")));
         return this;
     }

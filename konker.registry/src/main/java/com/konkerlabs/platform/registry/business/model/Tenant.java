@@ -1,10 +1,12 @@
 package com.konkerlabs.platform.registry.business.model;
 
 import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
+import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import java.util.Optional;
 
 @Document(collection = "tenants")
 @Data
@@ -15,6 +17,7 @@ public class Tenant implements URIDealer {
     private String id;
     private String name;
     private String domainName;
+    private LogLevel logLevel = LogLevel.WARNING;
 
     public static final String URI_SCHEME = "tenant";
 
@@ -32,4 +35,9 @@ public class Tenant implements URIDealer {
     public String getGuid() {
         return id;
     }
+    
+	public LogLevel getLogLevel() {
+		return Optional.ofNullable(logLevel).orElse(LogLevel.WARNING);
+	}
+
 }
