@@ -106,6 +106,8 @@ public class RecoverPasswordControllerTest extends WebLayerTestContext {
     	userData.add("email", user.getEmail());
     	userData.add("name", user.getName());
     	userData.add("username", user.getUsername());
+    	userData.add("newPassword", "qwertyqwertyqwerty");
+    	userData.add("newPasswordConfirmation", "qwertyqwertyqwerty");
     	userData.add("token", "8a4fd7bd-503e-4e4a-b85e-5501305c7a98");
     }
 
