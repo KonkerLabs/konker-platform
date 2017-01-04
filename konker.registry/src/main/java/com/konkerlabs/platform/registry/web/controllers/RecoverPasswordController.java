@@ -1,6 +1,6 @@
 package com.konkerlabs.platform.registry.web.controllers;
 
-import java.io.*;
+import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,14 +13,13 @@ import java.util.stream.Collectors;
 
 import javax.mail.MessagingException;
 
-import com.konkerlabs.platform.registry.business.services.api.*;
-import com.konkerlabs.platform.registry.web.forms.UserForm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -35,6 +34,7 @@ import org.springframework.web.servlet.ModelAndView;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.konkerlabs.platform.registry.business.model.Token;
 import com.konkerlabs.platform.registry.business.model.User;
+import com.konkerlabs.platform.registry.business.services.api.CaptchaService;
 import com.konkerlabs.platform.registry.business.services.api.EmailService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.TokenService;
@@ -47,6 +47,7 @@ import com.typesafe.config.ConfigFactory;
 @Controller()
 @Scope("request")
 @RequestMapping("/recoverpassword")
+@Profile("email")
 public class RecoverPasswordController implements ApplicationContextAware {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RecoverPasswordController.class);

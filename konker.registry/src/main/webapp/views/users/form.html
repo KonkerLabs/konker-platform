@@ -149,6 +149,7 @@
                                    data-th-placeholder="#{users.form.password-confirm.placeholder}"/>
                             <a id="recoverPassword" 
                             	th:href="@{/recoverpassword}" 
+                            	th:if="${@environment.getActiveProfiles().length != 0 && #lists.contains(@environment.getActiveProfiles(), 'email')}"
                             	href="#">
                             	<span data-th-text="#{user.forgot.password}">Forgot password</span>
                             </a>
