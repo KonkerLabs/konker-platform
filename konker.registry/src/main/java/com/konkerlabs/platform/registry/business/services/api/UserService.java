@@ -54,6 +54,10 @@ public interface UserService {
                                String password,
                                String newPassword,
                                String newPasswordConfirmation);
+    
+    ServiceResponse<User> save(User user,
+            String newPassword,
+            String newPasswordConfirmation);
 
     ServiceResponse<User> findByEmail(String email);
 }

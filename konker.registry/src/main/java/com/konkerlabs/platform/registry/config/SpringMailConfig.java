@@ -10,7 +10,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.core.env.Environment;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
@@ -71,7 +71,15 @@ public class SpringMailConfig implements ApplicationContextAware, EnvironmentAwa
         templateEngine.addTemplateResolver(textTemplateResolver());
         templateEngine.addTemplateResolver(htmlTemplateResolver());
         templateEngine.addTemplateResolver(stringTemplateResolver());
+        templateEngine.setTemplateEngineMessageSource(emailMessageSource());
         return templateEngine;
+	}
+	
+	@Bean
+	public ResourceBundleMessageSource emailMessageSource() {
+		ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
+		messageSource.setBasename("mail/MailMessages");
+		return messageSource;
 	}
 
 	private ITemplateResolver textTemplateResolver() {

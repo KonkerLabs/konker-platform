@@ -25,6 +25,7 @@ public class UserForm implements ModelBuilder<User,UserForm,Void> {
     private String oldPassword;
     private String newPassword;
     private String newPasswordConfirmation;
+    private String token;
     private Language language;
     private TimeZone zoneId;
     private String avatar;

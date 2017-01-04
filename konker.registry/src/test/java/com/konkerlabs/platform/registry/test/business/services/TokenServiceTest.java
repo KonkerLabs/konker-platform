@@ -103,7 +103,7 @@ public class TokenServiceTest extends BusinessLayerTestSupport {
     @Test
     public void shouldBeInvalidToken(){
         ServiceResponse<String> response = _tokenService.generateToken(
-                TokenService.Purpose.RESET_PASSWORD, _user, Duration.ofNanos((0)));
+                TokenService.Purpose.RESET_PASSWORD, _user, Duration.ofSeconds((-1)));
         Assert.assertTrue(_tokenService.isValidToken(response.getResult()).getStatus() == ServiceResponse.Status.ERROR);
 
         response = _tokenService.generateToken(

@@ -1,30 +1,20 @@
 package com.konkerlabs.platform.registry.test.web.controllers;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
-import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
-import com.konkerlabs.platform.registry.business.model.enumerations.Language;
-import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
-import com.konkerlabs.platform.registry.web.converters.utils.ConverterUtils;
+import com.konkerlabs.platform.registry.business.services.api.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,32 +24,27 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
-import com.fasterxml.jackson.databind.node.JsonNodeType;
-import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.Event.EventActor;
-import com.konkerlabs.platform.registry.business.model.EventSchema;
-import com.konkerlabs.platform.registry.business.model.EventSchema.SchemaField;
-import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.Token;
 import com.konkerlabs.platform.registry.business.model.User;
-import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.EmailService;
-import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.TokenService;
 import com.konkerlabs.platform.registry.business.services.api.UserService;
+import com.konkerlabs.platform.registry.business.services.api.UserService.Validations;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
-import com.konkerlabs.platform.registry.security.UserContextResolver;
 import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
 import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
-import org.springframework.web.servlet.LocaleResolver;
+import com.konkerlabs.platform.registry.web.controllers.RecoverPasswordController;
+
+import groovy.transform.WithReadLock;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
@@ -73,6 +58,9 @@ public class RecoverPasswordControllerTest extends WebLayerTestContext {
 
     private static final String USER_EMAIL = "user@testdomain.com";
     private static final String USER_EMAIL_INVALID = "common@testdomain.com";
+    
+    private static final String JSON = "{\"email\" : \"user@testdomain.com\", \"recaptcha\" : \"abc123456\"}";
+    private static final String JSON_INVALID_USER = "{\"email\" : \"common@testdomain.com\", \"recaptcha\" : \"abc123456\"}";
 
     @Autowired
     ApplicationContext applicationContext;
@@ -82,7 +70,10 @@ public class RecoverPasswordControllerTest extends WebLayerTestContext {
     
     @Autowired
     TokenService tokenService;
-    
+
+    @Autowired
+    CaptchaService captchaService;
+
     @Autowired
     UserService userService;
     
@@ -90,6 +81,8 @@ public class RecoverPasswordControllerTest extends WebLayerTestContext {
     private User user;
 
     private Token token;
+    private Token invalidToken;
+    private MultiValueMap<String, String> userData;
     
     @Before
     public void setUp() {
@@ -100,6 +93,20 @@ public class RecoverPasswordControllerTest extends WebLayerTestContext {
     				.token("8a4fd7bd-503e-4e4a-b85e-5501305c7a98")
     				.userEmail("user@testdomain.com")
     				.build();
+    	
+    	invalidToken = Token.builder()
+				.creationDateTime(Instant.now())
+				.isExpired(true)
+				.purpose(TokenService.Purpose.RESET_PASSWORD.name())
+				.token("8a4fd7bd-503e-4e4a-b85e-5501305c7a99")
+				.userEmail("user@testdomain.com")
+				.build();
+    	
+    	userData = new LinkedMultiValueMap<>();
+    	userData.add("email", user.getEmail());
+    	userData.add("name", user.getName());
+    	userData.add("username", user.getUsername());
+    	userData.add("token", "8a4fd7bd-503e-4e4a-b85e-5501305c7a98");
     }
 
     @After
@@ -113,24 +120,119 @@ public class RecoverPasswordControllerTest extends WebLayerTestContext {
     		.thenReturn(ServiceResponseBuilder.<User>error()
     		.withResult(null).build());
     	
-    	getMockMvc().perform(get("/recoverpassword").param("email", USER_EMAIL_INVALID))
+    	getMockMvc().perform(post("/recoverpassword/email")
+    			.contentType(MediaType.APPLICATION_JSON)
+    			.content(JSON_INVALID_USER))
     		.andDo(print())
     		.andExpect(content().string("false"));
     }
     
     @Test
     public void shouldReturnTrueIfUserEmailValid() throws Exception {
-    	when(userService.findByEmail(USER_EMAIL))
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", Boolean.TRUE);
+
+        when(captchaService.validateCaptcha(anyString(), anyString(), anyString()))
+                .thenReturn(ServiceResponseBuilder.<Map<String, Object>>ok()
+                        .withResult(response).build());
+
+        when(userService.findByEmail(USER_EMAIL))
     		.thenReturn(ServiceResponseBuilder.<User>ok()
     		.withResult(user).build());
     	
     	when(tokenService.generateToken(TokenService.Purpose.RESET_PASSWORD, user, Duration.ofMinutes(60)))
     		.thenReturn(ServiceResponseBuilder.<String>ok()
     		.withResult(token.getToken()).build());
-    	
-    	getMockMvc().perform(get("/recoverpassword").param("email", USER_EMAIL))
+
+        getMockMvc().perform(post("/recoverpassword/email")
+    			.contentType(MediaType.APPLICATION_JSON)
+    			.content(JSON))
     		.andDo(print())
     		.andExpect(content().string("true"));
+    }
+    
+    @Test
+    public void shouldRaiseAnExceptionIfTokenExpired() throws Exception {
+    	when(tokenService.getToken("8a4fd7bd-503e-4e4a-b85e-5501305c7a99"))
+			.thenReturn(ServiceResponseBuilder.<Token>ok()
+			.withResult(invalidToken).build());
+    	
+    	List<String> errors = new ArrayList<>();
+    	errors.add(applicationContext.getMessage(TokenService.Validations.EXPIRED_TOKEN.getCode(), null, Locale.ENGLISH));
+    	
+    	getMockMvc().perform(get("/recoverpassword/8a4fd7bd-503e-4e4a-b85e-5501305c7a99"))
+    		.andDo(print())
+			.andExpect(model().attribute("errors", equalTo(errors)))
+			.andExpect(model().attribute("isExpired", equalTo(true)));
+    }
+    
+    @Test
+    public void shouldRaiseAnExceptionIfTokenInvalid() throws Exception {
+    	when(tokenService.getToken("8a4fd7bd-503e-4e4a-b85e-5501305c7a99"))
+			.thenReturn(ServiceResponseBuilder.<Token>error()
+			.withMessage(TokenService.Validations.INVALID_TOKEN.getCode())		
+			.withResult(null).build());
+    	
+    	List<String> errors = new ArrayList<>();
+    	errors.add(applicationContext.getMessage(TokenService.Validations.INVALID_TOKEN.getCode(), null, Locale.ENGLISH));
+    	
+    	getMockMvc().perform(get("/recoverpassword/8a4fd7bd-503e-4e4a-b85e-5501305c7a99"))
+    		.andDo(print())
+			.andExpect(model().attribute("errors", equalTo(errors)))
+			.andExpect(model().attribute("isExpired", equalTo(true)));
+    }
+    
+    @Test
+    public void shouldShowResetPage() throws Exception {
+    	when(tokenService.getToken("8a4fd7bd-503e-4e4a-b85e-5501305c7a98"))
+			.thenReturn(ServiceResponseBuilder.<Token>ok()
+			.withResult(token).build());
+    	
+    	when(userService.findByEmail("user@testdomain.com"))
+    		.thenReturn(ServiceResponseBuilder.<User>ok()
+    		.withResult(user).build());
+    	
+    	
+    	getMockMvc().perform(get("/recoverpassword/8a4fd7bd-503e-4e4a-b85e-5501305c7a98"))
+    		.andDo(print())
+			.andExpect(model().attribute("user", equalTo(user)));
+    }
+    
+    @Test
+    public void shouldRaiseAnExceptionIfUserNotExists() throws Exception {
+    	when(tokenService.getToken("8a4fd7bd-503e-4e4a-b85e-5501305c7a98"))
+			.thenReturn(ServiceResponseBuilder.<Token>ok()
+			.withResult(token).build());
+    	
+    	when(userService.findByEmail("user@domain.com"))
+    		.thenReturn(ServiceResponseBuilder.<User>error()
+    		.withMessage(Validations.NO_EXIST_USER.getCode()).build());
+    	
+    	List<String> errors = new ArrayList<>();
+    	errors.add(applicationContext.getMessage(RecoverPasswordController.Messages.USER_DOES_NOT_EXIST.getCode(), null, Locale.ENGLISH));
+    	
+		getMockMvc().perform(post("/recoverpassword").params(userData))
+    		.andDo(print())
+			.andExpect(model().attribute("errors", equalTo(errors)));
+    }
+
+    @Test
+    public void shouldResetPassword() throws Exception {
+        when(tokenService.getToken("8a4fd7bd-503e-4e4a-b85e-5501305c7a98"))
+                .thenReturn(ServiceResponseBuilder.<Token>ok()
+                        .withResult(token).build());
+
+        when(userService.findByEmail("user@domain.com"))
+                .thenReturn(ServiceResponseBuilder.<User>ok()
+                        .withResult(user).build());
+
+        when(userService.save(user, "qwertyqwertyqwerty", "qwertyqwertyqwerty"))
+                .thenReturn(ServiceResponseBuilder.<User>ok()
+                        .withResult(user).build());
+
+        getMockMvc().perform(post("/recoverpassword").params(userData))
+                .andDo(print())
+                .andExpect(view().name("redirect:/login"));
     }
     
     @Configuration
@@ -147,6 +249,11 @@ public class RecoverPasswordControllerTest extends WebLayerTestContext {
         @Bean
         public UserService userSer() {
         	return Mockito.mock(UserService.class);
+        }
+
+        @Bean
+        public CaptchaService captchaService() {
+            return Mockito.mock(CaptchaService.class);
         }
     }
 }

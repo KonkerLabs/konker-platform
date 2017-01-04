@@ -140,7 +140,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         @Override
         protected void configure(HttpSecurity http) throws Exception {
             http.headers().frameOptions().sameOrigin().and().authorizeRequests()
-                    .antMatchers("/resources/**", "/recoverpassword")
+                    .antMatchers("/resources/**", "/recoverpassword/**")
                     .permitAll().anyRequest().hasAuthority("LOGIN").and().formLogin()
                     .loginPage(securityConfig.getString("loginPage"))
                     .defaultSuccessUrl(securityConfig.getString("successLoginUrl")).permitAll().and().logout()

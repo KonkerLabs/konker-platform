@@ -1,14 +1,19 @@
-$('#recoverPassword').on('click', function(e) {
+$('#btnSend').on('click', function(e) {
     e.preventDefault();
-    var url = urlTo('/recoverpassword');
+    var url = urlTo('/recoverpassword/email');
+
+    var recaptcha = grecaptcha.getResponse();
     var email = $('input[name=username]').val();
-    url = url + "?email=" + email;
+    var json = {"email" : email, "recaptcha": recaptcha}
+    
     $.ajax({
         context : this,
-        type : "GET",
+        type : "POST",
         url : url,
-        dataType: "html",
+        contentType: "application/json",
+        dataType: "json",
         timeout : 100000,
+        data: JSON.stringify(json),
         beforeSend : function() {
         },
         success : function(data) {
@@ -24,11 +29,4 @@ $('#recoverPassword').on('click', function(e) {
         complete : function() {
         }
     });
-});
-
-
-$('#btnYes').click(function() {
-  	$('#removeItemModal').modal('hide');
-    $("input[type=hidden][name=_method]").val('delete');
-    $('form').submit();
 });
