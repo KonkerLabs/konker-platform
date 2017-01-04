@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -33,6 +35,8 @@ public class DataEnrichmentExtensionServiceImpl extends AbstractURLBlacklistVali
 
 	@Autowired
 	private DataEnrichmentExtensionRepository repository;
+
+	private Logger LOG = LoggerFactory.getLogger(DataEnrichmentExtensionServiceImpl.class);
 
 	// @Autowired
 	// private MongoTemplate mongoTemplate;
@@ -78,6 +82,7 @@ public class DataEnrichmentExtensionServiceImpl extends AbstractURLBlacklistVali
 		Optional<Map<String, Object[]>> validations = dee.applyValidations();
 
 		if (validations.isPresent()) {
+			LOG.debug("Error registering dataenrichment", dee.toURI());
 			return ServiceResponseBuilder.<DataEnrichmentExtension> error().withMessages(validations.get()).build();
 		}
 

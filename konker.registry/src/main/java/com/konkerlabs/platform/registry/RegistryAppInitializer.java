@@ -32,6 +32,7 @@ import com.typesafe.config.ConfigFactory;
 public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
 
 	private static final Config smsConfig = ConfigFactory.load().getConfig("sms");
+	private static final Config emailConfig = ConfigFactory.load().getConfig("email");
 	private static final Logger LOGGER = LoggerFactory.getLogger(RegistryAppInitializer.class);
 
 	@Override
@@ -66,6 +67,9 @@ public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherSe
 		if (isSmsFeaturesEnabled()) {
             profiles.add("sms");
 		}
+		if (isEmailFeaturesEnabled()) {
+			profiles.add("email");
+		}
         servletContext.setInitParameter("spring.profiles.active", StringUtils.arrayToCommaDelimitedString(profiles.toArray()));
 	}
 
@@ -74,6 +78,20 @@ public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherSe
 
 		try {
 			isEnabled = Optional.ofNullable(smsConfig.getBoolean("enabled")).orElse(false);
+		} catch (ConfigException e) {
+			LOGGER.error(
+					"SMS configuration has no values for key 'enabled'. SMS features are being thoroughly disabled on the platform.",
+					e);
+		}
+		return isEnabled;
+
+	}
+	
+	private boolean isEmailFeaturesEnabled() {
+		boolean isEnabled = false;
+
+		try {
+			isEnabled = Optional.ofNullable(emailConfig.getBoolean("enabled")).orElse(false);
 		} catch (ConfigException e) {
 			LOGGER.error(
 					"SMS configuration has no values for key 'enabled'. SMS features are being thoroughly disabled on the platform.",

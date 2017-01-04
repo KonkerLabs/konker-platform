@@ -50,6 +50,7 @@ import com.konkerlabs.platform.registry.web.forms.DeviceVisualizationForm;
 @Scope("request")
 @RequestMapping(value = "visualization")
 public class DeviceVisualizationController implements ApplicationContextAware {
+
 	private static final Logger LOGGER = LoggerFactory.getLogger(DeviceVisualizationController.class);
 	
     public enum Messages {

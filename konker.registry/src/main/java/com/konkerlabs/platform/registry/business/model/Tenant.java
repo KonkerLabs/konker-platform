@@ -16,7 +16,7 @@ public class Tenant implements URIDealer {
     private String name;
     private String domainName;
 
-    public static final String URI_SCHEME = "smsdestination";
+    public static final String URI_SCHEME = "tenant";
 
     @Override
     public String getUriScheme() {

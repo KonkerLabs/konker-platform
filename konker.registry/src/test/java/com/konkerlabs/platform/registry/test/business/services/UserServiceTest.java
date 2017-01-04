@@ -91,7 +91,7 @@ public class UserServiceTest extends BusinessLayerTestSupport {
         Assert.assertNotNull(serviceResponse);
         assertThat(
                 serviceResponse,
-                hasErrorMessage(UserService.Validations.INVALID_USER_DETAILS.getCode()));
+                hasErrorMessage(UserService.Validations.INVALID_USER_EMAIL.getCode()));
     }
 
     @Test

@@ -12,9 +12,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
-import com.konkerlabs.platform.registry.business.services.api.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,6 +28,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -33,6 +37,7 @@ import org.springframework.util.MultiValueMap;
 
 import com.konkerlabs.platform.registry.business.model.Token;
 import com.konkerlabs.platform.registry.business.model.User;
+import com.konkerlabs.platform.registry.business.services.api.CaptchaService;
 import com.konkerlabs.platform.registry.business.services.api.EmailService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.TokenService;
@@ -44,8 +49,6 @@ import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
 import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
 import com.konkerlabs.platform.registry.web.controllers.RecoverPasswordController;
 
-import groovy.transform.WithReadLock;
-
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
 @ContextConfiguration(classes = {
@@ -54,6 +57,7 @@ import groovy.transform.WithReadLock;
         SecurityTestConfiguration.class,
         RecoverPasswordControllerTest.RecoverTestContextConfig.class
 })
+@ActiveProfiles("email")
 public class RecoverPasswordControllerTest extends WebLayerTestContext {
 
     private static final String USER_EMAIL = "user@testdomain.com";
@@ -106,6 +110,8 @@ public class RecoverPasswordControllerTest extends WebLayerTestContext {
     	userData.add("email", user.getEmail());
     	userData.add("name", user.getName());
     	userData.add("username", user.getUsername());
+    	userData.add("newPassword", "qwertyqwertyqwerty");
+    	userData.add("newPasswordConfirmation", "qwertyqwertyqwerty");
     	userData.add("token", "8a4fd7bd-503e-4e4a-b85e-5501305c7a98");
     }
 
@@ -129,18 +135,15 @@ public class RecoverPasswordControllerTest extends WebLayerTestContext {
     
     @Test
     public void shouldReturnTrueIfUserEmailValid() throws Exception {
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", Boolean.TRUE);
-
         when(captchaService.validateCaptcha(anyString(), anyString(), anyString()))
-                .thenReturn(ServiceResponseBuilder.<Map<String, Object>>ok()
-                        .withResult(response).build());
+                .thenReturn(ServiceResponseBuilder.<Boolean>ok()
+                        .withResult(Boolean.TRUE).build());
 
         when(userService.findByEmail(USER_EMAIL))
     		.thenReturn(ServiceResponseBuilder.<User>ok()
     		.withResult(user).build());
     	
-    	when(tokenService.generateToken(TokenService.Purpose.RESET_PASSWORD, user, Duration.ofMinutes(60)))
+    	when(tokenService.generateToken(TokenService.Purpose.RESET_PASSWORD, user, Duration.ofMinutes(15)))
     		.thenReturn(ServiceResponseBuilder.<String>ok()
     		.withResult(token.getToken()).build());
 

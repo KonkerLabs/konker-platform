@@ -22,6 +22,8 @@ import com.konkerlabs.platform.security.managers.PasswordManager;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.apache.commons.codec.binary.Base64OutputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -54,6 +56,8 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
     @Autowired @Qualifier("mongoEvents")
     private EventRepository eventRepository;
 
+    private Logger LOGGER = LoggerFactory.getLogger(DeviceRegisterServiceImpl.class);
+
     public Config publicServerConfig = ConfigFactory.load().getConfig("pubServer");
 
     @Autowired
@@ -62,25 +66,37 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
     @Override
     public ServiceResponse<Device> register(Tenant tenant, Device device) {
 
-        if (!Optional.ofNullable(tenant).isPresent())
+        if (!Optional.ofNullable(tenant).isPresent()) {
+            LOGGER.debug(CommonValidations.TENANT_NULL.getCode(),
+                    Device.builder().guid("NULL").tenant(
+                            Tenant.builder().domainName("unknow_domain").build()).build().toURI());
             return ServiceResponseBuilder.<Device>error()
                     .withMessage(CommonValidations.TENANT_NULL.getCode(), null)
                     .build();
+        }
 
-        if (!Optional.ofNullable(device).isPresent())
+        if (!Optional.ofNullable(device).isPresent()) {
+            LOGGER.debug(CommonValidations.RECORD_NULL.getCode(),
+                    Device.builder().guid("NULL").tenant(tenant).build().toURI());
             return ServiceResponseBuilder.<Device>error()
                     .withMessage(CommonValidations.RECORD_NULL.getCode(), null)
                     .build();
+        }
 
-        if (!tenantRepository.exists(tenant.getId()))
+        if (!tenantRepository.exists(tenant.getId())) {
+            LOGGER.debug(CommonValidations.TENANT_DOES_NOT_EXIST.getCode(),
+                    Device.builder().guid("NULL").tenant(tenant).build().toURI());
             return ServiceResponseBuilder.<Device>error()
                     .withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode(), null)
                     .build();
+        }
 
         device.onRegistration();
         device.setGuid(UUID.randomUUID().toString());
 
         if (Optional.ofNullable(deviceRepository.findByApiKey(device.getApiKey())).isPresent()) {
+            LOGGER.debug(CommonValidations.GENERIC_ERROR.getCode(),
+                    Device.builder().guid("NULL").tenant(tenant).build().toURI());
             return ServiceResponseBuilder.<Device>error()
                     .withMessage(CommonValidations.GENERIC_ERROR.getCode(), null)
                     .build();
@@ -90,12 +106,15 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
         Optional<Map<String, Object[]>> validations = device.applyValidations();
 
-        if (validations.isPresent())
+        if (validations.isPresent()) {
             return ServiceResponseBuilder.<Device>error()
                     .withMessages(validations.get())
                     .build();
+        }
 
         if (deviceRepository.findByTenantIdAndDeviceId(tenant.getId(), device.getDeviceId()) != null) {
+            LOGGER.debug(Validations.DEVICE_ID_ALREADY_REGISTERED.getCode(),
+                    Device.builder().guid("NULL").tenant(tenant).build().toURI());
             return ServiceResponseBuilder.<Device>error()
                     .withMessage(Validations.DEVICE_ID_ALREADY_REGISTERED.getCode(), null)
                     .build();

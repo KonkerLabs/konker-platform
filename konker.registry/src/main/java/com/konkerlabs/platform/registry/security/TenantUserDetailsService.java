@@ -1,5 +1,7 @@
 package com.konkerlabs.platform.registry.security;
 
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.repositories.UserRepository;
 import com.konkerlabs.platform.registry.config.SecurityConfig;
 
@@ -25,9 +27,14 @@ public class TenantUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        LOGGER.info("Loading details for username " + email);
-        return Optional
-            .ofNullable(userRepository.findOne(Optional.of(email).orElse("").trim().toLowerCase()))
-            .orElseThrow(() -> new UsernameNotFoundException("authentication.credentials.invalid"));
+        User user = userRepository.findOne(Optional.of(email).orElse("").trim().toLowerCase());
+        if(user == null){
+            LOGGER.debug("User not found",
+                    User.builder().email(email).tenant(
+                            Tenant.builder().name("NOT_FOUND").domainName("NOT_FOUND").build()
+                    ).build().toURI());
+            throw new UsernameNotFoundException("authentication.credentials.invalid");
+        }
+        return user;
     }
 }

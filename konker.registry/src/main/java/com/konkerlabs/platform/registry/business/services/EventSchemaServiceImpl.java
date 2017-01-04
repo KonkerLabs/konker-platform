@@ -1,6 +1,8 @@
 package com.konkerlabs.platform.registry.business.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.konkerlabs.platform.registry.audit.KonkerLogger;
+import com.konkerlabs.platform.registry.audit.KonkerLoggerFactory;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.EventSchema;
@@ -11,6 +13,9 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 import com.mongodb.BasicDBObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
@@ -19,6 +24,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +47,10 @@ public class EventSchemaServiceImpl implements EventSchemaService {
 
     @Autowired
     private MongoTemplate mongoTemplate;
+
+    /*private KonkerLogger LOG = KonkerLoggerFactory.getLogger(EventSchemaServiceImpl.class);*/
+    private Logger LOG = LoggerFactory.getLogger(EventSchemaServiceImpl.class);
+
 
     @Override
     public ServiceResponse<EventSchema> appendIncomingSchema(Event event) {

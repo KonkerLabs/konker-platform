@@ -51,9 +51,21 @@ public class UserServiceImpl implements UserService {
 
         User fromStorage = userRepository.findOne(user.getEmail());
 
+        if (!Optional.ofNullable(fromStorage).isPresent() ||
+                !Optional.ofNullable(user.getEmail()).isPresent()
+                || !user.getEmail().equals(fromStorage.getEmail())) {
+
+            LOG.debug(Validations.INVALID_USER_EMAIL.getCode(), user, user);
+            return ServiceResponseBuilder.<User>error()
+                    .withMessage(Validations.INVALID_USER_EMAIL.getCode())
+                    .build();
+        }
+
         if (!Optional.ofNullable(oldPassword).isPresent() ||
                 !Optional.ofNullable(newPassword).isPresent() ||
                 !Optional.ofNullable(newPasswordConfirmation).isPresent()) {
+
+            LOG.debug(Validations.INVALID_PASSWORD_CONFIRMATION.getCode(), user, user);
             return ServiceResponseBuilder.<User>error()
                     .withMessage(Validations.INVALID_PASSWORD_CONFIRMATION.getCode())
                     .build();
@@ -73,7 +85,7 @@ public class UserServiceImpl implements UserService {
         return save(user, newPassword, newPasswordConfirmation);
 
     }
-    
+
     @Override
 	public ServiceResponse<User> save(User user, String newPassword, String newPasswordConfirmation) {
     	User fromStorage = userRepository.findOne(user.getEmail());
@@ -87,33 +99,45 @@ public class UserServiceImpl implements UserService {
         }
 
         if (!newPassword.equals(newPasswordConfirmation)) {
+            LOG.debug(Validations.INVALID_PASSWORD_CONFIRMATION.getCode(), user, user);
+
             return ServiceResponseBuilder.<User>error()
                     .withMessage(Validations.INVALID_PASSWORD_CONFIRMATION.getCode())
                     .build();
         }
 
         if (!Optional.ofNullable(user).isPresent()) {
+            LOG.debug(Validations.INVALID_USER_DETAILS.getCode(), user, user);
+
             return ServiceResponseBuilder.<User>error()
                     .withMessage(Validations.INVALID_USER_DETAILS.getCode())
                     .build();
         }
 
         if (!Optional.ofNullable(user.getName()).isPresent()) {
+            LOG.debug(Validations.INVALID_USER_NAME.getCode(), user, user);
+
             return ServiceResponseBuilder.<User>error()
                     .withMessage(Validations.INVALID_USER_NAME.getCode())
                     .build();
         }
         if (!Optional.ofNullable(user.getDateFormat()).isPresent()) {
+            LOG.debug(Validations.INVALID_USER_PREFERENCE_DATEFORMAT.getCode(), user, user);
+
             return ServiceResponseBuilder.<User>error()
                     .withMessage(Validations.INVALID_USER_PREFERENCE_DATEFORMAT.getCode())
                     .build();
         }
         if (!Optional.ofNullable(user.getZoneId()).isPresent()) {
+            LOG.debug(Validations.INVALID_USER_PREFERENCE_LOCALE.getCode(), user, user);
+
             return ServiceResponseBuilder.<User>error()
                     .withMessage(Validations.INVALID_USER_PREFERENCE_LOCALE.getCode())
                     .build();
         }
         if (!Optional.ofNullable(user.getLanguage()).isPresent()) {
+            LOG.debug(Validations.INVALID_USER_PREFERENCE_LANGUAGE.getCode(), user, user);
+
             return ServiceResponseBuilder.<User>error()
                     .withMessage(Validations.INVALID_USER_PREFERENCE_LANGUAGE.getCode())
                     .build();
@@ -148,12 +172,14 @@ public class UserServiceImpl implements UserService {
                 try {
                     user.setPassword(encodePassword(password));
                 } catch (Exception e) {
-                    LOG.error("Error encoding password for user " + user.getEmail());
+                    LOG.error("Error encoding password for user " + user.getEmail(), user, user);
                 }
             }
         });
 
         if (Optional.ofNullable(user.getPassword()).isPresent() && !user.getPassword().startsWith(PasswordManager.QUALIFIER)) {
+            LOG.debug(Errors.ERROR_SAVE_USER.getCode(), user, user);
+
             return ServiceResponseBuilder.<User>error()
                     .withMessage(Errors.ERROR_SAVE_USER.getCode()).build();
         }
@@ -164,12 +190,13 @@ public class UserServiceImpl implements UserService {
                     .ifPresent(authentication -> {
                         User principal = (User) Optional.ofNullable(authentication.getPrincipal())
                         		.filter(p -> !p.equals("anonymousUser")).orElse(User.builder().build());
-                        
+
 						fillFrom(fromStorage, principal);
                     });
 
             return ServiceResponseBuilder.<User>ok().withResult(fromStorage).build();
         } catch (Exception e) {
+            LOG.debug(Errors.ERROR_SAVE_USER.getCode(), user, user);
             return ServiceResponseBuilder.<User>error()
                     .withMessage(Errors.ERROR_SAVE_USER.getCode()).build();
         }

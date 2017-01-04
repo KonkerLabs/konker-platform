@@ -112,11 +112,14 @@ public class EventPublisherSms implements EventPublisher {
                 messageGateway.send(messageBody,destination.getResult().getPhoneNumber());
 //                eventRepository.saveIncoming(tenant, outgoingEvent);
             } catch (JsonProcessingException|IntegrationException e) {
-                LOGGER.error("Error sending SMS.", e);
+                LOGGER.error("Error sending SMS.",
+                        destination.getResult().toURI(),
+                        e);
             }
         } else {
             LOGGER.debug(
-                    MessageFormat.format(EVENT_DROPPED,destinationUri,outgoingEvent.getPayload())
+                    MessageFormat.format(EVENT_DROPPED,destinationUri,outgoingEvent.getPayload()),
+                    destination.getResult().toURI()
             );
         }
     }
