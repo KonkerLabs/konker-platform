@@ -26,7 +26,7 @@ import java.util.Optional;
 @Scope(BeanDefinition.SCOPE_SINGLETON)
 public class EnrichmentExecutorImpl implements EnrichmentExecutor {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EnrichmentExecutorImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(EnrichmentExecutorImpl.class);
 
     @Autowired
     private DataEnrichmentExtensionService dataEnrichmentExtensionService;
@@ -74,20 +74,29 @@ public class EnrichmentExecutorImpl implements EnrichmentExecutor {
 
                     Object containerKey = incomingPayloadMap.get(dee.getContainerKey());
                     if (!Optional.ofNullable(containerKey).isPresent()) {
-                        LOGGER.warn(MessageFormat.format("There is no container key [{0}] for device {1} in incoming payload: [{2}]. It will be created.",
+                        LOG.warn(MessageFormat.format("There is no container key [{0}] for device {1} in incoming payload: [{2}]. It will be created.",
                                 dee.getContainerKey(),
                                 device.getName(),
-                                containerKey));
+                                containerKey),
+                                Event.EventActor.builder().tenantDomain(
+                                        device.getTenant().getDomainName())
+                                        .deviceGuid(incomingEvent.getIncoming().getDeviceGuid()).build().toURI(),
+                                user);
+
                         containerKey = new String();
                         incomingPayloadMap.put(dee.getContainerKey(), containerKey);
                     }
 
                     if (!containerKey.toString().isEmpty()) {
-                        LOGGER.warn(MessageFormat.format("Overwriting container key [{0}] for device {1}. Original state: [{2}], substituted by: [{3}]",
+                        LOG.warn(MessageFormat.format("Overwriting container key [{0}] for device {1}. Original state: [{2}], substituted by: [{3}]",
                                 dee.getContainerKey(),
                                 device.getName(),
                                 containerKey,
-                                body));
+                                body),
+                                Event.EventActor.builder().tenantDomain(
+                                        device.getTenant().getDomainName())
+                                .deviceGuid(incomingEvent.getIncoming().getDeviceGuid()).build().toURI(),
+                                user);
                     }
 
                     incomingPayloadMap.put(dee.getContainerKey(), enrichmentResultMap);
@@ -95,6 +104,11 @@ public class EnrichmentExecutorImpl implements EnrichmentExecutor {
                     incomingEvent.setPayload(jsonParsingService.toJsonString(incomingPayloadMap));
 
                 } catch (Exception e) {
+                    LOG.error(MessageFormat.format("Error enrich incoming event", null),
+                            Event.EventActor.builder().tenantDomain(
+                                    device.getTenant().getDomainName())
+                                    .deviceGuid(incomingEvent.getIncoming().getDeviceGuid()).build().toURI(),
+                            user);
                     return ServiceResponseBuilder.<Event>error()
                             .withMessage(e.getMessage()).<Event>build();
                 }

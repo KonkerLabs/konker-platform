@@ -94,12 +94,14 @@ public class EventPublisherRest implements EventPublisher {
                 );
 //                eventRepository.saveIncoming(tenant,outgoingEvent);
             } catch (JsonProcessingException|IntegrationException e) {
-                LOGGER.error("Failed to forward event to its destination", e);
+                LOGGER.error("Failed to forward event to its destination",
+                        destination.getResult().toURI(),
+                        e);
             }
         } else {
             LOGGER.debug(
                     MessageFormat.format(EVENT_DROPPED,destinationUri,outgoingEvent.getPayload())
-            );
+            , destination.getResult().toURI());
         }
     }
 

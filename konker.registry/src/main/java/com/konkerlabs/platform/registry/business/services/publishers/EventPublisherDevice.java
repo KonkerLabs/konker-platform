@@ -88,10 +88,13 @@ public class EventPublisherDevice implements EventPublisher {
             ServiceResponse<Event> response = deviceEventService.logOutgoingEvent(outgoingDevice, outgoingEvent);
 
             if (!response.isOk())
-                LOGGER.error("Failed to forward event to its destination", response.getResponseMessages());
+                LOGGER.error("Failed to forward event to its destination",
+                        response.getResponseMessages(),
+                        outgoingEvent.getOutgoing().toURI());
         } else {
             LOGGER.debug(
-                    MessageFormat.format(EVENT_DROPPED, destinationUri, outgoingEvent.getPayload())
+                    MessageFormat.format(EVENT_DROPPED, destinationUri, outgoingEvent.getPayload()),
+                    outgoingDevice.toURI()
             );
         }
     }

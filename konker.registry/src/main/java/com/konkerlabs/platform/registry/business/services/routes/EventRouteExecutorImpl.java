@@ -85,12 +85,12 @@ public class EventRouteExecutorImpl implements EventRouteExecutor {
                         logEventFilterMismatch(event, eventRoute);
                     }
                 } catch (IOException e) {
-                    LOGGER.error("Error parsing JSON payload.", e);
+                    LOGGER.error("Error parsing JSON payload.", eventRoute.toURI(), e);
                 } catch (SpelEvaluationException e) {
                     LOGGER.error(MessageFormat
                             .format("Error evaluating, probably malformed, expression: \"{0}\". Message payload: {1} ",
                                     eventRoute.getFilteringExpression(),
-                                    incomingPayload), e);
+                                    incomingPayload), eventRoute.toURI(), e);
                 }
             }
         }
@@ -119,11 +119,13 @@ public class EventRouteExecutorImpl implements EventRouteExecutor {
 
     private void logEventFilterMismatch(Event event, EventRoute eventRoute) {
         LOGGER.debug(MessageFormat.format("Dropped route \"{0}\", not matching pattern with content \"{1}\". Message payload: {2} ",
-                eventRoute.getName(), eventRoute.getFilteringExpression(), event.getPayload()));
+                eventRoute.getName(), eventRoute.getFilteringExpression(), event.getPayload()),
+                eventRoute.toURI());
     }
 
     private void logEventWithInvalidTransformation(Event event, EventRoute eventRoute) {
         LOGGER.debug(MessageFormat.format("Dropped route \"{0}\" with invalid transformation. Message payload: {1} ",
-                eventRoute.getName(), event.getPayload()));
+                eventRoute.getName(), event.getPayload()),
+                eventRoute);
     }
 }

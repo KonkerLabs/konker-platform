@@ -80,16 +80,16 @@ public class EventTransformationServiceImpl implements EventTransformationServic
             else
                 return null;
         } catch (JsonProcessingException e) {
-            LOGGER.error("Malformed JSON",e);
+            LOGGER.error("Malformed JSON", e);
             return null;
         } catch (ParseException|EvaluationException e) {
-            LOGGER.error("Malformed URL template",e);
+            LOGGER.error("Malformed URL template", e);
             return null;
         } catch (IntegrationException e) {
-            LOGGER.error("Failed to request step URL",e);
+            LOGGER.error("Failed to request step URL", e);
             return null;
         } catch (URISyntaxException e) {
-            LOGGER.error("Failed to encode step URL",e);
+            LOGGER.error("Failed to encode step URL", e);
             return null;
         }
     }
