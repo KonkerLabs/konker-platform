@@ -97,17 +97,17 @@ public class RecoverPasswordController implements ApplicationContextAware {
 	@RequestMapping(value = "/email", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody Boolean sendEmailRecover(@RequestBody String body, Locale locale) {
     	Map<String, Object> requestMap = Collections.emptyMap();
-    	Map recaptchaValidationMap = Collections.emptyMap();
+		Boolean isValidCaptcha = Boolean.FALSE;
     	try {
     		requestMap = new ObjectMapper().readValue(body, HashMap.class);
     		String recaptchaResponse = (String) requestMap.get("recaptcha");
-    		recaptchaValidationMap = captchaService.validateCaptcha(
+			isValidCaptcha = captchaService.validateCaptcha(
     				secretKey, recaptchaResponse , host).getResult();
     	} catch (IOException e) {
     		e.printStackTrace();
     	}
 
-    	if (!recaptchaValidationMap.isEmpty() && !requestMap.isEmpty() && (Boolean) recaptchaValidationMap.get("success")) {
+    	if (!requestMap.isEmpty() && isValidCaptcha) {
     		try {
     			String email = (String) requestMap.get("email");
     			if (!Optional.ofNullable(email).isPresent()) {

@@ -129,12 +129,9 @@ public class RecoverPasswordControllerTest extends WebLayerTestContext {
     
     @Test
     public void shouldReturnTrueIfUserEmailValid() throws Exception {
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", Boolean.TRUE);
-
         when(captchaService.validateCaptcha(anyString(), anyString(), anyString()))
-                .thenReturn(ServiceResponseBuilder.<Map<String, Object>>ok()
-                        .withResult(response).build());
+                .thenReturn(ServiceResponseBuilder.<Boolean>ok()
+                        .withResult(Boolean.TRUE).build());
 
         when(userService.findByEmail(USER_EMAIL))
     		.thenReturn(ServiceResponseBuilder.<User>ok()
