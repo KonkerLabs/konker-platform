@@ -39,6 +39,7 @@ public class User implements URIDealer, UserDetails {
     private String avatar;
     private Language language = Language.PT_BR;
     private DateFormat dateFormat = DateFormat.YYYYMMDD;
+    private boolean notificationViaEmail;
 
     @Tolerate
     public User() {

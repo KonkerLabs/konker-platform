@@ -36,6 +36,7 @@ public class UserForm implements ModelBuilder<User,UserForm,Void> {
     private static Config config = ConfigFactory.load().getConfig("cdn");
     public static String DEFAULT_AVATAR = "/resources/konker/images/default-avatat.jpeg";
     private Boolean avatarUploadEnabled = Boolean.FALSE;
+    private boolean notificationViaEmail;
 
 
 
@@ -53,6 +54,7 @@ public class UserForm implements ModelBuilder<User,UserForm,Void> {
                 .zoneId(getZoneId())
                 .phone(getPhone())
                 .tenant(tenant)
+                .notificationViaEmail(isNotificationViaEmail())
                 .build();
     }
 
@@ -75,6 +77,7 @@ public class UserForm implements ModelBuilder<User,UserForm,Void> {
         this.setTenant(model.getTenant());
         this.setLogLevel(model.getTenant().getLogLevel());
         this.setAvatarUploadEnabled(Boolean.parseBoolean(config.getString("enabled")));
+        this.setNotificationViaEmail(model.isNotificationViaEmail());
         return this;
     }
 

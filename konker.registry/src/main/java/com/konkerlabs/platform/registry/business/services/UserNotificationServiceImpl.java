@@ -1,12 +1,25 @@
 package com.konkerlabs.platform.registry.business.services;
 
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
+import javax.mail.MessagingException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.Scope;
+import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -15,18 +28,28 @@ import com.konkerlabs.platform.registry.business.model.UserNotification;
 import com.konkerlabs.platform.registry.business.model.UserNotificationStatus;
 import com.konkerlabs.platform.registry.business.repositories.UserNotificationRepository;
 import com.konkerlabs.platform.registry.business.repositories.UserNotificationStatusRepository;
+import com.konkerlabs.platform.registry.business.services.api.EmailService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.UserNotificationService;
 
 @Service
+@Scope(BeanDefinition.SCOPE_PROTOTYPE)
 public class UserNotificationServiceImpl implements UserNotificationService {
+	private static final Logger LOGGER = LoggerFactory.getLogger(UserNotificationServiceImpl.class);
+	
     private static final Sort SORT_DATE_DESC = new Sort(Sort.Direction.DESC, "date");
     @Autowired
     private UserNotificationRepository userNotificationRepository;
 
     @Autowired
     private UserNotificationStatusRepository userNotificationStatusRepository;
+    
+    @Autowired
+    private EmailService emailService;
+    
+    @Autowired
+    private Environment environment;
 
     @Override
     public ServiceResponse<Boolean> hasNewNotifications(User user) {
@@ -166,11 +189,34 @@ public class UserNotificationServiceImpl implements UserNotificationService {
             userHasNewMessagesFlag.markHasNewMessages(saved.getUuid());
             userNotificationStatusRepository.save(userHasNewMessagesFlag);
 
+            sendEmailNotification(user, saved);
 
             return ServiceResponseBuilder.<UserNotification> ok().withResult(saved).build();
         }
 
     }
+
+	private void sendEmailNotification(User user, UserNotification saved) {
+		List<String> profiles = Arrays.stream(environment.getActiveProfiles()).collect(Collectors.toList());
+		
+		if (user.isNotificationViaEmail() && profiles.contains("email")) {
+			Map<String, Object> templateParam = new HashMap<>();
+			templateParam.put("name", user.getName());
+			templateParam.put("body", saved.getBody());
+			
+			try {
+				emailService.send("no-reply@konkerlab.com", 
+						Collections.singletonList(user), 
+						Collections.emptyList(), 
+						saved.getSubject(), 
+						"text/email-notification", 
+						templateParam , 
+						new Locale(user.getLanguage().getLanguage()));
+			} catch (MessagingException e) {
+				LOGGER.error("Notification: ", e);
+			}
+		}
+	}
 
     @Override
     public ServiceResponse<Boolean> unmarkHasNewNotifications(User user) {

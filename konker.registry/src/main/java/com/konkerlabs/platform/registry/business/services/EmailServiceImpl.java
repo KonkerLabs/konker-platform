@@ -74,7 +74,7 @@ public class EmailServiceImpl implements EmailService {
 			message.setCc(recipientsCopied.stream().map(r -> r.getEmail()).collect(Collectors.toList()).toArray(new String[0]));
 		}
 		
-		final String htmlContent = this.templateEngine.process("html/".concat(templateName), ctx);
+		final String htmlContent = this.templateEngine.process(templateName, ctx);
 		message.setText(htmlContent, true);
 		
 		this.mailSender.send(mimeMessage);

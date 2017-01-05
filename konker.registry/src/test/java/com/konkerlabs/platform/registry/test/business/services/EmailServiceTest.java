@@ -48,7 +48,8 @@ public class EmailServiceTest extends BusinessLayerTestSupport {
     
     private String sender = "no-reply@konkerlabs.com";
     private String subject = "Recover Password";
-    private String templaName = "email-recover-pass";
+    private String templaNameHtml = "html/email-recover-pass";
+    private String templaNameTxt = "text/email-notification";
     private List<User> receivers;
     private List<User> receiversCopied;
     private Map<String, Object> templateParam = new HashMap<>();
@@ -63,42 +64,42 @@ public class EmailServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldRaiseAnExceptionIfSenderIsNull() throws Exception {
-    	ServiceResponse<Status> response = emailService.send(null, receivers, receiversCopied, subject, templaName, templateParam, Locale.ENGLISH);
+    	ServiceResponse<Status> response = emailService.send(null, receivers, receiversCopied, subject, templaNameHtml, templateParam, Locale.ENGLISH);
     	
     	assertThat(response, hasErrorMessage(EmailService.Validations.SENDER_NULL.getCode()));
     }
     
     @Test
     public void shouldRaiseAnExceptionIfSenderIsEmpty() throws Exception {
-    	ServiceResponse<Status> response = emailService.send("", receivers, receiversCopied, subject, templaName, templateParam, Locale.ENGLISH);
+    	ServiceResponse<Status> response = emailService.send("", receivers, receiversCopied, subject, templaNameHtml, templateParam, Locale.ENGLISH);
     	
     	assertThat(response, hasErrorMessage(EmailService.Validations.SENDER_NULL.getCode()));
     }
     
     @Test
     public void shouldRaiseAnExceptionIfReceiversIsNull() throws Exception {
-    	ServiceResponse<Status> response = emailService.send(sender, null, receiversCopied, subject, templaName, templateParam, Locale.ENGLISH);
+    	ServiceResponse<Status> response = emailService.send(sender, null, receiversCopied, subject, templaNameHtml, templateParam, Locale.ENGLISH);
     	
     	assertThat(response, hasErrorMessage(EmailService.Validations.RECEIVERS_NULL.getCode()));
     }
     
     @Test
     public void shouldRaiseAnExceptionIfReceiversIsEmpty() throws Exception {
-    	ServiceResponse<Status> response = emailService.send(sender, new ArrayList<>(), receiversCopied, subject, templaName, templateParam, Locale.ENGLISH);
+    	ServiceResponse<Status> response = emailService.send(sender, new ArrayList<>(), receiversCopied, subject, templaNameHtml, templateParam, Locale.ENGLISH);
     	
     	assertThat(response, hasErrorMessage(EmailService.Validations.RECEIVERS_NULL.getCode()));
     }
      
     @Test
     public void shouldRaiseAnExceptionIfSubjectIsNull() throws Exception {
-    	ServiceResponse<Status> response = emailService.send(sender, receivers, receiversCopied, null, templaName, templateParam, Locale.ENGLISH);
+    	ServiceResponse<Status> response = emailService.send(sender, receivers, receiversCopied, null, templaNameHtml, templateParam, Locale.ENGLISH);
     	
     	assertThat(response, hasErrorMessage(EmailService.Validations.SUBJECT_EMPTY.getCode()));
     }
     
     @Test
     public void shouldRaiseAnExceptionIfSubjectIsEmpty() throws Exception {
-    	ServiceResponse<Status> response = emailService.send(sender, receivers, receiversCopied, "", templaName, templateParam, Locale.ENGLISH);
+    	ServiceResponse<Status> response = emailService.send(sender, receivers, receiversCopied, "", templaNameHtml, templateParam, Locale.ENGLISH);
     	
     	assertThat(response, hasErrorMessage(EmailService.Validations.SUBJECT_EMPTY.getCode()));
     }
@@ -118,8 +119,15 @@ public class EmailServiceTest extends BusinessLayerTestSupport {
     }
     
     @Test
-    public void shouldSendAnEmail() throws Exception {
-    	ServiceResponse<Status> response = emailService.send(sender, receivers, receiversCopied, subject, templaName, templateParam, Locale.ENGLISH);
+    public void shouldSendAnEmailHtmlTemplate() throws Exception {
+    	ServiceResponse<Status> response = emailService.send(sender, receivers, receiversCopied, subject, templaNameHtml, templateParam, Locale.ENGLISH);
+    	
+    	assertThat(response, isResponseOk());
+    }
+    
+    @Test
+    public void shouldSendAnEmailTxtTemplate() throws Exception {
+    	ServiceResponse<Status> response = emailService.send(sender, receivers, receiversCopied, subject, templaNameTxt, templateParam, Locale.ENGLISH);
     	
     	assertThat(response, isResponseOk());
     }

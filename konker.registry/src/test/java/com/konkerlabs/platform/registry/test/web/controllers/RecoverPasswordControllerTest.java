@@ -186,10 +186,33 @@ public class RecoverPasswordControllerTest extends WebLayerTestContext {
     }
     
     @Test
+    public void shouldRaiseAnExceptionIfTokenInvalidForTime() throws Exception {
+    	when(tokenService.getToken("8a4fd7bd-503e-4e4a-b85e-5501305c7a98"))
+			.thenReturn(ServiceResponseBuilder.<Token>ok()
+			.withResult(token).build());
+		
+		when(tokenService.isValidToken("8a4fd7bd-503e-4e4a-b85e-5501305c7a98"))
+			.thenReturn(ServiceResponseBuilder.<Boolean>ok()
+			.withResult(false).build());
+    	
+    	List<String> errors = new ArrayList<>();
+    	errors.add(applicationContext.getMessage(TokenService.Validations.EXPIRED_TOKEN.getCode(), null, Locale.ENGLISH));
+    	
+    	getMockMvc().perform(get("/recoverpassword/8a4fd7bd-503e-4e4a-b85e-5501305c7a98"))
+    		.andDo(print())
+			.andExpect(model().attribute("errors", equalTo(errors)))
+			.andExpect(model().attribute("isExpired", equalTo(true)));
+    }
+    
+    @Test
     public void shouldShowResetPage() throws Exception {
     	when(tokenService.getToken("8a4fd7bd-503e-4e4a-b85e-5501305c7a98"))
 			.thenReturn(ServiceResponseBuilder.<Token>ok()
 			.withResult(token).build());
+    	
+    	when(tokenService.isValidToken("8a4fd7bd-503e-4e4a-b85e-5501305c7a98"))
+			.thenReturn(ServiceResponseBuilder.<Boolean>ok()
+			.withResult(true).build());
     	
     	when(userService.findByEmail("user@testdomain.com"))
     		.thenReturn(ServiceResponseBuilder.<User>ok()

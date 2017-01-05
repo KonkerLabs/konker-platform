@@ -25,6 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -38,12 +39,15 @@ import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.RedisTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.SpringMailTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(
-        classes = { MongoTestConfiguration.class, BusinessTestConfiguration.class, RedisTestConfiguration.class })
+        classes = { MongoTestConfiguration.class, BusinessTestConfiguration.class, RedisTestConfiguration.class,
+                SpringMailTestConfiguration.class })
 @UsingDataSet(locations = { "/fixtures/users.json", "/fixtures/userNotifications.json" })
+@ActiveProfiles("email")
 public class UserNotificationServiceTest extends BusinessLayerTestSupport {
 
     private static final class DescendingDateComparator implements Comparator<UserNotification> {
