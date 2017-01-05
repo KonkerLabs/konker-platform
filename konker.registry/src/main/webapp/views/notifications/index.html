@@ -2,56 +2,62 @@
 <html data-layout-decorate="layouts/default">
 
 <head>
-    <style>
-    .message-unread {
-        font-weight: bold;
-    }
-    </style>
 </head>
 
 <body>
     <div data-layout-fragment="content">
         <fieldset>
-            <legend>Notifications</legend>
+            <legend data-th-text="#{usernotifications.index.legend}">Notifications</legend>
             <div class="row" data-th-if="${messageCount > 0}">
                 <div class="col-md-4 sidebar">
-                    <button class="btn" id="mark-all-read-btn">Mark All Read</button>
+                    <input type="button" class="btn" id="mark-all-read-btn" data-th-value="#{usernotifications.index.mark_all_read}" value="Mark All Read">
+                    </button>
                     <div class="list-group" id="notification-summary">
-                        <!-- 
-                        <a href="#" class="list-group-item active notification-summary-item">
-                            <p>{{ subject }}</p>
-                            <p><small>{{ date }} </small></p>
-                        </a>
-                        <a href="#" class="list-group-item">
-                            <p><b>Change your password</b></p>
-                            <p><small>31/12/2016 19:53</small></p>
-                        </a> -->
                     </div>
                 </div>
-                <div class="col-md-8">
-                    <div class="row" id="notification-header">
-                        <div class="col-md-10">
-                            <h2 class="sub-header" id="notification-subject">Your account will expire</h2>
-                            <p class="small">Date: <span id="notification-date">31/12/2016 20:53</span>
-                            </p>
-                        </div>
-                        <div class="col-md-2">
-                            <h2 class="sub-header"><input type="button" class="btn" id="mark-read-btn" value="Mark Read" />
-                            <input type="button" class="btn" id="mark-unread-btn" value="Mark Unread" /></h2>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <p id="notification-body">Your Trial account will expire in 15 days. Please contact your support channel.</p>
-                    </div>
+                <div class="col-md-8" id="notification-target">
                 </div>
             </div>
             <div class="row" data-th-if="${messageCount == 0}">
-                <p align="center">You have no messages</p>
+                <p align="center" data-th-text="#{usernotifications.index.no_notifications}">You have no messages</p>
+            </div>
+            <div class="hidden">
+                <script id="notification-template" type="x-tmpl-mustache">
+                    <div class="row" id="notification-header">
+                        <div class="col-md-9">
+                            <h2 class="sub-header" id="notification-subject">{{subject}}</h2>
+                            <p class="small">{{notification-date-label}}: <span id="notification-date">{{dateTime}}</span>
+                            </p>
+                        </div>
+                        <div class="col-md-3">
+                            <h2 class="sub-header"><input type="button" class="btn" id="mark-read-btn" value="{{mark-read-btn}}" />
+                                    <input type="button" class="btn" id="mark-unread-btn" value="{{mark-unread-btn}}" /></h2>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <p id="notification-body">{{body}}</p>
+                    </div>
+                </script>
+                <script id="notification-header-template" type="x-tmpl-mustache">
+                    <a href="#" class="list-group-item notification-summary-item" id="{{uuid}}">
+                        <p>{{subject}}</p>
+                        <p><small>{{dateTime}}</small></p>
+                    </a>
+                </script>
             </div>
         </fieldset>
+
     </div>
     <div data-layout-fragment="script">
         <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+        <script data-th-attr="src=@{/resources/konker/scripts/mustache.min.js}"></script>
+        <script type="text/javascript" data-th-inline="javascript">
+        var mustacheTranslation = {
+            "mark-read-btn": [[#{usernotifications.index.mark_read}]],
+            "mark-unread-btn": [[#{usernotifications.index.mark_unread}]],
+            "notification-date-label": [[#{usernotifications.index.date}]]
+        };
+        </script>
         <script data-th-attr="src=@{/resources/js/notifications/index.js}"></script>
     </div>
 </body>

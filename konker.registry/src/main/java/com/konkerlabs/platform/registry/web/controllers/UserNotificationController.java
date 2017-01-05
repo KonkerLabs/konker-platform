@@ -126,7 +126,7 @@ public class UserNotificationController {
         } else {
             notifications = userNotificationService.findAll(user).getResult();
         }
-
+        
         return UserNotificationHeaderDecoration.decorate(notifications, user);
     }
 
