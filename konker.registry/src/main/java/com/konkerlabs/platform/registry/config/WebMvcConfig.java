@@ -106,7 +106,7 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements Application
     public MessageSource getMessageSource() {
         ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
         messageSource.addBasenames("/WEB-INF/i18n/global", "/WEB-INF/i18n/menu", "/WEB-INF/i18n/devices",
-                "/WEB-INF/i18n/enrichment", "/WEB-INF/i18n/routes", "/WEB-INF/i18n/destinations",
+                "/WEB-INF/i18n/routes", "/WEB-INF/i18n/destinations",
                 "/WEB-INF/i18n/transformations", "/WEB-INF/i18n/integration", "/WEB-INF/i18n/visualization",
                 "/WEB-INF/i18n/users", "/WEB-INF/i18n/languages", "/WEB-INF/i18n/timezones", "/WEB-INF/i18n/dateformats",
                 "/WEB-INF/i18n/loglevels", "/WEB-INF/i18n/email", "/WEB-INF/i18n/tokens", "/WEB-INF/i18n/usernotifications");

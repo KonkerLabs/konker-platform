@@ -56,8 +56,6 @@
                         <li th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'')')}">
                         	<a data-th-href="@{/routes}" data-th-text="#{nav.menu.routes}"></a></li>
                         <li th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'')')}">
-                        	<a data-th-href="@{/enrichment}" data-th-text="#{nav.menu.enrichment}"></a></li>
-                        <li th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'')')}">
                         	<a data-th-href="@{/transformation}" data-th-text="#{nav.menu.transformations}"></a></li>
                         <li th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'')')}">
                         	<a data-th-href="@{/destinations/rest}" data-th-text="#{nav.menu.rest_destinations}"></a></li>

@@ -3,12 +3,10 @@ package com.konkerlabs.platform.registry.integration.processors;
 import java.text.MessageFormat;
 import java.util.Optional;
 
-import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +15,6 @@ import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.EnrichmentExecutor;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteExecutor;
 
@@ -49,17 +46,14 @@ public class DeviceEventProcessor {
     private EventRouteExecutor eventRouteExecutor;
     private DeviceRegisterService deviceRegisterService;
     private DeviceEventService deviceEventService;
-    private EnrichmentExecutor enrichmentExecutor;
 
     @Autowired
     public DeviceEventProcessor(DeviceEventService deviceEventService,
                                 EventRouteExecutor eventRouteExecutor,
-                                DeviceRegisterService deviceRegisterService,
-                                EnrichmentExecutor enrichmentExecutor) {
+                                DeviceRegisterService deviceRegisterService) {
         this.deviceEventService = deviceEventService;
         this.eventRouteExecutor = eventRouteExecutor;
         this.deviceRegisterService = deviceRegisterService;
-        this.enrichmentExecutor = enrichmentExecutor;
     }
 
     public void process(String apiKey, String channel, String payload) throws BusinessException {
@@ -86,25 +80,6 @@ public class DeviceEventProcessor {
                 .payload(payload)
                 .build();
         if (device.isActive()) {
-
-            ServiceResponse<Event> serviceResponse = enrichmentExecutor.enrich(event, device);
-            switch (serviceResponse.getStatus()) {
-                case ERROR: {
-                    LOGGER.error(
-                            MessageFormat.format("Enrichment failed: [Device: {0}] - [Payload: {1}]",
-                                    device.toURI(),
-                                    payload),
-                            event.getIncoming().toURI()
-                    );
-                    break;
-                }
-                case OK: {
-                    event.setPayload(serviceResponse.getResult().getPayload());
-                    break;
-                }
-                default:
-                    break;
-            }
 
             ServiceResponse<Event> logResponse = deviceEventService.logIncomingEvent(device, event);
             if (logResponse.isOk()) {

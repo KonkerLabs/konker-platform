@@ -428,16 +428,6 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/enrichment-rest.json"})
-    public void shouldReturnErrorMessageIfDeviceHaveEnrichmentsOnDeletion() throws Exception {
-        ServiceResponse<Device> serviceResponse = deviceRegisterService
-                .remove(Tenant.builder().id(THE_TENANT_ID).build(), THE_DEVICE_GUID);
-        assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.ERROR));
-        assertThat(serviceResponse.getResponseMessages(),
-                hasEntry(DeviceRegisterService.Validations.DEVICE_HAVE_ENRICHMENTS.getCode(), null));
-    }
-
-    @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/events-incoming.json", "/fixtures/events-outgoing.json"})
     public void shouldReturnSuccessMessageIfDeviceDeletionSucceed() throws Exception {
         ServiceResponse<Device> serviceResponse = deviceRegisterService
