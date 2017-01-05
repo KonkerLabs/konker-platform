@@ -25,6 +25,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.TenantService;
@@ -57,6 +58,8 @@ public class UserControllerTest extends WebLayerTestContext {
 
 	@After
 	public void tearDown() {
+		Mockito.reset(userService);
+		Mockito.reset(tenantService);
 	}
 
 	@Test
@@ -89,6 +92,29 @@ public class UserControllerTest extends WebLayerTestContext {
 
 	}
 
+	@Test
+	@WithMockUser(authorities = { "ROLE_SUPER_USER", "ROLE_IOT_USER", "ROLE_ANALYTICS_USER" })
+	public void shouldChangeTenantWithException() throws Exception {
+
+		ServiceResponse<User> responseOk = ServiceResponseBuilder.<User>ok().build();
+		ServiceResponse<Tenant> responseTenantOk = ServiceResponseBuilder.<Tenant>error()
+				.withMessage(CommonValidations.RECORD_NULL.getCode()).build();
+
+		when(userService.save(Matchers.anyObject(), Matchers.anyString(), Matchers.anyString(), Matchers.anyString()))
+				.thenReturn(responseOk);
+		when(tenantService.updateLogLevel(Matchers.anyObject(), Matchers.anyObject())).thenReturn(responseTenantOk);
+
+		user.getTenant().setLogLevel(LogLevel.ALL);
+
+		ResultActions result = getMockMvc().perform(post("/me"));
+		result.andExpect(flash().attribute("errors", org.hamcrest.Matchers.notNullValue()));
+		result.andExpect(flash().attribute("message", org.hamcrest.Matchers.nullValue()));
+
+		// not changed
+		Assert.assertEquals(LogLevel.ALL, user.getTenant().getLogLevel());
+
+	}
+	
 	@Configuration
 	static class UserControllerTestContextConfig {
 
