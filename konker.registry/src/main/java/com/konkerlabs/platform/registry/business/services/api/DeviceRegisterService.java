@@ -16,9 +16,7 @@ public interface DeviceRegisterService {
 		DEVICE_ID_ALREADY_REGISTERED("service.device.id.already_registered"), 
 		DEVICE_ID_DOES_NOT_EXIST("service.device.id.does_not_exist"), 
 		DEVICE_GUID_DOES_NOT_EXIST("service.device.guid.does_not_exist"), 
-		DEVICE_HAVE_EVENTROUTES("service.device.have_eventroutes"), 
-		DEVICE_HAVE_ENRICHMENTS("service.device.have_enrichments");
-
+		DEVICE_HAVE_EVENTROUTES("service.device.have_eventroutes");
 
 		public String getCode() {
 			return code;

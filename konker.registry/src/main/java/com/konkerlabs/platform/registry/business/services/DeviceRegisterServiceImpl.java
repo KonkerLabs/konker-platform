@@ -8,7 +8,6 @@ import com.google.zxing.qrcode.QRCodeWriter;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.registry.business.repositories.DataEnrichmentExtensionRepository;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.EventRouteRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
@@ -49,9 +48,6 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
     @Autowired
     private EventRouteRepository eventRouteRepository;
-
-    @Autowired
-    private DataEnrichmentExtensionRepository dataEnrichmentExtensionRepository;
 
     @Autowired @Qualifier("mongoEvents")
     private EventRepository eventRepository;
@@ -265,10 +261,6 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         List<EventRoute> outgoingEvents =
                 eventRouteRepository.findByOutgoingUri(device.toURI());
 
-        List<DataEnrichmentExtension> enrichmentExtensions =
-                dataEnrichmentExtensionRepository
-                        .findByTenantIdAndIncoming(tenant.getId(), device.toURI());
-
         ServiceResponse<Device> response = null;
 
         if(Optional.ofNullable(incomingEvents).isPresent() && incomingEvents.size() > 0 ||
@@ -282,17 +274,6 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                 response.getResponseMessages().put(Validations.DEVICE_HAVE_EVENTROUTES.getCode(), null);
             }
 
-        }
-
-        if(Optional.ofNullable(enrichmentExtensions).isPresent() && enrichmentExtensions.size() > 0) {
-            if(response == null){
-                response = ServiceResponseBuilder.<Device>error()
-                        .withMessage(Validations.DEVICE_HAVE_ENRICHMENTS.getCode())
-                        .build();
-            } else {
-                response.setStatus(ServiceResponse.Status.ERROR);
-                response.getResponseMessages().put(Validations.DEVICE_HAVE_ENRICHMENTS.getCode(), null);
-            }
         }
 
         if(Optional.ofNullable(response).isPresent()) return response;
