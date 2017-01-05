@@ -217,6 +217,7 @@ public class UserServiceImpl implements UserService {
         storage.setPassword(!StringUtils.isEmpty(form.getPassword()) ? form.getPassword() : storage.getPassword());
         storage.setName(form.getName());
         storage.setPhone(form.getPhone());
+        storage.setNotificationViaEmail(form.isNotificationViaEmail());
     }
 
     /**

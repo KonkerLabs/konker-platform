@@ -12,7 +12,8 @@
       "name":"Konker Admin",
       "language": "EN",
       "zoneId": "AMERICA_SAO_PAULO",
-      "dateFormat":"YYYYMMDD"
+      "dateFormat":"YYYYMMDD",
+      "notificationViaEmail" : true
     },
     {
       "_id" : "foo@konkerlabs.com",

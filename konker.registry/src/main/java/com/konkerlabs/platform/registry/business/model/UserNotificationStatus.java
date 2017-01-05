@@ -20,14 +20,14 @@ public class UserNotificationStatus {
     private String destination;
 
     private Instant lastUpdated;
-    private String lastNotificationUUid;
+    private String lastNotificationUuid;
 
     private Boolean hasNewMessages = Boolean.FALSE;
 
     public void markHasNewMessages(String uuid) {
         this.hasNewMessages = Boolean.TRUE;
         this.lastUpdated = Instant.now();
-        this.lastNotificationUUid = uuid;
+        this.lastNotificationUuid = uuid;
     }
 
     public void unmarkHasNewMessages() {

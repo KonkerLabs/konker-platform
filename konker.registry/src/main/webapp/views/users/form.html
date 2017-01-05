@@ -49,7 +49,18 @@
                        data-th-if="*{avatarUploadEnabled}"
                 />
             </div>
-
+            
+            <div class="form-group">
+                <div class="col-sm-6">
+                    <input type="checkbox" data-th-field="*{notificationViaEmail}"
+                           id="notificationViaEmail"
+                           name="notificationViaEmail"
+                           class="pull-left" />
+            	<label class="col-sm-9"
+                       data-th-text="#{users.form.notification.email}"
+                       for="notificationViaEmail">Receive notifications via email</label>
+                </div>
+            </div>
         </fieldset>
 
         <input type="hidden" name="_method" data-th-value="${method}" data-th-if="${method != null}"/>

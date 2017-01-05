@@ -39,7 +39,17 @@ public class SpringMailTestConfiguration {
 		templateResolver.setTemplateMode(TemplateMode.HTML);
 		templateResolver.setCharacterEncoding("UTF-8");
 		templateResolver.setCacheable(false);
-    	mock.setTemplateResolver(templateResolver);
+    	mock.addTemplateResolver(templateResolver);
+    	
+    	final ClassLoaderTemplateResolver templateResolverTxt = new ClassLoaderTemplateResolver();
+		templateResolverTxt.setOrder(1);
+		templateResolverTxt.setResolvablePatterns(Collections.singleton("text/*"));
+		templateResolverTxt.setPrefix("/mail/");
+		templateResolverTxt.setSuffix(".txt");
+		templateResolverTxt.setTemplateMode(TemplateMode.TEXT);
+		templateResolverTxt.setCharacterEncoding("UTF-8");
+		templateResolverTxt.setCacheable(false);
+		mock.addTemplateResolver(templateResolverTxt);
     	
 		return mock;
     }

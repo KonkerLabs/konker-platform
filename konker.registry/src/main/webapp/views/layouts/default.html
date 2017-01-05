@@ -76,7 +76,7 @@
 
             <ul class="nav navbar-nav navbar-right collapsable options">
                 <li><a class="navbar-link" data-th-href="@{/me}" data-th-text="${@user.email}"></a></li>
-                <li><a class="navbar-link" data-th-href="@{/notifications}"><span class="glyphicon glyphicon-bell"></span></a></li>
+                <li><a class="navbar-link" data-th-href="@{/notifications}"><span id="notification-icon" class="glyphicon glyphicon-bell"></span></a></li>
 <!--                 <li><a class="navbar-link" href="#"><span class="glyphicon glyphicon-wrench"></span></a></li> -->
 <!--                 <li><a class="navbar-link" href="#"><span class="glyphicon glyphicon-search"></span></a></li> -->
                 <li><a class="navbar-link" data-th-href="@{/logout}"><span class="glyphicon glyphicon-log-out"></span></a></li>
@@ -125,6 +125,7 @@
     <script data-th-attr="src=@{/resources/bootstrap/js/bootstrap.min.js}"></script>
     <script data-th-attr="src=@{/resources/bootstrap/js/moment.js}"></script>
     <script data-th-attr="src=@{/resources/bootstrap/js/bootstrap-datetimepicker.min.js}"></script>
+    <script data-th-attr="src=@{/resources/js/notifications/status.js}"></script>
     <div data-layout-fragment="script">
     </div>
 </body>

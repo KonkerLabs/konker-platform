@@ -131,7 +131,7 @@ public class RecoverPasswordController implements ApplicationContextAware {
     					Collections.singletonList(user),
     					Collections.emptyList(),
     					applicationContext.getMessage(Messages.USER_EMAIL_SUBJECT.getCode(), null, locale),
-    					"email-recover-pass",
+    					"html/email-recover-pass",
     					templateParam,
     					locale);
     			return Boolean.TRUE;
@@ -148,6 +148,7 @@ public class RecoverPasswordController implements ApplicationContextAware {
     public ModelAndView showResetPage(@PathVariable("token") String token,
                                       Locale locale) {
         ServiceResponse<Token> serviceResponse = tokenService.getToken(token);
+        ServiceResponse<Boolean> validToken = tokenService.isValidToken(token);
 
         if (!Optional.ofNullable(serviceResponse).isPresent() ||
                 !Optional.ofNullable(serviceResponse.getResult()).isPresent()) {
@@ -164,7 +165,7 @@ public class RecoverPasswordController implements ApplicationContextAware {
                     .addObject("isExpired", true);
         }
 
-        if (serviceResponse.getResult().getIsExpired()) {
+        if (serviceResponse.getResult().getIsExpired() || !validToken.getResult()) {
             List<String> messages = new ArrayList<>();
             messages.add(applicationContext.getMessage(TokenService.Validations.EXPIRED_TOKEN.getCode(), null, locale));
 

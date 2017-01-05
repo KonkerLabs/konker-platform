@@ -1,3 +1,7 @@
 message-unread {
 	text-decoration: bold;
 }
+
+#notification-icon.new-notifications {
+	color: red;
+}

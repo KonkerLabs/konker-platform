@@ -1,9 +1,10 @@
-html,body {
-  height: 100%;
+html,
+body {
+    height: 100%;
 }
 
 .navbar-fixed-top {
-	z-index: 2;
+    z-index: 2;
     min-height: 59px;
     padding-bottom: 18px;
     background: transparent url(../../konker/images/topo.png) no-repeat center center;
@@ -19,7 +20,8 @@ html,body {
     margin: 14px;
 }
 
-.navbar-inverse .navbar-nav>li>a:focus, .navbar-inverse .navbar-nav>li>a:hover {
+.navbar-inverse .navbar-nav>li>a:focus,
+.navbar-inverse .navbar-nav>li>a:hover {
     color: #fff !important;
     background-color: transparent !important;
 }
@@ -32,39 +34,43 @@ html,body {
 }
 
 .options {
-	margin: 14px;
+    margin: 14px;
 }
 
 .caret {
-	border-top: 4px;
+    border-top: 4px;
 }
 
+
 /* Wrapper for page content to push down footer */
+
 #wrap {
-  min-height: 100%;
-  /*height: auto;*/
-  /* Negative indent footer by its height */
-  margin: 0 auto -60px;
-  /* Pad bottom by footer height */
-  padding: 15px 0 60px;
+    min-height: 100%;
+    /*height: auto;*/
+    /* Negative indent footer by its height */
+    margin: 0 auto -60px;
+    /* Pad bottom by footer height */
+    padding: 15px 0 60px;
 }
 
 .container {
-  width: 100%;
-  height: 100%;
+    width: 100%;
+    height: 100%;
 }
 
+
 /* Set the fixed height of the footer here */
+
 #footer {
-  height: 30px;
+    height: 30px;
 }
 
 fieldset {
-  margin-top: 1em;
+    margin-top: 1em;
 }
 
 a.btn.action {
-  margin-bottom: 10px;
+    margin-bottom: 10px;
 }
 
 #konker-header-logo {
@@ -81,14 +87,16 @@ img.ajax-loading {
 }
 
 .center-block {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-  float: none;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    float: none;
 }
+
 .avoid-missundertand {
     font-family: monospace;
 }
+
 .password-qrcode {}
 
 .user-avatar {
@@ -96,7 +104,16 @@ img.ajax-loading {
     max-height: 100px;
     margin-left: 1%;
 }
+
 #filePicker {
     margin-top: 1%;
     margin-left: 10%;
+}
+
+#notification-icon.new-notifications {
+    color: red;
+}
+
+.notification-unread {
+    font-weight: bold;
 }
