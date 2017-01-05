@@ -31,14 +31,14 @@
 									<td class="col-md-1" data-th-text="#{devices.events.date_time}"></td>
 									<td class="col-md-2"
 										data-th-text="#{devices.events.incoming.channel}"></td>
-									<td class="col-md-2" data-th-text="#{devices.events.payload}"></td>
+									<td class="col-md-3" data-th-text="#{devices.events.payload}"></td>
 								</tr>
 							</thead>
 							<tbody>
 								<tr data-th-each="event : ${recentIncomingEvents}">
 									<td data-th-text="${{event.timestamp}}"></td>
 									<td data-th-text="${event.incoming.channel}"></td>
-									<td data-th-text="${event.payload}"></td>
+									<td data-th-text="${event.payload}" class="payload"></td>
 								</tr>
 							</tbody>
 						</table>
@@ -57,14 +57,14 @@
 									<td class="col-md-1" data-th-text="#{devices.events.date_time}"></td>
 									<td class="col-md-2"
 										data-th-text="#{devices.events.incoming.channel}"></td>
-									<td class="col-md-2" data-th-text="#{devices.events.payload}"></td>
+									<td class="col-md-3" data-th-text="#{devices.events.payload}"></td>
 								</tr>
 							</thead>
 							<tbody>
 								<tr data-th-each="event : ${recentOutgoingEvents}">
 									<td data-th-text="${{event.timestamp}}"></td>
 									<td data-th-text="${event.outgoing.channel}"></td>
-									<td data-th-text="${event.payload}"></td>
+									<td data-th-text="${event.payload}" class="payload"></td>
 								</tr>
 							</tbody>
 						</table>
@@ -78,6 +78,10 @@
 		</fieldset>
 		<a data-th-href="@{/devices}" class="btn btn-default"
 			data-th-text="#{nav.back}"></a>
+		<div data-layout-fragment="script">
+			<script data-th-attr="src=@{/resources/konker/scripts/jquery-1.11.1.min.js}" type="text/javascript"></script>
+			<script data-th-attr="src=@{/resources/js/devices/payload.js}"></script>
+		</div>
 	</div>
 </body>
 </html>
