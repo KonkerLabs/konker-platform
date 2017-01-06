@@ -1,9 +1,10 @@
 target
 .idea/
 **/*.iml
-/.settings/
+**/.settings
+**/.classpath
 /.gitignore
-/.project
+**/.project
 /konker.registry/src/main/resources/application.conf
 **/env/*
 **/build/*
