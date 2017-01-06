@@ -94,7 +94,7 @@ public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherSe
 			Config emailConfig = config.getConfig("email");
 			Boolean hasRecaptchaConfig = config.hasPath("recaptcha");
 			isEnabled = Optional.ofNullable(emailConfig.getBoolean("enabled")).orElse(false);
-			if (hasRecaptchaConfig) {
+			if (!hasRecaptchaConfig) {
 				isEnabled = false;
 				LOGGER.error("Recaptcha configuration is empty. Email features are being thoroughly disabled on the platform.");
 			}
