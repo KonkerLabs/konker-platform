@@ -31,8 +31,6 @@ import com.typesafe.config.ConfigFactory;
 
 public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
 
-	private static final Config smsConfig = ConfigFactory.load().getConfig("sms");
-	private static final Config emailConfig = ConfigFactory.load().getConfig("email");
 	private static final Logger LOGGER = LoggerFactory.getLogger(RegistryAppInitializer.class);
 
 	@Override
@@ -77,10 +75,11 @@ public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherSe
 		boolean isEnabled = false;
 
 		try {
+			Config smsConfig = ConfigFactory.load().getConfig("sms");
 			isEnabled = Optional.ofNullable(smsConfig.getBoolean("enabled")).orElse(false);
 		} catch (ConfigException e) {
 			LOGGER.error(
-					"SMS configuration has no values for key 'enabled'. SMS features are being thoroughly disabled on the platform.",
+					"SMS configuration is empty or has no values for key 'enabled'. SMS features are being thoroughly disabled on the platform.",
 					e);
 		}
 		return isEnabled;
@@ -91,13 +90,20 @@ public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherSe
 		boolean isEnabled = false;
 
 		try {
+			Config config = ConfigFactory.load();
+			Config emailConfig = config.getConfig("email");
+			Boolean hasRecaptchaConfig = config.hasPath("recaptcha");
 			isEnabled = Optional.ofNullable(emailConfig.getBoolean("enabled")).orElse(false);
+			if (hasRecaptchaConfig) {
+				isEnabled = false;
+				LOGGER.error("Recaptcha configuration is empty. Email features are being thoroughly disabled on the platform.");
+			}
 		} catch (ConfigException e) {
 			LOGGER.error(
-					"SMS configuration has no values for key 'enabled'. SMS features are being thoroughly disabled on the platform.",
-					e);
+					"Email configuration is empty or has no values for key 'enabled'. Email features are being thoroughly disabled on the platform.", e);
 		}
 		return isEnabled;
 
 	}
+
 }
