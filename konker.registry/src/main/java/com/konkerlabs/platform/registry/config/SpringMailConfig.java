@@ -25,7 +25,6 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
 @Configuration
-@Profile("email")
 public class SpringMailConfig implements ApplicationContextAware, EnvironmentAware {
 	
 	private static final String JAVA_MAIL_FILE = "classpath:mail/javamail.properties";

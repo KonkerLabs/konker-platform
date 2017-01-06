@@ -45,7 +45,9 @@ public class CsvDownload<T> {
 			
 			if (method.getReturnType().getCanonicalName().contains("com.konkerlabs.platform.registry")) {
 				for (Field localField : method.getReturnType().getDeclaredFields()) {
-					listHeader.add(fieldName.concat("." + localField.getName()));
+					if (!"URI_SCHEME".equals(localField.getName())) {
+						listHeader.add(fieldName.concat("." + localField.getName()));
+					}
 				}
 			} else {
 				listHeader.add(fieldName);
