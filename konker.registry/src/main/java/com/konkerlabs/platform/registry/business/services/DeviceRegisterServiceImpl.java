@@ -103,6 +103,9 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         Optional<Map<String, Object[]>> validations = device.applyValidations();
 
         if (validations.isPresent()) {
+            LOGGER.debug("Error saving device",
+                    Device.builder().guid("NULL").tenant(
+                            tenant).build().toURI());
             return ServiceResponseBuilder.<Device>error()
                     .withMessages(validations.get())
                     .build();
