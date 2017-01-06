@@ -86,6 +86,6 @@ public class UserNotification implements Serializable {
             Instant date, String correlationUUID, String body) {
         return UserNotification.builder().destination(destination).subject(subject).contentLanguage(lang)
                 .contentType(contentType).date(date).correlationUuid(correlationUUID).body(body)
-                .uuid(UUID.randomUUID().toString()).build();
+                .uuid(UUID.randomUUID().toString()).unread(Boolean.TRUE).build();
     }
 }
