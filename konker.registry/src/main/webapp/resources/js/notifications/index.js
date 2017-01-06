@@ -17,6 +17,9 @@ var notificationDataStore = {
     markUnread: function(uuid) {
         return axios.post(urlTo("/notifications/" + uuid), { "unread": true }, { "responseType": "json" })
     },
+    sendTestMessage: function(subject, body) {
+        return axios.put(urlTo("/notifications"), { "subject": subject, "body": body }, { "responseType": "json" })
+    }
 }
 
 function renderMessageList(messages, autoRead) {

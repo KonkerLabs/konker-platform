@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry.web.controllers;
 
 import java.security.Principal;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -28,9 +29,9 @@ import com.konkerlabs.platform.registry.business.services.api.UserNotificationSe
 public class UserNotificationController {
 
     /**
-     * This class is a wrapper over the user notification meant to expose 
-     * only attributes related to the header of the messagem via JSON
-     *  
+     * This class is a wrapper over the user notification meant to expose only
+     * attributes related to the header of the messagem via JSON
+     * 
      * @author wmariusso
      *
      */
@@ -103,18 +104,18 @@ public class UserNotificationController {
     @Autowired
     private UserNotificationService userNotificationService;
 
-    
     /**
-     * This is the only method on this class that produces HTML. It delivers the HTML template used to
-     * build the page. All the other methods return JSON.
+     * This is the only method on this class that produces HTML. It delivers the
+     * HTML template used to build the page. All the other methods return JSON.
+     * 
      * @return
      */
     @RequestMapping(value = "", method = RequestMethod.GET)
     public ModelAndView index() {
-        return new ModelAndView("notifications/index").addObject("messageCount", userNotificationService.findAll(user).getResult().size());
+        return new ModelAndView("notifications/index").addObject("messageCount",
+                userNotificationService.findAll(user).getResult().size());
     }
 
-    
     @RequestMapping(value = "", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody List<UserNotificationHeaderDecoration> list(
             @RequestParam(name = "unreadOnly", defaultValue = "false", required = false) Boolean unreadOnly,
@@ -126,7 +127,7 @@ public class UserNotificationController {
         } else {
             notifications = userNotificationService.findAll(user).getResult();
         }
-        
+
         return UserNotificationHeaderDecoration.decorate(notifications, user);
     }
 
@@ -146,6 +147,18 @@ public class UserNotificationController {
         } else {
             return Collections.emptyList();
         }
+    }
+
+    @RequestMapping(value = "", method = RequestMethod.PUT, produces = "application/json",
+            consumes = "application/json")
+    public @ResponseBody UserNotificationDecoration putTestMessage(@RequestBody Map<String, String> body) {
+        return UserNotificationDecoration
+                .decorate(
+                        userNotificationService
+                                .postNotification(user, UserNotification.buildFresh(user.getEmail(),
+                                        body.get("subject"), body.get("lang"), body.get("contentType"), Instant.now(), null, body.get("body")))
+                                .getResult(),
+                        user);
     }
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.POST, produces = "application/json",

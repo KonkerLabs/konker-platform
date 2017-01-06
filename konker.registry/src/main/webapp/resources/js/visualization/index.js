@@ -60,9 +60,15 @@ function findAndLoadDataChart() {
         			var json = JSON.stringify(value.payload).replace(/\\/g, '');
         			json = json.replace(/\"{/g, '{');
         			json = json.replace(/\}"/g, '}');
-        			tableData = tableData + '<tr><td>'+value.timestampFormated+'</td><td>'+json+'</td></tr>';
+        			tableData = tableData + '<tr><td>'+value.timestampFormated+'</td><td class="json-data">'+json+'</td></tr>';
         		});
         		$("#data-event table tbody").html(tableData);
+                $("<link/>", {
+                    rel: "stylesheet",
+                    type: "text/css",
+                    href: "resources/konker/css/pretty-json.css"
+                }).appendTo("head");
+                $.getScript( "resources/konker/scripts/json.formatter.js");
         		loadCSV();
         	}
 
