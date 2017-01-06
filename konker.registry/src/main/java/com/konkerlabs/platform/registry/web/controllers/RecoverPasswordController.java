@@ -127,7 +127,7 @@ public class RecoverPasswordController implements ApplicationContextAware {
     			templateParam.put("link", URL.concat("recoverpassword/").concat(responseToken.getResult()));
     			templateParam.put("name", user.getName());
 
-    			emailService.send("no-reply@konkerlab.com",
+    			emailService.send(config.getString("sender"),
     					Collections.singletonList(user),
     					Collections.emptyList(),
     					applicationContext.getMessage(Messages.USER_EMAIL_SUBJECT.getCode(), null, locale),
