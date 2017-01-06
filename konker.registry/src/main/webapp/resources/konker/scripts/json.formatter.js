@@ -1,4 +1,4 @@
-$.each($(".payload"), function () {
+$.each($(".json-data"), function () {
         var payload = $(this).html();
         var obj = JSON.parse(payload);
 
@@ -7,6 +7,6 @@ $.each($(".payload"), function () {
         data:obj
         });
 
-        node.hide();
+        node.expandAll();
     }
 );
