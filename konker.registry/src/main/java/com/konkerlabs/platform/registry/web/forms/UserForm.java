@@ -12,6 +12,7 @@ import com.typesafe.config.ConfigFactory;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Tolerate;
+import org.springframework.util.StringUtils;
 
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -34,7 +35,6 @@ public class UserForm implements ModelBuilder<User,UserForm,Void> {
     private LogLevel logLevel;
     private Tenant tenant;
     private static Config config = ConfigFactory.load().getConfig("cdn");
-    public static String DEFAULT_AVATAR = "/resources/konker/images/default-avatat.jpeg";
     private Boolean avatarUploadEnabled = Boolean.FALSE;
     private boolean notificationViaEmail;
 
@@ -53,14 +53,17 @@ public class UserForm implements ModelBuilder<User,UserForm,Void> {
                 .avatar(getAvatar())
                 .zoneId(getZoneId())
                 .phone(getPhone())
-                .tenant(tenant)
+                .tenant(getTenant())
                 .notificationViaEmail(isNotificationViaEmail())
                 .build();
     }
 
     private String buildAvatarPath(String avatar) {
-        String baseAvatarPath = config.getString("prefix") + "/" + config.getString("name") + "/";
-        return baseAvatarPath + avatar;
+        if(!StringUtils.isEmpty(avatar)){
+            return config.getString("prefix") + "/" + config.getString("name") + "/" + avatar;
+        } else {
+            return config.getString("defaultavatar");
+        }
     }
     @Override
     public UserForm fillFrom(User model) {
@@ -68,8 +71,7 @@ public class UserForm implements ModelBuilder<User,UserForm,Void> {
         this.setEmail(model.getEmail());
         this.setPhone(model.getPhone());
         this.setAvatar(model.getAvatar());
-        this.setAvatar(Optional.ofNullable(model.getAvatar()).isPresent() ?
-                buildAvatarPath(getAvatar()) : DEFAULT_AVATAR);
+        this.setAvatar(buildAvatarPath(model.getAvatar()));
         this.setDateFormat(model.getDateFormat());
         this.setLanguage(model.getLanguage());
         this.setZoneId(model.getZoneId());

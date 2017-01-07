@@ -2,6 +2,14 @@ FROM openjdk:8-jre-alpine
 
 MAINTAINER Andre Rocha <andre@konkerlabs.com>
 
+#ENV TZ=America/Sao_Paulo
+#RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+#RUN echo America/Sao_Paulo | tee /etc/timezone && dpkg-reconfigure --frontend noninteractive tzdata
+#ENV TERM=xterm \
+#ENV TZ=America/Sao_Paulo
+#RUN apk --update add tzdata && cp /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+#apk del tzdata
+
 #Jetty
 # add our user and group first to make sure their IDs get assigned consistently, regardless of whatever dependencies get added
 RUN addgroup -S jetty && adduser -D -S -H -G jetty jetty && rm -rf /etc/group- /etc/passwd- /etc/shadow-
@@ -66,7 +74,10 @@ RUN chmod 777 /docker-entrypoint.sh
 COPY build/registry.war /var/lib/jetty/webapps/
 COPY build/application.conf /var/lib/jetty/resources/
 COPY build/logback.xml /var/lib/jetty/webapps/resources/
+COPY build/logback.xml /var/lib/jetty/resources/
 COPY build/resolv.conf /etc/
+COPY build/mail /var/lib/jetty/webapps/resources/mail/
+COPY build/mail /var/lib/jetty/resources/mail/
 
 #nginx
 ENV NGINX_VERSION nginx-1.7.11
@@ -101,7 +112,7 @@ RUN chmod 755 /usr/local/sbin/nginx
 COPY build/nginx.conf /etc/nginx/nginx.conf
 COPY build/nginx.conf /etc/nginx/conf/nginx.conf
 COPY build/mime.types /etc/nginx/mime.types
-COPY build/sites /var/www/
+#COPY build/sites /var/www/
 COPY build/conf.d /etc/nginx/conf.d
 
 #start

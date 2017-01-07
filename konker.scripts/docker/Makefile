@@ -6,20 +6,16 @@
 #
 JCC = mvn
 DCC = docker
-REGISTRY_SRC = ../../konker.registry
+REGISTRY_SRC = ../../
 JFLAGS = -f $(REGISTRY_SRC)
-JTARGET = clean install package
-ENV_SRC=env
+JTARGET = clean install package -DskipTests
+#ENV_SRC=env
 #default target
 default:
-			$(RM) build/*
 			$(JCC) $(JFLAGS) $(JTARGET)
-			cp $(REGISTRY_SRC)/target/registry.war build/
-			cp $(ENV_SRC)/$(ENV)/* build/
+			cp $(REGISTRY_SRC)/konker.registry/target/registry.war build/
 
 
 install:
 			$(DCC) build .
 
-clean:
-				$(RM) build/*
