@@ -130,10 +130,10 @@ public class RecoverPasswordController implements ApplicationContextAware {
     			emailService.send(config.getString("sender"),
     					Collections.singletonList(user),
     					Collections.emptyList(),
-    					applicationContext.getMessage(Messages.USER_EMAIL_SUBJECT.getCode(), null, locale),
+    					applicationContext.getMessage(Messages.USER_EMAIL_SUBJECT.getCode(), null, user.getLanguage().getLocale()),
     					"html/email-recover-pass",
     					templateParam,
-    					locale);
+    					user.getLanguage().getLocale());
     			return Boolean.TRUE;
     		} catch (MessagingException e) {
     			LOGGER.equals(e);
