@@ -14,7 +14,7 @@ $('#btnLoginSend').on('click', function(e) {
 		e.preventDefault();
 		var url = urlTo('/recoverpassword/email');
 		
-		var email = $('input[name=username]').val();
+		var email = $('.login-form-rcv input[name=username]').val();
 		var json = {"email" : email, "recaptcha": recaptcha}
 		
 		$.ajax({

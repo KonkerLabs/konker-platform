@@ -88,7 +88,8 @@ public class TokenServiceImpl implements TokenService {
     public ServiceResponse<Boolean> isValidToken(String token) {
         if (token != null) {
             Token result = tokenRepository.findOne(token);
-            if (result.getIsExpired() || result.getExpirationDateTime().isBefore(Instant.now())) {
+            if (!Optional.ofNullable(result).isPresent()
+            		|| result.getIsExpired() || result.getExpirationDateTime().isBefore(Instant.now())) {
                 return ServiceResponseBuilder.<Boolean>error()
                         .withMessage(Validations.INVALID_TOKEN.getCode())
                         .withResult(false).build();
