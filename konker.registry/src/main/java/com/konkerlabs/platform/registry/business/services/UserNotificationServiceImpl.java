@@ -214,7 +214,7 @@ public class UserNotificationServiceImpl implements UserNotificationService {
 						saved.getSubject(), 
 						"text/email-notification", 
 						templateParam , 
-						new Locale(user.getLanguage().getLanguage()));
+						user.getLanguage().getLocale());
 			} catch (MessagingException e) {
 				LOGGER.error("Notification: ", e);
 			}
