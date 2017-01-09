@@ -1,3 +1,57 @@
+
+// tela de login
+$('#btnLoginSend').on('click', function(e) {
+
+	var recaptcha = grecaptcha.getResponse();
+	
+	$('#recoverResultOk').hide();
+	$('#recoverResultError').hide();
+	
+	$('.login-form-rcv input[type="text"]').removeClass('has-error');
+	$('#recaptcha').removeClass('div-has-error');
+	
+	if ($('.login-form-rcv input[type="text"]').val() != "" && recaptcha != "") {
+		e.preventDefault();
+		var url = urlTo('/recoverpassword/email');
+		
+		var email = $('input[name=username]').val();
+		var json = {"email" : email, "recaptcha": recaptcha}
+		
+		$.ajax({
+			context : this,
+			type : "POST",
+			url : url,
+			contentType: "application/json",
+			dataType: "json",
+			timeout : 100000,
+			data: JSON.stringify(json),
+			beforeSend : function() {
+			},
+			success : function(data) {
+				var result = jQuery.parseJSON(data);
+				
+				if (result == true) {
+					$('#recoverResultOk').show();
+					$('#btnLoginSend').prop('disabled',true);
+				} else {
+					$('#recoverResultError').show();
+				}
+				
+			},
+			complete : function() {
+			}
+		});
+	}
+	
+	if ($('.login-form-rcv input[type="text"]').val() == "") {
+		$('.login-form-rcv input[type="text"]').addClass('has-error');
+	}
+	if (recaptcha == "") {
+		$('#recaptcha').addClass('div-has-error');
+	}
+});
+
+// tela de recuperação de senha (ainda é acessada?)
 $('#btnSend').on('click', function(e) {
 	var recaptcha = grecaptcha.getResponse();
 	
