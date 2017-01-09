@@ -58,6 +58,14 @@
                     <h4 data-th-text="#{login.title}"></h4>
                 </div>
 		        <div class="login-wrap">
+					
+					<!-- success message -->
+                    <div class="alert alert-success" role="alert" data-th-if="${message != null}">
+			            <span data-th-text="${message}"></span>
+			            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+			                <span aria-hidden="true">&times;</span>
+			            </button>
+			        </div>
 
                     <!-- Erro de login e senha -->
                     <div id="failLogin" class="row" th:if="${param.error}" th:with="errorMsg=${session['SPRING_SECURITY_LAST_EXCEPTION'].message}">
