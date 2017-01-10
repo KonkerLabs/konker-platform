@@ -1,7 +1,6 @@
 <!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/html" xmlns:th="http://www.w3.org/1999/xhtml">
-
-<head>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
     <script data-th-inline="javascript" data-th-if="${hotjarEnable}">
         /*<![CDATA[*/
             (function(h,o,t,j,a,r){
@@ -15,102 +14,208 @@
         /*]]>*/
     </script>
     
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <meta name="description" content="" />
-    <meta name="author" content="" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="Dashboard">
+    <meta name="keyword" content="Dashboard, Bootstrap, Admin, Template, Theme, Responsive, Fluid, Retina">
 
-    <title>Konker</title>
+    <title>Konker Platform</title>
 
     <!-- Bootstrap core CSS -->
-    <link data-th-href="@{/resources/bootstrap/css/bootstrap.min.css}" rel="stylesheet" />
-    <link data-th-href="@{/resources/bootstrap/css/bootstrap-datetimepicker.min.css}" rel="stylesheet" />
+    <link rel="stylesheet" data-th-href="@{/resources/bootstrap/css/bootstrap.min.css}" />
+    <!--external css-->
+    <link rel="stylesheet" type="text/css" data-th-href="@{/resources/font-awesome/css/font-awesome.min.css}">
 
     <!-- Custom styles for this template -->
-    <link data-th-href="@{/resources/bootstrap/css/jumbotron.css}" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" data-th-href="@{/resources/konker/css/style2.css}">
+    <link rel="stylesheet" type="text/css" data-th-href="@{/resources/konker/css/style-responsive.css}">
 
-    <link data-th-href="@{/resources/bootstrap/css/konker.css}" rel="stylesheet" />
-    
+    <!-- Favicon -->
     <link rel="icon" data-th-href="@{/resources/konker/images/favicon.png}" sizes="16x16 32x32 48x48 56x56"
           type="image/vnd.microsoft.icon" />
 
-    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
-		<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
-		<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-	<![endif]-->
-</head>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
 
-<body>
-    <nav class="navbar navbar-inverse navbar-fixed-top">
-        <div class="container-fluid">
+  <body>
 
-            <ul class="nav navbar-nav menu">
-                <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="caret"></span></a>
-                    <ul class="dropdown-menu">
-                        <li th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'')')}">
-                        	<a data-th-href="@{/devices}" data-th-text="#{nav.menu.devices}"></a></li>
-                        <li th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'')')}">
-                        	<a data-th-href="@{/routes}" data-th-text="#{nav.menu.routes}"></a></li>
-                        <li th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'')')}">
-                        	<a data-th-href="@{/transformation}" data-th-text="#{nav.menu.transformations}"></a></li>
-                        <li th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'')')}">
-                        	<a data-th-href="@{/destinations/rest}" data-th-text="#{nav.menu.rest_destinations}"></a></li>
-                        <li th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'')')}">
-                        	<a data-th-href="@{/destinations/sms}" data-th-text="#{nav.menu.sms_destinations}" 
-                        		th:if="${@environment.getActiveProfiles().length != 0 && #lists.contains(@environment.getActiveProfiles(), 'sms')}"></a></li>
-                        <li th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'')')}">
-                        	<a data-th-href="@{/visualization}" data-th-text="#{nav.menu.dashboards}"></a></li>
-                        <li th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_ANALYTICS_USER'')')}">
-                        	<a data-th-href="@{/dashboards}" data-th-text="#{nav.menu.dashboards}"></a></li>
-                        <li th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_ANALYTICS_USER'')')}">
-                        	<a data-th-href="@{/notebooks}" data-th-text="#{nav.menu.notebooks}"></a></li>
-                        <li><a href="https://konker.atlassian.net/wiki/display/DEV/Guia+de+Uso+da+Plataforma+Konker" target="help">Help</a></li>
-                    </ul>
-                </li>
-            </ul>
+  <section id="container" >
+      <!-- **********************************************************************************************************************************************************
+      TOP BAR CONTENT & NOTIFICATIONS
+      *********************************************************************************************************************************************************** -->
+      <!--header start-->
+      <header class="header black-bg">
+              <div class="sidebar-toggle-box">
+                  <div class="fa fa-bars tooltips" data-placement="right" data-original-title="Toggle Navigation"></div>
+              </div>
+            <!--logo start-->
+            <a data-th-href="@{/}" class="logo"><img data-th-attr="src=@{/resources/konker/images/konker-principal2.png}" alt="Konker" title="Konker" width="120px" /></a>
+            <!--logo end-->
+            <div class="nav notify-row pull-right" id="top_menu">
+                <!-- User info -->
+			<ul class="user-info pull-right">          
+			  <li class="profile-info dropdown"><a data-toggle="dropdown" class="dropdown-toggle" href="#" aria-expanded="false"> <img width="44" class="img-circle avatar" alt="" data-th-attr="src=@{/resources/konker/images/default-avatar.png}" data-th-text="${@user.email}"><span class="caret"></span></a>
 
+				<!-- User action menu -->
+				<ul class="dropdown-menu">
+                  <li><a data-th-href="@{/me}"><i class="icon-cog"></i><span data-th-text="#{nav.user.account_profile}">Conta e Perfil</span></a></li>
+                  <li><a data-th-href="@{/logout}"><i class="icon-cog"></i><span class="glyphicon glyphicon-log-out"></span><span>&nbsp;</span><span data-th-text="#{nav.user.logout}">Logout</span></a></li>
+				</ul>
+				<!-- /user action menu -->
 
-            <ul class="nav navbar-nav navbar-right collapsable options">
-                <li><a class="navbar-link" data-th-href="@{/me}" data-th-text="${@user.email}"></a></li>
-                <li><a class="navbar-link" data-th-href="@{/notifications}"><span id="notification-icon" class="glyphicon glyphicon-bell"></span></a></li>
-<!--                 <li><a class="navbar-link" href="#"><span class="glyphicon glyphicon-wrench"></span></a></li> -->
-<!--                 <li><a class="navbar-link" href="#"><span class="glyphicon glyphicon-search"></span></a></li> -->
-                <li><a class="navbar-link" data-th-href="@{/logout}"><span class="glyphicon glyphicon-log-out"></span></a></li>
-            </ul>
-            <!--/.navbar-collapse -->
-        </div>
-    </nav>
+			  </li>
+			</ul>
+			<!-- /user info -->
 
+            <!-- User alerts -->
+			<ul class="user-info pull-right">
 
-    <!-- Main jumbotron for a primary marketing message or call to action -->
-    <div id="wrap">
-        <div class="container" data-layout-fragment="content">
-        </div>
-    </div>
+			  <!-- Notifications -->
+			  <li>
+				<a data-th-href="@{/notifications}">
+                    <img id="notification-icon-off" data-th-attr="src=@{/resources/konker/images/alert-1.svg}" width="35px" />
+                    <img id="notification-icon-on" data-th-attr="src=@{/resources/konker/images/alert-2.svg}" width="35px" style="display: none;" />
+                </a>
+			  </li>
+			  <!-- /notifications -->
 
-    <div id="footer">
-        <div class="container">
-            <hr/>
-            <footer>
-                <p data-th-text="#{footer.support.description}"></p>
-            </footer>
-        </div>
-    </div>
+			</ul>
+			<!-- /user alerts -->
+            </div>            
+        </header>
+      <!--header end-->
+      
+      <!-- **********************************************************************************************************************************************************
+      MAIN SIDEBAR MENU
+      *********************************************************************************************************************************************************** -->
+      <!--sidebar start-->
+      <aside>
+          <div id="sidebar"  class="nav-collapse ">
+              <!-- sidebar menu start-->
+              <ul class="sidebar-menu" id="nav-accordion">              
 
+                  <li class="mt">
+                          <span class="titlemenu">IOT</span>
+                  </li>
 
-    <!-- Bootstrap core JavaScript
-================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-    
+                  <li class="sub-menu" th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'')')}">
+                      <a data-th-href="@{/devices}">
+                          <img data-th-attr="src=@{/resources/konker/images/icons-menu/icon-device.svg}" class="icon-menu" />
+                          <span data-th-text="#{nav.menu.devices}">Dispositivos</span>
+                      </a>                      
+                  </li>
+
+                  <li class="sub-menu" th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'')')}">
+                      <a data-th-href="@{/routes}">
+                          <i class="fa fa-cogs"></i>
+                          <span data-th-text="#{nav.menu.routes}">Roteador de eventos</span>
+                      </a>                      
+                  </li>
+
+                  <li class="sub-menu" th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'')')}">
+                      <a data-th-href="@{/transformation}">
+                          <i class="fa fa-book"></i>
+                          <span data-th-text="#{nav.menu.transformations}">Transformações</span>
+                      </a>                     
+                  </li>
+
+                  <li class="sub-menu" th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'')')}">
+                      <a data-th-href="@{/destinations/rest}">
+                          <i class="fa fa-th"></i>
+                          <span data-th-text="#{nav.menu.rest_destinations}">Destinos REST</span>
+                      </a>
+                  </li>
+
+                  <li class="sub-menu" th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'')')}">
+                      <a data-th-href="@{/visualization}">
+                          <i class=" fa fa-bar-chart-o"></i>
+                          <span data-th-text="#{nav.menu.dashboards}">Visualização de dados</span>
+                      </a>                      
+                  </li>
+              </ul>
+
+              <ul class="sidebar-menu subtitle" id="nav-accordion"
+                 th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_ANALYTICS_USER'')')}">              
+
+                  <li class="sub-menu">
+                      <span class="titlemenu" data-th-text="#{nav.menu.analytics}"></span>
+                  </li>
+
+                  <li class="sub-menu" th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_ANALYTICS_USER'')')}">
+                      <a data-th-href="@{/dashboards}">
+                          <i class="fa fa-desktop"></i>
+                          <span data-th-text="#{nav.menu.dashboards}">Dashboards</span>
+                      </a>                      
+                  </li>
+
+                  <li class="sub-menu" th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_ANALYTICS_USER'')')}">
+                      <a data-th-href="@{/notebooks}">
+                          <i class="fa fa-cogs"></i>
+                          <span data-th-text="#{nav.menu.notebooks}">Notebooks</span>
+                      </a>                      
+                  </li>
+                  
+              </ul>
+              
+              <ul class="sidebar-menu subtitle" id="nav-accordion">
+              
+                  <li class="sub-menu">
+                      <a target="_blank" href="https://konker.atlassian.net/wiki/display/DEV/Guia+de+Uso+da+Plataforma+Konker">
+                          <img data-th-attr="src=@{/resources/konker/images/icons-menu/icon-help.svg}" class="icon-menu" />
+                          <span data-th-text="#{nav.menu.help}">Ajuda</span>
+                      </a>
+                  </li>
+
+                  <li class="sub-menu">
+                      <a href="javascript:;" >
+                          <img data-th-attr="src=@{/resources/konker/images/icons-menu/icon-msg.svg}" class="icon-menu" />
+                          <span data-th-text="#{nav.menu.contact_us}">Fale com a gente</span>
+                      </a>                      
+                  </li>
+                  
+              </ul>
+              
+              <!-- sidebar menu end-->
+          </div>
+      </aside>
+      <!--sidebar end-->
+      
+      <!-- **********************************************************************************************************************************************************
+      MAIN CONTENT
+      *********************************************************************************************************************************************************** -->
+      <!--main content start-->
+      <section id="main-content">
+          <section class="wrapper">
+            <a id="maincontenttop"></a>
+            <div id="wrap">
+                <div data-layout-fragment="content">
+                </div>
+            </div> 
+          </section>
+      </section>
+
+      <!--main content end-->
+      <!--footer start-->
+      <footer class="site-footer">
+
+              2016 <strong>Konker</strong> <span data-th-text="#{footer.all_rights_reserved}"></span>
+              <a href="#maincontenttop" class="go-top">
+                  <i class="fa fa-angle-up"></i>
+              </a>
+
+      </footer>
+      <!--footer end-->
+  </section>
+
+    <!-- js placed at the end of the document so the pages load faster -->
+    <script data-th-attr="src=@{/resources/konker/scripts/jquery-1.11.1.min.js}" type="text/javascript"></script>
     <script data-th-inline="javascript">
         /*<![CDATA[*/
-            window.jQuery || document.write('<script src="/resources/bootstrap/js/vendor/jquery.min.js"/>')
-
             function contextPath() {
                 var context = /*[[@{/}]]*/ '/';
                 return context;
@@ -122,12 +227,15 @@
             }
         /*]]>*/
     </script>
+
     <script data-th-attr="src=@{/resources/bootstrap/js/bootstrap.min.js}"></script>
     <script data-th-attr="src=@{/resources/bootstrap/js/moment.js}"></script>
     <script data-th-attr="src=@{/resources/bootstrap/js/bootstrap-datetimepicker.min.js}"></script>
     <script data-th-attr="src=@{/resources/js/notifications/status.js}"></script>
+
+    <!-- page javascripts -->
     <div data-layout-fragment="script">
     </div>
-</body>
 
+  </body>
 </html>

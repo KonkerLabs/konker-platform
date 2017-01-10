@@ -18,7 +18,11 @@ var notificationStatusDataStore = {
 var notificationStatus = {
     refresh: function() {
         notificationStatusDataStore.checkNewNotifications().then(function(data) {
-            $('#notification-icon').toggleClass("new-notifications", data.hasNewNotifications)
+            // old template
+        	$('#notification-icon').toggleClass("new-notifications", data.hasNewNotifications);
+            // new template
+        	$('#notification-icon-off').hide();
+            $('#notification-icon-on').show();
         }, function(error) { console.log(error) });
     },
     unmarkNewNotifications: function() {
