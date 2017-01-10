@@ -106,6 +106,7 @@ email {
 	port="25"
 	protocol="smtp"
 	username="noreply@seudominio.com"
+	sender="noreply@seudominio.com"
 	password="admin123"
 	baseurl="http://localhost:8080/"
 }
