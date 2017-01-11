@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.konkerlabs.platform.registry.business.model.Token;
@@ -61,7 +62,8 @@ public class RecoverPasswordController implements ApplicationContextAware {
 
     public enum Messages {
         USER_DOES_NOT_EXIST("controller.recover.user.does.not.exist"),
-        USER_EMAIL_SUBJECT("controller.recover.user.email.subject");
+        USER_EMAIL_SUBJECT("controller.recover.user.email.subject"),
+        USER_CHANGE_PASSWORD_SUCCESS("controller.recover.user.success");
 
         public String getCode() {
             return code;
@@ -130,10 +132,10 @@ public class RecoverPasswordController implements ApplicationContextAware {
     			emailService.send(config.getString("sender"),
     					Collections.singletonList(user),
     					Collections.emptyList(),
-    					applicationContext.getMessage(Messages.USER_EMAIL_SUBJECT.getCode(), null, locale),
+    					applicationContext.getMessage(Messages.USER_EMAIL_SUBJECT.getCode(), null, user.getLanguage().getLocale()),
     					"html/email-recover-pass",
     					templateParam,
-    					locale);
+    					user.getLanguage().getLocale());
     			return Boolean.TRUE;
     		} catch (MessagingException e) {
     			LOGGER.equals(e);
@@ -183,7 +185,9 @@ public class RecoverPasswordController implements ApplicationContextAware {
     }
 
 	@RequestMapping(method = RequestMethod.POST)
-	public ModelAndView resetPassword(@ModelAttribute("userForm") UserForm userForm, Locale locale) {
+	public ModelAndView resetPassword(@ModelAttribute("userForm") UserForm userForm, 
+			RedirectAttributes redirectAttributes, 
+			Locale locale) {
 		ServiceResponse<User> response = userService.findByEmail(userForm.getEmail());
 
 		if (!Optional.ofNullable(response.getResult()).isPresent()) {
@@ -210,6 +214,9 @@ public class RecoverPasswordController implements ApplicationContextAware {
 		}
 
 		tokenService.invalidateToken(userForm.getToken());
+		
+		redirectAttributes.addFlashAttribute("message", applicationContext
+				.getMessage(Messages.USER_CHANGE_PASSWORD_SUCCESS.getCode(), null, locale));
 
 		return new ModelAndView("redirect:/login");
 	}

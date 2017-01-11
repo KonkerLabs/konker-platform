@@ -1,12 +1,30 @@
-$.each($(".json-data"), function () {
-        var payload = $(this).html();
-        var obj = JSON.parse(payload);
+var toggle = false;
+$("#isJsonFormatted").click(function () {
+    $("#isJsonFormatted").attr("checked", !toggle);
+    toggle = !toggle;
+    formatJson(toggle);
+});
 
-        var node = new PrettyJSON.view.Node({
-        el:$(this),
-        data:obj
-        });
+function formatJson(isFormatted) {
+    $.each($(".json-data"), function () {
+            var payload = $(this).html();
+            if (isFormatted) {
+                try {
+                    var result = JSON.parse(payload);
+                } catch (e) {
 
-        node.expandAll();
-    }
-);
+                }
+                $(this).attr("text", payload);
+                var node = new PrettyJSON.view.Node({
+                    el: $(this),
+                    data: result
+                });
+                node.expandAll();
+            }
+            else {
+                var unformattedJSON = $(this).attr("text");
+                $(this).html(unformattedJSON);
+            }
+        }
+    );
+}

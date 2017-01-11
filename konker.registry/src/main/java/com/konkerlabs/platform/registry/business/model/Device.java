@@ -1,7 +1,6 @@
 package com.konkerlabs.platform.registry.business.model;
 
 import java.math.BigInteger;
-import java.net.URI;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Collections;
@@ -11,6 +10,8 @@ import java.util.Optional;
 import java.util.Random;
 
 import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
+import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
+
 import lombok.experimental.Tolerate;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -75,6 +76,7 @@ public class Device implements URIDealer, Validatable, UserDetails {
 	private String guid;
 	private String description;
 	private Instant registrationDate;
+    private LogLevel logLevel;
 //	private List<Event> events;
 	private boolean active;
 
@@ -115,6 +117,9 @@ public class Device implements URIDealer, Validatable, UserDetails {
 //				.collect(Collectors.toList());
 //	}
 
+	public LogLevel getLogLevel() {
+		return Optional.ofNullable(logLevel).orElse(LogLevel.WARNING);
+	}
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {

@@ -16,7 +16,9 @@ import java.util.concurrent.Executor;
 
 @Configuration
 @EnableAsync
-@ComponentScan(basePackages = "com.konkerlabs.platform.registry.business")
+@ComponentScan(basePackages = {"com.konkerlabs.platform.registry.business",
+		"com.konkerlabs.platform.registry.audit.repositories"}
+)
 public class BusinessConfig implements AsyncConfigurer {
 
     @Override

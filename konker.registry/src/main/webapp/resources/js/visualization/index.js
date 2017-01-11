@@ -12,6 +12,13 @@ $('button.btn-success').click(function() {
 	findAndLoadDataChart();
 });
 
+$("<link/>", {
+    rel: "stylesheet",
+    type: "text/css",
+    href: "resources/konker/css/pretty-json.css"
+}).appendTo("head");
+$.getScript( "resources/konker/scripts/json.formatter.js");
+
 function loadCSV() {
 	$.ajax({
 		context : this,
@@ -46,8 +53,13 @@ function findAndLoadDataChart() {
             showElement('#loading');
         },
         success : function(data) {
-        	var result = jQuery.parseJSON(data);
-        	
+            var result;
+            try {
+                result = jQuery.parseJSON(data);
+            } catch (e) {
+
+            }
+
         	if (result.length > 0 && result[0].message != null) {
         		$('div .alert.alert-danger').removeClass('hide');
         		$('div .alert.alert-danger li').html(result[0].message);
@@ -63,12 +75,7 @@ function findAndLoadDataChart() {
         			tableData = tableData + '<tr><td>'+value.timestampFormated+'</td><td class="json-data">'+json+'</td></tr>';
         		});
         		$("#data-event table tbody").html(tableData);
-                $("<link/>", {
-                    rel: "stylesheet",
-                    type: "text/css",
-                    href: "resources/konker/css/pretty-json.css"
-                }).appendTo("head");
-                $.getScript( "resources/konker/scripts/json.formatter.js");
+        		formatJson($("#isJsonFormatted").attr("checked"));
         		loadCSV();
         	}
 

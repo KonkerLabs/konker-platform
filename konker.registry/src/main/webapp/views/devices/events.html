@@ -13,6 +13,14 @@
 					<input type="text" data-th-value="${device.deviceId}"
 						class="form-control" id="deviceId" name="deviceId" />
 				</div>
+				<label class="col-sm-1 control-label" data-th-text="#{json.format.messages}"
+					   style="width: 25%;"></label>
+				<div class="col-sm-3">
+					<label class="switch">
+						<input type="checkbox" id="isJsonFormatted" name="isJsonFormatted"/>
+						<div class="slider round"></div>
+					</label>
+				</div>
 			</div>
 			<ul class="nav nav-tabs nav-justified col-sm-12" >
 				<li class="active"><a data-toggle="tab" href="#incoming"
@@ -38,7 +46,7 @@
 								<tr data-th-each="event : ${recentIncomingEvents}">
 									<td data-th-text="${{event.timestamp}}"></td>
 									<td data-th-text="${event.incoming.channel}"></td>
-									<td data-th-text="${event.payload}" class="payload"></td>
+									<td data-th-text="${event.payload}" class="json-data"></td>
 								</tr>
 							</tbody>
 						</table>
@@ -64,7 +72,7 @@
 								<tr data-th-each="event : ${recentOutgoingEvents}">
 									<td data-th-text="${{event.timestamp}}"></td>
 									<td data-th-text="${event.outgoing.channel}"></td>
-									<td data-th-text="${event.payload}" class="payload"></td>
+									<td data-th-text="${event.payload}" class="json-data"></td>
 								</tr>
 							</tbody>
 						</table>
@@ -79,12 +87,13 @@
 		<a data-th-href="@{/devices}" class="btn btn-default"
 			data-th-text="#{nav.back}"></a>
 		<div data-layout-fragment="script">
+			<link data-th-href="@{/resources/konker/css/toggle-switch.css}" rel="stylesheet" />
             <link data-th-href="@{/resources/konker/css/pretty-json.css}" type="text/css" rel="stylesheet"/>
 			<script data-th-attr="src=@{/resources/konker/scripts/jquery-1.11.1.min.js}" type="text/javascript"></script>
             <script data-th-attr="src=@{/resources/konker/scripts/underscore-min.js}" type="text/javascript"></script>
             <script data-th-attr="src=@{/resources/konker/scripts/backbone-min.js}" type="text/javascript"></script>
             <script data-th-attr="src=@{/resources/konker/scripts/pretty-json-min.js}" type="text/javascript"></script>
-			<script data-th-attr="src=@{/resources/js/devices/payload.js}"></script>
+			<script data-th-attr="src=@{/resources/konker/scripts/json.formatter.js}"></script>
 		</div>
 	</div>
 </body>

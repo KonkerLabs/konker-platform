@@ -18,6 +18,11 @@ mongo {
   port = 27017
 }
 
+mongoAudit {
+  hostname = "localhost"
+  port = 27017
+}
+
 web {
   views {
     cache = false
@@ -81,13 +86,12 @@ konkerAnalytics {
 
 cdn {
     name:"konker.platform.user.bucket"
-    prefix:"https://s3.eu-central-1.amazonaws.com"
-    key:"AKIAIODMEQNWDXSDPN3Q"
-    secret:"SVmDo+kRJ885ma3DV9I5L8et4RuJoGn+2Sdt/YgO"
+    prefix:"https://s3.amz-region.amazonaws.com"
+    key:"yourawskey"
+    secret:"yourawssecret"
     max-size = 500000
     file-types = "jpg,png,jpeg"
     enabled = true
-    defaultavatar = "/registry/resources/konker/images/default-avatar.jpeg"
 }
 
 password.user {
@@ -97,17 +101,17 @@ password.user {
 }
 
 recaptcha {
- secretKey="6LfeXhAUAAAAACgDbaLLifgyGB9T0SX77GhQYoUo"
- siteKey="6LfeXhAUAAAAAG97txXpp0kgWCW-OVD6ylgjMTnp"
- host="localhost"
+  secretKey="abcdef123456"
+  siteKey="abcdef123456"
+ host="host"
 }
 
 email {
-    host="smtp.gmail.com"
-    port="587"
-    protocol="smtp"
-    username="doliveira.apolinario@gmail.com"
-    password="R13011987e"
-    baseurl="http://localhost:8080/"
-    enabled=true
+	host="servidor.smtp"
+	port="25"
+	protocol="smtp"
+	username="noreply@seudominio.com"
+	sender="noreply@seudominio.com"
+	password="admin123"
+	baseurl="http://localhost:8080/"
 }

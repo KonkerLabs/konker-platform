@@ -2,6 +2,7 @@
 <html data-layout-decorate="layouts/default">
 <head>
 	<link data-th-href="@{/resources/konker/css/nv.d3.css}" rel="stylesheet" />
+	<link data-th-href="@{/resources/konker/css/toggle-switch.css}" rel="stylesheet" />
 	<style>
 		svg {
     		display: block;
@@ -56,7 +57,7 @@
 	                    <input type="checkbox" data-th-field="*{online}"
 	                           id="online" name="online"/>
 	                </div>
-	                
+
 	            </div>
 	            
 	        	<div class="form-group">
@@ -105,6 +106,17 @@
 				<svg>
 				</svg>
 	        </div>
+
+			<div class="form-group">
+				<label class="col-sm-1 control-label" data-th-text="#{json.format.messages}"
+					   style="width: 25%;text-align: left"></label>
+				<div class="col-sm-4">
+					<label class="switch">
+						<input type="checkbox" id="isJsonFormatted" name="isJsonFormatted"/>
+						<div class="slider round"></div>
+					</label>
+				</div>
+			</div>
 	        
 	        <div id="data-event">
 	        	<table class="table table-bordered table-hover">

@@ -32,6 +32,8 @@ import com.konkerlabs.platform.registry.business.services.api.EmailService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.UserNotificationService;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
@@ -197,6 +199,7 @@ public class UserNotificationServiceImpl implements UserNotificationService {
     }
 
 	private void sendEmailNotification(User user, UserNotification saved) {
+		Config config = ConfigFactory.load().getConfig("email");
 		List<String> profiles = Arrays.stream(environment.getActiveProfiles()).collect(Collectors.toList());
 		
 		if (user.isNotificationViaEmail() && profiles.contains("email")) {
@@ -205,13 +208,13 @@ public class UserNotificationServiceImpl implements UserNotificationService {
 			templateParam.put("body", saved.getBody());
 			
 			try {
-				emailService.send("no-reply@konkerlab.com", 
+				emailService.send(config.getString("sender"), 
 						Collections.singletonList(user), 
 						Collections.emptyList(), 
 						saved.getSubject(), 
 						"text/email-notification", 
 						templateParam , 
-						new Locale(user.getLanguage().getLanguage()));
+						user.getLanguage().getLocale());
 			} catch (MessagingException e) {
 				LOGGER.error("Notification: ", e);
 			}
