@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html lang="en-US">
-<head>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
     <script data-th-inline="javascript" data-th-if="${hotjarEnable}">
         /*<![CDATA[*/
             (function(h,o,t,j,a,r){
@@ -13,119 +13,162 @@
             })(window,document,'//static.hotjar.com/c/hotjar-','.js?sv=');
         /*]]>*/
     </script>
-    <meta http-equiv="Content-type" content="text/html;charset=UTF-8"/>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Konker Cloud Platform</title>
-    <!-- CSS -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,100,300,500">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="Dashboard">
+    <meta name="keyword" content="Dashboard, Bootstrap, Admin, Template, Theme, Responsive, Fluid, Retina">
+
+    <title>Konker Platform Login</title>
+
+    <!-- Bootstrap core CSS -->
     <link rel="stylesheet" type="text/css" data-th-href="@{/resources/bootstrap/css/bootstrap.min.css}">
+
+    <!--external css-->
     <link rel="stylesheet" type="text/css" data-th-href="@{/resources/font-awesome/css/font-awesome.min.css}">
-	<link rel="stylesheet" type="text/css" data-th-href="@{/resources/konker/css/form-elements.css}">
-    <link rel="stylesheet" type="text/css" data-th-href="@{/resources/konker/css/style.css}">
 
-	<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" type="text/css" data-th-href="@{/resources/konker/css/style2.css}">
+    <link rel="stylesheet" type="text/css" data-th-href="@{/resources/konker/css/style-responsive.css}">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i,800,800i" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
-        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->    
-    
-    <link rel="shortcut icon" data-th-href="@{/resources/konker/images/favicon.png}" href="../resources/konker/images/favicon.png" sizes="16x16 32x32 48x48 56x56" type="image/vnd.microsoft.icon" />
-    <link rel="apple-touch-icon-precomposed" data-th-href="@{/resources/konker/images/apple-touch-icon-144-precomposed.png}" href="../resources/konker/images/apple-touch-icon-144-precomposed.png" sizes="144x144" >
-    <link rel="apple-touch-icon-precomposed" data-th-href="@{/resources/konker/images/apple-touch-icon-114-precomposed.png}" href="../resources/konker/images/apple-touch-icon-114-precomposed.png" sizes="114x114" >
-    <link rel="apple-touch-icon-precomposed" data-th-href="@{/resources/konker/images/apple-touch-icon-72-precomposed.png}" href="../resources/konker/images/apple-touch-icon-72-precomposed.png" sizes="72x72" >
-    <link rel="apple-touch-icon-precomposed" data-th-href="@{/resources/konker/images/apple-touch-icon-57-precomposed.png}" href="../resources/konker/images/apple-touch-icon-57-precomposed.png">
-</head>
-<body>
-	<!-- Top content -->
-    <div class="top-content">
-    	<div class="inner-bg">
-        	<div class="container">
-                <div class="row">
-                	<div class="col-sm-6 col-sm-offset-3 form-box">
-                    	<div class="form-top">
-                        	<div class="form-top-left">
-                        		<h3 data-th-text="#{login.title}">Login to Konker Platform</h3>
-                            	<p data-th-text="#{login.subtitle}">Enter your username and password to log on</p>
-                        	</div>
-                        	<div class="form-top-right">
-                        		<img id="logo-konker" data-th-attr="src=@{/resources/konker/images/logo-konker.png}"/>
-                        	</div>
-                        </div>
-                        <div class="form-bottom">
-			            	<form id="formLogin" role="form" method="post" data-th-action="@{/login}" class="login-form">
-			                	<div class="form-group">
-			                    	<label class="sr-only" for="form-username">Username</label>
-			                        <input type="text" name="username" th:placeholder="#{login.username.placeholder}" 
-			                        	   class="form-username form-control" id="form-username" />
-			                    </div>
-			                    <div class="form-group">
-			                    	<label class="sr-only" for="form-password">Password</label>
-			                        <input type="password" name="password" th:placeholder="#{login.password.placeholder}" 
-			                        	   class="form-password form-control" id="form-password" />
-			                       	<a id="recoverPassword" 
-			                       		th:href="@{/recoverpassword}"
-			                       		th:if="${@environment.getActiveProfiles().length != 0 && #lists.contains(@environment.getActiveProfiles(), 'email')}" 
-			                       		href="#">
-			                       			<span data-th-text="#{user.forgot.password}">Forgot password</span>
-			                       	</a>
-			                    </div>
-			                    <div class="form-top-center" th:if="${param.error}" 
-						        		th:with="errorMsg=${session['SPRING_SECURITY_LAST_EXCEPTION'].message}">
-									<p th:text="${errorMsg}">Bad credentials</p>
-						        </div>
-			                    <div class="form-top-center">
-									<p><span data-th-text="#{login.license.text}">Ao efetuar login, declaro que estou de acordo com os</span> <a data-th-text="#{login.license.link_description}" th:href="@{/resources/konker/pdf/termos_de_uso_20161014a.pdf}" href="#">Termos de Uso</a></p>
-						        </div>
-			                    <button type="submit" class="btn"><p data-th-text="#{nav.login}"></p></button>
-			            	</form>
-		                </div>
-                    </div>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+
+      <!-- **********************************************************************************************************************************************************
+      MAIN CONTENT
+      *********************************************************************************************************************************************************** -->
+
+	  <div id="login-page">
+	  	<div class="container">
+            <div class="loginaligin">
+                <label class="titlelogin" data-th-text="#{login.welcome}"></label>
+            </div>
+
+            <form id="formLogin" role="form" method="post" data-th-action="@{/login}" class="login-form">
+		        <div class="login-form-heading">
+                    <img data-th-attr="src=@{/resources/konker/images/konker-principal.png}" width="250px" />
+                    <br> <br>
+                    <h4 data-th-text="#{login.title}"></h4>
                 </div>
+		        <div class="login-wrap">
 
-				<!-- <div class="row">
-					<div class="col-sm-6 col-sm-offset-3 social-login">
-						<h3>...or login with:</h3>
-						<div class="social-login-buttons">
-							<a class="btn btn-link-1 btn-link-1-facebook" href="#"> <i
-								class="fa fa-facebook"></i> Facebook
-							</a> <a class="btn btn-link-1 btn-link-1-twitter" href="#"> <i
-								class="fa fa-twitter"></i> Twitter
-							</a> <a class="btn btn-link-1 btn-link-1-git-hub" href="#"> <i
-								class="fa fa-github"></i> Git Hub
-							</a>
-						</div>
-					</div>
-				</div> -->
+                    <!-- Erro de login e senha -->
+                    <div id="failLogin" class="row" th:if="${param.error}" th:with="errorMsg=${session['SPRING_SECURITY_LAST_EXCEPTION'].message}">
+                       <div class="alert alert-danger fade in"><span th:text="${errorMsg}"></span></div>
+                    </div>
 
-			</div>
-        </div>
-    </div>
-    
-<!-- Javascript -->
-<script data-th-attr="src=@{/resources/konker/scripts/jquery-1.11.1.min.js}" type="text/javascript"></script>
-<script data-th-inline="javascript">
-    /*<![CDATA[*/
-        window.jQuery || document.write('<script src="/resources/bootstrap/js/vendor/jquery.min.js"/>')
+                    <input type="text" class="form-control" name="username" th:placeholder="#{login.username.placeholder}" id="form-username" autofocus />
 
+		            <br>
+                    <img data-th-attr="src=@{/resources/konker/images/eye-open.svg}" id="olho" class="olho" />
+                    <input type="password" name="password" th:placeholder="#{login.password.placeholder}" 
+                                           class="form-control" id="form-password" />
+
+		            <label class="checkbox"
+                        th:if="${@environment.getActiveProfiles().length != 0 && #lists.contains(@environment.getActiveProfiles(), 'email')}" >
+		                <span class="pull-right">
+		                    <a data-toggle="modal" href="login.html#senhaModal" data-th-text="#{user.forgot.password}"></a>
+		                </span>
+		            </label>
+
+                    <label class="small" style="margin-top: 10px;"><span data-th-text="#{login.license.text}"></span><span>&nbsp;</span><a data-th-text="#{login.license.link_description}" th:href="@{/resources/konker/pdf/termos_de_uso_20161014a.pdf}" href="#"></a></label>
+		            <button class="btn btn-theme btn-block" type="submit"><i class="fa fa-lock"></i><span>&nbsp;</span><span data-th-text="#{nav.login}"></span></button>
+		        </div>
+
+		      </form>
+
+              <!-- Modal Senha -->
+              <div aria-hidden="true" aria-labelledby="myModalLabel" role="dialog" tabindex="-1" id="senhaModal" class="modal fade">
+                  <div class="modal-dialog">
+                    <form id="formRecoveryPassword" role="form" method="post" class="login-form-rcv" th:target="@{/recoverpassword}">
+                          <div class="modal-content">
+                              <div class="modal-header">
+                                  <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                  <h4 class="modal-title" data-th-text="#{recover_password.title}"></h4>
+                              </div><div class="">
+                              <div class="modal-body">
+                                  <div class="form-group login-wrap">
+                                      <p data-th-text="#{recover_password.subtitle}"></p>
+                                      <input type="text" name="username" th:placeholder="#{login.username.placeholder}"
+                                        autocomplete="off" class="form-control placeholder-no-fix" id="form-username"/> 
+                                      <p />
+                                      <div id="recaptcha" class="g-recaptcha" th:data-sitekey="${siteKey}"></div>
+                                      <p />
+                                      <div class="alert alert-info" role="alert" id="recoverResultOk" style="display: none;">
+                                        <span data-th-text="#{users.dialog.recoverpassword.success.text}"></span>
+                                      </div>
+                                      <div class="alert alert-danger" role="alert" id="recoverResultError" style="display: none;">
+                                        <span data-th-text="#{users.dialog.recoverpassword.error.text}"></span>
+                                      </div>
+                                  </div>
+                              </div>
+                              <div class="modal-footer">
+                                <div class="form-bottom">
+                                  <button data-dismiss="modal" class="btn btn-default" type="button" data-th-text="#{nav.cancel}"></button>
+                                  <button class="btn btn-theme" type="button" id="btnLoginSend" data-th-text="#{nav.send}"></button>
+                                </div>
+                              </div>
+                          </div>
+                    </form>
+                  </div>
+              </div>
+              <!-- modal -->
+
+	  	</div>
+	  </div>
+
+    <!-- js placed at the end of the document so the pages load faster -->
+    <script data-th-attr="src=@{/resources/konker/scripts/jquery-1.11.1.min.js}" type="text/javascript"></script>
+    <script data-th-attr="src=@{/resources/bootstrap/js/bootstrap.min.js}" type="text/javascript"></script>
+    <script data-th-attr="src=@{/resources/konker/scripts/scripts.js}" type="text/javascript"></script>
+       
+    <!--BACKSTRETCH-->
+    <!-- You can use an image of whatever size. This script will stretch to fit in any screen size.-->
+    <script data-th-attr="src=@{/resources/konker/scripts/jquery.backstretch.min.js}" type="text/javascript"></script>
+
+    <script>
+    	$.backstretch("[[@{/resources/konker/images/login-bg-min.jpg}]]", {speed: 500});
+    </script>
+
+    <!-- SHOW PASSWORD-->
+    <script>   
+        document.getElementById('olho').addEventListener('mousedown', function() {
+        document.getElementById('form-password').type = 'text';
+        });
+
+        document.getElementById('olho').addEventListener('mouseup', function() {
+        document.getElementById('form-password').type = 'password';
+        });
+
+        // Para que o password não fique exposto apos mover a imagem.
+        document.getElementById('olho').addEventListener('mousemove', function() {
+        document.getElementById('form-password').type = 'password';
+        });
+    </script>
+
+    <!-- recovery pass js -->
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script data-th-inline="javascript">
+        /*<![CDATA[*/
         function contextPath() {
             var context = /*[[@{/}]]*/ '/';
-            return context;
+            return context;v
         }
-
+    
         function urlTo(path) {
             var url = (contextPath() + path).replace(/\/\//, '/'); /* avoids double slashs */
             return url;
         }
-    /*]]>*/
-</script>
-<script data-th-attr="src=@{/resources/bootstrap/js/bootstrap.min.js}" type="text/javascript"></script>
-<script data-th-attr="src=@{/resources/konker/scripts/jquery.backstretch.min.js}" type="text/javascript"></script>
-<script data-th-attr="src=@{/resources/konker/scripts/scripts.js}" type="text/javascript"></script>
-       
-<!--[if lt IE 10]>
-	<script src="assets/js/placeholder.js"></script>
-<![endif]-->
-</body>
+        /*]]>*/
+    </script>
+    <script data-th-attr="src=@{/resources/js/users/userdialog.js(v2)}"></script>
+
+  </body>
 </html>
