@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
@@ -44,6 +45,7 @@ import com.konkerlabs.platform.registry.business.services.api.EventSchemaService
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.web.converters.InstantToStringConverter;
 import com.konkerlabs.platform.registry.web.csv.CsvDownload;
+import com.konkerlabs.platform.registry.web.csv.EventCsvDownload;
 import com.konkerlabs.platform.registry.web.forms.DeviceVisualizationForm;
 
 @Controller
@@ -200,7 +202,9 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     					 Locale locale, HttpServletResponse response) {
     	
     	try  {
-			new CsvDownload<EventDecorator>().download(events, "events.csv", response, EventDecorator.class);
+    		EventCsvDownload csvDownload = new EventCsvDownload();
+			
+			csvDownload.download(events, response);
 		} catch (IOException | SecurityException | NoSuchMethodException e) {
 			LOGGER.error("Error to generate CSV", e);
 		}
