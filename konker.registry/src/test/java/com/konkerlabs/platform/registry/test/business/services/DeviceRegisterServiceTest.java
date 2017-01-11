@@ -3,6 +3,7 @@ package com.konkerlabs.platform.registry.test.business.services;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
@@ -175,6 +176,34 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
         assertThat(response.getResult(), equalTo(saved));
     }
+
+	@Test
+	@UsingDataSet(locations = { "/fixtures/tenants.json" })
+	public void shouldPersistWithTenantLogLevel() throws Exception {
+		currentTenant.setLogLevel(LogLevel.ALL);
+
+		ServiceResponse<Device> response = deviceRegisterService.register(currentTenant, rawDevice);
+
+		assertThat(response, isResponseOk());
+
+		Device saved = deviceRepository.findByTenantIdAndDeviceId(currentTenant.getId(), device.getDeviceId());
+
+		assertThat(saved.getLogLevel(), equalTo(LogLevel.ALL));
+
+		deviceRegisterService.remove(currentTenant, rawDevice.getGuid());
+
+		// back to default log server
+		currentTenant.setLogLevel(LogLevel.WARNING);
+
+		response = deviceRegisterService.register(currentTenant, rawDevice);
+
+		assertThat(response, isResponseOk());
+
+		saved = deviceRepository.findByTenantIdAndDeviceId(currentTenant.getId(), device.getDeviceId());
+
+		assertThat(saved.getLogLevel(), equalTo(LogLevel.WARNING));
+
+	}
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json"})
