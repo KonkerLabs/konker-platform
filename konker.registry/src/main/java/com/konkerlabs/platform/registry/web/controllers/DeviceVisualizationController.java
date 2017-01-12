@@ -200,9 +200,16 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     					 Locale locale, HttpServletResponse response) {
     	
     	try  {
-    		EventCsvDownload csvDownload = new EventCsvDownload();
+    		String deviceGuid = events.get(0).getIncoming().getDeviceGuid();
+			String channel = events.get(0).getIncoming().getChannel();
+			ServiceResponse<EventSchema> metrics = eventSchemaService.findIncomingBy(deviceGuid, channel);
+    		
+    		List<String> additionalHeaders = metrics.getResult()
+    				.getFields().stream()
+    				.map(m -> m.getPath()).collect(Collectors.toList());
 			
-			csvDownload.download(events, response);
+    		EventCsvDownload csvDownload = new EventCsvDownload();
+			csvDownload.download(events, response, additionalHeaders);
 		} catch (IOException | SecurityException | NoSuchMethodException e) {
 			LOGGER.error("Error to generate CSV", e);
 		}

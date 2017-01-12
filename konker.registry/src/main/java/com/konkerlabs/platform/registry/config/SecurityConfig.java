@@ -50,7 +50,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         put("Access-Control-Allow-Origin", "{Origin}");
         put("Access-Control-Allow-Methods", "GET,POST");
         put("Access-Control-Allow-Credentials", "true");
-        put("Access-Control-Allow-Headers", "Authorization");
+        put("Access-Control-Allow-Headers", "Authorization,Content-Type");
     }};
 
 

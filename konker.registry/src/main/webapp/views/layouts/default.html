@@ -137,6 +137,13 @@
                           <span data-th-text="#{nav.menu.dashboards}">Visualização de dados</span>
                       </a>                      
                   </li>
+
+                  <li class="sub-menu" th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'')')}">
+                      <a data-th-href="@{/tenants/log}">
+                          <i class=" fa fa-bug"></i>
+                          <span data-th-text="#{nav.menu.debug_messages}">Debug</span>
+                      </a>                      
+                  </li>
               </ul>
 
               <ul class="sidebar-menu subtitle" id="nav-accordion"
