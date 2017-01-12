@@ -16,11 +16,20 @@
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
+            <ul>
             <li data-th-each="error : ${errors}" data-th-text="${error}"></li>
+            </ul>
         </div>
-        <a data-th-href="@{/devices/new}"
-           data-th-text="#{nav.new}"
-           class="btn btn-default action pull-right"></a>
+        <div>
+            <a data-th-href="@{/devices/new}"
+               data-th-text="#{nav.new}"
+               class="btn btn-default action pull-right"></a>
+            <a data-th-href="@{/tenants/log}"
+               data-th-text="#{tenants.log.form.legend}"
+               data-th-if="${@user.tenant.logLevel.id ne 'DISABLED'}"
+               class="btn btn-default action pull-right">
+            </a>
+        </div>
         <table class="table table-bordered">
             <thead>
             <tr>
