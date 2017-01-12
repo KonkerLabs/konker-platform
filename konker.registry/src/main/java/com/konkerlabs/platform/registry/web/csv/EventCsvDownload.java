@@ -17,7 +17,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -28,7 +27,7 @@ import com.konkerlabs.platform.registry.business.model.Event.EventDecorator;
 
 public class EventCsvDownload {
 	
-	public void download(List<EventDecorator> data, HttpServletResponse response) throws IOException, SecurityException, NoSuchMethodException {
+	public void download(List<EventDecorator> data, HttpServletResponse response, List<String> additionalHeaders) throws IOException, SecurityException, NoSuchMethodException {
 		String headerKey = "Content-Disposition";
 		String headerValue = String.format("attachment; filename=\"%s\"", "events.csv");
 
@@ -37,7 +36,7 @@ public class EventCsvDownload {
 		PrintWriter writer = response.getWriter();
 		
 		String[] header = createHeader(EventDecorator.class);
-		String[] additionalHeader = createAdditionalHeader(data);
+		String[] additionalHeader = additionalHeaders.toArray(new String[0]);
 		header = ArrayUtils.addAll(header, additionalHeader);
 		
 		StringBuffer bufferHeader = new StringBuffer();
@@ -51,7 +50,8 @@ public class EventCsvDownload {
 			jsonToMap("", new ObjectMapper().readTree(event.getPayload()), jsonMap);
 			
 			StringBuffer bufferJson = new StringBuffer();
-			Arrays.asList(additionalHeader).forEach(c -> bufferJson.append(jsonMap.get(c)).append(", "));
+			Arrays.asList(additionalHeader).forEach(c -> bufferJson.append(
+					Optional.ofNullable(jsonMap.get(c)).orElse("")).append(", "));
 			bufferJson.deleteCharAt(bufferJson.lastIndexOf(","));
 			
 			writer.println(event.getTimestampFormated() +", "+
@@ -71,21 +71,6 @@ public class EventCsvDownload {
 		writer.close();
 	}
 	
-	private String[] createAdditionalHeader(List<EventDecorator> data) throws JsonProcessingException, IOException {
-		String[] additionalHeader = new String[0];
-		if (!data.isEmpty()) {
-			Map<String, String> map = new LinkedHashMap<>();
-			
-			jsonToMap("", 
-					new ObjectMapper().readTree(data.get(0).getPayload()), 
-					map);
-			additionalHeader = map.keySet().toArray(new String[0]);
-			return additionalHeader;
-		}
-		
-		return additionalHeader;
-	}
-
 	private String[] createHeader(Class<EventDecorator> clazz) throws  SecurityException, NoSuchMethodException {
 		List<String> listHeader = new ArrayList<>();
 		
@@ -122,7 +107,7 @@ public class EventCsvDownload {
 		} else if (jsonNode.isArray()) {
 			ArrayNode arrayNode = (ArrayNode) jsonNode;
 			for (int i = 0; i < arrayNode.size(); i++) {
-				jsonToMap(currentPath + "[" + i + "]", arrayNode.get(i), map);
+				jsonToMap(currentPath + "." + i, arrayNode.get(i), map);
 			}
 		} else if (jsonNode.isValueNode()) {
 			ValueNode valueNode = (ValueNode) jsonNode;

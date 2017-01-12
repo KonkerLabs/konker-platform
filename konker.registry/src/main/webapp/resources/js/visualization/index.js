@@ -19,6 +19,10 @@ $("<link/>", {
 }).appendTo("head");
 $.getScript( "resources/konker/scripts/json.formatter.js");
 
+$('#exportCsv').click(function(e) {
+	loadCSV();
+});
+
 function loadCSV() {
 	$.ajax({
 		context : this,
@@ -33,9 +37,9 @@ function loadCSV() {
         success : function(data) {
         },
         complete : function(data) {
-        	$('#exportCsv').removeClass('hide');
-        	$('#exportCsv').attr('href', 'data:text/csv;charset=utf8,' + encodeURIComponent(data.responseText))
+        	$('#bufferCsv').attr('href', 'data:text/csv;charset=utf8,' + encodeURIComponent(data.responseText))
         		.attr('download', 'Events.csv');
+        	$('#bufferCsv')[0].click()
         }
     });
 }
@@ -63,6 +67,7 @@ function findAndLoadDataChart() {
         	if (result.length > 0 && result[0].message != null) {
         		$('div .alert.alert-danger').removeClass('hide');
         		$('div .alert.alert-danger li').html(result[0].message);
+        		$('#exportCsv').addClass('hide');
         	} else {
         		$('div .alert.alert-danger').addClass('hide');
         		$('#dataResult').val(data);
@@ -76,7 +81,10 @@ function findAndLoadDataChart() {
         		});
         		$("#data-event table tbody").html(tableData);
         		formatJson($("#isJsonFormatted").attr("checked"));
-        		loadCSV();
+        		
+        		if (result.length != 0) {
+        			$('#exportCsv').removeClass('hide');
+        		} 
         	}
 
         	graphService.update($('#metrics select').val(),result);
