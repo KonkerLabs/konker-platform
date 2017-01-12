@@ -72,9 +72,6 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         }
 
         if (!Optional.ofNullable(device).isPresent()) {
-            LOGGER.debug("device cannot be null",
-                    Device.builder().guid("NULL").tenant(tenant).build().toURI(),
-                    device.getLogLevel());
             return ServiceResponseBuilder.<Device>error()
                     .withMessage(CommonValidations.RECORD_NULL.getCode(), null)
                     .build();
