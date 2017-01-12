@@ -43,7 +43,7 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterServ
 import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.web.converters.InstantToStringConverter;
-import com.konkerlabs.platform.registry.web.csv.CsvDownload;
+import com.konkerlabs.platform.registry.web.csv.EventCsvDownload;
 import com.konkerlabs.platform.registry.web.forms.DeviceVisualizationForm;
 
 @Controller
@@ -200,7 +200,9 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     					 Locale locale, HttpServletResponse response) {
     	
     	try  {
-			new CsvDownload<EventDecorator>().download(events, "events.csv", response, EventDecorator.class);
+    		EventCsvDownload csvDownload = new EventCsvDownload();
+			
+			csvDownload.download(events, response);
 		} catch (IOException | SecurityException | NoSuchMethodException e) {
 			LOGGER.error("Error to generate CSV", e);
 		}

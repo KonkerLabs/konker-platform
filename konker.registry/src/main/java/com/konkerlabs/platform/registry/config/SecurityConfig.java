@@ -5,6 +5,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -40,6 +41,8 @@ import com.typesafe.config.ConfigFactory;
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SecurityConfig.class);
+    private static final int MIN_DELAY_TIME = 100;
+    private static final int MAX_DELAY_TIME = 250;
 
     private static final Config securityConfig = ConfigFactory.load().getConfig("security");
 
@@ -126,9 +129,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 @Override
                 public boolean isPasswordValid(String encPass, String rawPass, Object salt) {
                     try {
+                        Random random = new Random();
                         Boolean result = new PasswordManager().validatePassword(rawPass, encPass);
+                        // Delay time introduced to prevent user enumeration attack
+                        int delayTime = random.nextInt(MAX_DELAY_TIME - MIN_DELAY_TIME) + MIN_DELAY_TIME;
+                        Thread.sleep(delayTime);
                         return result;
-                    } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+                    } catch (NoSuchAlgorithmException | InvalidKeySpecException | InterruptedException e) {
                         LOGGER.error(e.getMessage(), e);
                         return false;
                     }
