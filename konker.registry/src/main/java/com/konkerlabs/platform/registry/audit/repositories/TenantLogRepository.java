@@ -74,20 +74,24 @@ public class TenantLogRepository {
 
 	}
 
-	public void insert(String domainName, Date time, String message) {
+	public void insert(String domainName, long timestampMillis, String message) {
 
 		String collectionName = domainName;
 
 		checkCollection(collectionName);
 
 		DBObject object = new BasicDBObject();
-		object.put("time", time.getTime());
+		object.put("time", timestampMillis);
 		object.put("message", message);
 		object.removeField("_class");
 
 		DBCollection collection = mongoAuditTemplate.getCollection(collectionName);
 		collection.insert(object);
 
+	}
+
+	public void insert(String domainName, Date time, String message) {
+		insert(domainName, time.getTime(), message);
 	}
 
 	private String getCollectionName(Tenant tenant) {

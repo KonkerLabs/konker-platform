@@ -24,11 +24,6 @@
             <a data-th-href="@{/devices/new}"
                data-th-text="#{nav.new}"
                class="btn btn-default action pull-right"></a>
-            <a data-th-href="@{/tenants/log}"
-               data-th-text="#{tenants.log.form.legend}"
-               data-th-if="${@user.tenant.logLevel.id ne 'DISABLED'}"
-               class="btn btn-default action pull-right">
-            </a>
         </div>
         <table class="table table-bordered">
             <thead>

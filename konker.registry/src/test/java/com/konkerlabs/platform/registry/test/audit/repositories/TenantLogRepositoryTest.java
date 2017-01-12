@@ -1,6 +1,5 @@
 package com.konkerlabs.platform.registry.test.audit.repositories;
 
-import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 
@@ -44,6 +43,34 @@ public class TenantLogRepositoryTest {
 		List<TenantLog> logs = tenantLogRepository.findAll(tenant);
 
 		Assert.assertEquals(10, logs.size());
+
+	}
+
+	@Test
+	public void shouldInsertLogsInMilliseconds() {
+
+		Tenant tenant = Tenant.builder().domainName("KBCYiVE379").build();
+
+		int initialSize = tenantLogRepository.findAll(tenant).size();
+
+		// assert empty collection
+		Assert.assertEquals(0, initialSize);
+
+		for (int i = 0; i < 10; i++) {
+			tenantLogRepository.insert(tenant.getDomainName(), new Date().getTime(), "LuxUkmRSB9");
+		}
+
+		List<TenantLog> logs = tenantLogRepository.findAll(tenant);
+
+		Assert.assertEquals(10, logs.size());
+
+	}
+
+	@Test
+	public void shouldGetInstanceRepositoryWork() {
+
+		TenantLogRepository repository = TenantLogRepository.getInstance();
+		repository.insert("YJgQ8Zj2j0", new Date().getTime(), "H5ITwKKqrm");
 
 	}
 
