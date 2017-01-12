@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.business.services;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -7,8 +8,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
+import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
@@ -21,6 +24,9 @@ public class TenantServiceImpl implements TenantService {
 
 	@Autowired
 	private TenantRepository tenantRepository;
+
+	@Autowired
+	private DeviceRepository deviceRepository;
 
 	@Override
 	public ServiceResponse<Tenant> updateLogLevel(Tenant tenant, LogLevel newLogLevel) {
@@ -41,9 +47,22 @@ public class TenantServiceImpl implements TenantService {
 
 		try {
 
-			fromStorage.setLogLevel(newLogLevel);
+			if (!fromStorage.getLogLevel().equals(newLogLevel)) {
+				LOG.info("Changed tenant ({}) log level: {} -> {}", tenant.getName(), fromStorage.getLogLevel(),
+						newLogLevel);
 
-			tenantRepository.save(fromStorage);
+				fromStorage.setLogLevel(newLogLevel);
+
+				tenantRepository.save(fromStorage);
+
+				// change all tenant devices log levels
+				List<Device> devices = deviceRepository.findAllByTenant(tenant.getId());
+
+				for (Device device : devices) {
+					device.setLogLevel(newLogLevel);
+					deviceRepository.save(device);
+				}
+			}
 
 			return ServiceResponseBuilder.<Tenant>ok().withResult(fromStorage).build();
 

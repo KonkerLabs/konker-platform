@@ -99,6 +99,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         }
 
         device.setTenant(tenant);
+		device.setLogLevel(tenant.getLogLevel());
 
         Optional<Map<String, Object[]>> validations = device.applyValidations();
 

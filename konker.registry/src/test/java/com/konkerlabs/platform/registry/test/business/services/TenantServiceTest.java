@@ -11,8 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
+import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.TenantService;
@@ -37,6 +39,9 @@ public class TenantServiceTest extends BusinessLayerTestSupport {
 
 	@Autowired
 	private TenantRepository tenantRepository;
+
+	@Autowired
+	private DeviceRepository deviceRepository;
 
 	private Tenant tenant;
 
@@ -107,6 +112,27 @@ public class TenantServiceTest extends BusinessLayerTestSupport {
 		Assert.assertNotNull(response);
 		Assert.assertEquals(response.getStatus(), ServiceResponse.Status.ERROR);
 		Assert.assertTrue(response.getResponseMessages().containsKey(Validations.NO_EXIST_TENANT.getCode()));
+
+	}
+
+	@Test
+	public void shouldChangeDevicesLogLevels() {
+
+		// set to INFO
+		tenantService.updateLogLevel(tenant, LogLevel.INFO);
+
+		String deviceId = "Q3UuYLFN67";
+		Device device = Device.builder().logLevel(LogLevel.INFO).description(deviceId).deviceId(deviceId).tenant(tenant)
+				.build();
+		deviceRepository.save(device);
+
+		// set to DISABLED
+		tenantService.updateLogLevel(tenant, LogLevel.DISABLED);
+
+		device = deviceRepository.findByTenantIdAndDeviceId(tenant.getId(), deviceId);
+
+		Assert.assertNotNull(device);
+		Assert.assertEquals(device.getLogLevel(), LogLevel.DISABLED);
 
 	}
 

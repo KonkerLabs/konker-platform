@@ -18,6 +18,7 @@ import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatche
 
 import com.konkerlabs.platform.registry.config.BusinessConfig;
 import com.konkerlabs.platform.registry.config.IntegrationConfig;
+import com.konkerlabs.platform.registry.config.MongoAuditConfig;
 import com.konkerlabs.platform.registry.config.MongoConfig;
 import com.konkerlabs.platform.registry.config.RedisConfig;
 import com.konkerlabs.platform.registry.config.SecurityConfig;
@@ -35,8 +36,8 @@ public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherSe
 
 	@Override
 	protected Class<?>[] getRootConfigClasses() {
-		return new Class<?>[] { SecurityConfig.class, BusinessConfig.class, MongoConfig.class, IntegrationConfig.class,
-				SolrConfig.class, UtilitiesConfig.class, RedisConfig.class, SpringMailConfig.class };
+		return new Class<?>[] { SecurityConfig.class, BusinessConfig.class, MongoConfig.class, MongoAuditConfig.class,
+				IntegrationConfig.class, SolrConfig.class, UtilitiesConfig.class, RedisConfig.class, SpringMailConfig.class };
 	}
 
 	@Override
