@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry.test.audit.repositories;
 
 import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 
 import org.junit.Assert;
@@ -37,7 +38,7 @@ public class TenantLogRepositoryTest {
 		Assert.assertEquals(0, initialSize);
 
 		for (int i = 0; i < 10; i++) {
-			tenantLogRepository.insert(tenant.getDomainName(), Instant.now(), "I4PlMe5TbK");
+			tenantLogRepository.insert(tenant.getDomainName(), new Date(), "I4PlMe5TbK");
 		}
 
 		List<TenantLog> logs = tenantLogRepository.findAll(tenant);
