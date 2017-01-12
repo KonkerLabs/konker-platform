@@ -120,7 +120,7 @@ function notificationSetup() {
         notificationDataStore.markAllRead().then(function(x) { renderMessageList(x.data, 3000) });
     });
 
-    notificationDataStore.listMessages().then(function(x) { renderMessageList(x.data, 3000) }).catch(function(error) { console.log(error); });
+    notificationDataStore.listMessages().then(function(x) { renderMessageList(x.data, 3000) });
 }
 
 notificationSetup();
