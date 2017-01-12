@@ -3,7 +3,6 @@ package com.konkerlabs.platform.registry.security;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.repositories.UserRepository;
-import com.konkerlabs.platform.registry.config.SecurityConfig;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,8 +12,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.konkerlabs.platform.registry.business.repositories.UserRepository;
-
 import java.util.Optional;
 import java.util.Random;
 
@@ -22,18 +19,19 @@ import java.util.Random;
 public class TenantUserDetailsService implements UserDetailsService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TenantUserDetailsService.class);
-    private static final int MIN_VALUE = 100;
-    private static final int MAX_VALUE = 250;
+    private static final int MIN_DELAY_TIME = 100;
+    private static final int MAX_DELAY_TIME = 250;
     
     @Autowired
     private UserRepository userRepository;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        // Delay time introduced to prevent user enumeration attack
         Random random = new Random();
-        int delay = random.nextInt(MAX_VALUE - MIN_VALUE) + MIN_VALUE;
+        int delayTime = random.nextInt(MAX_DELAY_TIME - MIN_DELAY_TIME) + MIN_DELAY_TIME;
         try {
-            Thread.sleep(delay);
+            Thread.sleep(delayTime);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

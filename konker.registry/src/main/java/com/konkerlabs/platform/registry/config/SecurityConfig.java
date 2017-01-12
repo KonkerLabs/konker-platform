@@ -41,8 +41,8 @@ import com.typesafe.config.ConfigFactory;
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SecurityConfig.class);
-    private static final int MIN_VALUE = 100;
-    private static final int MAX_VALUE = 250;
+    private static final int MIN_DELAY_TIME = 100;
+    private static final int MAX_DELAY_TIME = 250;
 
     private static final Config securityConfig = ConfigFactory.load().getConfig("security");
 
@@ -131,8 +131,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     try {
                         Random random = new Random();
                         Boolean result = new PasswordManager().validatePassword(rawPass, encPass);
-                        int delay = random.nextInt(MAX_VALUE - MIN_VALUE) + MIN_VALUE;
-                        Thread.sleep(delay);
+                        // Delay time introduced to prevent user enumeration attack
+                        int delayTime = random.nextInt(MAX_DELAY_TIME - MIN_DELAY_TIME) + MIN_DELAY_TIME;
+                        Thread.sleep(delayTime);
                         return result;
                     } catch (NoSuchAlgorithmException | InvalidKeySpecException | InterruptedException e) {
                         LOGGER.error(e.getMessage(), e);
