@@ -72,16 +72,18 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         }
 
         if (!Optional.ofNullable(device).isPresent()) {
-            LOGGER.debug(CommonValidations.RECORD_NULL.getCode(),
-                    Device.builder().guid("NULL").tenant(tenant).build().toURI());
+            LOGGER.debug("device cannot be null",
+                    Device.builder().guid("NULL").tenant(tenant).build().toURI(),
+                    device.getLogLevel());
             return ServiceResponseBuilder.<Device>error()
                     .withMessage(CommonValidations.RECORD_NULL.getCode(), null)
                     .build();
         }
 
         if (!tenantRepository.exists(tenant.getId())) {
-            LOGGER.debug(CommonValidations.TENANT_DOES_NOT_EXIST.getCode(),
-                    Device.builder().guid("NULL").tenant(tenant).build().toURI());
+            LOGGER.debug("device cannot exists",
+                    Device.builder().guid("NULL").tenant(tenant).build().toURI(),
+                    device.getLogLevel());
             return ServiceResponseBuilder.<Device>error()
                     .withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode(), null)
                     .build();
@@ -91,8 +93,9 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         device.setGuid(UUID.randomUUID().toString());
 
         if (Optional.ofNullable(deviceRepository.findByApiKey(device.getApiKey())).isPresent()) {
-            LOGGER.debug(CommonValidations.GENERIC_ERROR.getCode(),
-                    Device.builder().guid("NULL").tenant(tenant).build().toURI());
+            LOGGER.debug("device api key cannot exists",
+                    Device.builder().guid("NULL").tenant(tenant).build().toURI(),
+                    device.getLogLevel());
             return ServiceResponseBuilder.<Device>error()
                     .withMessage(CommonValidations.GENERIC_ERROR.getCode(), null)
                     .build();
@@ -104,17 +107,18 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         Optional<Map<String, Object[]>> validations = device.applyValidations();
 
         if (validations.isPresent()) {
-            LOGGER.debug("Error saving device",
-                    Device.builder().guid("NULL").tenant(
-                            tenant).build().toURI());
+            LOGGER.debug("error saving device",
+                    Device.builder().guid("NULL").tenant(tenant).build().toURI(),
+                    device.getLogLevel());
             return ServiceResponseBuilder.<Device>error()
                     .withMessages(validations.get())
                     .build();
         }
 
         if (deviceRepository.findByTenantIdAndDeviceId(tenant.getId(), device.getDeviceId()) != null) {
-            LOGGER.debug(Validations.DEVICE_ID_ALREADY_REGISTERED.getCode(),
-                    Device.builder().guid("NULL").tenant(tenant).build().toURI());
+            LOGGER.debug("error saving device",
+                    Device.builder().guid("NULL").tenant(tenant).build().toURI(),
+                    device.getLogLevel());
             return ServiceResponseBuilder.<Device>error()
                     .withMessage(Validations.DEVICE_ID_ALREADY_REGISTERED.getCode(), null)
                     .build();

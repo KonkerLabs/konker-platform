@@ -42,5 +42,4 @@ fi
 mongod &
 mosquitto &
 redis-server &
-python /root/populate_demo_data.py
 exec "$@"

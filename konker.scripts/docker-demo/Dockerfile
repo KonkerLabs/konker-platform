@@ -25,9 +25,7 @@ ENV JETTY_TGZ_URL https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-distrib
 
 # GPG Keys are personal keys of Jetty committers (see https://dev.eclipse.org/mhonarc/lists/jetty-users/msg05220.html)
 ENV JETTY_GPG_KEYS \
-	# 1024D/8FB67BAC 2006-12-10 Joakim Erdfelt <joakime@apache.org>
 	B59B67FD7904984367F931800818D9D68FB67BAC \
-	# 1024D/D7C58886 2010-03-09 Jesse McConnell (signing key) <jesse.mcconnell@gmail.com>
 	5DE533CB43DAF8BC3E372283E7AE839CD7C58886
 
 RUN set -xe \
@@ -65,10 +63,15 @@ RUN set -xe \
 	&& mkdir -p "$TMPDIR" \
 	&& chown -R jetty:jetty "$TMPDIR" "$JETTY_BASE"
 
-COPY env/local/registry.war /var/lib/jetty/webapps/
-COPY env/local/application.conf /var/lib/jetty/resources/
-COPY env/local/logback.xml /var/lib/jetty/webapps/resources/
+COPY docker-entrypoint.sh /
+RUN chmod 777 /docker-entrypoint.sh
 
+COPY build/registry.war /var/lib/jetty/webapps/
+COPY build/application.conf /var/lib/jetty/resources/
+COPY build/logback.xml /var/lib/jetty/webapps/resources/
+COPY build/logback.xml /var/lib/jetty/resources/
+COPY build/mail /var/lib/jetty/webapps/resources/mail/
+COPY build/mail /var/lib/jetty/resources/mail/
 
 #nginx
 ENV NGINX_VERSION nginx-1.7.11
@@ -96,47 +99,14 @@ RUN apk --update add openssl-dev pcre-dev zlib-dev wget build-base && \
 RUN ln -sf /dev/stdout /var/log/nginx/access.log
 RUN ln -sf /dev/stderr /var/log/nginx/error.log
 
+#VOLUME ["/var/log/nginx"]
+#WORKDIR /etc/nginx
 RUN chmod 755 /usr/local/sbin/nginx
 
-COPY env/local/nginx.conf /etc/nginx/nginx.conf
-COPY env/local/nginx.conf /etc/nginx/conf/nginx.conf
-COPY env/local/mime.types /etc/nginx/mime.types
-COPY env/local/sites /var/www/
-COPY env/local/conf.d /etc/nginx/conf.d
-
-
-# Install Redis.
-# add our user and group first to make sure their IDs get assigned consistently, regardless of whatever dependencies get added
-RUN addgroup -S redis && adduser -S -G redis redis
-
-# grab gosu for easy step-down from root
-RUN apk add --update ca-certificates curl gnupg && \
-    gpg --keyserver pool.sks-keyservers.net --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 && \
-    ARCH=`uname -m`; if [ $ARCH == "x86_64" ]; then export ARCH="amd64"; else export ARCH="i386"; fi && \
-    curl -o /usr/local/bin/gosu -SL "https://github.com/tianon/gosu/releases/download/1.6/gosu-$ARCH" && \
-    curl -o /usr/local/bin/gosu.asc -SL "https://github.com/tianon/gosu/releases/download/1.6/gosu-$ARCH.asc" && \
-    gpg --verify /usr/local/bin/gosu.asc && \
-	rm /usr/local/bin/gosu.asc && \
-	chmod +x /usr/local/bin/gosu && \
-    apk del ca-certificates curl gnupg && \
-    rm -rf /var/cache/apk/*
-
-ENV REDIS_VERSION 3.0.5
-ENV REDIS_DOWNLOAD_URL http://download.redis.io/releases/redis-3.0.5.tar.gz
-ENV REDIS_DOWNLOAD_SHA1 ad3ee178c42bfcfd310c72bbddffbbe35db9b4a6
-
-# for redis-sentinel see: http://redis.io/topics/sentinel
-RUN apk add --update ca-certificates curl gcc libc-dev make tar linux-headers && \
-    mkdir -p /usr/src/redis && \
-    curl -sSL "$REDIS_DOWNLOAD_URL" -o redis.tar.gz && \
-    echo "$REDIS_DOWNLOAD_SHA1 *redis.tar.gz" | sha1sum -c - && \
-    tar -xzf redis.tar.gz -C /usr/src/redis --strip-components=1 && \
-    rm redis.tar.gz && \
-    make -C /usr/src/redis MALLOC=libc && \
-    make -C /usr/src/redis install && \
-    rm -r /usr/src/redis && \
-    apk del ca-certificates curl gcc libc-dev make tar linux-headers
-
+COPY build/nginx.conf /etc/nginx/nginx.conf
+COPY build/nginx.conf /etc/nginx/conf/nginx.conf
+COPY build/mime.types /etc/nginx/mime.types
+COPY build/conf.d /etc/nginx/conf.d
 
 # Install MongoDB.
 RUN \
@@ -150,22 +120,64 @@ ENV DEBIAN_FRONTEND noninteractive
 RUN apk add --update mosquitto mosquitto-clients && \
 mkdir /work && chown nobody /work && mkdir -p /data/db
 
-COPY env/local/plugin/konker-mosquitto-auth-plugin.conf /etc/ld.so.conf.d/konker-mosquitto-auth-plugin.conf
-COPY env/local/plugin/konker-mosquitto-auth-plugin /usr/local/lib/konker-mosquitto-auth-plugin
-COPY env/local/plugin/konker-mosquitto-auth-plugin.conf /etc/ld.so.conf.d/konker-mosquitto-auth-plugin.conf
-COPY env/local/mosquitto.conf /etc/mosquitto/mosquitto.conf
-COPY env/local/passwords.pwd /etc/mosquitto/passwords.pwd
+COPY build/plugin/konker-mosquitto-auth-plugin.conf /etc/ld.so.conf.d/konker-mosquitto-auth-plugin.conf
+COPY build/plugin/lib/* /usr/local/lib/
+COPY build/mosquitto.conf /etc/mosquitto/mosquitto.conf
+COPY build/passwords.pwd /etc/mosquitto/passwords.pwd
 
 #populate demo data
 RUN apk add --update python && \
  apk add py2-pip && \
  pip install pymongo
 
-COPY env/local/populate_demo_data.py /root/populate_demo_data.py
-RUN chmod 777 ~/populate_demo_data.py
+#COPY build/populate_demo_data.py /root/populate_demo_data.py
+#RUN chmod 777 ~/populate_demo_data.py
 
 COPY docker-entrypoint.sh /
 RUN chmod 777 /docker-entrypoint.sh
+
+# grab su-exec for easy step-down from root
+RUN apk add --no-cache 'su-exec>=0.2'
+
+ENV REDIS_VERSION 3.2.6
+ENV REDIS_DOWNLOAD_URL http://download.redis.io/releases/redis-3.2.6.tar.gz
+ENV REDIS_DOWNLOAD_SHA1 0c7bc5c751bdbc6fabed178db9cdbdd948915d1b
+
+# for redis-sentinel see: http://redis.io/topics/sentinel
+RUN set -ex \
+	\
+	&& apk add --no-cache --virtual .build-deps \
+		gcc \
+		linux-headers \
+		make \
+		musl-dev \
+		tar \
+	\
+	&& wget -O redis.tar.gz "$REDIS_DOWNLOAD_URL" \
+	&& echo "$REDIS_DOWNLOAD_SHA1 *redis.tar.gz" | sha1sum -c - \
+	&& mkdir -p /usr/src/redis \
+	&& tar -xzf redis.tar.gz -C /usr/src/redis --strip-components=1 \
+	&& rm redis.tar.gz \
+	\
+# Disable Redis protected mode [1] as it is unnecessary in context
+# of Docker. Ports are not automatically exposed when running inside
+# Docker, but rather explicitely by specifying -p / -P.
+# [1] https://github.com/antirez/redis/commit/edd4d555df57dc84265fdfb4ef59a4678832f6da
+	&& grep -q '^#define CONFIG_DEFAULT_PROTECTED_MODE 1$' /usr/src/redis/src/server.h \
+	&& sed -ri 's!^(#define CONFIG_DEFAULT_PROTECTED_MODE) 1$!\1 0!' /usr/src/redis/src/server.h \
+	&& grep -q '^#define CONFIG_DEFAULT_PROTECTED_MODE 0$' /usr/src/redis/src/server.h \
+# for future reference, we modify this directly in the source instead of just supplying a default configuration flag because apparently "if you specify any argument to redis-server, [it assumes] you are going to specify everything"
+# see also https://github.com/docker-library/redis/issues/4#issuecomment-50780840
+# (more exactly, this makes sure the default behavior of "save on SIGTERM" stays functional by default)
+	\
+	&& make -C /usr/src/redis \
+	&& make -C /usr/src/redis install \
+	\
+	&& rm -r /usr/src/redis \
+	\
+	&& apk del .build-deps
+
+#RUN mkdir /data && chown redis:redis /data
 
 #start
 EXPOSE 8080 80 443 6379 27017 28017 1883

@@ -8,13 +8,17 @@
         </encoder>
     </appender>
 
-    <appender name="konkerAppender" class="com.konkerlabs.platform.registry.audit.KonkerLoggerAppender">
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>TRACE</level>
-        </filter>
-        <encoder>
-            <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} - %X{context} %X{uri} - %c{1} [%p] %m%n</Pattern>
-        </encoder>
+    <appender name="konkerAppender" class="com.konkerlabs.platform.registry.audit.KonkerLoggerAsyncAppender">
+        <appenders>
+            <appender name="konkerAppender" class="com.konkerlabs.platform.registry.audit.KonkerLoggerAppender">
+                <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+                    <level>TRACE</level>
+                </filter>
+                <encoder>
+                    <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} - %X{context} %X{uri} - %c{1} [%p] %m%n</Pattern>
+                </encoder>
+            </appender>
+        </appenders>
     </appender>
 
     <logger name="com.konkerlabs.platform.registry" level="DEBUG" additivity="false">

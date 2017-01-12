@@ -1,36 +1,27 @@
 package com.konkerlabs.platform.registry.audit;
 
-import ch.qos.logback.classic.AsyncAppender;
-import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEvent;
-import ch.qos.logback.core.rolling.RollingFileAppender;
-import com.konkerlabs.platform.registry.business.model.User;
-import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
+import ch.qos.logback.core.AppenderBase;
+import com.konkerlabs.platform.registry.audit.repositories.TenantLogRepository;
 import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
-import com.mongodb.Mongo;
-import com.mongodb.MongoClient;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
 import org.slf4j.MDC;
-import org.springframework.context.ApplicationContextAware;
 
 import java.net.URI;
-import java.net.UnknownHostException;
-import java.util.Arrays;
+import java.sql.Date;
+import java.time.Instant;
 
 
-public class KonkerLoggerAppender extends AsyncAppender {
+public class KonkerLoggerAppender extends AppenderBase<ILoggingEvent> {
 
     public static final String CONTEXT = "context";
-    private Mongo mongo;
-
-
+    private TenantLogRepository repository;
 
     @Override
     public void start() {
         super.start();
         try {
+            repository = TenantLogRepository.getInstance();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -38,11 +29,14 @@ public class KonkerLoggerAppender extends AsyncAppender {
 
 
     @Override
-    protected void preprocess(ILoggingEvent eventObject) {
-        super.preprocess(eventObject);
-        enrich(eventObject);
+    public void doAppend(ILoggingEvent eventObject) {
+        super.doAppend(eventObject);
     }
 
+    @Override
+    protected void append(ILoggingEvent iLoggingEvent) {
+        enrich(iLoggingEvent);
+    }
 
 
     /**
@@ -66,7 +60,7 @@ public class KonkerLoggerAppender extends AsyncAppender {
                 }
                 if(uri != null && logLevel != null){
                     MDC.put(CONTEXT, encodeDealer(uri));
-                    store(getTenant(uri), eventObject.getFormattedMessage());
+                    store(eventObject, getTenant(uri), eventObject.getFormattedMessage());
                 }
             }
 
@@ -75,11 +69,12 @@ public class KonkerLoggerAppender extends AsyncAppender {
 
     /**
      * Store log into datastore
+     * @param event
      * @param tenantDomain
      * @param trace
      */
-    private void store(String tenantDomain, String trace) {
-
+    private void store(ILoggingEvent event, String tenantDomain, String trace) {
+        repository.insert(tenantDomain, Date.from(Instant.ofEpochMilli(event.getTimeStamp())), trace);
     }
 
     /**
