@@ -1,6 +1,6 @@
 package com.konkerlabs.platform.registry.audit.model;
 
-import java.time.Instant;
+import java.util.Date;
 
 import lombok.Builder;
 import lombok.Data;
@@ -9,7 +9,7 @@ import lombok.Data;
 @Builder
 public class TenantLog {
 
-	private Instant time;
+	private Date time;
 	private String message;
 
 }
