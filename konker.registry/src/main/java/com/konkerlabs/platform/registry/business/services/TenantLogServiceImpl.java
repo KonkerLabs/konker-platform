@@ -23,13 +23,12 @@ public class TenantLogServiceImpl implements TenantLogService {
 
 	private Logger LOGGER = LoggerFactory.getLogger(TenantLogServiceImpl.class);
 
-	@Autowired
+    @Autowired
 	private TenantLogRepository tenantLogRepository;
 
 	@Override
 	public ServiceResponse<List<TenantLog>> findByTenant(Tenant tenant, boolean ascending) {
 
-		// validations
 		if (!Optional.ofNullable(tenant).isPresent()) {
 			LOGGER.debug(CommonValidations.TENANT_NULL.getCode(), Device.builder().guid("NULL")
 					.tenant(Tenant.builder().domainName("unknow_domain").build()).build().toURI());
