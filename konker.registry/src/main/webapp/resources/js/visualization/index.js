@@ -26,12 +26,12 @@ $('#exportCsv').click(function(e) {
 function loadCSV() {
 	$.ajax({
 		context : this,
-        type : "POST",
+        type : "GET",
         url : urlTo('/visualization/csv/download'),
         contentType: "application/json",
         dataType: "json",
         timeout : 100000,
-        data: $('#dataResult').val(),
+        data: $('#visualizationForm').serialize(),
         beforeSend : function(xhrObj) {
         },
         success : function(data) {
@@ -70,7 +70,6 @@ function findAndLoadDataChart() {
         		$('#exportCsv').addClass('hide');
         	} else {
         		$('div .alert.alert-danger').addClass('hide');
-        		$('#dataResult').val(data);
         		
         		var tableData = "";
         		$.each(result, function(index, value) {
