@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html data-layout-decorate="layouts/default"
+    xmlns:th="http://www.thymeleaf.org">
+<head>
+</head>
+<body>
+    <div data-layout-fragment="content">
+        <fieldset>
+            <legend data-th-text="#{tenants.log.form.legend}"></legend>
+            <div class="alert alert-success" role="alert"
+                data-th-if="${message != null}">
+                <span data-th-text="${message}"></span>
+                <button type="button" class="close" data-dismiss="alert"
+                    aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div>
+                <a
+                    data-th-href="@{/tenants/log(asc=${asc})}"
+                    data-th-text="#{tenants.log.form.refresh}"
+                    class="btn btn-default action pull-right">
+                </a>
+                <a 
+                    data-th-href="@{/tenants/log(asc=true)}"
+                    data-th-if="${not asc}"
+                    class="btn btn-default action pull-right"> <span
+                    class="glyphicon glyphicon glyphicon-sort-by-alphabet-alt"
+                    aria-hidden="true"></span>
+                </a>
+                <a 
+                    data-th-href="@{/tenants/log(asc=false)}"
+                    data-th-if="${asc}"
+                    class="btn btn-default action pull-right"> <span
+                    class="glyphicon glyphicon glyphicon-sort-by-alphabet"
+                    aria-hidden="true"></span>
+                </a>
+            </div>
+
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <td class="col-md-2"
+                            data-th-text="#{tenants.log.form.time}"></td>
+                        <td class="col-md-8"
+                            data-th-text="#{tenants.log.form.message}"></td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr data-th-each="log : ${logs}">
+                        <td
+                            data-th-text="${@dateToStringConverter.convert(log.time)}"></td>
+                        <td data-th-text="${log.message}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </fieldset>
+    </div>
+</body>
+</html>
