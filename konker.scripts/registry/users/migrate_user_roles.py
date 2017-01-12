@@ -8,7 +8,7 @@ client = MongoClient("mongodb://localhost:27017")
 db = client.registry
 
 
-def ingest_privileges(db):
+def ingest_privileges():
     db.privileges.insert_many([
         {
             "_id": ObjectId("5858266439f11e61b1fab1e2"),
@@ -214,7 +214,7 @@ def ingest_privileges(db):
     return True
 
 
-def ingest_roles(db):
+def ingest_roles():
     uid = db.privileges.find_one({"_id": ObjectId("585bcc7840bce8c571ba023a")})[u'_id']
     db.roles.insert_many([
         {
@@ -344,7 +344,7 @@ def ingest_roles(db):
     return True
 
 
-def update_user_roles(db):
+def update_user_roles():
     for user in db.users.find():
         db.users.save({
             "_id": user[u'_id'],
@@ -359,6 +359,12 @@ def update_user_roles(db):
         })
     return True
 
-ingest_privileges(db)
-ingest_roles(db)
-update_user_roles(db)
+
+def main():
+    ingest_privileges()
+    ingest_roles()
+    update_user_roles()
+
+
+if __name__ == "__main__":
+    main()
