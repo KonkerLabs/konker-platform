@@ -41,29 +41,34 @@ public class EventCsvDownload {
 		
 		StringBuffer bufferHeader = new StringBuffer();
 		for (String head : header) {
-			bufferHeader.append(head).append(", ");
+			bufferHeader.append(head).append(",");
 		}
 		writer.println(bufferHeader.toString());
 				
 		for (EventDecorator event : data) {
 			Map<String, String> jsonMap = new LinkedHashMap<>();
+			
 			jsonToMap("", new ObjectMapper().readTree(event.getPayload()), jsonMap);
 			
 			StringBuffer bufferJson = new StringBuffer();
-			Arrays.asList(additionalHeader).forEach(c -> bufferJson.append(
-					Optional.ofNullable(jsonMap.get(c)).orElse("")).append(", "));
+			Arrays.asList(additionalHeader).forEach(c -> {
+				String jsonMapValue = jsonMap.get(c);
+				jsonMapValue = jsonMapValue!= null && jsonMapValue.contains(",") ? "\"".concat(jsonMapValue).concat("\"") : jsonMapValue;
+				bufferJson.append(Optional.ofNullable(jsonMapValue).orElse("")).append(",");
+			});
+			
 			bufferJson.deleteCharAt(bufferJson.lastIndexOf(","));
 			
-			writer.println(event.getTimestampFormated() +", "+
+			writer.println(event.getTimestampFormated() +","+
 						event.getTimestamp() +", "+
-						Optional.ofNullable(event.getIncoming()).orElse(EventActor.builder().tenantDomain("").build()).getTenantDomain() +", "+
-						Optional.ofNullable(event.getIncoming()).orElse(EventActor.builder().deviceGuid("").build()).getDeviceGuid() +", "+
-						Optional.ofNullable(event.getIncoming()).orElse(EventActor.builder().deviceId("").build()).getDeviceId() +", "+
-						Optional.ofNullable(event.getIncoming()).orElse(EventActor.builder().channel("").build()).getChannel() +", "+
-						Optional.ofNullable(event.getOutgoing()).orElse(EventActor.builder().tenantDomain("").build()).getTenantDomain() +", "+
-						Optional.ofNullable(event.getOutgoing()).orElse(EventActor.builder().deviceGuid("").build()).getDeviceGuid() +", "+
-						Optional.ofNullable(event.getOutgoing()).orElse(EventActor.builder().deviceId("").build()).getDeviceId() +", "+
-						Optional.ofNullable(event.getOutgoing()).orElse(EventActor.builder().channel("").build()).getChannel() +", "+
+						Optional.ofNullable(event.getIncoming()).orElse(EventActor.builder().tenantDomain("").build()).getTenantDomain() +","+
+						Optional.ofNullable(event.getIncoming()).orElse(EventActor.builder().deviceGuid("").build()).getDeviceGuid() +","+
+						Optional.ofNullable(event.getIncoming()).orElse(EventActor.builder().deviceId("").build()).getDeviceId() +","+
+						Optional.ofNullable(event.getIncoming()).orElse(EventActor.builder().channel("").build()).getChannel() +","+
+						Optional.ofNullable(event.getOutgoing()).orElse(EventActor.builder().tenantDomain("").build()).getTenantDomain() +","+
+						Optional.ofNullable(event.getOutgoing()).orElse(EventActor.builder().deviceGuid("").build()).getDeviceGuid() +","+
+						Optional.ofNullable(event.getOutgoing()).orElse(EventActor.builder().deviceId("").build()).getDeviceId() +","+
+						Optional.ofNullable(event.getOutgoing()).orElse(EventActor.builder().channel("").build()).getChannel() +","+
 						bufferJson.toString());
 		}
 		
