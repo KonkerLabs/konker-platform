@@ -24,9 +24,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
@@ -111,7 +109,14 @@ public class DeviceVisualizationController implements ApplicationContextAware {
 				    		@RequestParam String channel,
 				    		Locale locale) {
     	
-    	if (deviceGuid.isEmpty()) {
+    	return doSearch(dateStart, dateEnd, online, deviceGuid, channel, locale);
+    	
+    }
+
+	@SuppressWarnings("rawtypes")
+	private List doSearch(String dateStart, String dateEnd, boolean online, String deviceGuid,
+			String channel, Locale locale) {
+		if (deviceGuid.isEmpty()) {
     		Map<String, String> message = new HashMap<>();
     		message.put("message", applicationContext.getMessage(Messages.DEVICE_IS_MANDATORY.getCode(),null,locale));
     		return Arrays.asList(message);
@@ -154,8 +159,7 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     	
     	List<EventDecorator> eventsResult = decorateEventResult(response);
 		return eventsResult;
-    	
-    }
+	}
 
 	private List<EventDecorator> decorateEventResult(ServiceResponse<List<Event>> response) {
 		List<EventDecorator> eventsResult = new ArrayList<>();
@@ -194,20 +198,24 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     	return new ModelAndView("visualization/metrics", "metrics", listMetrics);
     }
     
-    @RequestMapping(path = "/csv/download", method = RequestMethod.POST, consumes = "application/json")
+    @RequestMapping(path = "/csv/download")
     @PreAuthorize("hasAuthority('EXPORT_DEVICE_CSV')")
-    public void download(@RequestBody List<EventDecorator> events,
+    public void download(@RequestParam(required = false) String dateStart,
+			    		 @RequestParam(required = false) String dateEnd,
+			    		 @RequestParam(required = false) boolean online,
+			    		 @RequestParam String deviceGuid,
+			    		 @RequestParam String channel,
     					 Locale locale, HttpServletResponse response) {
     	
     	try  {
-    		String deviceGuid = events.get(0).getIncoming().getDeviceGuid();
-			String channel = events.get(0).getIncoming().getChannel();
 			ServiceResponse<EventSchema> metrics = eventSchemaService.findIncomingBy(deviceGuid, channel);
     		
     		List<String> additionalHeaders = metrics.getResult()
     				.getFields().stream()
     				.map(m -> m.getPath()).collect(Collectors.toList());
-			
+    		
+    		List events = doSearch(dateStart, dateEnd, online, deviceGuid, channel, locale);
+    		
     		EventCsvDownload csvDownload = new EventCsvDownload();
 			csvDownload.download(events, response, additionalHeaders);
 		} catch (IOException | SecurityException | NoSuchMethodException e) {

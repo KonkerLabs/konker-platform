@@ -92,6 +92,7 @@ cdn {
     max-size = 500000
     file-types = "jpg,png,jpeg"
     enabled = true
+    defaultavatar = "/resources/konker/images/default-avatar.png"
 }
 
 password.user {
