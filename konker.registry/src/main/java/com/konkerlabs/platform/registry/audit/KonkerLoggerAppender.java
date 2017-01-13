@@ -1,58 +1,108 @@
 package com.konkerlabs.platform.registry.audit;
 
-import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEvent;
-import ch.qos.logback.core.rolling.RollingFileAppender;
-import com.konkerlabs.platform.registry.business.model.User;
+import ch.qos.logback.core.AppenderBase;
+import com.konkerlabs.platform.registry.audit.repositories.TenantLogRepository;
+import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
 import org.slf4j.MDC;
 
 import java.net.URI;
+import java.sql.Date;
+import java.time.Instant;
 
 
-public class KonkerLoggerAppender extends RollingFileAppender<Object> {
+public class KonkerLoggerAppender extends AppenderBase<ILoggingEvent> {
 
     public static final String CONTEXT = "context";
+    private TenantLogRepository repository;
 
     @Override
-    protected void append(Object eventObject) {
-        if(eventObject != null && eventObject instanceof LoggingEvent) {
-            if (((LoggingEvent) eventObject).getArgumentArray() != null
-                    && ((LoggingEvent) eventObject).getArgumentArray().length > 0
-                    && ((LoggingEvent) eventObject).getArgumentArray()[0] instanceof URI) {
+    public void start() {
+        super.start();
+        try {
+            repository = TenantLogRepository.getInstance();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-                URI dealer = (URI) ((LoggingEvent) eventObject).getArgumentArray()[0];
-                MDC.put(CONTEXT, encodeDealer(dealer));
-                if(((LoggingEvent) eventObject).getArgumentArray().length > 1
-                        && ((LoggingEvent) eventObject).getArgumentArray()[1] instanceof User){
 
-                    User loggedUser = (User) ((LoggingEvent) eventObject)
-                            .getArgumentArray()[1];
+    @Override
+    public void doAppend(ILoggingEvent eventObject) {
+        super.doAppend(eventObject);
+    }
 
-                    if(loggedUser != null) { //TODO implement user log level
-                        super.append(eventObject);
-                    } else {
-                        //Non logged user debug
-                        if(((LoggingEvent) eventObject).getLevel().equals(Level.DEBUG)){
-                            super.append(eventObject);
-                        }
+    @Override
+    protected void append(ILoggingEvent iLoggingEvent) {
+        enrich(iLoggingEvent);
+    }
+
+
+    /**
+     * Enrich log with tenant info
+     * @param eventObject
+     */
+    private void enrich(ILoggingEvent eventObject) {
+
+        if (eventObject != null && eventObject instanceof LoggingEvent) {
+            if (eventObject.getArgumentArray() != null
+                    && eventObject.getArgumentArray().length > 1 ){
+                URI uri = null;
+                LogLevel logLevel = null;
+                for(Object item : eventObject.getArgumentArray()){
+                    if (item instanceof URI && !((URI) item).getScheme().equals("http")) {
+                        uri = (URI) item;
                     }
-                } else {
-                    //TODO implement user log level
-                    super.append(eventObject);
+                    if(item instanceof LogLevel){
+                        logLevel = (LogLevel) item;
+                    }
+                }
+                if(uri != null && logLevel != null){
+                    MDC.put(CONTEXT, encodeDealer(uri));
+                    store(eventObject, getTenant(uri), eventObject.getFormattedMessage());
                 }
             }
-        } else {
-            super.append(eventObject);
+
         }
     }
 
     /**
+     * Store log into datastore
+     * @param event
+     * @param tenantDomain
+     * @param trace
+     */
+    private void store(ILoggingEvent event, String tenantDomain, String trace) {
+        repository.insert(tenantDomain, Date.from(Instant.ofEpochMilli(event.getTimeStamp())), trace);
+    }
+
+    /**
      * Encode URIDealer to log format
+     *
      * @param dealer
      * @return String  - entity: {val}, tentant: {val}, guid: {val}
      */
-    private String encodeDealer(URI dealer){
+    private String encodeDealer(URI dealer) {
         return "Entity: " + dealer.getScheme() + ", Tenant: "
                 + dealer.getHost() + ", Guid: " + dealer.getPath().replaceAll("/", "");
+    }
+
+    /**
+     * Return tentant info
+     * @param dealer
+     * @return tentantDomain
+     */
+    private String getTenant(URI dealer) {
+        return dealer.getHost();
+    }
+
+    /**
+     * Return schema
+     * @param dealer
+     * @return entityName
+     */
+    private String getEntity(URI dealer) {
+        return dealer.getScheme();
     }
 }

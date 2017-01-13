@@ -7,5 +7,4 @@ target
 **/.project
 /konker.registry/src/main/resources/application.conf
 **/env/*
-**/build/*
 *.pydevproject
