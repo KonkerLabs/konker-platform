@@ -149,8 +149,7 @@ public class DeviceEventRestEndpoint {
     }
 
     @RequestMapping(value = "pub/{apiKey}/{channel}",
-            method = RequestMethod.POST,
-            consumes = MediaType.APPLICATION_JSON_VALUE)
+            method = RequestMethod.POST)
     public ResponseEntity<EventResponse> onEvent(HttpServletRequest servletRequest,
                                                  @PathVariable("apiKey") String apiKey,
                                                  @PathVariable("channel") String channel,
