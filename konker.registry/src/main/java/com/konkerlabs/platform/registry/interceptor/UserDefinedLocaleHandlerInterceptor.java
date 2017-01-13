@@ -18,15 +18,15 @@ import java.util.Locale;
 import java.util.Optional;
 
 
-public class RequestHandlerInterceptor extends HandlerInterceptorAdapter {
+public class UserDefinedLocaleHandlerInterceptor extends HandlerInterceptorAdapter {
 
-    private Logger LOG = LoggerFactory.getLogger(RequestHandlerInterceptor.class);
+    private Logger LOG = LoggerFactory.getLogger(UserDefinedLocaleHandlerInterceptor.class);
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         if (Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication()).isPresent() &&
                 SecurityContextHolder.getContext().getAuthentication().getPrincipal()
-                instanceof UserDetails) {
+                instanceof User) {
             try {
                 User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
                 if (Optional.ofNullable(request.getSession()).isPresent()
@@ -42,7 +42,7 @@ public class RequestHandlerInterceptor extends HandlerInterceptorAdapter {
                     }
                 }
             } catch (ClassCastException e){
-                LOG.error("Invalid user type on session");
+                LOG.error("Invalid user type on session", e);
             }
 
         }

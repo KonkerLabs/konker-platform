@@ -34,7 +34,7 @@ import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ITemplateResolver;
 
 import com.konkerlabs.platform.registry.business.model.enumerations.Language;
-import com.konkerlabs.platform.registry.interceptor.RequestHandlerInterceptor;
+import com.konkerlabs.platform.registry.interceptor.UserDefinedLocaleHandlerInterceptor;
 import com.konkerlabs.platform.registry.web.converters.InstantToStringConverter;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -123,7 +123,7 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements Application
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(localeChangeInterceptor());
-        registry.addInterceptor(new RequestHandlerInterceptor());
+        registry.addInterceptor(new UserDefinedLocaleHandlerInterceptor());
         super.addInterceptors(registry);
     }
 
