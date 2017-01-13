@@ -55,6 +55,11 @@
                     </tr>
                 </tbody>
             </table>
+            
+            <div th:if="${#lists.isEmpty(logs)}">
+                <span data-th-text="#{tenants.log.form.no_log_warning}"></span>&nbsp;<a data-th-href="@{/me}" data-th-text="#{tenants.log.form.click_here}">Clique aqui</a>.
+            </div>
+            
         </fieldset>
     </div>
 </body>
