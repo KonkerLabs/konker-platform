@@ -27,3 +27,30 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
 } else {
     alert('The File APIs are not fully supported in this browser.');
 }
+
+// show and hide view and edit divs
+var oldValues;
+
+$(".btn-edit-user").click(function() {
+	var panel = this.closest(".panel-user-fields");
+
+	// save current values
+	oldValues = $($(panel).find(".panel-edit-user")).clone(true, true);
+
+	$(panel).find(".panel-view-user").hide();
+	$(panel).find(".panel-edit-user").show();
+	$(".btn-edit-user").hide();
+
+});
+
+$(".btn-cancel-edit-user").click(function() {
+	var panel = this.closest(".panel-user-fields");
+
+	// restore previous values
+	$(panel).find(".panel-edit-user").replaceWith(oldValues);
+
+	$(panel).find(".panel-view-user").show();
+	$(panel).find(".panel-edit-user").hide();
+	$(".btn-edit-user").show();
+
+});

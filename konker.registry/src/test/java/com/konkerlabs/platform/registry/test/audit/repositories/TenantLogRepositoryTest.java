@@ -1,6 +1,6 @@
 package com.konkerlabs.platform.registry.test.audit.repositories;
 
-import java.time.Instant;
+import java.lang.reflect.Field;
 import java.util.Date;
 import java.util.List;
 
@@ -8,6 +8,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -44,6 +45,46 @@ public class TenantLogRepositoryTest {
 		List<TenantLog> logs = tenantLogRepository.findAll(tenant);
 
 		Assert.assertEquals(10, logs.size());
+
+	}
+
+	@Test
+	public void shouldInsertLogsInMilliseconds() {
+
+		Tenant tenant = Tenant.builder().domainName("KBCYiVE379").build();
+
+		int initialSize = tenantLogRepository.findAll(tenant).size();
+
+		// assert empty collection
+		Assert.assertEquals(0, initialSize);
+
+		for (int i = 0; i < 10; i++) {
+			tenantLogRepository.insert(tenant.getDomainName(), new Date().getTime(), "LuxUkmRSB9");
+		}
+
+		List<TenantLog> logs = tenantLogRepository.findAll(tenant);
+
+		Assert.assertEquals(10, logs.size());
+
+	}
+
+	@Test
+	public void shouldGetInstanceRepositoryWork()
+			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+
+		// workaround to get valid mongo template
+		Field f = tenantLogRepository.getClass().getDeclaredField("mongoAuditTemplate");
+		f.setAccessible(true);
+		MongoTemplate mongoTemplate = (MongoTemplate) f.get(tenantLogRepository);
+
+		TenantLogRepository repository = TenantLogRepository.getInstance();
+
+		// workaround to set mongo template
+		Field fSet = repository.getClass().getDeclaredField("mongoAuditTemplate");
+		fSet.setAccessible(true);
+		fSet.set(repository, mongoTemplate);
+
+		repository.insert("YJgQ8Zj2j0", new Date().getTime(), "H5ITwKKqrm");
 
 	}
 

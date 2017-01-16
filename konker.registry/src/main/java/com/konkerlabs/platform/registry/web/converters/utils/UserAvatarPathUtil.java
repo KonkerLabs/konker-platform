@@ -28,7 +28,7 @@ public class UserAvatarPathUtil {
 			absolutePath = config.getString("prefix") + "/" + config.getString("name") + "/";
 			absolutePath = absolutePath.concat(user.getAvatar());
 		} else {
-			absolutePath = config.getString("defaultavatar");
+			absolutePath = "/resources/konker/images/default-avatar.png";
 		}
 	}
 }

@@ -6,6 +6,7 @@ import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
 import com.konkerlabs.platform.registry.business.model.enumerations.Language;
 import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
 import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
+import com.konkerlabs.platform.registry.web.converters.utils.UserAvatarPathUtil;
 import com.konkerlabs.platform.registry.web.forms.api.ModelBuilder;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -58,20 +59,13 @@ public class UserForm implements ModelBuilder<User,UserForm,Void> {
                 .build();
     }
 
-    private String buildAvatarPath(String avatar) {
-        if(!StringUtils.isEmpty(avatar)){
-            return config.getString("prefix") + "/" + config.getString("name") + "/" + avatar;
-        } else {
-            return config.getString("defaultavatar");
-        }
-    }
     @Override
     public UserForm fillFrom(User model) {
         this.setName(model.getName());
         this.setEmail(model.getEmail());
         this.setPhone(model.getPhone());
         this.setAvatar(model.getAvatar());
-        this.setAvatar(buildAvatarPath(model.getAvatar()));
+        this.setAvatar(new UserAvatarPathUtil(model).getAbsolutePath());
         this.setDateFormat(model.getDateFormat());
         this.setLanguage(model.getLanguage());
         this.setZoneId(model.getZoneId());
