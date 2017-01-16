@@ -5,7 +5,9 @@
 <body>
 <div data-layout-fragment="content">
     <fieldset>
-        <legend data-th-text="#{transformations.index.legend}">Transformations</legend>
+        <div>
+            <h1 class="page-title" data-th-text="#{transformations.index.legend}"></h1>
+        </div>
         <div class="alert alert-success" role="alert" data-th-if="${message != null}">
             <span data-th-text="${message}"></span>
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
