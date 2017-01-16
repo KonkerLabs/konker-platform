@@ -120,7 +120,6 @@ function fetchViewFragment(scheme, fetchUrl, element) {
         context : this,
         type : "GET",
         url : fetchUrl,
-        async : false,
         dataType: "html",
         timeout : 100000,
         data: scheme,
@@ -142,7 +141,6 @@ $('#device').change(function() {
     renderOutgoingFragment($('#visualizationForm').serialize(), '/visualization/loading/channel/', '#div-channel');
     clearMetricSelect();
     clearChartTableHideCsvButton();
-    selectFirstOption('channel');
 
 });
 
@@ -150,7 +148,6 @@ function applyEventBindingsToChannel() {
 	$('#channel').change(function() {
 		renderOutgoingFragment($('#visualizationForm').serialize(), '/visualization/loading/metrics/', '#div-metric');
 		clearChartTableHideCsvButton();
-		selectFirstOption('metric');
 	});
 
 }
