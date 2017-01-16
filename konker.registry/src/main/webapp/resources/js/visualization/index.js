@@ -2,12 +2,6 @@ $('.date').datetimepicker({
 	format: "DD/MM/YYYY HH:mm:ss"
 });
 
-$('#device').change(function() {
-	renderOutgoingFragment($('#visualizationForm').serialize(), '/visualization/loading/channel/', '#div-channel');
-	clearMetricSelect();
-	clearChartTableHideCsvButton();
-});
-
 $('button.btn-success').click(function() {
 	findAndLoadDataChart();
 });
@@ -42,6 +36,14 @@ function loadCSV() {
         	$('#bufferCsv')[0].click()
         }
     });
+}
+
+function autoRefreshDataChart() {
+    if (!$('#device').val() === false &&
+        !$('#channel').val() === false &&
+        !$('#metric').val() === false) {
+        findAndLoadDataChart();		
+    }
 }
 
 function findAndLoadDataChart() {
@@ -99,7 +101,7 @@ $('#online').click(function() {
 	if ($(this).is(':checked')) {
 		$('.date input').attr('disabled', true);
 		
-		myInterval = setInterval(findAndLoadDataChart, 5000);
+		myInterval = setInterval(autoRefreshDataChart, 5000);
 	} else {
 		$('.date input').attr('disabled', false);
 		clearInterval(myInterval);
@@ -134,6 +136,12 @@ function fetchViewFragment(scheme, fetchUrl, element) {
         }
     });
 }
+
+$('#device').change(function() {
+    renderOutgoingFragment($('#visualizationForm').serialize(), '/visualization/loading/channel/', '#div-channel');
+    clearMetricSelect();
+    clearChartTableHideCsvButton();
+});
 
 function applyEventBindingsToChannel() {
 	$('#channel').change(function() {

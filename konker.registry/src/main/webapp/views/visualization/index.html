@@ -146,8 +146,8 @@
 <div data-layout-fragment="script">
 	<script data-th-attr="src=@{/resources/konker/scripts/d3.min.js}"></script>
 	<script data-th-attr="src=@{/resources/konker/scripts/nv.d3.min.js}"></script>
-	<script data-th-attr="src=@{/resources/js/visualization/graph.js}"></script>
-    <script data-th-attr="src=@{/resources/js/visualization/index.js}"></script>
+	<script data-th-attr="src=@{/resources/js/visualization/graph.js}" type="text/javascript"></script>
+    <script data-th-attr="src=@{/resources/js/visualization/index.js(v2)}" type="text/javascript"></script>
 	<script data-th-inline="javascript">
 		graphService.setup('#7777ff',[[#{visualization.graph.label.axisx}]],[[#{devices.visualization.graph.no_data}]]);
 	</script>
