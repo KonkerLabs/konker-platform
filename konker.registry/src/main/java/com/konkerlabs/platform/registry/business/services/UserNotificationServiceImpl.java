@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -216,7 +215,7 @@ public class UserNotificationServiceImpl implements UserNotificationService {
 						templateParam , 
 						user.getLanguage().getLocale());
 			} catch (MessagingException e) {
-				LOGGER.error("Notification: ", e);
+				LOGGER.error("Notification: ", user.getTenant().toURI(), user.getTenant().getLogLevel(), e);
 			}
 		}
 	}

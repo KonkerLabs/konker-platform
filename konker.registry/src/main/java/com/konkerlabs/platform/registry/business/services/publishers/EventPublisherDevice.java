@@ -90,11 +90,13 @@ public class EventPublisherDevice implements EventPublisher {
             if (!response.isOk())
                 LOGGER.error("Failed to forward event to its destination",
                         response.getResponseMessages(),
-                        outgoingEvent.getOutgoing().toURI());
+                        outgoingDevice.toURI(),
+                        outgoingDevice.getLogLevel());
         } else {
             LOGGER.debug(
                     MessageFormat.format(EVENT_DROPPED, destinationUri, outgoingEvent.getPayload()),
-                    outgoingDevice.toURI()
+                    outgoingDevice.toURI(),
+                    outgoingDevice.getLogLevel()
             );
         }
     }

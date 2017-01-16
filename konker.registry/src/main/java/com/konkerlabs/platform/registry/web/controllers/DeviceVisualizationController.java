@@ -219,7 +219,10 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     		EventCsvDownload csvDownload = new EventCsvDownload();
 			csvDownload.download(events, response, additionalHeaders);
 		} catch (IOException | SecurityException | NoSuchMethodException e) {
-			LOGGER.error("Error to generate CSV", e);
+			LOGGER.error("Error to generate CSV", 
+						Device.builder().guid(deviceGuid).build().toURI(),
+						Device.builder().guid(deviceGuid).build().getLogLevel(), 
+						e);
 		}
     }
 }

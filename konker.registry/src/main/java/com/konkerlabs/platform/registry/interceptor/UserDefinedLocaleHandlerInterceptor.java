@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.interceptor;
 
+import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.security.UserContextResolver;
 import org.slf4j.Logger;
@@ -42,7 +43,11 @@ public class UserDefinedLocaleHandlerInterceptor extends HandlerInterceptorAdapt
                     }
                 }
             } catch (ClassCastException e){
-                LOG.error("Invalid user type on session", e);
+                User invalidUSer = User.builder().name("INVALID USER").tenant(Tenant.builder().name("INVALID TENANT").build()).build();
+				LOG.error("Invalid user type on session", 
+                		invalidUSer.toURI(),
+                		invalidUSer.getTenant().getLogLevel(),
+                		e);
             }
 
         }

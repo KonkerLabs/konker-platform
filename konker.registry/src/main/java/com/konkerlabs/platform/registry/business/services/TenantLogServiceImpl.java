@@ -30,8 +30,11 @@ public class TenantLogServiceImpl implements TenantLogService {
 	public ServiceResponse<List<TenantLog>> findByTenant(Tenant tenant, boolean ascending) {
 
 		if (!Optional.ofNullable(tenant).isPresent()) {
-			LOGGER.debug(CommonValidations.TENANT_NULL.getCode(), Device.builder().guid("NULL")
-					.tenant(Tenant.builder().domainName("unknow_domain").build()).build().toURI());
+			Device device = Device.builder().guid("NULL")
+					.tenant(Tenant.builder().domainName("unknow_domain").build()).build();
+			
+			LOGGER.debug(CommonValidations.TENANT_NULL.getCode(), device.toURI(),
+					device.getLogLevel());
 			return ServiceResponseBuilder.<List<TenantLog>>error()
 					.withMessage(CommonValidations.TENANT_NULL.getCode(), null).build();
 		}
