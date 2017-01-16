@@ -130,12 +130,13 @@ RUN apk add --update python && \
 COPY build/__init__.py /usr/bin
 COPY build/dsl.py /usr/bin
 COPY build/users/ /usr/bin/users
+COPY build/dao/ /usr/bin/dao
 COPY build/setup.py /usr/bin
 
 RUN chmod 777 /usr/bin/setup.py
 RUN python /usr/bin/setup.py install 
 RUN rm /usr/bin/setup.py
-RUN ln -s /usr/bin/dsl.py /usr/bin/konker-user
+RUN ln -s /usr/bin/dsl.py /usr/bin/konker
 
 #RUN chmod 777 ~/populate_demo_data.py
 
