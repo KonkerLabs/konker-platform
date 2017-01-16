@@ -141,7 +141,6 @@ $('#device').change(function() {
     renderOutgoingFragment($('#visualizationForm').serialize(), '/visualization/loading/channel/', '#div-channel');
     clearMetricSelect();
     clearChartTableHideCsvButton();
-
 });
 
 function applyEventBindingsToChannel() {
