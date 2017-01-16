@@ -7,11 +7,12 @@
 <body>
     <div data-layout-fragment="content">
         <fieldset>
-            <legend data-th-text="#{usernotifications.index.legend}">Notifications</legend>
+            <div>
+                <h1 class="page-title" data-th-text="#{usernotifications.index.legend}"></h1>
+            </div>
             <div class="row" data-th-if="${messageCount > 0}">
                 <div class="col-md-4 sidebar">
                     <input type="button" class="btn" id="mark-all-read-btn" data-th-value="#{usernotifications.index.mark_all_read}" value="Mark All Read">
-                    </button>
                     <div class="list-group" id="notification-summary">
                     </div>
                 </div>

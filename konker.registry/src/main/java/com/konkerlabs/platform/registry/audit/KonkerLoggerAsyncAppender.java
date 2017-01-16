@@ -7,8 +7,6 @@ public class KonkerLoggerAsyncAppender extends AsyncAppender {
 
     @Override
     public void start() {
-        super.setMaxFlushTime(10000000);
-        super.setDiscardingThreshold(1000);
         super.start();
     }
 

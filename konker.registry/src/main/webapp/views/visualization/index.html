@@ -18,12 +18,17 @@
 <body>
 <div data-layout-fragment="content">
     <fieldset>
-        <legend data-th-text="#{visualization.index.legend}"></legend>
+        <div>
+            <h1 class="page-title" data-th-text="#{visualization.index.legend}"></h1>
+        </div>
+        
         <div class="alert alert-danger hide" role="alert">
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
+            <ul>
             <li></li>
+            </ul>
         </div>
         
         <form id="visualizationForm" data-th-object="${visualization}" method="post" class="form-horizontal">
@@ -65,7 +70,7 @@
 	                       data-th-text="#{visualization.index.device}"
 	                       for="device"></label>
 	                <div class="col-sm-4">
-	                    <select class="form-control" data-th-field="*{deviceGuid}"
+	                    <select class="col-md-12" data-th-field="*{deviceGuid}"
 	                        id="device" name="device">
 	                        <option data-th-value="${''}"
                                 data-th-text="#{visualization.index.select.empty}"></option>

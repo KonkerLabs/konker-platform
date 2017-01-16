@@ -5,12 +5,16 @@
 <body>
 <div data-layout-fragment="content">
     <fieldset>
-        <legend data-th-text="#{destinations.rest.form.legend}">REST Destination</legend>
+        <div>
+            <h1 class="page-title" data-th-text="#{destinations.rest.form.legend}"></h1>
+        </div>
         <div class="alert alert-danger" role="alert" data-th-if="${errors != null and !errors.empty}">
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
+            <ul>
             <li data-th-each="error : ${errors}" data-th-text="${error}"></li>
+            </ul>
         </div>
         <form data-th-action="@{__${action}__}" action="#" data-th-object="${destination}"
               method="post" class="form-horizontal" autocomplete="off">

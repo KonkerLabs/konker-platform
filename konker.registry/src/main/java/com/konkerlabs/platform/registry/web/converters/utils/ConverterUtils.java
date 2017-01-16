@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry.web.converters.utils;
 
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
@@ -55,7 +56,7 @@ public class ConverterUtils {
         return MessageFormat.format(
                 appContext.getMessage(
                         GLOBAL_DATETIME_FORMAT_PATTERN,
-                        null,
+                        Arrays.asList(date).toArray(),
                         userContextResolver.getObject().getLanguage().getLocale()),
                 date);
     }

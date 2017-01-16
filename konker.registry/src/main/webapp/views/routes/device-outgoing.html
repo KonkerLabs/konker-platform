@@ -9,7 +9,8 @@
                data-th-text="#{routes.device-outgoing.device}"
                for="outgoingDeviceAuthority">Outgoing Device</label>
         <div class="col-sm-4">
-            <select class="form-control" data-th-field="${route.outgoing.authorityId}"
+            <select class="col-md-12"
+                    data-th-field="${route.outgoing.authorityId}"
                     id="outgoingDeviceAuthority" name="outgoingDeviceAuthority">
                 <option data-th-each="device : ${allDevices}"
                         data-th-value="${device.guid}"

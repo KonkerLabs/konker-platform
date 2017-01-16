@@ -6,7 +6,10 @@
 <body>
     <div data-layout-fragment="content">
         <fieldset>
-            <legend data-th-text="#{tenants.log.form.legend}"></legend>
+            <div>
+                <h1 class="page-title" data-th-text="#{tenants.log.form.legend}"></h1>
+            </div>
+
             <div class="alert alert-success" role="alert"
                 data-th-if="${message != null}">
                 <span data-th-text="${message}"></span>
@@ -55,6 +58,11 @@
                     </tr>
                 </tbody>
             </table>
+            
+            <div th:if="${#lists.isEmpty(logs)}">
+                <span data-th-text="#{tenants.log.form.no_log_warning}"></span>&nbsp;<a data-th-href="@{/me}" data-th-text="#{tenants.log.form.click_here}">Clique aqui</a>.
+            </div>
+            
         </fieldset>
     </div>
 </body>
