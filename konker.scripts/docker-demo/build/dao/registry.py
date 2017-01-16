@@ -23,9 +23,7 @@ def user_find(username):
     except Exception as e:
         print(e)
         sys.exit(1)
-    if user is not None:
-        return user
-    return None
+    return user
 
 
 def tenant_find(tenant_name):
@@ -35,9 +33,7 @@ def tenant_find(tenant_name):
     except Exception as e:
         print(e)
         sys.exit(1)
-    if tenant is not None:
-        return tenant
-    return None
+    return tenant
 
 
 def create_tenant(args, name):
@@ -84,6 +80,7 @@ def create_user(args):
             sys.exit(1)
     else:
         print("This konker user already exists")
+        sys.exit(0)
 
 
 def update_user(args):
@@ -107,3 +104,4 @@ def update_user(args):
             sys.exit(1)
     else:
         print("Konker username not found")
+        sys.exit(0)
