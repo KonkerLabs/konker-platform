@@ -6,5 +6,6 @@ target
 /.gitignore
 **/.project
 /konker.registry/src/main/resources/application.conf
+/konker.scripts/docker/build/application.conf
 **/env/*
 *.pydevproject
