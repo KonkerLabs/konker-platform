@@ -41,12 +41,13 @@ def tenant_find(tenant_name):
 
 def create_tenant(args, name):
     db = db_connect()
-    tenant = tenant_find(name)
+    if not args.org:
+        print("Info: The konker username will be used as organization name")
+        org = name
+    else:
+        org = args.org
+    tenant = tenant_find(org)
     if tenant is None:
-        if not args.org:
-            org = name
-        else:
-            org = args.org
         try:
             inserted_id = db.tenants.insert_one({"name": org, "domainName": org}).inserted_id
             return inserted_id
@@ -54,14 +55,13 @@ def create_tenant(args, name):
             print(e)
             sys.exit(1)
     else:
-        return tenant
+        return tenant['_id']
 
 
 def create_user(args):
     db = db_connect()
     user = user_find(args.user)
     if user is None:
-        print("Info: The konker username will be used as organization name")
         username = args.user
         tenant_id = create_tenant(args, username)
 
