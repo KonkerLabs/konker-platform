@@ -40,6 +40,8 @@ fi
 
 /usr/local/sbin/nginx &
 mongod &
+#Set database version
+konker database upgrade 0.1 &
 mosquitto &
 redis-server &
 exec "$@"

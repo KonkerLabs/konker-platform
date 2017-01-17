@@ -6,6 +6,9 @@ from pymongo import MongoClient
 from users.migrate_user_pwd import get_hashed_password
 from users.migrate_user_roles import update_user_roles
 
+db_version = "0.1"
+versioning_collection_name = "version"
+
 
 def db_connect(host='localhost', port=27017):
     try:
@@ -105,3 +108,44 @@ def update_user(args):
     else:
         print("Konker username not found")
         sys.exit(0)
+
+
+def create_versioning_collection():
+    db = db_connect()
+    if versioning_collection_name not in db.collection_names():
+        db.create_collection(versioning_collection_name)
+        db.version.insert(
+            {
+                "version": db_version
+            }
+        )
+        print("Database version: " + db_version)
+
+
+def upgrade_version(args):
+    create_versioning_collection()
+
+    db = db_connect()
+    version = db.version.find_one()
+    if float(version['version']) < float(args.version):
+        try:
+            db.version.update_one(
+                {
+                    '_id': version['_id']
+                },
+                {
+                    '$set':
+                        {
+                            'version': args.version
+                        }
+                }, upsert=False)
+            print("Database version upgraded to " + args.version)
+        except Exception as e:
+            print(e)
+            sys.exit(1)
+    else:
+        print("Database already upgraded")
+        sys.exit(0)
+
+
+

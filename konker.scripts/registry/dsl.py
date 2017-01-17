@@ -2,7 +2,7 @@
 import argparse
 import sys
 
-from dao.registry import create_user, update_user
+from dao.registry import create_user, update_user, upgrade_version
 
 usage = '''konker <command> [<args>]
 
@@ -46,10 +46,12 @@ class KonkerDsl(object):
 
     @staticmethod
     def database():
-        parser = argparse.ArgumentParser(description='Database Management')
+        parser = argparse.ArgumentParser(description='Database management')
         sub_parser = parser.add_subparsers(title='subcommands', description='valid subcommands', help='Additional help')
 
-        sub_parser_migration = sub_parser.add_parser('migration', description='migration command', help='Database migration')
+        sub_parser_upgrade = sub_parser.add_parser('upgrade', description='upgrade command', help='Database upgrade')
+        sub_parser_upgrade.add_argument('version', help='Database version', type=str)
+        sub_parser_upgrade.set_defaults(func=upgrade_version)
         args = parser.parse_args(sys.argv[2:])
         args.func(args)
 
