@@ -15,16 +15,28 @@ import java.time.Instant;
 public class KonkerLoggerAppender extends AppenderBase<ILoggingEvent> {
 
     public static final String CONTEXT = "context";
+
     private TenantLogRepository repository;
+
+    public KonkerLoggerAppender(TenantLogRepository repository) {
+        this.repository = repository;
+    }
+
+    public KonkerLoggerAppender() {}
+
+
 
     @Override
     public void start() {
         super.start();
-        try {
-            repository = TenantLogRepository.getInstance();
-        } catch (Exception e) {
-            e.printStackTrace();
+        if(repository == null){
+            try {
+                repository = TenantLogRepository.getInstance();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
+
     }
 
 
@@ -34,7 +46,7 @@ public class KonkerLoggerAppender extends AppenderBase<ILoggingEvent> {
     }
 
     @Override
-    protected void append(ILoggingEvent iLoggingEvent) {
+    public void append(ILoggingEvent iLoggingEvent) {
         enrich(iLoggingEvent);
     }
 
@@ -58,7 +70,7 @@ public class KonkerLoggerAppender extends AppenderBase<ILoggingEvent> {
                         logLevel = (LogLevel) item;
                     }
                 }
-                if(uri != null && logLevel != null){
+                if(uri != null && logLevel != null && logLevel.getId().equals(eventObject.getLevel().levelStr)){
                     MDC.put(CONTEXT, encodeDealer(uri));
                     store(eventObject, getTenant(uri), eventObject.getFormattedMessage());
                 }
@@ -73,7 +85,7 @@ public class KonkerLoggerAppender extends AppenderBase<ILoggingEvent> {
      * @param tenantDomain
      * @param trace
      */
-    private void store(ILoggingEvent event, String tenantDomain, String trace) {
+    public void store(ILoggingEvent event, String tenantDomain, String trace) {
         repository.insert(tenantDomain, Date.from(Instant.ofEpochMilli(event.getTimeStamp())), trace);
     }
 
@@ -104,5 +116,9 @@ public class KonkerLoggerAppender extends AppenderBase<ILoggingEvent> {
      */
     private String getEntity(URI dealer) {
         return dealer.getScheme();
+    }
+
+    public void setRepository(TenantLogRepository repository) {
+        this.repository = repository;
     }
 }
