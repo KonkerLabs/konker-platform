@@ -11,6 +11,8 @@ import java.util.function.Supplier;
 
 public interface HttpGateway {
 
+    static final String KONKER_VERSION_HEADER = "X-Konker-Version";
+
     <T> String request(HttpMethod method,
                        URI uri,
                        MediaType mediaType,
