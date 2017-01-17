@@ -39,7 +39,6 @@ class KonkerDsl(object):
         sub_parser_update = sub_parser.add_parser('update', description='update command', help='Update account')
         sub_parser_update.add_argument('user', help='Specify the account username', type=str)
         sub_parser_update.add_argument('password', help='Specify the new account password', type=str)
-        sub_parser_update.add_argument('--org', help='Organization name, account username used as default', type=str)
         sub_parser_update.set_defaults(func=update_user)
         args = parser.parse_args(sys.argv[2:])
         args.func(args)
