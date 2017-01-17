@@ -164,7 +164,7 @@ public class EventRouteFormTest {
                 .uri(new URIDealer() {
                     @Override
                     public String getUriScheme() {
-                        return Device.URI_SCHEME;
+                        return SmsDestinationURIDealer.SMS_URI_SCHEME;
                     }
 
                     @Override
@@ -214,7 +214,7 @@ public class EventRouteFormTest {
                 .uri(new URIDealer() {
                     @Override
                     public String getUriScheme() {
-                        return Device.URI_SCHEME;
+                        return RESTDestinationURIDealer.REST_DESTINATION_URI_SCHEME;
                     }
 
                     @Override

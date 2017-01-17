@@ -8,6 +8,7 @@ import com.konkerlabs.platform.registry.business.services.JedisTaskService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
 import com.konkerlabs.platform.registry.integration.serializers.EventJsonView;
 import com.konkerlabs.platform.registry.integration.serializers.EventVO;
@@ -42,7 +43,8 @@ public class DeviceEventRestEndpoint {
         INVALID_RESOURCE("integration.rest.invalid.resource"),
         INVALID_WAITTIME("integration.rest.invalid.waitTime"),
         INVALID_CHANNEL_PATTERN("integration.rest.invalid.channel"),
-    	DEVICE_NOT_FOUND("integration.event_processor.channel.not_found");
+    	DEVICE_NOT_FOUND("integration.event_processor.channel.not_found"),
+    	INVALID_REQUEST_ORIGIN("integration.rest.invalid_requrest_origin");
 
         private String code;
 
@@ -160,7 +162,10 @@ public class DeviceEventRestEndpoint {
             return new ResponseEntity<EventResponse>(buildResponse(Messages.INVALID_REQUEST_BODY.getCode(),locale), HttpStatus.BAD_REQUEST);
 
         if (!principal.getApiKey().equals(apiKey))
-            return new ResponseEntity<EventResponse>(buildResponse(Messages.INVALID_RESOURCE.getCode(),locale),HttpStatus.NOT_FOUND);
+            return new ResponseEntity<EventResponse>(buildResponse(Messages.INVALID_RESOURCE.getCode(),locale), HttpStatus.NOT_FOUND);
+
+		if (servletRequest.getHeader(HttpGateway.KONKER_VERSION_HEADER) != null)
+			return new ResponseEntity<EventResponse>(buildResponse(Messages.INVALID_REQUEST_ORIGIN.getCode(), locale), HttpStatus.FORBIDDEN);
 
         try {
             deviceEventProcessor.process(apiKey,channel,body);
