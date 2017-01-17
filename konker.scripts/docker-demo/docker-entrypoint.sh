@@ -40,8 +40,10 @@ fi
 
 /usr/local/sbin/nginx &
 mongod &
-#Set database version
-konker database upgrade 0.1 &
 mosquitto &
 redis-server &
+#Set database version
+konker database upgrade 0.1 &
+#Set default user
+konker user create admin changeme &
 exec "$@"

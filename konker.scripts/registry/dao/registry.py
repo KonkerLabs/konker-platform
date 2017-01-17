@@ -41,7 +41,7 @@ def tenant_find(tenant_name):
 
 def create_tenant(args, name):
     db = db_connect()
-    tenant = tenant_find(name, db)
+    tenant = tenant_find(name)
     if tenant is None:
         if not args.org:
             org = name
@@ -63,7 +63,7 @@ def create_user(args):
     if user is None:
         print("Info: The konker username will be used as organization name")
         username = args.user
-        tenant_id = create_tenant(args, username, db)
+        tenant_id = create_tenant(args, username)
 
         new_user = {
             "_id": username,
@@ -88,7 +88,7 @@ def create_user(args):
 
 def update_user(args):
     db = db_connect()
-    user = user_find(args.user, db)
+    user = user_find(args.user)
     if user is not None:
         try:
             db.users.update_one(
