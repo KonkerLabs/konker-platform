@@ -56,7 +56,7 @@ function findAndLoadDataChart() {
         timeout : 100000,
         data: $('#visualizationForm').serialize(),
         beforeSend : function() {
-            showElement('#loading');
+            $("div .loading-chart").show();
         },
         success : function(data) {
             var result;
@@ -91,7 +91,7 @@ function findAndLoadDataChart() {
         	graphService.update($('#metrics select').val(),result);
         },
         complete : function() {
-            hideElement('#loading');
+            $("div .loading-chart").hide();
         }
     });
 }
@@ -116,6 +116,8 @@ function renderOutgoingFragment(scheme, url, element) {
 }
 
 function fetchViewFragment(scheme, fetchUrl, element) {
+    var loadSpinner;
+    
     $.ajax({
         context : this,
         type : "GET",
@@ -124,7 +126,9 @@ function fetchViewFragment(scheme, fetchUrl, element) {
         timeout : 100000,
         data: scheme,
         beforeSend : function() {
-            showElement('#loading');
+            loadSpinner = setTimeout(function() {
+                $("div.ajax-loading").addClass('show');
+            }, 50);
         },
         success : function(data) {
             displayFragment(element, data);
@@ -132,7 +136,8 @@ function fetchViewFragment(scheme, fetchUrl, element) {
             applyEventBindingsToMetric();
         },
         complete : function() {
-            hideElement('#loading');
+            clearTimeout(loadSpinner);
+            $("div.ajax-loading").removeClass('show');
         }
     });
 }

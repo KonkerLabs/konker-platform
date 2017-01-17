@@ -16,6 +16,8 @@ function renderOutgoingFragment(scheme) {
 }
 
 function fetchViewFragment(scheme, fetchUrl) {
+    var loadSpinner;
+    
     $.ajax({
         context : this,
         type : "GET",
@@ -23,14 +25,17 @@ function fetchViewFragment(scheme, fetchUrl) {
         dataType: "html",
         timeout : 100000,
         beforeSend : function() {
-            showElement('#loading');
+            loadSpinner = setTimeout(function() {
+                $("div.ajax-loading").addClass('show');
+            }, 50);
         },
         success : function(data) {
             displayFragment(data);
             applyEventBindings(scheme);
         },
         complete : function() {
-            hideElement('#loading');
+            clearTimeout(loadSpinner);
+            $("div.ajax-loading").removeClass('show');
         }
     });
 }
