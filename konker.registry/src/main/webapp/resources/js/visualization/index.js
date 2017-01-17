@@ -75,9 +75,7 @@ function findAndLoadDataChart() {
         		
         		var tableData = "";
         		$.each(result, function(index, value) {
-        			var json = JSON.stringify(value.payload).replace(/\\/g, '');
-        			json = json.replace(/\"{/g, '{');
-        			json = json.replace(/\}"/g, '}');
+        			var json = value.payload;
         			tableData = tableData + '<tr><td>'+value.timestampFormated+'</td><td class="json-data">'+json+'</td></tr>';
         		});
         		$("#data-event table tbody").html(tableData);
