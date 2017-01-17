@@ -86,7 +86,6 @@
                                data-th-text="#{routes.form.outgoing.type.rest}"
                                value="rest" data-th-checked="*{outgoingScheme == 'rest'}"></input>
                     </label>
-                    <img data-th-src="@{/resources/konker/images/loading.gif}" id="loading" class="ajax-loading"/>
                 </div>
             </div>
             <div id="outgoingFragment">
@@ -167,10 +166,13 @@
             </div>
 
         </form>
+        
+        <div class="ajax-loading"></div>
+  
     </fieldset>
 </div>
 <div data-layout-fragment="script">
-    <script data-th-attr="src=@{/resources/js/routes/form.js}"></script>
+    <script data-th-attr="src=@{/resources/js/routes/form.js(v2)}" type="text/javascript"></script>
 </div>
 </body>
 </html>
