@@ -74,10 +74,17 @@ public class EventRouteForm
         return toURI(
                 URI_TEMPLATE,
                 tenantDomainSupplier.get(),
-                getOutgoing().getAuthorityId()
+                getOutgoing().getAuthorityId(),
+                getOutgoingScheme()
         );
     }
 
+    private URI toURI(String tpl, String ctx, String guid, String uriScheme) {
+        return URI.create(
+            MessageFormat.format(tpl, uriScheme, ctx, guid)
+        );
+    }
+    
     private URI toURI(String tpl, String ctx, String guid) {
         return URI.create(
             MessageFormat.format(tpl, getUriScheme(), ctx, guid)

@@ -4,7 +4,7 @@
 </head>
 <body>
 <div data-th-fragment="channels" id="channels">
-    <select class="form-control" id="channel" name="channel">
+    <select class="col-md-12" id="channel" name="channel">
 	    <option data-th-value="${''}"
                                 data-th-text="#{visualization.index.select.empty}"></option>
 		<option data-th-each="channel : ${channels}"

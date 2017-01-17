@@ -61,6 +61,8 @@ public class HttpGatewayImpl implements HttpGateway {
                 headers.add("Authorization", format("Basic {0}", encodedCredentials));
             }
 
+            headers.add(KONKER_VERSION_HEADER, "0.1");
+
             HttpEntity<String> entity = new HttpEntity(
                 Optional.ofNullable(body).orElse(() -> null).get(),
                 headers

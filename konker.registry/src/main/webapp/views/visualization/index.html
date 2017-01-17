@@ -6,24 +6,32 @@
 	<style>
 		svg {
     		display: block;
-		}
-		#chart, svg {
 			margin: 0px;
 			padding: 0px;
 			height: 400px;
 			width: 95%;
 		}
+        .loading-chart {
+            height: 32px;
+            width: 32px;
+            display: none;
+        }
 	</style>
 </head>
 <body>
 <div data-layout-fragment="content">
     <fieldset>
-        <legend data-th-text="#{visualization.index.legend}"></legend>
+        <div>
+            <h1 class="page-title" data-th-text="#{visualization.index.legend}"></h1>
+        </div>
+        
         <div class="alert alert-danger hide" role="alert">
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
+            <ul>
             <li></li>
+            </ul>
         </div>
         
         <form id="visualizationForm" data-th-object="${visualization}" method="post" class="form-horizontal">
@@ -65,7 +73,7 @@
 	                       data-th-text="#{visualization.index.device}"
 	                       for="device"></label>
 	                <div class="col-sm-4">
-	                    <select class="form-control" data-th-field="*{deviceGuid}"
+	                    <select class="col-md-12" data-th-field="*{deviceGuid}"
 	                        id="device" name="device">
 	                        <option data-th-value="${''}"
                                 data-th-text="#{visualization.index.select.empty}"></option>
@@ -74,7 +82,6 @@
 	                                data-th-text="${device.deviceId + ' - ' + device.name}"></option>
 	                    </select>
 	                </div>
-	                <img data-th-src="@{/resources/konker/images/loading.gif}" id="loading" class="ajax-loading"/>
 	            </div>
 	            
 	            <div class="form-group">
@@ -98,7 +105,8 @@
 	            </div>
 	            
 	            <div class="form-group col-sm-9">
-	            	<button type="button" data-th-text="#{visualization.index.btn.apply}" class="btn btn-success  pull-right"></button>
+                    <img data-th-attr="src=@{/resources/konker/images/loading.gif}" class="loading-chart" />
+	            	<button type="button" data-th-text="#{visualization.index.btn.apply}" class="btn btn-success pull-right"></button>
 	            </div>
 	        </div>
 	        
@@ -136,13 +144,16 @@
 	           	<a id="bufferCsv" class="hide"></a>
 	        </div>
         </form>
+        
+        <div class="ajax-loading"></div>
+        
     </fieldset>
 </div>
 <div data-layout-fragment="script">
-	<script data-th-attr="src=@{/resources/konker/scripts/d3.min.js}"></script>
-	<script data-th-attr="src=@{/resources/konker/scripts/nv.d3.min.js}"></script>
-	<script data-th-attr="src=@{/resources/js/visualization/graph.js}"></script>
-    <script data-th-attr="src=@{/resources/js/visualization/index.js}"></script>
+	<script data-th-attr="src=@{/resources/konker/scripts/d3.min.js}" type="text/javascript"></script>
+	<script data-th-attr="src=@{/resources/konker/scripts/nv.d3.min.js}" type="text/javascript"></script>
+	<script data-th-attr="src=@{/resources/js/visualization/graph.js}" type="text/javascript"></script>
+    <script data-th-attr="src=@{/resources/js/visualization/index.js(v2)}" type="text/javascript"></script>
 	<script data-th-inline="javascript">
 		graphService.setup('#7777ff',[[#{visualization.graph.label.axisx}]],[[#{devices.visualization.graph.no_data}]]);
 	</script>

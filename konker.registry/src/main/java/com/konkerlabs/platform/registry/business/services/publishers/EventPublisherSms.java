@@ -113,13 +113,15 @@ public class EventPublisherSms implements EventPublisher {
 //                eventRepository.saveIncoming(tenant, outgoingEvent);
             } catch (JsonProcessingException|IntegrationException e) {
                 LOGGER.error("Error sending SMS.",
-                        destination.getResult().toURI(),
+                        tenant.toURI(),
+                        tenant.getLogLevel(),
                         e);
             }
         } else {
             LOGGER.debug(
                     MessageFormat.format(EVENT_DROPPED,destinationUri,outgoingEvent.getPayload()),
-                    destination.getResult().toURI()
+                    tenant.toURI(),
+                    tenant.getLogLevel()
             );
         }
     }

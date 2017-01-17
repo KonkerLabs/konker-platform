@@ -9,7 +9,7 @@
                data-th-text="#{routes.rest-outgoing.destination}"
                for="outgoingRestDestinationGuid">REST Destination</label>
         <div class="col-sm-4">
-            <select class="form-control" data-th-field="${route.outgoing.authorityId}"
+            <select class="col-md-12" data-th-field="${route.outgoing.authorityId}"
                     id="outgoingRestDestinationGuid" name="outgoingRestDestinationGuid">
                 <option data-th-each="restDestination : ${allRestDestinations}"
                         data-th-value="${restDestination.guid}"

@@ -2,12 +2,6 @@ $('.date').datetimepicker({
 	format: "DD/MM/YYYY HH:mm:ss"
 });
 
-$('#device').change(function() {
-	renderOutgoingFragment($('#visualizationForm').serialize(), '/visualization/loading/channel/', '#div-channel');
-	clearMetricSelect();
-	clearChartTableHideCsvButton();
-});
-
 $('button.btn-success').click(function() {
 	findAndLoadDataChart();
 });
@@ -44,6 +38,14 @@ function loadCSV() {
     });
 }
 
+function autoRefreshDataChart() {
+    if (!$('#device').val() === false &&
+        !$('#channel').val() === false &&
+        !$('#metric').val() === false) {
+        findAndLoadDataChart();		
+    }
+}
+
 function findAndLoadDataChart() {
 	var url = urlTo('/visualization/load/');
     $.ajax({
@@ -54,7 +56,7 @@ function findAndLoadDataChart() {
         timeout : 100000,
         data: $('#visualizationForm').serialize(),
         beforeSend : function() {
-            showElement('#loading');
+            $("div .loading-chart").show();
         },
         success : function(data) {
             var result;
@@ -73,9 +75,7 @@ function findAndLoadDataChart() {
         		
         		var tableData = "";
         		$.each(result, function(index, value) {
-        			var json = JSON.stringify(value.payload).replace(/\\/g, '');
-        			json = json.replace(/\"{/g, '{');
-        			json = json.replace(/\}"/g, '}');
+        			var json = value.payload;
         			tableData = tableData + '<tr><td>'+value.timestampFormated+'</td><td class="json-data">'+json+'</td></tr>';
         		});
         		$("#data-event table tbody").html(tableData);
@@ -89,7 +89,7 @@ function findAndLoadDataChart() {
         	graphService.update($('#metrics select').val(),result);
         },
         complete : function() {
-            hideElement('#loading');
+            $("div .loading-chart").hide();
         }
     });
 }
@@ -99,7 +99,7 @@ $('#online').click(function() {
 	if ($(this).is(':checked')) {
 		$('.date input').attr('disabled', true);
 		
-		myInterval = setInterval(findAndLoadDataChart, 5000);
+		myInterval = setInterval(autoRefreshDataChart, 5000);
 	} else {
 		$('.date input').attr('disabled', false);
 		clearInterval(myInterval);
@@ -114,6 +114,8 @@ function renderOutgoingFragment(scheme, url, element) {
 }
 
 function fetchViewFragment(scheme, fetchUrl, element) {
+    var loadSpinner;
+    
     $.ajax({
         context : this,
         type : "GET",
@@ -122,7 +124,9 @@ function fetchViewFragment(scheme, fetchUrl, element) {
         timeout : 100000,
         data: scheme,
         beforeSend : function() {
-            showElement('#loading');
+            loadSpinner = setTimeout(function() {
+                $("div.ajax-loading").addClass('show');
+            }, 50);
         },
         success : function(data) {
             displayFragment(element, data);
@@ -130,23 +134,40 @@ function fetchViewFragment(scheme, fetchUrl, element) {
             applyEventBindingsToMetric();
         },
         complete : function() {
-            hideElement('#loading');
+            clearTimeout(loadSpinner);
+            $("div.ajax-loading").removeClass('show');
         }
     });
 }
 
+$('#device').change(function() {
+    renderOutgoingFragment($('#visualizationForm').serialize(), '/visualization/loading/channel/', '#div-channel');
+    clearMetricSelect();
+    clearChartTableHideCsvButton();
+});
+
 function applyEventBindingsToChannel() {
 	$('#channel').change(function() {
 		renderOutgoingFragment($('#visualizationForm').serialize(), '/visualization/loading/metrics/', '#div-metric');
-		
 		clearChartTableHideCsvButton();
 	});
+
 }
 
 function applyEventBindingsToMetric() {
-	$('#metrics select').change(function() {
+	$('#metric').change(function() {
 		findAndLoadDataChart();
 	});
+}
+
+function selectFirstOption(selectName) {
+
+    if ($("select[name=" + selectName + "] option").length === 2) {
+        var value = $("select[name=" + selectName + "] option")[1].value;
+        $("select[name=" + selectName + "]").val(value);
+        $("select[name=" + selectName + "]").change();
+    }
+
 }
 
 function clearChartTableHideCsvButton() {

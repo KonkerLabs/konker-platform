@@ -1,16 +1,20 @@
 <!DOCTYPE html>
-<html data-layout-decorate="layouts/default">
+<html data-layout-decorate="layouts/default" xmlns:th="http://www.thymeleaf.org">
 <head>
 </head>
 <body>
 <div data-layout-fragment="content">
     <fieldset>
-        <legend data-th-text="#{routes.form.legend}"></legend>
+        <div>
+            <h1 class="page-title" data-th-text="#{routes.form.legend}"></h1>
+        </div>
         <div class="alert alert-danger" role="alert" data-th-if="${errors != null and !errors.empty}">
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
+            <ul>
             <li data-th-each="error : ${errors}" data-th-text="${error}"></li>
+            </ul>
         </div>
         <form data-th-action="@{__${action}__}" action="#" data-th-object="${route}"
               method="post" class="form-horizontal" autocomplete="off">
@@ -41,7 +45,9 @@
                        data-th-text="#{routes.form.incoming.device}"
                        for="incomingAuthority"></label>
                 <div class="col-sm-4">
-                    <select class="form-control" data-th-field="*{incoming.authorityId}"
+                    <select
+                        class="col-md-12"
+                        data-th-field="*{incoming.authorityId}"
                         id="incomingAuthority" name="incomingAuthority">
                         <option data-th-each="device : ${allDevices}"
                                 data-th-value="${device.guid}"
@@ -80,7 +86,6 @@
                                data-th-text="#{routes.form.outgoing.type.rest}"
                                value="rest" data-th-checked="*{outgoingScheme == 'rest'}"></input>
                     </label>
-                    <img data-th-src="@{/resources/konker/images/loading.gif}" id="loading" class="ajax-loading"/>
                 </div>
             </div>
             <div id="outgoingFragment">
@@ -110,7 +115,8 @@
                        data-th-text="#{routes.form.transformation_chain}"
                        for="transformation"></label>
                 <div class="col-sm-4">
-                    <select class="form-control" data-th-field="*{transformation}"
+                    <select class="col-md-12"
+                            data-th-field="*{transformation}"
                             id="transformation" name="transformation">
                         <option data-th-value="${''}"
                                 data-th-text="#{routes.form.transformation.empty}"></option>
@@ -160,10 +166,13 @@
             </div>
 
         </form>
+        
+        <div class="ajax-loading"></div>
+  
     </fieldset>
 </div>
 <div data-layout-fragment="script">
-    <script data-th-attr="src=@{/resources/js/routes/form.js}"></script>
+    <script data-th-attr="src=@{/resources/js/routes/form.js(v2)}" type="text/javascript"></script>
 </div>
 </body>
 </html>

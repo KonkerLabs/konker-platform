@@ -5,7 +5,10 @@
 <body>
 <div data-layout-fragment="content">
     <fieldset>
-        <legend data-th-text="#{destinations.sms.index.legend}">SMS Destinations</legend>
+        <div>
+            <h1 class="page-title" data-th-text="#{destinations.sms.index.legend}"></h1>
+        </div>
+
         <div class="alert alert-success" role="alert" data-th-if="${message != null}">
             <span data-th-text="${message}"></span>
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -27,8 +30,8 @@
                 <td data-th-text="${destination.name}"></td>
                 <td data-th-text="${destination.phoneNumber}"></td>
                 <td>
-                    <span data-th-if="${destination.active}" class="glyphicon glyphicon-thumbs-up" aria-hidden="true"/>
-                    <span data-th-if="${not destination.active}" class="glyphicon glyphicon-thumbs-down" aria-hidden="true"/>
+                    <span data-th-if="${destination.active}" class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span>
+                    <span data-th-if="${not destination.active}" class="glyphicon glyphicon-thumbs-down" aria-hidden="true"></span>
                 </td>
                 <td class="text-center">
                     <a data-th-href="@{/destinations/sms/{id}(id=${destination.guid})}" class="btn btn-default" data-th-text="#{nav.show}">

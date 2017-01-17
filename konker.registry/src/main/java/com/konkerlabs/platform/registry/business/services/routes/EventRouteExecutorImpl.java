@@ -62,7 +62,7 @@ public class EventRouteExecutorImpl implements EventRouteExecutor {
                 if (!eventRoute.isActive())
                     continue;
                 if (!eventRoute.getIncoming().getData().get(DEVICE_MQTT_CHANNEL).equals(event.getIncoming().getChannel())) {
-                    LOGGER.debug("Non matching channel for incoming event: {}", event);
+                    LOGGER.debug("Non matching channel for incoming event: {}", event, eventRoute.getTenant().toURI(), eventRoute.getTenant().getLogLevel());
                     continue;
                 }
 
@@ -85,12 +85,12 @@ public class EventRouteExecutorImpl implements EventRouteExecutor {
                         logEventFilterMismatch(event, eventRoute);
                     }
                 } catch (IOException e) {
-                    LOGGER.error("Error parsing JSON payload.", eventRoute.toURI(), e);
+                    LOGGER.error("Error parsing JSON payload.", eventRoute.toURI(), eventRoute.getTenant().getLogLevel(), e);
                 } catch (SpelEvaluationException e) {
                     LOGGER.error(MessageFormat
                             .format("Error evaluating, probably malformed, expression: \"{0}\". Message payload: {1} ",
                                     eventRoute.getFilteringExpression(),
-                                    incomingPayload), eventRoute.toURI(), e);
+                                    incomingPayload), eventRoute.toURI(), eventRoute.getTenant().getLogLevel(), e);
                 }
             }
         }
@@ -120,12 +120,14 @@ public class EventRouteExecutorImpl implements EventRouteExecutor {
     private void logEventFilterMismatch(Event event, EventRoute eventRoute) {
         LOGGER.debug(MessageFormat.format("Dropped route \"{0}\", not matching pattern with content \"{1}\". Message payload: {2} ",
                 eventRoute.getName(), eventRoute.getFilteringExpression(), event.getPayload()),
-                eventRoute.toURI());
+                eventRoute.toURI(),
+                eventRoute.getTenant().getLogLevel());
     }
 
     private void logEventWithInvalidTransformation(Event event, EventRoute eventRoute) {
         LOGGER.debug(MessageFormat.format("Dropped route \"{0}\" with invalid transformation. Message payload: {1} ",
                 eventRoute.getName(), event.getPayload()),
-                eventRoute);
+                eventRoute.toURI(),
+                eventRoute.getTenant().getLogLevel());
     }
 }

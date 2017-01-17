@@ -1,12 +1,34 @@
 package com.konkerlabs.platform.registry.business.services;
 
+import java.io.ByteArrayOutputStream;
+import java.util.AbstractMap;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.apache.commons.codec.binary.Base64OutputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.Scope;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Service;
+
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
-import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.EventRoute;
+import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.EventRouteRepository;
@@ -20,21 +42,6 @@ import com.konkerlabs.platform.security.exceptions.SecurityException;
 import com.konkerlabs.platform.security.managers.PasswordManager;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import org.apache.commons.codec.binary.Base64OutputStream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Scope;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Service;
-
-import java.io.ByteArrayOutputStream;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
@@ -63,9 +70,11 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
     public ServiceResponse<Device> register(Tenant tenant, Device device) {
 
         if (!Optional.ofNullable(tenant).isPresent()) {
-            LOGGER.debug(CommonValidations.TENANT_NULL.getCode(),
-                    Device.builder().guid("NULL").tenant(
-                            Tenant.builder().domainName("unknow_domain").build()).build().toURI());
+            Device noDevice = Device.builder().guid("NULL").tenant(
+			        Tenant.builder().domainName("unknow_domain").build()).build();
+			LOGGER.debug(CommonValidations.TENANT_NULL.getCode(),
+                    noDevice.toURI(),
+                    noDevice.getTenant().getLogLevel());
             return ServiceResponseBuilder.<Device>error()
                     .withMessage(CommonValidations.TENANT_NULL.getCode(), null)
                     .build();

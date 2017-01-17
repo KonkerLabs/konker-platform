@@ -5,7 +5,9 @@
 <body>
 <div data-layout-fragment="content">
     <fieldset disabled="" class="form-horizontal">
-        <legend data-th-text="#{routes.show.legend}"></legend>
+        <div>
+            <h1 class="page-title" data-th-text="#{routes.show.legend}"></h1>
+        </div>
         <div class="alert alert-success" role="alert" data-th-if="${message != null}">
             <span data-th-text="${message}"></span>
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -38,7 +40,7 @@
                    data-th-text="#{routes.show.incoming.device}"
                    for="incomingAuthority"></label>
             <div class="col-sm-4">
-                <select class="form-control" data-th-field="${route.incoming.authorityId}"
+                <select class="col-md-12" data-th-field="${route.incoming.authorityId}"
                         id="incomingAuthority" name="incomingAuthority">
                     <option data-th-each="device : ${allDevices}"
                             data-th-value="${device.guid}"

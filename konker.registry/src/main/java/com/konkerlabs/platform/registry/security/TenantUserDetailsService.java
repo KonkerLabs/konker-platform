@@ -37,10 +37,12 @@ public class TenantUserDetailsService implements UserDetailsService {
         }
         User user = userRepository.findOne(Optional.of(email).orElse("").trim().toLowerCase());
         if(user == null){
-            LOGGER.debug("User not found",
-                    User.builder().email(email).tenant(
-                            Tenant.builder().name("NOT_FOUND").domainName("NOT_FOUND").build()
-                    ).build().toURI());
+            User noUser = User.builder().email(email).tenant(
+			        Tenant.builder().name("NOT_FOUND").domainName("NOT_FOUND").build()
+			).build();
+			LOGGER.debug("User not found",
+                    noUser.toURI(),
+                    noUser.getTenant().getLogLevel());
             throw new UsernameNotFoundException("authentication.credentials.invalid");
         }
         return user;
