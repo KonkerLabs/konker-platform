@@ -165,7 +165,7 @@ public class DeviceEventRestEndpoint {
             return new ResponseEntity<EventResponse>(buildResponse(Messages.INVALID_RESOURCE.getCode(),locale), HttpStatus.NOT_FOUND);
 
 		if (servletRequest.getHeader(HttpGateway.KONKER_VERSION_HEADER) != null)
-			return new ResponseEntity<EventResponse>(buildResponse(Messages.INVALID_REQUEST_ORIGIN.getCode(), locale), HttpStatus.NOT_FOUND);
+			return new ResponseEntity<EventResponse>(buildResponse(Messages.INVALID_REQUEST_ORIGIN.getCode(), locale), HttpStatus.FORBIDDEN);
 
         try {
             deviceEventProcessor.process(apiKey,channel,body);
