@@ -49,11 +49,12 @@ var graphService = {
 
             chart.noData(controller.noDataMessage);
 
-            chart.margin({"bottom":120})
+            chart.margin({"bottom":120, "right": 50})
 
             chart.xAxis
               .axisLabel(controller.xAxisLabel)
               .rotateLabels(0)
+              .showMaxMin(false)
               .tickFormat(function(d) {
                 return d3.time.format('%d/%m/%Y %X')(new Date(d))
               });
