@@ -24,7 +24,7 @@ public class UserAvatarPathUtil {
 	
 	@Autowired
 	public UserAvatarPathUtil(User user) {
-		if (Optional.ofNullable(user.getAvatar()).isPresent()) {
+		if (config.getBoolean("enabled") && Optional.ofNullable(user.getAvatar()).isPresent()) {
 			absolutePath = config.getString("prefix") + "/" + config.getString("name") + "/";
 			absolutePath = absolutePath.concat(user.getAvatar());
 		} else {

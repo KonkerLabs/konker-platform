@@ -109,7 +109,7 @@
                     <div class="row">
                         <h2 class="subtitle-page" data-th-text="#{users.form.account}"></h2>
                     </div>
-                    <div class="col-md-5 pull-left">
+                    <div class="row col-md-5 pull-left">
                         <p>
                             <label class="control-label"
                                data-th-text="#{users.form.email}"
@@ -230,8 +230,10 @@
                         <p><span data-th-text="#{users.form.preferences.language}"></span><span>: </span><span data-th-text="#{*{language.code}}"></span></p>
                         <p><span data-th-text="#{users.form.preferences.timezone}"></span><span>: </span><span data-th-text="#{*{zoneId.code}}"></span></p>
                         <p><span data-th-text="#{users.form.preferences.dateformat}"></span><span>: </span><span data-th-text="#{*{dateFormat.code}}"></span></p>
+                        <div th:if="${@environment.getActiveProfiles().length != 0 && #lists.contains(@environment.getActiveProfiles(), 'email')}">
                         <p data-th-if="*{notificationViaEmail}"><span data-th-text="#{users.form.notification.email}"></span><span>: </span><span data-th-text="#{users.form.preferences.mail.notifications.yes}"></span></p>
                         <p data-th-if="*{not notificationViaEmail}"><span data-th-text="#{users.form.notification.email}"></span><span>: </span><span data-th-text="#{users.form.preferences.mail.notifications.no}"></span></p>
+                        </div>
                     </div>
                 </div>
                 <div class="col-md-4 col-xs-12">          
@@ -240,11 +242,11 @@
             </div>
 
             <div class="row section-dvision btvertical panel-edit-user">
-                <div class="col-md-5 col-xs-12 pull-left">
+                <div class="col-xs-12 pull-left">
                     <div class="row">
                         <h2 class="subtitle-page" data-th-text="#{users.form.preferences.title}"></h2>
                     </div>
-                    <div class="row">
+                    <div class="row col-md-5 pull-left">
                         <p>
                             <label class="control-label"
                                    data-th-text="#{users.form.preferences.language}"
@@ -285,7 +287,7 @@
                                         data-th-value="${dateformat}"></option>
                             </select>
                         </p>
-                        <p>
+                        <p th:if="${@environment.getActiveProfiles().length != 0 && #lists.contains(@environment.getActiveProfiles(), 'email')}">
                             <label class="control-label"
                                 data-th-text="#{users.form.notification.email}"
                                 for="notificationViaEmail">Receive
@@ -297,6 +299,7 @@
                                 <input type="radio" name="notificationViaEmail" value="false" data-th-checked="${not user.notificationViaEmail}" data-th-text="#{users.form.preferences.mail.notifications.no}"><br>
                             </span>
                         </p>
+                        <p>&nbsp;</p>
                         <div class="row">
                             <button type="submit" class="btn btn-theme"  data-th-text="#{nav.save}">Salvar alterações</button>
                             <button type="button" class="btn btn-default btn-cancel-edit-user" data-th-text="#{nav.cancel}">Cancelar</button>
@@ -327,7 +330,7 @@
                     <div class="row">
                         <h2 class="subtitle-page" data-th-text="#{users.form.tenantconfig.title}"></h2>
                     </div>
-                    <div class="col-md-5 pull-left">
+                    <div class="row col-md-5 pull-left">
                         <p>
                             <label class="control-label"
                                    data-th-text="#{users.form.tenantconfig.loglevel}"
