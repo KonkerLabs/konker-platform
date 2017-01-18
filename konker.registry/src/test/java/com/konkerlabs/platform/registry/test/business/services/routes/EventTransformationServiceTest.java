@@ -70,6 +70,7 @@ public class EventTransformationServiceTest {
             "  \"valid\" : tr\n" +
             "}";
 
+    private String transformationMethod = "POST";
     private String transformationUrl = "http://server:8080/path/@{#field}?query=1";
     private String transformationServiceUsername = "username";
     private String transformationServicePassword = "password";
@@ -91,6 +92,7 @@ public class EventTransformationServiceTest {
             .step(RestTransformationStep.builder()
                 .attributes(new HashMap<String,String>() {
                     {
+                        put(RestTransformationStep.REST_URL_ATTRIBUTE_METHOD, transformationMethod);
                         put(RestTransformationStep.REST_URL_ATTRIBUTE_NAME,transformationUrl);
                         put(RestTransformationStep.REST_USERNAME_ATTRIBUTE_NAME,transformationServiceUsername);
                         put(RestTransformationStep.REST_PASSWORD_ATTRIBUTE_NAME,transformationServicePassword);
@@ -264,6 +266,7 @@ public class EventTransformationServiceTest {
         steps.add(RestTransformationStep.builder()
                 .attributes(new HashMap<String,String>() {
                     {
+                        put(RestTransformationStep.REST_URL_ATTRIBUTE_METHOD, transformationMethod);
                         put(RestTransformationStep.REST_URL_ATTRIBUTE_NAME,secondStepURI);
                         put(RestTransformationStep.REST_USERNAME_ATTRIBUTE_NAME,"");
                         put(RestTransformationStep.REST_PASSWORD_ATTRIBUTE_NAME,"");

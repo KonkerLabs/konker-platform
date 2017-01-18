@@ -1,5 +1,7 @@
 package com.konkerlabs.platform.registry.business.model.enumerations;
 
+import org.springframework.http.HttpMethod;
+
 public enum SupportedHttpMethod {
 
     GET("GET"),
@@ -16,6 +18,10 @@ public enum SupportedHttpMethod {
 
     public String getCode() {
         return this.code;
+    }
+
+    public HttpMethod getHttpMethod(){
+        return HttpMethod.resolve(code);
     }
 
 }
