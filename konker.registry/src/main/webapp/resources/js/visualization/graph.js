@@ -13,6 +13,26 @@ function getByPath(o, s) {
     return o;
 }
 
+var insertLinebreaks = function (d) {
+    var el = d3.select(this);
+    var words = d3.select(this).text().split(' ');
+    el.text('');
+
+    for (var i = 0; i < words.length; i++) {
+        var tspan = el.append('tspan').text(words[i]);
+        tspan.attr('x', 0).attr('dy', '16');
+    }
+};
+
+function improveChart() {
+
+    // break lines
+    $('.nv-x .tick text').each(insertLinebreaks);
+    $('.nv-axisMaxMin-x text').each(insertLinebreaks);
+    $('.nv-x .nv-axislabel').attr('y', 60);
+
+}
+
 var graphService = {
     data : [],
     buildChart : function() {
@@ -29,11 +49,11 @@ var graphService = {
 
             chart.noData(controller.noDataMessage);
 
-            chart.margin({"bottom":200})
+            chart.margin({"bottom":120})
 
             chart.xAxis
               .axisLabel(controller.xAxisLabel)
-              .rotateLabels(-45)
+              .rotateLabels(0)
               .tickFormat(function(d) {
                 return d3.time.format('%d/%m/%Y %X')(new Date(d))
               });
@@ -52,6 +72,8 @@ var graphService = {
                 .datum(controller.data)
                 .call(controller.chart);
             nv.utils.windowResize(controller.chart.update);
+            
+            improveChart();
 
             return controller.chart;
         });
@@ -88,6 +110,8 @@ var graphService = {
         // Update the SVG with the new data and call chart
         d3.select('#chart svg').datum(this.data).call(this.chart);
         nv.utils.windowResize(this.chart.update);
+        improveChart();
+        
     },
     setup : function(lineColor,xAxisLabel,noDataMessage) {
         this.lineColor = lineColor;
