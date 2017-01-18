@@ -43,6 +43,7 @@ public class EventCsvDownload {
 		for (String head : header) {
 			bufferHeader.append(head).append(",");
 		}
+		bufferHeader.deleteCharAt(bufferHeader.lastIndexOf(","));
 		writer.println(bufferHeader.toString());
 				
 		for (EventDecorator event : data) {
@@ -53,27 +54,61 @@ public class EventCsvDownload {
 			StringBuffer bufferJson = new StringBuffer();
 			Arrays.asList(additionalHeader).forEach(c -> {
 				String jsonMapValue = jsonMap.get(c);
-				jsonMapValue = jsonMapValue!= null && jsonMapValue.contains(",") ? "\"".concat(jsonMapValue).concat("\"") : jsonMapValue;
+				jsonMapValue = handleSpecialCharacters(jsonMapValue);
 				bufferJson.append(Optional.ofNullable(jsonMapValue).orElse("")).append(",");
 			});
 			
 			bufferJson.deleteCharAt(bufferJson.lastIndexOf(","));
 			
 			writer.println(event.getTimestampFormated() +","+
-						event.getTimestamp() +", "+
+						event.getTimestamp() +","+
 						Optional.ofNullable(event.getIncoming()).orElse(EventActor.builder().tenantDomain("").build()).getTenantDomain() +","+
 						Optional.ofNullable(event.getIncoming()).orElse(EventActor.builder().deviceGuid("").build()).getDeviceGuid() +","+
 						Optional.ofNullable(event.getIncoming()).orElse(EventActor.builder().deviceId("").build()).getDeviceId() +","+
 						Optional.ofNullable(event.getIncoming()).orElse(EventActor.builder().channel("").build()).getChannel() +","+
-						Optional.ofNullable(event.getOutgoing()).orElse(EventActor.builder().tenantDomain("").build()).getTenantDomain() +","+
-						Optional.ofNullable(event.getOutgoing()).orElse(EventActor.builder().deviceGuid("").build()).getDeviceGuid() +","+
-						Optional.ofNullable(event.getOutgoing()).orElse(EventActor.builder().deviceId("").build()).getDeviceId() +","+
-						Optional.ofNullable(event.getOutgoing()).orElse(EventActor.builder().channel("").build()).getChannel() +","+
 						bufferJson.toString());
 		}
 		
 		writer.flush();
 		writer.close();
+	}
+
+	private String handleSpecialCharacters(String jsonMapValue) {
+		if (!Optional.ofNullable(jsonMapValue).isPresent()) {
+			return null;
+		}
+		
+		if (jsonMapValue.contains("\"\"")) {
+			String value = "";
+			value = jsonMapValue.replaceAll("\"\"", "\"\"\"\"");
+			value = "\"".concat(value).concat("\"");
+			jsonMapValue = value.substring(0, value.lastIndexOf("\"\"")).concat("\" \"");
+			return jsonMapValue;
+		}
+		
+		if (jsonMapValue.contains("\"")) {
+			jsonMapValue = jsonMapValue.replaceAll("\"", "\"\"");
+			jsonMapValue = "\"".concat(jsonMapValue).concat("\"");
+			return jsonMapValue;
+		}
+		
+		if (jsonMapValue.contains(",") || jsonMapValue.contains("/") 
+				|| jsonMapValue.contains("\"")) {
+			jsonMapValue = "\"".concat(jsonMapValue).concat("\"");
+			return jsonMapValue;
+		}
+		
+		if (jsonMapValue.contains("\\")) {
+			String[] split = jsonMapValue.split("\\\\");
+			String value = "";
+			for (String str : split) {
+				value = value.concat("\"\"").concat(str).concat("\"\"");
+			}
+			jsonMapValue = value.substring(0, value.lastIndexOf("\"\"")).concat("\" \"");
+			return jsonMapValue;
+		}
+		
+		return jsonMapValue;
 	}
 	
 	private String[] createHeader(Class<EventDecorator> clazz) throws  SecurityException, NoSuchMethodException {
@@ -88,7 +123,9 @@ public class EventCsvDownload {
 			if (method.getReturnType().getCanonicalName().contains("com.konkerlabs.platform.registry")) {
 				for (Field localField : method.getReturnType().getDeclaredFields()) {
 					if (!"URI_SCHEME".equals(localField.getName())) {
-						listHeader.add(fieldName.concat("." + localField.getName()));
+						listHeader.add("tenantDomain".equals(localField.getName()) 
+								? fieldName.concat(".organization") 
+								: fieldName.concat("." + localField.getName()));
 					}
 				}
 			} else if(!"Payload".equals(fieldName)) {

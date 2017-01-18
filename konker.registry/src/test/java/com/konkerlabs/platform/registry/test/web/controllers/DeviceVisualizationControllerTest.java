@@ -205,7 +205,6 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     					+ "'timestamp': 1475603097000,"
     					+ "'incoming':{"
     					+ "'tenantDomain':'inmetrics.com','deviceGuid':'169897e9-ed44-41d1-978d-d244d78e9a67','channel':'datain'},"
-    					+ "'outgoing':{'tenantDomain':'inmetrics.com','deviceGuid':'169897e9-ed44-41d1-978d-d244d78e9a67','channel':'datain'},"
     					+ "'payload':'{\"a\": 109, \"b\": 111}'}]"));
     }
     
@@ -224,7 +223,6 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     					+ "'timestamp': 1475603097000,"
     					+ "'incoming':{"
     					+ "'tenantDomain':'inmetrics.com','deviceGuid':'169897e9-ed44-41d1-978d-d244d78e9a67','channel':'datain'},"
-    					+ "'outgoing':{'tenantDomain':'inmetrics.com','deviceGuid':'169897e9-ed44-41d1-978d-d244d78e9a67','channel':'datain'},"
     					+ "'payload':'{\"a\": 109, \"b\": 111}'}]"));
     }
     

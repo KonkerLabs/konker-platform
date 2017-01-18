@@ -75,7 +75,6 @@ public class Event {
         private String timestampFormated;
         private Long timestamp;
         private EventActor incoming;
-        private EventActor outgoing;
         private String payload;
     }
 }

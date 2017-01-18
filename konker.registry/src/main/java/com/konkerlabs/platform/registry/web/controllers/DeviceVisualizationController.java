@@ -167,7 +167,6 @@ public class DeviceVisualizationController implements ApplicationContextAware {
 				.timestampFormated(instantToStringConverter.convert(r.getTimestamp()))
 				.timestamp(r.getTimestamp().toEpochMilli())
 				.incoming(r.getIncoming())
-				.outgoing(r.getOutgoing())
 				.payload(r.getPayload())
 				.build()));
 		return eventsResult;
