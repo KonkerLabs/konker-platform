@@ -58,6 +58,7 @@ public class TransformationControllerTest extends WebLayerTestContext {
     private TransformationForm transformationForm;
     private MultiValueMap<String, String> transformationData;
 
+    private String method = "POST";
     private String url = "http://google.com/test";
     private String username = "root";
     private String password = "secret";
@@ -71,6 +72,7 @@ public class TransformationControllerTest extends WebLayerTestContext {
         transformation = Transformation.builder().name("TransformationTest").description("Test transformation")
                 .step(RestTransformationStep.builder().attributes(new HashMap<String, String>() {
                     {
+                        put("method", method);
                         put("url", url);
                         put("username", username);
                         put("password", password);
@@ -83,12 +85,13 @@ public class TransformationControllerTest extends WebLayerTestContext {
         transformationForm.setName(transformation.getName());
         transformationForm.setDescription(transformation.getDescription());
         transformationForm.setSteps(transformation.getSteps().stream()
-                .map(transformationStep -> new TransformationForm.TransformationStepForm(url, username, password))
+                .map(transformationStep -> new TransformationForm.TransformationStepForm(method, url, username, password))
                 .collect(Collectors.toList()));
 
         transformationData = new LinkedMultiValueMap<>();
         transformationData.add("name", transformation.getName());
         transformationData.add("description", transformation.getDescription());
+        transformationData.add("steps[0].method", method);
         transformationData.add("steps[0].url", url);
         transformationData.add("steps[0].username", username);
         transformationData.add("steps[0].password", password);

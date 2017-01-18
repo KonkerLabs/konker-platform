@@ -54,6 +54,7 @@
                     </caption>
                     <thead>
                         <tr>
+                            <td data-th-text="#{transformations.form.steps.method}">Method</td>
                             <td data-th-text="#{transformations.form.steps.url}">URL</td>
                             <td data-th-text="#{transformations.form.steps.username}">Username</td>
                             <td data-th-text="#{transformations.form.steps.password}">Password</td>
@@ -61,6 +62,15 @@
                     </thead>
                     <tbody class="table-body">
                         <tr data-th-each="step, stat: *{steps}">
+                            <td class="col-sm-2">
+                                <select data-th-field="*{steps[__${stat.index}__].method}"
+                                        class="form-control"
+                                        id="method"
+                                        name="method">
+                                    <option data-th-each="methodItem: *{methodList}" data-th-text="${methodItem.code}"
+                                            data-th-value="${methodItem}"></option>
+                                </select>
+                            </td>
                             <td class="col-sm-6">
                                 <input type="text" data-th-field="*{steps[__${stat.index}__].url}"
                                        class="form-control"/>

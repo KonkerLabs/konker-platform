@@ -16,6 +16,7 @@ public class RestTransformationStep extends TransformationStep {
 
     public enum Validations {
         ATTRIBUTES_NULL_EMPTY("model.transformation.rest.attributes.not_empty"),
+        ATTRIBUTES_METHOD_MISSING("model.transformation.rest.attributes.method.missing"),
         ATTRIBUTES_URL_MISSING("model.transformation.rest.attributes.url.missing"),
         ATTRIBUTES_USERNAME_MISSING("model.transformation.rest.attributes.username.missing"),
         ATTRIBUTES_PASSWORD_MISSING("model.transformation.rest.attributes.password.missing");
@@ -31,6 +32,7 @@ public class RestTransformationStep extends TransformationStep {
         }
     }
 
+    public static final String REST_URL_ATTRIBUTE_METHOD = "method";
     public static final String REST_URL_ATTRIBUTE_NAME = "url";
     public static final String REST_USERNAME_ATTRIBUTE_NAME = "username";
     public static final String REST_PASSWORD_ATTRIBUTE_NAME = "password";
@@ -66,6 +68,8 @@ public class RestTransformationStep extends TransformationStep {
 
         Optional.ofNullable(getAttributes()).filter(attributes -> !attributes.isEmpty())
             .ifPresent(attr -> {
+                if (!attr.containsKey(REST_URL_ATTRIBUTE_METHOD))
+                    validations.put(Validations.ATTRIBUTES_METHOD_MISSING.getCode(),null);
                 if (!attr.containsKey(REST_URL_ATTRIBUTE_NAME) || attr.get(REST_URL_ATTRIBUTE_NAME).isEmpty()) {
                     validations.put(Validations.ATTRIBUTES_URL_MISSING.getCode(),null);
                 } else {

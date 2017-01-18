@@ -37,6 +37,7 @@
                             </caption>
                             <thead>
                                 <tr>
+                                    <td data-th-text="#{destinations.rest.form.service_params.method}">Method</td>
                                     <td data-th-text="#{destinations.rest.form.service_params.URL}">URL</td>
                                     <td data-th-text="#{destinations.rest.form.service_params.username}">Username</td>
                                     <td data-th-text="#{destinations.rest.form.service_params.password}">Password</td>
@@ -44,6 +45,15 @@
                             </thead>
                             <tbody>
                                 <tr>
+                                    <td class="col-sm-2">
+                                        <select data-th-field="*{method}"
+                                                class="form-control"
+                                                id="method"
+                                                name="method">
+                                            <option data-th-each="methodItem: *{methodList}" data-th-text="${methodItem.code}"
+                                                    data-th-value="${methodItem}"></option>
+                                        </select>
+                                    </td>
                                     <td class="col-sm-6">
                                         <input type="text" data-th-field="*{serviceURI}"
                                                class="form-control"/>

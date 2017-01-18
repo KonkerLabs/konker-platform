@@ -11,7 +11,7 @@ var controller = {
     },
     applyNewIndex : function(row, index) {
 
-    	row.find('input').each(function() {
+    	row.find('select, input').each(function() {
             var input = $(this);
             var newId = input.attr('id').replace(/\d+/gi,index);
             var newName = input.attr('name').replace(/\d+/gi,index);

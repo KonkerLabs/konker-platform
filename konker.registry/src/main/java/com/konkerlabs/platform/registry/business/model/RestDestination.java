@@ -42,6 +42,7 @@ public class RestDestination implements URIDealer, Validatable {
     private Tenant tenant;
     private String guid;
     private String name;
+    private String method;
     private String serviceURI;
     private String serviceUsername;
     private String servicePassword;

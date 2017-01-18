@@ -43,6 +43,7 @@
                         </caption>
                         <thead>
                         <tr>
+                            <td data-th-text="#{transformations.show.steps.method}">Method</td>
                             <td data-th-text="#{transformations.show.steps.url}">URL</td>
                             <td data-th-text="#{transformations.show.steps.username}">Username</td>
                             <td data-th-text="#{transformations.show.steps.password}">Password</td>
@@ -50,6 +51,10 @@
                         </thead>
                         <tbody>
                         <tr data-th-each="step, stat: ${transformation.steps}">
+                            <td class="col-sm-2">
+                                <input type="text" data-th-value="${transformation.steps[__${stat.index}__].method}"
+                                       class="form-control"/>
+                            </td>
                             <td class="col-sm-6">
                                 <input type="text" data-th-value="${transformation.steps[__${stat.index}__].url}"
                                        class="form-control"/>

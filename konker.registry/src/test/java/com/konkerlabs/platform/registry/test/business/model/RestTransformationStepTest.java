@@ -22,6 +22,7 @@ public class RestTransformationStepTest {
         subject = RestTransformationStep.builder()
             .attributes(new HashMap<String,String>() {
                 {
+                    put("method", "POST");
                     put("url","http://host:8080/path?query=1");
                     put("username","username");
                     put("password","password");

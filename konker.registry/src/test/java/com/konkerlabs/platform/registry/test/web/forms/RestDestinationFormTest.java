@@ -16,11 +16,12 @@ public class RestDestinationFormTest {
     @Before
     public void setUp() {
         model = RestDestination.builder()
-            .name("Name")
-            .serviceURI("http://localhost:8080/path?query=1")
-            .serviceUsername("username")
-            .servicePassword("password")
-            .active(true).build();
+                .name("Name")
+                .serviceURI("http://localhost:8080/path?query=1")
+                .serviceUsername("username")
+                .servicePassword("password")
+                .method("POST")
+                .active(true).build();
 
         form = new RestDestinationForm();
         form.setName(model.getName());
@@ -28,14 +29,16 @@ public class RestDestinationFormTest {
         form.setServiceUsername(model.getServiceUsername());
         form.setServicePassword(model.getServicePassword());
         form.setActive(model.isActive());
+        form.setMethod(model.getMethod());
     }
 
     @Test
     public void shouldTranslateFromFormToModel() throws Exception {
-        assertThat(form.toModel(),equalTo(model));
+        assertThat(form.toModel(), equalTo(model));
     }
+
     @Test
     public void shouldTranslateFromModelToForm() throws Exception {
-        assertThat(new RestDestinationForm().fillFrom(model),equalTo(form));
+        assertThat(new RestDestinationForm().fillFrom(model), equalTo(form));
     }
 }

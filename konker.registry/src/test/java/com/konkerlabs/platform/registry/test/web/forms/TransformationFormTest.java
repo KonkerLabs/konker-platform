@@ -30,7 +30,7 @@ public class TransformationFormTest {
         form.setName("Transformation name");
         form.setDescription("Description");
         form.setSteps(new LinkedList<TransformationForm.TransformationStepForm>() {
-            {add(new TransformationForm.TransformationStepForm("URL","USERNAME","PASSWORD"));}
+            {add(new TransformationForm.TransformationStepForm("METHOD", "URL","USERNAME","PASSWORD"));}
         });
 
         model = Transformation.builder()
@@ -40,6 +40,7 @@ public class TransformationFormTest {
                 RestTransformationStep.builder()
                     .attributes(new HashMap<String,String>() {
                         {
+                            put(RestTransformationStep.REST_URL_ATTRIBUTE_METHOD,form.getSteps().get(0).getMethod());
                             put(RestTransformationStep.REST_URL_ATTRIBUTE_NAME,form.getSteps().get(0).getUrl());
                             put(RestTransformationStep.REST_USERNAME_ATTRIBUTE_NAME,form.getSteps().get(0).getUsername());
                             put(RestTransformationStep.REST_PASSWORD_ATTRIBUTE_NAME,form.getSteps().get(0).getPassword());

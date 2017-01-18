@@ -70,10 +70,11 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
     @Before
     public void setUp() {
         destination = RestDestination.builder()
-            .name("Destination name")
-            .serviceURI("https://www.host.com:443/path?query=1")
-            .serviceUsername("username")
-            .servicePassword("password").active(true).build();
+                .name("Destination name")
+                .serviceURI("https://www.host.com:443/path?query=1")
+                .serviceUsername("username")
+                .method("POST")
+                .servicePassword("password").active(true).build();
 
         savedDestination = RestDestination.builder()
                 .guid("deviceId")
@@ -82,6 +83,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
                 .serviceUsername(destination.getServiceUsername())
                 .servicePassword(destination.getServicePassword())
                 .active(destination.isActive())
+                .method(destination.getMethod())
                 .build();
 
         registeredDestinations = new ArrayList<>();
@@ -89,6 +91,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
 
         destinationData = new LinkedMultiValueMap<>();
         destinationData.add("name", destination.getName());
+        destinationData.add("method", destination.getMethod());
         destinationData.add("serviceURI", destination.getServiceURI());
         destinationData.add("serviceUsername", destination.getServiceUsername());
         destinationData.add("servicePassword", destination.getServicePassword());
@@ -96,6 +99,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
 
         destinationForm = new RestDestinationForm();
         destinationForm.setName(destination.getName());
+        destinationForm.setMethod(destination.getMethod());
         destinationForm.setServiceURI(destination.getServiceURI());
         destinationForm.setServiceUsername(destination.getServiceUsername());
         destinationForm.setServicePassword(destination.getServicePassword());
@@ -108,13 +112,13 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
     }
 
     @Test
-    @WithMockUser(authorities={"LIST_REST_DESTINATIONS"})
+    @WithMockUser(authorities = {"LIST_REST_DESTINATIONS"})
     public void shouldListAllRegisteredDestinations() throws Exception {
         when(
-            restDestinationService.findAll(tenant)
+                restDestinationService.findAll(tenant)
         ).thenReturn(
-            ServiceResponseBuilder.<List<RestDestination>>ok()
-                    .withResult(registeredDestinations).build()
+                ServiceResponseBuilder.<List<RestDestination>>ok()
+                        .withResult(registeredDestinations).build()
         );
 
         getMockMvc().perform(get("/destinations/rest"))
@@ -123,126 +127,127 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
     }
 
     @Test
-    @WithMockUser(authorities={"CREATE_REST_DESTINATION"})
+    @WithMockUser(authorities = {"CREATE_REST_DESTINATION"})
     public void shouldShowRegistrationForm() throws Exception {
         getMockMvc().perform(get("/destinations/rest/new"))
                 .andExpect(view().name("destinations/rest/form"))
-                .andExpect(model().attribute("destination",any(RestDestinationForm.class)))
-                .andExpect(model().attribute("action","/destinations/rest/save"));
+                .andExpect(model().attribute("destination", any(RestDestinationForm.class)))
+                .andExpect(model().attribute("action", "/destinations/rest/save"));
     }
 
     @Test
-    @WithMockUser(authorities={"CREATE_REST_DESTINATION"})
+    @WithMockUser(authorities = {"CREATE_REST_DESTINATION"})
     public void shouldBindErrorMessagesWhenRegistrationFailsAndGoBackToRegistrationForm() throws Exception {
         response = ServiceResponseBuilder.<RestDestination>error()
                 .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
 
-        when(restDestinationService.register(eq(tenant),eq(destination))).thenReturn(response);
+        when(restDestinationService.register(eq(tenant), eq(destination))).thenReturn(response);
 
         getMockMvc().perform(post("/destinations/rest/save").params(destinationData))
                 .andExpect(model().attribute("errors",
-                    equalTo(Arrays.asList(new String[] {
-                            applicationContext.getMessage(
-                                    CommonValidations.TENANT_NULL.getCode(),null, Locale.ENGLISH
-                            )
-                    }))))
+                        equalTo(Arrays.asList(new String[]{
+                                applicationContext.getMessage(
+                                        CommonValidations.TENANT_NULL.getCode(), null, Locale.ENGLISH
+                                )
+                        }))))
                 .andExpect(model().attribute("destination", equalTo(destinationForm)))
                 .andExpect(model().attribute("method", ""))
                 .andExpect(view().name("destinations/rest/form"));
 
-        verify(restDestinationService).register(eq(tenant),eq(destination));
+        verify(restDestinationService).register(eq(tenant), eq(destination));
     }
 
     @Test
-    @WithMockUser(authorities={"CREATE_REST_DESTINATION"})
+    @WithMockUser(authorities = {"CREATE_REST_DESTINATION"})
     public void shouldRedirectToShowAfterRegistrationSucceed() throws Exception {
         response = ServiceResponseBuilder.<RestDestination>ok()
                 .withResult(savedDestination)
                 .build();
 
-        when(restDestinationService.register(eq(tenant),eq(destination))).thenReturn(response);
+        when(restDestinationService.register(eq(tenant), eq(destination))).thenReturn(response);
 
         getMockMvc().perform(post("/destinations/rest/save").params(destinationData))
                 .andExpect(flash().attribute("message",
-                    applicationContext.getMessage(RestDestinationController.Messages.ENRICHMENT_REGISTERED_SUCCESSFULLY.getCode(),null,Locale.ENGLISH)
+                        applicationContext.getMessage(RestDestinationController.Messages.ENRICHMENT_REGISTERED_SUCCESSFULLY.getCode(), null, Locale.ENGLISH)
                 ))
                 .andExpect(redirectedUrl(format("/destinations/rest/{0}", savedDestination.getGuid())));
 
-        verify(restDestinationService).register(eq(tenant),eq(destination));
+        verify(restDestinationService).register(eq(tenant), eq(destination));
     }
 
     @Test
-    @WithMockUser(authorities={"SHOW_REST_DESTINATION"})
+    @WithMockUser(authorities = {"SHOW_REST_DESTINATION"})
     public void shouldShowDestinationDetails() throws Exception {
         response = ServiceResponseBuilder.<RestDestination>ok()
                 .withResult(savedDestination)
                 .build();
 
-        when(restDestinationService.getByGUID(eq(tenant),eq(savedDestination.getGuid()))).thenReturn(response);
+        when(restDestinationService.getByGUID(eq(tenant), eq(savedDestination.getGuid()))).thenReturn(response);
 
         getMockMvc().perform(get(format("/destinations/rest/{0}", savedDestination.getGuid())))
                 .andExpect(model().attribute("destination", equalTo(new RestDestinationForm().fillFrom(savedDestination))))
                 .andExpect(view().name("destinations/rest/show"));
 
-        verify(restDestinationService).getByGUID(eq(tenant),eq(savedDestination.getGuid()));
+        verify(restDestinationService).getByGUID(eq(tenant), eq(savedDestination.getGuid()));
     }
 
     @Test
-    @WithMockUser(authorities={"EDIT_REST_DESTINATION"})
+    @WithMockUser(authorities = {"EDIT_REST_DESTINATION"})
     public void shouldShowEditForm() throws Exception {
         response = ServiceResponseBuilder.<RestDestination>ok()
                 .withResult(savedDestination)
                 .build();
 
-        when(restDestinationService.getByGUID(eq(tenant),eq(savedDestination.getGuid()))).thenReturn(response);
+        when(restDestinationService.getByGUID(eq(tenant), eq(savedDestination.getGuid()))).thenReturn(response);
 
         getMockMvc().perform(get(format("/destinations/rest/{0}/edit", savedDestination.getGuid())))
                 .andExpect(model().attribute("destination", equalTo(new RestDestinationForm().fillFrom(savedDestination))))
-                .andExpect(model().attribute("action", format("/destinations/rest/{0}",savedDestination.getGuid())))
+                .andExpect(model().attribute("action", format("/destinations/rest/{0}", savedDestination.getGuid())))
                 .andExpect(model().attribute("method", "put"))
                 .andExpect(view().name("destinations/rest/form"));
 
-        verify(restDestinationService).getByGUID(eq(tenant),eq(savedDestination.getGuid()));
+        verify(restDestinationService).getByGUID(eq(tenant), eq(savedDestination.getGuid()));
     }
 
     @Test
-    @WithMockUser(authorities={"EDIT_REST_DESTINATION"})
+    @WithMockUser(authorities = {"EDIT_REST_DESTINATION"})
     public void shouldBindErrorMessagesWhenEditFailsAndGoBackToEditForm() throws Exception {
         response = ServiceResponseBuilder.<RestDestination>error()
                 .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
 
-        when(restDestinationService.update(eq(tenant),eq(savedDestination.getGuid()),eq(destination))).thenReturn(response);
+        when(restDestinationService.update(eq(tenant), eq(savedDestination.getGuid()), eq(destination)))
+                .thenReturn(response);
 
-        getMockMvc().perform(put(format("/destinations/rest/{0}",savedDestination.getGuid())).params(destinationData))
+        getMockMvc().perform(put(format("/destinations/rest/{0}", savedDestination.getGuid())).params(destinationData))
                 .andExpect(model().attribute("errors",
-                    equalTo(Arrays.asList(new String[] {
-                        applicationContext.getMessage(
-                                CommonValidations.TENANT_NULL.getCode(),null, Locale.ENGLISH
-                        )
-                    }))))
+                        equalTo(Arrays.asList(new String[]{
+                                applicationContext.getMessage(
+                                        CommonValidations.TENANT_NULL.getCode(), null, Locale.ENGLISH
+                                )
+                        }))))
                 .andExpect(model().attribute("destination", equalTo(destinationForm)))
                 .andExpect(model().attribute("method", "put"))
                 .andExpect(view().name("destinations/rest/form"));
 
-        verify(restDestinationService).update(eq(tenant),eq(savedDestination.getGuid()),eq(destination));
+        verify(restDestinationService).update(eq(tenant), eq(savedDestination.getGuid()), eq(destination));
     }
 
     @Test
-    @WithMockUser(authorities={"EDIT_REST_DESTINATION"})
+    @WithMockUser(authorities = {"EDIT_REST_DESTINATION"})
     public void shouldRedirectToShowAfterEditSucceed() throws Exception {
         response = ServiceResponseBuilder.<RestDestination>ok()
                 .withResult(savedDestination)
                 .build();
 
-        when(restDestinationService.update(eq(tenant),eq(savedDestination.getGuid()),eq(destination))).thenReturn(response);
+        when(restDestinationService.update(eq(tenant), eq(savedDestination.getGuid()), eq(destination))).thenReturn(response);
 
-        getMockMvc().perform(put(format("/destinations/rest/{0}",savedDestination.getGuid())).params(destinationData))
+        getMockMvc().perform(put(format("/destinations/rest/{0}", savedDestination.getGuid())).params(destinationData))
                 .andExpect(flash().attribute("message",
-                    applicationContext.getMessage(RestDestinationController.Messages.ENRICHMENT_REGISTERED_SUCCESSFULLY.getCode(),null,Locale.ENGLISH)
+                        applicationContext.getMessage(RestDestinationController.Messages.ENRICHMENT_REGISTERED_SUCCESSFULLY.getCode(), null, Locale.ENGLISH)
                 ))
                 .andExpect(redirectedUrl(format("/destinations/rest/{0}", savedDestination.getGuid())));
 
-        verify(restDestinationService).update(eq(tenant),eq(savedDestination.getGuid()),eq(destination));
+        verify(restDestinationService).update(eq(tenant), eq(savedDestination.getGuid()), eq(destination));
     }
 
     @Configuration

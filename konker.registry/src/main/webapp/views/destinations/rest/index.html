@@ -20,6 +20,7 @@
             <thead>
             <tr>
                 <td class="col-md-1" data-th-text="#{destinations.rest.index.name}">Name</td>
+                <td class="col-md-1" data-th-text="#{destinations.rest.index.method}">Method</td>
                 <td class="col-md-2" data-th-text="#{destinations.rest.index.service_uri}">Service URI</td>
                 <td class="col-md-1" data-th-text="#{destinations.rest.index.active}">Active?</td>
                 <td class="col-md-1 text-center" data-th-text="#{destinations.rest.index.actions}">Actions</td>
@@ -28,6 +29,7 @@
             <tbody>
             <tr data-th-each="destination : ${allDestinations}">
                 <td data-th-text="${destination.name}"></td>
+                <td data-th-text="${destination.method}"></td>
                 <td data-th-text="${destination.serviceURI}"></td>
                 <td>
                     <span data-th-if="${destination.active}" class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span>

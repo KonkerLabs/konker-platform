@@ -76,7 +76,7 @@ public class RestDestinationServiceTest extends BusinessLayerTestSupport {
 
         newRestDestination = spy(
                 RestDestination.builder().name("New Name").active(true).serviceURI("http://host.com/")
-                        .serviceUsername("user").servicePassword("password").build());
+                        .serviceUsername("user").servicePassword("password").method("GET").build());
         oldRestDestination = spy(RestDestination.builder().id(THE_DESTINATION_ID).name(THE_DESTINATION_NAME)
                 .tenant(tenant).active(false).serviceURI("http://host.com/").serviceUsername("user")
                 .servicePassword("password").build());
