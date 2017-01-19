@@ -123,6 +123,17 @@ public class DeviceController implements ApplicationContextAware {
 		return mv;
 	}
 
+	@RequestMapping("/{deviceGuid}/events/incoming")
+	@PreAuthorize("hasAuthority('VIEW_DEVICE_LOG')")
+	public ModelAndView loadIncomingEvents(@PathVariable String deviceGuid) {
+		Device device = deviceRegisterService.getByDeviceGuid(tenant, deviceGuid).getResult();
+
+		ModelAndView mv = new ModelAndView("devices/events-incoming", "recentIncomingEvents", 
+				deviceEventService.findIncomingBy(tenant, device.getGuid(), null, null, null, false, 50).getResult());
+
+		return mv;
+	}
+
 	private void addChartObjects(Device device, ModelAndView mv) {
 		
 		String deviceGuid = device.getGuid();

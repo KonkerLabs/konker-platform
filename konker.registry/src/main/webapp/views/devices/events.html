@@ -48,7 +48,7 @@
 
             <form id="visualizationForm">
 
-                <input type="hidden" name="deviceGuid" data-th-value="${device.guid}" />
+                <input type="hidden" id="deviceGuid" name="deviceGuid" data-th-value="${device.guid}" />
                 <input type="hidden" id="dataResult">
 
                 <div id="filter">
@@ -103,8 +103,8 @@
     	                       data-th-text="#{visualization.index.metric}"
     	                       for="metric"></label>
     	                <div id="div-metric" class="col-sm-4">
-    	                    <data-th-block data-th-include="visualization/metrics :: metrics">
-    						</data-th-block>
+    	                    <div data-th-include="visualization/metrics :: metrics">
+    						</div>
     	                </div>
     	            </div>
                 </div>
@@ -146,56 +146,10 @@
 			</ul>
 			<div class="tab-content">
 				<div id="incoming" class="tab-pane fade in active">
-
-					<div class="col-sm-12 list-group" >
-						<table class="table table-bordered table-hover"  
-							data-th-if="${recentIncomingEvents != null and !recentIncomingEvents.empty}">
-							<thead>
-								<tr>
-									<td class="col-md-1" data-th-text="#{devices.events.date_time}"></td>
-									<td class="col-md-1"
-										data-th-text="#{devices.events.incoming.channel}"></td>
-									<td class="col-md-4" data-th-text="#{devices.events.payload}"></td>
-								</tr>
-							</thead>
-							<tbody>
-								<tr data-th-each="event : ${recentIncomingEvents}">
-									<td data-th-text="${{event.timestamp}}"></td>
-									<td data-th-text="${event.incoming.channel}"></td>
-									<td data-th-text="${event.payload}" class="json-data"></td>
-								</tr>
-							</tbody>
-						</table>
-						<span data-th-if="${recentIncomingEvents == null or recentIncomingEvents.empty}"
-							data-th-text="#{devices.events.incoming.empty_message}"></span>
-					</div>
-
+                    <div data-th-include="devices/events-incoming :: incoming"></div>
 				</div>
 				<div id="outgoing" class="tab-pane fade">
-
-					<div class="col-sm-12 list-group">
-						<table class="table table-bordered table-hover"
-							data-th-if="${recentOutgoingEvents != null and !recentOutgoingEvents.empty}">
-							<thead>
-								<tr>
-									<td class="col-md-1" data-th-text="#{devices.events.date_time}"></td>
-									<td class="col-md-2"
-										data-th-text="#{devices.events.incoming.channel}"></td>
-									<td class="col-md-3" data-th-text="#{devices.events.payload}"></td>
-								</tr>
-							</thead>
-							<tbody>
-								<tr data-th-each="event : ${recentOutgoingEvents}">
-									<td data-th-text="${{event.timestamp}}"></td>
-									<td data-th-text="${event.outgoing.channel}"></td>
-									<td data-th-text="${event.payload}" class="json-data"></td>
-								</tr>
-							</tbody>
-						</table>
-						<span data-th-if="${recentOutgoingEvents == null or recentOutgoingEvents.empty}"
-							data-th-text="#{devices.events.outgoing.empty_message}"></span>
-					</div>
-
+                    <div data-th-include="devices/events-outgoing :: outgoing"></div>
 				</div>
 			</div>
 

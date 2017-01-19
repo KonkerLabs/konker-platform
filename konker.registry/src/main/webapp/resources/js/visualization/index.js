@@ -22,7 +22,8 @@ function loadCSV() {
 function autoRefreshDataChart() {
     if (!$('#channel').val() === false &&
         !$('#metric').val() === false) {
-        findAndLoadDataChart();		
+        findAndLoadDataChart();
+        loadIncomingEvents();
     }
 }
 
@@ -53,14 +54,6 @@ function findAndLoadDataChart() {
         	} else {
         		$('div .alert.alert-danger').addClass('hide');
         		
-        		var tableData = "";
-        		$.each(result, function(index, value) {
-        			var json = value.payload;
-        			tableData = tableData + '<tr><td>'+value.timestampFormated+'</td><td class="json-data">'+json+'</td></tr>';
-        		});
-        		$("#data-event table tbody").html(tableData);
-        		formatJson($("#isJsonFormatted").attr("checked"));
-        		
         		if (result.length != 0) {
         			$('#exportCsv').removeClass('hide');
                     $('#chart').removeClass('hide');
@@ -87,6 +80,10 @@ function renderOutgoingFragment(scheme, url, element) {
     fetchViewFragment(scheme, url, element);
 }
 
+function beautifierJson() {
+    formatJson($("#isJsonFormatted").is(':checked'));
+}
+
 function fetchViewFragment(scheme, fetchUrl, element) {
     var loadSpinner;
     
@@ -98,17 +95,18 @@ function fetchViewFragment(scheme, fetchUrl, element) {
         timeout : 100000,
         data: scheme,
         beforeSend : function() {
-            loadSpinner = setTimeout(function() {
-                $("div.ajax-loading").addClass('show');
-            }, 50);
+            //loadSpinner = setTimeout(function() {
+            //    $("div.ajax-loading").addClass('show');
+            //}, 50);
         },
         success : function(data) {
             displayFragment(element, data);
             applyEventBindingsToMetric();
+            beautifierJson();
         },
         complete : function() {
-            clearTimeout(loadSpinner);
-            $("div.ajax-loading").removeClass('show');
+            //clearTimeout(loadSpinner);
+            //$("div.ajax-loading").removeClass('show');
         }
     });
 }
@@ -124,8 +122,13 @@ function applyEventBindingsToChannel() {
     $('#channel').change(function() {
         clearChartTableHideCsvButton();
         renderOutgoingFragment($('#visualizationForm').serialize(), '/visualization/loading/metrics/', '#div-metric');
-        autoRefreshDataChart()
+        autoRefreshDataChart();
     });
+}
+
+function loadIncomingEvents() {
+    var deviceGuid = $('#deviceGuid').val();
+    renderOutgoingFragment('', '/devices/' + deviceGuid + '/events/incoming', '#incoming');
 }
 
 function selectFirstOption(selectName) {

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+<div data-th-fragment="incoming">
+
+    <div class="col-sm-12 list-group" >
+        <table class="table table-bordered table-hover"  
+            data-th-if="${recentIncomingEvents != null and !recentIncomingEvents.empty}">
+            <thead>
+                <tr>
+                    <td class="col-md-1" data-th-text="#{devices.events.date_time}"></td>
+                    <td class="col-md-1"
+                        data-th-text="#{devices.events.incoming.channel}"></td>
+                    <td class="col-md-4" data-th-text="#{devices.events.payload}"></td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr data-th-each="event : ${recentIncomingEvents}">
+                    <td data-th-text="${{event.timestamp}}"></td>
+                    <td data-th-text="${event.incoming.channel}"></td>
+                    <td data-th-text="${event.payload}" class="json-data"></td>
+                </tr>
+            </tbody>
+        </table>
+        <span data-th-if="${recentIncomingEvents == null or recentIncomingEvents.empty}"
+            data-th-text="#{devices.events.incoming.empty_message}"></span>
+    </div>
+
+</div>
+</body>
+</html>
