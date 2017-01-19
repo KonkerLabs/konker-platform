@@ -46,6 +46,7 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
@@ -71,6 +72,8 @@ public class DeviceControllerTest extends WebLayerTestContext {
 	DeviceRegisterService deviceRegisterService;
 	@Autowired
 	DeviceEventService deviceEventService;
+	@Autowired
+	EventSchemaService eventSchemaService;
 	@Autowired
 	private Tenant tenant;
 
@@ -112,6 +115,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
 	@After
 	public void tearDown() {
 		Mockito.reset(deviceRegisterService);
+		Mockito.reset(eventSchemaService);
 	}
 
 	@Test
@@ -190,6 +194,10 @@ public class DeviceControllerTest extends WebLayerTestContext {
 				.thenReturn(ServiceResponseBuilder.<List<Event>> ok().withResult(Collections.emptyList()).build());
 		when(deviceEventService.findOutgoingBy(tenant, savedDevice.getGuid(), null, null, null, false, 50))
 				.thenReturn(ServiceResponseBuilder.<List<Event>> ok().withResult(Collections.emptyList()).build());
+		when(deviceEventService.findIncomingBy(tenant, savedDevice.getGuid(), null, null, null, false, 200))
+				.thenReturn(ServiceResponseBuilder.<List<Event>> ok().withResult(Collections.emptyList()).build());
+		when(eventSchemaService.findKnownIncomingChannelsBy(tenant, savedDevice.getGuid()))
+				.thenReturn(ServiceResponseBuilder.<List<String>> ok().withResult(Collections.emptyList()).build());
 
 		getMockMvc().perform(get(MessageFormat.format("/devices/{0}/events", savedDevice.getGuid())))
 				.andExpect(model().attribute("device", savedDevice)).andExpect(view().name("devices/events"));
@@ -286,5 +294,11 @@ public class DeviceControllerTest extends WebLayerTestContext {
 		public DeviceEventService deviceEventService() {
 			return Mockito.mock(DeviceEventService.class);
 		}
+
+		@Bean
+		public EventSchemaService eventSchemaService() {
+			return Mockito.mock(EventSchemaService.class);
+		}
 	}
+
 }
