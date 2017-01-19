@@ -140,14 +140,15 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     @Test
     @WithMockUser(authorities={"VIEW_DEVICE_CHART"})
     public void shouldLoadMetrics() throws Exception {
-    	when(eventSchemaService.findIncomingBy(DEVICE_GUID, CHANNEL))
-    		.thenReturn(ServiceResponseBuilder.<EventSchema>ok()
-    				.withResult(eventSchema).build());
-    	
     	List<String> listMetrics = eventSchema.getFields()
 				.stream()
 				.filter(schemaField -> schemaField.getKnownTypes().contains(JsonNodeType.NUMBER))
 				.map(m -> m.getPath()).collect(java.util.stream.Collectors.toList());
+
+    	when(eventSchemaService.findKnownIncomingMetricsBy(tenant, DEVICE_GUID, CHANNEL, JsonNodeType.NUMBER))
+			.thenReturn(ServiceResponseBuilder.<List<String>>ok()
+			.withResult(new ArrayList<String>(listMetrics)).build());
+    	
     	getMockMvc().perform(get("/visualization/loading/metrics/").param("deviceGuid", DEVICE_GUID).param("channel", CHANNEL))
     		.andExpect(model().attribute("metrics", equalTo(listMetrics)))
     		.andExpect(view().name("visualization/metrics"));
