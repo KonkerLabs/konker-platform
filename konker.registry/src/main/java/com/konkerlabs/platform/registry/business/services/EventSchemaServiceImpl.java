@@ -1,8 +1,23 @@
 package com.konkerlabs.platform.registry.business.services;
 
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.Scope;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.stereotype.Service;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.konkerlabs.platform.registry.audit.KonkerLogger;
-import com.konkerlabs.platform.registry.audit.KonkerLoggerFactory;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.EventSchema;
@@ -13,22 +28,6 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 import com.mongodb.BasicDBObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.context.annotation.Scope;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.stereotype.Service;
-
-import javax.annotation.PostConstruct;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
@@ -161,4 +160,29 @@ public class EventSchemaServiceImpl implements EventSchemaService {
                     .withMessages(deviceServiceResponse.getResponseMessages()).build();
         }
     }
+
+	@Override
+	public ServiceResponse<List<String>> findKnownIncomingMetricsBy(Tenant tenant, String deviceGuid, String channel, JsonNodeType nodeType) {
+    	
+		ServiceResponse<EventSchema> metricsResponse = findIncomingBy(deviceGuid, channel);
+
+		if (metricsResponse.isOk()) {
+		
+	    	List<String> listMetrics = metricsResponse.getResult()
+					.getFields().stream()
+					.filter(schemaField -> schemaField.getKnownTypes().contains(JsonNodeType.NUMBER))
+					.map(m -> m.getPath()).collect(Collectors.toList());
+	    	
+	    	return ServiceResponseBuilder.<List<String>>ok()
+	                .withResult(listMetrics).build();
+	    	
+		} else {
+
+            return ServiceResponseBuilder.<List<String>>error()
+                    .withMessages(metricsResponse.getResponseMessages()).build();
+			
+		}
+    	
+	}
+	
 }

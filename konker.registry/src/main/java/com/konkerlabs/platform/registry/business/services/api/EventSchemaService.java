@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.business.services.api;
 
+import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.EventSchema;
 import com.konkerlabs.platform.registry.business.model.Tenant;
@@ -39,4 +40,7 @@ public interface EventSchemaService {
     ServiceResponse<EventSchema> findIncomingBy(String deviceGuid, String channel);
     ServiceResponse<EventSchema> findOutgoingBy(String deviceGuid, String channel);
     ServiceResponse<List<String>> findKnownIncomingChannelsBy(Tenant tenant, String deviceGuid);
+	ServiceResponse<List<String>> findKnownIncomingMetricsBy(Tenant tenant, String deviceGuid, String channel,
+			JsonNodeType nodeType);
+
 }

@@ -41,6 +41,8 @@ var graphService = {
             var chart;
             var controller = graphService;
 
+            $('.nvtooltip').remove(); // KRMVP-392
+            
             chart = nv.models.lineChart()
                 .options({
                     duration: 200,

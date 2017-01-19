@@ -6,9 +6,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
+
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -23,11 +22,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
 import com.konkerlabs.platform.registry.web.forms.DeviceRegistrationForm;
 import com.typesafe.config.ConfigFactory;
 
@@ -54,7 +55,8 @@ public class DeviceController implements ApplicationContextAware {
     }
 
     private ApplicationContext applicationContext;
-
+    private EventSchemaService eventSchemaService;
+    
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
@@ -65,9 +67,10 @@ public class DeviceController implements ApplicationContextAware {
     private Tenant tenant;
 
     @Autowired
-    public DeviceController(DeviceRegisterService deviceRegisterService, DeviceEventService deviceEventService, Tenant tenant) {
+    public DeviceController(DeviceRegisterService deviceRegisterService, DeviceEventService deviceEventService, EventSchemaService eventSchemaService, Tenant tenant) {
         this.deviceRegisterService = deviceRegisterService;
         this.deviceEventService = deviceEventService;
+        this.eventSchemaService = eventSchemaService;
         this.tenant = tenant;
     }
 
@@ -105,16 +108,54 @@ public class DeviceController implements ApplicationContextAware {
                 .addObject("method", "put");
     }
 
-    @RequestMapping("/{deviceGuid}/events")
-    @PreAuthorize("hasAuthority('VIEW_DEVICE_LOG')")
-    public ModelAndView deviceEvents(@PathVariable String deviceGuid) {
-        Device device = deviceRegisterService.getByDeviceGuid(tenant, deviceGuid).getResult();
-        return new ModelAndView("devices/events").addObject("device", device)
-                .addObject("recentIncomingEvents",
-                        deviceEventService.findIncomingBy(tenant, device.getGuid(), null, null, null, false, 50).getResult())
-                .addObject("recentOutgoingEvents",
-                        deviceEventService.findOutgoingBy(tenant, device.getGuid(), null, null, null, false, 50).getResult());
-    }
+	@RequestMapping("/{deviceGuid}/events")
+	@PreAuthorize("hasAuthority('VIEW_DEVICE_LOG')")
+	public ModelAndView deviceEvents(@PathVariable String deviceGuid) {
+		Device device = deviceRegisterService.getByDeviceGuid(tenant, deviceGuid).getResult();
+
+		ModelAndView mv = new ModelAndView("devices/events");
+
+		mv.addObject("recentIncomingEvents", deviceEventService.findIncomingBy(tenant, device.getGuid(), null, null, null, false, 50).getResult())
+		  .addObject("recentOutgoingEvents", deviceEventService.findOutgoingBy(tenant, device.getGuid(), null, null, null, false, 50).getResult());
+
+		addChartObjects(device, mv);
+
+		return mv;
+	}
+
+	private void addChartObjects(Device device, ModelAndView mv) {
+		
+		String deviceGuid = device.getGuid();
+		
+		ServiceResponse<List<String>> channels = eventSchemaService.findKnownIncomingChannelsBy(tenant, deviceGuid);
+    	
+		String channel = null;
+		String metric = null;
+		List<String> listMetrics = null;
+		
+		if (channels != null && CollectionUtils.isNotEmpty(channels.getResult())) {
+			channel = channels.getResult().get(0);
+		}
+		
+		if (channel != null) {
+
+			ServiceResponse<List<String>> metrics = eventSchemaService.findKnownIncomingMetricsBy(tenant, deviceGuid, channel, JsonNodeType.NUMBER);
+
+	    	listMetrics = metrics.isOk() ? metrics.getResult() : new ArrayList<>();
+
+	    	if (CollectionUtils.isNotEmpty(listMetrics)) {
+	    		metric = listMetrics.get(0);
+	    	}
+
+		}
+
+		mv.addObject("device", device)
+		  .addObject("channels", channels.getResult())
+		  .addObject("defaultChannel", channel)
+		  .addObject("metrics", listMetrics)
+		  .addObject("defaultMetric", metric);
+
+	}
 
     @RequestMapping(path = "/save", method = RequestMethod.POST)
     @PreAuthorize("hasAuthority('ADD_DEVICE')")
