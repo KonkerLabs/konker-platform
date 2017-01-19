@@ -46,7 +46,7 @@ import com.konkerlabs.platform.registry.web.csv.EventCsvDownload;
 
 @Controller
 @Scope("request")
-@RequestMapping(value = "visualization")
+@RequestMapping(value = "devices/visualization")
 public class DeviceVisualizationController implements ApplicationContextAware {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(DeviceVisualizationController.class);
@@ -90,9 +90,10 @@ public class DeviceVisualizationController implements ApplicationContextAware {
         this.instantToStringConverter = instantToStringConverter;
     }
 
-    @RequestMapping(path = "/load/")
+	@RequestMapping(path = "/load/")
     @PreAuthorize("hasAuthority('VIEW_DEVICE_CHART')")
-    public @ResponseBody List load(@RequestParam(required = false) String dateStart,
+    @SuppressWarnings("rawtypes")
+	public @ResponseBody List load(@RequestParam(required = false) String dateStart,
 				    		@RequestParam(required = false) String dateEnd,
 				    		@RequestParam(required = false) boolean online,
 				    		@RequestParam String deviceGuid,
@@ -167,7 +168,7 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     public ModelAndView loadChannels(@RequestParam String deviceGuid) {
     	ServiceResponse<List<String>> channels = eventSchemaService.findKnownIncomingChannelsBy(tenant, deviceGuid);
     	
-    	return new ModelAndView("visualization/channels", "channels", channels.getResult());
+    	return new ModelAndView("/devices/visualization/channels", "channels", channels.getResult());
     }
     
     @RequestMapping("/loading/metrics/")
@@ -177,12 +178,12 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     	ServiceResponse<List<String>> metricsResponse = eventSchemaService.findKnownIncomingMetricsBy(tenant, deviceGuid, channel, JsonNodeType.NUMBER);
     	
     	if (metricsResponse.getResult() == null) {
-    		return new ModelAndView("visualization/metrics", "metrics", new ArrayList<>());
+    		return new ModelAndView("/devices/visualization/metrics", "metrics", new ArrayList<>());
     	}
     	
     	String defaultMetric = CollectionUtils.isEmpty(metricsResponse.getResult()) ? null : metricsResponse.getResult().get(0);
     	
-    	return new ModelAndView("visualization/metrics", "metrics", metricsResponse.getResult())
+    	return new ModelAndView("/devices/visualization/metrics", "metrics", metricsResponse.getResult())
     			.addObject("defaultMetric", defaultMetric);
     }
     
@@ -213,4 +214,5 @@ public class DeviceVisualizationController implements ApplicationContextAware {
 						e);
 		}
     }
+
 }

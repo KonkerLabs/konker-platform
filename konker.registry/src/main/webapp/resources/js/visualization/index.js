@@ -2,7 +2,7 @@ function loadCSV() {
 	$.ajax({
 		context : this,
         type : "GET",
-        url : urlTo('/visualization/csv/download'),
+        url : urlTo('/devices/visualization/csv/download'),
         contentType: "application/json",
         dataType: "json",
         timeout : 100000,
@@ -24,11 +24,12 @@ function autoRefreshDataChart() {
         !$('#metric').val() === false) {
         findAndLoadDataChart();
         loadIncomingEvents();
+        loadOutgoingEvents();
     }
 }
 
 function findAndLoadDataChart() {
-	var url = urlTo('/visualization/load/');
+	var url = urlTo('/devices/visualization/load/');
     $.ajax({
         context : this,
         type : "GET",
@@ -121,14 +122,19 @@ function applyEventBindingsToMetric() {
 function applyEventBindingsToChannel() {
     $('#channel').change(function() {
         clearChartTableHideCsvButton();
-        renderOutgoingFragment($('#visualizationForm').serialize(), '/visualization/loading/metrics/', '#div-metric');
+        renderOutgoingFragment($('#visualizationForm').serialize(), '/devices/visualization/loading/metrics/', '#div-metric');
         autoRefreshDataChart();
     });
 }
 
 function loadIncomingEvents() {
     var deviceGuid = $('#deviceGuid').val();
-    renderOutgoingFragment('', '/devices/' + deviceGuid + '/events/incoming', '#incoming');
+    renderOutgoingFragment($('#visualizationForm').serialize(), '/devices/' + deviceGuid + '/events/incoming', '#incoming');
+}
+
+function loadOutgoingEvents() {
+    var deviceGuid = $('#deviceGuid').val();
+    renderOutgoingFragment($('#visualizationForm').serialize(), '/devices/' + deviceGuid + '/events/outgoing', '#outgoing');
 }
 
 function selectFirstOption(selectName) {

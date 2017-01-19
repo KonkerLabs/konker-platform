@@ -132,9 +132,9 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     		.thenReturn(ServiceResponseBuilder.<List<String>>ok()
     				.withResult(channels).build());
     	
-    	getMockMvc().perform(get("/visualization/loading/channel/").param("deviceGuid", DEVICE_GUID))
+    	getMockMvc().perform(get("/devices/visualization/loading/channel/").param("deviceGuid", DEVICE_GUID))
     		.andExpect(model().attribute("channels", equalTo(channels)))
-    		.andExpect(view().name("visualization/channels"));
+    		.andExpect(view().name("/devices/visualization/channels"));
     }
     
     @Test
@@ -149,16 +149,16 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
 			.thenReturn(ServiceResponseBuilder.<List<String>>ok()
 			.withResult(new ArrayList<String>(listMetrics)).build());
     	
-    	getMockMvc().perform(get("/visualization/loading/metrics/").param("deviceGuid", DEVICE_GUID).param("channel", CHANNEL))
+    	getMockMvc().perform(get("/devices/visualization/loading/metrics/").param("deviceGuid", DEVICE_GUID).param("channel", CHANNEL))
     		.andExpect(model().attribute("metrics", equalTo(listMetrics)))
-    		.andExpect(view().name("visualization/metrics"));
+    		.andExpect(view().name("/devices/visualization/metrics"));
     }
     
     @Test
     @WithMockUser(authorities={"VIEW_DEVICE_CHART"})
     public void shouldReturnDeviceIsMandatoryMessage() throws Exception {
     	
-    	getMockMvc().perform(get("/visualization/load/").param("dateStart", "").param("dateEnd", "").param("online", "false")
+    	getMockMvc().perform(get("/devices/visualization/load/").param("dateStart", "").param("dateEnd", "").param("online", "false")
     			.param("deviceGuid", "").param("channel", CHANNEL))
     			.andExpect(content().json("[{'message':'Device is mandatory'}]"));
     }
@@ -167,7 +167,7 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     @WithMockUser(authorities={"VIEW_DEVICE_CHART"})
     public void shouldReturnChannelIsMandatoryMessage() throws Exception {
     	
-    	getMockMvc().perform(get("/visualization/load/").param("dateStart", "").param("dateEnd", "").param("online", "false")
+    	getMockMvc().perform(get("/devices/visualization/load/").param("dateStart", "").param("dateEnd", "").param("online", "false")
     			.param("deviceGuid", DEVICE_GUID).param("channel", ""))
     			.andExpect(content().json("[{'message':'Channel is mandatory'}]"));
     }
@@ -176,7 +176,7 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     @WithMockUser(authorities={"VIEW_DEVICE_CHART"})
     public void shouldReturnDateStartIsMandatoryMessage() throws Exception {
     	
-    	getMockMvc().perform(get("/visualization/load/").param("dateStart", "").param("dateEnd", "").param("online", "false")
+    	getMockMvc().perform(get("/devices/visualization/load/").param("dateStart", "").param("dateEnd", "").param("online", "false")
     			.param("deviceGuid", DEVICE_GUID).param("channel", CHANNEL))
     			.andExpect(content().json("[{'message':'Dt/hr start is mandatory'}]"));
     }
@@ -185,7 +185,7 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     @WithMockUser(authorities={"VIEW_DEVICE_CHART"})
     public void shouldReturnDateEndIsMandatoryMessage() throws Exception {
     	
-    	getMockMvc().perform(get("/visualization/load/").param("dateStart", dateStart).param("dateEnd", "").param("online", "false")
+    	getMockMvc().perform(get("/devices/visualization/load/").param("dateStart", dateStart).param("dateEnd", "").param("online", "false")
     			.param("deviceGuid", DEVICE_GUID).param("channel", CHANNEL))
     			.andExpect(content().json("[{'message':'Dt/hr end is mandatory'}]"));
     }
@@ -200,7 +200,7 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
 				.withResult(eventsList).build());
     	
     	
-    	getMockMvc().perform(get("/visualization/load/").param("dateStart", "").param("dateEnd", "").param("online", "true")
+    	getMockMvc().perform(get("/devices/visualization/load/").param("dateStart", "").param("dateEnd", "").param("online", "true")
     			.param("deviceGuid", DEVICE_GUID).param("channel", CHANNEL))
     			.andExpect(content().json("[{'timestampFormated': '04/10/2016 14:44:57.000 BRT',"
     					+ "'timestamp': 1475603097000,"
@@ -218,7 +218,7 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
 			.thenReturn(ServiceResponseBuilder.<List<Event>>ok()
 				.withResult(eventsList).build());
 
-		getMockMvc().perform(get("/visualization/load/").param("dateStart", dateStart).param("dateEnd", dateEnd).param("online", "false")
+		getMockMvc().perform(get("/devices/visualization/load/").param("dateStart", dateStart).param("dateEnd", dateEnd).param("online", "false")
     			.param("deviceGuid", DEVICE_GUID).param("channel", CHANNEL))
     			.andExpect(content().json("[{'timestampFormated': '04/10/2016 14:44:57.000 BRT',"
     					+ "'timestamp': 1475603097000,"
