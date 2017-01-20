@@ -5,6 +5,7 @@ import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.RestTransformationStep;
 import com.konkerlabs.platform.registry.business.model.Transformation;
 import com.konkerlabs.platform.registry.business.model.TransformationStep;
+import com.konkerlabs.platform.registry.business.model.enumerations.SupportedHttpMethod;
 import com.konkerlabs.platform.registry.business.services.routes.api.EventTransformationService;
 import com.konkerlabs.platform.registry.integration.exceptions.IntegrationException;
 import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
@@ -18,6 +19,7 @@ import org.springframework.expression.ParseException;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -66,7 +68,17 @@ public class EventTransformationServiceImpl implements EventTransformationServic
                             step.getAttributes().get(RestTransformationStep.REST_URL_ATTRIBUTE_NAME),
                             jsonParsingService.toMap(event.getPayload()));
 
-            String stepResponse = httpGateway.request(HttpMethod.POST,
+            String stepMethod = evaluationService
+                    .evaluateTemplate(
+                            step.getAttributes().get(RestTransformationStep.REST_URL_ATTRIBUTE_METHOD),
+                            jsonParsingService.toMap(event.getPayload()));
+
+            if(StringUtils.isEmpty(stepMethod)){
+                stepMethod = SupportedHttpMethod.POST.getCode();
+            }
+
+            String stepResponse = httpGateway.request(
+                    HttpMethod.resolve(stepMethod),
                     new URI(stepUrl), MediaType.APPLICATION_JSON,
                     () -> event.getPayload(),
                     step.getAttributes().get(RestTransformationStep.REST_USERNAME_ATTRIBUTE_NAME),

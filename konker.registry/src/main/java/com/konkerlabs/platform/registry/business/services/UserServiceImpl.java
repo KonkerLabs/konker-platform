@@ -19,9 +19,8 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.UploadService;
 import com.konkerlabs.platform.registry.business.services.api.UserService;
+import com.konkerlabs.platform.registry.config.PasswordUserConfig;
 import com.konkerlabs.platform.security.managers.PasswordManager;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -34,10 +33,11 @@ public class UserServiceImpl implements UserService {
     private UploadService uploadService;
     @Autowired
     private PasswordBlacklistRepository passwordBlacklistRepository;
-
+    @Autowired
+    private PasswordUserConfig passwordUserConfig;
+    
     private PasswordManager passwordManager;
 
-    private Config passwordConfig = ConfigFactory.load().getConfig("password.user");
 
     public UserServiceImpl() {
         passwordManager = new PasswordManager();
@@ -234,7 +234,7 @@ public class UserServiceImpl implements UserService {
         }
         return passwordManager.createHash(
                 password,
-                Optional.of(passwordConfig.getInt("iterations"))
+                Optional.of(passwordUserConfig.getIterations())
         );
     }
 

@@ -5,6 +5,7 @@ import com.konkerlabs.platform.registry.business.repositories.upload.AwsUploadRe
 import com.konkerlabs.platform.registry.business.services.UploadServiceImpl;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.UploadService;
+import com.konkerlabs.platform.registry.config.CdnConfig;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
@@ -37,7 +38,8 @@ import static org.mockito.Mockito.when;
 @ContextConfiguration(classes = {
         MongoTestConfiguration.class,
         BusinessTestConfiguration.class,
-        RedisTestConfiguration.class
+        RedisTestConfiguration.class,
+        CdnConfig.class
 })
 public class UploadServiceTest extends BusinessLayerTestSupport {
 

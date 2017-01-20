@@ -2,6 +2,12 @@ package com.konkerlabs.platform.registry.config;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+
+import lombok.Data;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -13,13 +19,23 @@ import org.springframework.data.solr.server.SolrServerFactory;
 import org.springframework.data.solr.server.support.MulticoreSolrServerFactory;
 
 @Configuration
+@Data
 public class SolrConfig {
 
-    private static final Config solrConfig = ConfigFactory.load().getConfig("solr");
+    private String baseUrl;
+    
+    public SolrConfig() {
+    	Map<String, Object> defaultMap = new HashMap<>();
+		defaultMap.put("solr.base.url", "http://localhost:8983/solr/");
+		Config defaultConf = ConfigFactory.parseMap(defaultMap);
+
+		Config config = ConfigFactory.load().withFallback(defaultConf);
+    	setBaseUrl(config.getString("solr.base.url"));
+    }
 
     @Bean
     public SolrServer solrServer() {
-        return new HttpSolrServer(solrConfig.getString("base.url"));
+        return new HttpSolrServer(getBaseUrl());
     }
 
     @Bean

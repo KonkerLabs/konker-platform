@@ -14,6 +14,7 @@
         {
           "type" : "REST",
           "attributes" : {
+            "method": "POST",
             "url" : "http://host:8080/path?query=1",
             "username" : "user",
             "password" : "secret"
@@ -36,6 +37,7 @@
         {
           "type" : "REST",
           "attributes" : {
+            "method": "POST",
             "url" : "http://host:8080/path?query=1",
             "username" : "user",
             "password" : "secret"
@@ -58,6 +60,7 @@
         {
           "type" : "REST",
           "attributes" : {
+            "method": "POST",
             "url" : "http://host:8080/path?query=1",
             "username" : "user",
             "password" : "secret"
@@ -67,6 +70,7 @@
         {
           "type" : "REST",
           "attributes" : {
+            "method": "POST",
             "url" : "http://host:8080/path02?query=2",
             "username" : "user",
             "password" : "secret"

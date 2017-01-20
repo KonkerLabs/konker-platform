@@ -18,15 +18,20 @@ var notificationStatusDataStore = {
 var notificationStatus = {
     refresh: function() {
         notificationStatusDataStore.checkNewNotifications().then(function(data) {
-            // old template
-        	$('#notification-icon').toggleClass("new-notifications", data.hasNewNotifications);
             // new template
-        	$('#notification-icon-off').hide();
-            $('#notification-icon-on').show();
+            if (data.hasNewNotifications) {
+                $('#notification-icon-off').hide();
+                $('#notification-icon-on').show();
+            } else {
+                $('#notification-icon-off').show();
+                $('#notification-icon-on').hide();
+            }
+
         }, function(error) { console.log(error) });
     },
     unmarkNewNotifications: function() {
-        notificationStatusDataStore.unmarkNewNotifications().then(function(data) { $('#notification-icon').removeClass("new-notifications") }, function(error) { console.log(error) });
+        notificationStatusDataStore.unmarkNewNotifications().then(function(data) { $('#notification-icon-on').hide();
+            $('#notification-icon-off').show(); }, function(error) { console.log(error) });
     }
 }
 

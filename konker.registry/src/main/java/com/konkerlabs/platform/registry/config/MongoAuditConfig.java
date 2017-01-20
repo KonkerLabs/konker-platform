@@ -1,7 +1,9 @@
 package com.konkerlabs.platform.registry.config;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,11 +22,26 @@ import com.mongodb.MongoClient;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
+import lombok.Data;
+
 @Configuration
 @EnableMongoRepositories(basePackages = "com.konkerlabs.platform.registry.audit.repositories", mongoTemplateRef = "mongoAuditTemplate")
+@Data
 public class MongoAuditConfig extends AbstractMongoConfiguration {
 
-	public static final Config mongoAuditConfig = ConfigFactory.load().getConfig("mongoAudit");
+	private String hostname;
+    private Integer port;
+    
+    public MongoAuditConfig() {
+    	Map<String, Object> defaultMap = new HashMap<>();
+    	defaultMap.put("mongoAudit.hostname", "localhost");
+    	defaultMap.put("mongoAudit.port", 27017);
+    	Config defaultConf = ConfigFactory.parseMap(defaultMap);
+
+    	Config config = ConfigFactory.load().withFallback(defaultConf);
+    	setHostname(config.getString("mongoAudit.hostname"));
+    	setPort(config.getInt("mongoAudit.port"));
+    }
 
     public static final List<Converter<?,?>> converters = Arrays.asList(
         new Converter[] {
@@ -46,8 +63,8 @@ public class MongoAuditConfig extends AbstractMongoConfiguration {
 
 	@Override
     public Mongo mongo() throws Exception {
-		return new MongoClient(mongoAuditConfig.getString("hostname"),
-                Integer.valueOf(mongoAuditConfig.getInt("port"))
+		return new MongoClient(getHostname(),
+                getPort()
         );
     }
 

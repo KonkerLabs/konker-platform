@@ -41,16 +41,18 @@ var graphService = {
             var chart;
             var controller = graphService;
 
-            // Disable show legend flag if using multiple series
+            $('.nvtooltip').remove(); // KRMVP-392
+
+            // Disable showLegend and useInteractiveGuideLine flag if using multiple series
             chart = nv.models.lineChart()
                 .options({
                     duration: 200,
-                    useInteractiveGuideline: false
+                    useInteractiveGuideline: true
                 }).showLegend(true);
 
             chart.noData(controller.noDataMessage);
 
-            chart.margin({"bottom":120, "right": 50});
+            chart.margin({"bottom":120, "right": 50})
 
             chart.xAxis
               .axisLabel(controller.xAxisLabel)

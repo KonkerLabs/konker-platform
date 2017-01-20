@@ -86,7 +86,9 @@ public class EventPublisherRest implements EventPublisher {
                 );
 
                 httpGateway.request(
-                    HttpMethod.POST,
+                    HttpMethod.resolve(
+                            Optional.ofNullable(destination.getResult().getMethod()).isPresent() ?
+                                    destination.getResult().getMethod() : "POST"),
                     URI.create(serviceURI), MediaType.APPLICATION_JSON,
                     () -> outgoingEvent.getPayload(),
                     destination.getResult().getServiceUsername(),

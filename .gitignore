@@ -9,3 +9,4 @@ target
 /konker.scripts/docker/build/application.conf
 **/env/*
 *.pydevproject
+**/*.pyc

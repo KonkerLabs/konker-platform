@@ -1,17 +1,18 @@
 package com.konkerlabs.platform.registry.integration.gateways;
 
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
+import java.net.URI;
+
 import org.springframework.beans.factory.SmartFactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.net.URI;
+import com.konkerlabs.platform.registry.config.SmsConfig;
 
 @Component
 public class SmsMessageGatewayFactory implements SmartFactoryBean<SMSMessageGateway> {
 
-    private static final Config smsServiceConfig = ConfigFactory.load().getConfig("sms");
+    @Autowired
+    private SmsConfig smsConfig;
 
     @Autowired
     private HttpGateway httpGateway;
@@ -29,10 +30,10 @@ public class SmsMessageGatewayFactory implements SmartFactoryBean<SMSMessageGate
     @Override
     public SMSMessageGateway getObject() throws Exception {
         SMSMessageGatewayTwilioImpl smsMessageGateway = new SMSMessageGatewayTwilioImpl();
-        smsMessageGateway.setApiUri(new URI(smsServiceConfig.getString("uri")));
-        smsMessageGateway.setUsername(smsServiceConfig.getString("username"));
-        smsMessageGateway.setPassword(smsServiceConfig.getString("password"));
-        smsMessageGateway.setFromPhoneNumber(smsServiceConfig.getString("from"));
+        smsMessageGateway.setApiUri(new URI(smsConfig.getUri()));
+        smsMessageGateway.setUsername(smsConfig.getUsername());
+        smsMessageGateway.setPassword(smsConfig.getPassword());
+        smsMessageGateway.setFromPhoneNumber(smsConfig.getFrom());
 //        smsMessageGateway.setRestTemplate(restTemplate);
         smsMessageGateway.setHttpGateway(httpGateway);
 

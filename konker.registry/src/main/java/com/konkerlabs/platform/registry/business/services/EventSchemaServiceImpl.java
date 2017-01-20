@@ -1,22 +1,16 @@
 package com.konkerlabs.platform.registry.business.services;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.konkerlabs.platform.registry.audit.KonkerLogger;
-import com.konkerlabs.platform.registry.audit.KonkerLoggerFactory;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.EventSchema;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
-import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
-import com.mongodb.BasicDBObject;
+import java.io.IOException;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -24,11 +18,23 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
+import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
+import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.EventSchema;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.repositories.events.EventRepository;
+import com.konkerlabs.platform.registry.business.model.EventSchema.SchemaField;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
+import com.mongodb.BasicDBObject;
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
@@ -44,6 +50,10 @@ public class EventSchemaServiceImpl implements EventSchemaService {
 
     @Autowired
     private JsonParsingService jsonParsingService;
+
+    @Autowired
+    @Qualifier("mongoEvents")
+    private EventRepository eventRepository;
 
     @Autowired
     private MongoTemplate mongoTemplate;
@@ -161,4 +171,88 @@ public class EventSchemaServiceImpl implements EventSchemaService {
                     .withMessages(deviceServiceResponse.getResponseMessages()).build();
         }
     }
+
+	@Override
+	public ServiceResponse<List<String>> findKnownIncomingMetricsBy(Tenant tenant, String deviceGuid, String channel, JsonNodeType nodeType) {
+    	
+		ServiceResponse<EventSchema> metricsResponse = findIncomingBy(deviceGuid, channel);
+
+		if (metricsResponse.isOk()) {
+		
+	    	List<String> listMetrics = metricsResponse.getResult()
+					.getFields().stream()
+					.filter(schemaField -> schemaField.getKnownTypes().contains(JsonNodeType.NUMBER))
+					.map(m -> m.getPath()).collect(Collectors.toList());
+	    	
+	    	return ServiceResponseBuilder.<List<String>>ok()
+	                .withResult(listMetrics).build();
+	    	
+		} else {
+
+            return ServiceResponseBuilder.<List<String>>error()
+                    .withMessages(metricsResponse.getResponseMessages()).build();
+			
+		}
+    	
+	}
+
+	@Override
+	public ServiceResponse<EventSchema> findLastIncomingBy(Tenant tenant, String deviceGuid, JsonNodeType nodeType) {
+
+		EventSchema lastEvent = null;
+
+		try {
+			// List all last events
+			List<Event> lastEvents = eventRepository.findIncomingBy(tenant, deviceGuid, null, null, null, false,
+					1000);
+
+			ObjectMapper mapper = new ObjectMapper();
+			
+			for (Event event : lastEvents) {
+				if (event.getIncoming() == null) {
+					continue;
+				}
+
+				ServiceResponse<EventSchema> schemaResponse = findIncomingBy(deviceGuid,
+						event.getIncoming().getChannel());
+				EventSchema schema = schemaResponse.getResult();
+				if (schema == null) {
+					continue;
+				}
+
+				for (SchemaField field : schema.getFields()) {
+					if (field.getKnownTypes().contains(nodeType)) {
+						try {
+							// check if node exists
+							JsonNode root = mapper.readTree(event.getPayload());
+							if (root.path(field.getPath()) != null) {
+								lastEvent = EventSchema.builder()
+										.channel(schema.getChannel())
+										.field(field)
+										.build();
+
+								break;
+							}
+						} catch (IOException e) {
+							LOG.warn(e.getMessage());
+						}
+					}
+				}
+
+				// found?
+				if (lastEvent != null) {
+					break;
+				}
+			}
+
+			return ServiceResponseBuilder.<EventSchema>ok().withResult(lastEvent).build();
+
+		} catch (BusinessException e1) {
+
+			return ServiceResponseBuilder.<EventSchema>error().withMessage(e1.getLocalizedMessage()).build();
+
+		}
+
+	}
+
 }

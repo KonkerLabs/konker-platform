@@ -1,5 +1,8 @@
 package com.konkerlabs.platform.registry.test.web.controllers;
 
+import com.konkerlabs.platform.registry.config.CdnConfig;
+import com.konkerlabs.platform.registry.config.HotjarConfig;
+import com.konkerlabs.platform.registry.config.WebConfig;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
@@ -18,7 +21,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebAppConfiguration
 @ContextConfiguration(classes = {
     WebMvcConfig.class,
-    WebTestConfiguration.class, SecurityTestConfiguration.class
+    WebTestConfiguration.class, SecurityTestConfiguration.class, WebConfig.class, HotjarConfig.class,
+    CdnConfig.class
 })
 public class ControlPanelControllerTest extends WebLayerTestContext {
 

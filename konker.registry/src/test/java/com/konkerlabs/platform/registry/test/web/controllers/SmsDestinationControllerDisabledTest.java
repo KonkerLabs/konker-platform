@@ -17,6 +17,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
 import com.konkerlabs.platform.registry.business.services.api.SmsDestinationService;
+import com.konkerlabs.platform.registry.config.WebConfig;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
@@ -25,7 +26,7 @@ import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
 @ContextConfiguration(classes = { WebMvcConfig.class, WebTestConfiguration.class, SecurityTestConfiguration.class,
-        SmsDestinationControllerDisabledTest.SmsDestinationTestContextConfig.class })
+        SmsDestinationControllerDisabledTest.SmsDestinationTestContextConfig.class, WebConfig.class })
 public class SmsDestinationControllerDisabledTest extends WebLayerTestContext {
 
     @Autowired
