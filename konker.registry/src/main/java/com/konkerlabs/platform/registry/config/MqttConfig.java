@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.config;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -52,11 +53,11 @@ public class MqttConfig {
     
     public MqttConfig() {
     	Map<String, Object> defaultMap = new HashMap<>();
-    	defaultMap.put("mqtt.subcribe.uris", new String[]{"tcp://dev-server:1883"});
-    	defaultMap.put("mqtt.subcribe.topics", new String[]{"pub/+/+"});
+    	defaultMap.put("mqtt.subcribe.uris", Collections.singleton("tcp://dev-server:1883"));
+    	defaultMap.put("mqtt.subcribe.topics", Collections.singleton("pub/+/+"));
     	defaultMap.put("mqtt.subcribe.username", "user");
     	defaultMap.put("mqtt.subcribe.password", "pass");
-    	defaultMap.put("mqtt.publish.uris", new String[]{"tcp://dev-server:1883"});
+    	defaultMap.put("mqtt.publish.uris", Collections.singleton("tcp://dev-server:1883"));
     	defaultMap.put("mqtt.publish.username", "user");
     	defaultMap.put("mqtt.publish.password", "pass");
     	Config defaultConf = ConfigFactory.parseMap(defaultMap);
