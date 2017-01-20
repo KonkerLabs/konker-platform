@@ -47,16 +47,19 @@
                          data-th-if="*{avatarUploadEnabled}"
                          class="avataraccount img-responsive">
                 </div>
-                <div class="col-md-7 col-sm-5 pull-left panel-view-user">
+                <div class="col-md-7 col-sm-5 pull-left panel-view-user"
+                    data-th-if="${@environment.getActiveProfiles().length != 0 && #lists.contains(@environment.getActiveProfiles(), 'cdn')}">
                     <div>
                         <h2 data-th-text="#{users.form.photo.yourphoto}">Sua foto</h2>
                     </div>
                     <div class="row paddingrow">
-                        <button type="button" class="btn-inline btn btn-theme btn-edit-user" data-th-text="#{users.form.photo.change}">Trocar foto</button>
+                        <button type="button" class="btn-inline btn btn-theme btn-edit-user" 
+                            data-th-text="#{users.form.photo.change}">Trocar foto</button>
                     </div>
                     <br />
                 </div>
-                <div class="col-md-7 col-sm-5 pull-left panel-edit-user">
+                <div class="col-md-7 col-sm-5 pull-left panel-edit-user"
+                    data-th-if="${@environment.getActiveProfiles().length != 0 && #lists.contains(@environment.getActiveProfiles(), 'cdn')}">
                     <div>
                         <h2 data-th-text="#{users.form.photo.yourphoto}">Sua foto</h2>
                     </div>
