@@ -647,6 +647,14 @@ a.logo span {
     padding: 5px;
 }
 
+#notification-icon.new-notifications {
+    color: red;
+}
+
+.notification-unread {
+    font-weight: bold;
+}
+
 ul.top-menu > li > a {
     color: #666666;
     font-size: 16px;
