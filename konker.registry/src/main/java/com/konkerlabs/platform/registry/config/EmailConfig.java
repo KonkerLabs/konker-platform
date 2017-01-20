@@ -30,7 +30,7 @@ public class EmailConfig {
 			setPassword(config.getString("password"));
 			setBaseurl(config.getString("baseurl"));
 			setSender(config.getString("sender"));
-			setEnabled(config.getBoolean("enabled"));
+			setEnabled(config.hasPath("enabled") ? config.getBoolean("enabled") : false);
 		}
 	}
 }
