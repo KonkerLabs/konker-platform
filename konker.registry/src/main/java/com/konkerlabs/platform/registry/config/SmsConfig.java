@@ -1,5 +1,8 @@
 package com.konkerlabs.platform.registry.config;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.context.annotation.Configuration;
 
 import com.typesafe.config.Config;
@@ -11,20 +14,26 @@ import lombok.Data;
 @Data
 public class SmsConfig {
 	
-	private String uri = "http://api.com/endpoint";
-	private String username = "user";
-	private String password = "pass";
-	private String from = "+99999999999";
-	private boolean enabled = false;
+	private String uri;
+	private String username;
+	private String password;
+	private String from;
+	private boolean enabled;
 	
 	public SmsConfig() {
-		if (ConfigFactory.load().hasPath("sms")) {
-			Config config = ConfigFactory.load().getConfig("sms");
-			setUri(config.getString("uri"));
-			setUsername(config.getString("username"));
-			setPassword(config.getString("password"));
-			setFrom(config.getString("from"));
-			setEnabled(config.getBoolean("enabled"));
-		}
+		Map<String, Object> defaultMap = new HashMap<>();
+		defaultMap.put("sms.uri", "http://api.com/endpoint");
+		defaultMap.put("sms.username", "user");
+		defaultMap.put("sms.password", "pass");
+		defaultMap.put("sms.from", "+99999999999");
+		defaultMap.put("sms.enabled", false);
+		Config defaultConf = ConfigFactory.parseMap(defaultMap);
+		
+		Config config = ConfigFactory.load().withFallback(defaultConf);
+		setUri(config.getString("sms.uri"));
+		setUsername(config.getString("sms.username"));
+		setPassword(config.getString("sms.password"));
+		setFrom(config.getString("sms.from"));
+		setEnabled(config.getBoolean("sms.enabled"));
 	}
 }

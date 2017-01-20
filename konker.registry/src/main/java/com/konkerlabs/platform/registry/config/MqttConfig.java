@@ -1,9 +1,9 @@
 package com.konkerlabs.platform.registry.config;
 
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
-
-import lombok.Data;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.Executor;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -24,8 +24,10 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.UUID;
-import java.util.concurrent.Executor;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+
+import lombok.Data;
 
 @Configuration
 @EnableIntegration
@@ -34,14 +36,14 @@ import java.util.concurrent.Executor;
 @Data
 public class MqttConfig {
 
-    private String[] subcribeUris = {"tcp://dev-server:1883"};
-    private String[] subcribeTopics = {"pub/+/+"};
-    private String subcribeUsername = "user";
-    private String subcribePassword = "pass";
+    private String[] subcribeUris;
+    private String[] subcribeTopics;
+    private String subcribeUsername;
+    private String subcribePassword;
     
-    private String[] publishUris = {"tcp://dev-server:1883"};
-    private String publishUsername = "user";
-    private String publishPassword = "pass";
+    private String[] publishUris;
+    private String publishUsername;
+    private String publishPassword;
 
     //MQTT stuff
 
@@ -49,20 +51,25 @@ public class MqttConfig {
     private Executor executor;
     
     public MqttConfig() {
-    	if (ConfigFactory.load().hasPath("mqtt") && ConfigFactory.load().getConfig("mqtt").hasPath("subcribe")) {
-    		Config inboundBrokerConfig = ConfigFactory.load().getConfig("mqtt").getConfig("subcribe");
-    		setSubcribeUris(inboundBrokerConfig.getStringList("uris").toArray(new String[] {}));
-    		setSubcribeTopics(inboundBrokerConfig.getStringList("topics").toArray(new String[] {}));
-    		setSubcribeUsername(inboundBrokerConfig.getString("username"));
-    		setSubcribePassword(inboundBrokerConfig.getString("password"));
-    	}
+    	Map<String, Object> defaultMap = new HashMap<>();
+    	defaultMap.put("mqtt.subcribe.uris", new String[]{"tcp://dev-server:1883"});
+    	defaultMap.put("mqtt.subcribe.topics", new String[]{"pub/+/+"});
+    	defaultMap.put("mqtt.subcribe.username", "user");
+    	defaultMap.put("mqtt.subcribe.password", "pass");
+    	defaultMap.put("mqtt.publish.uris", new String[]{"tcp://dev-server:1883"});
+    	defaultMap.put("mqtt.publish.username", "user");
+    	defaultMap.put("mqtt.publish.password", "pass");
+    	Config defaultConf = ConfigFactory.parseMap(defaultMap);
 
-    	if (ConfigFactory.load().hasPath("mqtt") && ConfigFactory.load().getConfig("mqtt").hasPath("publish")) {
-    		Config outboundBrokerConfig = ConfigFactory.load().getConfig("mqtt").getConfig("publish");
-    		setPublishUris(outboundBrokerConfig.getStringList("uris").toArray(new String[] {}));
-    		setPublishUsername(outboundBrokerConfig.getString("username"));
-    		setPublishPassword(outboundBrokerConfig.getString("password"));
-    	}
+    	Config config = ConfigFactory.load().withFallback(defaultConf);
+    	setSubcribeUris(config.getStringList("mqtt.subcribe.uris").toArray(new String[] {}));
+    	setSubcribeTopics(config.getStringList("mqtt.subcribe.topics").toArray(new String[] {}));
+    	setSubcribeUsername(config.getString("mqtt.subcribe.username"));
+    	setSubcribePassword(config.getString("mqtt.subcribe.password"));
+
+    	setPublishUris(config.getStringList("mqtt.publish.uris").toArray(new String[] {}));
+    	setPublishUsername(config.getString("mqtt.publish.username"));
+    	setPublishPassword(config.getString("mqtt.publish.password"));
     }
 
     @Bean(name = "konkerMqttInputChannel")

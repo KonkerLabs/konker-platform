@@ -1,5 +1,8 @@
 package com.konkerlabs.platform.registry.config;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.context.annotation.Configuration;
 
 import com.typesafe.config.Config;
@@ -11,26 +14,35 @@ import lombok.Data;
 @Data
 public class EmailConfig {
 	
-	private String host = "email-smtp.us-east-1.amazonaws.com";
-	private String port = "587";
-	private String protocol = "smtp";
-	private String username = "username";
-	private String password = "pass";
-	private String baseurl = "http://localhost:8080/";
-	private String sender = "no-reply@konkerlabs.com";
-	private boolean enabled = false;
+	private String host;
+	private String port;
+	private String protocol;
+	private String username;
+	private String password;
+	private String baseurl;
+	private String sender;
+	private boolean enabled;
 	
 	public EmailConfig() {
-		if (ConfigFactory.load().hasPath("email")) {
-			Config config = ConfigFactory.load().getConfig("email");
-			setHost(config.getString("host"));
-			setPort(config.getString("port"));
-			setProtocol(config.getString("protocol"));
-			setUsername(config.getString("username"));
-			setPassword(config.getString("password"));
-			setBaseurl(config.getString("baseurl"));
-			setSender(config.getString("sender"));
-			setEnabled(config.hasPath("enabled") ? config.getBoolean("enabled") : false);
-		}
+		Map<String, Object> defaultMap = new HashMap<>();
+		defaultMap.put("email.host", "email-smtp.us-east-1.amazonaws.com");
+		defaultMap.put("email.port", "587");
+		defaultMap.put("email.protocol", "smtp");
+		defaultMap.put("email.username", "username");
+		defaultMap.put("email.password", "pass");
+		defaultMap.put("email.baseurl", "http://localhost:8080/");
+		defaultMap.put("email.sender", "no-reply@konkerlabs.com");
+		defaultMap.put("email.enabled", false);
+		Config defaultConf = ConfigFactory.parseMap(defaultMap);
+
+		Config config = ConfigFactory.load().withFallback(defaultConf);
+		setHost(config.getString("email.host"));
+		setPort(config.getString("email.port"));
+		setProtocol(config.getString("email.protocol"));
+		setUsername(config.getString("email.username"));
+		setPassword(config.getString("email.password"));
+		setBaseurl(config.getString("email.baseurl"));
+		setSender(config.getString("email.sender"));
+		setEnabled(config.getBoolean("email.enabled"));
 	}
 }

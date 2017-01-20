@@ -1,7 +1,9 @@
 package com.konkerlabs.platform.registry.config;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -29,15 +31,15 @@ public class MongoConfig extends AbstractMongoConfiguration {
     private Integer port;
     
     public MongoConfig() {
-		if (ConfigFactory.load().hasPath("mongo")) {
-			Config config = ConfigFactory.load().getConfig("mongo");
-			setHostname(config.getString("hostname"));
-			setPort(config.getInt("port"));
-		} else {
-			setHostname("localhost");
-			setPort(27017);
-		}
-	}
+    	Map<String, Object> defaultMap = new HashMap<>();
+    	defaultMap.put("mongo.hostname", "localhost");
+    	defaultMap.put("mongo.port", 27017);
+    	Config defaultConf = ConfigFactory.parseMap(defaultMap);
+
+    	Config config = ConfigFactory.load().withFallback(defaultConf);
+    	setHostname(config.getString("mongo.hostname"));
+    	setPort(config.getInt("mongo.port"));
+    }
 
 	public static final List<Converter<?,?>> converters = Arrays.asList(
         new Converter[] {

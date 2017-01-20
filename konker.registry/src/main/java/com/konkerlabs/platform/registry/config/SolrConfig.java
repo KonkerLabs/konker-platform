@@ -5,6 +5,9 @@ import com.typesafe.config.ConfigFactory;
 
 import lombok.Data;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -22,12 +25,12 @@ public class SolrConfig {
     private String baseUrl;
     
     public SolrConfig() {
-    	if (ConfigFactory.load().hasPath("solr")) {
-    		Config config = ConfigFactory.load().getConfig("solr");
-    		setBaseUrl(config.getString("base.url"));
-    	} else {
-    		setBaseUrl("http://localhost:8983/solr/");
-    	}
+    	Map<String, Object> defaultMap = new HashMap<>();
+		defaultMap.put("solr.base.url", "http://localhost:8983/solr/");
+		Config defaultConf = ConfigFactory.parseMap(defaultMap);
+
+		Config config = ConfigFactory.load().withFallback(defaultConf);
+    	setBaseUrl(config.getString("solr.base.url"));
     }
 
     @Bean

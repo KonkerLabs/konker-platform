@@ -1,5 +1,8 @@
 package com.konkerlabs.platform.registry.config;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.context.annotation.Configuration;
 
 import com.typesafe.config.Config;
@@ -11,25 +14,33 @@ import lombok.Data;
 @Data
 public class PubServerConfig {
 
-	private String httpHostname = "dev-server";
-	private String httpPort = "8080";
-	private String httpCtx = "registry";
-	private String httpsPort = "443";
-	private String mqttHostName = "dev-server";
-	private String mqttPort = "1883";
-	private String mqttTlsPort = "1883";
+	private String httpHostname;
+	private String httpPort;
+	private String httpCtx;
+	private String httpsPort;
+	private String mqttHostName;
+	private String mqttPort;
+	private String mqttTlsPort;
 	
 	public PubServerConfig() {
-		if (ConfigFactory.load().hasPath("pubServer")) {
-			Config config = ConfigFactory.load().getConfig("pubServer");
-			setHttpHostname(config.getString("httpHostname"));
-			setHttpPort(config.getString("httpPort"));
-			setHttpCtx(config.getString("httpCtx"));
-			setHttpsPort(config.getString("httpsPort"));
-			setMqttHostName(config.getString("mqttHostName"));
-			setMqttPort(config.getString("mqttPort"));
-			setMqttTlsPort(config.getString("mqttTlsPort"));
-		}
+		Map<String, Object> defaultMap = new HashMap<>();
+		defaultMap.put("pubServer.httpHostname", "dev-server");
+		defaultMap.put("pubServer.httpPort", "8080");
+		defaultMap.put("pubServer.httpCtx", "registry");
+		defaultMap.put("pubServer.httpsPort", "443");
+		defaultMap.put("pubServer.mqttHostName", "dev-server");
+		defaultMap.put("pubServer.mqttPort", "1883");
+		defaultMap.put("pubServer.mqttTlsPort", "1883");
+		Config defaultConf = ConfigFactory.parseMap(defaultMap);
+
+		Config config = ConfigFactory.load().withFallback(defaultConf);
+		setHttpHostname(config.getString("pubServer.httpHostname"));
+		setHttpPort(config.getString("pubServer.httpPort"));
+		setHttpCtx(config.getString("pubServer.httpCtx"));
+		setHttpsPort(config.getString("pubServer.httpsPort"));
+		setMqttHostName(config.getString("pubServer.mqttHostName"));
+		setMqttPort(config.getString("pubServer.mqttPort"));
+		setMqttTlsPort(config.getString("pubServer.mqttTlsPort"));
 	}
 
 }

@@ -1,5 +1,8 @@
 package com.konkerlabs.platform.registry.config;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -23,20 +26,19 @@ import lombok.Data;
 @Data
 public class RedisConfig {
 
-//    public static Config config = ConfigFactory.load().getConfig("redis");
 	private String host;
 	private Integer port;
     
-    public RedisConfig() {
-    	if (ConfigFactory.load().hasPath("redis")) {
-    		Config config = ConfigFactory.load().getConfig("redis");
-    		setHost(config.getString("master.host"));
-    		setPort(config.getInt("master.port"));
-    	} else {
-    		setHost("localhost");
-    		setPort(6379);
-    	}
-    }
+	public RedisConfig() {
+		Map<String, Object> defaultMap = new HashMap<>();
+		defaultMap.put("redis.master.host", "localhost");
+		defaultMap.put("redis.master.port", 6379);
+		Config defaultConf = ConfigFactory.parseMap(defaultMap);
+
+		Config config = ConfigFactory.load().withFallback(defaultConf);
+		setHost(config.getString("redis.master.host"));
+		setPort(config.getInt("redis.master.port"));
+	}
 
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {

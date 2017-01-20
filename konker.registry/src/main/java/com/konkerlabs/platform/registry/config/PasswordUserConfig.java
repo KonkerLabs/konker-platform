@@ -1,5 +1,8 @@
 package com.konkerlabs.platform.registry.config;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.context.annotation.Configuration;
 
 import com.typesafe.config.Config;
@@ -11,17 +14,21 @@ import lombok.Data;
 @Data
 public class PasswordUserConfig {
 	
-	private String hashAlgorithm = "SHA256";
-	private Integer saltSize = 16;
-	private Integer iterations = 10000;
+	private String hashAlgorithm;
+	private Integer saltSize;
+	private Integer iterations;
 	
 	public PasswordUserConfig() {
-		if (ConfigFactory.load().hasPath("password.user")) {
-			Config config = ConfigFactory.load().getConfig("password.user");
-			setHashAlgorithm(config.getString("hash.algorithm"));
-			setSaltSize(config.getInt("salt.size"));
-			setIterations(config.getInt("iterations"));
-		}
+		Map<String, Object> defaultMap = new HashMap<>();
+		defaultMap.put("password.user.hash.algorithm", "SHA256");
+		defaultMap.put("password.user.salt.size", 16);
+		defaultMap.put("password.user.iterations", 10000);
+		Config defaultConf = ConfigFactory.parseMap(defaultMap);
+
+		Config config = ConfigFactory.load().withFallback(defaultConf);
+		setHashAlgorithm(config.getString("password.user.hash.algorithm"));
+		setSaltSize(config.getInt("password.user.salt.size"));
+		setIterations(config.getInt("password.user.iterations"));
 	}
 
 }

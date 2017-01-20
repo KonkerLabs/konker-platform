@@ -130,14 +130,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         private String successLoginUrl;
         
         public FormWebSecurityConfig() {
-        	if (ConfigFactory.load().hasPath("security")) {
-        		Config config = ConfigFactory.load().getConfig("security");
-        		setLoginPage(config.getString("loginPage"));
-        		setSuccessLoginUrl(config.getString("successLoginUrl"));
-        	} else {
-        		setLoginPage("/login");
-        		setSuccessLoginUrl("/");
-        	}
+        	Map<String, Object> defaultMap = new HashMap<>();
+        	defaultMap.put("security.loginPage", "/login");
+        	defaultMap.put("security.successLoginUrl", "/");
+        	Config defaultConf = ConfigFactory.parseMap(defaultMap);
+
+        	Config config = ConfigFactory.load().withFallback(defaultConf);
+        	setLoginPage(config.getString("security.loginPage"));
+        	setSuccessLoginUrl(config.getString("security.successLoginUrl"));
         }
 
         @Override
