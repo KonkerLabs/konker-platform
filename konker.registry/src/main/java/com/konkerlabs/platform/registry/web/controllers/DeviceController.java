@@ -13,6 +13,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.impl.entity.LaxContentLengthStrategy;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -150,14 +151,13 @@ public class DeviceController implements ApplicationContextAware {
 	public ModelAndView loadIncomingEvents(@PathVariable String deviceGuid,
 			@RequestParam(required = false) String dateStart,
    		 	@RequestParam(required = false) String dateEnd) {
-		Device device = deviceRegisterService.getByDeviceGuid(tenant, deviceGuid).getResult();
 
     	DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss", user.getLanguage().getLocale());
     	Instant instantStart = StringUtils.isNotEmpty(dateStart) ? ZonedDateTime.of(LocalDateTime.parse(dateStart, dtf), ZoneId.of(user.getZoneId().getId())).toInstant() : null;
     	Instant instantEnd = StringUtils.isNotEmpty(dateEnd) ? ZonedDateTime.of(LocalDateTime.parse(dateEnd, dtf), ZoneId.of(user.getZoneId().getId())).toInstant() : null;
 
 		ModelAndView mv = new ModelAndView("devices/events-incoming", "recentIncomingEvents", 
-				deviceEventService.findIncomingBy(tenant, device.getGuid(), null, instantStart, instantEnd, false, 50).getResult());
+				deviceEventService.findIncomingBy(tenant, deviceGuid, null, instantStart, instantEnd, false, 50).getResult());
 
 		return mv;
 	}
@@ -167,14 +167,13 @@ public class DeviceController implements ApplicationContextAware {
 	public ModelAndView loadOutgoingEvents(@PathVariable String deviceGuid,
 			@RequestParam(required = false) String dateStart,
    		 	@RequestParam(required = false) String dateEnd) {
-		Device device = deviceRegisterService.getByDeviceGuid(tenant, deviceGuid).getResult();
 
     	DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss", user.getLanguage().getLocale());
     	Instant instantStart = StringUtils.isNotEmpty(dateStart) ? ZonedDateTime.of(LocalDateTime.parse(dateStart, dtf), ZoneId.of(user.getZoneId().getId())).toInstant() : null;
     	Instant instantEnd = StringUtils.isNotEmpty(dateEnd) ? ZonedDateTime.of(LocalDateTime.parse(dateEnd, dtf), ZoneId.of(user.getZoneId().getId())).toInstant() : null;
 
 		ModelAndView mv = new ModelAndView("devices/events-outgoing", "recentOutgoingEvents", 
-				deviceEventService.findOutgoingBy(tenant, device.getGuid(), null, instantStart, instantEnd, false, 50).getResult());
+				deviceEventService.findOutgoingBy(tenant, deviceGuid, null, instantStart, instantEnd, false, 50).getResult());
 
 		return mv;
 	}
@@ -188,41 +187,12 @@ public class DeviceController implements ApplicationContextAware {
 		List<String> listMetrics = null;
 
 		// Try to find the last numeric metric
-		List<Event> lastEvents = deviceEventService.findIncomingBy(tenant, deviceGuid, null, null, null, false, 200).getResult();
-
-		for (Event event : lastEvents) {
-			if (event.getIncoming() == null) {
-				continue;
-			}
-			
-			ServiceResponse<EventSchema> schemaResponse = eventSchemaService.findIncomingBy(deviceGuid, event.getIncoming().getChannel());
-			EventSchema schema = schemaResponse.getResult();
-			if (schema == null) {
-				continue;
-			}
-
-			for (SchemaField field :  schema.getFields()) {
-				if (field.getKnownTypes().contains(JsonNodeType.NUMBER)) {
-					try {
-						// check if node exists
-						JSONObject json = new JSONObject(event.getPayload());
-						if (json.get(field.getPath()) != null) {
-							defaultChannel = event.getIncoming().getChannel();
-							defaultMetric = field.getPath();
-							break;
-						}
-					} catch (JSONException e) {
-						LOGGER.warn(e.getMessage());
-					}
-				}
-			}
-
-			// found?
-			if (defaultChannel != null) {
-				break; 
-			}
+		ServiceResponse<EventSchema> lastEvent = eventSchemaService.findLastIncomingBy(tenant, deviceGuid, JsonNodeType.NUMBER);
+		if (lastEvent.isOk() && lastEvent.getResult() != null) {
+			defaultChannel = lastEvent.getResult().getChannel();
+			defaultMetric = lastEvent.getResult().getFields().iterator().next().getPath();
 		}
-
+		
 		// Load lists
 		ServiceResponse<List<String>> channels = eventSchemaService.findKnownIncomingChannelsBy(tenant, deviceGuid);
 

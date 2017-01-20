@@ -1,11 +1,13 @@
 package com.konkerlabs.platform.registry.test.business.services;
 
 import com.fasterxml.jackson.databind.node.JsonNodeType;
+import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.EventSchema;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
+import com.konkerlabs.platform.registry.business.repositories.events.EventRepository;
 import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
@@ -18,6 +20,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -45,9 +48,10 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
     @Autowired
     private DeviceRepository deviceRepository;
     @Autowired
-    private EventSchemaService eventSchemaService;
+    @Qualifier("mongoEvents")
+    private EventRepository eventRepository;
     @Autowired
-    private EventSchemaService subject;
+    private EventSchemaService eventSchemaService;
 
     private String deviceGuid = "8363c556-84ea-11e6-92a2-4b01fea7e243";
 
@@ -153,4 +157,62 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
         assertThat(response,isResponseOk());
         assertThat(response.getResult(),equalTo(knownChannels));
     }
+    
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/eventSchemas.json"})
+    public void shouldFindKnownIncomingMetrics() throws Exception {
+        List<String> knownMetrics = Arrays.asList(new String[]{"temperature"});
+
+        ServiceResponse<List<String>> response = eventSchemaService.findKnownIncomingMetricsBy(tenant, deviceGuid, "data", JsonNodeType.NUMBER);
+
+        assertThat(response,isResponseOk());
+        assertThat(response.getResult(),equalTo(knownMetrics));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/eventSchemas.json"})
+    public void shouldFindLastIncomingBy() throws Exception {
+
+        Tenant tenant = tenantRepository.findByDomainName("konker");
+        String channel = "tDs8hinlkT";
+        String deviceGuid = "dde1129e-4c6c-4ec4-89dc-425857b68009";
+
+        deviceRepository.save(Device.builder().tenant(tenant).guid(deviceGuid).name("b2cwPd7QgQ").build());
+
+        // Non numeric event
+        Event incomingEvent = Event.builder()
+                .payload("{\"city\": \"RJ\"}")
+                .timestamp(Instant.now())
+                .incoming(
+                        Event.EventActor.builder()
+                                .deviceGuid(deviceGuid)
+                                .channel(channel)
+                                .tenantDomain(tenant.getDomainName())
+                                .build()).build();
+
+        eventSchemaService.appendIncomingSchema(incomingEvent);
+        eventRepository.saveIncoming(tenant, incomingEvent);
+
+        // Numeric event
+        Event incomingEventSnd = Event.builder()
+                .payload(secondJson)
+                .timestamp(Instant.now().minusSeconds(10))
+                .incoming(
+                        Event.EventActor.builder()
+                                .deviceGuid(deviceGuid)
+                                .channel(channel)
+                                .tenantDomain(tenant.getDomainName())
+                                .build()).build();
+
+        eventSchemaService.appendIncomingSchema(incomingEventSnd);
+        eventRepository.saveIncoming(tenant, incomingEventSnd);
+
+
+        ServiceResponse<EventSchema> response = eventSchemaService.findLastIncomingBy(tenant, deviceGuid, JsonNodeType.NUMBER);
+
+        assertThat(response, isResponseOk());
+        assertThat(response.getResult().getChannel(), equalTo(channel));
+        assertThat(response.getResult().getFields().iterator().next().getPath(), equalTo(secondField));
+    }
+
 }

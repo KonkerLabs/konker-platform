@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.business.services;
 
+import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -17,11 +19,16 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
+import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.EventSchema;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.repositories.events.EventRepository;
+import com.konkerlabs.platform.registry.business.model.EventSchema.SchemaField;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
@@ -43,6 +50,10 @@ public class EventSchemaServiceImpl implements EventSchemaService {
 
     @Autowired
     private JsonParsingService jsonParsingService;
+
+    @Autowired
+    @Qualifier("mongoEvents")
+    private EventRepository eventRepository;
 
     @Autowired
     private MongoTemplate mongoTemplate;
@@ -184,5 +195,64 @@ public class EventSchemaServiceImpl implements EventSchemaService {
 		}
     	
 	}
-	
+
+	@Override
+	public ServiceResponse<EventSchema> findLastIncomingBy(Tenant tenant, String deviceGuid, JsonNodeType nodeType) {
+
+		EventSchema lastEvent = null;
+
+		try {
+			// List all last events
+			List<Event> lastEvents = eventRepository.findIncomingBy(tenant, deviceGuid, null, null, null, false,
+					1000);
+
+			ObjectMapper mapper = new ObjectMapper();
+			
+			for (Event event : lastEvents) {
+				if (event.getIncoming() == null) {
+					continue;
+				}
+
+				ServiceResponse<EventSchema> schemaResponse = findIncomingBy(deviceGuid,
+						event.getIncoming().getChannel());
+				EventSchema schema = schemaResponse.getResult();
+				if (schema == null) {
+					continue;
+				}
+
+				for (SchemaField field : schema.getFields()) {
+					if (field.getKnownTypes().contains(nodeType)) {
+						try {
+							// check if node exists
+							JsonNode root = mapper.readTree(event.getPayload());
+							if (root.path(field.getPath()) != null) {
+								lastEvent = EventSchema.builder()
+										.channel(schema.getChannel())
+										.field(field)
+										.build();
+
+								break;
+							}
+						} catch (IOException e) {
+							LOG.warn(e.getMessage());
+						}
+					}
+				}
+
+				// found?
+				if (lastEvent != null) {
+					break;
+				}
+			}
+
+			return ServiceResponseBuilder.<EventSchema>ok().withResult(lastEvent).build();
+
+		} catch (BusinessException e1) {
+
+			return ServiceResponseBuilder.<EventSchema>error().withMessage(e1.getLocalizedMessage()).build();
+
+		}
+
+	}
+
 }

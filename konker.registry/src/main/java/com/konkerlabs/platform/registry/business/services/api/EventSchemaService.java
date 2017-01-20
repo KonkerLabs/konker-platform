@@ -42,5 +42,6 @@ public interface EventSchemaService {
     ServiceResponse<List<String>> findKnownIncomingChannelsBy(Tenant tenant, String deviceGuid);
 	ServiceResponse<List<String>> findKnownIncomingMetricsBy(Tenant tenant, String deviceGuid, String channel,
 			JsonNodeType nodeType);
+	ServiceResponse<EventSchema> findLastIncomingBy(Tenant tenant, String deviceGuid, JsonNodeType nodeType);
 
 }
