@@ -1,5 +1,3 @@
-$.getScript( "resources/konker/scripts/math.min.js");
-
 function get_segments(data) {
     var segments = {};
     if (data.length > 1){

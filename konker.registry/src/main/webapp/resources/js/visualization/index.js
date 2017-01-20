@@ -1,5 +1,3 @@
-$.getScript( "resources/js/visualization/outlier.js");
-
 function loadCSV() {
 	$.ajax({
 		context : this,
