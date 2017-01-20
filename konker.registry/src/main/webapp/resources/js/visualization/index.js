@@ -12,6 +12,7 @@ $("<link/>", {
     href: "resources/konker/css/pretty-json.css"
 }).appendTo("head");
 $.getScript( "resources/konker/scripts/json.formatter.js");
+$.getScript( "resources/js/visualization/outlier.js");
 
 $('#exportCsv').click(function(e) {
 	loadCSV();
@@ -85,8 +86,10 @@ function findAndLoadDataChart() {
         			$('#exportCsv').removeClass('hide');
         		} 
         	}
-
-        	graphService.update($('#metrics select').val(),result);
+        	// Used to identify outliers
+            // var outliers = data_filter(result);
+            // graphService.update($('#metrics select').val(), outliers);
+            graphService.update($('#metrics select').val(), result);
         },
         complete : function() {
             $("div .loading-chart").hide();
@@ -191,3 +194,4 @@ function showElement(selector) {
 function hideElement(selector) {
     $(selector).hide();
 }
+
