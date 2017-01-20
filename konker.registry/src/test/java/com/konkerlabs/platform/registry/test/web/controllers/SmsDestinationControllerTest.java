@@ -42,6 +42,9 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.SmsDestinationService;
+import com.konkerlabs.platform.registry.config.CdnConfig;
+import com.konkerlabs.platform.registry.config.HotjarConfig;
+import com.konkerlabs.platform.registry.config.WebConfig;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
@@ -52,7 +55,8 @@ import com.konkerlabs.platform.registry.web.forms.SmsDestinationForm;
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
 @ContextConfiguration(classes = { WebMvcConfig.class, WebTestConfiguration.class, SecurityTestConfiguration.class,
-        SmsDestinationControllerTest.SmsDestinationTestContextConfig.class })
+        SmsDestinationControllerTest.SmsDestinationTestContextConfig.class, WebConfig.class, HotjarConfig.class,
+        CdnConfig.class})
 @ActiveProfiles("sms")
 public class SmsDestinationControllerTest extends WebLayerTestContext {
 

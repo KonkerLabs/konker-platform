@@ -6,11 +6,11 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
@@ -43,8 +43,9 @@ import com.konkerlabs.platform.registry.business.model.validation.CommonValidati
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.config.PubServerConfig;
 import com.konkerlabs.platform.registry.web.forms.DeviceRegistrationForm;
-import com.typesafe.config.ConfigFactory;
 
 @Controller
 @Scope("request")
@@ -83,14 +84,16 @@ public class DeviceController implements ApplicationContextAware {
     
     private Tenant tenant;
     private User user;
+    private PubServerConfig pubServerConfig;
     
     @Autowired
-    public DeviceController(DeviceRegisterService deviceRegisterService, DeviceEventService deviceEventService, EventSchemaService eventSchemaService, Tenant tenant, User user) {
+    public DeviceController(DeviceRegisterService deviceRegisterService, DeviceEventService deviceEventService, EventSchemaService eventSchemaService, Tenant tenant, User user, PubServerConfig pubServerConfig) {
         this.deviceRegisterService = deviceRegisterService;
         this.deviceEventService = deviceEventService;
         this.eventSchemaService = eventSchemaService;
         this.tenant = tenant;
         this.user = user;
+        this.pubServerConfig = pubServerConfig;
     }
 
     @RequestMapping
@@ -307,7 +310,7 @@ public class DeviceController implements ApplicationContextAware {
                     .addObject("deviceGuid", device.getDeviceId())
                     .addObject("apiKey", device.getApiKey())
                     .addObject("device", device)
-                    .addObject("pubServerInfo", ConfigFactory.load().getConfig("pubServer"));
+                    .addObject("pubServerInfo", pubServerConfig);
 
 
         } else {
@@ -334,7 +337,7 @@ public class DeviceController implements ApplicationContextAware {
                     .addObject("action", MessageFormat.format("/devices/{0}/password", deviceGuid))
                     .addObject("password", credentials.getPassword())
                     .addObject("device", credentials.getDevice())
-                    .addObject("pubServerInfo", ConfigFactory.load().getConfig("pubServer"))
+                    .addObject("pubServerInfo", pubServerConfig)
                     .addObject("qrcode", base64QrCode.getResult());
         } else {
             List<String> messages = serviceResponse.getResponseMessages()

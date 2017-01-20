@@ -37,6 +37,7 @@ import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.services.JedisTaskService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.config.WebConfig;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.integration.endpoints.DeviceEventRestEndpoint;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
@@ -48,7 +49,7 @@ import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
 @ContextConfiguration(classes = {WebMvcConfig.class, WebTestConfiguration.class, SecurityTestConfiguration.class,
-        DeviceEventRestEndpointTest.DeviceEventRestEndpointTestContextConfig.class})
+        DeviceEventRestEndpointTest.DeviceEventRestEndpointTestContextConfig.class, WebConfig.class})
 public class DeviceEventRestEndpointTest extends WebLayerTestContext {
 
     @Rule

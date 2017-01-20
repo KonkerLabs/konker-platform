@@ -20,11 +20,26 @@ import com.mongodb.MongoClient;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
+import lombok.Data;
+
 @Configuration
 @EnableMongoRepositories(basePackages = "com.konkerlabs.platform.registry.audit.repositories", mongoTemplateRef = "mongoAuditTemplate")
+@Data
 public class MongoAuditConfig extends AbstractMongoConfiguration {
 
-	public static final Config mongoAuditConfig = ConfigFactory.load().getConfig("mongoAudit");
+	private String hostname;
+    private Integer port;
+    
+    public MongoAuditConfig() {
+		if (ConfigFactory.load().hasPath("mongoAudit")) {
+			Config config = ConfigFactory.load().getConfig("mongoAudit");
+			setHostname(config.getString("hostname"));
+			setPort(config.getInt("port"));
+		} else {
+			setHostname("localhost");
+			setPort(27017);
+		}
+	}
 
     public static final List<Converter<?,?>> converters = Arrays.asList(
         new Converter[] {
@@ -46,8 +61,8 @@ public class MongoAuditConfig extends AbstractMongoConfiguration {
 
 	@Override
     public Mongo mongo() throws Exception {
-		return new MongoClient(mongoAuditConfig.getString("hostname"),
-                Integer.valueOf(mongoAuditConfig.getInt("port"))
+		return new MongoClient(getHostname(),
+                getPort()
         );
     }
 

@@ -37,6 +37,7 @@ import com.konkerlabs.platform.registry.business.repositories.events.EventReposi
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.config.PubServerConfig;
 import com.konkerlabs.platform.registry.web.controllers.DeviceController;
 import com.konkerlabs.platform.security.exceptions.SecurityException;
 import com.konkerlabs.platform.security.managers.PasswordManager;
@@ -61,7 +62,8 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
     private Logger LOGGER = LoggerFactory.getLogger(DeviceRegisterServiceImpl.class);
 
-    public Config publicServerConfig = ConfigFactory.load().getConfig("pubServer");
+    @Autowired
+    private PubServerConfig pubServerConfig;
 
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
@@ -350,13 +352,13 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
             StringBuilder content = new StringBuilder();
             content.append("{\"user\":\"" + credentials.getDevice().getUsername());
             content.append("\",\"pass\":\"" + credentials.getPassword());
-            content.append("\",\"host\":\"" + publicServerConfig.getString("httpHostname"));
-            content.append("\",\"ctx\":\"" + publicServerConfig.getString("httpCtx"));
-            content.append("\",\"host-mqtt\":\"" + publicServerConfig.getString("mqttHostName"));
-            content.append("\",\"http\":\"" + publicServerConfig.getString("httpPort"));
-            content.append("\",\"https\":\"" + publicServerConfig.getString("httpsPort"));
-            content.append("\",\"mqtt\":\"" + publicServerConfig.getString("mqttPort"));
-            content.append("\",\"mqtt-tls\":\"" + publicServerConfig.getString("mqttTlsPort"));
+            content.append("\",\"host\":\"" + pubServerConfig.getHttpHostname());
+            content.append("\",\"ctx\":\"" + pubServerConfig.getHttpCtx());
+            content.append("\",\"host-mqtt\":\"" + pubServerConfig.getMqttHostName());
+            content.append("\",\"http\":\"" + pubServerConfig.getHttpPort());
+            content.append("\",\"https\":\"" + pubServerConfig.getHttpsPort());
+            content.append("\",\"mqtt\":\"" + pubServerConfig.getMqttPort());
+            content.append("\",\"mqtt-tls\":\"" + pubServerConfig.getMqttTlsPort());
             content.append("\",\"pub\":\"pub/"+ credentials.getDevice().getUsername());
             content.append("\",\"sub\":\"sub/"+ credentials.getDevice().getUsername() +"\"}");
 

@@ -1,22 +1,5 @@
 package com.konkerlabs.platform.registry.business.repositories.upload;
 
-import com.amazonaws.AmazonServiceException;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.*;
-import com.amazonaws.util.Base64;
-import com.amazonaws.util.IOUtils;
-import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
-import com.konkerlabs.platform.registry.business.services.api.UploadService;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
-import org.apache.commons.io.CopyUtils;
-import org.apache.commons.io.FileUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
-
-import javax.annotation.PostConstruct;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,6 +7,28 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+
+import javax.annotation.PostConstruct;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.DeleteObjectRequest;
+import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.util.Base64;
+import com.amazonaws.util.IOUtils;
+import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
+import com.konkerlabs.platform.registry.business.services.api.UploadService;
+import com.konkerlabs.platform.registry.config.CdnConfig;
+import com.typesafe.config.Config;
 
 @Repository
 public class AwsUploadRepository implements UploadRepository {
@@ -34,15 +39,12 @@ public class AwsUploadRepository implements UploadRepository {
     @Autowired
     private S3Credentials credentials;
 
-    private static Config config = ConfigFactory.load().getConfig("cdn");
+    @Autowired
+    private CdnConfig cdnConfig;
 
     private AmazonS3 s3Client;
 
     public AwsUploadRepository() {
-    }
-
-    public AwsUploadRepository(Config config) {
-        this.config = config;
     }
 
     @PostConstruct
@@ -63,14 +65,14 @@ public class AwsUploadRepository implements UploadRepository {
     }
 
     private void validateFileSize(Integer size) throws BusinessException {
-        Integer maxSize = config.getInt("max-size");
+        Integer maxSize = cdnConfig.getMaxSize();
         if (size > maxSize) {
             throw new BusinessException(Validations.INVALID_FILE_SIZE.getCode());
         }
     }
 
     private void validateFileType(String type) throws BusinessException {
-        String fileTypes = config.getString("file-types");
+        String fileTypes = cdnConfig.getFileTypes();
         List<String> types = null;
         if (Optional.ofNullable(fileTypes).isPresent()) {
             if (fileTypes.contains(",")) {
@@ -100,7 +102,7 @@ public class AwsUploadRepository implements UploadRepository {
         client.getClient(credentials.getCredentials());
         try {
             s3Client.deleteObject(
-                    new DeleteObjectRequest(config.getString("name"), path)
+                    new DeleteObjectRequest(cdnConfig.getName(), path)
             );
         } catch (AmazonServiceException e) {
             throw new BusinessException(e.getMessage());
@@ -131,7 +133,7 @@ public class AwsUploadRepository implements UploadRepository {
             }
 
             S3Object object = s3Client.getObject(
-                    new GetObjectRequest(config.getString("name"), filePath));
+                    new GetObjectRequest(cdnConfig.getName(), filePath));
             return object.getObjectContent();
         } catch (AmazonServiceException e) {
             throw new BusinessException(Validations.INVALID_S3_BUCKET_CREDENTIALS.getCode());
@@ -155,7 +157,7 @@ public class AwsUploadRepository implements UploadRepository {
                 byte[] bytes = IOUtils.toByteArray(is);
                 s3Client.putObject(
                         new PutObjectRequest(
-                                config.getString("name"),
+                        		cdnConfig.getName(),
                                 fileName + "." + sufix,
                                 new ByteArrayInputStream(bytes),
                                 S3ObjectMetadata.getObjectMetadata(bytes)
@@ -188,12 +190,13 @@ class S3Credentials {
     private static String key;
     private static String secret;
 
-    private Config config = ConfigFactory.load().getConfig("cdn");
+    @Autowired
+    private CdnConfig cdnConfig;
 
     @PostConstruct
     public void init() {
-        this.key = config.getString("key");
-        this.secret = config.getString("secret");
+        this.key = cdnConfig.getKey();
+        this.secret = cdnConfig.getSecret();
     }
 
     public BasicAWSCredentials getCredentials() {

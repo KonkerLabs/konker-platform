@@ -1,26 +1,16 @@
 package com.konkerlabs.platform.registry.config;
 
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
-import lombok.Builder;
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPubSub;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import java.time.Instant;
-import java.util.concurrent.Future;
-import java.util.function.Function;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+
+import lombok.Data;
 
 /**
  * Factory for Redis connections
@@ -30,15 +20,29 @@ import java.util.function.Function;
  * @since 2016-09-23
  */
 @Configuration
+@Data
 public class RedisConfig {
 
-    public static Config config = ConfigFactory.load().getConfig("redis");
+//    public static Config config = ConfigFactory.load().getConfig("redis");
+	private String host;
+	private Integer port;
+    
+    public RedisConfig() {
+    	if (ConfigFactory.load().hasPath("redis")) {
+    		Config config = ConfigFactory.load().getConfig("redis");
+    		setHost(config.getString("master.host"));
+    		setPort(config.getInt("master.port"));
+    	} else {
+    		setHost("localhost");
+    		setPort(6379);
+    	}
+    }
 
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
         JedisConnectionFactory cf = new JedisConnectionFactory();
-        cf.setHostName(config.getString("master.host"));
-        cf.setPort(config.getInt("master.port"));
+        cf.setHostName(getHost());
+        cf.setPort(getPort());
         cf.afterPropertiesSet();
         return cf;
     }

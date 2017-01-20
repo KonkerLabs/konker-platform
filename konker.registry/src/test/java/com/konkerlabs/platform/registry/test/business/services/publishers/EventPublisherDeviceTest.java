@@ -11,6 +11,7 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterServ
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.publishers.EventPublisherDevice;
 import com.konkerlabs.platform.registry.business.services.publishers.api.EventPublisher;
+import com.konkerlabs.platform.registry.config.PubServerConfig;
 import com.konkerlabs.platform.registry.integration.gateways.MqttMessageGateway;
 import com.konkerlabs.platform.registry.test.base.*;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
@@ -44,7 +45,8 @@ import static org.hamcrest.MatcherAssert.*;
         MongoTestConfiguration.class,
         BusinessTestConfiguration.class,
         SolrTestConfiguration.class,
-        RedisTestConfiguration.class
+        RedisTestConfiguration.class,
+        PubServerConfig.class
 })
 @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json"})
 public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
