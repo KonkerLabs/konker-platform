@@ -49,7 +49,7 @@ class KonkerDsl(object):
         sub_parser = parser.add_subparsers(title='subcommands', description='valid subcommands', help='Additional help')
 
         sub_parser_upgrade = sub_parser.add_parser('upgrade', description='upgrade command', help='Database upgrade')
-        sub_parser_upgrade.add_argument('version', help='Database version', type=str)
+        sub_parser_upgrade.add_argument('--version', help='Database version', type=str)
         sub_parser_upgrade.set_defaults(func=upgrade_version)
         args = parser.parse_args(sys.argv[2:])
         args.func(args)
