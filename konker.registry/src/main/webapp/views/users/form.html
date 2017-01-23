@@ -257,7 +257,7 @@
                             <select data-th-field="*{language}"
                                     id="language"
                                     name="language"
-                                    class="col-md-12"
+                                    class="form-control col-md-12"
                                     data-th-placeholder="#{users.form.preferences.language.placeholder}">
                                 <option data-th-each="language: ${languages}" data-th-text="#{${language.code}}"
                                         data-th-value="${language}"
@@ -271,7 +271,7 @@
                             <select data-th-field="*{zoneId}"
                                     id="timezone"
                                     name="timezone"
-                                    class="col-md-12"
+                                    class="form-control col-md-12"
                                     data-th-placeholder="#{users.form.preferences.timezone.placeholder}">
                                 <option data-th-each="timezone: ${timezones}" data-th-text="#{${timezone.code}}"
                                         data-th-value="${{timezone}}"></option>
@@ -284,7 +284,7 @@
                             <select data-th-field="*{dateFormat}"
                                     id="dateformat"
                                     name="dateformat"
-                                    class="col-md-12"
+                                    class="form-control col-md-12"
                                     data-th-placeholder="#{users.form.preferences.dateformat.placeholder}">
                                 <option data-th-each="dateformat: ${dateformats}" data-th-text="#{${dateformat.code}}"
                                         data-th-value="${dateformat}"></option>
@@ -340,7 +340,7 @@
                                    for="loglevel"></label>
                             <span style="display: block;">
                                 <select data-th-field="*{logLevel}"
-                                        class="col-md-10"
+                                        class="form-control col-md-10"
                                         id="loglevel"
                                         name="loglevel"
                                         data-th-placeholder="#{users.form.tenantconfig.loglevel.placeholder}">
