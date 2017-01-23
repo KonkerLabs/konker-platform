@@ -1,11 +1,13 @@
 package com.konkerlabs.platform.registry.audit;
 
+import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEvent;
 import ch.qos.logback.core.AppenderBase;
 import com.konkerlabs.platform.registry.audit.repositories.TenantLogRepository;
 import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
 import org.slf4j.MDC;
+import org.springframework.util.StringUtils;
 
 import java.net.URI;
 import java.sql.Date;
@@ -22,14 +24,14 @@ public class KonkerLoggerAppender extends AppenderBase<ILoggingEvent> {
         this.repository = repository;
     }
 
-    public KonkerLoggerAppender() {}
-
+    public KonkerLoggerAppender() {
+    }
 
 
     @Override
     public void start() {
         super.start();
-        if(repository == null){
+        if (repository == null) {
             try {
                 repository = TenantLogRepository.getInstance();
             } catch (Exception e) {
@@ -53,26 +55,34 @@ public class KonkerLoggerAppender extends AppenderBase<ILoggingEvent> {
 
     /**
      * Enrich log with tenant info
+     *
      * @param eventObject
      */
     private void enrich(ILoggingEvent eventObject) {
 
         if (eventObject != null && eventObject instanceof LoggingEvent) {
             if (eventObject.getArgumentArray() != null
-                    && eventObject.getArgumentArray().length > 1 ){
+                    && eventObject.getArgumentArray().length > 1) {
                 URI uri = null;
                 LogLevel logLevel = null;
-                for(Object item : eventObject.getArgumentArray()){
+                for (Object item : eventObject.getArgumentArray()) {
                     if (item instanceof URI && !((URI) item).getScheme().equals("http")) {
                         uri = (URI) item;
                     }
-                    if(item instanceof LogLevel){
+                    if (item instanceof LogLevel) {
                         logLevel = (LogLevel) item;
                     }
                 }
-                if(uri != null && logLevel != null && logLevel.getId().equals(eventObject.getLevel().levelStr)){
-                    MDC.put(CONTEXT, encodeDealer(uri));
-                    store(eventObject, getTenant(uri), eventObject.getFormattedMessage());
+                if (uri != null
+                        && logLevel != null
+                        && !StringUtils.isEmpty(logLevel.getId())
+                        && eventObject.getLevel() != null) {
+                    Level userLogLevel = Level.toLevel(logLevel.getId());
+                    Level eventLogLevel = eventObject.getLevel();
+                    if (eventLogLevel.isGreaterOrEqual(userLogLevel)) {
+                        MDC.put(CONTEXT, encodeDealer(uri));
+                        store(eventObject, getTenant(uri), eventObject.getFormattedMessage());
+                    }
                 }
             }
 
@@ -81,6 +91,7 @@ public class KonkerLoggerAppender extends AppenderBase<ILoggingEvent> {
 
     /**
      * Store log into datastore
+     *
      * @param event
      * @param tenantDomain
      * @param trace
@@ -102,6 +113,7 @@ public class KonkerLoggerAppender extends AppenderBase<ILoggingEvent> {
 
     /**
      * Return tentant info
+     *
      * @param dealer
      * @return tentantDomain
      */
@@ -111,6 +123,7 @@ public class KonkerLoggerAppender extends AppenderBase<ILoggingEvent> {
 
     /**
      * Return schema
+     *
      * @param dealer
      * @return entityName
      */

@@ -3,7 +3,7 @@ package com.konkerlabs.platform.registry.business.model.enumerations;
 public enum LogLevel {
 	
 	ALL("loglevels.all", "ALL"),
-	WARNING("loglevels.warning", "WARNING"),
+	WARNING("loglevels.warning", "WARN"),
 	INFO("loglevels.info", "INFO"),
 	DISABLED("loglevels.disabled", "DISABLED");
 

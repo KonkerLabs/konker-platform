@@ -55,7 +55,7 @@ public class UserServiceImpl implements UserService {
                 !Optional.ofNullable(user.getEmail()).isPresent()
                 || !user.getEmail().equals(fromStorage.getEmail())) {
 
-            LOG.debug(Validations.INVALID_USER_EMAIL.getCode(), user.getTenant().toURI(), user.getTenant().getLogLevel(), user);
+            LOG.debug("This user id is ivalid:" + (Optional.ofNullable(user.getEmail()).isPresent() ? user.getEmail() : "NULL"));
             return ServiceResponseBuilder.<User>error()
                     .withMessage(Validations.INVALID_USER_EMAIL.getCode())
                     .build();
@@ -65,7 +65,10 @@ public class UserServiceImpl implements UserService {
                 !Optional.ofNullable(newPassword).isPresent() ||
                 !Optional.ofNullable(newPasswordConfirmation).isPresent()) {
 
-            LOG.debug(Validations.INVALID_PASSWORD_CONFIRMATION.getCode(), user.getTenant().toURI(), user.getTenant().getLogLevel(), user);
+            LOG.debug("Invalid password confirmation",
+                    fromStorage.getTenant().toURI(),
+                    fromStorage.getTenant().getLogLevel(),
+                    fromStorage);
             return ServiceResponseBuilder.<User>error()
                     .withMessage(Validations.INVALID_PASSWORD_CONFIRMATION.getCode())
                     .build();
@@ -75,6 +78,9 @@ public class UserServiceImpl implements UserService {
             try {
                 validateOldPassword(oldPassword, fromStorage);
             } catch (BusinessException e) {
+                LOG.debug("Invalid current password",
+                        fromStorage.getTenant().toURI(),
+                        fromStorage.getTenant().getLogLevel());
                 return ServiceResponseBuilder.<User>error()
                         .withMessage(e.getMessage())
                         .build();
@@ -99,7 +105,10 @@ public class UserServiceImpl implements UserService {
         }
 
         if (!newPassword.equals(newPasswordConfirmation)) {
-            LOG.debug(Validations.INVALID_PASSWORD_CONFIRMATION.getCode(), user.getTenant().toURI(), user.getTenant().getLogLevel(), user);
+            LOG.debug("Invalid password confirmation on user update",
+                    fromStorage.getTenant().toURI(),
+                    fromStorage.getTenant().getLogLevel(),
+                    fromStorage);
 
             return ServiceResponseBuilder.<User>error()
                     .withMessage(Validations.INVALID_PASSWORD_CONFIRMATION.getCode())
@@ -107,7 +116,9 @@ public class UserServiceImpl implements UserService {
         }
 
         if (!Optional.ofNullable(user).isPresent()) {
-            LOG.debug(Validations.INVALID_USER_DETAILS.getCode(), user.getTenant().toURI(), user.getTenant().getLogLevel(), user);
+            LOG.debug("Invalid user details on update",
+                    fromStorage.getTenant().toURI(),
+                    fromStorage.getTenant().getLogLevel(), fromStorage);
 
             return ServiceResponseBuilder.<User>error()
                     .withMessage(Validations.INVALID_USER_DETAILS.getCode())
@@ -115,28 +126,40 @@ public class UserServiceImpl implements UserService {
         }
 
         if (!Optional.ofNullable(user.getName()).isPresent()) {
-            LOG.debug(Validations.INVALID_USER_NAME.getCode(), user.getTenant().toURI(), user.getTenant().getLogLevel(), user);
+            LOG.debug("Invalid user name on update",
+                    fromStorage.getTenant().toURI(),
+                    fromStorage.getTenant().getLogLevel(),
+                    fromStorage);
 
             return ServiceResponseBuilder.<User>error()
                     .withMessage(Validations.INVALID_USER_NAME.getCode())
                     .build();
         }
         if (!Optional.ofNullable(user.getDateFormat()).isPresent()) {
-            LOG.debug(Validations.INVALID_USER_PREFERENCE_DATEFORMAT.getCode(), user.getTenant().toURI(), user.getTenant().getLogLevel(), user);
+            LOG.debug("Invalid date format preference update",
+                    fromStorage.getTenant().toURI(),
+                    fromStorage.getTenant().getLogLevel(),
+                    fromStorage);
 
             return ServiceResponseBuilder.<User>error()
                     .withMessage(Validations.INVALID_USER_PREFERENCE_DATEFORMAT.getCode())
                     .build();
         }
         if (!Optional.ofNullable(user.getZoneId()).isPresent()) {
-            LOG.debug(Validations.INVALID_USER_PREFERENCE_LOCALE.getCode(), user.getTenant().toURI(), user.getTenant().getLogLevel(), user);
+            LOG.debug("Invalid locale preference update",
+                    fromStorage.getTenant().toURI(),
+                    fromStorage.getTenant().getLogLevel(),
+                    fromStorage);
 
             return ServiceResponseBuilder.<User>error()
                     .withMessage(Validations.INVALID_USER_PREFERENCE_LOCALE.getCode())
                     .build();
         }
         if (!Optional.ofNullable(user.getLanguage()).isPresent()) {
-            LOG.debug(Validations.INVALID_USER_PREFERENCE_LANGUAGE.getCode(), user.getTenant().toURI(), user.getTenant().getLogLevel(), user);
+            LOG.debug("Invalid language preference update",
+                    fromStorage.getTenant().toURI(),
+                    fromStorage.getTenant().getLogLevel(),
+                    fromStorage);
 
             return ServiceResponseBuilder.<User>error()
                     .withMessage(Validations.INVALID_USER_PREFERENCE_LANGUAGE.getCode())
@@ -172,14 +195,14 @@ public class UserServiceImpl implements UserService {
                 try {
                     user.setPassword(encodePassword(password));
                 } catch (Exception e) {
-                    LOG.error("Error encoding password for user " + user.getEmail(), 
-                    		user.getTenant().toURI(), user.getTenant().getLogLevel(), user);
+                    LOG.error("Error encoding password for user " + fromStorage.getEmail(), 
+                    		fromStorage.getTenant().toURI(), fromStorage.getTenant().getLogLevel(), fromStorage);
                 }
             }
         });
 
         if (Optional.ofNullable(user.getPassword()).isPresent() && !user.getPassword().startsWith(PasswordManager.QUALIFIER)) {
-            LOG.debug(Errors.ERROR_SAVE_USER.getCode(), user.getTenant().toURI(), user.getTenant().getLogLevel(), user);
+            LOG.debug(Errors.ERROR_SAVE_USER.getCode(), fromStorage.getTenant().toURI(), fromStorage.getTenant().getLogLevel(), fromStorage);
 
             return ServiceResponseBuilder.<User>error()
                     .withMessage(Errors.ERROR_SAVE_USER.getCode()).build();
@@ -197,7 +220,9 @@ public class UserServiceImpl implements UserService {
 
             return ServiceResponseBuilder.<User>ok().withResult(fromStorage).build();
         } catch (Exception e) {
-            LOG.debug(Errors.ERROR_SAVE_USER.getCode(), user.getTenant().toURI(), user.getTenant().getLogLevel(), user);
+            LOG.debug("Error saving User update",
+                    fromStorage.getTenant().toURI(),
+                    fromStorage.getTenant().getLogLevel(), fromStorage);
             return ServiceResponseBuilder.<User>error()
                     .withMessage(Errors.ERROR_SAVE_USER.getCode()).build();
         }
