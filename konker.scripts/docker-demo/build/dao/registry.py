@@ -4,7 +4,7 @@ from bson import DBRef
 from pymongo import MongoClient
 
 from users.migrate_user_pwd import get_hashed_password
-from users.migrate_user_roles import update_user_roles
+from users.migrate_user_roles import update_user_roles, update_to_version_0_1
 
 db_version = "0.1"
 
@@ -119,6 +119,9 @@ def create_versioning_collection():
             }
         )
         print("Database version: " + db_version)
+
+    if db_version == "0.1":
+        update_to_version_0_1()
 
 
 def upgrade_version(args):
