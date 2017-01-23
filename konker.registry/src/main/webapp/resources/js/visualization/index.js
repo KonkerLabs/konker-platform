@@ -77,17 +77,11 @@ function findAndLoadDataChart() {
     });
 }
 
-function renderOutgoingFragment(scheme, url, element) {
-    var url = urlTo(url);
-
-    fetchViewFragment(scheme, url, element);
-}
-
 function beautifierJson() {
     formatJson($("#isJsonFormatted").is(':checked'));
 }
 
-function fetchViewFragment(scheme, fetchUrl, element) {
+function fetchMetricViewFragment(scheme, fetchUrl, element) {
     var loadSpinner;
     
     $.ajax({
@@ -98,21 +92,43 @@ function fetchViewFragment(scheme, fetchUrl, element) {
         timeout : 100000,
         data: scheme,
         beforeSend : function() {
-            //loadSpinner = setTimeout(function() {
-            //    $("div.ajax-loading").addClass('show');
-            //}, 50);
+            loadSpinner = setTimeout(function() {
+                $("div.ajax-loading").addClass('show');
+            }, 50);
         },
         success : function(data) {
             displayFragment(element, data);
             applyEventBindingsToMetric();
-            beautifierJson();
+            autoRefreshDataChart();
         },
         complete : function() {
-            //clearTimeout(loadSpinner);
-            //$("div.ajax-loading").removeClass('show');
+            clearTimeout(loadSpinner);
+            $("div.ajax-loading").removeClass('show');
         }
     });
 }
+
+function fetchEventsViewFragment(scheme, fetchUrl, element) {
+
+    $.ajax({
+        context : this,
+        type : "GET",
+        url : fetchUrl,
+        dataType: "html",
+        timeout : 100000,
+        data: scheme,
+        beforeSend : function() {
+        },
+        success : function(data) {
+            displayFragment(element, data);
+            beautifierJson();
+        },
+        complete : function() {
+        }
+    });
+    
+}
+
 
 function applyEventBindingsToMetric() {
 	$('#metric').change(function() {
@@ -124,19 +140,34 @@ function applyEventBindingsToMetric() {
 function applyEventBindingsToChannel() {
     $('#channel').change(function() {
         clearChartTableHideCsvButton();
-        renderOutgoingFragment($('#visualizationForm').serialize(), '/devices/visualization/loading/metrics/', '#div-metric');
-        autoRefreshDataChart();
+
+        var scheme = $('#visualizationForm').serialize();
+        var url = '/devices/visualization/loading/metrics/';
+        var element = '#div-metric';
+
+        fetchMetricViewFragment(scheme, urlTo(url), element);
+
     });
 }
 
 function loadIncomingEvents() {
     var deviceGuid = $('#deviceGuid').val();
-    renderOutgoingFragment($('#visualizationForm').serialize(), '/devices/' + deviceGuid + '/events/incoming', '#incoming');
+
+    var scheme = $('#visualizationForm').serialize();
+    var url = '/devices/' + deviceGuid + '/events/incoming';
+    var element = '#incoming';
+
+    fetchEventsViewFragment(scheme, urlTo(url), element);
 }
 
 function loadOutgoingEvents() {
     var deviceGuid = $('#deviceGuid').val();
-    renderOutgoingFragment($('#visualizationForm').serialize(), '/devices/' + deviceGuid + '/events/outgoing', '#outgoing');
+
+    var scheme = $('#visualizationForm').serialize();
+    var url = '/devices/' + deviceGuid + '/events/outgoing';
+    var element = '#outgoing';
+
+    fetchEventsViewFragment(scheme, urlTo(url), element);
 }
 
 function selectFirstOption(selectName) {
