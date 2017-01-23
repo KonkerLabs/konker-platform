@@ -8,6 +8,7 @@ def main():
         parser = argparse.ArgumentParser()
         parser.add_argument('user', type=str)
         parser.add_argument('password', type=str)
+        parser.add_argument('--org', type=str)
         args = parser.parse_args(["admin", "changeme"])
         create_user(args)
 
