@@ -55,7 +55,7 @@ public class UserServiceImpl implements UserService {
                 !Optional.ofNullable(user.getEmail()).isPresent()
                 || !user.getEmail().equals(fromStorage.getEmail())) {
 
-            LOG.debug(Validations.INVALID_USER_EMAIL.getCode(), fromStorage.getTenant().toURI(), fromStorage.getTenant().getLogLevel(), fromStorage);
+            LOG.debug("This user id is ivalid:" + (Optional.ofNullable(user.getEmail()).isPresent() ? user.getEmail() : "NULL"));
             return ServiceResponseBuilder.<User>error()
                     .withMessage(Validations.INVALID_USER_EMAIL.getCode())
                     .build();
