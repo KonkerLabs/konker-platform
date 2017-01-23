@@ -153,4 +153,25 @@ def upgrade_version(args):
         sys.exit(0)
 
 
+def create_users_collection():
+    db = db_connect()
+    if "users" not in db.collection_names():
+        db.create_collection("users")
+
+
+def users_count():
+    create_users_collection()
+    db = db_connect()
+
+    try:
+        number_of_users = db.users.find({}).count()
+    except Exception as e:
+        print(e)
+        sys.exit(1)
+
+    return number_of_users
+
+
+
+
 

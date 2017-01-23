@@ -45,5 +45,5 @@ redis-server &
 #Set database version
 konker database upgrade 0.1 &
 #Set default user
-konker user create admin changeme &
+populate_users &
 exec "$@"
