@@ -1,12 +1,8 @@
 package com.konkerlabs.platform.registry.audit;
 
-
-import org.slf4j.ILoggerFactory;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.helpers.NOPLoggerFactory;
 import org.slf4j.helpers.SubstituteLogger;
-import org.slf4j.helpers.SubstituteLoggerFactory;
 import org.slf4j.helpers.Util;
 import org.slf4j.impl.StaticLoggerBinder;
 
@@ -227,7 +223,6 @@ public final class KonkerLoggerFactory implements IKonkerLoggerFactory {
 
     public static IKonkerLoggerFactory getILoggerFactory() {
         if(INITIALIZATION_STATE == 0) {
-            Class var0 = KonkerLoggerFactory.class;
             synchronized(KonkerLoggerFactory.class) {
                 if(INITIALIZATION_STATE == 0) {
                     INITIALIZATION_STATE = 1;

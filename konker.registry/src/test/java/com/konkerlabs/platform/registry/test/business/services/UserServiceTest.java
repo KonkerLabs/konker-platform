@@ -9,6 +9,8 @@ import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.UserRepository;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.UserService;
+import com.konkerlabs.platform.registry.config.CdnConfig;
+import com.konkerlabs.platform.registry.config.PasswordUserConfig;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
@@ -27,7 +29,9 @@ import static com.konkerlabs.platform.registry.test.base.matchers.ServiceRespons
 @ContextConfiguration(classes = {
         MongoTestConfiguration.class,
         BusinessTestConfiguration.class,
-        RedisTestConfiguration.class
+        RedisTestConfiguration.class,
+        CdnConfig.class,
+        PasswordUserConfig.class
 })
 @UsingDataSet(locations = {
         "/fixtures/tenants.json",

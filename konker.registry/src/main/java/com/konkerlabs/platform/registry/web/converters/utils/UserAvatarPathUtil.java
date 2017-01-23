@@ -8,8 +8,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.konkerlabs.platform.registry.business.model.User;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
+import com.konkerlabs.platform.registry.config.CdnConfig;
 
 import lombok.Data;
 
@@ -18,14 +17,12 @@ import lombok.Data;
 @Data
 public class UserAvatarPathUtil {
 	
-	private static Config config = ConfigFactory.load().getConfig("cdn");
-
 	private String absolutePath;
 	
 	@Autowired
-	public UserAvatarPathUtil(User user) {
-		if (config.getBoolean("enabled") && Optional.ofNullable(user.getAvatar()).isPresent()) {
-			absolutePath = config.getString("prefix") + "/" + config.getString("name") + "/";
+	public UserAvatarPathUtil(User user, CdnConfig cdnConfig) {
+		if (cdnConfig.isEnabled() && Optional.ofNullable(user.getAvatar()).isPresent()) {
+			absolutePath = cdnConfig.getPrefix() + "/" + cdnConfig.getName() + "/";
 			absolutePath = absolutePath.concat(user.getAvatar());
 		} else {
 			absolutePath = "/resources/konker/images/default-avatar.png";

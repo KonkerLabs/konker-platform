@@ -128,6 +128,7 @@ RUN apk add --update python && \
 #DSL for Instance Administration
 
 COPY build/__init__.py /usr/bin
+COPY build/populate_users.py /usr/bin
 COPY build/dsl.py /usr/bin
 COPY build/users/ /usr/bin/users
 COPY build/dao/ /usr/bin/dao
@@ -137,6 +138,7 @@ RUN chmod 777 /usr/bin/setup.py
 RUN python /usr/bin/setup.py install 
 RUN rm /usr/bin/setup.py
 RUN ln -s /usr/bin/dsl.py /usr/bin/konker
+RUN ln -s /usr/bin/populate_users.py /usr/bin/populate_users
 
 #RUN chmod 777 ~/populate_demo_data.py
 

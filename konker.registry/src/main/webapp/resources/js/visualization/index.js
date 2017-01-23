@@ -1,27 +1,8 @@
-$('.date').datetimepicker({
-	format: "DD/MM/YYYY HH:mm:ss"
-});
-
-$('button.btn-success').click(function() {
-	findAndLoadDataChart();
-});
-
-$("<link/>", {
-    rel: "stylesheet",
-    type: "text/css",
-    href: "resources/konker/css/pretty-json.css"
-}).appendTo("head");
-$.getScript( "resources/konker/scripts/json.formatter.js");
-
-$('#exportCsv').click(function(e) {
-	loadCSV();
-});
-
 function loadCSV() {
 	$.ajax({
 		context : this,
         type : "GET",
-        url : urlTo('/visualization/csv/download'),
+        url : urlTo('/devices/visualization/csv/download'),
         contentType: "application/json",
         dataType: "json",
         timeout : 100000,
@@ -39,15 +20,16 @@ function loadCSV() {
 }
 
 function autoRefreshDataChart() {
-    if (!$('#device').val() === false &&
-        !$('#channel').val() === false &&
+    if (!$('#channel').val() === false &&
         !$('#metric').val() === false) {
-        findAndLoadDataChart();		
+        findAndLoadDataChart();
+        loadIncomingEvents();
+        loadOutgoingEvents();
     }
 }
 
 function findAndLoadDataChart() {
-	var url = urlTo('/visualization/load/');
+	var url = urlTo('/devices/visualization/load/');
     $.ajax({
         context : this,
         type : "GET",
@@ -56,7 +38,7 @@ function findAndLoadDataChart() {
         timeout : 100000,
         data: $('#visualizationForm').serialize(),
         beforeSend : function() {
-            $("div .loading-chart").show();
+            $("img .loading-chart").removeClass('hide');
         },
         success : function(data) {
             var result;
@@ -72,48 +54,34 @@ function findAndLoadDataChart() {
         		$('#exportCsv').addClass('hide');
         	} else {
         		$('div .alert.alert-danger').addClass('hide');
-        		
-        		var tableData = "";
-        		$.each(result, function(index, value) {
-        			var json = value.payload;
-        			tableData = tableData + '<tr><td>'+value.timestampFormated+'</td><td class="json-data">'+json+'</td></tr>';
-        		});
-        		$("#data-event table tbody").html(tableData);
-        		formatJson($("#isJsonFormatted").attr("checked"));
-        		
+
         		if (result.length != 0) {
         			$('#exportCsv').removeClass('hide');
-        		} 
+                    $('#chart').removeClass('hide');
+                    $('#onlineRow').removeClass('hide');
+                    // Used to identify outliers
+                    // var outliers = data_filter(result);
+                    // graphService.update($('#metric option:selected').val(), outliers);
+                    graphService.update($('#metric option:selected').val(),result);
+                }
         	}
 
-        	graphService.update($('#metrics select').val(),result);
         },
         complete : function() {
-            $("div .loading-chart").hide();
+            $("div .loading-chart").addClass('hide');
+
+            if ($('.nv-noData').length) {
+                clearChartTableHideCsvButton();
+            }
         }
     });
 }
 
-var myInterval;
-$('#online').click(function() {
-	if ($(this).is(':checked')) {
-		$('.date input').attr('disabled', true);
-		
-		myInterval = setInterval(autoRefreshDataChart, 5000);
-	} else {
-		$('.date input').attr('disabled', false);
-		clearInterval(myInterval);
-	}
-});
-$('#online').click();
-
-function renderOutgoingFragment(scheme, url, element) {
-    var url = urlTo(url);
-
-    fetchViewFragment(scheme, url, element);
+function beautifierJson() {
+    formatJson($("#isJsonFormatted").is(':checked'));
 }
 
-function fetchViewFragment(scheme, fetchUrl, element) {
+function fetchMetricViewFragment(scheme, fetchUrl, element) {
     var loadSpinner;
     
     $.ajax({
@@ -130,8 +98,8 @@ function fetchViewFragment(scheme, fetchUrl, element) {
         },
         success : function(data) {
             displayFragment(element, data);
-            applyEventBindingsToChannel();
             applyEventBindingsToMetric();
+            autoRefreshDataChart();
         },
         complete : function() {
             clearTimeout(loadSpinner);
@@ -140,24 +108,66 @@ function fetchViewFragment(scheme, fetchUrl, element) {
     });
 }
 
-$('#device').change(function() {
-    renderOutgoingFragment($('#visualizationForm').serialize(), '/visualization/loading/channel/', '#div-channel');
-    clearMetricSelect();
-    clearChartTableHideCsvButton();
-});
+function fetchEventsViewFragment(scheme, fetchUrl, element) {
 
-function applyEventBindingsToChannel() {
-	$('#channel').change(function() {
-		renderOutgoingFragment($('#visualizationForm').serialize(), '/visualization/loading/metrics/', '#div-metric');
-		clearChartTableHideCsvButton();
-	});
-
+    $.ajax({
+        context : this,
+        type : "GET",
+        url : fetchUrl,
+        dataType: "html",
+        timeout : 100000,
+        data: scheme,
+        beforeSend : function() {
+        },
+        success : function(data) {
+            displayFragment(element, data);
+            beautifierJson();
+        },
+        complete : function() {
+        }
+    });
+    
 }
+
 
 function applyEventBindingsToMetric() {
 	$('#metric').change(function() {
+	    clearChartTableHideCsvButton();
 		findAndLoadDataChart();
 	});
+}
+
+function applyEventBindingsToChannel() {
+    $('#channel').change(function() {
+        clearChartTableHideCsvButton();
+
+        var scheme = $('#visualizationForm').serialize();
+        var url = '/devices/visualization/loading/metrics/';
+        var element = '#div-metric';
+
+        fetchMetricViewFragment(scheme, urlTo(url), element);
+
+    });
+}
+
+function loadIncomingEvents() {
+    var deviceGuid = $('#deviceGuid').val();
+
+    var scheme = $('#visualizationForm').serialize();
+    var url = '/devices/' + deviceGuid + '/events/incoming';
+    var element = '#incoming';
+
+    fetchEventsViewFragment(scheme, urlTo(url), element);
+}
+
+function loadOutgoingEvents() {
+    var deviceGuid = $('#deviceGuid').val();
+
+    var scheme = $('#visualizationForm').serialize();
+    var url = '/devices/' + deviceGuid + '/events/outgoing';
+    var element = '#outgoing';
+
+    fetchEventsViewFragment(scheme, urlTo(url), element);
 }
 
 function selectFirstOption(selectName) {
@@ -171,23 +181,60 @@ function selectFirstOption(selectName) {
 }
 
 function clearChartTableHideCsvButton() {
-	$('#chart svg').html("")
+    $('#chart').addClass('hide');
+	$('#chart svg').html("");
 	$("#data-event table tbody").html("");
 	$('#exportCsv').addClass('hide');
-}
-
-function clearMetricSelect() {
-	$('#metric').html('<option value="">Select an option...</option>');
+	$('#onlineRow').addClass('hide');
 }
 
 function displayFragment(element, data) {
     $(element).html(data);
 }
 
-function showElement(selector) {
-    $(selector).show();
+var chartRefreshService = {
+    myInterval : null,
+    processOnlineClick : function() {
+        if ($('#online').is(':checked')) {
+            $('input.date').attr('disabled', true);
+            $('#updateChartBtn').addClass('hide');
+
+            autoRefreshDataChart();
+            myInterval = setInterval(autoRefreshDataChart, 5000);
+        } else {
+            $('input.date').attr('disabled', false);
+            $('#updateChartBtn').removeClass('hide');
+
+            clearInterval(myInterval);
+        }
+    }
 }
 
-function hideElement(selector) {
-    $(selector).hide();
-}
+
+$(document).ready(function() {
+
+    applyEventBindingsToChannel();
+    applyEventBindingsToMetric();
+    autoRefreshDataChart();
+
+    $('.date').datetimepicker({
+        format: "DD/MM/YYYY HH:mm:ss"
+    });
+
+    // CSV
+    $('#exportCsv').click(function(e) {
+        loadCSV();
+    });
+
+    // Auto update
+    chartRefreshService.processOnlineClick();
+
+    $('#online').click(function() {
+        chartRefreshService.processOnlineClick();
+    });
+
+    $('#updateChartBtn').click(function() {
+        autoRefreshDataChart();
+    });
+
+});

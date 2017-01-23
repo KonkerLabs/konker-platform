@@ -35,6 +35,9 @@ import com.konkerlabs.platform.security.managers.PasswordManager;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
+import lombok.Getter;
+import lombok.Setter;
+
 @Configuration
 @EnableWebSecurity
 @ComponentScan(basePackageClasses = TenantUserDetailsService.class)
@@ -44,16 +47,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private static final int MIN_DELAY_TIME = 100;
     private static final int MAX_DELAY_TIME = 250;
 
-    private static final Config securityConfig = ConfigFactory.load().getConfig("security");
-
     private static final Map<String, String> CORS_HEADERS = new HashMap<String, String>() {{
         put("Access-Control-Allow-Origin", "{Origin}");
         put("Access-Control-Allow-Methods", "GET,POST");
         put("Access-Control-Allow-Credentials", "true");
         put("Access-Control-Allow-Headers", "Authorization,Content-Type");
     }};
-
-
+    
     @Configuration
     @Order(1)
     public static class ApiWebSecurityConfig extends WebSecurityConfigurerAdapter {
@@ -120,6 +120,25 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         @Autowired
         @Qualifier("tenantUserDetails")
         private UserDetailsService userDetailsService;
+        
+        @Setter
+        @Getter
+        private String loginPage;
+        
+        @Setter
+        @Getter
+        private String successLoginUrl;
+        
+        public FormWebSecurityConfig() {
+        	Map<String, Object> defaultMap = new HashMap<>();
+        	defaultMap.put("security.loginPage", "/login");
+        	defaultMap.put("security.successLoginUrl", "/");
+        	Config defaultConf = ConfigFactory.parseMap(defaultMap);
+
+        	Config config = ConfigFactory.load().withFallback(defaultConf);
+        	setLoginPage(config.getString("security.loginPage"));
+        	setSuccessLoginUrl(config.getString("security.successLoginUrl"));
+        }
 
         @Override
         protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -149,9 +168,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             http.headers().frameOptions().sameOrigin().and().authorizeRequests()
                     .antMatchers("/resources/**", "/recoverpassword/**")
                     .permitAll().anyRequest().hasAuthority("LOGIN").and().formLogin()
-                    .loginPage(securityConfig.getString("loginPage"))
-                    .defaultSuccessUrl(securityConfig.getString("successLoginUrl")).permitAll().and().logout()
-                    .logoutSuccessUrl(securityConfig.getString("loginPage")).and().csrf().disable();
+                    .loginPage(getLoginPage())
+                    .defaultSuccessUrl(getSuccessLoginUrl()).permitAll().and().logout()
+                    .logoutSuccessUrl(getLoginPage()).and().csrf().disable();
         }
 
 

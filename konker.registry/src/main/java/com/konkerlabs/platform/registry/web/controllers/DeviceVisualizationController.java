@@ -15,6 +15,8 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -37,16 +39,14 @@ import com.konkerlabs.platform.registry.business.model.EventSchema;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.web.converters.InstantToStringConverter;
 import com.konkerlabs.platform.registry.web.csv.EventCsvDownload;
-import com.konkerlabs.platform.registry.web.forms.DeviceVisualizationForm;
 
 @Controller
 @Scope("request")
-@RequestMapping(value = "visualization")
+@RequestMapping(value = "devices/visualization")
 public class DeviceVisualizationController implements ApplicationContextAware {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(DeviceVisualizationController.class);
@@ -68,7 +68,6 @@ public class DeviceVisualizationController implements ApplicationContextAware {
         }
     }
     
-    private DeviceRegisterService deviceRegisterService;
     private DeviceEventService deviceEventService;
     private Tenant tenant;
     private ApplicationContext applicationContext;
@@ -82,9 +81,8 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     }
 
     @Autowired
-    public DeviceVisualizationController(DeviceRegisterService deviceRegisterService, DeviceEventService deviceEventService, Tenant tenant,
+    public DeviceVisualizationController(DeviceEventService deviceEventService, Tenant tenant,
     		EventSchemaService eventSchemaService, User user, InstantToStringConverter instantToStringConverter) {
-        this.deviceRegisterService = deviceRegisterService;
         this.deviceEventService = deviceEventService;
         this.tenant = tenant;
         this.eventSchemaService = eventSchemaService;
@@ -92,17 +90,10 @@ public class DeviceVisualizationController implements ApplicationContextAware {
         this.instantToStringConverter = instantToStringConverter;
     }
 
-    @RequestMapping
+	@RequestMapping(path = "/load/")
     @PreAuthorize("hasAuthority('VIEW_DEVICE_CHART')")
-    public ModelAndView index() {
-        List<Device> all = deviceRegisterService.findAll(tenant).getResult();
-        DeviceVisualizationForm deviceVisualizationForm = new DeviceVisualizationForm();
-		return new ModelAndView("visualization/index", "devices", all).addObject("visualization", deviceVisualizationForm);
-    }
-    
-    @RequestMapping(path = "/load/")
-    @PreAuthorize("hasAuthority('VIEW_DEVICE_CHART')")
-    public @ResponseBody List load(@RequestParam(required = false) String dateStart,
+    @SuppressWarnings("rawtypes")
+	public @ResponseBody List load(@RequestParam(required = false) String dateStart,
 				    		@RequestParam(required = false) String dateEnd,
 				    		@RequestParam(required = false) boolean online,
 				    		@RequestParam String deviceGuid,
@@ -128,13 +119,13 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     		return Arrays.asList(message);
     	}
     	
-    	if (!online && dateStart.isEmpty()) {
+    	if (!online && StringUtils.isEmpty(dateStart)) {
     		Map<String, String> message = new HashMap<>();
     		message.put("message", applicationContext.getMessage(Messages.DATESTART_IS_MANDATORY.getCode(),null,locale));
     		return Arrays.asList(message);
     	}
     	
-    	if (!online && dateEnd.isEmpty()) {
+    	if (!online && StringUtils.isEmpty(dateEnd)) {
     		Map<String, String> message = new HashMap<>();
     		message.put("message", applicationContext.getMessage(Messages.DATEEND_IS_MANDATORY.getCode(),null,locale));
     		return Arrays.asList(message);
@@ -177,24 +168,23 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     public ModelAndView loadChannels(@RequestParam String deviceGuid) {
     	ServiceResponse<List<String>> channels = eventSchemaService.findKnownIncomingChannelsBy(tenant, deviceGuid);
     	
-    	return new ModelAndView("visualization/channels", "channels", channels.getResult());
+    	return new ModelAndView("/devices/visualization/channels", "channels", channels.getResult());
     }
     
     @RequestMapping("/loading/metrics/")
     @PreAuthorize("hasAuthority('VIEW_DEVICE_CHART')")
     public ModelAndView loadMetrics(@RequestParam String deviceGuid, 
     								@RequestParam String channel) {
-    	ServiceResponse<EventSchema> metrics = eventSchemaService.findIncomingBy(deviceGuid, channel);
+    	ServiceResponse<List<String>> metricsResponse = eventSchemaService.findKnownIncomingMetricsBy(tenant, deviceGuid, channel, JsonNodeType.NUMBER);
     	
-    	if (metrics.getResult() == null) {
-    		return new ModelAndView("visualization/metrics", "metrics", new ArrayList<>());
+    	if (metricsResponse.getResult() == null) {
+    		return new ModelAndView("/devices/visualization/metrics", "metrics", new ArrayList<>());
     	}
     	
-    	List<String> listMetrics = metrics.getResult()
-				.getFields().stream()
-				.filter(schemaField -> schemaField.getKnownTypes().contains(JsonNodeType.NUMBER))
-				.map(m -> m.getPath()).collect(Collectors.toList());
-    	return new ModelAndView("visualization/metrics", "metrics", listMetrics);
+    	String defaultMetric = CollectionUtils.isEmpty(metricsResponse.getResult()) ? null : metricsResponse.getResult().get(0);
+    	
+    	return new ModelAndView("/devices/visualization/metrics", "metrics", metricsResponse.getResult())
+    			.addObject("defaultMetric", defaultMetric);
     }
     
     @RequestMapping(path = "/csv/download")
@@ -224,4 +214,5 @@ public class DeviceVisualizationController implements ApplicationContextAware {
 						e);
 		}
     }
+
 }

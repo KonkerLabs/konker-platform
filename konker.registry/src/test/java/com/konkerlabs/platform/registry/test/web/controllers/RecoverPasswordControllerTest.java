@@ -43,6 +43,10 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBui
 import com.konkerlabs.platform.registry.business.services.api.TokenService;
 import com.konkerlabs.platform.registry.business.services.api.UserService;
 import com.konkerlabs.platform.registry.business.services.api.UserService.Validations;
+import com.konkerlabs.platform.registry.config.EmailConfig;
+import com.konkerlabs.platform.registry.config.HotjarConfig;
+import com.konkerlabs.platform.registry.config.RecaptchaConfig;
+import com.konkerlabs.platform.registry.config.WebConfig;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
@@ -55,7 +59,11 @@ import com.konkerlabs.platform.registry.web.controllers.RecoverPasswordControlle
         WebMvcConfig.class,
         WebTestConfiguration.class,
         SecurityTestConfiguration.class,
-        RecoverPasswordControllerTest.RecoverTestContextConfig.class
+        RecoverPasswordControllerTest.RecoverTestContextConfig.class, 
+        WebConfig.class,
+        RecaptchaConfig.class,
+        EmailConfig.class, 
+        HotjarConfig.class
 })
 @ActiveProfiles("email")
 public class RecoverPasswordControllerTest extends WebLayerTestContext {
@@ -122,6 +130,10 @@ public class RecoverPasswordControllerTest extends WebLayerTestContext {
     
     @Test
     public void shouldReturnFalseIfEmailInvalid() throws Exception {
+    	when(captchaService.validateCaptcha(anyString(), anyString(), anyString()))
+        .thenReturn(ServiceResponseBuilder.<Boolean>ok()
+                .withResult(Boolean.TRUE).build());
+
     	when(userService.findByEmail(USER_EMAIL_INVALID))
     		.thenReturn(ServiceResponseBuilder.<User>error()
     		.withResult(null).build());

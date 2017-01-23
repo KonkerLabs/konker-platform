@@ -35,6 +35,7 @@ import com.konkerlabs.platform.registry.business.repositories.UserRepository;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.UserNotificationService;
 import com.konkerlabs.platform.registry.business.services.api.UserNotificationService.Validations;
+import com.konkerlabs.platform.registry.config.EmailConfig;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
@@ -45,7 +46,7 @@ import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(
         classes = { MongoTestConfiguration.class, BusinessTestConfiguration.class, RedisTestConfiguration.class,
-                SpringMailTestConfiguration.class })
+                SpringMailTestConfiguration.class, EmailConfig.class })
 @UsingDataSet(locations = { "/fixtures/users.json", "/fixtures/userNotifications.json" })
 @ActiveProfiles("email")
 public class UserNotificationServiceTest extends BusinessLayerTestSupport {

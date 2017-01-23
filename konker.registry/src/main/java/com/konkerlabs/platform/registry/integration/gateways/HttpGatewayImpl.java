@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.integration.gateways;
 
+import com.konkerlabs.platform.registry.config.IntegrationConfig;
 import com.konkerlabs.platform.registry.integration.exceptions.IntegrationException;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -26,8 +27,10 @@ import static java.text.MessageFormat.format;
 public class HttpGatewayImpl implements HttpGateway {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpGatewayImpl.class);
-    private static Config config = ConfigFactory.load().getConfig("integration");
 
+    @Autowired
+    private IntegrationConfig integrationConfig;
+    
     @Autowired
     private RestTemplate restTemplate;
 
@@ -106,7 +109,7 @@ public class HttpGatewayImpl implements HttpGateway {
         Integer clientTimeout =
                 Optional.ofNullable(timeout).isPresent() ?
                         timeout.get() :
-                        Integer.parseInt(config.getObjectList("timeout").get(0).get("default").render());
+                        integrationConfig.getTimeoutDefault();
 
         Optional.ofNullable(restTemplate.getRequestFactory()).ifPresent(item -> {
             ((SimpleClientHttpRequestFactory) item).setReadTimeout(clientTimeout);

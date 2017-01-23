@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.test.integration.gateways;
 
+import com.konkerlabs.platform.registry.config.IntegrationConfig;
 import com.konkerlabs.platform.registry.integration.exceptions.IntegrationException;
 import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
 import com.konkerlabs.platform.registry.test.base.IntegrationLayerTestContext;
@@ -28,7 +29,8 @@ import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
-    IntegrationLayerTestContext.class
+    IntegrationLayerTestContext.class,
+    IntegrationConfig.class
 })
 public class HttpGatewayTest {
 

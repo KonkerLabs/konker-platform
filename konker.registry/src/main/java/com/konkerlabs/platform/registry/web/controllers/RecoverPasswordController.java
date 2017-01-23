@@ -40,9 +40,9 @@ import com.konkerlabs.platform.registry.business.services.api.EmailService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.TokenService;
 import com.konkerlabs.platform.registry.business.services.api.UserService;
+import com.konkerlabs.platform.registry.config.EmailConfig;
+import com.konkerlabs.platform.registry.config.RecaptchaConfig;
 import com.konkerlabs.platform.registry.web.forms.UserForm;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
 
 
 @Controller()
@@ -52,13 +52,6 @@ import com.typesafe.config.ConfigFactory;
 public class RecoverPasswordController implements ApplicationContextAware {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RecoverPasswordController.class);
-
-    private static Config config = ConfigFactory.load().getConfig("email");
-    private static final Config recaptchaConfig = ConfigFactory.load().getConfig("recaptcha");
-    private static final String secretKey = recaptchaConfig.getString("secretKey");
-    private static final String siteKey = recaptchaConfig.getString("siteKey");
-    private static final String host = recaptchaConfig.getString("host");
-    private static final String URL = config.getString("baseurl");
 
     public enum Messages {
         USER_DOES_NOT_EXIST("controller.recover.user.does.not.exist"),
@@ -87,13 +80,19 @@ public class RecoverPasswordController implements ApplicationContextAware {
 
     @Autowired
     private CaptchaService captchaService;
+    
+    @Autowired
+    private RecaptchaConfig recaptchaConfig;
+    
+    @Autowired
+    private EmailConfig emailConfig;
 
     private ApplicationContext applicationContext;
 
     @RequestMapping(method = RequestMethod.GET)
     public ModelAndView recoveryPasswordPage() {
         return new ModelAndView("recover-password")
-                .addObject("siteKey", siteKey);
+                .addObject("siteKey", recaptchaConfig.getSiteKey());
     }
 
     @SuppressWarnings("unchecked")
@@ -103,9 +102,11 @@ public class RecoverPasswordController implements ApplicationContextAware {
 		Boolean isValidCaptcha = Boolean.FALSE;
     	try {
     		requestMap = new ObjectMapper().readValue(body, HashMap.class);
-    		String recaptchaResponse = (String) requestMap.get("recaptcha");
-			isValidCaptcha = captchaService.validateCaptcha(
-    				secretKey, recaptchaResponse , host).getResult();
+    		String recaptcha = (String) requestMap.get("recaptcha");
+    		if (!recaptcha.isEmpty()) {
+				isValidCaptcha = captchaService.validateCaptcha(
+						recaptchaConfig.getSecretKey(), recaptcha , recaptchaConfig.getHost()).getResult();
+			}
     	} catch (IOException e) {
     		e.printStackTrace();
     	}
@@ -126,10 +127,10 @@ public class RecoverPasswordController implements ApplicationContextAware {
     			ServiceResponse<String> responseToken = tokenService.generateToken(TokenService.Purpose.RESET_PASSWORD, user, Duration.ofMinutes(15));
 
     			Map<String, Object> templateParam = new HashMap<>();
-    			templateParam.put("link", URL.concat("recoverpassword/").concat(responseToken.getResult()));
+    			templateParam.put("link", emailConfig.getBaseurl().concat("recoverpassword/").concat(responseToken.getResult()));
     			templateParam.put("name", user.getName());
 
-    			emailService.send(config.getString("sender"),
+    			emailService.send(emailConfig.getSender(),
     					Collections.singletonList(user),
     					Collections.emptyList(),
     					applicationContext.getMessage(Messages.USER_EMAIL_SUBJECT.getCode(), null, user.getLanguage().getLocale()),
@@ -138,7 +139,7 @@ public class RecoverPasswordController implements ApplicationContextAware {
     					user.getLanguage().getLocale());
     			return Boolean.TRUE;
     		} catch (MessagingException e) {
-    			LOGGER.equals(e);
+    			LOGGER.warn(e.getLocalizedMessage());
     			return Boolean.FALSE;
     		}
     	} else {

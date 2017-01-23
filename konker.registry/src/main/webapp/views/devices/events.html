@@ -1,6 +1,26 @@
 <!DOCTYPE html>
-<html data-layout-decorate="layouts/default">
+<html data-layout-decorate="layouts/default" xmlns:th="http://www.thymeleaf.org">
 <head>
+    <link data-th-href="@{/resources/konker/css/nv.d3.css}" rel="stylesheet" />
+	<link data-th-href="@{/resources/konker/css/toggle-switch.css}" rel="stylesheet" />
+    <link data-th-href="@{/resources/konker/css/pretty-json.css}" type="text/css" rel="stylesheet"/>
+    <link data-th-href="@{/resources/bootstrap/css/bootstrap-datetimepicker.min.css}" type="text/css" rel="stylesheet"/>
+
+    <style>
+        svg {
+            display: block;
+        }
+        #chart, svg {
+            margin: 0px;
+            padding: 0px;
+            height: 400px;
+            width: 95%;
+        }
+        .loading-chart {
+            height: 32px;
+            width: 32px;
+        }
+    </style>
 </head>
 <body>
 	<div data-layout-fragment="content">
@@ -8,23 +28,117 @@
             <div>
                 <h1 class="page-title" data-th-text="#{devices.events.legend}"></h1>
             </div>
-			<div class="form-group">
-				<label class="col-sm-1 control-label" for="deviceId"
+            
+            <div class="alert alert-danger hide" role="alert">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <ul>
+                <li></li>
+                </ul>
+            </div>
+                
+        	<div class="row form-group">
+				<label class="col-sm-2 control-label" for="deviceId"
 					data-th-text="#{devices.events.id}"></label>
-				<div class="col-sm-4">
-					<input type="text" data-th-value="${device.deviceId}"
-						class="form-control" id="deviceId" name="deviceId" />
-				</div>
-				<label class="col-sm-1 control-label" data-th-text="#{json.format.messages}"
-					   style="width: 25%;"></label>
-				<div class="col-sm-3">
-					<label class="switch">
-						<input type="checkbox" id="isJsonFormatted" name="isJsonFormatted"/>
-						<div class="slider round"></div>
-					</label>
+				<div class="col-sm-5">
+					<input data-th-value="${device.deviceId}" disabled="disabled"></input>
 				</div>
 			</div>
-			<ul class="nav nav-tabs nav-justified col-sm-12" >
+
+            <form id="visualizationForm">
+
+                <input type="hidden" id="deviceGuid" name="deviceGuid" data-th-value="${device.guid}" />
+                <input type="hidden" id="dataResult">
+
+                <div id="filter">
+
+                    <div class="row form-group">
+
+                        <label class="col-sm-2 control-label"
+                               data-th-text="#{visualization.index.date.start}"></label>
+                        <div class="col-sm-3">
+                            <div class="input-group" style="float: left; width: 215px;">
+                                <input type="text" class="form-control date" id="dateStart" name="dateStart"/>
+                                <span class="input-group-addon">
+                                    <span class="glyphicon glyphicon-calendar"></span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <label class="col-sm-2 control-label"
+                               data-th-text="#{visualization.index.date.end}"></label>
+                        <div class="col-sm-3">
+                            <div class="input-group" style="float: left; width: 215px;">
+                                <input type="text" class="form-control date" id="dateEnd" name="dateEnd"/>
+                                <span class="input-group-addon">
+                                    <span class="glyphicon glyphicon-calendar"></span>
+                                </span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="row form-group">
+                        <label class="col-sm-2 control-label"
+                            data-th-text="#{visualization.index.channel}"
+                            for="channel"></label>
+                        <div id="div-channel" class="col-sm-4">
+                            <div data-th-fragment="channels" id="channels">
+                                <select class="form-control col-sm-12" id="channel" name="channel" data-th-value="${defaultChannel}">
+                                    <option data-th-value="${''}"
+                                        data-th-text="#{visualization.index.select.empty}"></option>
+                                    <option
+                                        data-th-each="channel : ${channels}"
+                                        data-th-selected="${channel eq defaultChannel}"
+                                        data-th-value="${channel}"
+                                        data-th-text="${channel}"></option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+    
+    	            <div class="row form-group">
+    	                <label class="col-sm-2 control-label"
+    	                       data-th-text="#{visualization.index.metric}"
+    	                       for="metric"></label>
+    	                <div id="div-metric" class="col-sm-4">
+    	                    <div data-th-include="devices/visualization/metrics :: metrics">
+    						</div>
+    	                </div>
+    	            </div>
+                </div>
+
+                <div class="row form-group hide col-sm-10" id="onlineRow">
+                    <label class="col-sm-1 control-label"
+                        data-th-text="#{visualization.index.online}"></label>
+                    <label class="switch col-sm-1" style="margin-top: 4px;"> 
+                        <input type="checkbox" id="online" name="online" checked="checked" />
+                        <div class="slider round"></div>
+                    </label>
+                    <div class="col-sm-2">
+                        <img data-th-attr="src=@{/resources/konker/images/loading.gif}" class="loading-chart hide" />
+                    </div>
+                    <button type="button" data-th-text="#{visualization.index.btn.apply}" id="updateChartBtn" class="btn btn-success pull-right hide"></button>
+                </div>
+
+                <div id="chart" class="with-3d-shadow with-transitions hide">
+                    <svg></svg>
+                </div>
+
+            </form>
+
+            <div class="row">
+                <label class="col-sm-2 control-label" data-th-text="#{json.format.messages}"></label>
+                <div class="col-sm-1">
+                    <label class="switch">
+                        <input type="checkbox" id="isJsonFormatted" name="isJsonFormatted"/>
+                        <div class="slider round"></div>
+                    </label>
+                </div>
+            </div>
+
+            <ul class="nav nav-tabs nav-justified col-sm-12" >
 				<li class="active"><a data-toggle="tab" href="#incoming"
 					data-th-text="#{devices.events.incoming.events}"></a></li>
 				<li><a data-toggle="tab" href="#outgoing"
@@ -32,71 +146,44 @@
 			</ul>
 			<div class="tab-content">
 				<div id="incoming" class="tab-pane fade in active">
-
-					<div class="col-sm-12 list-group" >
-						<table class="table table-bordered table-hover"  
-							data-th-if="${recentIncomingEvents != null and !recentIncomingEvents.empty}">
-							<thead>
-								<tr>
-									<td class="col-md-1" data-th-text="#{devices.events.date_time}"></td>
-									<td class="col-md-2"
-										data-th-text="#{devices.events.incoming.channel}"></td>
-									<td class="col-md-3" data-th-text="#{devices.events.payload}"></td>
-								</tr>
-							</thead>
-							<tbody>
-								<tr data-th-each="event : ${recentIncomingEvents}">
-									<td data-th-text="${{event.timestamp}}"></td>
-									<td data-th-text="${event.incoming.channel}"></td>
-									<td data-th-text="${event.payload}" class="json-data"></td>
-								</tr>
-							</tbody>
-						</table>
-						<span data-th-if="${recentIncomingEvents == null or recentIncomingEvents.empty}"
-							data-th-text="#{devices.events.incoming.empty_message}"></span>
-					</div>
-
+                    <div data-th-include="devices/events-incoming :: incoming"></div>
 				</div>
 				<div id="outgoing" class="tab-pane fade">
-
-					<div class="col-sm-12 list-group">
-						<table class="table table-bordered table-hover"
-							data-th-if="${recentOutgoingEvents != null and !recentOutgoingEvents.empty}">
-							<thead>
-								<tr>
-									<td class="col-md-1" data-th-text="#{devices.events.date_time}"></td>
-									<td class="col-md-2"
-										data-th-text="#{devices.events.incoming.channel}"></td>
-									<td class="col-md-3" data-th-text="#{devices.events.payload}"></td>
-								</tr>
-							</thead>
-							<tbody>
-								<tr data-th-each="event : ${recentOutgoingEvents}">
-									<td data-th-text="${{event.timestamp}}"></td>
-									<td data-th-text="${event.outgoing.channel}"></td>
-									<td data-th-text="${event.payload}" class="json-data"></td>
-								</tr>
-							</tbody>
-						</table>
-						<span data-th-if="${recentOutgoingEvents == null or recentOutgoingEvents.empty}"
-							data-th-text="#{devices.events.outgoing.empty_message}"></span>
-					</div>
-
+                    <div data-th-include="devices/events-outgoing :: outgoing"></div>
 				</div>
 			</div>
 
+            <div class="ajax-loading"></div>
+        
 		</fieldset>
-		<a data-th-href="@{/devices}" class="btn btn-default"
-			data-th-text="#{nav.back}"></a>
-		<div data-layout-fragment="script">
-			<link data-th-href="@{/resources/konker/css/toggle-switch.css}" rel="stylesheet" />
-            <link data-th-href="@{/resources/konker/css/pretty-json.css}" type="text/css" rel="stylesheet"/>
-			<script data-th-attr="src=@{/resources/konker/scripts/jquery-1.11.1.min.js}" type="text/javascript"></script>
-            <script data-th-attr="src=@{/resources/konker/scripts/underscore-min.js}" type="text/javascript"></script>
-            <script data-th-attr="src=@{/resources/konker/scripts/backbone-min.js}" type="text/javascript"></script>
-            <script data-th-attr="src=@{/resources/konker/scripts/pretty-json-min.js}" type="text/javascript"></script>
-			<script data-th-attr="src=@{/resources/konker/scripts/json.formatter.js}"></script>
-		</div>
+
+	    <div class="form-group col-sm-12">
+	        <a id="exportCsv" class="btn btn-primary pull-right hide" style="margin-right: 5px;" data-th-text="#{visualization.index.btn.csv}"></a>
+	        <a id="bufferCsv" class="hide"></a>
+            <a data-th-href="@{/devices}" class="btn btn-default" data-th-text="#{nav.back}"></a>
+	    </div>
+
 	</div>
+    
+    <div data-layout-fragment="script">
+        <script data-th-attr="src=@{/resources/konker/scripts/underscore-min.js}" type="text/javascript"></script>
+        <script data-th-attr="src=@{/resources/konker/scripts/backbone-min.js}" type="text/javascript"></script>
+        <script data-th-attr="src=@{/resources/konker/scripts/pretty-json-min.js}" type="text/javascript"></script>
+        <script data-th-attr="src=@{/resources/konker/scripts/json.formatter.js}"></script>
+        <!-- date picker -->
+        <script data-th-attr="src=@{/resources/bootstrap/js/moment.js}" type="text/javascript"></script>
+        <script data-th-attr="src=@{/resources/bootstrap/js/bootstrap-datetimepicker.min.js}" type="text/javascript"></script>
+        <!-- chart -->
+        <script data-th-attr="src=@{/resources/konker/scripts/d3.js}" type="text/javascript"></script>
+        <script data-th-attr="src=@{/resources/konker/scripts/nv.d3.min.js}" type="text/javascript"></script>
+        <script data-th-attr="src=@{/resources/js/visualization/graph.js(v2)}" type="text/javascript"></script>
+        <script data-th-attr="src=@{/resources/konker/scripts/math.min.js}" type="text/javascript"></script>
+        <script data-th-attr="src=@{/resources/js/visualization/outlier.js}" type="text/javascript"></script>
+        <script data-th-attr="src=@{/resources/js/visualization/index.js(v2)}" type="text/javascript"></script>
+        <script data-th-inline="javascript">
+            graphService.setup('#7777ff',[[#{visualization.graph.label.axisx}]],[[#{devices.visualization.graph.no_data}]]);
+        </script>
+    </div>
+
 </body>
 </html>

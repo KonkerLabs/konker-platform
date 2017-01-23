@@ -47,16 +47,19 @@
                          data-th-if="*{avatarUploadEnabled}"
                          class="avataraccount img-responsive">
                 </div>
-                <div class="col-md-7 col-sm-5 pull-left panel-view-user">
+                <div class="col-md-7 col-sm-5 pull-left panel-view-user"
+                    data-th-if="${@environment.getActiveProfiles().length != 0 && #lists.contains(@environment.getActiveProfiles(), 'cdn')}">
                     <div>
                         <h2 data-th-text="#{users.form.photo.yourphoto}">Sua foto</h2>
                     </div>
                     <div class="row paddingrow">
-                        <button type="button" class="btn-inline btn btn-theme btn-edit-user" data-th-text="#{users.form.photo.change}">Trocar foto</button>
+                        <button type="button" class="btn-inline btn btn-theme btn-edit-user" 
+                            data-th-text="#{users.form.photo.change}">Trocar foto</button>
                     </div>
                     <br />
                 </div>
-                <div class="col-md-7 col-sm-5 pull-left panel-edit-user">
+                <div class="col-md-7 col-sm-5 pull-left panel-edit-user"
+                    data-th-if="${@environment.getActiveProfiles().length != 0 && #lists.contains(@environment.getActiveProfiles(), 'cdn')}">
                     <div>
                         <h2 data-th-text="#{users.form.photo.yourphoto}">Sua foto</h2>
                     </div>
@@ -254,7 +257,7 @@
                             <select data-th-field="*{language}"
                                     id="language"
                                     name="language"
-                                    class="col-md-12"
+                                    class="form-control col-md-12"
                                     data-th-placeholder="#{users.form.preferences.language.placeholder}">
                                 <option data-th-each="language: ${languages}" data-th-text="#{${language.code}}"
                                         data-th-value="${language}"
@@ -268,7 +271,7 @@
                             <select data-th-field="*{zoneId}"
                                     id="timezone"
                                     name="timezone"
-                                    class="col-md-12"
+                                    class="form-control col-md-12"
                                     data-th-placeholder="#{users.form.preferences.timezone.placeholder}">
                                 <option data-th-each="timezone: ${timezones}" data-th-text="#{${timezone.code}}"
                                         data-th-value="${{timezone}}"></option>
@@ -281,7 +284,7 @@
                             <select data-th-field="*{dateFormat}"
                                     id="dateformat"
                                     name="dateformat"
-                                    class="col-md-12"
+                                    class="form-control col-md-12"
                                     data-th-placeholder="#{users.form.preferences.dateformat.placeholder}">
                                 <option data-th-each="dateformat: ${dateformats}" data-th-text="#{${dateformat.code}}"
                                         data-th-value="${dateformat}"></option>
@@ -330,20 +333,22 @@
                     <div class="row">
                         <h2 class="subtitle-page" data-th-text="#{users.form.tenantconfig.title}"></h2>
                     </div>
-                    <div class="row col-md-5 pull-left">
+                    <div class="row col-md-5">
                         <p>
                             <label class="control-label"
                                    data-th-text="#{users.form.tenantconfig.loglevel}"
                                    for="loglevel"></label>
                             <span style="display: block;">
-                                <select data-th-field="*{logLevel}"
-                                        class="col-md-10"
-                                        id="loglevel"
-                                        name="loglevel"
-                                        data-th-placeholder="#{users.form.tenantconfig.loglevel.placeholder}">
-                                    <option data-th-each="loglevel: ${loglevels}" data-th-text="#{${loglevel.code}}"
-                                            data-th-value="${loglevel}"></option>
-                                </select>
+                            	<div class="col-md-10">
+	                                <select data-th-field="*{logLevel}"
+	                                        class="form-control"
+	                                        id="loglevel"
+	                                        name="loglevel"
+	                                        data-th-placeholder="#{users.form.tenantconfig.loglevel.placeholder}">
+	                                    <option data-th-each="loglevel: ${loglevels}" data-th-text="#{${loglevel.code}}"
+	                                            data-th-value="${loglevel}"></option>
+	                                </select>
+                            	</div>
                                 <button type="button" class="btn btn-default" aria-label="Help" data-toggle="modal" data-target="#logLevelInfoModal">
                                     <span class="glyphicon glyphicon glyphicon-info-sign" aria-hidden="true"></span>
                                 </button>

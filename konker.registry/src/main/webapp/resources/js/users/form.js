@@ -23,7 +23,8 @@ var handleFileSelect = function(evt) {
 };
 
 if (window.File && window.FileReader && window.FileList && window.Blob) {
-    document.getElementById('filePicker').addEventListener('change', handleFileSelect, false);
+    if (document.getElementById('filePicker') !== null)
+        document.getElementById('filePicker').addEventListener('change', handleFileSelect, false);
 } else {
     alert('The File APIs are not fully supported in this browser.');
 }

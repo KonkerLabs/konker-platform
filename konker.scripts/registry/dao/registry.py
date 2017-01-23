@@ -106,7 +106,7 @@ def update_user(args):
             sys.exit(1)
     else:
         print("Konker username not found")
-        sys.exit(0)
+        sys.exit(1)
 
 
 def create_versioning_collection():
@@ -126,7 +126,13 @@ def upgrade_version(args):
 
     db = db_connect()
     version = db.konkerVersion.find_one()
-    if float(version['version']) < float(args.version):
+
+    if not args.version:
+        v = db_version
+    else:
+        v = args.version
+
+    if float(version['version']) < float(v):
         try:
             db.konkerVersion.update_one(
                 {
@@ -146,4 +152,22 @@ def upgrade_version(args):
         print("Database already upgraded")
         sys.exit(0)
 
+
+def create_users_collection():
+    db = db_connect()
+    if "users" not in db.collection_names():
+        db.create_collection("users")
+
+
+def users_count():
+    create_users_collection()
+    db = db_connect()
+
+    try:
+        number_of_users = db.users.find({}).count()
+    except Exception as e:
+        print(e)
+        sys.exit(1)
+
+    return number_of_users
 

@@ -1,8 +1,6 @@
 package com.konkerlabs.platform.registry.test.web.controllers;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -17,12 +15,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 
-import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
-import com.konkerlabs.platform.registry.business.model.enumerations.Language;
-import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
-import com.konkerlabs.platform.registry.web.converters.utils.ConverterUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,16 +37,20 @@ import com.konkerlabs.platform.registry.business.model.EventSchema;
 import com.konkerlabs.platform.registry.business.model.EventSchema.SchemaField;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
+import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
+import com.konkerlabs.platform.registry.business.model.enumerations.Language;
+import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.config.HotjarConfig;
+import com.konkerlabs.platform.registry.config.WebConfig;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.security.UserContextResolver;
 import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
 import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
-import org.springframework.web.servlet.LocaleResolver;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
@@ -61,7 +58,9 @@ import org.springframework.web.servlet.LocaleResolver;
         WebMvcConfig.class,
         WebTestConfiguration.class,
         SecurityTestConfiguration.class,
-        DeviceVisualizationControllerTest.DeviceTestContextConfig.class
+        DeviceVisualizationControllerTest.DeviceTestContextConfig.class, 
+        WebConfig.class, 
+        HotjarConfig.class
 })
 public class DeviceVisualizationControllerTest extends WebLayerTestContext {
 
@@ -132,32 +131,33 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     		.thenReturn(ServiceResponseBuilder.<List<String>>ok()
     				.withResult(channels).build());
     	
-    	getMockMvc().perform(get("/visualization/loading/channel/").param("deviceGuid", DEVICE_GUID))
+    	getMockMvc().perform(get("/devices/visualization/loading/channel/").param("deviceGuid", DEVICE_GUID))
     		.andExpect(model().attribute("channels", equalTo(channels)))
-    		.andExpect(view().name("visualization/channels"));
+    		.andExpect(view().name("/devices/visualization/channels"));
     }
     
     @Test
     @WithMockUser(authorities={"VIEW_DEVICE_CHART"})
     public void shouldLoadMetrics() throws Exception {
-    	when(eventSchemaService.findIncomingBy(DEVICE_GUID, CHANNEL))
-    		.thenReturn(ServiceResponseBuilder.<EventSchema>ok()
-    				.withResult(eventSchema).build());
-    	
     	List<String> listMetrics = eventSchema.getFields()
 				.stream()
 				.filter(schemaField -> schemaField.getKnownTypes().contains(JsonNodeType.NUMBER))
 				.map(m -> m.getPath()).collect(java.util.stream.Collectors.toList());
-    	getMockMvc().perform(get("/visualization/loading/metrics/").param("deviceGuid", DEVICE_GUID).param("channel", CHANNEL))
+
+    	when(eventSchemaService.findKnownIncomingMetricsBy(tenant, DEVICE_GUID, CHANNEL, JsonNodeType.NUMBER))
+			.thenReturn(ServiceResponseBuilder.<List<String>>ok()
+			.withResult(new ArrayList<String>(listMetrics)).build());
+    	
+    	getMockMvc().perform(get("/devices/visualization/loading/metrics/").param("deviceGuid", DEVICE_GUID).param("channel", CHANNEL))
     		.andExpect(model().attribute("metrics", equalTo(listMetrics)))
-    		.andExpect(view().name("visualization/metrics"));
+    		.andExpect(view().name("/devices/visualization/metrics"));
     }
     
     @Test
     @WithMockUser(authorities={"VIEW_DEVICE_CHART"})
     public void shouldReturnDeviceIsMandatoryMessage() throws Exception {
     	
-    	getMockMvc().perform(get("/visualization/load/").param("dateStart", "").param("dateEnd", "").param("online", "false")
+    	getMockMvc().perform(get("/devices/visualization/load/").param("dateStart", "").param("dateEnd", "").param("online", "false")
     			.param("deviceGuid", "").param("channel", CHANNEL))
     			.andExpect(content().json("[{'message':'Device is mandatory'}]"));
     }
@@ -166,7 +166,7 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     @WithMockUser(authorities={"VIEW_DEVICE_CHART"})
     public void shouldReturnChannelIsMandatoryMessage() throws Exception {
     	
-    	getMockMvc().perform(get("/visualization/load/").param("dateStart", "").param("dateEnd", "").param("online", "false")
+    	getMockMvc().perform(get("/devices/visualization/load/").param("dateStart", "").param("dateEnd", "").param("online", "false")
     			.param("deviceGuid", DEVICE_GUID).param("channel", ""))
     			.andExpect(content().json("[{'message':'Channel is mandatory'}]"));
     }
@@ -175,7 +175,7 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     @WithMockUser(authorities={"VIEW_DEVICE_CHART"})
     public void shouldReturnDateStartIsMandatoryMessage() throws Exception {
     	
-    	getMockMvc().perform(get("/visualization/load/").param("dateStart", "").param("dateEnd", "").param("online", "false")
+    	getMockMvc().perform(get("/devices/visualization/load/").param("dateStart", "").param("dateEnd", "").param("online", "false")
     			.param("deviceGuid", DEVICE_GUID).param("channel", CHANNEL))
     			.andExpect(content().json("[{'message':'Dt/hr start is mandatory'}]"));
     }
@@ -184,7 +184,7 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     @WithMockUser(authorities={"VIEW_DEVICE_CHART"})
     public void shouldReturnDateEndIsMandatoryMessage() throws Exception {
     	
-    	getMockMvc().perform(get("/visualization/load/").param("dateStart", dateStart).param("dateEnd", "").param("online", "false")
+    	getMockMvc().perform(get("/devices/visualization/load/").param("dateStart", dateStart).param("dateEnd", "").param("online", "false")
     			.param("deviceGuid", DEVICE_GUID).param("channel", CHANNEL))
     			.andExpect(content().json("[{'message':'Dt/hr end is mandatory'}]"));
     }
@@ -199,7 +199,7 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
 				.withResult(eventsList).build());
     	
     	
-    	getMockMvc().perform(get("/visualization/load/").param("dateStart", "").param("dateEnd", "").param("online", "true")
+    	getMockMvc().perform(get("/devices/visualization/load/").param("dateStart", "").param("dateEnd", "").param("online", "true")
     			.param("deviceGuid", DEVICE_GUID).param("channel", CHANNEL))
     			.andExpect(content().json("[{'timestampFormated': '04/10/2016 14:44:57.000 BRT',"
     					+ "'timestamp': 1475603097000,"
@@ -217,7 +217,7 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
 			.thenReturn(ServiceResponseBuilder.<List<Event>>ok()
 				.withResult(eventsList).build());
 
-		getMockMvc().perform(get("/visualization/load/").param("dateStart", dateStart).param("dateEnd", dateEnd).param("online", "false")
+		getMockMvc().perform(get("/devices/visualization/load/").param("dateStart", dateStart).param("dateEnd", dateEnd).param("online", "false")
     			.param("deviceGuid", DEVICE_GUID).param("channel", CHANNEL))
     			.andExpect(content().json("[{'timestampFormated': '04/10/2016 14:44:57.000 BRT',"
     					+ "'timestamp': 1475603097000,"

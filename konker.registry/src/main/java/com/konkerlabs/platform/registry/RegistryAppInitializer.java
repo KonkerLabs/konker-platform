@@ -1,7 +1,6 @@
 package com.konkerlabs.platform.registry;
 
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 import javax.servlet.Filter;
@@ -17,18 +16,24 @@ import org.springframework.web.servlet.resource.ResourceUrlEncodingFilter;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
 import com.konkerlabs.platform.registry.config.BusinessConfig;
+import com.konkerlabs.platform.registry.config.CdnConfig;
+import com.konkerlabs.platform.registry.config.EmailConfig;
+import com.konkerlabs.platform.registry.config.HotjarConfig;
 import com.konkerlabs.platform.registry.config.IntegrationConfig;
 import com.konkerlabs.platform.registry.config.MongoAuditConfig;
 import com.konkerlabs.platform.registry.config.MongoConfig;
+import com.konkerlabs.platform.registry.config.MqttConfig;
+import com.konkerlabs.platform.registry.config.PasswordUserConfig;
+import com.konkerlabs.platform.registry.config.PubServerConfig;
+import com.konkerlabs.platform.registry.config.RecaptchaConfig;
 import com.konkerlabs.platform.registry.config.RedisConfig;
 import com.konkerlabs.platform.registry.config.SecurityConfig;
+import com.konkerlabs.platform.registry.config.SmsConfig;
 import com.konkerlabs.platform.registry.config.SolrConfig;
 import com.konkerlabs.platform.registry.config.SpringMailConfig;
+import com.konkerlabs.platform.registry.config.WebConfig;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.utilities.config.UtilitiesConfig;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigException;
-import com.typesafe.config.ConfigFactory;
 
 public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
 
@@ -37,7 +42,9 @@ public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherSe
 	@Override
 	protected Class<?>[] getRootConfigClasses() {
 		return new Class<?>[] { SecurityConfig.class, BusinessConfig.class, MongoConfig.class, MongoAuditConfig.class,
-				IntegrationConfig.class, SolrConfig.class, UtilitiesConfig.class, RedisConfig.class, SpringMailConfig.class };
+				MqttConfig.class, SolrConfig.class, UtilitiesConfig.class, RedisConfig.class, SpringMailConfig.class,
+				SmsConfig.class, WebConfig.class, PubServerConfig.class, IntegrationConfig.class, CdnConfig.class,
+				PasswordUserConfig.class, RecaptchaConfig.class, EmailConfig.class, HotjarConfig.class };
 	}
 
 	@Override
@@ -73,38 +80,13 @@ public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherSe
 	}
 
 	private boolean isSmsFeaturesEnabled() {
-		boolean isEnabled = false;
-
-		try {
-			Config smsConfig = ConfigFactory.load().getConfig("sms");
-			isEnabled = Optional.ofNullable(smsConfig.getBoolean("enabled")).orElse(false);
-		} catch (ConfigException e) {
-			LOGGER.error(
-					"SMS configuration is empty or has no values for key 'enabled'. SMS features are being thoroughly disabled on the platform.",
-					e);
-		}
-		return isEnabled;
-
+		SmsConfig config = new SmsConfig();
+		return config.isEnabled();
 	}
 	
 	private boolean isEmailFeaturesEnabled() {
-		boolean isEnabled = false;
-
-		try {
-			Config config = ConfigFactory.load();
-			Config emailConfig = config.getConfig("email");
-			Boolean hasRecaptchaConfig = config.hasPath("recaptcha");
-			isEnabled = Optional.ofNullable(emailConfig.getBoolean("enabled")).orElse(false);
-			if (!hasRecaptchaConfig) {
-				isEnabled = false;
-				LOGGER.error("Recaptcha configuration is empty. Email features are being thoroughly disabled on the platform.");
-			}
-		} catch (ConfigException e) {
-			LOGGER.error(
-					"Email configuration is empty or has no values for key 'enabled'. Email features are being thoroughly disabled on the platform.", e);
-		}
-		return isEnabled;
-
+		EmailConfig config = new EmailConfig();
+		return config.isEnabled();
 	}
 
 }

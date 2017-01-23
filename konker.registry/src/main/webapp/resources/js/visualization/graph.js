@@ -41,11 +41,14 @@ var graphService = {
             var chart;
             var controller = graphService;
 
+            $('.nvtooltip').remove(); // KRMVP-392
+
+            // Disable showLegend and useInteractiveGuideLine flag if using multiple series
             chart = nv.models.lineChart()
                 .options({
                     duration: 200,
                     useInteractiveGuideline: true
-                });
+                }).showLegend(true);
 
             chart.noData(controller.noDataMessage);
 
@@ -101,6 +104,30 @@ var graphService = {
             }
         ];
     },
+    // Used to handle multiple series
+    prepareSets : function(data) {
+        var result = [];
+        data.reverse();
+
+        for (var i = 0; i < data.length; i++) {
+            var points = [];
+            for (var j = 0; j < data[i].length; j++){
+                var value = getByPath(JSON.parse(data[i][j].payload),graphService.field)   ;
+                if (!isNaN(value)) {
+                    var d = new Date(0);
+                    d.setUTCSeconds(data[i][j].timestamp / 1000)
+                    points.push({x: d, y: value});
+                }
+            }
+            result.push({
+                values : points,
+                key : '<span>' + graphService.field + '</span>' + '<span style="visibility: collapse;">' + i + '</span>',
+                color : graphService.lineColor
+            });
+        }
+
+        return result;
+    },
     update : function(field,data) {
         if (this.chart == null || this.field != field) {
             this.field = field;
@@ -108,6 +135,7 @@ var graphService = {
         }
 
         this.data = this.prepare(data);
+        // this.data = this.prepareSets(data);
         // Update the SVG with the new data and call chart
         d3.select('#chart svg').datum(this.data).call(this.chart);
         nv.utils.windowResize(this.chart.update);

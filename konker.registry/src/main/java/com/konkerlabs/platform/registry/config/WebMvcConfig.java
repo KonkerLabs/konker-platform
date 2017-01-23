@@ -3,6 +3,7 @@ package com.konkerlabs.platform.registry.config;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.MessageSource;
@@ -33,11 +34,8 @@ import org.thymeleaf.spring4.view.ThymeleafViewResolver;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ITemplateResolver;
 
-import com.konkerlabs.platform.registry.business.model.enumerations.Language;
 import com.konkerlabs.platform.registry.interceptor.UserDefinedLocaleHandlerInterceptor;
 import com.konkerlabs.platform.registry.web.converters.InstantToStringConverter;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
 
 import nz.net.ultraq.thymeleaf.LayoutDialect;
 
@@ -50,7 +48,8 @@ import nz.net.ultraq.thymeleaf.LayoutDialect;
 @Import({SecurityConfig.class})
 public class WebMvcConfig extends WebMvcConfigurerAdapter implements ApplicationContextAware {
 
-    private static final Config webConfig = ConfigFactory.load().getConfig("web");
+	@Autowired
+	private WebConfig webConfig;
 
     private ApplicationContext applicationContext;
 
@@ -72,7 +71,7 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements Application
         templateResolver.setCharacterEncoding("UTF-8");
         templateResolver.setOrder(3);
         templateResolver.setCheckExistence(true);
-        templateResolver.setCacheable(webConfig.getBoolean("views.cache"));
+        templateResolver.setCacheable(webConfig.isViewsCache());
         return templateResolver;
     }
 
