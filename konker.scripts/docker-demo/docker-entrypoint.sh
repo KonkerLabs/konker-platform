@@ -43,7 +43,7 @@ mongod &
 mosquitto &
 redis-server &
 #Set database version
-konker database upgrade 0.1 &
+konker database upgrade &
 #Set default user
 populate_users &
 exec "$@"
