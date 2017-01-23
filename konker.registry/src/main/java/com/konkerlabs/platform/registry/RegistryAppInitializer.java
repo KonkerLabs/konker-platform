@@ -76,6 +76,10 @@ public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherSe
 		if (isEmailFeaturesEnabled()) {
 			profiles.add("email");
 		}
+		if (isCdnFeaturesEnabled()) {
+			profiles.add("cdn");
+		}
+		
         servletContext.setInitParameter("spring.profiles.active", StringUtils.arrayToCommaDelimitedString(profiles.toArray()));
 	}
 
@@ -86,6 +90,11 @@ public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherSe
 	
 	private boolean isEmailFeaturesEnabled() {
 		EmailConfig config = new EmailConfig();
+		return config.isEnabled();
+	}
+	
+	private boolean isCdnFeaturesEnabled() {
+		CdnConfig config = new CdnConfig();
 		return config.isEnabled();
 	}
 
