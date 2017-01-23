@@ -4,8 +4,8 @@ import org.springframework.http.HttpMethod;
 
 public enum SupportedHttpMethod {
 
-    GET("GET"),
     POST("POST"),
+    GET("GET"),
     PUT("PUT"),
     PATCH("PATCH"),
     DELETE("DELETE");

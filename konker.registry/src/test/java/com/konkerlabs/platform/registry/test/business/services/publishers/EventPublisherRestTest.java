@@ -25,6 +25,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
@@ -48,7 +49,7 @@ import static org.mockito.Mockito.verify;
         SolrTestConfiguration.class,
         RedisTestConfiguration.class
 })
-@UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/rest-destinations.json"})
+@UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/rest-destinations.json"})
 public class EventPublisherRestTest extends BusinessLayerTestSupport {
 
     private static final String REGISTERED_AND_ACTIVE_DESTINATION_GUID = "dda64780-eb81-11e5-958b-a73dab8b32ee";
@@ -124,7 +125,7 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
 
     @After
     public void tearDown() {
-        Mockito.reset(eventRepository,httpGateway);
+        Mockito.reset(eventRepository, httpGateway);
     }
 
     @Test
@@ -132,7 +133,7 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Event cannot be null");
 
-        subject.send(null,destinationUri,null,tenant);
+        subject.send(null, destinationUri, null, tenant);
     }
 
     @Test
@@ -140,7 +141,7 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Destination URI cannot be null or empty");
 
-        subject.send(event,null,null,tenant);
+        subject.send(event, null, null, tenant);
     }
 
     @Test
@@ -148,7 +149,7 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Destination URI cannot be null or empty");
 
-        subject.send(event,new URI(null,null,null,null,null),null,tenant);
+        subject.send(event, new URI(null, null, null, null, null), null, tenant);
     }
 
     @Test
@@ -156,7 +157,7 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Tenant cannot be null");
 
-        subject.send(event,destinationUri,null,null);
+        subject.send(event, destinationUri, null, null);
     }
 
     @Test
@@ -183,7 +184,7 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
                 MessageFormat.format("REST Destination is unknown : {0}", destinationUri)
         );
 
-        subject.send(event,destinationUri,null,tenant);
+        subject.send(event, destinationUri, null, tenant);
     }
 
     @Test
@@ -205,35 +206,36 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
             }
         }.toURI();
 
-        subject.send(event,destinationUri,null,tenant);
+        subject.send(event, destinationUri, null, tenant);
 
-        verify(httpGateway,never()).request(any(),any(),any(),any(),any(),any());
-        verify(eventRepository,never()).saveIncoming(tenant,event);
+        verify(httpGateway, never()).request(any(), any(), any(), any(), any(), any(), any());
+        verify(eventRepository, never()).saveIncoming(tenant, event);
     }
 
     @Test
     public void shouldNotSendAnyEventThroughGatewayIfPayloadParsingFails() throws Exception {
         event.setPayload(invalidEventPayload);
 
-        subject.send(event,destinationUri,null,tenant);
+        subject.send(event, destinationUri, null, tenant);
 
-        verify(httpGateway,never()).request(any(),any(),any(),any(),any(),any());
-        verify(eventRepository,never()).saveIncoming(tenant,event);
+        verify(httpGateway, never()).request(any(), any(), any(), any(), any(), any(), any());
+        verify(eventRepository, never()).saveIncoming(tenant, event);
     }
 
     @Test
     public void shouldSendAnEventThroughGatewayIfDestinationIsEnabled() throws Exception {
-        subject.send(event,destinationUri,null,tenant);
+        subject.send(event, destinationUri, null, tenant);
 
-        InOrder inOrder = Mockito.inOrder(eventRepository,httpGateway);
+        InOrder inOrder = Mockito.inOrder(eventRepository, httpGateway);
 
         inOrder.verify(httpGateway).request(
-            eq(HttpMethod.POST),
-            eq(URI.create(destination.getServiceURI().replaceAll("\\@\\{.*}", "value"))),
-            eq(MediaType.APPLICATION_JSON),
-            argLambda(objectSupplier -> objectSupplier.get().equals(event.getPayload())),
-            eq(destination.getServiceUsername()),
-            eq(destination.getServicePassword())
+                eq(HttpMethod.POST),
+                eq(new HttpHeaders()),
+                eq(URI.create(destination.getServiceURI().replaceAll("\\@\\{.*}", "value"))),
+                eq(MediaType.APPLICATION_JSON),
+                argLambda(objectSupplier -> objectSupplier.get().equals(event.getPayload())),
+                eq(destination.getServiceUsername()),
+                eq(destination.getServicePassword())
         );
 //        inOrder.verify(eventRepository).saveIncoming(eq(tenant),eq(event));
     }

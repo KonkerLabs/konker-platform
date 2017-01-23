@@ -28,7 +28,7 @@ public class TransformationTest {
                 .id("id").build();
 
         restTransformation = spy(RestTransformationStep.builder()
-                .attributes(new HashMap<String,String>() {
+                .attributes(new HashMap<String, Object>() {
                     {
                         put("url","http://host:8080/path?query=1");
                         put("username","username");

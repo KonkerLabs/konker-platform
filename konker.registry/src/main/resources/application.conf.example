@@ -103,7 +103,8 @@ password.user {
 recaptcha {
   secretKey="abcdef123456"
   siteKey="abcdef123456"
- host="host"
+  host="host"
+  enabled = false
 }
 
 email {

@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.experimental.Tolerate;
+
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -31,11 +33,13 @@ public class EventRoute implements URIDealer, Validatable {
         INCOMING_ACTOR_URI_NULL("model.event_route.incoming_actor_uri.not_null"),
         INCOMING_ACTOR_URI_MUST_BE_A_DEVICE("model.event_route.incoming_uri.must_be_a_device"),
         INCOMING_ACTOR_CHANNEL_NULL("model.event_route.incoming_actor.channel.not_null"),
+        INCOMING_ACTOR_CHANNEL_INVALID_NAME("model.event_route.incoming_actor.channel.invalid_name"),
         OUTGOING_ACTOR_NULL("model.event_route.outgoing_actor.not_null"),
         OUTGOING_ACTOR_URI_NULL("model.event_route.outgoing_actor_uri.not_null"),
         OUTGOING_ACTOR_URI_MUST_BE_A_DEVICE("model.event_route.outgoing_uri.must_be_a_device"),
         OUTGOING_ACTOR_URI_MUST_BE_A_SMS("model.event_route.outgoing_uri.must_be_a_sms"),
         OUTGOING_ACTOR_CHANNEL_NULL("model.event_route.outgoing_actor.channel.not_null"),
+        OUTGOING_ACTOR_CHANNEL_INVALID_NAME("model.event_route.outgoing_actor.channel.invalid_name"),
         OUTGOING_SMS_CUSTOM_TEXT_MANDATORY("model.event_route.outgoing_sms.custom_text.mandatory"),
         OUTGOING_SMS_INVALID_STRATEGY("model.event_route.outgoing_sms.invalid_strategy"),
         GUID_NULL("model.event_route.guid.not_null"),
@@ -115,34 +119,42 @@ public class EventRoute implements URIDealer, Validatable {
             applySMSOutgoingValidations(validations);
         }
 
-        
 		if (getIncoming() != null && getIncoming().compareAndCheckIfDevicesChannelsAreEqual(getOutgoing()))
 			validations.put(Validations.INCOMING_OUTGOING_DEVICE_CHANNELS_SAME.getCode(), null);
 
  		return Optional.of(validations).filter(stringMap -> !stringMap.isEmpty());
  	}
 
- 	
-     	
     private void applyDeviceIncomingValidations(Map<String,Object[]> validations) {
         Map<String, String> data = getIncoming().getData();
         if (!"device".equals(getIncoming().getUri().getScheme())) {
             validations.put(Validations.INCOMING_ACTOR_URI_MUST_BE_A_DEVICE.getCode(),null);
         } else {
-            if (!Optional.ofNullable(data.get(DEVICE_MQTT_CHANNEL))
-                    .filter(s -> !s.trim().isEmpty()).isPresent())
+            String channelName = data.get(DEVICE_MQTT_CHANNEL);
+			if (StringUtils.isBlank(channelName)) {
                 validations.put(Validations.INCOMING_ACTOR_CHANNEL_NULL.getCode(),null);
+			} else if (!isValidChannelName(channelName)) {
+				validations.put(Validations.INCOMING_ACTOR_CHANNEL_INVALID_NAME.getCode(),null);
+			}
         }
+
     }
 
-    public void applyDeviceOutgoingValidations(Map<String,Object[]> validations) {
+    private boolean isValidChannelName(String channelName) {
+    	return channelName.matches("[a-zA-Z0-9_-]+");
+	}
+
+	public void applyDeviceOutgoingValidations(Map<String,Object[]> validations) {
         Map<String, String> data = getOutgoing().getData();
         if (!"device".equals(getOutgoing().getUri().getScheme())) {
             validations.put(Validations.OUTGOING_ACTOR_URI_MUST_BE_A_DEVICE.getCode(),null);
         } else {
-            if (!Optional.ofNullable(data.get(DEVICE_MQTT_CHANNEL))
-                    .filter(s -> !s.trim().isEmpty()).isPresent())
+            String channelName = data.get(DEVICE_MQTT_CHANNEL);
+			if (StringUtils.isBlank(channelName)) {
                 validations.put(Validations.OUTGOING_ACTOR_CHANNEL_NULL.getCode(),null);
+			} else if (!isValidChannelName(channelName)) {
+				validations.put(Validations.OUTGOING_ACTOR_CHANNEL_INVALID_NAME.getCode(),null);
+			}
         }
     }
 

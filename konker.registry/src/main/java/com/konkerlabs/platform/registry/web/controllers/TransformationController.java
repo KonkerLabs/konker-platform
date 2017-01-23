@@ -75,7 +75,8 @@ public class TransformationController implements ApplicationContextAware {
     public ModelAndView save(@ModelAttribute("transformation") TransformationForm transformationForm,
                              BindingResult bindingResult, RedirectAttributes redirectAttributes, Locale locale) {
 
-        ServiceResponse<Transformation> serviceResponse = transformationService.register(tenant, transformationForm.toModel());
+        ServiceResponse<Transformation> serviceResponse =
+                transformationService.register(tenant, transformationForm.toModel());
 
         switch (serviceResponse.getStatus()) {
             case ERROR:

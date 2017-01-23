@@ -133,7 +133,7 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     	
     	getMockMvc().perform(get("/devices/visualization/loading/channel/").param("deviceGuid", DEVICE_GUID))
     		.andExpect(model().attribute("channels", equalTo(channels)))
-    		.andExpect(view().name("/devices/visualization/channels"));
+    		.andExpect(view().name("devices/visualization/channels"));
     }
     
     @Test
@@ -150,7 +150,7 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     	
     	getMockMvc().perform(get("/devices/visualization/loading/metrics/").param("deviceGuid", DEVICE_GUID).param("channel", CHANNEL))
     		.andExpect(model().attribute("metrics", equalTo(listMetrics)))
-    		.andExpect(view().name("/devices/visualization/metrics"));
+    		.andExpect(view().name("devices/visualization/metrics"));
     }
     
     @Test

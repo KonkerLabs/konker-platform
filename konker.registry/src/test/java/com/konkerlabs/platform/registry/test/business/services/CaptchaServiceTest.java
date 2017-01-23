@@ -40,7 +40,7 @@ public class CaptchaServiceTest {
     @Test
     public void shouldBeSuccessfulCaptchaValidation(){
         try {
-            when(httpGateway.request(any(), any(), any(), any(),  any(), any()))
+            when(httpGateway.request(any(), any(), any(), any(), any(),  any(), any()))
                     .thenReturn(JSON_SUCCESSFUL);
         } catch (IntegrationException e) {
             e.printStackTrace();
@@ -54,11 +54,11 @@ public class CaptchaServiceTest {
         try {
             Assert.assertFalse(captchaService.validateCaptcha(null, null, null).getResult());
 
-            when(httpGateway.request(any(), any(), any(), any(),  any(), any()))
+            when(httpGateway.request(any(), any(), any(), any(), any(),  any(), any()))
                     .thenThrow(URISyntaxException.class);
             Assert.assertFalse(captchaService.validateCaptcha("", "", "").getResult());
 
-            when(httpGateway.request(any(), any(), any(), any(),  any(), any()))
+            when(httpGateway.request(any(), any(), any(), any(), any(),  any(), any()))
                     .thenReturn(JSON_UNSUCCESSFUL);
             Assert.assertFalse(captchaService.validateCaptcha("", "", "").getResult());
         } catch (IntegrationException e) {

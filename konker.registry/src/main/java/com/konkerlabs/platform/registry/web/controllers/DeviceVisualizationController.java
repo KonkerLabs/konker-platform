@@ -168,7 +168,7 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     public ModelAndView loadChannels(@RequestParam String deviceGuid) {
     	ServiceResponse<List<String>> channels = eventSchemaService.findKnownIncomingChannelsBy(tenant, deviceGuid);
     	
-    	return new ModelAndView("/devices/visualization/channels", "channels", channels.getResult());
+    	return new ModelAndView("devices/visualization/channels", "channels", channels.getResult());
     }
     
     @RequestMapping("/loading/metrics/")
@@ -178,12 +178,12 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     	ServiceResponse<List<String>> metricsResponse = eventSchemaService.findKnownIncomingMetricsBy(tenant, deviceGuid, channel, JsonNodeType.NUMBER);
     	
     	if (metricsResponse.getResult() == null) {
-    		return new ModelAndView("/devices/visualization/metrics", "metrics", new ArrayList<>());
+    		return new ModelAndView("devices/visualization/metrics", "metrics", new ArrayList<>());
     	}
     	
     	String defaultMetric = CollectionUtils.isEmpty(metricsResponse.getResult()) ? null : metricsResponse.getResult().get(0);
     	
-    	return new ModelAndView("/devices/visualization/metrics", "metrics", metricsResponse.getResult())
+    	return new ModelAndView("devices/visualization/metrics", "metrics", metricsResponse.getResult())
     			.addObject("defaultMetric", defaultMetric);
     }
     

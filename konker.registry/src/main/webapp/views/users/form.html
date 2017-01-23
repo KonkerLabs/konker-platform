@@ -333,20 +333,22 @@
                     <div class="row">
                         <h2 class="subtitle-page" data-th-text="#{users.form.tenantconfig.title}"></h2>
                     </div>
-                    <div class="row col-md-5 pull-left">
+                    <div class="row col-md-5">
                         <p>
                             <label class="control-label"
                                    data-th-text="#{users.form.tenantconfig.loglevel}"
                                    for="loglevel"></label>
                             <span style="display: block;">
-                                <select data-th-field="*{logLevel}"
-                                        class="form-control col-md-10"
-                                        id="loglevel"
-                                        name="loglevel"
-                                        data-th-placeholder="#{users.form.tenantconfig.loglevel.placeholder}">
-                                    <option data-th-each="loglevel: ${loglevels}" data-th-text="#{${loglevel.code}}"
-                                            data-th-value="${loglevel}"></option>
-                                </select>
+                            	<div class="col-md-10">
+	                                <select data-th-field="*{logLevel}"
+	                                        class="form-control"
+	                                        id="loglevel"
+	                                        name="loglevel"
+	                                        data-th-placeholder="#{users.form.tenantconfig.loglevel.placeholder}">
+	                                    <option data-th-each="loglevel: ${loglevels}" data-th-text="#{${loglevel.code}}"
+	                                            data-th-value="${loglevel}"></option>
+	                                </select>
+                            	</div>
                                 <button type="button" class="btn btn-default" aria-label="Help" data-toggle="modal" data-target="#logLevelInfoModal">
                                     <span class="glyphicon glyphicon glyphicon-info-sign" aria-hidden="true"></span>
                                 </button>

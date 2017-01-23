@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.expression.EvaluationException;
 import org.springframework.expression.ParseException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -24,6 +25,7 @@ import org.springframework.util.StringUtils;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Optional;
+import java.util.regex.Matcher;
 
 @Component
 public class EventTransformationServiceImpl implements EventTransformationService {
@@ -65,24 +67,34 @@ public class EventTransformationServiceImpl implements EventTransformationServic
         try {
             String stepUrl = evaluationService
                     .evaluateTemplate(
-                            step.getAttributes().get(RestTransformationStep.REST_URL_ATTRIBUTE_NAME),
+                            (String) step.getAttributes().get(RestTransformationStep.REST_URL_ATTRIBUTE_NAME),
                             jsonParsingService.toMap(event.getPayload()));
 
             String stepMethod = evaluationService
                     .evaluateTemplate(
-                            step.getAttributes().get(RestTransformationStep.REST_URL_ATTRIBUTE_METHOD),
+                            (String) step.getAttributes().get(RestTransformationStep.REST_ATTRIBUTE_METHOD),
                             jsonParsingService.toMap(event.getPayload()));
 
             if(StringUtils.isEmpty(stepMethod)){
                 stepMethod = SupportedHttpMethod.POST.getCode();
             }
 
+            HttpHeaders headers = new HttpHeaders();
+            Optional.ofNullable((String) step.getAttributes().get(RestTransformationStep.REST_ATTRIBUTE_HEADERS))
+                    .ifPresent( item ->{
+                        String[] header = item.split("=");
+                        if(header.length == 2){
+                            headers.add(header[0], header[1]);
+                        }
+                    });
+
             String stepResponse = httpGateway.request(
                     HttpMethod.resolve(stepMethod),
+                    headers,
                     new URI(stepUrl), MediaType.APPLICATION_JSON,
                     () -> event.getPayload(),
-                    step.getAttributes().get(RestTransformationStep.REST_USERNAME_ATTRIBUTE_NAME),
-                    step.getAttributes().get(RestTransformationStep.REST_PASSWORD_ATTRIBUTE_NAME));
+                    (String) step.getAttributes().get(RestTransformationStep.REST_USERNAME_ATTRIBUTE_NAME),
+                    (String) step.getAttributes().get(RestTransformationStep.REST_PASSWORD_ATTRIBUTE_NAME));
 
             if (isValidResponse(stepResponse))
                 return Event.builder()

@@ -83,7 +83,7 @@ public class TransformationServiceImpl extends AbstractURLBlacklistValidation im
 		Optional<Map<String, Object[]>> result = null;
 		for (TransformationStep uri : uriList) {
 
-			result = verifyIfUrlMatchesBlacklist(uri.getAttributes().get("url"));
+			result = verifyIfUrlMatchesBlacklist((String) uri.getAttributes().get("url"));
 
 			if (result.isPresent())
 				break;

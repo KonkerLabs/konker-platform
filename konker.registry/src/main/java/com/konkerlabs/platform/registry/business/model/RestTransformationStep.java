@@ -1,14 +1,10 @@
 package com.konkerlabs.platform.registry.business.model;
 
-import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.registry.business.model.enumerations.IntegrationType;
 import com.konkerlabs.platform.utilities.validations.InterpolableURIValidator;
-import com.konkerlabs.platform.utilities.validations.ValidationException;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 
-import java.net.URI;
-import java.text.MessageFormat;
 import java.util.*;
 
 @EqualsAndHashCode(callSuper = true)
@@ -16,6 +12,7 @@ public class RestTransformationStep extends TransformationStep {
 
     public enum Validations {
         ATTRIBUTES_NULL_EMPTY("model.transformation.rest.attributes.not_empty"),
+        ATTRIBUTES_HEADERS_INVALID  ("model.transformation.rest.attributes.headers.invalid"),
         ATTRIBUTES_METHOD_MISSING("model.transformation.rest.attributes.method.missing"),
         ATTRIBUTES_URL_MISSING("model.transformation.rest.attributes.url.missing"),
         ATTRIBUTES_USERNAME_MISSING("model.transformation.rest.attributes.username.missing"),
@@ -32,7 +29,8 @@ public class RestTransformationStep extends TransformationStep {
         }
     }
 
-    public static final String REST_URL_ATTRIBUTE_METHOD = "method";
+    public static final String REST_ATTRIBUTE_METHOD = "method";
+    public static final String REST_ATTRIBUTE_HEADERS = "headers";
     public static final String REST_URL_ATTRIBUTE_NAME = "url";
     public static final String REST_USERNAME_ATTRIBUTE_NAME = "username";
     public static final String REST_PASSWORD_ATTRIBUTE_NAME = "password";
@@ -46,16 +44,16 @@ public class RestTransformationStep extends TransformationStep {
 
     @Override
     public String getContext() {
-        return this.getAttributes().get(REST_URL_ATTRIBUTE_NAME);
+        return (String) this.getAttributes().get(REST_ATTRIBUTE_METHOD);
     }
 
     @Override
     public String getGuid() {
-        return getAttributes().get(REST_USERNAME_ATTRIBUTE_NAME);
+        return (String) getAttributes().get(REST_URL_ATTRIBUTE_NAME);
     }
 
     @Builder
-    public RestTransformationStep(Map<String, String> attributes) {
+    public RestTransformationStep(Map<String, Object> attributes) {
         super(IntegrationType.REST, attributes);
     }
 
@@ -68,12 +66,14 @@ public class RestTransformationStep extends TransformationStep {
 
         Optional.ofNullable(getAttributes()).filter(attributes -> !attributes.isEmpty())
             .ifPresent(attr -> {
-                if (!attr.containsKey(REST_URL_ATTRIBUTE_METHOD))
+                if (!attr.containsKey(REST_ATTRIBUTE_METHOD))
                     validations.put(Validations.ATTRIBUTES_METHOD_MISSING.getCode(),null);
-                if (!attr.containsKey(REST_URL_ATTRIBUTE_NAME) || attr.get(REST_URL_ATTRIBUTE_NAME).isEmpty()) {
+                if (!attr.containsKey(REST_URL_ATTRIBUTE_NAME) ||
+                        (attr.get(REST_URL_ATTRIBUTE_NAME) != null &&
+                        ((String) attr.get(REST_URL_ATTRIBUTE_NAME)).isEmpty())) {
                     validations.put(Validations.ATTRIBUTES_URL_MISSING.getCode(),null);
                 } else {
-                    InterpolableURIValidator.to(attr.get(REST_URL_ATTRIBUTE_NAME))
+                    InterpolableURIValidator.to((String) attr.get(REST_URL_ATTRIBUTE_NAME))
                             .applyValidations()
                             .filter(stringMap -> !stringMap.isEmpty())
                             .ifPresent(stringMap -> {

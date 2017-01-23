@@ -50,12 +50,13 @@ public class HttpGatewayTest {
     @Autowired
     private HttpGateway httpGateway;
     private HttpMethod method;
+    private HttpHeaders headers;
     private MediaType mediaType = MediaType.APPLICATION_JSON;
 
     @Before
     public void setUp() throws URISyntaxException {
         MockitoAnnotations.initMocks(this);
-
+        headers = new HttpHeaders();
         method = HttpMethod.GET;
         uri = new URI("http://my.enrichment.service:8080/device/000000000001/product");
     }
@@ -65,7 +66,7 @@ public class HttpGatewayTest {
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("HTTP method must be provided");
 
-        httpGateway.request(null, null, mediaType, () -> null, USERNAME, PASSWORD);
+        httpGateway.request(null, null, null, mediaType, () -> null, USERNAME, PASSWORD);
 
         verifyZeroInteractions(restTemplate);
     }
@@ -75,7 +76,7 @@ public class HttpGatewayTest {
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("Service URI must be provided");
 
-        httpGateway.request(method, null, mediaType, () -> null, USERNAME, PASSWORD);
+        httpGateway.request(method, null, null, mediaType, () -> null, USERNAME, PASSWORD);
 
         verifyZeroInteractions(restTemplate);
     }
@@ -85,7 +86,7 @@ public class HttpGatewayTest {
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("Username and Password must be both provided together");
 
-        httpGateway.request(method, uri, mediaType, () -> null, null, PASSWORD);
+        httpGateway.request(method, headers, uri, mediaType, () -> null, null, PASSWORD);
 
         verifyZeroInteractions(restTemplate);
     }
@@ -95,7 +96,7 @@ public class HttpGatewayTest {
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("Username and Password must be both provided together");
 
-        httpGateway.request(method, uri, mediaType, () -> null, USERNAME, null);
+        httpGateway.request(method, headers, uri, mediaType, () -> null, USERNAME, null);
 
         verifyZeroInteractions(restTemplate);
     }
@@ -105,7 +106,7 @@ public class HttpGatewayTest {
         when(restTemplate.exchange(eq(uri), eq(HttpMethod.GET), httpEntityCaptor.capture(),
                 eq(String.class))).thenReturn(new ResponseEntity<String>(HttpStatus.OK));
 
-        httpGateway.request(method, uri, mediaType, () -> null, USERNAME, PASSWORD);
+        httpGateway.request(method, headers, uri, mediaType, () -> null, USERNAME, PASSWORD);
 
         HttpEntity<String> entity = httpEntityCaptor.getValue();
         assertThat(entity,notNullValue());
@@ -121,7 +122,7 @@ public class HttpGatewayTest {
         when(restTemplate.exchange(eq(uri), eq(HttpMethod.GET), httpEntityCaptor.capture(),
                 eq(String.class))).thenReturn(new ResponseEntity<String>(HttpStatus.OK));
 
-        httpGateway.request(method, uri, mediaType, () -> null, "", PASSWORD);
+        httpGateway.request(method, headers, uri, mediaType, () -> null, "", PASSWORD);
 
         HttpEntity<String> entity = httpEntityCaptor.getValue();
         assertThat(entity,notNullValue());
@@ -137,7 +138,7 @@ public class HttpGatewayTest {
         when(restTemplate.exchange(eq(uri), eq(HttpMethod.GET), httpEntityCaptor.capture(),
                 eq(String.class))).thenReturn(new ResponseEntity<String>(HttpStatus.OK));
 
-        httpGateway.request(method, uri, mediaType, () -> null, "", PASSWORD);
+        httpGateway.request(method, headers, uri, mediaType, () -> null, "", PASSWORD);
 
         HttpEntity<String> entity = httpEntityCaptor.getValue();
         assertThat(entity,notNullValue());
@@ -153,7 +154,7 @@ public class HttpGatewayTest {
         when(restTemplate.exchange(eq(uri), eq(HttpMethod.GET), httpEntityCaptor.capture(),
                 eq(String.class))).thenReturn(new ResponseEntity<String>(HttpStatus.OK));
 
-        httpGateway.request(method, uri, mediaType, () -> null, USERNAME, "");
+        httpGateway.request(method, headers, uri, mediaType, () -> null, USERNAME, "");
 
         HttpEntity<String> entity = httpEntityCaptor.getValue();
         assertThat(entity,notNullValue());
@@ -169,7 +170,7 @@ public class HttpGatewayTest {
         when(restTemplate.exchange(eq(uri), eq(HttpMethod.GET), httpEntityCaptor.capture(),
                 eq(String.class))).thenReturn(new ResponseEntity<String>(HttpStatus.OK));
 
-        httpGateway.request(method, uri, mediaType, () -> null, null, null);
+        httpGateway.request(method, headers, uri, mediaType, () -> null, null, null);
 
         HttpEntity<String> entity = httpEntityCaptor.getValue();
         assertThat(entity,notNullValue());
@@ -185,7 +186,7 @@ public class HttpGatewayTest {
         when(restTemplate.exchange(eq(uri), eq(HttpMethod.GET), httpEntityCaptor.capture(),
                 eq(String.class))).thenReturn(new ResponseEntity<String>(HttpStatus.OK));
 
-        httpGateway.request(method, uri, mediaType, () -> null, "", "");
+        httpGateway.request(method, headers, uri, mediaType, () -> null, "", "");
 
         HttpEntity<String> entity = httpEntityCaptor.getValue();
         assertThat(entity,notNullValue());
@@ -203,7 +204,7 @@ public class HttpGatewayTest {
         when(restTemplate.exchange(eq(uri), eq(HttpMethod.GET), httpEntityCaptor.capture(),
                 eq(String.class))).thenReturn(new ResponseEntity<String>(HttpStatus.OK));
 
-        httpGateway.request(method, uri, mediaType, body, USERNAME, PASSWORD);
+        httpGateway.request(method, headers, uri, mediaType, body, USERNAME, PASSWORD);
 
         HttpEntity<String> entity = httpEntityCaptor.getValue();
         assertThat(entity,notNullValue());
@@ -218,7 +219,7 @@ public class HttpGatewayTest {
         when(restTemplate.exchange(eq(uri), eq(method), httpEntityCaptor.capture(),
                 eq(String.class))).thenReturn(new ResponseEntity<String>(HttpStatus.OK));
 
-        httpGateway.request(method, uri, mediaType, null, USERNAME, PASSWORD);
+        httpGateway.request(method, headers, uri, mediaType, null, USERNAME, PASSWORD);
 
         verify(restTemplate).exchange(eq(uri), eq(method), httpEntityCaptor.capture(),
                 eq(String.class));
@@ -237,6 +238,6 @@ public class HttpGatewayTest {
         when(restTemplate.exchange(eq(uri), eq(method), httpEntityCaptor.capture(),
                 eq(String.class))).thenReturn(new ResponseEntity<String>(errorBody,HttpStatus.INTERNAL_SERVER_ERROR));
 
-        httpGateway.request(method, uri, mediaType, null, USERNAME, PASSWORD);
+        httpGateway.request(method, headers, uri, mediaType, null, USERNAME, PASSWORD);
     }
 }

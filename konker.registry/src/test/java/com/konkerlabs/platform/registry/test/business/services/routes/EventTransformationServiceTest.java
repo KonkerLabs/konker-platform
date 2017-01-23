@@ -18,6 +18,7 @@ import org.mockito.Captor;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
@@ -39,7 +40,7 @@ import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
-    BusinessTestConfiguration.class
+        BusinessTestConfiguration.class
 })
 public class EventTransformationServiceTest {
 
@@ -80,26 +81,26 @@ public class EventTransformationServiceTest {
         MockitoAnnotations.initMocks(this);
 
         event = Event.builder().timestamp(Instant.now())
-            .incoming(
-                    Event.EventActor.builder()
-                    .channel(DEVICE_MQTT_CHANNEL).build()
-            ).payload(validPayloadJson).build();
+                .incoming(
+                        Event.EventActor.builder()
+                                .channel(DEVICE_MQTT_CHANNEL).build()
+                ).payload(validPayloadJson).build();
 
         transformation = Transformation.builder()
-            .id("id")
-            .name("Transformation name")
-            .description("Description")
-            .step(RestTransformationStep.builder()
-                .attributes(new HashMap<String,String>() {
-                    {
-                        put(RestTransformationStep.REST_URL_ATTRIBUTE_METHOD, transformationMethod);
-                        put(RestTransformationStep.REST_URL_ATTRIBUTE_NAME,transformationUrl);
-                        put(RestTransformationStep.REST_USERNAME_ATTRIBUTE_NAME,transformationServiceUsername);
-                        put(RestTransformationStep.REST_PASSWORD_ATTRIBUTE_NAME,transformationServicePassword);
-                    }
-                }).build()
-            )
-            .build();
+                .id("id")
+                .name("Transformation name")
+                .description("Description")
+                .step(RestTransformationStep.builder()
+                        .attributes(new HashMap<String, Object>() {
+                            {
+                                put(RestTransformationStep.REST_ATTRIBUTE_METHOD, transformationMethod);
+                                put(RestTransformationStep.REST_URL_ATTRIBUTE_NAME, transformationUrl);
+                                put(RestTransformationStep.REST_USERNAME_ATTRIBUTE_NAME, transformationServiceUsername);
+                                put(RestTransformationStep.REST_PASSWORD_ATTRIBUTE_NAME, transformationServicePassword);
+                            }
+                        }).build()
+                )
+                .build();
     }
 
     @Test
@@ -107,7 +108,7 @@ public class EventTransformationServiceTest {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Event cannot be null");
 
-        subject.transform(null,transformation);
+        subject.transform(null, transformation);
     }
 
     @Test
@@ -115,26 +116,26 @@ public class EventTransformationServiceTest {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Transformation cannot be null");
 
-        subject.transform(event,null);
+        subject.transform(event, null);
     }
 
     @Test
     public void shouldReturnEmptyEventIfTransformationURLTemplateIsInvalid() throws Exception {
         transformation.getSteps().get(0).getAttributes()
-                .put(RestTransformationStep.REST_URL_ATTRIBUTE_NAME,"http://server:8080/path/@{#dummy?query=1");
+                .put(RestTransformationStep.REST_URL_ATTRIBUTE_NAME, "http://server:8080/path/@{#dummy?query=1");
 
-        Optional<Event> transformed = subject.transform(event,transformation);
+        Optional<Event> transformed = subject.transform(event, transformation);
 
-        assertThat(transformed,equalTo(Optional.empty()));
+        assertThat(transformed, equalTo(Optional.empty()));
     }
 
     @Test
     public void shouldReturnEmptyEventIfEventPayloadIsInvalid() throws Exception {
         event.setPayload(invalidPayloadJson);
 
-        Optional<Event> transformed = subject.transform(event,transformation);
+        Optional<Event> transformed = subject.transform(event, transformation);
 
-        assertThat(transformed,equalTo(Optional.empty()));
+        assertThat(transformed, equalTo(Optional.empty()));
     }
 
     @Test
@@ -142,34 +143,36 @@ public class EventTransformationServiceTest {
         String url = transformationUrl.replaceAll("\\@\\{.*}", "value");
         URI uri = URI.create(url);
         when(
-            httpGateway.request(
-                eq(HttpMethod.POST),
-                eq(uri),
-                eq(MediaType.APPLICATION_JSON),
-                bodyCaptor.capture(),
-                eq(transformationServiceUsername),
-                eq(transformationServicePassword))
+                httpGateway.request(
+                        eq(HttpMethod.POST),
+                        Mockito.any(HttpHeaders.class),
+                        eq(uri),
+                        eq(MediaType.APPLICATION_JSON),
+                        bodyCaptor.capture(),
+                        eq(transformationServiceUsername),
+                        eq(transformationServicePassword))
         ).thenThrow(IntegrationException.class);
 
-        Optional<Event> transformed = subject.transform(event,transformation);
+        Optional<Event> transformed = subject.transform(event, transformation);
 
-        assertThat(transformed,equalTo(Optional.empty()));
+        assertThat(transformed, equalTo(Optional.empty()));
     }
 
     @Test
     public void shouldReturnEmptyEventIfStepResponseBodyIsEmpty() throws Exception {
         when(
-            httpGateway.request(
-                    eq(HttpMethod.POST),
-                    Mockito.any(URI.class),
-                    eq(MediaType.APPLICATION_JSON),
-                    bodyCaptor.capture(),
-                    eq(transformationServiceUsername),
-                    eq(transformationServicePassword))
+                httpGateway.request(
+                        eq(HttpMethod.POST),
+                        Mockito.any(HttpHeaders.class),
+                        Mockito.any(URI.class),
+                        eq(MediaType.APPLICATION_JSON),
+                        bodyCaptor.capture(),
+                        eq(transformationServiceUsername),
+                        eq(transformationServicePassword))
         ).thenReturn("");
 
-        Optional<Event> transformed = subject.transform(event,transformation);
-        assertThat(transformed,equalTo(Optional.empty()));
+        Optional<Event> transformed = subject.transform(event, transformation);
+        assertThat(transformed, equalTo(Optional.empty()));
     }
 
     @Test
@@ -177,6 +180,7 @@ public class EventTransformationServiceTest {
         when(
                 httpGateway.request(
                         eq(HttpMethod.POST),
+                        Mockito.any(HttpHeaders.class),
                         Mockito.any(URI.class),
                         eq(MediaType.APPLICATION_JSON),
                         bodyCaptor.capture(),
@@ -184,8 +188,8 @@ public class EventTransformationServiceTest {
                         eq(transformationServicePassword))
         ).thenReturn("[]");
 
-        Optional<Event> transformed = subject.transform(event,transformation);
-        assertThat(transformed,equalTo(Optional.empty()));
+        Optional<Event> transformed = subject.transform(event, transformation);
+        assertThat(transformed, equalTo(Optional.empty()));
     }
 
     @Test
@@ -193,6 +197,7 @@ public class EventTransformationServiceTest {
         when(
                 httpGateway.request(
                         eq(HttpMethod.POST),
+                        Mockito.any(HttpHeaders.class),
                         Mockito.any(URI.class),
                         eq(MediaType.APPLICATION_JSON),
                         bodyCaptor.capture(),
@@ -200,8 +205,8 @@ public class EventTransformationServiceTest {
                         eq(transformationServicePassword))
         ).thenReturn("{}");
 
-        Optional<Event> transformed = subject.transform(event,transformation);
-        assertThat(transformed,equalTo(Optional.empty()));
+        Optional<Event> transformed = subject.transform(event, transformation);
+        assertThat(transformed, equalTo(Optional.empty()));
     }
 
     @Test
@@ -216,6 +221,7 @@ public class EventTransformationServiceTest {
         when(
                 httpGateway.request(
                         eq(HttpMethod.POST),
+                        Mockito.any(HttpHeaders.class),
                         Mockito.any(URI.class),
                         eq(MediaType.APPLICATION_JSON),
                         bodyCaptor.capture(),
@@ -223,13 +229,13 @@ public class EventTransformationServiceTest {
                         eq(transformationServicePassword))
         ).thenReturn(firstStepResponseJson);
 
-        Optional<Event> transformed = subject.transform(event,transformation);
+        Optional<Event> transformed = subject.transform(event, transformation);
 
-        assertThat(transformed.isPresent(),equalTo(true));
+        assertThat(transformed.isPresent(), equalTo(true));
         transformed.ifPresent(e -> {
-            assertThat(e.getTimestamp(),equalTo(event.getTimestamp()));
-            assertThat(e.getIncoming().getChannel(),equalTo(event.getIncoming().getChannel()));
-            assertThat(e.getPayload(),equalTo(firstStepResponseJson));
+            assertThat(e.getTimestamp(), equalTo(event.getTimestamp()));
+            assertThat(e.getIncoming().getChannel(), equalTo(event.getIncoming().getChannel()));
+            assertThat(e.getPayload(), equalTo(firstStepResponseJson));
         });
     }
 
@@ -250,13 +256,14 @@ public class EventTransformationServiceTest {
         URI firstURI = URI.create(transformationUrl.replaceAll("\\@\\{.*}", "value"));
 
         when(
-            httpGateway.request(
-                    eq(HttpMethod.POST),
-                    eq(firstURI),
-                    eq(MediaType.APPLICATION_JSON),
-                    bodyCaptor.capture(),
-                    eq(transformationServiceUsername),
-                    eq(transformationServicePassword))
+                httpGateway.request(
+                        eq(HttpMethod.POST),
+                        Mockito.any(HttpHeaders.class),
+                        eq(firstURI),
+                        eq(MediaType.APPLICATION_JSON),
+                        bodyCaptor.capture(),
+                        eq(transformationServiceUsername),
+                        eq(transformationServicePassword))
         ).thenReturn(firstStepResponseJson);
 
         String secondStepURI = "http://server:8080/service/@{#customerId}/verify";
@@ -264,12 +271,12 @@ public class EventTransformationServiceTest {
         List<TransformationStep> steps = new ArrayList<>();
         steps.addAll(transformation.getSteps());
         steps.add(RestTransformationStep.builder()
-                .attributes(new HashMap<String,String>() {
+                .attributes(new HashMap<String, Object>() {
                     {
-                        put(RestTransformationStep.REST_URL_ATTRIBUTE_METHOD, transformationMethod);
-                        put(RestTransformationStep.REST_URL_ATTRIBUTE_NAME,secondStepURI);
-                        put(RestTransformationStep.REST_USERNAME_ATTRIBUTE_NAME,"");
-                        put(RestTransformationStep.REST_PASSWORD_ATTRIBUTE_NAME,"");
+                        put(RestTransformationStep.REST_ATTRIBUTE_METHOD, transformationMethod);
+                        put(RestTransformationStep.REST_URL_ATTRIBUTE_NAME, secondStepURI);
+                        put(RestTransformationStep.REST_USERNAME_ATTRIBUTE_NAME, "");
+                        put(RestTransformationStep.REST_PASSWORD_ATTRIBUTE_NAME, "");
                     }
                 }).build());
         transformation.setSteps(steps);
@@ -277,22 +284,23 @@ public class EventTransformationServiceTest {
         URI secondURI = URI.create(secondStepURI.replaceAll("\\@\\{.*}", "123456"));
 
         when(
-            httpGateway.request(
-                    eq(HttpMethod.POST),
-                    eq(secondURI),
-                    eq(MediaType.APPLICATION_JSON),
-                    bodyCaptor.capture(),
-                    eq(""),
-                    eq(""))
+                httpGateway.request(
+                        eq(HttpMethod.POST),
+                        Mockito.any(HttpHeaders.class),
+                        eq(secondURI),
+                        eq(MediaType.APPLICATION_JSON),
+                        bodyCaptor.capture(),
+                        eq(""),
+                        eq(""))
         ).thenReturn(secondStepResponseJson);
 
-        Optional<Event> transformed = subject.transform(event,transformation);
+        Optional<Event> transformed = subject.transform(event, transformation);
 
-        assertThat(transformed.isPresent(),equalTo(true));
+        assertThat(transformed.isPresent(), equalTo(true));
         transformed.ifPresent(e -> {
-            assertThat(e.getTimestamp(),equalTo(event.getTimestamp()));
-            assertThat(e.getIncoming().getChannel(),equalTo(event.getIncoming().getChannel()));
-            assertThat(e.getPayload(),equalTo(secondStepResponseJson));
+            assertThat(e.getTimestamp(), equalTo(event.getTimestamp()));
+            assertThat(e.getIncoming().getChannel(), equalTo(event.getIncoming().getChannel()));
+            assertThat(e.getPayload(), equalTo(secondStepResponseJson));
         });
     }
 }
