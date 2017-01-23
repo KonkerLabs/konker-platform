@@ -75,7 +75,7 @@ COPY build/registry.war /var/lib/jetty/webapps/
 COPY build/application.conf /var/lib/jetty/resources/
 COPY build/logback.xml /var/lib/jetty/webapps/resources/
 COPY build/logback.xml /var/lib/jetty/resources/
-COPY build/resolv.conf /etc/
+#COPY build/resolv.conf /etc/
 COPY build/mail /var/lib/jetty/webapps/resources/mail/
 COPY build/mail /var/lib/jetty/resources/mail/
 
