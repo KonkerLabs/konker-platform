@@ -137,7 +137,7 @@ public class RecoverPasswordController implements ApplicationContextAware {
     					user.getLanguage().getLocale());
     			return Boolean.TRUE;
     		} catch (MessagingException e) {
-    			LOGGER.equals(e);
+    			LOGGER.warn(e.getLocalizedMessage());
     			return Boolean.FALSE;
     		}
     	} else {
