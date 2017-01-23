@@ -24,6 +24,8 @@ import org.springframework.util.StringUtils;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
 
@@ -80,12 +82,11 @@ public class EventTransformationServiceImpl implements EventTransformationServic
             }
 
             HttpHeaders headers = new HttpHeaders();
-            Optional.ofNullable((String) step.getAttributes().get(RestTransformationStep.REST_ATTRIBUTE_HEADERS))
-                    .ifPresent( item ->{
-                        String[] header = item.split("=");
-                        if(header.length == 2){
-                            headers.add(header[0], header[1]);
-                        }
+            Optional.ofNullable((Map<String, String>) step.getAttributes().get(RestTransformationStep.REST_ATTRIBUTE_HEADERS))
+                    .ifPresent(item ->{
+                        item.entrySet().stream().forEach( entry ->{
+                            headers.add(entry.getKey(), entry.getValue());
+                        });
                     });
 
             String stepResponse = httpGateway.request(
