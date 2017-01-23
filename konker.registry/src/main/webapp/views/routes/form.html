@@ -46,7 +46,7 @@
                        for="incomingAuthority"></label>
                 <div class="col-sm-4">
                     <select
-                        class="col-md-12"
+                        class="form-control col-md-12"
                         data-th-field="*{incoming.authorityId}"
                         id="incomingAuthority" name="incomingAuthority">
                         <option data-th-each="device : ${allDevices}"
@@ -115,7 +115,7 @@
                        data-th-text="#{routes.form.transformation_chain}"
                        for="transformation"></label>
                 <div class="col-sm-4">
-                    <select class="col-md-12"
+                    <select class="form-control col-md-12"
                             data-th-field="*{transformation}"
                             id="transformation" name="transformation">
                         <option data-th-value="${''}"

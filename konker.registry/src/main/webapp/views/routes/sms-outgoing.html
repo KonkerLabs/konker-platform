@@ -9,7 +9,7 @@
                data-th-text="#{routes.sms-outgoing.destination}"
                for="outgoingSmsDestinationGuid">SMS Destination</label>
         <div class="col-sm-4">
-            <select class="col-md-12" data-th-field="${route.outgoing.authorityId}"
+            <select class="form-control col-md-12" data-th-field="${route.outgoing.authorityId}"
                     id="outgoingSmsDestinationGuid" name="outgoingSmsDestinationGuid">
                 <option data-th-each="smsDestination : ${allSmsDestinations}"
                         data-th-value="${smsDestination.guid}"
