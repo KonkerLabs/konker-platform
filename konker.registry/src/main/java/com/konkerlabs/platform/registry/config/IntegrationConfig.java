@@ -27,10 +27,12 @@ public class IntegrationConfig {
 		valuesTimeout.put("sms", 30000);
 		defaultMap.put("integration.timeout", Collections.singleton(valuesTimeout));
 		Config defaultConf = ConfigFactory.parseMap(defaultMap);
+		
+		Config defaultConfListValue = ConfigFactory.parseMap(valuesTimeout);
 
 		Config config = ConfigFactory.load().withFallback(defaultConf);
-		setTimeoutDefault(Integer.parseInt(config.getObjectList("integration.timeout").get(0).get("default").render()));
-		setEnrichment(Integer.parseInt(config.getObjectList("integration.timeout").get(0).get("enrichment").render()));
-		setSms(Integer.parseInt(config.getObjectList("integration.timeout").get(0).get("sms").render()));
+		setTimeoutDefault(Integer.parseInt(config.getObjectList("integration.timeout").get(0).withFallback(defaultConfListValue).get("default").render()));
+		setEnrichment(Integer.parseInt(config.getObjectList("integration.timeout").get(0).withFallback(defaultConfListValue).get("enrichment").render()));
+		setSms(Integer.parseInt(config.getObjectList("integration.timeout").get(0).withFallback(defaultConfListValue).get("sms").render()));
 	}
 }

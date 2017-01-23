@@ -1,12 +1,15 @@
 package com.konkerlabs.platform.registry.business.services;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -174,19 +177,26 @@ public class EventSchemaServiceImpl implements EventSchemaService {
 
 	@Override
 	public ServiceResponse<List<String>> findKnownIncomingMetricsBy(Tenant tenant, String deviceGuid, String channel, JsonNodeType nodeType) {
-    	
+
 		ServiceResponse<EventSchema> metricsResponse = findIncomingBy(deviceGuid, channel);
 
 		if (metricsResponse.isOk()) {
-		
-	    	List<String> listMetrics = metricsResponse.getResult()
-					.getFields().stream()
-					.filter(schemaField -> schemaField.getKnownTypes().contains(JsonNodeType.NUMBER))
-					.map(m -> m.getPath()).collect(Collectors.toList());
-	    	
-	    	return ServiceResponseBuilder.<List<String>>ok()
-	                .withResult(listMetrics).build();
-	    	
+
+			if (metricsResponse.getResult() != null) {
+
+		    	List<String> listMetrics = metricsResponse.getResult()
+						.getFields().stream()
+						.filter(schemaField -> schemaField.getKnownTypes().contains(JsonNodeType.NUMBER))
+						.map(m -> m.getPath()).collect(Collectors.toList());
+	
+		    	return ServiceResponseBuilder.<List<String>>ok()
+		                .withResult(listMetrics).build();	    	
+
+			} else {
+				return ServiceResponseBuilder.<List<String>>ok()
+		                .withResult(Collections.emptyList()).build();	    
+			}
+
 		} else {
 
             return ServiceResponseBuilder.<List<String>>error()
