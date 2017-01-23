@@ -7,6 +7,7 @@ import com.konkerlabs.platform.registry.web.forms.TransformationForm;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -30,7 +31,8 @@ public class TransformationFormTest {
         form.setName("Transformation name");
         form.setDescription("Description");
         form.setSteps(new LinkedList<TransformationForm.TransformationStepForm>() {
-            {add(new TransformationForm.TransformationStepForm("METHOD", "URL","USERNAME","PASSWORD"));}
+            {add(new TransformationForm.TransformationStepForm("METHOD", "URL","USERNAME","PASSWORD",
+                    new ArrayList<TransformationForm.TransformationStepHeaderForm>()));}
         });
 
         model = Transformation.builder()
@@ -38,12 +40,13 @@ public class TransformationFormTest {
             .description(form.getDescription())
             .step(
                 RestTransformationStep.builder()
-                    .attributes(new HashMap<String,String>() {
+                    .attributes(new HashMap<String,Object>() {
                         {
-                            put(RestTransformationStep.REST_URL_ATTRIBUTE_METHOD,form.getSteps().get(0).getMethod());
+                            put(RestTransformationStep.REST_ATTRIBUTE_METHOD,form.getSteps().get(0).getMethod());
                             put(RestTransformationStep.REST_URL_ATTRIBUTE_NAME,form.getSteps().get(0).getUrl());
                             put(RestTransformationStep.REST_USERNAME_ATTRIBUTE_NAME,form.getSteps().get(0).getUsername());
                             put(RestTransformationStep.REST_PASSWORD_ATTRIBUTE_NAME,form.getSteps().get(0).getPassword());
+                            put(RestTransformationStep.REST_ATTRIBUTE_HEADERS, form.getSteps().get(0).getHeadersAsMap());
                         }
                     }).build()
             )

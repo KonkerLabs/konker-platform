@@ -15,6 +15,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
@@ -31,7 +32,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 
-@ContextConfiguration(classes = { IntegrationLayerTestContext.class })
+@ContextConfiguration(classes = {IntegrationLayerTestContext.class})
 @RunWith(MockitoJUnitRunner.class)
 public class SMSMessageGatewayTwilioImplTest extends IntegrationLayerTestSupport {
     private static final String USERNAME = "Username";
@@ -50,7 +51,7 @@ public class SMSMessageGatewayTwilioImplTest extends IntegrationLayerTestSupport
     private ArgumentCaptor<Supplier<MultiValueMap<String, String>>> formCaptor;
 
     private SMSMessageGatewayTwilioImpl build(URI uri, String username, String password, String fromNumber,
-            HttpGateway httpGateway) {
+                                              HttpGateway httpGateway) {
         SMSMessageGatewayTwilioImpl s = new SMSMessageGatewayTwilioImpl();
         s.setApiUri(uri);
         s.setUsername(username);
@@ -192,7 +193,14 @@ public class SMSMessageGatewayTwilioImplTest extends IntegrationLayerTestSupport
     public void shouldRaiseIntegrationExceptionIfPostFails() throws IntegrationException {
         thrown.expect(IntegrationException.class);
 
-        Mockito.when(httpGateway.request(eq(HttpMethod.POST),eq(apiUri),eq(MediaType.APPLICATION_FORM_URLENCODED),anyObject(),eq(USERNAME),eq(PASSWORD)))
+        Mockito.when(httpGateway.request(
+                eq(HttpMethod.POST),
+                Mockito.any(HttpHeaders.class),
+                eq(apiUri),
+                eq(MediaType.APPLICATION_FORM_URLENCODED),
+                anyObject(),
+                eq(USERNAME),
+                eq(PASSWORD)))
                 .thenThrow(new RestClientException("Dummy Exception"));
         build(apiUri, USERNAME, PASSWORD, FROM_NUMBER, httpGateway).send("SMS Text Body", "+2");
     }
@@ -201,7 +209,7 @@ public class SMSMessageGatewayTwilioImplTest extends IntegrationLayerTestSupport
     public void shouldPostToApiIfDataIsCorrect() throws IntegrationException {
         build(apiUri, USERNAME, PASSWORD, FROM_NUMBER, httpGateway).send("SMS Text Body", "+2");
 
-        verify(httpGateway).request(eq(HttpMethod.POST),anyObject(),eq(MediaType.APPLICATION_FORM_URLENCODED),formCaptor.capture(),eq(USERNAME),eq(PASSWORD));
+        verify(httpGateway).request(eq(HttpMethod.POST), Mockito.any(HttpHeaders.class), anyObject(), eq(MediaType.APPLICATION_FORM_URLENCODED), formCaptor.capture(), eq(USERNAME), eq(PASSWORD));
 
         Supplier<MultiValueMap<String, String>> entity = formCaptor.getValue();
         assertNotNull(entity);

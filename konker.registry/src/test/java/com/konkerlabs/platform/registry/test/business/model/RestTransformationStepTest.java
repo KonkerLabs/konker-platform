@@ -20,7 +20,7 @@ public class RestTransformationStepTest {
     @Before
     public void setUp() {
         subject = RestTransformationStep.builder()
-            .attributes(new HashMap<String,String>() {
+            .attributes(new HashMap<String, Object>() {
                 {
                     put("method", "POST");
                     put("url","http://host:8080/path?query=1");

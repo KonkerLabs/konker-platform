@@ -18,7 +18,7 @@ public abstract class TransformationStep implements URIDealer, Validatable {
 
     private IntegrationType type;
     @Singular
-    private Map<String,String> attributes = new HashMap<>();
+    private Map<String, Object> attributes = new HashMap<>();
 
     public TransformationStep() {
     }

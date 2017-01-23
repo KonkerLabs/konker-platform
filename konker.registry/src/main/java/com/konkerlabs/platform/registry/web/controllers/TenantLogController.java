@@ -33,11 +33,11 @@ public class TenantLogController {
 		ServiceResponse<List<TenantLog>> response = tenantLogService.findByTenant(tenant, ascendingOrder);
 
 		if (!response.isOk()) {
-			return new ModelAndView("/tenants/log/index").addObject("message", response.getResponseMessages())
+			return new ModelAndView("tenants/log/index").addObject("message", response.getResponseMessages())
 					.addObject("logs", response.getResult()).addObject("asc", ascendingOrder);
 		}
 
-		return new ModelAndView("/tenants/log/index").addObject("logs", response.getResult()).addObject("asc",
+		return new ModelAndView("tenants/log/index").addObject("logs", response.getResult()).addObject("asc",
 				ascendingOrder);
 
 
