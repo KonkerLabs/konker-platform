@@ -3,6 +3,7 @@ package com.konkerlabs.platform.registry.integration.gateways;
 import com.konkerlabs.platform.registry.integration.exceptions.IntegrationException;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import org.apache.http.Header;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,13 +31,18 @@ public class HttpGatewayImpl implements HttpGateway {
     @Autowired
     private RestTemplate restTemplate;
 
+    private HttpHeaders defaultHeaders;
+
     @Override
-    public <T> String request(HttpMethod method,
-                          URI uri,
-                          MediaType mediaType,
-                          Supplier<T> body,
-                          String username,
-                          String password) throws IntegrationException {
+    public <T> String request(
+            HttpMethod method,
+            HttpHeaders headers,
+            URI uri,
+            MediaType mediaType,
+            Supplier<T> body,
+            String username,
+            String password) throws IntegrationException {
+
         Optional.ofNullable(method)
                 .orElseThrow(() -> new IllegalStateException("HTTP method must be provided"));
 
@@ -46,13 +52,19 @@ public class HttpGatewayImpl implements HttpGateway {
         Optional.ofNullable(restTemplate)
                 .orElseThrow(() -> new IllegalStateException("RestTemplate must be provided"));
 
+        Optional.ofNullable(headers).orElse(new HttpHeaders());
+
         if ((username != null && password == null) || username == null && password != null) {
             throw new IllegalStateException("Username and Password must be both provided together");
         }
 
         try {
-            HttpHeaders headers = new HttpHeaders();;
-            headers.setContentType(mediaType);
+
+            Optional.ofNullable(defaultHeaders).ifPresent(item -> {
+                item.entrySet().forEach(header->{
+                    headers.put(header.getKey(), header.getValue());
+                });
+            });
 
             if ((username != null && !username.trim().isEmpty()) || (password != null && !password.trim().isEmpty())) {
                 String encodedCredentials = Base64Utils
@@ -61,15 +73,13 @@ public class HttpGatewayImpl implements HttpGateway {
                 headers.add("Authorization", format("Basic {0}", encodedCredentials));
             }
 
-            headers.add(KONKER_VERSION_HEADER, "0.1");
-
             HttpEntity<String> entity = new HttpEntity(
-                Optional.ofNullable(body).orElse(() -> null).get(),
-                headers
+                    Optional.ofNullable(body).orElse(() -> null).get(),
+                    headers
             );
 
             LOGGER.debug("Requesting {} from {}.", method, uri);
-            warmUp(null);
+            setUp(null, mediaType);
             ResponseEntity<String> exchange = restTemplate.exchange(uri, method, entity, String.class);
 
             if (exchange.getStatusCode().is2xxSuccessful()) {
@@ -87,13 +97,18 @@ public class HttpGatewayImpl implements HttpGateway {
         }
     }
 
-    private void warmUp(Optional<Integer> timeout) {
+    private void setUp(Optional<Integer> timeout, MediaType mediaType) {
+
+        defaultHeaders = new HttpHeaders();
+        defaultHeaders.setContentType(mediaType);
+        defaultHeaders.add(KONKER_VERSION_HEADER, "0.1");
+
         Integer clientTimeout =
                 Optional.ofNullable(timeout).isPresent() ?
                         timeout.get() :
                         Integer.parseInt(config.getObjectList("timeout").get(0).get("default").render());
 
-        Optional.ofNullable(restTemplate.getRequestFactory()).ifPresent (item -> {
+        Optional.ofNullable(restTemplate.getRequestFactory()).ifPresent(item -> {
             ((SimpleClientHttpRequestFactory) item).setReadTimeout(clientTimeout);
             ((SimpleClientHttpRequestFactory) item).setConnectTimeout(clientTimeout);
         });

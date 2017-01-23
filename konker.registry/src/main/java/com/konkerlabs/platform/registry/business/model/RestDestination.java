@@ -10,6 +10,7 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.http.HttpHeaders;
 
 import java.net.URI;
 import java.util.*;
@@ -43,6 +44,7 @@ public class RestDestination implements URIDealer, Validatable {
     private String guid;
     private String name;
     private String method;
+    private Map<String, String> headers;
     private String serviceURI;
     private String serviceUsername;
     private String servicePassword;

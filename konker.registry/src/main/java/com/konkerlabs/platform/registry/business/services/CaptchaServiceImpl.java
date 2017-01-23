@@ -11,6 +11,7 @@ import org.json.JSONString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -61,7 +62,9 @@ public class CaptchaServiceImpl implements CaptchaService {
         String body;
         Map<String, Object> result;
         try {
-            body = httpGateway.request(HttpMethod.POST,
+            body = httpGateway.request(
+                    HttpMethod.POST,
+                    new HttpHeaders(),
                     finalUrl.toURI(), MediaType.APPLICATION_JSON, null, null, null);
             result = jsonParsingService.toMap(body);
         } catch (URISyntaxException | IOException | IntegrationException | IllegalArgumentException e) {

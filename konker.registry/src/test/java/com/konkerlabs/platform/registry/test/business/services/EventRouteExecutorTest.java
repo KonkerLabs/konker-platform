@@ -17,6 +17,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
@@ -94,14 +95,15 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
         }.toURI();
 
         when(
-            httpGateway.request(
-                eq(HttpMethod.POST),
-                Mockito.any(URI.class),
-                Mockito.any(MediaType.class),
-                Mockito.any(Supplier.class),
-                Mockito.anyString(),
-                Mockito.anyString()
-            )
+                httpGateway.request(
+                        eq(HttpMethod.POST),
+                        Mockito.any(HttpHeaders.class),
+                        Mockito.any(URI.class),
+                        Mockito.any(MediaType.class),
+                        Mockito.any(Supplier.class),
+                        Mockito.anyString(),
+                        Mockito.anyString()
+                )
         ).thenReturn(transformationResponse);
     }
 
@@ -112,11 +114,11 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {
-        "/fixtures/tenants.json",
-        "/fixtures/devices.json",
-        "/fixtures/transformations.json",
-        "/fixtures/sms-destinations.json",
-        "/fixtures/event-routes.json"})
+            "/fixtures/tenants.json",
+            "/fixtures/devices.json",
+            "/fixtures/transformations.json",
+            "/fixtures/sms-destinations.json",
+            "/fixtures/event-routes.json"})
     public void shouldSendEventsForAMatchingRoute() throws ExecutionException, InterruptedException {
         Future<List<Event>> eventFuture = subject.execute(event, uri);
         assertThat(eventFuture.get(), notNullValue());
@@ -129,7 +131,7 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = "/fixtures/event-routes.json")
     public void shouldntSendAnyEventsForANonmatchingRoute() throws ExecutionException, InterruptedException, URISyntaxException {
-        URI nonMatchingFilterURI = new URI("device",nonMatchingFilterDeviceId,null,null,null);
+        URI nonMatchingFilterURI = new URI("device", nonMatchingFilterDeviceId, null, null, null);
         Future<List<Event>> eventFuture = subject.execute(event, nonMatchingFilterURI);
         assertThat(eventFuture.get(), notNullValue());
         assertThat(eventFuture.get(), hasSize(0));
@@ -138,7 +140,7 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = "/fixtures/event-routes.json")
     public void shouldntSendAnyEventsForANonMatchingIncomingDevice() throws ExecutionException, InterruptedException, URISyntaxException {
-        URI nonMatchingDeviceURI = new URI("device",nonMatchingRouteDeviceId,null,null,null);
+        URI nonMatchingDeviceURI = new URI("device", nonMatchingRouteDeviceId, null, null, null);
         Future<List<Event>> eventFuture = subject.execute(event, nonMatchingDeviceURI);
         assertThat(eventFuture.get(), notNullValue());
         assertThat(eventFuture.get(), hasSize(0));
@@ -147,7 +149,7 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = "/fixtures/event-routes.json")
     public void shouldntSendAnyEventsForANonMatchingIncomingChannel() throws ExecutionException, InterruptedException, URISyntaxException {
-        URI nonMatchingDeviceURI = new URI("device",matchingRouteDeviceGuid,null,null,null);
+        URI nonMatchingDeviceURI = new URI("device", matchingRouteDeviceGuid, null, null, null);
         event.getIncoming().setChannel("non_matching_channel");
         Future<List<Event>> eventFuture = subject.execute(event, nonMatchingDeviceURI);
         assertThat(eventFuture.get(), notNullValue());
@@ -157,7 +159,7 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = "/fixtures/event-routes.json")
     public void shouldntSendAnyEventsForANonActiveRoute() throws ExecutionException, InterruptedException, URISyntaxException {
-        URI inactiveRouteDeviceURI = new URI("device",inactiveRouteDeviceId,null,null,null);
+        URI inactiveRouteDeviceURI = new URI("device", inactiveRouteDeviceId, null, null, null);
         Future<List<Event>> eventFuture = subject.execute(event, inactiveRouteDeviceURI);
         assertThat(eventFuture, notNullValue());
         assertThat(eventFuture.get(), hasSize(0));
@@ -166,7 +168,7 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/event-routes.json"})
     public void shouldntSendAnyEventsForMalformedExpressionFilter() throws ExecutionException, InterruptedException, URISyntaxException {
-        URI nonBooleanRouteDeviceURI = new URI("device", malformedRouteDeviceId,null,null,null);
+        URI nonBooleanRouteDeviceURI = new URI("device", malformedRouteDeviceId, null, null, null);
         Future<List<Event>> eventFuture = subject.execute(event, nonBooleanRouteDeviceURI);
         assertThat(eventFuture, notNullValue());
         assertThat(eventFuture.get(), hasSize(0));

@@ -7,7 +7,7 @@ public interface ExpressionEvaluationService {
 
     Pattern EXPRESSION_TEMPLATE_PATTERN = Pattern.compile(".*\\@\\{.*}.*");
 
-    String evaluateTemplate(String expressionTemplate, Map<String, Object> evaluationContext);
     boolean evaluateConditional(String conditionalExpression, Map<String, Object> evaluationContext);
+    String evaluateTemplate(String expressionTemplate, Map<String, Object> evaluationContext);
 
 }

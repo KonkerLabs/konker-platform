@@ -13,7 +13,7 @@
                 <span aria-hidden="true">&times;</span>
             </button>
             <ul>
-            <li data-th-each="error : ${errors}" data-th-text="${error}"></li>
+                <li data-th-each="error : ${errors}" data-th-text="${error}"></li>
             </ul>
         </div>
         <form data-th-action="@{__${action}__}" action="#" data-th-object="${transformation}"
@@ -37,90 +37,155 @@
                        for="description">Description</label>
                 <div class="col-sm-6">
                     <textarea id="description" class="form-control" name="description"
-                              data-th-placeholder="#{transformations.form.description.placeholder}" data-th-field="*{description}">
+                              data-th-placeholder="#{transformations.form.description.placeholder}"
+                              data-th-field="*{description}">
                     </textarea>
                 </div>
             </div>
+
             <div class="center-block">
-            <div class="form-group form-group-sm">
-                <div class="col-md-10 center-block">
-                <table class="table table-condensed" id="transformationSteps">
-                    <caption>
-                        <strong data-th-text="#{transformations.form.steps}">Transformation steps</strong>
-                        <button class="btn btn-sm pull-right" type="button" id="btn-add">
-                            <span class="glyphicon glyphicon-plus"></span>
-                            [[#{nav.add} ?: 'Add']]
-                        </button>
-                    </caption>
-                    <thead>
-                        <tr>
-                            <td data-th-text="#{transformations.form.steps.method}">Method</td>
-                            <td data-th-text="#{transformations.form.steps.url}">URL</td>
-                            <td data-th-text="#{transformations.form.steps.username}">Username</td>
-                            <td data-th-text="#{transformations.form.steps.password}">Password</td>
-                        </tr>
-                    </thead>
-                    <tbody class="table-body">
-                        <tr data-th-each="step, stat: *{steps}">
-                            <td class="col-sm-2">
-                                <select data-th-field="*{steps[__${stat.index}__].method}"
-                                        class="form-control"
-                                        id="method"
-                                        name="method">
-                                    <option data-th-each="methodItem: *{methodList}" data-th-text="${methodItem.code}"
-                                            data-th-value="${methodItem}"></option>
-                                </select>
-                            </td>
-                            <td class="col-sm-6">
-                                <input type="text" data-th-field="*{steps[__${stat.index}__].url}"
-                                       class="form-control"/>
-                            </td>
-                            <td class="col-sm-2">
-                                <input type="text" data-th-field="*{steps[__${stat.index}__].username}"
-                                       class="form-control"/>
-                            </td>
-                            <td class="col-sm-2">
-                                <input type="text" data-th-field="*{steps[__${stat.index}__].password}"
-                                       class="form-control"/>
-                            </td>
-                            <td class="col-sm-1 text-center">
-                                <button class="btn btn-sm remove" type="button">
-                                    <span class="glyphicon glyphicon-remove"></span>
+                <div class="form-group form-group-sm">
+                    <div class="col-md-10 center-block">
+                        <table class="table table-condensed" id="transformationSteps">
+                            <caption>
+                                <strong data-th-text="#{transformations.form.steps}">Transformation steps</strong>
+                                <button class="btn btn-sm pull-right" type="button" id="btn-add">
+                                    <span class="glyphicon glyphicon-plus"></span>
+                                    [[#{nav.add} ?: 'Add']]
                                 </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                            </caption>
+                            <thead>
+                            <tr>
+                                <td data-th-text="#{transformations.form.steps.method}">Method</td>
+                                <td data-th-text="#{transformations.form.steps.url}">URL</td>
+                                <td data-th-text="#{transformations.form.steps.username}">Username</td>
+                                <td data-th-text="#{transformations.form.steps.password}">Password</td>
+                            </tr>
+                            </thead>
+                            <tbody class="table-body">
+                            <tr data-th-each="step, stat: *{steps}">
+                                <table>
+                                    <tr class="restparams">
+                                        <td class="col-sm-2">
+                                            <select data-th-field="*{steps[__${stat.index}__].method}"
+                                                    class="form-control"
+                                                    name="method">
+                                                <option data-th-each="methodItem: *{methodList}"
+                                                        data-th-text="${methodItem.code}"
+                                                        data-th-value="${methodItem}"></option>
+                                            </select>
+                                        </td>
+                                        <td class="col-sm-6">
+                                            <input type="text" data-th-field="*{steps[__${stat.index}__].url}"
+                                                   class="form-control"/>
+                                        </td>
+                                        <td class="col-sm-2">
+                                            <input type="text" data-th-field="*{steps[__${stat.index}__].username}"
+                                                   class="form-control"/>
+                                        </td>
+                                        <td class="col-sm-2">
+                                            <input type="text" data-th-field="*{steps[__${stat.index}__].password}"
+                                                   class="form-control"/>
+                                        </td>
+                                        <td class="col-sm-1 text-center">
+                                            <button class="btn btn-sm remove" type="button">
+                                                <span class="glyphicon glyphicon-remove"></span>
+                                            </button>
+                                        </td>
+                                        <!--<td class="col-sm-1 text-center">
+                                            <button data-toggle="collapse" data-target="#restheaders"
+                                                    class="btn btn-sm pull-right" type="button" id="btn-open-header">
+                                                <span class="glyphicon glyphicon-plus"></span>
+                                                header
+                                            </button>
+
+                                        </td>-->
+                                    </tr>
+                                    <!--<tr class="restheaders collapse" id="restheaders">
+                                        <td class="col-sm-2">
+                                            <strong>Headers</strong>
+                                        </td>
+                                        <td class="col-sm-12">
+                                            <div class="col-md-16 center-block">
+                                                <table class="table table-condensed" id="transformationStepHeaders">
+                                                    <thead>
+                                                    <tr>
+                                                        <td>Name</td>
+                                                        <td>Value</td>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody class="table-body">
+                                                    <tr data-th-each="header, headerIndex: *{steps[__${stat.index}__].headers}">
+                                                        <td class="col-sm-6">
+                                                            <input type="text"
+                                                                   data-th-field="*{steps[__${stat.index}__].headers[__${headerIndex.index}__].key}"
+                                                                   id="header-0-name"
+                                                                   class="form-control"/>
+                                                        </td>
+                                                        <td class="col-sm-6">
+                                                            <input type="text"
+                                                                   data-th-field="*{steps[__${stat.index}__].headers[__${headerIndex.index}__].value}"
+                                                                   id="header-0-value"
+                                                                   class="form-control"/>
+                                                        </td>
+                                                        <td class="col-sm-1 text-center">
+                                                            <button class="btn btn-sm remove" type="button">
+                                                                <span class="glyphicon glyphicon-remove"></span>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </td>
+                                        <td class="col-sm-1 text-center">
+                                            <button class="btn btn-sm pull-right add-header" type="button">
+                                                <span class="glyphicon glyphicon-plus"></span>
+                                                [[#{nav.add} ?: 'Add']]
+                                            </button>
+                                        </td>
+                                    </tr>-->
+                                </table>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
             </div>
             <button type="submit"
                     data-th-text="#{nav.save}"
-                    class="btn btn-success">Save</button>
+                    class="btn btn-success">Save
+            </button>
             <a data-th-href="@{/transformation}"
                data-th-text="#{nav.back}"
                class="btn btn-default">Back</a>
             <a class="btn btn-default" data-th-if="*{id} != null"
-					data-th-text="#{nav.remove}" data-toggle="modal" data-target="#removeItemModal">Remove</a>
-					
-			<div class="modal" id="removeItemModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-				<div class="modal-dialog" role="document">
-					<div class="modal-content">
-						<div class="modal-header">
-							<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-							<h3 data-th-text="#{transformation.form.remove_confirmation}">Remove</h3>
-						</div>
-						<div class="modal-body">
-							<p data-th-text="#{transformation.form.remove_confirmation.about_to_remove}">You are about to remove this Transformation.</p>
-							<p data-th-text="#{transformation.form.remove_confirmation.proceed}">Do you want to proceed?</p>
-						</div>
-						<div class="modal-footer">
-							<button type="button" id="btnYes" class="btn btn-primary" data-th-text="#{nav.yes}">Yes</button>
-							<button type="button" data-dismiss="modal" aria-hidden="true" class="btn btn-default" data-th-text=#{nav.no}>No</button>
-						</div>
-					</div>
-				</div>
-			</div>
+               data-th-text="#{nav.remove}" data-toggle="modal" data-target="#removeItemModal">Remove</a>
+
+            <div class="modal" id="removeItemModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                    aria-hidden="true">&times;</span></button>
+                            <h3 data-th-text="#{transformation.form.remove_confirmation}">Remove</h3>
+                        </div>
+                        <div class="modal-body">
+                            <p data-th-text="#{transformation.form.remove_confirmation.about_to_remove}">You are about
+                                to remove this Transformation.</p>
+                            <p data-th-text="#{transformation.form.remove_confirmation.proceed}">Do you want to
+                                proceed?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" id="btnYes" class="btn btn-primary" data-th-text="#{nav.yes}">Yes
+                            </button>
+                            <button type="button" data-dismiss="modal" aria-hidden="true" class="btn btn-default"
+                                    data-th-text=#{nav.no}>No
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </form>
     </fieldset>
 </div>

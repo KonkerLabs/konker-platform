@@ -4,6 +4,7 @@ import com.konkerlabs.platform.registry.integration.exceptions.IntegrationExcept
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.util.Base64Utils;
@@ -111,7 +112,8 @@ public class SMSMessageGatewayTwilioImpl implements SMSMessageGateway {
             LOGGER.debug("Sending SMS Message [{}] to [{}].", text, destinationPhoneNumber);
 
 //            restTemplate.postForLocation(apiUri, entity);
-            httpGateway.request(HttpMethod.POST,apiUri, MediaType.APPLICATION_FORM_URLENCODED, () -> form,username,password);
+            httpGateway.request(HttpMethod.POST, new HttpHeaders(),
+                    apiUri, MediaType.APPLICATION_FORM_URLENCODED, () -> form,username,password);
 
         } catch (RestClientException rce) {
             throw new IntegrationException(

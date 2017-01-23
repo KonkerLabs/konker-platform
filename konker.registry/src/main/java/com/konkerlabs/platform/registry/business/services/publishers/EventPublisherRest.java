@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -52,7 +53,8 @@ public class EventPublisherRest implements EventPublisher {
         this.expressionEvaluationService = expressionEvaluationService;
     }
 
-    @Autowired @Qualifier("mongoEvents")
+    @Autowired
+    @Qualifier("mongoEvents")
     public void setEventRepository(EventRepository eventRepository) {
         this.eventRepository = eventRepository;
     }
@@ -68,34 +70,35 @@ public class EventPublisherRest implements EventPublisher {
                 .orElseThrow(() -> new IllegalArgumentException("Tenant cannot be null"));
 
         ServiceResponse<RestDestination> destination = restDestinationService.getByGUID(
-            tenant,
-            destinationUri.getPath().replaceAll("/","")
+                tenant,
+                destinationUri.getPath().replaceAll("/", "")
         );
 
         Optional.ofNullable(destination)
                 .filter(response -> response.getStatus().equals(ServiceResponse.Status.OK))
                 .orElseThrow(() -> new IllegalArgumentException(
-                        MessageFormat.format("REST Destination is unknown : {0}",destinationUri)
+                        MessageFormat.format("REST Destination is unknown : {0}", destinationUri)
                 ));
 
         if (destination.getResult().isActive()) {
             try {
 
                 String serviceURI = evaluateExpressionIfNecessary(
-                    destination.getResult().getServiceURI(),outgoingEvent.getPayload()
+                        destination.getResult().getServiceURI(), outgoingEvent.getPayload()
                 );
 
                 httpGateway.request(
-                    HttpMethod.resolve(
-                            Optional.ofNullable(destination.getResult().getMethod()).isPresent() ?
-                                    destination.getResult().getMethod() : "POST"),
-                    URI.create(serviceURI), MediaType.APPLICATION_JSON,
-                    () -> outgoingEvent.getPayload(),
-                    destination.getResult().getServiceUsername(),
-                    destination.getResult().getServicePassword()
+                        HttpMethod.resolve(
+                                Optional.ofNullable(destination.getResult().getMethod()).isPresent() ?
+                                        destination.getResult().getMethod() : "POST"),
+                        new HttpHeaders(),
+                        URI.create(serviceURI), MediaType.APPLICATION_JSON,
+                        () -> outgoingEvent.getPayload(),
+                        destination.getResult().getServiceUsername(),
+                        destination.getResult().getServicePassword()
                 );
 //                eventRepository.saveIncoming(tenant,outgoingEvent);
-            } catch (JsonProcessingException|IntegrationException e) {
+            } catch (JsonProcessingException | IntegrationException e) {
                 LOGGER.error("Failed to forward event to its destination",
                         tenant.toURI(),
                         tenant.getLogLevel(),
@@ -103,7 +106,7 @@ public class EventPublisherRest implements EventPublisher {
             }
         } else {
             LOGGER.debug(
-                    MessageFormat.format(EVENT_DROPPED,destinationUri,outgoingEvent.getPayload()), 
+                    MessageFormat.format(EVENT_DROPPED, destinationUri, outgoingEvent.getPayload()),
                     tenant.toURI(),
                     tenant.getLogLevel());
         }
@@ -111,7 +114,7 @@ public class EventPublisherRest implements EventPublisher {
 
     private String evaluateExpressionIfNecessary(String template, String json) throws JsonProcessingException {
         if (ExpressionEvaluationService.EXPRESSION_TEMPLATE_PATTERN.matcher(template).matches())
-            return expressionEvaluationService.evaluateTemplate(template,jsonParsingService.toMap(json));
+            return expressionEvaluationService.evaluateTemplate(template, jsonParsingService.toMap(json));
         else return template;
     }
 }
