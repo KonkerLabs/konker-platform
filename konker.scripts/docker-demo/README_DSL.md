@@ -1,5 +1,19 @@
 # konker-platform
 
+__Run__
+```
+sudo docker run -p 80:80 -p 1883:1883 -v ~/yourpersistentfolder:/data/db -itd sonecabr/konker-platform:maker-0.1.0-SNAPSHOT
+```
+__Ports__
+ - 80 is the http port
+ - 1883 is the mqtt port
+
+__Usage:__
+Open __http://localhost__ in your prefered browser and type:
+
+__user__: admin
+__pass__: changeme
+
 ## domain specific language
 
 A [domain specific language](https://en.wikipedia.org/wiki/Domain-specific_language) helps you to manage some features in a system. So, we provide the following commands to manage users and database:
