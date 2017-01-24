@@ -168,33 +168,66 @@ public class RecoverPasswordController implements ApplicationContextAware {
                     .map(message -> applicationContext.getMessage(message.getKey(), message.getValue(), locale))
                     .collect(Collectors.toList());
 
-            return new ModelAndView("reset-password").addObject("user", User.builder().build())
-                    .addObject("errors", messages).addObject("isExpired", true);
+            return new ModelAndView("reset-password")
+            		.addObject("user", User.builder().build())
+                    .addObject("errors", messages)
+                    .addObject("isExpired", true);
         }
 
         if (serviceResponse.getResult().getIsExpired() || !validToken.getResult()) {
             List<String> messages = new ArrayList<>();
             messages.add(applicationContext.getMessage(TokenService.Validations.EXPIRED_TOKEN.getCode(), null, locale));
 
-            return new ModelAndView("reset-password").addObject("user", User.builder().build())
-                    .addObject("errors", messages).addObject("isExpired", true);
+            return new ModelAndView("reset-password")
+            		.addObject("user", User.builder().build())
+                    .addObject("errors", messages)
+                    .addObject("isExpired", true);
         }
 
         ServiceResponse<User> responseUser = userService.findByEmail(serviceResponse.getResult().getUserEmail());
 
-        return new ModelAndView("reset-password").addObject("user", responseUser.getResult()).addObject("token", token);
+        return new ModelAndView("reset-password")
+        		.addObject("user", responseUser.getResult())
+        		.addObject("token", token);
     }
 
     @RequestMapping(method = RequestMethod.POST)
     public ModelAndView resetPassword(@ModelAttribute("userForm") UserForm userForm,
             RedirectAttributes redirectAttributes, Locale locale) {
-        ServiceResponse<User> response = userService.findByEmail(userForm.getEmail());
+    	ServiceResponse<Token> serviceResponse = tokenService.getToken(userForm.getToken());
+        ServiceResponse<Boolean> validToken = tokenService.isValidToken(userForm.getToken());
+
+        if (!Optional.ofNullable(serviceResponse).isPresent()
+                || !Optional.ofNullable(serviceResponse.getResult()).isPresent()) {
+
+            List<String> messages = serviceResponse.getResponseMessages().entrySet().stream()
+                    .map(message -> applicationContext.getMessage(message.getKey(), message.getValue(), locale))
+                    .collect(Collectors.toList());
+
+            return new ModelAndView("reset-password")
+            		.addObject("user", User.builder().build())
+                    .addObject("errors", messages)
+                    .addObject("isExpired", true);
+        }
+
+        if (serviceResponse.getResult().getIsExpired() || !validToken.getResult()) {
+            List<String> messages = new ArrayList<>();
+            messages.add(applicationContext.getMessage(TokenService.Validations.EXPIRED_TOKEN.getCode(), null, locale));
+
+            return new ModelAndView("reset-password")
+            		.addObject("user", User.builder().build())
+                    .addObject("errors", messages)
+                    .addObject("isExpired", true);
+        }
+        
+        ServiceResponse<User> response = userService.findByEmail(serviceResponse.getResult().getUserEmail());
 
         if (!Optional.ofNullable(response.getResult()).isPresent()) {
             List<String> messages = new ArrayList<>();
             messages.add(applicationContext.getMessage(Messages.USER_DOES_NOT_EXIST.getCode(), null, locale));
-            return new ModelAndView("reset-password").addObject("errors", messages).addObject("user",
-                    User.builder().build());
+            return new ModelAndView("reset-password")
+            		.addObject("errors", messages)
+            		.addObject("user", User.builder().build());
         }
 
         User user = response.getResult();
@@ -206,7 +239,10 @@ public class RecoverPasswordController implements ApplicationContextAware {
                     .map(message -> applicationContext.getMessage(message.getKey(), message.getValue(), locale))
                     .collect(Collectors.toList());
 
-            return new ModelAndView("reset-password").addObject("user", user).addObject("errors", messages);
+            return new ModelAndView("reset-password")
+            		.addObject("user", user)
+            		.addObject("token", userForm.getToken())
+            		.addObject("errors", messages);
         }
 
         tokenService.invalidateToken(userForm.getToken());

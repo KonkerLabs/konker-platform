@@ -13,10 +13,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import org.junit.After;
 import org.junit.Before;
@@ -242,7 +240,11 @@ public class RecoverPasswordControllerTest extends WebLayerTestContext {
 			.thenReturn(ServiceResponseBuilder.<Token>ok()
 			.withResult(token).build());
     	
-    	when(userService.findByEmail("user@domain.com"))
+    	when(tokenService.isValidToken("8a4fd7bd-503e-4e4a-b85e-5501305c7a98"))
+			.thenReturn(ServiceResponseBuilder.<Boolean>ok()
+			.withResult(true).build());
+    	
+    	when(userService.findByEmail(token.getUserEmail()))
     		.thenReturn(ServiceResponseBuilder.<User>error()
     		.withMessage(Validations.NO_EXIST_USER.getCode()).build());
     	
@@ -253,14 +255,53 @@ public class RecoverPasswordControllerTest extends WebLayerTestContext {
     		.andDo(print())
 			.andExpect(model().attribute("errors", equalTo(errors)));
     }
+    
+    @Test
+    public void shouldRaiseAnExceptionIfTokenInvalidInReset() throws Exception {
+    	when(tokenService.getToken("8a4fd7bd-503e-4e4a-b85e-5501305c7a98"))
+			.thenReturn(ServiceResponseBuilder.<Token>error()
+			.withMessage(TokenService.Validations.INVALID_TOKEN.getCode())		
+			.withResult(null).build());
+    	
+    	List<String> errors = new ArrayList<>();
+    	errors.add(applicationContext.getMessage(TokenService.Validations.INVALID_TOKEN.getCode(), null, Locale.ENGLISH));
+    	
+    	getMockMvc().perform(post("/recoverpassword").params(userData))
+    		.andDo(print())
+			.andExpect(model().attribute("errors", equalTo(errors)))
+			.andExpect(model().attribute("isExpired", equalTo(true)));
+    }
+    
+    @Test
+    public void shouldRaiseAnExceptionIfTokenExpiredInReset() throws Exception {
+    	when(tokenService.getToken("8a4fd7bd-503e-4e4a-b85e-5501305c7a98"))
+			.thenReturn(ServiceResponseBuilder.<Token>ok()
+			.withResult(token).build());
+		
+		when(tokenService.isValidToken("8a4fd7bd-503e-4e4a-b85e-5501305c7a98"))
+			.thenReturn(ServiceResponseBuilder.<Boolean>ok()
+			.withResult(false).build());
+    	
+    	List<String> errors = new ArrayList<>();
+    	errors.add(applicationContext.getMessage(TokenService.Validations.EXPIRED_TOKEN.getCode(), null, Locale.ENGLISH));
+    	
+    	getMockMvc().perform(post("/recoverpassword").params(userData))
+    		.andDo(print())
+			.andExpect(model().attribute("errors", equalTo(errors)))
+			.andExpect(model().attribute("isExpired", equalTo(true)));
+    }
 
     @Test
     public void shouldResetPassword() throws Exception {
+    	when(tokenService.isValidToken("8a4fd7bd-503e-4e4a-b85e-5501305c7a98"))
+			.thenReturn(ServiceResponseBuilder.<Boolean>ok()
+			.withResult(true).build());
+	
         when(tokenService.getToken("8a4fd7bd-503e-4e4a-b85e-5501305c7a98"))
                 .thenReturn(ServiceResponseBuilder.<Token>ok()
                         .withResult(token).build());
 
-        when(userService.findByEmail("user@domain.com"))
+        when(userService.findByEmail(token.getUserEmail()))
                 .thenReturn(ServiceResponseBuilder.<User>ok()
                         .withResult(user).build());
 

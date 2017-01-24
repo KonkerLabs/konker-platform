@@ -125,16 +125,6 @@ public class UserServiceImpl implements UserService {
                     .build();
         }
 
-        if (!Optional.ofNullable(user.getName()).isPresent()) {
-            LOG.debug("Invalid user name on update",
-                    fromStorage.getTenant().toURI(),
-                    fromStorage.getTenant().getLogLevel(),
-                    fromStorage);
-
-            return ServiceResponseBuilder.<User>error()
-                    .withMessage(Validations.INVALID_USER_NAME.getCode())
-                    .build();
-        }
         if (!Optional.ofNullable(user.getDateFormat()).isPresent()) {
             LOG.debug("Invalid date format preference update",
                     fromStorage.getTenant().toURI(),

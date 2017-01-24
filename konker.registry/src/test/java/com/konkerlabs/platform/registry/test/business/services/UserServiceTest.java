@@ -1,5 +1,20 @@
 package com.konkerlabs.platform.registry.test.business.services;
 
+import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
+import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.isResponseOk;
+import static org.hamcrest.MatcherAssert.assertThat;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
@@ -16,14 +31,6 @@ import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.RedisTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
-import org.junit.*;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
@@ -72,18 +79,6 @@ public class UserServiceTest extends BusinessLayerTestSupport {
     @After
     public void tearDown() throws Exception {
 
-    }
-
-    @Test
-    public void shouldReturnErrorForInvalidUserName(){
-        user.setName(null);
-        ServiceResponse<User> serviceResponse =
-                userService.save(user, oldPassword,
-                        newPassword, newPasswordConfirmation);
-        Assert.assertNotNull(serviceResponse);
-        assertThat(
-                serviceResponse,
-                hasErrorMessage(UserService.Validations.INVALID_USER_NAME.getCode()));
     }
 
     @Test
