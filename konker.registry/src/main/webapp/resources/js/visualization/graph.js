@@ -59,7 +59,17 @@ var graphService = {
               .rotateLabels(0)
               .showMaxMin(false)
               .tickFormat(function(d) {
-                return d3.time.format('%d/%m/%Y %X')(new Date(d))
+                var userDateFormat = $('#userDateFormat').val();
+              
+                if (userDateFormat === 'DDMMYYYY') {
+                    return d3.time.format('%d/%m/%Y %X')(new Date(d));
+                } else if (userDateFormat === 'YYYYMMDD') {
+                    return d3.time.format('%Y/%m/%d %X')(new Date(d));
+                } else if (userDateFormat === 'MMDDYYYY') {
+                    return d3.time.format('%m/%d/%Y %X')(new Date(d));
+                } else {
+                    return d3.time.format('%d/%m/%Y %X')(new Date(d));                  
+                }
               });
             chart.yAxis
                 .axisLabel(controller.field)
