@@ -140,7 +140,7 @@ public class RecoverPasswordController implements ApplicationContextAware {
                 Map<String, Object> templateParam = new HashMap<>();
                 templateParam.put("link",
                         emailConfig.getBaseurl().concat("recoverpassword/").concat(responseToken.getResult()));
-                templateParam.put("name", user.getName());
+                templateParam.put("name", Optional.ofNullable(user.getName()).orElse(""));
 
                 emailService.send(emailConfig.getSender(), Collections.singletonList(user), Collections.emptyList(),
                         applicationContext.getMessage(Messages.USER_EMAIL_SUBJECT.getCode(), null,

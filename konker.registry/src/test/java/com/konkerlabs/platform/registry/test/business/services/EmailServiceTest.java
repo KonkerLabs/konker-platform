@@ -60,6 +60,7 @@ public class EmailServiceTest extends BusinessLayerTestSupport {
     	receiversCopied = Arrays.asList(userRepository.findOne("admin@konkerlabs.com"));
     	
     	templateParam.put("link", "http://localhost:8080/8a4fd7bd-503e-4e4a-b85e-5501305c7a98");
+    	templateParam.put("name", "no-reply");
     }
 
     @Test
