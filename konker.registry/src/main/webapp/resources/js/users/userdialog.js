@@ -23,7 +23,7 @@ $('#btnLoginSend').on('click', function(e) {
 	$('.login-form-rcv input[type="text"]').removeClass('has-error');
 	$('#recaptcha').removeClass('div-has-error');
 	
-	if ($('.login-form-rcv input[type="text"]').val() != "" && recaptcha != "") {
+	if ($('.login-form-rcv input[type="text"]').val() != "" && (recaptcha != "" || !isRecaptchaEnabled)) {
 		e.preventDefault();
 		var url = urlTo('/recoverpassword/email');
 		
@@ -71,7 +71,7 @@ $('#btnSend').on('click', function(e) {
         recaptcha = grecaptcha.getResponse();
     }
 	
-	if ($('.login-form input[type="text"]').val() != "" && recaptcha != "") {
+	if ($('.login-form input[type="text"]').val() != "" && (recaptcha != "" || !isRecaptchaEnabled)) {
 		$('.login-form input[type="text"]').removeClass('input-error');
 		$('#recaptcha').removeClass('input-div-error');
 		
