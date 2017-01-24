@@ -30,6 +30,11 @@ function improveChart() {
     $('.nv-x .tick text').each(insertLinebreaks);
     $('.nv-axisMaxMin-x text').each(insertLinebreaks);
     $('.nv-x .nv-axislabel').attr('y', 60);
+    
+    // remove x-axis ticks if there is only one data
+    if ($('.nv-x .tick').length === 1) {
+        $('.nv-x .tick').remove();
+    };
 
 }
 
