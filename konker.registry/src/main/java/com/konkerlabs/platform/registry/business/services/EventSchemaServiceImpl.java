@@ -235,7 +235,8 @@ public class EventSchemaServiceImpl implements EventSchemaService {
 						try {
 							// check if node exists
 							JsonNode root = mapper.readTree(event.getPayload());
-							if (root.path(field.getPath()) != null) {
+							JsonNode node = root.path(field.getPath());
+							if (node != null && !node.isMissingNode()) {
 								lastEvent = EventSchema.builder()
 										.channel(schema.getChannel())
 										.field(field)
