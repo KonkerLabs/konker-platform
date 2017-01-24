@@ -36,6 +36,7 @@ import org.thymeleaf.templateresolver.ITemplateResolver;
 
 import com.konkerlabs.platform.registry.interceptor.UserDefinedLocaleHandlerInterceptor;
 import com.konkerlabs.platform.registry.web.converters.InstantToStringConverter;
+import com.konkerlabs.platform.registry.web.dialect.KonkerDialect;
 
 import nz.net.ultraq.thymeleaf.LayoutDialect;
 
@@ -82,6 +83,7 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements Application
         engine.addDialect(new LayoutDialect());
         engine.addDialect(java8TimeDialect());
         engine.addDialect(new SpringSecurityDialect());
+        engine.addDialect(new KonkerDialect());
         engine.setTemplateResolver(templateResolver());
         return engine;
     }

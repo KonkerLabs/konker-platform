@@ -294,7 +294,12 @@ hr {
   border-top: 1px solid #797979;
 }
 
+/*Custom Tags*/
 
+.enabled-img {
+	width: 18px;
+	height: 18px;
+}
 
 /*Helpers*/
 

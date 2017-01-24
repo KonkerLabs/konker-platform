@@ -19,9 +19,9 @@
         <table class="table table-bordered">
             <thead>
             <tr>
-                <th class="col-md-1" data-th-text="#{destinations.rest.index.name}">Name</th>
+                <th class="col-md-2" data-th-text="#{destinations.rest.index.name}">Name</th>
                 <th class="col-md-1" data-th-text="#{destinations.rest.index.method}">Method</th>
-                <th class="col-md-2" data-th-text="#{destinations.rest.index.service_uri}">Service URI</th>
+                <th class="col-md-4" data-th-text="#{destinations.rest.index.service_uri}">Service URI</th>
                 <th class="col-md-1" data-th-text="#{destinations.rest.index.active}">Active?</th>
                 <th class="col-md-1 text-center" data-th-text="#{destinations.rest.index.actions}">Actions</th>
             </tr>
@@ -32,8 +32,7 @@
                 <td data-th-text="${destination.method}"></td>
                 <td data-th-text="${destination.serviceURI}"></td>
                 <td>
-                    <span data-th-if="${destination.active}" class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span>
-                    <span data-th-if="${not destination.active}" class="glyphicon glyphicon-thumbs-down" aria-hidden="true"></span>
+                    <img data-konker-enabled-img="${destination.active}"></img>
                 </td>
                 <td class="text-center">
                     <!--  <a data-th-href="@{/destinations/rest/{id}(id=${destination.guid})}" class="btn btn-default" data-th-text="#{nav.show}">
