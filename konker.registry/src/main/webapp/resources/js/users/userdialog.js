@@ -1,22 +1,15 @@
-var isRecaptchaEnabled = false;
-var recaptcha = "";
-
-$(function() {
-    var siteKey = $('#recaptcha').attr("data-sitekey");
-    if (siteKey == "site-key") {
-        $('#recaptcha').remove();
-	} else {
-        isRecaptchaEnabled = true;
-	}
-});
-
 // tela de login
 $('#btnLoginSend').on('click', function(e) {
-
-	if (isRecaptchaEnabled) {
-        recaptcha = grecaptcha.getResponse();
-	}
-
+	var isRecaptchaEnabled = false;
+	if (typeof grecaptcha != 'undefined')  {
+		isRecaptchaEnabled = true;
+        var recaptcha = grecaptcha.getResponse();
+    } else {
+    	var recaptcha = "";
+    }
+    
+	
+	
 	$('#recoverResultOk').hide();
 	$('#recoverResultError').hide();
 	
@@ -59,16 +52,17 @@ $('#btnLoginSend').on('click', function(e) {
 	if ($('.login-form-rcv input[type="text"]').val() == "") {
 		$('.login-form-rcv input[type="text"]').addClass('has-error');
 	}
-	if (recaptcha == "") {
-		$('#recaptcha').addClass('div-has-error');
-	}
 });
 
 // tela de recuperação de senha (ainda é acessada?)
 $('#btnSend').on('click', function(e) {
 
-    if (isRecaptchaEnabled) {
-        recaptcha = grecaptcha.getResponse();
+	var isRecaptchaEnabled = false;
+	if (typeof grecaptcha != 'undefined')  {
+		isRecaptchaEnabled = true;
+        var recaptcha = grecaptcha.getResponse();
+    } else {
+    	var recaptcha = "";
     }
 	
 	if ($('.login-form input[type="text"]').val() != "" && (recaptcha != "" || !isRecaptchaEnabled)) {

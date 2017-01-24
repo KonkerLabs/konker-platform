@@ -44,19 +44,18 @@ import com.konkerlabs.platform.registry.config.EmailConfig;
 import com.konkerlabs.platform.registry.config.RecaptchaConfig;
 import com.konkerlabs.platform.registry.web.forms.UserForm;
 
-
 @Controller()
 @Scope("request")
 @RequestMapping("/recoverpassword")
 @Profile("email")
 public class RecoverPasswordController implements ApplicationContextAware {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(RecoverPasswordController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RecoverPasswordController.class);
 
     public enum Messages {
-        USER_DOES_NOT_EXIST("controller.recover.user.does.not.exist"),
-        USER_EMAIL_SUBJECT("controller.recover.user.email.subject"),
-        USER_CHANGE_PASSWORD_SUCCESS("controller.recover.user.success");
+        USER_DOES_NOT_EXIST("controller.recover.user.does.not.exist"), USER_EMAIL_SUBJECT(
+                "controller.recover.user.email.subject"), USER_CHANGE_PASSWORD_SUCCESS(
+                        "controller.recover.user.success");
 
         public String getCode() {
             return code;
@@ -80,10 +79,10 @@ public class RecoverPasswordController implements ApplicationContextAware {
 
     @Autowired
     private CaptchaService captchaService;
-    
+
     @Autowired
     private RecaptchaConfig recaptchaConfig;
-    
+
     @Autowired
     private EmailConfig emailConfig;
 
@@ -91,142 +90,132 @@ public class RecoverPasswordController implements ApplicationContextAware {
 
     @RequestMapping(method = RequestMethod.GET)
     public ModelAndView recoveryPasswordPage() {
-        return new ModelAndView("recover-password")
-                .addObject("siteKey", recaptchaConfig.getSiteKey());
+        ModelAndView mav = new ModelAndView("recover-password");
+        mav.addObject("recaptchaEnabled", recaptchaConfig.isEnabled());
+        if (recaptchaConfig.isEnabled()) {
+            mav.addObject("recaptchaSiteKey", recaptchaConfig.getSiteKey());
+        }
+        return mav;
     }
 
     @SuppressWarnings("unchecked")
-	@RequestMapping(value = "/email", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/email", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody Boolean sendEmailRecover(@RequestBody String body, Locale locale) {
-    	Map<String, Object> requestMap = Collections.emptyMap();
-		Boolean isValidCaptcha = Boolean.FALSE;
-    	try {
-    		requestMap = new ObjectMapper().readValue(body, HashMap.class);
-    		String recaptcha = (String) requestMap.get("recaptcha");
+        Map<String, Object> requestMap = Collections.emptyMap();
+        Boolean isValidCaptcha = Boolean.FALSE;
+        try {
+            requestMap = new ObjectMapper().readValue(body, HashMap.class);
 
-    		if (!recaptcha.isEmpty()) {
-				isValidCaptcha = captchaService.validateCaptcha(
-						recaptchaConfig.getSecretKey(), recaptcha , recaptchaConfig.getHost()).getResult();
-			}
+            if (recaptchaConfig.isEnabled()) {
 
-			if (!recaptchaConfig.isEnabled()) {
-				isValidCaptcha = true;
-			}
+                String recaptcha = (String) requestMap.get("recaptcha");
 
-    	} catch (IOException e) {
-    		e.printStackTrace();
-    	}
+                isValidCaptcha = captchaService
+                        .validateCaptcha(recaptchaConfig.getSecretKey(), recaptcha, recaptchaConfig.getHost())
+                        .getResult();
+            } else {
+                isValidCaptcha = true;
+            }
 
-    	if (!requestMap.isEmpty() && isValidCaptcha) {
-    		try {
-    			String email = (String) requestMap.get("email");
-    			if (!Optional.ofNullable(email).isPresent()) {
-    				return Boolean.FALSE;
-    			}
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
 
-    			ServiceResponse<User> response = userService.findByEmail(email);
-    			User user = response.getResult();
-    			if (!Optional.ofNullable(user).isPresent()) {
-    				return Boolean.FALSE;
-    			}
+        if (!requestMap.isEmpty() && isValidCaptcha) {
+            try {
+                String email = (String) requestMap.get("email");
+                if (!Optional.ofNullable(email).isPresent()) {
+                    return Boolean.FALSE;
+                }
 
-    			ServiceResponse<String> responseToken = tokenService.generateToken(TokenService.Purpose.RESET_PASSWORD, user, Duration.ofMinutes(15));
+                ServiceResponse<User> response = userService.findByEmail(email);
+                User user = response.getResult();
+                if (!Optional.ofNullable(user).isPresent()) {
+                    return Boolean.FALSE;
+                }
 
-    			Map<String, Object> templateParam = new HashMap<>();
-    			templateParam.put("link", emailConfig.getBaseurl().concat("recoverpassword/").concat(responseToken.getResult()));
-    			templateParam.put("name", user.getName());
+                ServiceResponse<String> responseToken = tokenService.generateToken(TokenService.Purpose.RESET_PASSWORD,
+                        user, Duration.ofMinutes(15));
 
-    			emailService.send(emailConfig.getSender(),
-    					Collections.singletonList(user),
-    					Collections.emptyList(),
-    					applicationContext.getMessage(Messages.USER_EMAIL_SUBJECT.getCode(), null, user.getLanguage().getLocale()),
-    					"html/email-recover-pass",
-    					templateParam,
-    					user.getLanguage().getLocale());
-    			return Boolean.TRUE;
-    		} catch (MessagingException e) {
-    			LOGGER.warn(e.getLocalizedMessage());
-    			return Boolean.FALSE;
-    		}
-    	} else {
-    		return Boolean.FALSE;
-    	}
+                Map<String, Object> templateParam = new HashMap<>();
+                templateParam.put("link",
+                        emailConfig.getBaseurl().concat("recoverpassword/").concat(responseToken.getResult()));
+                templateParam.put("name", user.getName());
+
+                emailService.send(emailConfig.getSender(), Collections.singletonList(user), Collections.emptyList(),
+                        applicationContext.getMessage(Messages.USER_EMAIL_SUBJECT.getCode(), null,
+                                user.getLanguage().getLocale()),
+                        "html/email-recover-pass", templateParam, user.getLanguage().getLocale());
+                return Boolean.TRUE;
+            } catch (MessagingException e) {
+                LOGGER.warn(e.getLocalizedMessage());
+                return Boolean.FALSE;
+            }
+        } else {
+            return Boolean.FALSE;
+        }
     }
 
     @RequestMapping(value = "/{token}", method = RequestMethod.GET)
-    public ModelAndView showResetPage(@PathVariable("token") String token,
-                                      Locale locale) {
+    public ModelAndView showResetPage(@PathVariable("token") String token, Locale locale) {
         ServiceResponse<Token> serviceResponse = tokenService.getToken(token);
         ServiceResponse<Boolean> validToken = tokenService.isValidToken(token);
 
-        if (!Optional.ofNullable(serviceResponse).isPresent() ||
-                !Optional.ofNullable(serviceResponse.getResult()).isPresent()) {
+        if (!Optional.ofNullable(serviceResponse).isPresent()
+                || !Optional.ofNullable(serviceResponse.getResult()).isPresent()) {
 
-            List<String> messages = serviceResponse.getResponseMessages()
-                    .entrySet()
-                    .stream()
+            List<String> messages = serviceResponse.getResponseMessages().entrySet().stream()
                     .map(message -> applicationContext.getMessage(message.getKey(), message.getValue(), locale))
                     .collect(Collectors.toList());
 
-            return new ModelAndView("reset-password")
-		    .addObject("user", User.builder().build())
-                    .addObject("errors", messages)
-                    .addObject("isExpired", true);
+            return new ModelAndView("reset-password").addObject("user", User.builder().build())
+                    .addObject("errors", messages).addObject("isExpired", true);
         }
 
         if (serviceResponse.getResult().getIsExpired() || !validToken.getResult()) {
             List<String> messages = new ArrayList<>();
             messages.add(applicationContext.getMessage(TokenService.Validations.EXPIRED_TOKEN.getCode(), null, locale));
 
-            return new ModelAndView("reset-password")
-		    .addObject("user", User.builder().build())
-                    .addObject("errors", messages)
-                    .addObject("isExpired", true);
+            return new ModelAndView("reset-password").addObject("user", User.builder().build())
+                    .addObject("errors", messages).addObject("isExpired", true);
         }
 
         ServiceResponse<User> responseUser = userService.findByEmail(serviceResponse.getResult().getUserEmail());
 
-        return new ModelAndView("reset-password")
-                .addObject("user", responseUser.getResult())
-                .addObject("token", token);
+        return new ModelAndView("reset-password").addObject("user", responseUser.getResult()).addObject("token", token);
     }
 
-	@RequestMapping(method = RequestMethod.POST)
-	public ModelAndView resetPassword(@ModelAttribute("userForm") UserForm userForm, 
-			RedirectAttributes redirectAttributes, 
-			Locale locale) {
-		ServiceResponse<User> response = userService.findByEmail(userForm.getEmail());
+    @RequestMapping(method = RequestMethod.POST)
+    public ModelAndView resetPassword(@ModelAttribute("userForm") UserForm userForm,
+            RedirectAttributes redirectAttributes, Locale locale) {
+        ServiceResponse<User> response = userService.findByEmail(userForm.getEmail());
 
-		if (!Optional.ofNullable(response.getResult()).isPresent()) {
-			List<String> messages = new ArrayList<>();
-			messages.add(applicationContext.getMessage(Messages.USER_DOES_NOT_EXIST.getCode(), null, locale));
-			return new ModelAndView("reset-password")
-	        		.addObject("errors", messages)
-	        		.addObject("user", User.builder().build());
-		}
+        if (!Optional.ofNullable(response.getResult()).isPresent()) {
+            List<String> messages = new ArrayList<>();
+            messages.add(applicationContext.getMessage(Messages.USER_DOES_NOT_EXIST.getCode(), null, locale));
+            return new ModelAndView("reset-password").addObject("errors", messages).addObject("user",
+                    User.builder().build());
+        }
 
-		User user = response.getResult();
+        User user = response.getResult();
 
-		ServiceResponse<User> saveResponse = userService.save(user, userForm.getNewPassword(), userForm.getNewPasswordConfirmation());
-		if (!Optional.ofNullable(saveResponse.getResult()).isPresent()) {
-			List<String> messages = saveResponse.getResponseMessages()
-					.entrySet()
-					.stream()
-					.map(message -> applicationContext.getMessage(message.getKey(), message.getValue(), locale))
-					.collect(Collectors.toList());
+        ServiceResponse<User> saveResponse = userService.save(user, userForm.getNewPassword(),
+                userForm.getNewPasswordConfirmation());
+        if (!Optional.ofNullable(saveResponse.getResult()).isPresent()) {
+            List<String> messages = saveResponse.getResponseMessages().entrySet().stream()
+                    .map(message -> applicationContext.getMessage(message.getKey(), message.getValue(), locale))
+                    .collect(Collectors.toList());
 
-			return new ModelAndView("reset-password")
-				.addObject("user", user)
-				.addObject("errors", messages);
-		}
+            return new ModelAndView("reset-password").addObject("user", user).addObject("errors", messages);
+        }
 
-		tokenService.invalidateToken(userForm.getToken());
-		
-		redirectAttributes.addFlashAttribute("message", applicationContext
-				.getMessage(Messages.USER_CHANGE_PASSWORD_SUCCESS.getCode(), null, locale));
+        tokenService.invalidateToken(userForm.getToken());
 
-		return new ModelAndView("redirect:/login");
-	}
+        redirectAttributes.addFlashAttribute("message",
+                applicationContext.getMessage(Messages.USER_CHANGE_PASSWORD_SUCCESS.getCode(), null, locale));
+
+        return new ModelAndView("redirect:/login");
+    }
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {

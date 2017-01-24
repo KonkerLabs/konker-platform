@@ -107,7 +107,8 @@
                                       <input type="text" name="username" th:placeholder="#{login.username.placeholder}"
                                         autocomplete="off" class="form-control placeholder-no-fix" id="form-username"/> 
                                       <p />
-                                      <div id="recaptcha" class="g-recaptcha" th:data-sitekey="${siteKey}"></div>
+                                      <div id="recaptcha" class="g-recaptcha" th:data-sitekey="${recaptchaSiteKey}"
+                                      data-th-if="${recaptchaEnabled}"></div>
                                       <p />
                                       <div class="alert alert-info" role="alert" id="recoverResultOk" style="display: none;">
                                         <span data-th-text="#{users.dialog.recoverpassword.success.text}"></span>
@@ -163,7 +164,7 @@
     </script>
 
     <!-- recovery pass js -->
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer data-th-if="${recaptchaEnabled}"></script>
     <script data-th-inline="javascript">
         /*<![CDATA[*/
         function contextPath() {
