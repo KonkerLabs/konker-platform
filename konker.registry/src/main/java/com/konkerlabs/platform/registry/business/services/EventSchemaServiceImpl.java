@@ -19,6 +19,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.integration.json.JsonPathUtils;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -235,7 +236,7 @@ public class EventSchemaServiceImpl implements EventSchemaService {
 						try {
 							// check if node exists
 							JsonNode root = mapper.readTree(event.getPayload());
-							JsonNode node = root.path(field.getPath());
+							JsonNode node = getJsonNodeFromPath(root, field.getPath());
 							if (node != null && !node.isMissingNode()) {
 								lastEvent = EventSchema.builder()
 										.channel(schema.getChannel())
@@ -264,6 +265,21 @@ public class EventSchemaServiceImpl implements EventSchemaService {
 
 		}
 
+	}
+
+	private JsonNode getJsonNodeFromPath(JsonNode root, String path) {
+		
+		String tokens[] = path.split("\\.");
+		
+		for (String token: tokens) {
+			root = root.get(token);
+			if (root == null) {
+				return null;
+			}
+		}
+		
+		return root;
+		
 	}
 
 }
