@@ -234,6 +234,7 @@ $(document).ready(function() {
     });
 
     $('#updateChartBtn').click(function() {
+        clearChartTableHideCsvButton();
         autoRefreshDataChart();
     });
 
