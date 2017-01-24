@@ -17,7 +17,12 @@ public class LoginController {
 
     @RequestMapping("/login")
 	public ModelAndView loginPage() {
-		return new ModelAndView("login").addObject("siteKey", recaptchaConfig.getSiteKey());
+        ModelAndView mav = new ModelAndView("login");
+        mav.addObject("recaptchaEnabled", recaptchaConfig.isEnabled());
+        if (recaptchaConfig.isEnabled()) {
+            mav.addObject("recaptchaSiteKey", recaptchaConfig.getSiteKey());
+        }
+		return mav;
     }
 
 }
