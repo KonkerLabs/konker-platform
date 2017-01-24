@@ -9,6 +9,10 @@ function formatJson(isFormatted) {
     $.each($(".json-data"), function () {
             var payload = $(this).html();
             if (isFormatted) {
+                if($(this).attr("text")) {
+                    // json already formatted
+                    return;
+                }
                 try {
                     var result = JSON.parse(payload);
                 } catch (e) {
