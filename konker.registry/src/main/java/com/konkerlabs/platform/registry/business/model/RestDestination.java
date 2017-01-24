@@ -1,18 +1,17 @@
 package com.konkerlabs.platform.registry.business.model;
 
-import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.utilities.validations.InterpolableURIValidator;
 import com.konkerlabs.platform.utilities.validations.api.Validatable;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.http.HttpHeaders;
 
-import java.net.URI;
 import java.util.*;
 
 @Data
@@ -51,8 +50,7 @@ public class RestDestination implements URIDealer, Validatable {
     private boolean active;
 
     public static final String URI_SCHEME = "rest";
-
-
+    
     @Override
     public String getUriScheme() {
         return URI_SCHEME;
@@ -100,4 +98,15 @@ public class RestDestination implements URIDealer, Validatable {
 
         return Optional.of(validations).filter(stringMap -> !stringMap.isEmpty());
     }
+    
+    @Data
+    @NoArgsConstructor
+    public static class RestDestinationHeader {
+    	
+    	private String key;
+    	
+    	private String value;
+    	
+    }
+    
 }

@@ -80,22 +80,23 @@ public class EventPublisherRest implements EventPublisher {
                         MessageFormat.format("REST Destination is unknown : {0}", destinationUri)
                 ));
 
-        if (destination.getResult().isActive()) {
+        RestDestination restDestination = destination.getResult();
+		if (restDestination.isActive()) {
             try {
 
                 String serviceURI = evaluateExpressionIfNecessary(
-                        destination.getResult().getServiceURI(), outgoingEvent.getPayload()
+                        restDestination.getServiceURI(), outgoingEvent.getPayload()
                 );
 
                 httpGateway.request(
                         HttpMethod.resolve(
-                                Optional.ofNullable(destination.getResult().getMethod()).isPresent() ?
-                                        destination.getResult().getMethod() : "POST"),
-                        new HttpHeaders(),
+                                Optional.ofNullable(restDestination.getMethod()).isPresent() ?
+                                        restDestination.getMethod() : "POST"),
+                        getHeaders(restDestination),
                         URI.create(serviceURI), MediaType.APPLICATION_JSON,
                         () -> outgoingEvent.getPayload(),
-                        destination.getResult().getServiceUsername(),
-                        destination.getResult().getServicePassword()
+                        restDestination.getServiceUsername(),
+                        restDestination.getServicePassword()
                 );
 //                eventRepository.saveIncoming(tenant,outgoingEvent);
             } catch (JsonProcessingException | IntegrationException e) {
@@ -111,6 +112,16 @@ public class EventPublisherRest implements EventPublisher {
                     tenant.getLogLevel());
         }
     }
+
+	private HttpHeaders getHeaders(RestDestination restDestination) {
+		HttpHeaders headers = new HttpHeaders();
+		if (restDestination.getHeaders() != null) {
+			for (String key : restDestination.getHeaders().keySet()) {
+				headers.add(key, restDestination.getHeaders().get(key));
+			}
+		}
+		return headers;
+	}
 
     private String evaluateExpressionIfNecessary(String template, String json) throws JsonProcessingException {
         if (ExpressionEvaluationService.EXPRESSION_TEMPLATE_PATTERN.matcher(template).matches())

@@ -32,6 +32,7 @@ import org.springframework.util.LinkedMultiValueMap;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -79,6 +80,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
                 .name("Destination name")
                 .serviceURI("https://www.host.com:443/path?query=1")
                 .serviceUsername("username")
+                .headers(new HashMap<String, String>())
                 .method("POST")
                 .servicePassword("password").active(true).build();
 
