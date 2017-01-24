@@ -103,10 +103,16 @@ public class RecoverPasswordController implements ApplicationContextAware {
     	try {
     		requestMap = new ObjectMapper().readValue(body, HashMap.class);
     		String recaptcha = (String) requestMap.get("recaptcha");
+
     		if (!recaptcha.isEmpty()) {
 				isValidCaptcha = captchaService.validateCaptcha(
 						recaptchaConfig.getSecretKey(), recaptcha , recaptchaConfig.getHost()).getResult();
 			}
+
+			if (!recaptchaConfig.isEnabled()) {
+				isValidCaptcha = true;
+			}
+
     	} catch (IOException e) {
     		e.printStackTrace();
     	}
