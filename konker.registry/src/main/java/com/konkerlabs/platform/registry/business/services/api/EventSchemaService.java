@@ -38,10 +38,11 @@ public interface EventSchemaService {
     ServiceResponse<EventSchema> appendIncomingSchema(Event event);
     ServiceResponse<EventSchema> appendOutgoingSchema(Event event);
     ServiceResponse<EventSchema> findIncomingBy(String deviceGuid, String channel);
+	ServiceResponse<EventSchema> findIncomingBy(String deviceGuid);
     ServiceResponse<EventSchema> findOutgoingBy(String deviceGuid, String channel);
     ServiceResponse<List<String>> findKnownIncomingChannelsBy(Tenant tenant, String deviceGuid);
-	ServiceResponse<List<String>> findKnownIncomingMetricsBy(Tenant tenant, String deviceGuid, String channel,
-			JsonNodeType nodeType);
+	ServiceResponse<List<String>> findKnownIncomingMetricsBy(Tenant tenant, String deviceGuid, String channel, JsonNodeType nodeType);
+	ServiceResponse<List<String>> findKnownIncomingMetricsBy(Tenant tenant, String deviceGuid, JsonNodeType nodeType);
 	ServiceResponse<EventSchema> findLastIncomingBy(Tenant tenant, String deviceGuid, JsonNodeType nodeType);
 
 }

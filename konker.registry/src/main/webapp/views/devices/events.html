@@ -55,7 +55,7 @@
 
             <input type="hidden" data-th-value="${userDateFormat}" id="userDateFormat" disabled="disabled"></input>
 
-            <form id="visualizationForm">
+            <form id="visualizationForm" data-th-if="${existsNumericMetric}">
 
                 <input type="hidden" id="deviceGuid" name="deviceGuid" data-th-value="${device.guid}" />
                 <input type="hidden" id="dataResult">

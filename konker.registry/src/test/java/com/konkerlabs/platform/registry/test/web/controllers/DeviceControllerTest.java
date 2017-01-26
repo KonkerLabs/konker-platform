@@ -213,6 +213,8 @@ public class DeviceControllerTest extends WebLayerTestContext {
 			.thenReturn(ServiceResponseBuilder.<EventSchema> ok().withResult(lastSchema).build());
 		when(eventSchemaService.findKnownIncomingMetricsBy(tenant, savedDevice.getGuid(), "square", JsonNodeType.NUMBER))
 			.thenReturn(ServiceResponseBuilder.<List<String>> ok().withResult(Collections.emptyList()).build());
+		when(eventSchemaService.findKnownIncomingMetricsBy(tenant, savedDevice.getGuid(), JsonNodeType.NUMBER))
+			.thenReturn(ServiceResponseBuilder.<List<String>> ok().withResult(Collections.emptyList()).build());
 
 		getMockMvc().perform(get(MessageFormat.format("/devices/{0}/events", savedDevice.getGuid())))
 				.andExpect(model().attribute("channels", channels))
@@ -220,6 +222,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
 				.andExpect(model().attribute("metrics", Collections.emptyList()))
 				.andExpect(model().attribute("device", savedDevice))
 				.andExpect(model().attribute("hasAnyEvent", false))
+				.andExpect(model().attribute("existsNumericMetric", false))
 				.andExpect(view().name("devices/events"));
 
 		verify(deviceRegisterService).getByDeviceGuid(tenant, savedDevice.getGuid());
