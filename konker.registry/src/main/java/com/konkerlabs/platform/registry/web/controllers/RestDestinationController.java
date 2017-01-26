@@ -132,7 +132,7 @@ public class RestDestinationController implements ApplicationContextAware {
     }
 
     @RequestMapping(path = "/{guid}", method = RequestMethod.DELETE)
-    @PreAuthorize("hasAuthority('REMOVE_DEVICE')")
+    @PreAuthorize("hasAuthority('REMOVE_REST_DESTINATION')")
     public ModelAndView remove(@PathVariable String guid,
     						   @ModelAttribute("destinationForm") RestDestinationForm destinationForm,
                                RedirectAttributes redirectAttributes, Locale locale) {

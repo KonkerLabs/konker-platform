@@ -41,6 +41,7 @@ import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -256,6 +257,42 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
                 .andExpect(redirectedUrl(format("/destinations/rest/{0}", savedDestination.getGuid())));
 
         verify(restDestinationService).update(eq(tenant), eq(savedDestination.getGuid()), eq(destination));
+    }
+    
+    @Test
+    @WithMockUser(authorities = {"REMOVE_REST_DESTINATION"})
+    public void shouldRemoveRestDestination() throws Exception {
+        response = ServiceResponseBuilder.<RestDestination>ok()
+                .withResult(savedDestination)
+                .build();
+
+        when(restDestinationService.remove(eq(tenant), eq(savedDestination.getGuid()))).thenReturn(response);
+
+        getMockMvc().perform(delete(format("/destinations/rest/{0}", savedDestination.getGuid())))
+                .andExpect(redirectedUrl("/destinations/rest"))
+                .andExpect(flash().attribute("message", applicationContext.getMessage(
+                		RestDestinationController.Messages.REST_DESTINATION_REMOVED_SUCCESSFULLY.getCode(), null, Locale.ENGLISH)));
+
+    }
+    
+    @Test
+    @WithMockUser(authorities = {"REMOVE_REST_DESTINATION"})
+    public void shouldNotRemoveRestDestination() throws Exception {
+        response = ServiceResponseBuilder.<RestDestination>error()
+        		.withMessage(CommonValidations.TENANT_NULL.getCode())
+                .build();
+
+        when(restDestinationService.remove(eq(tenant), eq(savedDestination.getGuid()))).thenReturn(response);
+
+        getMockMvc().perform(delete(format("/destinations/rest/{0}", savedDestination.getGuid())))
+                .andExpect(redirectedUrl("/destinations/rest"))
+                .andExpect(flash().attribute("errors",
+                        equalTo(Arrays.asList(new String[]{
+                                applicationContext.getMessage(
+                                        CommonValidations.TENANT_NULL.getCode(), null, Locale.ENGLISH
+                                )
+                        }))));
+
     }
 
     @Configuration
