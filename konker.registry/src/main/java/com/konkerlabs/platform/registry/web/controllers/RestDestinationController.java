@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -31,7 +32,8 @@ import static java.text.MessageFormat.format;
 public class RestDestinationController implements ApplicationContextAware {
 
     public enum Messages {
-        ENRICHMENT_REGISTERED_SUCCESSFULLY("controller.rest_destination.registered.successfully");
+        ENRICHMENT_REGISTERED_SUCCESSFULLY("controller.rest_destination.registered.successfully"),
+        REST_DESTINATION_REMOVED_SUCCESSFULLY("controller.rest_destination.removed_successfully");
 
         private String code;
 
@@ -127,6 +129,28 @@ public class RestDestinationController implements ApplicationContextAware {
                 );
             }
         }
+    }
+
+    @RequestMapping(path = "/{guid}", method = RequestMethod.DELETE)
+    @PreAuthorize("hasAuthority('REMOVE_DEVICE')")
+    public ModelAndView remove(@PathVariable String guid,
+    						   @ModelAttribute("destinationForm") RestDestinationForm destinationForm,
+                               RedirectAttributes redirectAttributes, Locale locale) {
+
+        ServiceResponse<RestDestination> serviceResponse = restDestinationService.remove(tenant, guid);
+        if (serviceResponse.isOk()) {
+            redirectAttributes.addFlashAttribute("message",
+                    applicationContext.getMessage(Messages.REST_DESTINATION_REMOVED_SUCCESSFULLY.getCode(), null, locale)
+            );
+        } else {
+            List<String> messages = serviceResponse.getResponseMessages()
+                    .entrySet().stream()
+                    .map(message -> applicationContext.getMessage(message.getKey(), message.getValue(), locale))
+                    .collect(Collectors.toList());
+            redirectAttributes.addFlashAttribute("errors", messages);
+        }
+
+        return new ModelAndView("redirect:/destinations/rest");
     }
 
     @Override
