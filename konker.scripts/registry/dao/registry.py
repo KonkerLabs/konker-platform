@@ -70,6 +70,9 @@ def create_user(args):
             "dateFormat": "DDMMYYYY",
             "zoneId": "AMERICA_SAO_PAULO",
             "password": get_hashed_password(args.password.encode(encoding='UTF-8')).decode(),
+            "name": username,
+            "phone": "",
+            "notificationViaEmail": False,
             "tenant": DBRef("tenants", tenant_id)
         }
 
