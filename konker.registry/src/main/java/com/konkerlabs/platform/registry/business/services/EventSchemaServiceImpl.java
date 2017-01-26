@@ -143,6 +143,17 @@ public class EventSchemaServiceImpl implements EventSchemaService {
     }
 
     @Override
+    public ServiceResponse<EventSchema> findIncomingBy(String deviceGuid) {
+        EventSchema existing = mongoTemplate.findOne(
+                Query.query(Criteria.where("deviceGuid").is(deviceGuid)),
+                EventSchema.class,EventSchemaService.INCOMING_COLLECTION_NAME
+        );
+
+        return ServiceResponseBuilder.<EventSchema>ok()
+            .withResult(existing).build();
+    }
+
+    @Override
     public ServiceResponse<EventSchema> findIncomingBy(String deviceGuid, String channel) {
         EventSchema existing = mongoTemplate.findOne(
                 Query.query(Criteria.where("deviceGuid")
@@ -179,6 +190,19 @@ public class EventSchemaServiceImpl implements EventSchemaService {
 	public ServiceResponse<List<String>> findKnownIncomingMetricsBy(Tenant tenant, String deviceGuid, String channel, JsonNodeType nodeType) {
 
 		ServiceResponse<EventSchema> metricsResponse = findIncomingBy(deviceGuid, channel);
+		return filterMetricsByJsonType(metricsResponse, nodeType);
+    	
+	}
+
+	@Override
+	public ServiceResponse<List<String>> findKnownIncomingMetricsBy(Tenant tenant, String deviceGuid, JsonNodeType nodeType) {
+
+		ServiceResponse<EventSchema> metricsResponse = findIncomingBy(deviceGuid);
+		return filterMetricsByJsonType(metricsResponse, nodeType);
+    	
+	}
+
+	private ServiceResponse<List<String>> filterMetricsByJsonType(ServiceResponse<EventSchema> metricsResponse, JsonNodeType nodeType) {
 
 		if (metricsResponse.isOk()) {
 
@@ -186,7 +210,7 @@ public class EventSchemaServiceImpl implements EventSchemaService {
 
 		    	List<String> listMetrics = metricsResponse.getResult()
 						.getFields().stream()
-						.filter(schemaField -> schemaField.getKnownTypes().contains(JsonNodeType.NUMBER))
+						.filter(schemaField -> schemaField.getKnownTypes().contains(nodeType))
 						.map(m -> m.getPath()).collect(Collectors.toList());
 	
 		    	return ServiceResponseBuilder.<List<String>>ok()
@@ -203,7 +227,7 @@ public class EventSchemaServiceImpl implements EventSchemaService {
                     .withMessages(metricsResponse.getResponseMessages()).build();
 			
 		}
-    	
+
 	}
 
 	@Override

@@ -13,9 +13,6 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.impl.entity.LaxContentLengthStrategy;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -37,7 +34,6 @@ import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.EventSchema;
-import com.konkerlabs.platform.registry.business.model.EventSchema.SchemaField;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
@@ -218,13 +214,22 @@ public class DeviceController implements ApplicationContextAware {
 	    	}
 
 		}
+		
+		// Check if there is any numeric metric
+		boolean existsNumericMetric = false;
+		
+		ServiceResponse<List<String>> allNumericMetrics = eventSchemaService.findKnownIncomingMetricsBy(tenant, deviceGuid, JsonNodeType.NUMBER);
+		if (allNumericMetrics.isOk() && !allNumericMetrics.getResult().isEmpty()) {
+			existsNumericMetric = true;
+		}
 
 		// Add objects
 		mv.addObject("device", device)
 		  .addObject("channels", channels.getResult())
 		  .addObject("defaultChannel", defaultChannel)
 		  .addObject("metrics", listMetrics)
-		  .addObject("defaultMetric", defaultMetric);
+		  .addObject("defaultMetric", defaultMetric)
+		  .addObject("existsNumericMetric", existsNumericMetric);
 
 	}
 
