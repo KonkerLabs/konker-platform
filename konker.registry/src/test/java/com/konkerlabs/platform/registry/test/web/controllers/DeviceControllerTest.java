@@ -219,6 +219,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
 				.andExpect(model().attribute("defaultChannel", "square"))
 				.andExpect(model().attribute("metrics", Collections.emptyList()))
 				.andExpect(model().attribute("device", savedDevice))
+				.andExpect(model().attribute("hasAnyEvent", false))
 				.andExpect(view().name("devices/events"));
 
 		verify(deviceRegisterService).getByDeviceGuid(tenant, savedDevice.getGuid());

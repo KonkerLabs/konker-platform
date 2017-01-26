@@ -24,7 +24,9 @@
 </head>
 <body>
 	<div data-layout-fragment="content">
-		<fieldset class="form-horizontal">
+
+        <fieldset class="form-horizontal">
+
             <div>
                 <h1 class="page-title" data-th-text="#{devices.events.legend}"></h1>
             </div>
@@ -45,6 +47,11 @@
 					<input data-th-value="${device.deviceId}" disabled="disabled"></input>
 				</div>
 			</div>
+
+        </fieldset>
+		
+        <fieldset class="form-horizontal"
+            data-th-if="${hasAnyEvent}">
 
             <input type="hidden" data-th-value="${userDateFormat}" id="userDateFormat" disabled="disabled"></input>
 
@@ -158,6 +165,15 @@
             <div class="ajax-loading"></div>
         
 		</fieldset>
+
+        <fieldset class="form-horizontal"
+            data-th-if="${not hasAnyEvent}">
+    
+            <div class="alert alert-warning" role="alert">
+                <span data-th-text="#{devices.events.empty_message}"></span>
+            </div>
+                
+        </fieldset>
 
 	    <div class="form-group col-sm-12">
 	        <a id="exportCsv" class="btn btn-primary pull-right hide" style="margin-right: 5px;" data-th-text="#{visualization.index.btn.csv}"></a>

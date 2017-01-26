@@ -138,9 +138,15 @@ public class DeviceController implements ApplicationContextAware {
 
 		ModelAndView mv = new ModelAndView("devices/events");
 
+		List<Event> incomingEvents = deviceEventService.findIncomingBy(tenant, device.getGuid(), null, null, null, false, 50).getResult();
+		List<Event> outgoingEvents = deviceEventService.findOutgoingBy(tenant, device.getGuid(), null, null, null, false, 50).getResult();
+
+		boolean hasAnyEvent = !incomingEvents.isEmpty() || !outgoingEvents.isEmpty();
+
 		mv.addObject("userDateFormat", user.getDateFormat().name())
-		  .addObject("recentIncomingEvents", deviceEventService.findIncomingBy(tenant, device.getGuid(), null, null, null, false, 50).getResult())
-		  .addObject("recentOutgoingEvents", deviceEventService.findOutgoingBy(tenant, device.getGuid(), null, null, null, false, 50).getResult());
+		  .addObject("recentIncomingEvents", incomingEvents)
+		  .addObject("recentOutgoingEvents", outgoingEvents)
+		  .addObject("hasAnyEvent", hasAnyEvent);
 
 		addChartObjects(device, mv);
 
