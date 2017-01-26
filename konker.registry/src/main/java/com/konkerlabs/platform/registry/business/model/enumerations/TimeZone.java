@@ -418,7 +418,6 @@ public enum TimeZone {
 	ASIA_QATAR("timezones.asia_qatar", "Asia/Qatar"), 
 	ASIA_RIYADH("timezones.asia_riyadh", "Asia/Riyadh"), 
 	ETC_GMT_3("timezones.etc_gmt_3", "Etc/GMT-3"), 
-	EUROPE_KIROV("timezones.europe_kirov", "Europe/Kirov"), 
 	EUROPE_MINSK("timezones.europe_minsk", "Europe/Minsk"), 
 	EUROPE_MOSCOW("timezones.europe_moscow", "Europe/Moscow"), 
 	EUROPE_SIMFEROPOL("timezones.europe_simferopol", "Europe/Simferopol"), 
