@@ -170,22 +170,10 @@ function loadOutgoingEvents() {
     fetchEventsViewFragment(scheme, urlTo(url), element);
 }
 
-function selectFirstOption(selectName) {
-
-    if ($("select[name=" + selectName + "] option").length === 2) {
-        var value = $("select[name=" + selectName + "] option")[1].value;
-        $("select[name=" + selectName + "]").val(value);
-        $("select[name=" + selectName + "]").change();
-    }
-
-}
-
 function clearChartTableHideCsvButton() {
     $('#chart').addClass('hide');
 	$('#chart svg').html("");
-	$("#data-event table tbody").html("");
 	$('#exportCsv').addClass('hide');
-	$('#onlineRow').addClass('hide');
 }
 
 function displayFragment(element, data) {
@@ -199,17 +187,21 @@ var chartRefreshService = {
             $('input.date').attr('disabled', true);
             $('#updateChartBtn').addClass('hide');
 
+            $('#dateStart').val('');
+            $('#dateEnd').val('');
+
             autoRefreshDataChart();
             myInterval = setInterval(autoRefreshDataChart, 5000);
         } else {
             $('input.date').attr('disabled', false);
             $('#updateChartBtn').removeClass('hide');
 
-            clearInterval(myInterval);
+            if (typeof myInterval !== 'undefined') {
+                clearInterval(myInterval);
+            }
         }
     }
 }
-
 
 $(document).ready(function() {
 
@@ -217,7 +209,17 @@ $(document).ready(function() {
     applyEventBindingsToMetric();
     autoRefreshDataChart();
 
-    $('.date').datetimepicker({
+    $('#dateStart').datetimepicker({
+        format: "DD/MM/YYYY HH:mm:ss"
+    });
+    $('#dateStartGroup').datetimepicker({
+        format: "DD/MM/YYYY HH:mm:ss"
+    });
+
+    $('#dateEnd').datetimepicker({
+        format: "DD/MM/YYYY HH:mm:ss"
+    });
+    $('#dateEndGroup').datetimepicker({
         format: "DD/MM/YYYY HH:mm:ss"
     });
 
