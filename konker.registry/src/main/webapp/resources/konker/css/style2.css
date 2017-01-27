@@ -410,6 +410,7 @@ ul.user-info {
 
 #sidebar ul li {
     position: relative;
+    list-style: none;
 }
 
 #sidebar .sub-menu > .sub li  {
@@ -2150,10 +2151,14 @@ margin-left: 260px;
 .site-footer {
     border-top: solid 1px #ddd;
 	padding: 10px 30px 2px;
+   /* margin-left: 200px;
+    add caso o menu fique fixo*/
     margin-left: 200px;
+    position: absolute; /*rodape abaixo*/
+    bottom: 0;
+    width: 85%;
+    z-index: -9999;
 }
-
-
 
 .go-top {
     margin-right: 1%;
@@ -2164,7 +2169,6 @@ margin-left: 260px;
     border-radius: 50%;
     -webkit-border-radius: 50%;
 }
-
 .go-top i {
     color: #2A3542;
 }
@@ -2172,5 +2176,3 @@ margin-left: 260px;
 .site-min-height {
     min-height: 900px;
 }
-
-
