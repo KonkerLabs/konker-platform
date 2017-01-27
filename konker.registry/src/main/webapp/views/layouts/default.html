@@ -237,8 +237,9 @@
                 /* footer */
                 var windowHeight = $(window).height();
                 var docHeight = $('.wrapper').height();
+                var headerHeight = $('.header').height();
 
-                if (windowHeight > docHeight) {
+                if (windowHeight > docHeight + headerHeight + 80) {
                     $('#footer').css('bottom', '0px');
                 }
             });
