@@ -26,7 +26,8 @@
     <link rel="stylesheet" data-th-href="@{/resources/bootstrap/css/bootstrap.min.css}" />
     <!--external css-->
     <link rel="stylesheet" type="text/css" data-th-href="@{/resources/font-awesome/css/font-awesome.min.css}">
-
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i,800,800i" rel="stylesheet">
+       
     <!-- Custom styles for this template -->
     <link rel="stylesheet" type="text/css" data-th-href="@{/resources/konker/css/style2.css(v2)}">
     <link rel="stylesheet" type="text/css" data-th-href="@{/resources/konker/css/style-responsive.css}">
@@ -118,28 +119,28 @@
 
                   <li class="sub-menu" th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'')')}">
                       <a data-th-href="@{/routes}">
-                          <i class="fa fa-cogs"></i>
+                          <img data-th-attr="src=@{/resources/konker/images/icons-menu/icon-route.svg}" class="icon-menu" />
                           <span data-th-text="#{nav.menu.routes}">Roteador de eventos</span>
                       </a>                      
                   </li>
 
                   <li class="sub-menu" th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'')')}">
                       <a data-th-href="@{/transformation}">
-                          <i class="fa fa-book"></i>
+                          <img data-th-attr="src=@{/resources/konker/images/icons-menu/icon-transform.svg}" class="icon-menu" />
                           <span data-th-text="#{nav.menu.transformations}">Transformações</span>
                       </a>                     
                   </li>
 
                   <li class="sub-menu" th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'')')}">
                       <a data-th-href="@{/destinations/rest}">
-                          <i class="fa fa-th"></i>
+                          <img data-th-attr="src=@{/resources/konker/images/icons-menu/icon-rest.svg}" class="icon-menu" />
                           <span data-th-text="#{nav.menu.rest_destinations}">Destinos REST</span>
                       </a>
                   </li>
 
                   <li class="sub-menu" th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'')')}">
                       <a data-th-href="@{/tenants/log}">
-                          <i class=" fa fa-bug"></i>
+                          <img data-th-attr="src=@{/resources/konker/images/icons-menu/icon-debug.svg}" class="icon-menu" />
                           <span data-th-text="#{nav.menu.debug_messages}">Debug</span>
                       </a>                      
                   </li>
@@ -154,14 +155,14 @@
 
                   <li class="sub-menu" th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_ANALYTICS_USER'')')}">
                       <a data-th-href="@{/dashboards}">
-                          <i class="fa fa-desktop"></i>
+                          <img data-th-attr="src=@{/resources/konker/images/icons-menu/icon-dashboard.svg}" class="icon-menu" />
                           <span data-th-text="#{nav.menu.dashboards}">Dashboards</span>
                       </a>                      
                   </li>
 
                   <li class="sub-menu" th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_ANALYTICS_USER'')')}">
                       <a data-th-href="@{/notebooks}">
-                          <i class="fa fa-cogs"></i>
+                          <img data-th-attr="src=@{/resources/konker/images/icons-menu/icon-notebook.svg}" class="icon-menu" />
                           <span data-th-text="#{nav.menu.notebooks}">Notebooks</span>
                       </a>                      
                   </li>
