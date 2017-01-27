@@ -51,7 +51,7 @@ var graphService = {
             // Disable showLegend and useInteractiveGuideLine flag if using multiple series
             chart = nv.models.lineChart()
                 .options({
-                    duration: 200,
+                    duration: 0,
                     useInteractiveGuideline: true
                 }).showLegend(true);
 
@@ -150,12 +150,12 @@ var graphService = {
         }
 
         this.data = this.prepare(data);
-        // this.data = this.prepareSets(data);
         // Update the SVG with the new data and call chart
-        d3.select('#chart svg').datum(this.data).call(this.chart);
-        nv.utils.windowResize(this.chart.update);
-        improveChart();
-        
+        if (typeof this.chart !== 'undefined') {
+            d3.select('#chart svg').datum(this.data).call(this.chart);
+            improveChart();
+        }
+
     },
     setup : function(lineColor,xAxisLabel,noDataMessage) {
         this.lineColor = lineColor;
