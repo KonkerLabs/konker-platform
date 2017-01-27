@@ -2283,7 +2283,6 @@ margin-left: 260px;
     add caso o menu fique fixo*/
     margin-left: 200px;
     position: absolute; /*rodape abaixo*/
-    bottom: 0;
     width: 85%;
     z-index: -9999;
 }

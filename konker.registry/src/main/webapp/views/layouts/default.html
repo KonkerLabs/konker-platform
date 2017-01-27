@@ -208,7 +208,7 @@
 
       <!--main content end-->
       <!--footer start-->
-      <footer class="site-footer">
+      <footer class="site-footer" id="footer">
 
               2017 <strong>Konker</strong> <span data-th-text="#{footer.all_rights_reserved}"></span>
               <a href="#maincontenttop" class="go-top">
@@ -232,6 +232,16 @@
                 var url = (contextPath() + path).replace(/\/\//, '/'); /* avoids double slashs */
                 return url;
             }
+            
+            $(document).ready(function() {
+                /* footer */
+                var windowHeight = $(window).height();
+                var docHeight = $('.wrapper').height();
+
+                if (windowHeight > docHeight) {
+                    $('#footer').css('bottom', '0px');
+                }
+            });
         /*]]>*/
     </script>
 
