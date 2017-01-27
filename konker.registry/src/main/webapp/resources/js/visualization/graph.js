@@ -92,6 +92,10 @@ var graphService = {
                 .call(controller.chart);
             nv.utils.windowResize(controller.chart.update);
             
+            chart.dispatch.on('renderEnd', function(){ 
+                improveChart();
+            });
+            
             improveChart();
 
             return controller.chart;
@@ -153,7 +157,6 @@ var graphService = {
         // Update the SVG with the new data and call chart
         if (typeof this.chart !== 'undefined') {
             d3.select('#chart svg').datum(this.data).call(this.chart);
-            improveChart();
         }
 
     },
