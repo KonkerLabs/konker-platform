@@ -8,8 +8,8 @@
             <h1 class="page-title-error" data-th-text="#{error.title}"> </h1>
             <p data-th-text="#{error.text}"></p>
             <br>
-            <a href="/" class="btn btn-theme btn-act" data-th-text="#{error.btn}" ></a> <br>
-        	<img src="/resources/konker/images/error-1.png">
+            <a data-th-href="@{/}" class="btn btn-theme btn-act" data-th-text="#{error.btn}" ></a> <br>
+            <img data-th-attr="src=@{/resources/konker/images/error-1.png}" />
     	</div>  
  	</div>
 </body>
