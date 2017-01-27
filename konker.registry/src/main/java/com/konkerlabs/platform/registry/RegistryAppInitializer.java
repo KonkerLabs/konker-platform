@@ -6,6 +6,7 @@ import java.util.Set;
 import javax.servlet.Filter;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration.Dynamic;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +61,11 @@ public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherSe
 	@Override
 	protected Filter[] getServletFilters() {
 		return new Filter[] { new HiddenHttpMethodFilter(), new ResourceUrlEncodingFilter() };
+	}
+	
+	@Override
+	protected void customizeRegistration(Dynamic registration) {
+		registration.setInitParameter("throwExceptionIfNoHandlerFound", "true");
 	}
 
 	@Override

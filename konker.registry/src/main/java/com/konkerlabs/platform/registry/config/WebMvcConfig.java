@@ -110,7 +110,8 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements Application
 				"/WEB-INF/i18n/routes", "/WEB-INF/i18n/destinations", "/WEB-INF/i18n/tenants",
                 "/WEB-INF/i18n/transformations", "/WEB-INF/i18n/integration", "/WEB-INF/i18n/visualization",
                 "/WEB-INF/i18n/users", "/WEB-INF/i18n/languages", "/WEB-INF/i18n/timezones", "/WEB-INF/i18n/dateformats",
-                "/WEB-INF/i18n/loglevels", "/WEB-INF/i18n/email", "/WEB-INF/i18n/tokens", "/WEB-INF/i18n/usernotifications");
+                "/WEB-INF/i18n/loglevels", "/WEB-INF/i18n/email", "/WEB-INF/i18n/tokens", "/WEB-INF/i18n/usernotifications",
+                "/WEB-INF/i18n/error");
         messageSource.setDefaultEncoding("UTF-8");
         return messageSource;
     }
