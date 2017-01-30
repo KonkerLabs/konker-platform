@@ -24,8 +24,15 @@
             </ul>
         </div>
         
-        <a data-th-href="@{/destinations/rest/new}" class="btn btn-default action pull-right" data-th-text="#{nav.new}">New</a>
-        <table class="table table-bordered">
+         <div>
+            <a data-th-href="@{/destinations/rest/new}"
+               class="mb btn btn-theme action pull-right">
+                <span class="glyphicon glyphicon-plus"></span>
+                <span data-th-text="#{nav.new}"></span>
+            </a>
+        </div>
+
+        <table class="table table-bordered table-hover table-striped">
             <thead>
             <tr>
                 <th class="col-md-2" data-th-text="#{destinations.rest.index.name}">Name</th>

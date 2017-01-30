@@ -14,11 +14,14 @@
                 <span aria-hidden="true">&times;</span>
             </button>
         </div>
-        <a data-th-href="@{/routes/new}"
-           data-th-if="${not allDevices.empty}"
-           data-th-text="#{nav.new}"
-           class="btn btn-default action pull-right"></a>
-        <table class="table table-bordered">
+        <div>
+            <a data-th-href="@{/routes/new}"
+               class="mb btn btn-theme action pull-right">
+                <span class="glyphicon glyphicon-plus"></span>
+                <span data-th-text="#{nav.new}"></span>
+            </a>
+        </div>
+        <table class="table table-bordered table-hover table-striped">
             <thead>
             <tr>
                 <th class="col-md-2" data-th-text="#{routes.index.name}"></th>
