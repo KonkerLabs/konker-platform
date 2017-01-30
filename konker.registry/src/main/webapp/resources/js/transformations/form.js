@@ -1,18 +1,18 @@
 var controller = {
-    addNewRow : function(trLast, rowCount, callback) {
+    addNewRow : function(trLast, rowCount, parentIndex, callback) {
         trNew = trLast.clone();
         trLast.after(trNew);
-        this.applyNewIndex(trNew, rowCount + 1);
+        this.applyNewIndex(trNew, rowCount + 1, parentIndex);
         callback(trNew);
     },
-    applyNewIndex : function(row, index) {
+    applyNewIndex : function(row, index, parentIndex) {
 
     	row.find('select, input, button, tr').each(function() {
             var input = $(this);
             var newId = 'undefined';
             if(input.attr('id') != undefined){
-                if(input.attr('id').indexOf('.headers') != -1){
-                       newId = input.attr('id').substring(0, 6).replace(/\d+/gi, index -1)
+                if(input.attr('id').indexOf('.headers') != -1 && parentIndex != undefined){
+                       newId = input.attr('id').substring(0, 6).replace(/\d+/gi, parentIndex)
                         + input.attr('id').substring(6, input.attr('id').length).replace(/\d+/gi, index -1);
                 } else {
                     newId = input.attr('id').replace(/\d+/gi, index -1);
@@ -22,9 +22,9 @@ var controller = {
 
             if(input.attr('name') != undefined){
                 var newName = input.attr('name').replace(/\d+/gi, index -1);
-                if(input.attr('name').indexOf('headers') != -1){
+                if(input.attr('name').indexOf('headers') != -1  && parentIndex != undefined){
 
-                    var firstIndex = $(this).attr('name').substring(0, 8).replace(/\d+/gi, index -1);
+                    var firstIndex = $(this).attr('name').substring(0, 8).replace(/\d+/gi, parentIndex);
                     var secondIndex = $(this).attr('name').substring(8, $(this).attr('name').length)
                         .replace(/\d+/gi, index -1);
 
@@ -40,12 +40,11 @@ var controller = {
 
         });
     },
-    removeRow : function(tableRow, rowCount, callback) {
+    removeRow : function(tableRow, rowCount, parentIndex, isHeader, callback) {
         if (rowCount > 1) {
             tableRows = tableRow.parent();
             tableRow.remove();
-            this.tableRowCount -= 1;
-            this.reindexRows(tableRows);
+            this.reindexRows(tableRows, parentIndex, isHeader);
         } else {
             tableRow.find('input').each(function(index, row){
                 row.value = '';
@@ -55,11 +54,18 @@ var controller = {
             callback();
         }
     },
-    reindexRows : function(tableRows) {
-        tableRows.each( function(index) {
-            index++;
-            controller.applyNewIndex($(this), index);
-        });
+    reindexRows : function(tableRows, parentIndex, isHeader) {
+        if(isHeader){
+            tableRows.find('tr.header-line').each( function(index, item) {
+                controller.applyNewIndex($(item), index+1, parentIndex);
+            });
+        } else {
+            tableRows.each( function(index) {
+                index++;
+                controller.applyNewIndex($(this), index, parentIndex);
+            });
+        }
+
     },
 }
 
@@ -69,6 +75,7 @@ $(document).ready(function() {
         controller.addNewRow(
             $(this).parent().parent().parent().find('div.step:last'),
             $(this).parent().parent().parent().find('div.step').length,
+            null,
             function(item){
                 item.find('input[type=text]').each(function(input){
                     this.value = '';
@@ -81,7 +88,8 @@ $(document).ready(function() {
                             $(this).parent().parent().parent().parent().parent().parent().find('div.step').length,
                             function(){
                                 $(this).parent().parent().parent().parent().parent().find('tr.header-line').each(function(index, headerRow){
-                                    controller.removeRow(headerRow, $(this).parent().parent().parent().find('tr.header-line').length);
+                                    controller.removeRow(headerRow, $(this).parent().parent().parent().find('tr.header-line').length,
+                                    true);
                                 });
                             }
                         );
@@ -93,21 +101,27 @@ $(document).ready(function() {
                          controller.addNewRow(
                                     $(this).parent().parent().find("tr:last"),
                                     $(this).parent().parent().parent().find('tr.header-line').length +1,
+                                    $(this).parent().parent().attr('id').split('-')[1],
                                     function(item){
                                         item.find('input[type=text]').each(function(input){
                                             this.value = '';
                                         });
                                         item.find('button.remove-header').on('click', function(){
                                             var row = $(this).closest('tr');
-                                            controller.removeRow(row, $(this).parent().parent().parent().find('tr.header-line').length);
+                                            controller.removeRow(row, $(this).parent().parent().parent().find('tr.header-line').length, false);
                                         });
                                     });
                     });
                 });
-                if(item.find('tr.restheaders tr.header-line').length > 1){
+                if(item.find('tr.restheaders tr.header-line').length > 0){
                     item.find('tr.restheaders tr.header-line').each(function(tr){
                         if(item.find('tr.restheaders tr.header-line').length > 1){
                             this.remove();
+                        } else {
+                            controller.reindexRows(
+                                item.find('tr.restheaders'),
+                                $(this).parent().parent().parent().parent().parent().attr('id').split('-')[1],
+                                true);
                         }
                     });
                 }
@@ -117,23 +131,32 @@ $(document).ready(function() {
         controller.addNewRow(
             $(this).parent().parent().find("tr:last"),
             $(this).parent().parent().parent().find('tr.header-line').length,
+            $(this).parent().parent().attr('id').split('-')[1],
             function(item){
                 item.find('input[type=text]').each(function(input){
                     this.value = '';
                 });
                 item.find('button.remove-header').on('click', function(){
                     var row = $(this).closest('tr');
-                    controller.removeRow(row, $(this).parent().parent().parent().find('tr.header-line').length);
+                    controller.removeRow(row, $(this).parent().parent().parent().find('tr.header-line').length, true);
                 });
             });
     });
     $('.remove-step').on('click', function() {
         var row = $(this).closest('div');
-        controller.removeRow(row,  $(this).parent().parent().length);
+        controller.removeRow(
+            row,
+            $(this).parent().parent().parent().parent().parent().parent().parent().parent().find('tr.restparams').length,
+            undefined,
+            false);
     });
      $('.remove-header').on('click', function() {
         var row = $(this).closest('tr');
-        controller.removeRow(row, $(this).parent().parent().parent().find('tr.header-line').length);
+        controller.removeRow(
+            row,
+            $(this).parent().parent().parent().find('tr.header-line').length,
+            $(this).parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().attr('id').split('-')[1],
+            true);
      });
 
 
