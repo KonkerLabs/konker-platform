@@ -13,9 +13,6 @@
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>TRACE</level>
         </filter>
-        <encoder>
-            <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} - %X{context} %X{uri} - %c{1} [%p] %m%n</Pattern>
-        </encoder>
     </appender>
     <appender name="konkerAsyncAppender"
               class="com.konkerlabs.platform.registry.audit.KonkerLoggerAsyncAppender"
@@ -40,4 +37,5 @@
         <level value="INFO"/>
         <appender-ref ref="consoleAppender"/>
     </root>
+
 </configuration>
