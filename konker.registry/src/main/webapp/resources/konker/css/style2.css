@@ -127,7 +127,7 @@ p {
     margin-top: 15px;
 }
 
-thead {
+table.table thead {
     background-color: #004b9b;
     color: #fff;
 }

@@ -2,7 +2,6 @@
 <html data-layout-decorate="layouts/default" xmlns:th="http://www.thymeleaf.org">
 <head>
     <link data-th-href="@{/resources/konker/css/nv.d3.css}" rel="stylesheet" />
-	<link data-th-href="@{/resources/konker/css/toggle-switch.css}" rel="stylesheet" />
     <link data-th-href="@{/resources/konker/css/pretty-json.css}" type="text/css" rel="stylesheet"/>
     <link data-th-href="@{/resources/bootstrap/css/bootstrap-datetimepicker.min.css}" type="text/css" rel="stylesheet"/>
 
@@ -134,7 +133,7 @@
                     <button type="button" data-th-text="#{visualization.index.btn.apply}" id="updateChartBtn" class="btn btn-success pull-right hide"></button>
                 </div>
 
-                <div id="chart" class="with-3d-shadow with-transitions hide">
+                <div id="chart">
                     <svg></svg>
                 </div>
 

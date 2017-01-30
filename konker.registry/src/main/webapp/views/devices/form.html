@@ -58,9 +58,13 @@
                            data-th-text="#{devices.form.active}"
                            for="active">Active?</label>
                     <div class="col-sm-2">
-                        <input type="checkbox" data-th-field="*{active}"
+                    	<label class="switch">
+	                        <input type="checkbox" 
+                               data-th-field="*{active}"
                                id="active"
                                name="active"/>
+	                    </label>
+                        
                     </div>
                 </div>
                 <button type="submit"

@@ -120,9 +120,11 @@
                    data-th-text="#{routes.show.active}"
                    for="active"></label>
             <div class="col-sm-4">
-                <input type="checkbox" data-th-checked="${route.active}"
-                       id="active"
-                       name="active"/>
+	            <label class="switch">
+	                <input type="checkbox" data-th-field="${route.active}"
+	                       id="active"
+	                       name="active"/>
+	            </label>
             </div>
         </div>
     </fieldset>
