@@ -100,7 +100,7 @@ $(document).ready(function() {
                     $(item).on('click', function(){
                          controller.addNewRow(
                                     $(this).parent().parent().find("tr:last"),
-                                    $(this).parent().parent().parent().find('tr.header-line').length +1,
+                                    $(this).parent().parent().parent().find('tr.header-line').length,
                                     $(this).parent().parent().attr('id').split('-')[1],
                                     function(item){
                                         item.find('input[type=text]').each(function(input){
