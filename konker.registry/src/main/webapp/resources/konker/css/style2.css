@@ -747,6 +747,11 @@ ul.sidebar-menu li a.active i {
     padding-bottom: 15px;
     padding-top: 0px;
     width: 100%;
+	min-height: 100vh;
+	min-height: -webkit-calc(100vh - 130px);
+	min-height: -moz-calc(100vh - 130px);
+	min-height: calc(100vh - 130px);
+	position: relative;
 }
 
 a.logo {
@@ -2291,9 +2296,8 @@ margin-left: 260px;
    /* margin-left: 200px;
     add caso o menu fique fixo*/
     margin-left: 200px;
-    position: absolute; /*rodape abaixo*/
-    width: 85%;
-    z-index: -9999;
+	display: block;
+	min-height: 40px;
 }
 
 .go-top {
