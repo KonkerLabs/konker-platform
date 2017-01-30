@@ -232,8 +232,8 @@
                 var url = (contextPath() + path).replace(/\/\//, '/'); /* avoids double slashs */
                 return url;
             }
-            
-            $(document).ready(function() {
+
+            function locateFooter() {
                 /* footer */
                 var windowHeight = $(window).height();
                 var docHeight = $('.wrapper').height();
@@ -241,7 +241,17 @@
 
                 if (windowHeight > docHeight + headerHeight + 80) {
                     $('#footer').css('bottom', '0px');
-                }
+                } else {
+                    $('#footer').css('bottom', 'auto');
+                };
+            }
+
+            $(document).ready(function() {
+                locateFooter();
+            });
+            
+            $(window).resize(function() {
+                locateFooter();
             });
         /*]]>*/
     </script>
