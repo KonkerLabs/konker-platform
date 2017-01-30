@@ -23,25 +23,26 @@
                 <a
                     data-th-href="@{/tenants/log(asc=${asc})}"
                     data-th-text="#{tenants.log.form.refresh}"
-                    class="btn btn-default action pull-right">
+                    class="mb btn btn-theme action pull-right">
                 </a>
+                <span class="pull-right">&nbsp;</span>
                 <a 
                     data-th-href="@{/tenants/log(asc=true)}"
                     data-th-if="${not asc}"
-                    class="btn btn-default action pull-right"> <span
+                    class="mb btn btn-theme action pull-right"> <span
                     class="glyphicon glyphicon glyphicon-sort-by-alphabet-alt"
                     aria-hidden="true"></span>
                 </a>
                 <a 
                     data-th-href="@{/tenants/log(asc=false)}"
                     data-th-if="${asc}"
-                    class="btn btn-default action pull-right"> <span
+                    class="mb btn btn-theme action pull-right"> <span
                     class="glyphicon glyphicon glyphicon-sort-by-alphabet"
                     aria-hidden="true"></span>
                 </a>
             </div>
 
-            <table class="table table-bordered">
+            <table class="table table-bordered table-striped">
                 <thead>
                     <tr>
                         <th class="col-md-2"

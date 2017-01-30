@@ -73,17 +73,16 @@
                         <table class="table table-condensed" id="headers">
                             <caption>
                                 <strong data-th-text="#{destinations.rest.form.headers}">Headers</strong>
+                                <button class="btn btn-sm pull-right add-header" type="button">
+                                    <span class="glyphicon glyphicon-plus"></span>
+                                    [[#{nav.add} ?: 'Add']]
+                                </button>
                             </caption>
                             <thead>
                                 <tr>
                                     <td data-th-text="#{destinations.rest.form.headers.key}">Name</td>
                                     <td data-th-text="#{destinations.rest.form.headers.value}">Value</td>
-                                    <td class="col-sm-1 text-center">
-                                        <button class="btn btn-sm pull-right add-header" type="button">
-                                            <span class="glyphicon glyphicon-plus"></span>
-                                            [[#{nav.add} ?: 'Add']]
-                                        </button>
-                                    </td>
+                                    <td class="col-sm-1 text-center"></td>
                                 </tr>
                             </thead>
                             <tbody class="table-body" id="headersBody">

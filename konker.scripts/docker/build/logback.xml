@@ -1,4 +1,5 @@
 <configuration scan="true" scanPeriod="30 seconds">
+
     <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>TRACE</level>
@@ -8,8 +9,23 @@
         </encoder>
     </appender>
 
-    <appender name="konkerAppender" class="com.konkerlabs.platform.registry.audit.KonkerLoggerAppender">
-        <file>tenant.log</file>
+    <appender name="konkerAppender"
+              class="com.konkerlabs.platform.registry.audit.KonkerLoggerAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>TRACE</level>
+        </filter>
+    </appender>
+    <appender name="konkerAsyncAppender"
+              class="com.konkerlabs.platform.registry.audit.KonkerLoggerAsyncAppender"
+              immediateFlush="false" append="false">
+        <queueSize>500</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <maxFlushTime>1000</maxFlushTime>
+        <appender-ref ref="konkerAppender" />
+    </appender>
+
+    <appender name="fileAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>registry.log</file>
         <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
             <maxFileSize>100MB</maxFileSize>
         </triggeringPolicy>
@@ -27,17 +43,20 @@
     </appender>
 
     <logger name="com.konkerlabs.platform.registry" level="DEBUG" additivity="false">
-        <appender-ref ref="konkerAppender"/>
+        <appender-ref ref="konkerAsyncAppender"/>
+        <appender-ref ref="fileAppender"/>
         <appender-ref ref="consoleAppender"/>
     </logger>
 
     <logger name="org.springframework.integration" level="DEBUG" additivity="false">
-        <appender-ref ref="konkerAppender"/>
+        <appender-ref ref="fileAppender"/>
         <appender-ref ref="consoleAppender"/>
     </logger>
 
     <root>
         <level value="INFO"/>
+        <appender-ref ref="fileAppender"/>
         <appender-ref ref="consoleAppender"/>
     </root>
+
 </configuration>
