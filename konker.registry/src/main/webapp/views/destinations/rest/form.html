@@ -116,9 +116,11 @@
             <div class="form-group">
                 <label class="col-sm-1 control-label" for="active" data-th-text="#{destinations.rest.form.active}">Active?</label>
                 <div class="col-sm-4">
-                    <input type="checkbox" data-th-field="*{active}"
-                           id="active"
-                           name="active"/>
+	                <label class="switch">
+	                    <input type="checkbox" data-th-field="*{active}"
+	                           id="active"
+	                           name="active"/>
+	                </label>
                 </div>
             </div>
             <button type="submit" class="btn btn-success" data-th-text="#{nav.save}">Save</button>
