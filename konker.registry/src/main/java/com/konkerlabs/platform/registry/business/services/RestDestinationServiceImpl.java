@@ -10,15 +10,18 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
+import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.repositories.EventRouteRepository;
 import com.konkerlabs.platform.registry.business.repositories.RestDestinationRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.AbstractURLBlacklistValidation;
 import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.web.controllers.DeviceController;
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
@@ -28,6 +31,8 @@ public class RestDestinationServiceImpl extends AbstractURLBlacklistValidation i
 	private TenantRepository tenantRepository;
 	@Autowired
 	private RestDestinationRepository restRepository;
+    @Autowired
+    private EventRouteRepository eventRouteRepository;
 
 	@Override
 	public ServiceResponse<List<RestDestination>> findAll(Tenant tenant) {
@@ -172,6 +177,41 @@ public class RestDestinationServiceImpl extends AbstractURLBlacklistValidation i
 		RestDestination saved = restRepository.save(destination);
 
 		return ServiceResponseBuilder.<RestDestination> ok().withResult(saved).build();
+	}
+
+	@Override
+	public ServiceResponse<RestDestination> remove(Tenant tenant, String guid) {
+		if (!Optional.ofNullable(tenant).isPresent())
+			return ServiceResponseBuilder.<RestDestination> error().withMessage(CommonValidations.TENANT_NULL.getCode())
+					.build();
+
+		if (!Optional.ofNullable(guid).filter(s -> !s.isEmpty()).isPresent())
+			return ServiceResponseBuilder.<RestDestination> error().withMessage(Validations.GUID_NULL.getCode())
+					.build();
+
+		Tenant existingTenant = tenantRepository.findByDomainName(tenant.getDomainName());
+
+		if (!Optional.ofNullable(existingTenant).isPresent())
+			return ServiceResponseBuilder.<RestDestination> error()
+					.withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();
+
+		RestDestination existingDestination = restRepository.getByTenantAndGUID(existingTenant.getId(), guid);
+
+		if (!Optional.ofNullable(existingDestination).isPresent())
+			return ServiceResponseBuilder.<RestDestination> error()
+					.withMessage(Validations.DESTINATION_NOT_FOUND.getCode()).build();
+
+		if (!eventRouteRepository.findByOutgoingUri(existingDestination.toURI()).isEmpty()) {
+			return ServiceResponseBuilder.<RestDestination> error()
+					.withMessage(Validations.REST_DESTINATION_IN_USE_TRANSFORMATION.getCode()).build();
+		}
+
+		restRepository.delete(existingDestination);
+
+        return ServiceResponseBuilder.<RestDestination>ok()
+                .withMessage(Messages.REST_DESTINATION_REMOVED_SUCCESSFULLY.getCode())
+                .withResult(existingDestination)
+                .build();
 	}
 
 }

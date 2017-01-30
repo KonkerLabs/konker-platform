@@ -1,10 +1,14 @@
 package com.konkerlabs.platform.registry.test.business.services;
 
+import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.repositories.EventRouteRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
@@ -48,6 +52,9 @@ public class RestDestinationServiceTest extends BusinessLayerTestSupport {
     @Autowired
     private TenantRepository tenantRepository;
 
+    @Autowired
+    private EventRouteRepository eventRouteRepository;
+    
     private Tenant tenant;
     private Tenant emptyTenant;
     private Tenant otherTenant;
@@ -386,5 +393,42 @@ public class RestDestinationServiceTest extends BusinessLayerTestSupport {
         assertThat(after.getName(), not(equalTo(OTHER_DESTINATION_NAME)));
     }
 
+    @Test
+    public void shouldRemoveDestinationSuccesfully() {
+    	ServiceResponse<RestDestination> response = null;
+
+    	RestDestination tempRestDestination = RestDestination.builder().name("LOMoHYKvTs").serviceURI("http://host.com/").build();
+
+    	// register
+    	response = subject.register(tenant, tempRestDestination);
+    	assertThat(response.isOk(), equalTo(true));
+
+    	// remove
+    	response = subject.remove(tenant, tempRestDestination.getGuid());
+    	assertThat(response.isOk(), equalTo(true));
+    	
+    }
+
+    @Test
+    public void shouldNotRemoveDestinationWithRouteInUse() {
+    	ServiceResponse<RestDestination> response = null;
+
+    	RestDestination tempRestDestination = RestDestination.builder().name("LOMoHYKvTs").serviceURI("http://host.com/").build();
+
+    	// register
+    	response = subject.register(tenant, tempRestDestination);
+    	assertThat(response.isOk(), equalTo(true));
+
+    	// create a route to the rest destination
+    	EventRoute route = EventRoute.builder().description("Kj4xqmJQUC").name("2sVevJm0qq").outgoing(RouteActor.builder().uri(tempRestDestination.toURI()).build()).build();
+		eventRouteRepository.save(route);
+
+    	// try to remove
+    	response = subject.remove(tenant, tempRestDestination.getGuid());
+    	assertThat(response.isOk(), equalTo(false));
+        assertThat(response.getResponseMessages(),
+                hasEntry(RestDestinationService.Validations.REST_DESTINATION_IN_USE_TRANSFORMATION.getCode(), null));
+
+    }
 
 }

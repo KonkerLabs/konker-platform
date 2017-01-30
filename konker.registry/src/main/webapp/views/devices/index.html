@@ -24,10 +24,12 @@
         </div>
         <div>
             <a data-th-href="@{/devices/new}"
-               data-th-text="#{nav.new}"
-               class="btn btn-default action pull-right"></a>
+               class="mb btn btn-theme action pull-right">
+                <span class="glyphicon glyphicon-plus"></span>
+                <span data-th-text="#{nav.new}"></span>
+            </a>
         </div>
-        <table class="table table-bordered">
+        <table class="table table-bordered table-hover table-striped">
             <thead>
             <tr>
                 <th class="col-md-3" data-th-text="#{devices.index.id}"></th>

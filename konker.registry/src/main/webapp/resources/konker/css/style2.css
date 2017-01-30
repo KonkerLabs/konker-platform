@@ -1,23 +1,15 @@
-/* --------- NOTIFICAÇÔES ------- */
+.page-title {
+    font-weight: 500;
+    color: #b40f0f;
+}
 
-.listmsg li{
-    border: 1px solid #000;
-    list-style: none;
-    padding-top: 8px;
-    height: 100%;
+.pagination li a {
+    background-color: black;
+}
+.pagination {
     display: flex;
-    
+    align-items: center;
 }
-.listis {
-    height: 500px;
-    overflow-y: scroll;
-    
-}
-
-
-
-/* --------- FIM NOTIFICAÇÔES ------- */
-
 
 .btvertical {
       display: -ms-flex;
@@ -35,6 +27,7 @@
     width: 18px;
     margin-right: 5px;
 }
+
 /*Konker Basic Basic CSS
 Date: 03/01/2017 */
 
@@ -132,6 +125,16 @@ p {
 
 .subtitle-page {
     margin-top: 15px;
+}
+
+thead {
+    background-color: #004b9b;
+    color: #fff;
+}
+
+.table-hover > tbody > tr:hover td {
+    background-color: #50c8ea;
+    color: #fff;
 }
 
 /* Bootstrap Modifications */
@@ -383,16 +386,77 @@ ul.user-info {
 }
 
 .profile-info.dropdown .dropdown-menu li a:hover {
-	color: #333;
-	background-color: #000; /*mudar*/
+	color: #FFF;
+	background-color: #50c8ea;
 }
+
 .profile-info img.avatar {
 	margin-right: 8px;
 	height: 42px;
 	width: 42px;
 }
 
+/* --------- NOTIFICAÇÔES ------- */
 
+.listmsg li{
+    border: 0.5px solid #CCC;
+    list-style: none;
+    padding-top: 8px;
+    height: 100%;
+    display: flex;
+    line-height: 10px;
+    background-color: #FFF;    
+}
+.listmsg ul{
+    padding-right: 0px !important; 
+    padding-left: 0px !important;
+}
+
+.listis {
+    height: 500px;       
+}
+.listis h4 {
+    color: #1d4593;
+}
+.noread h4, head-msg h4 {
+    font-weight: bold;
+}
+
+.pmessages {
+    border: 0.5px solid #CCC;
+    margin-right: 25px;
+    min-height: 450px;
+    
+}
+.head-msg {
+    border-bottom: 1px solid #000;
+    padding: 10px;
+    display: flex;
+    line-height: 10px;
+}
+.top-list {
+    margin-bottom: 0px;
+    padding-left: 5px;
+    padding-right: 5px;
+    border: 0.5px solid #CCC;
+    height: 50px;
+    padding-top: 5px;
+    display: flex;
+    display: -webkit-box;
+}
+
+.top-list ul {
+    list-style: none;
+}
+
+.head-msg h4 {
+    font-weight: bold;
+    color: #1d4593;
+}
+
+.body-msg {
+    padding: 20px;
+}
 
 /*sidebar navigation*/
 
@@ -410,6 +474,7 @@ ul.user-info {
 
 #sidebar ul li {
     position: relative;
+    list-style: none;
 }
 
 #sidebar .sub-menu > .sub li  {
@@ -430,6 +495,82 @@ ul.user-info {
 #sidebar .mt {
 	margin-top: 80px;
 }
+
+/* --------- FIM NOTIFICAÇÔES ------- */
+
+/*PAGINA DE ERRO */
+.error-page {
+    text-align: center;
+}
+.error-page h1 {
+    font-size: 50px;
+    font-weight: bolder;
+    color:#a94442;
+}
+.error-page img {
+    width: 30%;
+    margin: 20px;
+}
+
+/* CARDS INICIAIS */
+.card {
+    color: #FFF;
+    text-align: center;
+    padding: 10px;
+    box-shadow: 0px 5px 6px #CCC;
+   -webkit-box-shadow: 0px 5px 6px #CCC;
+   -moz-box-shadow: 0px 5px 6px #CCC;
+    min-height: 295px;
+    max-height: 330px;
+    margin: 20px 0px;
+}
+
+.card h1 {
+    font-size: 80px;
+    font-weight: bolder;
+    margin: 3px;   
+}
+.card h2 {
+    font-size: 20px;
+    text-transform: uppercase; 
+}
+.card p {
+    font-size: 14px;
+    margin: 5px;
+}
+.card img {
+    width: 15%;
+    margin: 10px;
+}
+
+.card-1 {
+    background-color: #00a69c;
+}
+.card-2 {
+    background-color: #fbaf41;
+}
+.card-3 {
+    background-color: #e54182;
+}
+.card-others {
+    background-color: #667978;
+}
+.card-general {
+    background-color: #adc9d4;
+}
+.card-general img {
+    margin: 22px;
+    width: 30%;
+}
+
+.btn-inline-card {
+    background-color: transparent !important;
+    color: #e9e9e9 !important;
+    border-color: #e9e9e9 !important;
+    border-style: solid;
+}
+
+/* FIM CARDS INICIAIS */
 
 /*LEFT NAVIGATION ICON*/
 .dcjq-icon {
@@ -584,12 +725,9 @@ ul.sidebar-menu li a.active i {
     margin-left: 210px;
 }
 
-.header, .footer {
+.header {
     min-height: 60px;
     padding: 0 15px;
-}
-
-.header {
     position: fixed;
     left: 0;
     right: 0;
@@ -2150,10 +2288,13 @@ margin-left: 260px;
 .site-footer {
     border-top: solid 1px #ddd;
 	padding: 10px 30px 2px;
+   /* margin-left: 200px;
+    add caso o menu fique fixo*/
     margin-left: 200px;
+    position: absolute; /*rodape abaixo*/
+    width: 85%;
+    z-index: -9999;
 }
-
-
 
 .go-top {
     margin-right: 1%;
@@ -2164,7 +2305,6 @@ margin-left: 260px;
     border-radius: 50%;
     -webkit-border-radius: 50%;
 }
-
 .go-top i {
     color: #2A3542;
 }
@@ -2172,5 +2312,3 @@ margin-left: 260px;
 .site-min-height {
     min-height: 900px;
 }
-
-

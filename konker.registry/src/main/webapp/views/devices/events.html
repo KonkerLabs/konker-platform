@@ -2,7 +2,6 @@
 <html data-layout-decorate="layouts/default" xmlns:th="http://www.thymeleaf.org">
 <head>
     <link data-th-href="@{/resources/konker/css/nv.d3.css}" rel="stylesheet" />
-	<link data-th-href="@{/resources/konker/css/toggle-switch.css}" rel="stylesheet" />
     <link data-th-href="@{/resources/konker/css/pretty-json.css}" type="text/css" rel="stylesheet"/>
     <link data-th-href="@{/resources/bootstrap/css/bootstrap-datetimepicker.min.css}" type="text/css" rel="stylesheet"/>
 
@@ -19,6 +18,9 @@
         .loading-chart {
             height: 32px;
             width: 32px;
+        }
+        .date-group .input-group-addon {
+            cursor: pointer;
         }
     </style>
 </head>
@@ -67,7 +69,7 @@
                         <label class="col-sm-2 control-label"
                                data-th-text="#{visualization.index.date.start}"></label>
                         <div class="col-sm-3">
-                            <div class="input-group" style="float: left; width: 215px;">
+                            <div class="input-group date-group" id="dateStartGroup" style="float: left; width: 215px;">
                                 <input type="text" class="form-control date" id="dateStart" name="dateStart"/>
                                 <span class="input-group-addon">
                                     <span class="glyphicon glyphicon-calendar"></span>
@@ -78,7 +80,7 @@
                         <label class="col-sm-2 control-label"
                                data-th-text="#{visualization.index.date.end}"></label>
                         <div class="col-sm-3">
-                            <div class="input-group" style="float: left; width: 215px;">
+                            <div class="input-group date-group" id="dateEndGroup" style="float: left; width: 215px;">
                                 <input type="text" class="form-control date" id="dateEnd" name="dateEnd"/>
                                 <span class="input-group-addon">
                                     <span class="glyphicon glyphicon-calendar"></span>
@@ -137,7 +139,7 @@
 
             </form>
 
-            <div class="row">
+            <div class="row col-sm-12">
                 <label class="col-sm-2 control-label" data-th-text="#{json.format.messages}"></label>
                 <div class="col-sm-1">
                     <label class="switch">

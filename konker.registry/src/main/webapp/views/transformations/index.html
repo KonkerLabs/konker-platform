@@ -14,10 +14,14 @@
                 <span aria-hidden="true">&times;</span>
             </button>
         </div>
-        <a data-th-href="@{/transformation/new}"
-           data-th-text="#{nav.new}"
-           class="btn btn-default action pull-right">New</a>
-        <table class="table table-bordered">
+        <div>
+            <a data-th-href="@{/transformation/new}"
+               class="mb btn btn-theme action pull-right">
+                <span class="glyphicon glyphicon-plus"></span>
+                <span data-th-text="#{nav.new}"></span>
+            </a>
+        </div>
+        <table class="table table-bordered table-hover table-striped">
             <thead>
             <tr>
                 <th class="col-md-2" data-th-text="#{transformations.index.name}">Name</th>

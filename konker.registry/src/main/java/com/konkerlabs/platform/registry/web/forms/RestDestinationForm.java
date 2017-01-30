@@ -17,6 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 @Data
 public class RestDestinationForm implements ModelBuilder<RestDestination, RestDestinationForm, Void> {
 
+    private String restId;
     private String name;
     private String method;
     private List<RestDestinationHeader> headers;
@@ -44,6 +45,7 @@ public class RestDestinationForm implements ModelBuilder<RestDestination, RestDe
 
 	@Override
     public RestDestinationForm fillFrom(RestDestination model) {
+		setRestId(model.getId());
         setName(model.getName());
         setServiceURI(model.getServiceURI());
         setServiceUsername(model.getServiceUsername());

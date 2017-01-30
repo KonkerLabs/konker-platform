@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -107,4 +107,16 @@ public class User implements URIDealer, UserDetails {
         @Id
         private String value;
     }
+
+    public String getFirstName() {
+    	if (StringUtils.isNotBlank(name)) {
+	    	int spaceIndex = name.indexOf(' ');
+	    	if (spaceIndex > 0) {
+	    		return name.substring(0, spaceIndex);
+	    	}
+    	}
+    	
+    	return name;
+    }
+
 }
