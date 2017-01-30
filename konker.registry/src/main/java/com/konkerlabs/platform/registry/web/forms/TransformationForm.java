@@ -63,8 +63,9 @@ public class TransformationForm implements ModelBuilder<Transformation, Transfor
             this.username = username;
             this.password = password;
             List<TransformationStepHeaderForm> headerFromMap = new ArrayList<>();
-            if (headers == null) {
+            if (headers == null || headers.size() == 0) {
                 headers = new HashMap<>();
+                headers.put("", "");
             }
             headers.forEach((key, value) -> {
                 headerFromMap.add(new TransformationStepHeaderForm(key, value));

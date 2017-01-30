@@ -7,29 +7,57 @@ var controller = {
     },
     applyNewIndex : function(row, index) {
 
-    	row.find('select, input').each(function() {
+    	row.find('select, input, button, tr').each(function() {
             var input = $(this);
-            var newId = input.attr('id').replace(/\d+/gi,index);
-            var newName = input.attr('name').replace(/\d+/gi,index);
-            if(input.attr('name').indexOf('headers') != -1){
-                newName = input.attr('name').split('headers')[0] +
-                "headers" +
-                input.attr('name').split('headers')[1].replace(/\d+/gi,index);
+            var newId = 'undefined';
+            if(input.attr('id') != undefined){
+                if(input.attr('id').indexOf('.headers') != -1){
+                       newId = input.attr('id').substring(0, 6).replace(/\d+/gi, index -1)
+                        + input.attr('id').substring(6, input.attr('id').length).replace(/\d+/gi, index -1);
+                } else {
+                    newId = input.attr('id').replace(/\d+/gi, index -1);
+                }
+                input.attr('id', newId);
             }
-            input.attr('id',newId);
-            input.attr('name',newName);
+
+            if(input.attr('name') != undefined){
+                var newName = input.attr('name').replace(/\d+/gi, index -1);
+                if(input.attr('name').indexOf('headers') != -1){
+
+                    var firstIndex = $(this).attr('name').substring(0, 8).replace(/\d+/gi, index -1);
+                    var secondIndex = $(this).attr('name').substring(8, $(this).attr('name').length)
+                        .replace(/\d+/gi, index -1);
+
+                    newName = firstIndex + secondIndex;
+                }
+
+                input.attr('name',newName);
+            }
+
+            if(input.attr('data-target') != undefined){
+                input.attr('data-target', input.attr('data-target').replace(/\d+/gi, index-1));
+            }
+
         });
     },
-    removeRow : function(tableRow, rowCount) {
+    removeRow : function(tableRow, rowCount, callback) {
         if (rowCount > 1) {
             tableRows = tableRow.parent();
             tableRow.remove();
             this.tableRowCount -= 1;
             this.reindexRows(tableRows);
+        } else {
+            tableRow.find('input').each(function(index, row){
+                row.value = '';
+            });
+        }
+        if(callback != undefined){
+            callback();
         }
     },
     reindexRows : function(tableRows) {
         tableRows.each( function(index) {
+            index++;
             controller.applyNewIndex($(this), index);
         });
     },
@@ -37,42 +65,75 @@ var controller = {
 
 $(document).ready(function() {
     controller.tableBody = $('tbody');
-
-    $('#transformationSteps').on('click','#btn-add',function() {
+    $('.transformationSteps .btn-add').on('click', function() {
         controller.addNewRow(
-            controller.tableBody.find("tr.restparams:last"),
-            $('#transformationSteps > tbody > tr.restparams').length,
+            $(this).parent().parent().parent().find('div.step:last'),
+            $(this).parent().parent().parent().find('div.step').length,
             function(item){
                 item.find('input[type=text]').each(function(input){
                     this.value = '';
                 });
-                item.find('button').on('click', function(){
-                    var row = $(this).closest('tr');
-                    controller.removeRow(row, $('#transformationSteps > tbody > tr.restparams').length);
+                item.find('button.remove-step').each(function(index, item){
+                    $(item).on('click', function(){
+                        var row = $(this).closest('div');
+                        controller.removeRow(
+                            row,
+                            $(this).parent().parent().parent().parent().parent().parent().find('div.step').length,
+                            function(){
+                                $(this).parent().parent().parent().parent().parent().find('tr.header-line').each(function(index, headerRow){
+                                    controller.removeRow(headerRow, $(this).parent().parent().parent().find('tr.header-line').length);
+                                });
+                            }
+                        );
+                    });
                 });
+
+                item.find('button.add-header').each(function(index, item){
+                    $(item).on('click', function(){
+                         controller.addNewRow(
+                                    $(this).parent().parent().find("tr:last"),
+                                    $(this).parent().parent().parent().find('tr.header-line').length +1,
+                                    function(item){
+                                        item.find('input[type=text]').each(function(input){
+                                            this.value = '';
+                                        });
+                                        item.find('button.remove-header').on('click', function(){
+                                            var row = $(this).closest('tr');
+                                            controller.removeRow(row, $(this).parent().parent().parent().find('tr.header-line').length);
+                                        });
+                                    });
+                    });
+                });
+                if(item.find('tr.restheaders tr.header-line').length > 1){
+                    item.find('tr.restheaders tr.header-line').each(function(tr){
+                        if(item.find('tr.restheaders tr.header-line').length > 1){
+                            this.remove();
+                        }
+                    });
+                }
             });
     });
-    $('.add-header').on('click',function() {
+    $('.add-header').on('click', function() {
         controller.addNewRow(
             $(this).parent().parent().find("tr:last"),
-            $('#restheaders').find('tr').length -1,
+            $(this).parent().parent().parent().find('tr.header-line').length,
             function(item){
                 item.find('input[type=text]').each(function(input){
                     this.value = '';
                 });
-                item.find('button').on('click', function(){
+                item.find('button.remove-header').on('click', function(){
                     var row = $(this).closest('tr');
-                    controller.removeRow(row, $('#restheaders').find('tr').length -1);
+                    controller.removeRow(row, $(this).parent().parent().parent().find('tr.header-line').length);
                 });
             });
     });
-    $('#transformationSteps').on('click','button.remove',function() {
-        var row = $(this).closest('tr');
-        controller.removeRow(row, $('#transformationSteps > tbody > tr.restparams').length -1);
+    $('.remove-step').on('click', function() {
+        var row = $(this).closest('div');
+        controller.removeRow(row,  $(this).parent().parent().length);
     });
-     $('#transformationStepHeaders').on('click','button.remove',function() {
+     $('.remove-header').on('click', function() {
         var row = $(this).closest('tr');
-        controller.removeRow(row, $('#restheaders').find('tr').length -1);
+        controller.removeRow(row, $(this).parent().parent().parent().find('tr.header-line').length);
      });
 
 
