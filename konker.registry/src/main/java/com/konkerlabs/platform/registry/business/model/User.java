@@ -114,8 +114,10 @@ public class User implements URIDealer, UserDetails {
 	    	if (spaceIndex > 0) {
 	    		return name.substring(0, spaceIndex);
 	    	}
+    	} else {
+    		return email;
     	}
-    	
+
     	return name;
     }
 

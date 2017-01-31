@@ -65,8 +65,13 @@
 			  	<a data-toggle="dropdown" class="dropdown-toggle" href="#" aria-expanded="false"> 
 				  	<img width="44" class="img-circle avatar" alt="" 
 				  		data-th-attr="src=${@userAvatarPath.absolutePath}" 
-				  		data-th-text="${@user.email}">
-				  	<span class="caret"></span>
+				  		data-th-text="${@user.name}"
+                        data-th-if="${not #strings.isEmpty(@user.name)}" />
+                    <img width="44" class="img-circle avatar" alt="" 
+                        data-th-attr="src=${@userAvatarPath.absolutePath}" 
+                        data-th-text="${@user.email}"
+                        data-th-if="${#strings.isEmpty(@user.name)}" />
+   				  	<span class="caret"></span>
 				</a>
 
 				<!-- User action menu -->
