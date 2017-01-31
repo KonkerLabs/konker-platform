@@ -11,7 +11,7 @@ __Ports__
 __Usage:__
 Open __http://localhost__ in your prefered browser and type:
 
-__user__: admin@localhost
+__user__: admin
 __pass__: changeme
 
 ## domain specific language
@@ -41,7 +41,7 @@ optional arguments:
 
 If you do not have a database containing Konker users, we provide one as default:
 
-User: admin@localhost
+User: admin
 
 Password: changeme
 
