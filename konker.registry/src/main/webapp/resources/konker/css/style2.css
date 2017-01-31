@@ -32,7 +32,7 @@
 Date: 03/01/2017 */
 
 /* Import fonts */
-@import url(https://fonts.googleapis.com/css?family=Open+Sans);
+@import url(opensans.css);
 
 /* BASIC THEME CONFIGURATION */
 body {
@@ -138,9 +138,6 @@ table.table thead {
 }
 
 /* Bootstrap Modifications */
-.modal-header {
-	background: #1d4593;
-}
 
 .modal-title {
 	color: white;
@@ -304,6 +301,20 @@ hr {
 	height: 18px;
 }
 
+.avoid-missundertand {
+    font-family: monospace;
+}
+
+.password-eye {
+    float: right;
+    margin-right: 6px;
+    margin-top: -23px;
+    position: relative;
+    z-index: 2;
+    width: 16px;
+    cursor: pointer;
+ }
+     
 /*Helpers*/
 
 .centered {
@@ -394,6 +405,37 @@ ul.user-info {
 	margin-right: 8px;
 	height: 42px;
 	width: 42px;
+}
+
+/* Modal */
+
+.modal-header {
+	background: #1d4593;
+	border-top-left-radius: 4px;
+	border-top-right-radius: 4px;
+}
+
+.modal-alignment-helper {
+    display:table;
+    height: 100%;
+    width: 100%;
+    pointer-events:none; /* This makes sure that we can still click outside of the modal to close it */
+}
+
+.modal-align-center {
+    /* To center vertically */
+    display: table-cell;
+    vertical-align: middle;
+    pointer-events:none;
+}
+
+.modal-content {
+    /* Bootstrap sets the size of the modal in the modal-dialog class, we need to inherit it */
+    width:inherit;
+    height:inherit;
+    /* To center horizontally */
+    margin: 0 auto;
+    pointer-events: all;
 }
 
 /* --------- NOTIFICAÇÔES ------- */
@@ -1998,7 +2040,6 @@ label {
 }
 
 #pass {
-  
   padding-right: 20px;
 }
 
@@ -2006,8 +2047,8 @@ label {
   cursor: pointer;
   position: absolute;
   width: 16px;
-margin-left: 260px;
-    margin-top: 10px;
+  margin-left: 260px;
+  margin-top: 10px;
 }
 
 #failLogin {

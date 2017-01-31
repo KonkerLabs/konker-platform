@@ -23,13 +23,12 @@
     <title>Konker Platform</title>
 
     <!-- Bootstrap core CSS -->
-    <link rel="stylesheet" data-th-href="@{/resources/bootstrap/css/bootstrap.min.css}" />
-    <!--external css-->
-    <link rel="stylesheet" type="text/css" data-th-href="@{/resources/font-awesome/css/font-awesome.min.css}">
-    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i,800,800i" rel="stylesheet">
-       
+    <link rel="stylesheet" type="text/css" data-th-href="@{/resources/bootstrap/css/bootstrap.min.css}" />
+ 
     <!-- Custom styles for this template -->
-    <link rel="stylesheet" type="text/css" data-th-href="@{/resources/konker/css/style2.css(v2)}">
+    <link rel="stylesheet" type="text/css" data-th-href="@{/resources/font-awesome/css/font-awesome.min.css}">
+    <link rel="stylesheet" type="text/css" data-th-href="@{/resources/konker/css/opensans.css}">
+    <link rel="stylesheet" type="text/css" data-th-href="@{/resources/konker/css/style2.css(v3)}">
     <link rel="stylesheet" type="text/css" data-th-href="@{/resources/konker/css/style-responsive.css}">
 
     <!-- Favicon -->
@@ -40,8 +39,8 @@
 
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+      <script data-th-attr="src=@{/resources/konker/scripts/html5shiv.js}" type="text/javascript"></script>
+      <script data-th-attr="src=@{/resources/konker/scripts/respond.min.js}" type="text/javascript"></script>
     <![endif]-->
   </head>
 
@@ -66,8 +65,13 @@
 			  	<a data-toggle="dropdown" class="dropdown-toggle" href="#" aria-expanded="false"> 
 				  	<img width="44" class="img-circle avatar" alt="" 
 				  		data-th-attr="src=${@userAvatarPath.absolutePath}" 
-				  		data-th-text="${@user.email}">
-				  	<span class="caret"></span>
+				  		data-th-text="${@user.name}"
+                        data-th-if="${not #strings.isEmpty(@user.name)}" />
+                    <img width="44" class="img-circle avatar" alt="" 
+                        data-th-attr="src=${@userAvatarPath.absolutePath}" 
+                        data-th-text="${@user.email}"
+                        data-th-if="${#strings.isEmpty(@user.name)}" />
+   				  	<span class="caret"></span>
 				</a>
 
 				<!-- User action menu -->

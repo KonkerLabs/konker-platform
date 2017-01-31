@@ -102,6 +102,7 @@ COPY build/nginx.conf /etc/nginx/nginx.conf
 COPY build/nginx.conf /etc/nginx/conf/nginx.conf
 COPY build/mime.types /etc/nginx/mime.types
 COPY build/conf.d /etc/nginx/conf.d
+COPY build/error_page/* /usr/share/nginx/html/
 
 # Install MongoDB.
 RUN \
