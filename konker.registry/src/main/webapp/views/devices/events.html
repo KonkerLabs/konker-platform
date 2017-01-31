@@ -171,10 +171,9 @@
         <fieldset class="form-horizontal"
             data-th-if="${not hasAnyEvent}">
     
-            <div class="alert alert-warning" role="alert">
-                <span data-th-text="#{devices.events.empty_message}"></span>
-            </div>
-                
+            <span data-th-text="#{devices.events.empty_message}"></span>
+            <p />
+   
         </fieldset>
 
 	    <div class="form-group col-sm-12">
