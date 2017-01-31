@@ -359,29 +359,37 @@
                             <button type="button" class="btn btn-default btn-cancel-edit-user" data-th-text="#{nav.cancel}">Cancelar</button>
                         </div>
                         <div class="modal fade" id="logLevelInfoModal" tabindex="-1" role="dialog"
-                                        aria-labelledby="logLevelInfoModalLabel" aria-hidden="true">
-                            <div class="modal-dialog" role="document">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <button type="button" class="close" data-dismiss="modal"
-                                            aria-label="Close">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
-                                        <h4 class="modal-title" id="logLevelInfoModalLabel"><span data-th-text="#{users.form.tenantconfig.loglevel.help}"></span></h4>
-                                    </div>
-                                    <div class="modal-body">
-                                    <div><span data-th-text="#{users.form.tenantconfig.loglevel.text}"></span><span>:</span></div>
-                                    <p />
-                                    <ul>
-                                        <li><span data-th-text="#{loglevels.all}" style="font-weight: bold;"></span>: <span data-th-text="#{users.form.tenantconfig.loglevel.all}"></span></li>
-                                        <li><span data-th-text="#{loglevels.warning}" style="font-weight: bold;"></span>: <span data-th-text="#{users.form.tenantconfig.loglevel.warning}"></span></li>
-                                        <li><span data-th-text="#{loglevels.info}" style="font-weight: bold;"></span>: <span data-th-text="#{users.form.tenantconfig.loglevel.info}"></span></li>
-                                        <li><span data-th-text="#{loglevels.disabled}" style="font-weight: bold;"></span>: <span data-th-text="#{users.form.tenantconfig.loglevel.disabled}"></span></li>
-                                    </ul>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary"
-                                            data-dismiss="modal" data-th-text="#{nav.close}"></button>
+                            aria-labelledby="logLevelInfoModalLabel" aria-hidden="true">
+                            <div class="modal-alignment-helper">
+                                <div class="modal-dialog modal-align-center">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                            <h3 class="modal-title" id="logLevelInfoModalLabel">
+                                                <span data-th-text="#{users.form.tenantconfig.loglevel.help}"></span>
+                                            </h3>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div>
+                                                <span data-th-text="#{users.form.tenantconfig.loglevel.text}"></span><span>:</span>
+                                            </div>
+                                            <p />
+                                            <ul>
+                                                <li><span data-th-text="#{loglevels.all}" style="font-weight: bold;"></span>:
+                                                    <span data-th-text="#{users.form.tenantconfig.loglevel.all}"></span></li>
+                                                <li><span data-th-text="#{loglevels.warning}" style="font-weight: bold;"></span>:
+                                                    <span data-th-text="#{users.form.tenantconfig.loglevel.warning}"></span></li>
+                                                <li><span data-th-text="#{loglevels.info}" style="font-weight: bold;"></span>:
+                                                    <span data-th-text="#{users.form.tenantconfig.loglevel.info}"></span></li>
+                                                <li><span data-th-text="#{loglevels.disabled}" style="font-weight: bold;"></span>:
+                                                    <span data-th-text="#{users.form.tenantconfig.loglevel.disabled}"></span></li>
+                                            </ul>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal" data-th-text="#{nav.close}"></button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

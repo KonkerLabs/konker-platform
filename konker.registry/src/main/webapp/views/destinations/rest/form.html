@@ -131,19 +131,21 @@
                data-th-if="*{restId} != null"></a>
             <!-- delete confirm modal -->
             <div class="modal" id="removeItemModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                            <h3 data-th-text="#{nav.remove}">Remove</h3>
-                        </div>
-                        <div class="modal-body">
-                            <p data-th-text="#{destinations.rest.form.modal.remove.firstLine}"></p>
-                            <p data-th-text="#{destinations.rest.form.modal.remove.secondLine}"></p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" id="btnYes" class="btn btn-primary" data-th-text="#{nav.yes}">Yes</button>
-                            <button type="button" data-dismiss="modal" aria-hidden="true" class="btn btn-default" data-th-text=#{nav.no}>No</button>
+                <div class="modal-alignment-helper">
+                    <div class="modal-dialog modal-align-center">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                <h3 class="modal-title" data-th-text="#{nav.remove}">Remove</h3>
+                            </div>
+                            <div class="modal-body">
+                                <p data-th-text="#{destinations.rest.form.modal.remove.firstLine}"></p>
+                                <p data-th-text="#{destinations.rest.form.modal.remove.secondLine}"></p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" id="btnYes" class="btn btn-primary" data-th-text="#{nav.yes}">Yes</button>
+                                <button type="button" data-dismiss="modal" aria-hidden="true" class="btn btn-default" data-th-text=#{nav.no}>No</button>
+                            </div>
                         </div>
                     </div>
                 </div>
