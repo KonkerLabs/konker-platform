@@ -46,8 +46,9 @@ var controller = {
             tableRow.remove();
             this.reindexRows(tableRows, parentIndex, isHeader);
         } else {
-            tableRow.find('input').each(function(index, row){
+            $(tableRow).find('input').each(function(index, row){
                 row.value = '';
+                controller.reindexRows(tableRows, parentIndex, isHeader);
             });
         }
         if(callback != undefined){
@@ -60,9 +61,10 @@ var controller = {
                 controller.applyNewIndex($(item), index+1, parentIndex);
             });
         } else {
-            tableRows.each( function(index) {
+            tableRows = $('.transformationSteps').find('tr.restheaders')
+            tableRows.each( function(index, item) {
                 index++;
-                controller.applyNewIndex($(this), index, parentIndex);
+                controller.applyNewIndex($(item).parent(), index, parentIndex);
             });
         }
 
@@ -138,7 +140,8 @@ $(document).ready(function() {
                 });
                 item.find('button.remove-header').on('click', function(){
                     var row = $(this).closest('tr');
-                    controller.removeRow(row, $(this).parent().parent().parent().find('tr.header-line').length, true);
+                    controller.removeRow(row, $(this).parent().parent().parent().find('tr.header-line').length,
+                    true);
                 });
             });
     });
@@ -148,7 +151,16 @@ $(document).ready(function() {
             row,
             $(this).parent().parent().parent().parent().parent().parent().parent().parent().find('tr.restparams').length,
             undefined,
-            false);
+            false,
+            function(result){
+                row.find('tr.header-line').each(function(index, headerline){
+                    controller.removeRow(
+                        headerline,
+                        row.find('tr.header-line').length,
+                        $(headerline).parent().parent().parent().parent().parent().attr('id').split('-')[1],
+                        true);
+                    });
+            });
     });
      $('.remove-header').on('click', function() {
         var row = $(this).closest('tr');
