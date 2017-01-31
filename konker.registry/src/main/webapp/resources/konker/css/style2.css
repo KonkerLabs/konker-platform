@@ -304,6 +304,10 @@ hr {
 	height: 18px;
 }
 
+.avoid-missundertand {
+    font-family: monospace;
+}
+
 /*Helpers*/
 
 .centered {
