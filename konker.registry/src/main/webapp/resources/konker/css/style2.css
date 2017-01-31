@@ -308,6 +308,16 @@ hr {
     font-family: monospace;
 }
 
+.password-eye {
+    float: right;
+    margin-right: 6px;
+    margin-top: -23px;
+    position: relative;
+    z-index: 2;
+    width: 16px;
+    cursor: pointer;
+ }
+     
 /*Helpers*/
 
 .centered {
@@ -2002,7 +2012,6 @@ label {
 }
 
 #pass {
-  
   padding-right: 20px;
 }
 
@@ -2010,8 +2019,8 @@ label {
   cursor: pointer;
   position: absolute;
   width: 16px;
-margin-left: 260px;
-    margin-top: 10px;
+  margin-left: 260px;
+  margin-top: 10px;
 }
 
 #failLogin {

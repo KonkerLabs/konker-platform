@@ -64,7 +64,7 @@
                                        class="form-control"/>
                             </td>
                             <td class="col-sm-2">
-                                <input type="text" data-th-value="${transformation.steps[__${stat.index}__].password}"
+                                <input type="text" data-th-value="${@maskPasswordConverter.convert(transformation.steps[__${stat.index}__].password)}"
                                        class="form-control"/>
                             </td>
                         </tr>

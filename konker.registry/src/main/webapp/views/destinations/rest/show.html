@@ -53,7 +53,7 @@
                                        class="form-control"/>
                             </td>
                             <td class="col-sm-2">
-                                <input type="text" data-th-field="${destination.servicePassword}"
+                                <input type="text" data-th-value="${@maskPasswordConverter.convert(destination.servicePassword)}"
                                        class="form-control"/>
                             </td>
                         </tr>
