@@ -29,6 +29,7 @@ import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.EventRouteRepository;
@@ -192,6 +193,9 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                 String randomPassword = passwordManager.generateRandomPassword(12);
                 existingDevice.setSecurityHash(passwordManager.createHash(randomPassword));
                 Device saved = deviceRepository.save(existingDevice);
+
+                LOGGER.info("Password generated for device id: {}", existingDevice.getDeviceId(), LogLevel.INFO, tenant.toURI());
+
                 return ServiceResponseBuilder.<DeviceSecurityCredentials>ok() 
                         .withResult(new DeviceSecurityCredentials(saved,randomPassword)).build();
             } catch (SecurityException e) {
