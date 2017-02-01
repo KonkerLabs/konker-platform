@@ -138,7 +138,9 @@ $(document).ready(function() {
                 });
                 item.find('button.remove-header').on('click', function(){
                     var row = $(this).closest('tr');
-                    controller.removeRow(row, $(this).parent().parent().parent().find('tr.header-line').length, true);
+                    controller.removeRow(row, $(this).parent().parent().parent().find('tr.header-line').length,
+                                              $(this).closest('.restheaders').attr('id').split('-')[1],
+                                              true);
                 });
             });
     });
@@ -155,12 +157,10 @@ $(document).ready(function() {
         controller.removeRow(
             row,
             $(this).parent().parent().parent().find('tr.header-line').length,
-            $(this).parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().attr('id').split('-')[1],
+            $(this).closest('.restheaders').attr('id').split('-')[1],
             true);
      });
 
-
-    
     $('#btnYes').click(function() {
     	$('#removeItemModal').modal('hide');
     	$("input[type=hidden][name=_method]").val('delete');
