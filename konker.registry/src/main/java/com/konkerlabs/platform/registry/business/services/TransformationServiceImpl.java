@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
@@ -15,6 +17,7 @@ import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.Transformation;
 import com.konkerlabs.platform.registry.business.model.TransformationStep;
+import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.EventRouteRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
@@ -27,6 +30,8 @@ import com.konkerlabs.platform.registry.business.services.api.TransformationServ
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
 public class TransformationServiceImpl extends AbstractURLBlacklistValidation implements TransformationService {
+
+    private Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
 	@Autowired
 	private TenantRepository tenantRepository;
@@ -75,6 +80,8 @@ public class TransformationServiceImpl extends AbstractURLBlacklistValidation im
 			return ServiceResponseBuilder.<Transformation> error().withMessages(blacklistValidations.get()).build();
 
 		Transformation saved = transformationRepository.save(transformation);
+
+        LOGGER.info("Transformation created. Name: {}", saved.getName(), LogLevel.INFO, tenant.toURI());
 
 		return ServiceResponseBuilder.<Transformation> ok().withResult(saved).<Transformation> build();
 	}
@@ -143,6 +150,8 @@ public class TransformationServiceImpl extends AbstractURLBlacklistValidation im
 
 		Transformation saved = transformationRepository.save(fromDb);
 
+        LOGGER.info("Transformation updated. Name: {}", saved.getName(), LogLevel.INFO, tenant.toURI());
+
 		return ServiceResponseBuilder.<Transformation> ok().withResult(saved).build();
 	}
 
@@ -166,6 +175,8 @@ public class TransformationServiceImpl extends AbstractURLBlacklistValidation im
 		}
 
 		transformationRepository.delete(transformation);
+
+        LOGGER.info("Transformation removed. Name: {}", transformation.getName(), LogLevel.INFO, tenant.toURI());
 
 		return ServiceResponseBuilder.<Transformation> ok().build();
 	}

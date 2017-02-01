@@ -49,6 +49,8 @@ import com.typesafe.config.ConfigFactory;
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
 public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
+    private Logger LOGGER = LoggerFactory.getLogger(DeviceRegisterServiceImpl.class);
+
     @Autowired
     private TenantRepository tenantRepository;
 
@@ -60,8 +62,6 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
     @Autowired @Qualifier("mongoEvents")
     private EventRepository eventRepository;
-
-    private Logger LOGGER = LoggerFactory.getLogger(DeviceRegisterServiceImpl.class);
 
     @Autowired
     private PubServerConfig pubServerConfig;
@@ -132,6 +132,8 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .withMessage(Validations.DEVICE_ID_ALREADY_REGISTERED.getCode(), null)
                     .build();
         }
+
+        LOGGER.info("Device created. Id: {}", device.getDeviceId(), LogLevel.INFO, tenant.toURI());
 
         Device saved = deviceRepository.save(device);
 
@@ -248,6 +250,8 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
         Device saved = deviceRepository.save(deviceFromDB);
 
+        LOGGER.info("Device updated. Id: {}", deviceFromDB.getDeviceId(), LogLevel.INFO, tenant.toURI());
+
         return ServiceResponseBuilder.<Device>ok()
                 .withResult(saved)
                 .build();
@@ -307,6 +311,8 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .withResult(device)
                     .build();
         }
+
+        LOGGER.info("Device removed. Id: {}", device.getDeviceId(), LogLevel.INFO, tenant.toURI());
 
         return ServiceResponseBuilder.<Device>ok()
                 .withMessage(DeviceController.Messages.DEVICE_REMOVED_SUCCESSFULLY.getCode())
