@@ -6,8 +6,11 @@ import com.konkerlabs.platform.registry.business.model.enumerations.SupportedHtt
 import com.konkerlabs.platform.registry.web.forms.api.ModelBuilder;
 import lombok.Data;
 
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import org.junit.Ignore;
 
 @Data
 public class TransformationForm implements ModelBuilder<Transformation, TransformationForm, Void> {
@@ -24,8 +27,10 @@ public class TransformationForm implements ModelBuilder<Transformation, Transfor
 
     @Data
     public static class TransformationStepForm {
-        private String method;
-        private String url;
+        
+    	private String method;
+        private String urlProtocol;
+        private String urlHost;
         private String username;
         private String password;
         private List<TransformationStepHeaderForm> headers = new ArrayList<>();
@@ -39,7 +44,7 @@ public class TransformationForm implements ModelBuilder<Transformation, Transfor
                                       String password,
                                       List<TransformationStepHeaderForm> headers) {
             this.method = method;
-            this.url = url;
+            this.setUrl(url);
             this.username = username;
             this.password = password;
             List<TransformationStepHeaderForm> defaultHeaders = new ArrayList<TransformationStepHeaderForm>();
@@ -59,7 +64,7 @@ public class TransformationForm implements ModelBuilder<Transformation, Transfor
                                       Map<String, String> headers) {
 
             this.method = method;
-            this.url = url;
+            this.setUrl(url);
             this.username = username;
             this.password = password;
             List<TransformationStepHeaderForm> headerFromMap = new ArrayList<>();
@@ -79,7 +84,7 @@ public class TransformationForm implements ModelBuilder<Transformation, Transfor
                                       String password) {
 
             this.method = method;
-            this.url = url;
+            this.setUrl(url);
             this.username = username;
             this.password = password;
         }
@@ -91,6 +96,23 @@ public class TransformationForm implements ModelBuilder<Transformation, Transfor
             });
             return headersAsMap;
         }
+        
+    	public String getUrl() {
+    		return MessageFormat.format("{0}://{1}", urlProtocol, urlHost);
+    	}
+
+    	public void setUrl(String url) {
+    		String tokens[] = url.split("://");
+
+    		if (tokens.length == 2) {
+	    		urlProtocol = tokens[0];
+	    		urlHost = tokens[1];
+    		} else {
+	    		urlProtocol = "http"; // default protocol
+	    		urlHost = tokens[0];
+    		}
+    	}
+    	
     }
 
     @Data

@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html data-layout-decorate="layouts/default">
 <head>
+    <style>
+        .nopadding {
+            padding-left: 0px; 
+            padding-right: 0px;
+        }
+    </style>
 </head>
 <body>
 <div data-layout-fragment="content">
@@ -73,7 +79,7 @@
                                                 <thead>
                                                     <tr>
                                                         <td class="col-sm-2" data-th-text="#{transformations.form.steps.method}">Method</td>
-                                                        <td class="col-sm-2" data-th-text="#{transformations.form.steps.url}">URL</td>
+                                                        <td class="col-sm-4" data-th-text="#{transformations.form.steps.url}">URL</td>
                                                         <td class="col-sm-2" data-th-text="#{transformations.form.steps.username}">Username</td>
                                                         <td class="col-sm-2" data-th-text="#{transformations.form.steps.password}">Password</td>
                                                     </tr>
@@ -88,9 +94,22 @@
                                                                     data-th-value="${methodItem}"></option>
                                                         </select>
                                                     </td>
-                                                    <td class="col-sm-3">
-                                                        <input type="text" data-th-field="*{steps[__${stat.index}__].url}"
-                                                               class="form-control"/>
+                                                    <td class="col-sm-4">
+                                                        <div class="col-sm-3 nopadding">
+                                                            <select data-th-field="*{steps[__${stat.index}__].urlProtocol}"
+                                                                class="form-control"
+                                                                id="method"
+                                                                name="method">
+                                                                <option value="http">http://</option>
+                                                                <option value="https">https://</option>
+                                                            </select>
+                                                        </div>
+                                                        <div class="col-sm-9 nopadding">
+                                                            <input type="text"
+                                                                placeholder="ex.: www.konkerlabs.com/api"
+                                                                data-th-field="*{steps[__${stat.index}__].urlHost}"
+                                                                class="form-control" />
+                                                        </div>
                                                     </td>
                                                     <td class="col-sm-2">
                                                         <input type="text" data-th-field="*{steps[__${stat.index}__].username}"
@@ -112,7 +131,6 @@
                                                             <span class="glyphicon glyphicon-plus"></span>
                                                             header
                                                         </button>
-
                                                     </td>
                                                 </tr>
                                                 <tr class="restheaders collapse" th:id="'restheaders-' + ${stat.index}">
