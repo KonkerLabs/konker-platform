@@ -85,7 +85,7 @@ public class EventRouteServiceImpl implements EventRouteService {
         
         EventRoute saved = eventRouteRepository.save(route);
 
-        LOGGER.info("Route created. Name: {}", route.getName(), LogLevel.INFO, tenant.toURI());
+        LOGGER.info("Route created. Name: {}", route.getName(), tenant.toURI(), tenant.getLogLevel());
 
         return ServiceResponseBuilder.<EventRoute>ok().withResult(saved).build();
     }
@@ -150,7 +150,7 @@ public class EventRouteServiceImpl implements EventRouteService {
 
         EventRoute saved = eventRouteRepository.save(current);
 
-        LOGGER.info("Route updated. Name: {}", saved.getName(), LogLevel.INFO, tenant.toURI());
+        LOGGER.info("Route updated. Name: {}", saved.getName(), tenant.toURI(), tenant.getLogLevel());
 
         return ServiceResponseBuilder.<EventRoute>ok().withResult(saved).build();
     }
@@ -278,7 +278,7 @@ public class EventRouteServiceImpl implements EventRouteService {
 
         eventRouteRepository.delete(route);
 
-        LOGGER.info("Route removed. Name: {}", route.getName(), LogLevel.INFO, tenant.toURI());
+        LOGGER.info("Route removed. Name: {}", route.getName(), tenant.toURI(), tenant.getLogLevel());
 
         return ServiceResponseBuilder.<EventRoute>ok()
                 .withResult(route)

@@ -133,7 +133,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .build();
         }
 
-        LOGGER.info("Device created. Id: {}", device.getDeviceId(), LogLevel.INFO, tenant.toURI());
+        LOGGER.info("Device created. Id: {}", device.getDeviceId(), tenant.toURI(), tenant.getLogLevel());
 
         Device saved = deviceRepository.save(device);
 
@@ -196,7 +196,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                 existingDevice.setSecurityHash(passwordManager.createHash(randomPassword));
                 Device saved = deviceRepository.save(existingDevice);
 
-                LOGGER.info("Password generated for device id: {}", existingDevice.getDeviceId(), LogLevel.INFO, tenant.toURI());
+                LOGGER.info("Password generated for device id: {}", existingDevice.getDeviceId(), tenant.toURI(), tenant.getLogLevel());
 
                 return ServiceResponseBuilder.<DeviceSecurityCredentials>ok() 
                         .withResult(new DeviceSecurityCredentials(saved,randomPassword)).build();
@@ -250,7 +250,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
         Device saved = deviceRepository.save(deviceFromDB);
 
-        LOGGER.info("Device updated. Id: {}", deviceFromDB.getDeviceId(), LogLevel.INFO, tenant.toURI());
+        LOGGER.info("Device updated. Id: {}", deviceFromDB.getDeviceId(), tenant.toURI(), tenant.getLogLevel());
 
         return ServiceResponseBuilder.<Device>ok()
                 .withResult(saved)
@@ -312,7 +312,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .build();
         }
 
-        LOGGER.info("Device removed. Id: {}", device.getDeviceId(), LogLevel.INFO, tenant.toURI());
+        LOGGER.info("Device removed. Id: {}", device.getDeviceId(), tenant.toURI(), tenant.getLogLevel());
 
         return ServiceResponseBuilder.<Device>ok()
                 .withMessage(DeviceController.Messages.DEVICE_REMOVED_SUCCESSFULLY.getCode())

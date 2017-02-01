@@ -118,7 +118,7 @@ public class RestDestinationServiceImpl extends AbstractURLBlacklistValidation i
 
 		RestDestination saved = restRepository.save(destination);
 
-        LOGGER.info("REST destination created. Name: {}", destination.getName(), LogLevel.INFO, tenant.toURI());
+        LOGGER.info("REST destination created. Name: {}", destination.getName(), tenant.toURI(), tenant.getLogLevel());
 
 		return ServiceResponseBuilder.<RestDestination> ok().withResult(saved).build();
 	}
@@ -181,7 +181,7 @@ public class RestDestinationServiceImpl extends AbstractURLBlacklistValidation i
 
 		RestDestination saved = restRepository.save(destination);
 
-        LOGGER.info("REST destination updated. Name: {}", destination.getName(), LogLevel.INFO, tenant.toURI());
+        LOGGER.info("REST destination updated. Name: {}", destination.getName(), tenant.toURI(), tenant.getLogLevel());
 
 		return ServiceResponseBuilder.<RestDestination> ok().withResult(saved).build();
 	}
@@ -215,7 +215,7 @@ public class RestDestinationServiceImpl extends AbstractURLBlacklistValidation i
 
 		restRepository.delete(existingDestination);
 
-        LOGGER.info("REST destination removed. Name: {}", existingDestination.getName(), LogLevel.INFO, tenant.toURI());
+        LOGGER.info("REST destination removed. Name: {}", existingDestination.getName(), tenant.toURI(), tenant.getLogLevel());
 
         return ServiceResponseBuilder.<RestDestination>ok()
                 .withMessage(Messages.REST_DESTINATION_REMOVED_SUCCESSFULLY.getCode())

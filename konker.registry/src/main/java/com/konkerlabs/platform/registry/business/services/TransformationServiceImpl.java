@@ -81,7 +81,7 @@ public class TransformationServiceImpl extends AbstractURLBlacklistValidation im
 
 		Transformation saved = transformationRepository.save(transformation);
 
-        LOGGER.info("Transformation created. Name: {}", saved.getName(), LogLevel.INFO, tenant.toURI());
+        LOGGER.info("Transformation created. Name: {}", saved.getName(), tenant.toURI(), tenant.getLogLevel());
 
 		return ServiceResponseBuilder.<Transformation> ok().withResult(saved).<Transformation> build();
 	}
@@ -150,7 +150,7 @@ public class TransformationServiceImpl extends AbstractURLBlacklistValidation im
 
 		Transformation saved = transformationRepository.save(fromDb);
 
-        LOGGER.info("Transformation updated. Name: {}", saved.getName(), LogLevel.INFO, tenant.toURI());
+        LOGGER.info("Transformation updated. Name: {}", saved.getName(), tenant.toURI(), tenant.getLogLevel());
 
 		return ServiceResponseBuilder.<Transformation> ok().withResult(saved).build();
 	}
@@ -176,7 +176,7 @@ public class TransformationServiceImpl extends AbstractURLBlacklistValidation im
 
 		transformationRepository.delete(transformation);
 
-        LOGGER.info("Transformation removed. Name: {}", transformation.getName(), LogLevel.INFO, tenant.toURI());
+        LOGGER.info("Transformation removed. Name: {}", transformation.getName(), tenant.toURI(), tenant.getLogLevel());
 
 		return ServiceResponseBuilder.<Transformation> ok().build();
 	}

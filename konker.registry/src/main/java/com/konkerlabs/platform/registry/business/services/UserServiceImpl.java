@@ -2,6 +2,7 @@ package com.konkerlabs.platform.registry.business.services;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.text.MessageFormat;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -196,6 +197,12 @@ public class UserServiceImpl implements UserService {
 
             return ServiceResponseBuilder.<User>error()
                     .withMessage(Errors.ERROR_SAVE_USER.getCode()).build();
+        } else {
+        	LOG.info(MessageFormat.format("User password has been changed, user \"{0}\"",
+        			fromStorage.getEmail()), 
+        			fromStorage.getTenant().toURI(), 
+        			fromStorage.getTenant().getLogLevel(), 
+        			fromStorage);
         }
         try {
             fillFrom(user, fromStorage);
