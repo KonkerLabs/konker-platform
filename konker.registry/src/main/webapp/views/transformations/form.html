@@ -61,16 +61,6 @@
                                     [[#{nav.add} ?: 'Add']]
                                 </button>
                             </caption>
-                            <!--<thead>
-                                <tr>
-                                    <td class="col-sm-2" data-th-text="#{transformations.form.steps.method}">Method</td>
-                                    <td class="col-sm-2" data-th-text="#{transformations.form.steps.url}">URL</td>
-                                    <td class="col-sm-2" data-th-text="#{transformations.form.steps.username}">Username</td>
-                                    <td class="col-sm-2" data-th-text="#{transformations.form.steps.password}">Password</td>
-                                </tr>
-                            </thead>
-                            </table>
-                            <table class="table table-condensed transformationSteps">-->
                             <tbody class="table-body">
                                 <tr data-th-each="step, stat: *{steps}">
                                     <td class="col-sm-12">
@@ -113,11 +103,13 @@
                                                     </td>
                                                     <td class="col-sm-2">
                                                         <input type="text" data-th-field="*{steps[__${stat.index}__].username}"
-                                                               class="form-control"/>
+                                                               data-th-attr="autocomplete=*{id} != null ? 'on' : 'off'"
+                                                               class="form-control password-input"/>
                                                     </td>
                                                     <td class="col-sm-2">
                                                         <input type="text" data-th-field="*{steps[__${stat.index}__].password}"
-                                                               class="form-control"/>
+                                                               data-th-attr="autocomplete=*{id} != null ? 'on' : 'off'"
+                                                               class="form-control password-input"/>
                                                         <img data-th-attr="src=@{/resources/konker/images/eye-open.svg}" id="olho" class="password-eye" />
                                                     </td>
                                                     <td class="col-sm-1 text-center">

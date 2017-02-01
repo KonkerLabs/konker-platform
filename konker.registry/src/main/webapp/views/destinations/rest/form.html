@@ -80,11 +80,13 @@
                                     </td>
                                     <td class="col-sm-2">
                                         <input type="text" data-th-field="*{serviceUsername}"
-                                               class="form-control"/>
+                                               data-th-attr="autocomplete=*{restId} != null ? 'on' : 'off'"
+                                               class="form-control password-input"/>
                                     </td>
                                     <td class="col-sm-2">
                                         <input type="text" data-th-field="*{servicePassword}"
-                                               class="form-control"/>
+                                               data-th-attr="autocomplete=*{restId} != null ? 'on' : 'off'"
+                                               class="form-control password-input"/>
                                         <img data-th-attr="src=@{/resources/konker/images/eye-open.svg}" id="olho" class="password-eye" />
                                     </td>
                                 </tr>

@@ -10,7 +10,7 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import org.junit.Ignore;
+import org.apache.commons.lang3.StringUtils;
 
 @Data
 public class TransformationForm implements ModelBuilder<Transformation, TransformationForm, Void> {
@@ -36,6 +36,10 @@ public class TransformationForm implements ModelBuilder<Transformation, Transfor
         private List<TransformationStepHeaderForm> headers = new ArrayList<>();
 
         public TransformationStepForm() {
+        	if (headers.isEmpty()) {
+        		// header html template
+        		headers.add(new TransformationStepHeaderForm(null, null));
+        	}
         }
 
         public TransformationStepForm(String method,
@@ -51,9 +55,7 @@ public class TransformationForm implements ModelBuilder<Transformation, Transfor
             if (headers == null) {
                 headers = new ArrayList<>();
             }
-            headers.add(
-                    new TransformationStepHeaderForm("Content-Type", "application/json"))
-            ;
+            headers.add(new TransformationStepHeaderForm("Content-Type", "application/json"));
             this.headers = headers != null ? headers : defaultHeaders;
         }
 
@@ -68,7 +70,7 @@ public class TransformationForm implements ModelBuilder<Transformation, Transfor
             this.username = username;
             this.password = password;
             List<TransformationStepHeaderForm> headerFromMap = new ArrayList<>();
-            if (headers == null || headers.size() == 0) {
+            if (headers == null || headers.isEmpty()) {
                 headers = new HashMap<>();
                 headers.put("", "");
             }
@@ -92,7 +94,9 @@ public class TransformationForm implements ModelBuilder<Transformation, Transfor
         public Map<String, String> getHeadersAsMap() {
             Map<String, String> headersAsMap = new HashMap<>();
             getHeaders().stream().forEach(item -> {
-                headersAsMap.put(item.getKey(), item.getValue());
+            	if (StringUtils.isNotBlank(item.getKey())) {
+            		headersAsMap.put(item.getKey(), item.getValue());
+            	}
             });
             return headersAsMap;
         }
