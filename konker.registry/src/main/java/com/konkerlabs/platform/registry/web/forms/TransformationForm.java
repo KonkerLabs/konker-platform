@@ -89,6 +89,10 @@ public class TransformationForm implements ModelBuilder<Transformation, Transfor
             this.setUrl(url);
             this.username = username;
             this.password = password;
+        	if (headers.isEmpty()) {
+        		// header html template
+        		headers.add(new TransformationStepHeaderForm(null, null));
+        	}
         }
 
         public Map<String, String> getHeadersAsMap() {
