@@ -61,9 +61,10 @@ public class TenantLogRepository {
 				cursor.next();
 
 				String message = (String) cursor.curr().get("message");
+				String level = (String) cursor.curr().get("level");
 				Long time = (Long) cursor.curr().get("time");
 
-				logs.add(TenantLog.builder().message(message).time(new Date(time)).build());
+				logs.add(TenantLog.builder().level(level).message(message).time(new Date(time)).build());
 
 			}
 		} finally {
@@ -74,7 +75,7 @@ public class TenantLogRepository {
 
 	}
 
-	public void insert(String domainName, long timestampMillis, String message) {
+	public void insert(String domainName, long timestampMillis, String level, String message) {
 
 		String collectionName = domainName;
 
@@ -82,6 +83,7 @@ public class TenantLogRepository {
 
 		DBObject object = new BasicDBObject();
 		object.put("time", timestampMillis);
+		object.put("level", level);
 		object.put("message", message);
 		object.removeField("_class");
 
@@ -90,8 +92,8 @@ public class TenantLogRepository {
 
 	}
 
-	public void insert(String domainName, Date time, String message) {
-		insert(domainName, time.getTime(), message);
+	public void insert(String domainName, Date time, String level, String message) {
+		insert(domainName, time.getTime(), level, message);
 	}
 
 	private String getCollectionName(Tenant tenant) {

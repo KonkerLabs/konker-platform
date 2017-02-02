@@ -47,6 +47,8 @@
                     <tr>
                         <th class="col-md-2"
                             data-th-text="#{tenants.log.form.time}"></th>
+                        <th class="col-md-2"
+                            data-th-text="#{tenants.log.form.level}"></th>
                         <th class="col-md-8"
                             data-th-text="#{tenants.log.form.message}"></th>
                     </tr>
@@ -55,6 +57,7 @@
                     <tr data-th-each="log : ${logs}">
                         <td
                             data-th-text="${@dateToStringConverter.convert(log.time)}"></td>
+                        <td data-th-text="${log.level}"></td>
                         <td data-th-text="${log.message}"></td>
                     </tr>
                 </tbody>
