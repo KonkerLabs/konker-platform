@@ -48,8 +48,8 @@ public class TenantServiceImpl implements TenantService {
 		try {
 
 			if (!fromStorage.getLogLevel().equals(newLogLevel)) {
-				LOG.info("Changed tenant ({}) log level: {} -> {}", tenant.getName(), fromStorage.getLogLevel(),
-						newLogLevel, tenant.toURI());
+				LOG.info("Changed organization log level: {} -> {}", fromStorage.getLogLevel(),
+						newLogLevel);
 
 				fromStorage.setLogLevel(newLogLevel);
 

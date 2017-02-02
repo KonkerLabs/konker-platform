@@ -1,8 +1,8 @@
 var controller = {
-    addNewRow : function(trLast, rowCount, parentIndex, callback) {
+    addNewRow : function(trLast, callback) {
         trNew = trLast.clone();
         trLast.after(trNew);
-        this.applyNewIndex(trNew, rowCount + 1, parentIndex);
+        this.reindexRows();
         callback(trNew);
     },
     applyNewIndex : function(row, index, parentIndex) {
@@ -40,11 +40,11 @@ var controller = {
 
         });
     },
-    removeRow : function(tableRow, rowCount, parentIndex, isHeader, callback) {
+    removeRow : function(tableRow, rowCount, callback) {
         if (rowCount > 1) {
             tableRows = tableRow.parent();
             tableRow.remove();
-            this.reindexRows(tableRows, parentIndex, isHeader);
+            this.reindexRows();
         } else {
             $(tableRow).find('input').each(function(index, row){
                 row.value = '';
@@ -55,6 +55,7 @@ var controller = {
             callback();
         }
     },
+<<<<<<< HEAD
     reindexRows : function(tableRows, parentIndex, isHeader) {
         if(isHeader){
             tableRows.find('tr.header-line').each( function(index, item) {
@@ -67,68 +68,72 @@ var controller = {
                 controller.applyNewIndex($(item).parent(), index, parentIndex);
             });
         }
+=======
+    reindexRows : function() {
+
+        $('div.step').each(function(key, value) {
+            controller.applyNewIndex($(value), key + 1);
+            controller.reindexHeaders(value, key);
+        });
+>>>>>>> 8929e93824477724a950bedfda8c6e4286c4f508
 
     },
+    reindexHeaders : function(step, parentIndex) {
+
+        $(step).find('tr.header-line').each(function(key, value) {
+            controller.applyNewIndex($(value), key+1, parentIndex);
+        });
+
+    },
+    onRemoveHeader :function() {
+        var row = $(this).closest('tr');
+        controller.removeRow(
+            row,
+            $(this).closest('.restheaders').find('tr.header-line').length);
+
+    },
+    onRemoveStep :function() {
+        var row = $(this).closest('div');
+        controller.removeRow(
+            row,
+            $('div.step').length
+        );
+    },
+    onAddHeader :function() {
+        controller.addNewRow(
+                $(this).parent().parent().find("tr:last"),
+                function(item){
+                    item.find('input[type=text]').each(function(input){
+                        this.value = '';
+                    });
+                    item.find('button.remove-header').on('click', controller.onRemoveHeader);
+                });
+    }
 }
 
 $(document).ready(function() {
     controller.tableBody = $('tbody');
+    
     $('.transformationSteps .btn-add').on('click', function() {
         controller.addNewRow(
-            $(this).parent().parent().parent().find('div.step:last'),
-            $(this).parent().parent().parent().find('div.step').length,
-            null,
+            $('div.step:last'),
             function(item){
                 item.find('input[type=text]').each(function(input){
                     this.value = '';
                 });
                 item.find('button.remove-step').each(function(index, item){
-                    $(item).on('click', function(){
-                        var row = $(this).closest('div');
-                        controller.removeRow(
-                            row,
-                            $(this).parent().parent().parent().parent().parent().parent().find('div.step').length,
-                            function(){
-                                $(this).parent().parent().parent().parent().parent().find('tr.header-line').each(function(index, headerRow){
-                                    controller.removeRow(headerRow, $(this).parent().parent().parent().find('tr.header-line').length,
-                                    true);
-                                });
-                            }
-                        );
-                    });
+                    $(item).on('click', controller.onRemoveStep);
                 });
-
                 item.find('button.add-header').each(function(index, item){
-                    $(item).on('click', function(){
-                         controller.addNewRow(
-                                    $(this).parent().parent().find("tr:last"),
-                                    $(this).parent().parent().parent().find('tr.header-line').length,
-                                    $(this).parent().parent().attr('id').split('-')[1],
-                                    function(item){
-                                        item.find('input[type=text]').each(function(input){
-                                            this.value = '';
-                                        });
-                                        item.find('button.remove-header').on('click', function(){
-                                            var row = $(this).closest('tr');
-                                            controller.removeRow(row, $(this).parent().parent().parent().find('tr.header-line').length, false);
-                                        });
-                                    });
-                    });
+                    $(item).on('click', controller.onAddHeader);
                 });
-                if(item.find('tr.restheaders tr.header-line').length > 0){
-                    item.find('tr.restheaders tr.header-line').each(function(tr){
-                        if(item.find('tr.restheaders tr.header-line').length > 1){
-                            this.remove();
-                        } else {
-                            controller.reindexRows(
-                                item.find('tr.restheaders'),
-                                $(this).parent().parent().parent().parent().parent().attr('id').split('-')[1],
-                                true);
-                        }
-                    });
-                }
+                item.find('button.remove-header').on('click', controller.onRemoveHeader);
+                // the new step must have just one header
+                item.find('tr.restheaders tr.header-line:not(:first)').remove();
+                controller.reindexRows();
             });
     });
+<<<<<<< HEAD
     $('.add-header').on('click', function() {
         controller.addNewRow(
             $(this).parent().parent().find("tr:last"),
@@ -171,11 +176,16 @@ $(document).ready(function() {
             true);
      });
 
+=======
+    $('.add-header').on('click', controller.onAddHeader);
+    $('.remove-step').on('click', controller.onRemoveStep);
+    $('.remove-header').on('click', controller.onRemoveHeader);
+>>>>>>> 8929e93824477724a950bedfda8c6e4286c4f508
 
-    
     $('#btnYes').click(function() {
     	$('#removeItemModal').modal('hide');
     	$("input[type=hidden][name=_method]").val('delete');
     	$('form').submit();
     });
+
 });

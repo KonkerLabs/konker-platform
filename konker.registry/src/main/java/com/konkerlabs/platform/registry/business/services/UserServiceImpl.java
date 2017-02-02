@@ -2,6 +2,7 @@ package com.konkerlabs.platform.registry.business.services;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.text.MessageFormat;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -184,6 +185,11 @@ public class UserServiceImpl implements UserService {
             if (!StringUtils.isEmpty(newPasswordConfirmation)) {
                 try {
                     user.setPassword(encodePassword(password));
+                    LOG.info(MessageFormat.format("User password has been changed, user \"{0}\"",
+                			fromStorage.getEmail()), 
+                			fromStorage.getTenant().toURI(), 
+                			fromStorage.getTenant().getLogLevel(), 
+                			fromStorage);
                 } catch (Exception e) {
                     LOG.error("Error encoding password for user " + fromStorage.getEmail(), 
                     		fromStorage.getTenant().toURI(), fromStorage.getTenant().getLogLevel(), fromStorage);
@@ -196,7 +202,8 @@ public class UserServiceImpl implements UserService {
 
             return ServiceResponseBuilder.<User>error()
                     .withMessage(Errors.ERROR_SAVE_USER.getCode()).build();
-        }
+        } 
+        
         try {
             fillFrom(user, fromStorage);
             userRepository.save(fromStorage);

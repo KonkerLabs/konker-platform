@@ -2,15 +2,27 @@ FROM alpine:edge
 
 MAINTAINER Andre Rocha <andre@konkerlabs.com>
 
-#java
+# General structure: start installing components that
+# do not have dependencies and en up installing the web
+# app. This will optimize building time, since the
+# first layers, with independent components are very
+# rarrely update and the layers will already be cached
 
-RUN echo http://dl-4.alpinelinux.org/alpine/edge/community >> /etc/apk/repositories
-RUN apk add --no-cache openjdk8-jre
+
+
+######################## INSTALL BASIC COMPONENTS #######################################
+## install java
+RUN echo http://dl-4.alpinelinux.org/alpine/edge/community >> /etc/apk/repositories && \
+    apk add --no-cache openjdk8-jre
+
+# install python
+RUN apk add --update python py2-pip && \
+    pip install pymongo
+
 
 #Jetty
 # add our user and group first to make sure their IDs get assigned consistently, regardless of whatever dependencies get added
 RUN addgroup -S jetty && adduser -D -S -H -G jetty jetty && rm -rf /etc/group- /etc/passwd- /etc/shadow-
-RUN addgroup -S nginx && adduser -D -S -H -G nginx nginx && rm -rf /etc/group- /etc/passwd- /etc/shadow-
 
 ENV JETTY_HOME /usr/local/jetty
 ENV PATH $JETTY_HOME/bin:$PATH
@@ -58,20 +70,24 @@ RUN set -xe \
 	&& mkdir -p "$TMPDIR" \
 	&& chown -R jetty:jetty "$TMPDIR" "$JETTY_BASE"
 
-COPY docker-entrypoint.sh /
-RUN chmod 777 /docker-entrypoint.sh
 
-COPY build/registry.war /var/lib/jetty/webapps/
-COPY build/application.conf /var/lib/jetty/resources/
-COPY build/logback.xml /var/lib/jetty/webapps/resources/
-COPY build/logback.xml /var/lib/jetty/resources/
-COPY build/mail /var/lib/jetty/webapps/resources/mail/
-COPY build/mail /var/lib/jetty/resources/mail/
+# Install MongoDB.
+RUN \
+echo http://dl-4.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories && \
+apk add --no-cache mongodb && \
+rm /usr/bin/mongosniff /usr/bin/mongoperf
 
-#nginx
+# Install mosquitto
+
+RUN apk add --update mosquitto libcrypto1.0 libssl1.0 && \
+    mkdir /work && chown nobody /work 
+
+
+# Install nginx
 ENV NGINX_VERSION nginx-1.7.11
 
-RUN apk --update add openssl-dev pcre-dev zlib-dev wget build-base && \
+RUN addgroup -S nginx && adduser -D -S -H -G nginx nginx && rm -rf /etc/group- /etc/passwd- /etc/shadow- && \
+    apk --update add openssl-dev pcre-dev zlib-dev wget build-base && \
     mkdir -p /tmp/src && \
     cd /tmp/src && \
     wget http://nginx.org/download/${NGINX_VERSION}.tar.gz && \
@@ -94,57 +110,10 @@ RUN apk --update add openssl-dev pcre-dev zlib-dev wget build-base && \
 RUN ln -sf /dev/stdout /var/log/nginx/access.log
 RUN ln -sf /dev/stderr /var/log/nginx/error.log
 
-#VOLUME ["/var/log/nginx"]
-#WORKDIR /etc/nginx
 RUN chmod 755 /usr/local/sbin/nginx
 
-COPY build/nginx.conf /etc/nginx/nginx.conf
-COPY build/nginx.conf /etc/nginx/conf/nginx.conf
-COPY build/mime.types /etc/nginx/mime.types
-COPY build/conf.d /etc/nginx/conf.d
-COPY build/error_page/* /usr/share/nginx/html/
 
-# Install MongoDB.
-RUN \
-echo http://dl-4.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories && \
-apk add --no-cache mongodb && \
-rm /usr/bin/mongosniff /usr/bin/mongoperf
-
-# Install mosquitto
-ENV DEBIAN_FRONTEND noninteractive
-
-RUN apk add --update mosquitto mosquitto-clients && \
-mkdir /work && chown nobody /work && mkdir -p /data/db
-
-COPY build/plugin/konker-mosquitto-auth-plugin.conf /etc/ld.so.conf.d/konker-mosquitto-auth-plugin.conf
-COPY build/plugin/lib/* /usr/local/lib/
-COPY build/mosquitto.conf /etc/mosquitto/mosquitto.conf
-COPY build/passwords.pwd /etc/mosquitto/passwords.pwd
-
-#populate demo data
-RUN apk add --update python && \
- apk add py2-pip && \
- pip install pymongo
-
-#DSL for Instance Administration
-
-COPY build/__init__.py /usr/bin
-COPY build/populate_users.py /usr/bin
-COPY build/dsl.py /usr/bin
-COPY build/users/ /usr/bin/users
-COPY build/dao/ /usr/bin/dao
-COPY build/setup.py /usr/bin
-
-RUN chmod 777 /usr/bin/setup.py
-RUN python /usr/bin/setup.py install 
-RUN rm /usr/bin/setup.py
-RUN ln -s /usr/bin/dsl.py /usr/bin/konker
-RUN ln -s /usr/bin/populate_users.py /usr/bin/populate_users
-
-#RUN chmod 777 ~/populate_demo_data.py
-
-COPY docker-entrypoint.sh /
-RUN chmod 777 /docker-entrypoint.sh
+# Install redis
 
 # grab su-exec for easy step-down from root
 RUN apk add --no-cache 'su-exec>=0.2'
@@ -186,6 +155,59 @@ RUN set -ex \
 	&& rm -r /usr/src/redis \
 	\
 	&& apk del .build-deps
+
+
+
+################### CONFIGURE COMPONENTS ###########################
+## Configure nginx
+
+COPY build/nginx.conf /etc/nginx/nginx.conf
+COPY build/nginx.conf /etc/nginx/conf/nginx.conf
+COPY build/mime.types /etc/nginx/mime.types
+COPY build/conf.d /etc/nginx/conf.d
+COPY build/error_page/* /usr/share/nginx/html/
+
+
+## Configure mosquitto
+RUN mkdir /var/log/mosquitto && chmod -R 777 /var/log/mosquitto && \  
+    mkdir /var/lib/mosquitto && chmod -R 777 /var/lib/mosquitto && \
+    apk add --update mongo-c-driver
+COPY build/plugin/konker-mosquitto-auth-plugin-ld.conf /etc/ld.so.conf.d/konker-mosquitto-auth-plugin-ld.conf
+COPY build/plugin/lib/*.so /usr/local/lib/konker-mosquitto-auth-plugin/
+COPY build/mosquitto.conf /etc/mosquitto/mosquitto.conf
+COPY build/konker-mosquitto-auth-plugin.conf /etc/mosquitto/konker-mosquitto-auth-plugin.conf
+COPY build/konker-mqtt.conf /etc/mosquitto/conf.d/konker-mqtt.conf
+RUN  ln -s /usr/lib/libcrypto.so.1.0.0 /usr/lib/libcrypto.so.10 && \
+     ln -s /usr/lib/libssl.so.1.0.0 /usr/lib/libssl.so.10 
+
+
+#DSL for Instance Administration
+COPY build/__init__.py /usr/bin
+COPY build/populate_users.py /usr/bin
+COPY build/dsl.py /usr/bin
+COPY build/users/ /usr/bin/users
+COPY build/dao/ /usr/bin/dao
+COPY build/setup.py /usr/bin
+
+RUN chmod 777 /usr/bin/setup.py
+RUN python /usr/bin/setup.py install
+RUN rm /usr/bin/setup.py
+RUN ln -s /usr/bin/dsl.py /usr/bin/konker
+RUN ln -s /usr/bin/populate_users.py /usr/bin/populate_users
+
+
+## Configure and deploy web app
+COPY build/registry.war /var/lib/jetty/webapps/
+COPY build/application.conf /var/lib/jetty/resources/
+COPY build/logback.xml /var/lib/jetty/webapps/resources/
+COPY build/logback.xml /var/lib/jetty/resources/
+COPY build/mail /var/lib/jetty/webapps/resources/mail/
+COPY build/mail /var/lib/jetty/resources/mail/
+
+
+## Set entrypoint
+COPY docker-entrypoint.sh /
+RUN chmod 777 /docker-entrypoint.sh
 
 #RUN mkdir /data && chown redis:redis /data
 

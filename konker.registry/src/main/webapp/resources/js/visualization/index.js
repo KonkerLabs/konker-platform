@@ -38,7 +38,7 @@ function findAndLoadDataChart() {
         timeout : 100000,
         data: $('#visualizationForm').serialize(),
         beforeSend : function() {
-            $("img .loading-chart").removeClass('hide');
+            $("div .loading-chart").removeClass('hide');
         },
         success : function(data) {
             var result;

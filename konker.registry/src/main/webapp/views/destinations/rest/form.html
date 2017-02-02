@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html data-layout-decorate="layouts/default">
 <head>
+    <style>
+        .nopadding {
+            padding-left: 0px; 
+            padding-right: 0px;
+        }
+    </style>
 </head>
 <body>
 <div data-layout-fragment="content">
@@ -56,16 +62,31 @@
                                         </select>
                                     </td>
                                     <td class="col-sm-6">
-                                        <input type="text" data-th-field="*{serviceURI}"
-                                               class="form-control"/>
+                                        <div class="col-sm-3 nopadding">
+                                            <select data-th-field="*{serviceProtocol}"
+                                                class="form-control"
+                                                id="method"
+                                                name="method">
+                                                <option value="http">http://</option>
+                                                <option value="https">https://</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-sm-9 nopadding">
+                                            <input type="text"
+                                                placeholder="ex.: www.konkerlabs.com/api"
+                                                data-th-field="*{serviceHost}"
+                                                class="form-control" />
+                                        </div>
                                     </td>
                                     <td class="col-sm-2">
                                         <input type="text" data-th-field="*{serviceUsername}"
-                                               class="form-control"/>
+                                               data-th-attr="autocomplete=*{restId} != null ? 'on' : 'off'"
+                                               class="form-control password-input"/>
                                     </td>
                                     <td class="col-sm-2">
                                         <input type="text" data-th-field="*{servicePassword}"
-                                               class="form-control"/>
+                                               data-th-attr="autocomplete=*{restId} != null ? 'on' : 'off'"
+                                               class="form-control password-input"/>
                                         <img data-th-attr="src=@{/resources/konker/images/eye-open.svg}" id="olho" class="password-eye" />
                                     </td>
                                 </tr>

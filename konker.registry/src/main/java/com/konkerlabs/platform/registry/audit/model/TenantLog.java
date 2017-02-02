@@ -11,5 +11,6 @@ public class TenantLog {
 
 	private Date time;
 	private String message;
-
+	private String level;
+	
 }

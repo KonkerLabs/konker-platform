@@ -50,7 +50,8 @@
 
     </div>
     <div data-layout-fragment="script">
-        <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+        <!-- https://unpkg.com/axios/dist/ -->
+        <script data-th-attr="src=@{/resources/konker/scripts/axios.min.js}"></script>
         <script data-th-attr="src=@{/resources/konker/scripts/mustache.min.js}"></script>
         <script type="text/javascript" data-th-inline="javascript">
         var mustacheTranslation = {

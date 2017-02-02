@@ -6,6 +6,7 @@ import com.konkerlabs.platform.registry.business.model.enumerations.SupportedHtt
 import com.konkerlabs.platform.registry.web.forms.api.ModelBuilder;
 import lombok.Data;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,7 +22,8 @@ public class RestDestinationForm implements ModelBuilder<RestDestination, RestDe
     private String name;
     private String method;
     private List<RestDestinationHeader> headers;
-    private String serviceURI;
+    private String serviceProtocol;
+    private String serviceHost;
     private String serviceUsername;
     private String servicePassword;
     private boolean active;
@@ -58,7 +60,7 @@ public class RestDestinationForm implements ModelBuilder<RestDestination, RestDe
         return this;
     }
 
-    public SupportedHttpMethod[] getMethodList() {
+	public SupportedHttpMethod[] getMethodList() {
         return SupportedHttpMethod.values();
     }
     
@@ -105,4 +107,21 @@ public class RestDestinationForm implements ModelBuilder<RestDestination, RestDe
 
 	}
 
+
+	public String getServiceURI() {
+		return MessageFormat.format("{0}://{1}", serviceProtocol, serviceHost);
+	}
+
+	public void setServiceURI(String serviceURI) {
+		String tokens[] = serviceURI.split("://");
+
+		if (tokens.length == 2) {
+			serviceProtocol = tokens[0];
+			serviceHost = tokens[1];
+		} else {
+			serviceProtocol = "http"; // default protocol
+			serviceHost = tokens[0];
+		}
+	}
+	
 }

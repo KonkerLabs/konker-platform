@@ -2,6 +2,7 @@ package com.konkerlabs.platform.registry.business.services;
 
 import java.io.ByteArrayOutputStream;
 import java.util.AbstractMap;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
+import org.springframework.core.env.Environment;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +31,7 @@ import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.EventRouteRepository;
@@ -48,6 +51,8 @@ import com.typesafe.config.ConfigFactory;
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
 public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
+    private Logger LOGGER = LoggerFactory.getLogger(DeviceRegisterServiceImpl.class);
+
     @Autowired
     private TenantRepository tenantRepository;
 
@@ -60,13 +65,14 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
     @Autowired @Qualifier("mongoEvents")
     private EventRepository eventRepository;
 
-    private Logger LOGGER = LoggerFactory.getLogger(DeviceRegisterServiceImpl.class);
-
     @Autowired
     private PubServerConfig pubServerConfig;
 
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
+    
+    @Autowired
+    private Environment environment;
 
     @Override
     public ServiceResponse<Device> register(Tenant tenant, Device device) {
@@ -132,6 +138,8 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .build();
         }
 
+        LOGGER.info("Device created. Id: {}", device.getDeviceId(), tenant.toURI(), tenant.getLogLevel());
+
         Device saved = deviceRepository.save(device);
 
         return ServiceResponseBuilder.<Device>ok().withResult(saved).build();
@@ -192,6 +200,9 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                 String randomPassword = passwordManager.generateRandomPassword(12);
                 existingDevice.setSecurityHash(passwordManager.createHash(randomPassword));
                 Device saved = deviceRepository.save(existingDevice);
+
+                LOGGER.info("Password generated for device id: {}", existingDevice.getDeviceId(), tenant.toURI(), tenant.getLogLevel());
+
                 return ServiceResponseBuilder.<DeviceSecurityCredentials>ok() 
                         .withResult(new DeviceSecurityCredentials(saved,randomPassword)).build();
             } catch (SecurityException e) {
@@ -243,6 +254,8 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         }
 
         Device saved = deviceRepository.save(deviceFromDB);
+
+        LOGGER.info("Device updated. Id: {}", deviceFromDB.getDeviceId(), tenant.toURI(), tenant.getLogLevel());
 
         return ServiceResponseBuilder.<Device>ok()
                 .withResult(saved)
@@ -304,6 +317,8 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .build();
         }
 
+        LOGGER.info("Device removed. Id: {}", device.getDeviceId(), tenant.toURI(), tenant.getLogLevel());
+
         return ServiceResponseBuilder.<Device>ok()
                 .withMessage(DeviceController.Messages.DEVICE_REMOVED_SUCCESSFULLY.getCode())
                 .withResult(device)
@@ -347,6 +362,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
     @Override
     public ServiceResponse<String> generateQrCodeAccess(DeviceSecurityCredentials credentials, int width, int height) {
         try {
+        	List<String> profiles = Arrays.stream(environment.getActiveProfiles()).collect(Collectors.toList());
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             Base64OutputStream encoded = new Base64OutputStream(baos);
             StringBuilder content = new StringBuilder();
@@ -356,9 +372,11 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
             content.append("\",\"ctx\":\"" + pubServerConfig.getHttpCtx());
             content.append("\",\"host-mqtt\":\"" + pubServerConfig.getMqttHostName());
             content.append("\",\"http\":\"" + pubServerConfig.getHttpPort());
-            content.append("\",\"https\":\"" + pubServerConfig.getHttpsPort());
+            if (profiles.contains("ssl"))
+            	content.append("\",\"https\":\"" + pubServerConfig.getHttpsPort());
             content.append("\",\"mqtt\":\"" + pubServerConfig.getMqttPort());
-            content.append("\",\"mqtt-tls\":\"" + pubServerConfig.getMqttTlsPort());
+            if (profiles.contains("ssl"))
+            	content.append("\",\"mqtt-tls\":\"" + pubServerConfig.getMqttTlsPort());
             content.append("\",\"pub\":\"pub/"+ credentials.getDevice().getUsername());
             content.append("\",\"sub\":\"sub/"+ credentials.getDevice().getUsername() +"\"}");
 

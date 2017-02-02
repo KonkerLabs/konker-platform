@@ -6,8 +6,11 @@ import com.konkerlabs.platform.registry.business.model.enumerations.SupportedHtt
 import com.konkerlabs.platform.registry.web.forms.api.ModelBuilder;
 import lombok.Data;
 
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
 
 @Data
 public class TransformationForm implements ModelBuilder<Transformation, TransformationForm, Void> {
@@ -24,13 +27,19 @@ public class TransformationForm implements ModelBuilder<Transformation, Transfor
 
     @Data
     public static class TransformationStepForm {
-        private String method;
-        private String url;
+        
+    	private String method;
+        private String urlProtocol;
+        private String urlHost;
         private String username;
         private String password;
         private List<TransformationStepHeaderForm> headers = new ArrayList<>();
 
         public TransformationStepForm() {
+        	if (headers.isEmpty()) {
+        		// header html template
+        		headers.add(new TransformationStepHeaderForm(null, null));
+        	}
         }
 
         public TransformationStepForm(String method,
@@ -39,16 +48,14 @@ public class TransformationForm implements ModelBuilder<Transformation, Transfor
                                       String password,
                                       List<TransformationStepHeaderForm> headers) {
             this.method = method;
-            this.url = url;
+            this.setUrl(url);
             this.username = username;
             this.password = password;
             List<TransformationStepHeaderForm> defaultHeaders = new ArrayList<TransformationStepHeaderForm>();
             if (headers == null) {
                 headers = new ArrayList<>();
             }
-            headers.add(
-                    new TransformationStepHeaderForm("Content-Type", "application/json"))
-            ;
+            headers.add(new TransformationStepHeaderForm("Content-Type", "application/json"));
             this.headers = headers != null ? headers : defaultHeaders;
         }
 
@@ -59,11 +66,11 @@ public class TransformationForm implements ModelBuilder<Transformation, Transfor
                                       Map<String, String> headers) {
 
             this.method = method;
-            this.url = url;
+            this.setUrl(url);
             this.username = username;
             this.password = password;
             List<TransformationStepHeaderForm> headerFromMap = new ArrayList<>();
-            if (headers == null || headers.size() == 0) {
+            if (headers == null || headers.isEmpty()) {
                 headers = new HashMap<>();
                 headers.put("", "");
             }
@@ -79,18 +86,41 @@ public class TransformationForm implements ModelBuilder<Transformation, Transfor
                                       String password) {
 
             this.method = method;
-            this.url = url;
+            this.setUrl(url);
             this.username = username;
             this.password = password;
+        	if (headers.isEmpty()) {
+        		// header html template
+        		headers.add(new TransformationStepHeaderForm(null, null));
+        	}
         }
 
         public Map<String, String> getHeadersAsMap() {
             Map<String, String> headersAsMap = new HashMap<>();
             getHeaders().stream().forEach(item -> {
-                headersAsMap.put(item.getKey(), item.getValue());
+            	if (StringUtils.isNotBlank(item.getKey())) {
+            		headersAsMap.put(item.getKey(), item.getValue());
+            	}
             });
             return headersAsMap;
         }
+        
+    	public String getUrl() {
+    		return MessageFormat.format("{0}://{1}", urlProtocol, urlHost);
+    	}
+
+    	public void setUrl(String url) {
+    		String tokens[] = url.split("://");
+
+    		if (tokens.length == 2) {
+	    		urlProtocol = tokens[0];
+	    		urlHost = tokens[1];
+    		} else {
+	    		urlProtocol = "http"; // default protocol
+	    		urlHost = tokens[0];
+    		}
+    	}
+    	
     }
 
     @Data

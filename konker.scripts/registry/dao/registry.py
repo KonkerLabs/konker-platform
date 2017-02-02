@@ -1,5 +1,8 @@
 #! /usr/bin/env python2
 import sys
+import string
+import random
+
 from bson import DBRef
 from pymongo import MongoClient
 
@@ -28,6 +31,13 @@ def user_find(username):
     return user
 
 
+def domain_generator(size = 8):
+    chars = string.ascii_uppercase + string.ascii_lowercase
+    allChars = chars + string.digits
+    # first character must be a letter
+    return ''.join(random.SystemRandom().choice(chars)) + ''.join(random.SystemRandom().choice(allChars) for _ in range(size - 1))
+
+
 def tenant_find(tenant_name):
     db = db_connect()
     try:
@@ -38,17 +48,24 @@ def tenant_find(tenant_name):
     return tenant
 
 
+def tenant_find_by_domain(domain_name):
+    db = db_connect()
+    try:
+        tenant = db.tenants.find_one({"domainName": domain_name})
+    except Exception as e:
+        print(e)
+        sys.exit(1)
+    return tenant
+
+
 def create_tenant(args, name):
     db = db_connect()
-    if not args.org:
-        print("Info: The konker username will be used as organization name")
-        org = name
-    else:
-        org = args.org
-    tenant = tenant_find(org)
+    org = domain_generator()
+    tenant = tenant_find_by_domain(org)
+    print("Info: Organization name = " + org)
     if tenant is None:
         try:
-            inserted_id = db.tenants.insert_one({"name": org, "domainName": org}).inserted_id
+            inserted_id = db.tenants.insert_one({"name": name, "domainName": org}).inserted_id
             return inserted_id
         except Exception as e:
             print(e)

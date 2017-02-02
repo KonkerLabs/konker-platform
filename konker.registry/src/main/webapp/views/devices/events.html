@@ -147,8 +147,11 @@
                         <div class="slider round"></div>
                     </label>
                 </div>
+                
+                <a id="exportCsv" class="btn btn-primary pull-right hide" style="margin-right: 5px;" data-th-text="#{visualization.index.btn.csv}"></a>
+		        <a id="bufferCsv" class="hide"></a>
             </div>
-
+            
             <ul class="nav nav-tabs nav-justified col-sm-12" >
 				<li class="active"><a data-toggle="tab" href="#incoming"
 					data-th-text="#{devices.events.incoming.events}"></a></li>
@@ -177,8 +180,6 @@
         </fieldset>
 
 	    <div class="form-group col-sm-12">
-	        <a id="exportCsv" class="btn btn-primary pull-right hide" style="margin-right: 5px;" data-th-text="#{visualization.index.btn.csv}"></a>
-	        <a id="bufferCsv" class="hide"></a>
             <a data-th-href="@{/devices}" class="btn btn-default" data-th-text="#{nav.back}"></a>
 	    </div>
 

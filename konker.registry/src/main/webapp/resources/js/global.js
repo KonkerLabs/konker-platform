@@ -9,6 +9,13 @@ $(document).ready( function () {
         var input = $(this).parent().find('input');
         $(input).attr('type', 'password');
     });
+
+    $('input[autocomplete="off"].password-input').change(function(){
+        var input = this;
+        $(input).val('');
+        $(input).unbind('change');
+    });
+
 });
 
 $('.password-eye').mousedown(function() {

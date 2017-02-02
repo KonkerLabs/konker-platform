@@ -5,14 +5,16 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
-import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.EventRouteRepository;
 import com.konkerlabs.platform.registry.business.repositories.RestDestinationRepository;
@@ -21,11 +23,12 @@ import com.konkerlabs.platform.registry.business.services.api.AbstractURLBlackli
 import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
-import com.konkerlabs.platform.registry.web.controllers.DeviceController;
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
 public class RestDestinationServiceImpl extends AbstractURLBlacklistValidation implements RestDestinationService {
+
+    private Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
 	@Autowired
 	private TenantRepository tenantRepository;
@@ -115,6 +118,8 @@ public class RestDestinationServiceImpl extends AbstractURLBlacklistValidation i
 
 		RestDestination saved = restRepository.save(destination);
 
+        LOGGER.info("REST destination created. Name: {}", destination.getName(), tenant.toURI(), tenant.getLogLevel());
+
 		return ServiceResponseBuilder.<RestDestination> ok().withResult(saved).build();
 	}
 
@@ -176,6 +181,8 @@ public class RestDestinationServiceImpl extends AbstractURLBlacklistValidation i
 
 		RestDestination saved = restRepository.save(destination);
 
+        LOGGER.info("REST destination updated. Name: {}", destination.getName(), tenant.toURI(), tenant.getLogLevel());
+
 		return ServiceResponseBuilder.<RestDestination> ok().withResult(saved).build();
 	}
 
@@ -207,6 +214,8 @@ public class RestDestinationServiceImpl extends AbstractURLBlacklistValidation i
 		}
 
 		restRepository.delete(existingDestination);
+
+        LOGGER.info("REST destination removed. Name: {}", existingDestination.getName(), tenant.toURI(), tenant.getLogLevel());
 
         return ServiceResponseBuilder.<RestDestination>ok()
                 .withMessage(Messages.REST_DESTINATION_REMOVED_SUCCESSFULLY.getCode())

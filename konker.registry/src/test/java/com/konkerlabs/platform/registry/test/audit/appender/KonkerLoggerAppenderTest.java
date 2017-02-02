@@ -26,15 +26,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-
-
-
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {BusinessTestConfiguration.class,
         MongoTestConfiguration.class,
         RedisTestConfiguration.class})
 public class KonkerLoggerAppenderTest {
-
 
     private Tenant tenant;
     private Device device;
@@ -79,6 +75,7 @@ public class KonkerLoggerAppenderTest {
         Mockito.verify(konkerLoggerAppender, Mockito.never())
                 .store(Mockito.any(),
                         Mockito.anyString(),
+                        Mockito.anyString(),
                         Mockito.anyString());
     }
 
@@ -96,6 +93,7 @@ public class KonkerLoggerAppenderTest {
         konkerLoggerAppender.append(logEvent);
         Mockito.verify(konkerLoggerAppender, Mockito.never())
                 .store(Mockito.any(),
+                        Mockito.anyString(),
                         Mockito.anyString(),
                         Mockito.anyString());
     }
@@ -115,6 +113,7 @@ public class KonkerLoggerAppenderTest {
         Mockito.verify(konkerLoggerAppender, Mockito.never())
                 .store(Mockito.any(),
                         Mockito.anyString(),
+                        Mockito.anyString(),
                         Mockito.anyString());
     }
 
@@ -133,6 +132,7 @@ public class KonkerLoggerAppenderTest {
         konkerLoggerAppender.append(logEvent);
         Mockito.verify(konkerLoggerAppender, Mockito.atLeastOnce())
                 .store(Mockito.any(),
+                        Mockito.anyString(),
                         Mockito.anyString(),
                         Mockito.anyString());
 
