@@ -30,7 +30,7 @@
                 <th class="col-md-1" data-th-text="#{routes.index.outgoing.type}"></th>
                 <th class="col-md-2" data-th-text="#{routes.index.outgoing.id}"></th>
                 <th class="col-md-1" data-th-text="#{routes.index.active}"></th>
-                <th class="col-md-1 text-center" data-th-text="#{routes.index.actions}"></th>
+                <th class="col-md-2 text-center" data-th-text="#{routes.index.actions}"></th>
             </tr>
             </thead>
             <tbody>
@@ -50,8 +50,9 @@
                     </a>
                      -->
                     <a data-th-href="@{/routes/{id}/edit(id=${route.guid})}"
-                       data-th-text="#{nav.edit}"
                        class="btn btn-default">
+                       <img data-th-src="@{/resources/konker/images/icons-bt/edit-icon-bt-01.svg}" class="bt-icon">
+                       <span data-th-text="#{nav.edit}"></span>
                     </a>
                 </td>
             </tr>
