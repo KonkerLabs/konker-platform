@@ -39,7 +39,7 @@ if [ "$1" = "java" -a -n "$JAVA_OPTIONS" ] ; then
 fi
 
 #still unstable
-#generate_mosquitto_credentials.sh
+generate_mosquitto_credentials.sh
 
 /usr/local/sbin/nginx &
 mongod &
