@@ -145,12 +145,20 @@
 	                </label>
                 </div>
             </div>
-            <button type="submit" class="btn btn-success" data-th-text="#{nav.save}">Save</button>
-            <a data-th-href="@{/destinations/rest/}" class="btn btn-default" data-th-text="#{nav.back}">Back</a>
+            <button type="submit" class="btn btn-success">
+				<img data-th-attr="src=@{/resources/konker/images/icons-bt/save-icon-bt-01.svg}" class="bt-icon" />
+                <span data-th-text="#{nav.save}"></span>
+			</button>
+            <a data-th-href="@{/destinations/rest/}" class="btn btn-default">
+            	<img data-th-attr="src=@{/resources/konker/images/icons-bt/back-icon-bt-01.svg}" class="bt-icon" />
+                <span data-th-text="#{nav.back}"></span>
+            </a>
             <!-- delete item -->
             <a class="btn btn-default confirm-delete"
-               data-th-text="#{nav.remove}"
-               data-th-if="*{restId} != null"></a>
+               data-th-if="*{restId} != null">
+            	<img data-th-attr="src=@{/resources/konker/images/icons-bt/trash-icon-bt-01.svg}" class="bt-icon" />
+                <span data-th-text="#{nav.remove}"></span>   
+            </a>
             <!-- delete confirm modal -->
             <div class="modal" id="removeItemModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
                 <div class="modal-alignment-helper">
