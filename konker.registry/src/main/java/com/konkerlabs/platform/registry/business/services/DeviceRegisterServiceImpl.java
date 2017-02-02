@@ -2,6 +2,7 @@ package com.konkerlabs.platform.registry.business.services;
 
 import java.io.ByteArrayOutputStream;
 import java.util.AbstractMap;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
+import org.springframework.core.env.Environment;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -68,6 +70,9 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
+    
+    @Autowired
+    private Environment environment;
 
     @Override
     public ServiceResponse<Device> register(Tenant tenant, Device device) {
@@ -357,6 +362,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
     @Override
     public ServiceResponse<String> generateQrCodeAccess(DeviceSecurityCredentials credentials, int width, int height) {
         try {
+        	List<String> profiles = Arrays.stream(environment.getActiveProfiles()).collect(Collectors.toList());
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             Base64OutputStream encoded = new Base64OutputStream(baos);
             StringBuilder content = new StringBuilder();
@@ -366,9 +372,11 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
             content.append("\",\"ctx\":\"" + pubServerConfig.getHttpCtx());
             content.append("\",\"host-mqtt\":\"" + pubServerConfig.getMqttHostName());
             content.append("\",\"http\":\"" + pubServerConfig.getHttpPort());
-            content.append("\",\"https\":\"" + pubServerConfig.getHttpsPort());
+            if (profiles.contains("ssl"))
+            	content.append("\",\"https\":\"" + pubServerConfig.getHttpsPort());
             content.append("\",\"mqtt\":\"" + pubServerConfig.getMqttPort());
-            content.append("\",\"mqtt-tls\":\"" + pubServerConfig.getMqttTlsPort());
+            if (profiles.contains("ssl"))
+            	content.append("\",\"mqtt-tls\":\"" + pubServerConfig.getMqttTlsPort());
             content.append("\",\"pub\":\"pub/"+ credentials.getDevice().getUsername());
             content.append("\",\"sub\":\"sub/"+ credentials.getDevice().getUsername() +"\"}");
 

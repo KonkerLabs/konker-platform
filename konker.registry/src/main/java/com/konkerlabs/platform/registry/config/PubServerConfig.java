@@ -21,6 +21,7 @@ public class PubServerConfig {
 	private String mqttHostName;
 	private String mqttPort;
 	private String mqttTlsPort;
+	private boolean sslEnabled;
 	
 	public PubServerConfig() {
 		Map<String, Object> defaultMap = new HashMap<>();
@@ -31,6 +32,7 @@ public class PubServerConfig {
 		defaultMap.put("pubServer.mqttHostName", "dev-server");
 		defaultMap.put("pubServer.mqttPort", "1883");
 		defaultMap.put("pubServer.mqttTlsPort", "1883");
+		defaultMap.put("pubServer.sslEnabled", false);
 		Config defaultConf = ConfigFactory.parseMap(defaultMap);
 
 		Config config = ConfigFactory.load().withFallback(defaultConf);
@@ -41,6 +43,7 @@ public class PubServerConfig {
 		setMqttHostName(config.getString("pubServer.mqttHostName"));
 		setMqttPort(config.getString("pubServer.mqttPort"));
 		setMqttTlsPort(config.getString("pubServer.mqttTlsPort"));
+		setSslEnabled(config.getBoolean("pubServer.sslEnabled"));
 	}
 
 }
