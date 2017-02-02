@@ -80,12 +80,12 @@
                                     </td>
                                     <td class="col-sm-2">
                                         <input type="text" data-th-field="*{serviceUsername}"
-                                               data-th-attr="autocomplete=*{restId} != null ? 'on' : 'off'"
+                                               autocomplete="off"
                                                class="form-control password-input"/>
                                     </td>
                                     <td class="col-sm-2">
                                         <input type="text" data-th-field="*{servicePassword}"
-                                               data-th-attr="autocomplete=*{restId} != null ? 'on' : 'off'"
+                                               autocomplete="off"
                                                class="form-control password-input"/>
                                         <img data-th-attr="src=@{/resources/konker/images/eye-open.svg}" id="olho" class="password-eye" />
                                     </td>
@@ -178,6 +178,7 @@
 </div>
 <div data-layout-fragment="script">
     <script data-th-attr="src=@{/resources/js/destinations/rest/form.js}"></script>
+    <script data-th-attr="src=@{/resources/js/input-eye.js}"></script>
 </div>
 </body>
 </html>
