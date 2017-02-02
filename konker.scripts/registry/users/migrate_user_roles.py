@@ -358,20 +358,21 @@ def ingest_roles():
 
 def update_user_roles():
     for user in db.users.find():
-        db.users.save({
-            "_id": user[u'_id'],
-            "tenant": user[u'tenant'],
-            "password": user[u'password'],
-            "phone": user[u'phone'],
-            "name": user[u'name'],
-            "notificationViaEmail": user[u'notificationViaEmail'],
-            "language": "PT_BR",
-            "dateformat": "DDMMYYYY",
-            "zoneId": "AMERICA_SAO_PAULO",
-            "roles": [
-                DBRef("roles", ObjectId("58542d56861bd736c42a0202"))
-            ]
-        })
+        changes = {}
+        if not "roles" in user:
+            changes["roles"] = [DBRef("roles", ObjectId("58542d56861bd736c42a0202"))]
+        if not "language" in user:
+            changes["language"] = "PT_BR"
+        if not "dateformat" in user:
+            changes["dateformat"] = "DDMMYYYY"
+        if not "zoneId" in user:
+            changes["zoneId"] = "AMERICA_SAO_PAULO"
+
+        if changes:
+            print "Updating roles for {}: {}".format( user[u'_id'], str(changes))
+            db.users.update({"_id": user[u'_id']},
+                            {"$set": changes},
+                            multi=False)
     return True
 
 

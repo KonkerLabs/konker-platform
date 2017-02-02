@@ -19,20 +19,14 @@ saltHashBytes = 32
 
 def update_user_password():
     for user in db.users.find():
-        if qualifier not in user[u'password']:
-            hashed = get_hashed_password(user[u'password'])
-            print("New password for user " + user[u'_id'] + " from " + user[u'password'] + "to " + hashed)
-            db.users.save({
-                "_id": user[u'_id'],
-                "tenant": user[u'tenant'],
-                "password": hashed,
-                "language": "PT_BR",
-                "dateformat": "DDMMYYYY",
-                "zoneId": "AMERICA_SAO_PAULO"
-            })
+        if qualifier not in user.get(u'password', ""):
+            hashed = get_hashed_password(user.get(u'password', ""))
+            print("New password for user " + user[u'_id'] + " from ********** to " + hashed)
+            db.users.update({"_id": user[u'_id']},
+                            {"$set": {"password" : hashed}},
+                            multi=False)
         else:
             continue
-
     return True
 
 
