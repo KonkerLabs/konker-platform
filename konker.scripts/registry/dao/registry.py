@@ -60,7 +60,10 @@ def tenant_find_by_domain(domain_name):
 
 def create_tenant(args, name):
     db = db_connect()
-    org = domain_generator()
+    if args.org:
+        org = args.org
+    else:
+        org = domain_generator()
     tenant = tenant_find_by_domain(org)
     print("Info: Organization name = " + org)
     if tenant is None:
