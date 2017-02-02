@@ -40,7 +40,7 @@ fi
 
 /usr/local/sbin/nginx &
 mongod &
-mosquitto &
+mosquitto -c /etc/mosquitto/mosquitto.conf &
 redis-server &
 #Set database version
 konker database upgrade &
