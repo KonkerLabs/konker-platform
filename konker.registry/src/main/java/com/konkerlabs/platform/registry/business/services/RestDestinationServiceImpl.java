@@ -210,7 +210,7 @@ public class RestDestinationServiceImpl extends AbstractURLBlacklistValidation i
 
 		if (!eventRouteRepository.findByOutgoingUri(existingDestination.toURI()).isEmpty()) {
 			return ServiceResponseBuilder.<RestDestination> error()
-					.withMessage(Validations.REST_DESTINATION_IN_USE_TRANSFORMATION.getCode()).build();
+					.withMessage(Validations.REST_DESTINATION_IN_USE_ROUTE.getCode()).build();
 		}
 
 		restRepository.delete(existingDestination);
