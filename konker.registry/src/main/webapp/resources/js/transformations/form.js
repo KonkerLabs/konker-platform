@@ -111,6 +111,7 @@ $(document).ready(function() {
                 item.find('button.add-header').each(function(index, item){
                     $(item).on('click', controller.onAddHeader);
                 });
+                item.find('button.remove-header').on('click', controller.onRemoveHeader);
                 // the new step must have just one header
                 item.find('tr.restheaders tr.header-line:not(:first)').remove();
                 controller.reindexRows();
