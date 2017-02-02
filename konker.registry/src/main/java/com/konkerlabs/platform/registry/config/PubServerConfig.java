@@ -3,6 +3,7 @@ package com.konkerlabs.platform.registry.config;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.annotation.Configuration;
 
 import com.typesafe.config.Config;
@@ -44,6 +45,18 @@ public class PubServerConfig {
 		setMqttPort(config.getString("pubServer.mqttPort"));
 		setMqttTlsPort(config.getString("pubServer.mqttTlsPort"));
 		setSslEnabled(config.getBoolean("pubServer.sslEnabled"));
+
+		// Environment param overwrite file values 
+		String httpHostname = System.getenv("PUB_HTTP_HOSTNAME");
+		if (StringUtils.isNotBlank(httpHostname)) {
+			setHttpHostname(httpHostname);
+		}
+
+		String mqttHostname = System.getenv("PUB_MQTT_HOSTNAME");
+		if (StringUtils.isNotBlank(mqttHostname)) {
+			setMqttHostName(mqttHostname);
+		}
+
 	}
 
 }
