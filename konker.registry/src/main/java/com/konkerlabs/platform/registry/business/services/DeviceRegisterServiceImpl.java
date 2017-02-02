@@ -372,11 +372,9 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
             content.append("\",\"ctx\":\"" + pubServerConfig.getHttpCtx());
             content.append("\",\"host-mqtt\":\"" + pubServerConfig.getMqttHostName());
             content.append("\",\"http\":\"" + pubServerConfig.getHttpPort());
-            if (profiles.contains("ssl"))
-            	content.append("\",\"https\":\"" + pubServerConfig.getHttpsPort());
+            content.append("\",\"https\":\"" + pubServerConfig.getHttpsPort());
             content.append("\",\"mqtt\":\"" + pubServerConfig.getMqttPort());
-            if (profiles.contains("ssl"))
-            	content.append("\",\"mqtt-tls\":\"" + pubServerConfig.getMqttTlsPort());
+            content.append("\",\"mqtt-tls\":\"" + pubServerConfig.getMqttTlsPort());
             content.append("\",\"pub\":\"pub/"+ credentials.getDevice().getUsername());
             content.append("\",\"sub\":\"sub/"+ credentials.getDevice().getUsername() +"\"}");
 
