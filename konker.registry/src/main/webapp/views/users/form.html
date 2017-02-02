@@ -48,7 +48,7 @@
                          class="avataraccount img-responsive">
                 </div>
                 <div class="col-md-7 col-sm-5 pull-left panel-view-user"
-                    data-th-if="${@environment.getActiveProfiles().length != 0 && #lists.contains(@environment.getActiveProfiles(), 'cdn')}">
+                    data-th-if="${#lists.contains(@environment.getActiveProfiles(), 'cdn')}">
                     <div>
                         <h2 data-th-text="#{users.form.photo.yourphoto}">Sua foto</h2>
                     </div>
@@ -59,7 +59,7 @@
                     <br />
                 </div>
                 <div class="col-md-7 col-sm-5 pull-left panel-edit-user"
-                    data-th-if="${@environment.getActiveProfiles().length != 0 && #lists.contains(@environment.getActiveProfiles(), 'cdn')}">
+                    data-th-if="${#lists.contains(@environment.getActiveProfiles(), 'cdn')}">
                     <div>
                         <h2 data-th-text="#{users.form.photo.yourphoto}">Sua foto</h2>
                     </div>
@@ -208,7 +208,7 @@
                                    data-th-placeholder="#{users.form.password-confirm.placeholder}"/>
                             <a id="recoverPassword" 
                                 th:href="@{/recoverpassword}" 
-                                th:if="${@environment.getActiveProfiles().length != 0 && #lists.contains(@environment.getActiveProfiles(), 'email')}"
+                                th:if="${#lists.contains(@environment.getActiveProfiles(), 'email')}"
                                 href="#">
                                 <span data-th-text="#{user.forgot.password}">Forgot password</span>
                             </a>
@@ -233,7 +233,7 @@
                         <p><span data-th-text="#{users.form.preferences.language}"></span><span>: </span><span data-th-text="#{*{language.code}}"></span></p>
                         <p><span data-th-text="#{users.form.preferences.timezone}"></span><span>: </span><span data-th-text="#{*{zoneId.code}}"></span></p>
                         <p><span data-th-text="#{users.form.preferences.dateformat}"></span><span>: </span><span data-th-text="#{*{dateFormat.code}}"></span></p>
-                        <div th:if="${@environment.getActiveProfiles().length != 0 && #lists.contains(@environment.getActiveProfiles(), 'email')}">
+                        <div th:if="${#lists.contains(@environment.getActiveProfiles(), 'email')}">
                         <p data-th-if="*{notificationViaEmail}"><span data-th-text="#{users.form.notification.email}"></span><span>: </span><span data-th-text="#{users.form.preferences.mail.notifications.yes}"></span></p>
                         <p data-th-if="*{not notificationViaEmail}"><span data-th-text="#{users.form.notification.email}"></span><span>: </span><span data-th-text="#{users.form.preferences.mail.notifications.no}"></span></p>
                         </div>
@@ -290,7 +290,7 @@
                                         data-th-value="${dateformat}"></option>
                             </select>
                         </p>
-                        <p th:if="${@environment.getActiveProfiles().length != 0 && #lists.contains(@environment.getActiveProfiles(), 'email')}">
+                        <p th:if="${#lists.contains(@environment.getActiveProfiles(), 'email')}">
                             <label class="control-label"
                                 data-th-text="#{users.form.notification.email}"
                                 for="notificationViaEmail">Receive

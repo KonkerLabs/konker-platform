@@ -103,12 +103,12 @@
                                                     </td>
                                                     <td class="col-sm-2">
                                                         <input type="text" data-th-field="*{steps[__${stat.index}__].username}"
-                                                               data-th-attr="autocomplete=*{id} != null ? 'on' : 'off'"
+                                                               autocomplete="off"
                                                                class="form-control password-input"/>
                                                     </td>
                                                     <td class="col-sm-2">
                                                         <input type="text" data-th-field="*{steps[__${stat.index}__].password}"
-                                                               data-th-attr="autocomplete=*{id} != null ? 'on' : 'off'"
+                                                               autocomplete="off"
                                                                class="form-control password-input"/>
                                                         <img data-th-attr="src=@{/resources/konker/images/eye-open.svg}" id="olho" class="password-eye" />
                                                     </td>
@@ -218,6 +218,7 @@
 </div>
 <div data-layout-fragment="script">
     <script data-th-attr="src=@{/resources/js/transformations/form.js}"></script>
+    <script data-th-attr="src=@{/resources/js/input-eye.js}"></script>
 </div>
 </body>
 </html>

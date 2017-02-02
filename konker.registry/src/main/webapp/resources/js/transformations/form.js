@@ -1,6 +1,6 @@
 var controller = {
     addNewRow : function(trLast, callback) {
-        trNew = trLast.clone();
+        trNew = trLast.clone(true, true);
         trLast.after(trNew);
         this.reindexRows();
         callback(trNew);
@@ -85,19 +85,18 @@ var controller = {
     },
     onAddHeader :function() {
         controller.addNewRow(
-                $(this).parent().parent().find("tr:last"),
+                $(this).closest('.restheaders').find("tr:last"),
                 function(item){
                     item.find('input[type=text]').each(function(input){
                         this.value = '';
                     });
-                    item.find('button.remove-header').on('click', controller.onRemoveHeader);
                 });
     }
 }
 
 $(document).ready(function() {
     controller.tableBody = $('tbody');
-    
+
     $('.transformationSteps .btn-add').on('click', function() {
         controller.addNewRow(
             $('div.step:last'),
@@ -105,16 +104,8 @@ $(document).ready(function() {
                 item.find('input[type=text]').each(function(input){
                     this.value = '';
                 });
-                item.find('button.remove-step').each(function(index, item){
-                    $(item).on('click', controller.onRemoveStep);
-                });
-                item.find('button.add-header').each(function(index, item){
-                    $(item).on('click', controller.onAddHeader);
-                });
-                item.find('button.remove-header').on('click', controller.onRemoveHeader);
                 // the new step must have just one header
                 item.find('tr.restheaders tr.header-line:not(:first)').remove();
-                controller.reindexRows();
             });
     });
     $('.add-header').on('click', controller.onAddHeader);

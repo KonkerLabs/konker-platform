@@ -83,7 +83,7 @@
                                            class="form-control" id="form-password" />
 
 		            <label class="checkbox"
-                        th:if="${@environment.getActiveProfiles().length != 0 && #lists.contains(@environment.getActiveProfiles(), 'email')}" >
+                        data-th-if="${#lists.contains(@environment.getActiveProfiles(), 'email')}" >
 		                <span class="pull-right">
 		                    <a data-toggle="modal" href="login.html#senhaModal" data-th-text="#{user.forgot.password}"></a>
 		                </span>
