@@ -69,8 +69,10 @@
         </div>
     </fieldset>
     <a data-th-href="@{/devices}"
-       data-th-text="#{nav.back}"
-       class="btn btn-default"></a>
+       class="btn btn-default">
+        <img data-th-src="@{/resources/konker/images/icons-bt/back-icon-bt-01.svg}" class="bt-icon" />
+        <span data-th-text="#{nav.back}"></span>
+    </a>
 </div>
 </body>
 </html>

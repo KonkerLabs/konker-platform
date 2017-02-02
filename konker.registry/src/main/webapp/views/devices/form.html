@@ -69,15 +69,22 @@
                     </div>
                 </div>
                 <button type="submit"
-                        data-th-text="#{nav.save}"
-                        class="btn btn-success"></button>
+                        class="btn btn-success">
+                    <img data-th-attr="src=@{/resources/konker/images/icons-bt/save-icon-bt-01.svg}"
+                         class="icon-menu" />
+                    <span data-th-text="#{nav.save}"></span>
+                </button>
                 <a data-th-href="@{/devices}"
-                   data-th-text="#{nav.back}"
-                   class="btn btn-default">Back</a>
+                   class="btn btn-default">
+                    <img data-th-src="@{/resources/konker/images/icons-bt/back-icon-bt-01.svg}" class="bt-icon">
+                    <span data-th-text="#{nav.back}"></span>
+                </a>
                 <!-- delete item -->
                 <a class="btn btn-default confirm-delete"
-                   data-th-text="#{nav.remove}"
-                   data-th-if="*{deviceId} != null"></a>
+                   data-th-if="*{deviceId} != null">
+                    <img data-th-src="@{/resources/konker/images/icons-bt/trash-icon-bt-01.svg}" class="bt-icon">
+                    <span data-th-text="#{nav.remove}"></span>
+                </a>
 
                 <div class="modal" id="removeItemModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
                     <div class="modal-alignment-helper">
