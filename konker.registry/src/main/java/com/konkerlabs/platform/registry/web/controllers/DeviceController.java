@@ -7,6 +7,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Supplier;
@@ -222,6 +223,9 @@ public class DeviceController implements ApplicationContextAware {
 		if (allNumericMetrics.isOk() && !allNumericMetrics.getResult().isEmpty()) {
 			existsNumericMetric = true;
 		}
+
+		List<String> channelList = channels.getResult();
+        channelList.removeAll(Collections.singleton(null));
 
 		// Add objects
 		mv.addObject("device", device)

@@ -96,7 +96,7 @@ var controller = {
 
 $(document).ready(function() {
     controller.tableBody = $('tbody');
-    
+
     $('.transformationSteps .btn-add').on('click', function() {
         controller.addNewRow(
             $('div.step:last'),
