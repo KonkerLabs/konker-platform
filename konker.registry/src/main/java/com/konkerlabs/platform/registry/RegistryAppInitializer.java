@@ -85,6 +85,9 @@ public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherSe
 		if (isCdnFeaturesEnabled()) {
 			profiles.add("cdn");
 		}
+		if (isSslFeaturesEnabled()) {
+			profiles.add("ssl");
+		}
 		
         servletContext.setInitParameter("spring.profiles.active", StringUtils.arrayToCommaDelimitedString(profiles.toArray()));
 	}
@@ -102,6 +105,11 @@ public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherSe
 	private boolean isCdnFeaturesEnabled() {
 		CdnConfig config = new CdnConfig();
 		return config.isEnabled();
+	}
+	
+	private boolean isSslFeaturesEnabled() {
+		PubServerConfig config = new PubServerConfig();
+		return config.isSslEnabled();
 	}
 
 }

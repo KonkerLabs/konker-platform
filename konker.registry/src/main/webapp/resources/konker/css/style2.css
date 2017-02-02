@@ -379,6 +379,9 @@ ul.user-info {
 }
 .user-info > li {
 	float: left;
+}
+.user-alert-info > li {
+	float: left;
 	margin-right: 20px;
 }
 

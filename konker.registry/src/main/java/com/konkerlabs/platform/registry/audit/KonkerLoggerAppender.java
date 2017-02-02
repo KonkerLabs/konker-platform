@@ -81,7 +81,7 @@ public class KonkerLoggerAppender extends AppenderBase<ILoggingEvent> {
                     Level eventLogLevel = eventObject.getLevel();
                     if (eventLogLevel.isGreaterOrEqual(userLogLevel)) {
                         MDC.put(CONTEXT, encodeDealer(uri));
-                        store(eventObject, getTenant(uri), eventObject.getFormattedMessage());
+                        store(eventObject, getTenant(uri), eventLogLevel.levelStr, eventObject.getFormattedMessage());
                     }
                 }
             }
@@ -96,8 +96,8 @@ public class KonkerLoggerAppender extends AppenderBase<ILoggingEvent> {
      * @param tenantDomain
      * @param trace
      */
-    public void store(ILoggingEvent event, String tenantDomain, String trace) {
-        repository.insert(tenantDomain, Date.from(Instant.ofEpochMilli(event.getTimeStamp())), trace);
+    public void store(ILoggingEvent event, String tenantDomain, String level, String trace) {
+        repository.insert(tenantDomain, Date.from(Instant.ofEpochMilli(event.getTimeStamp())), level, trace);
     }
 
     /**
@@ -121,17 +121,8 @@ public class KonkerLoggerAppender extends AppenderBase<ILoggingEvent> {
         return dealer.getHost();
     }
 
-    /**
-     * Return schema
-     *
-     * @param dealer
-     * @return entityName
-     */
-    private String getEntity(URI dealer) {
-        return dealer.getScheme();
-    }
-
     public void setRepository(TenantLogRepository repository) {
         this.repository = repository;
     }
+
 }

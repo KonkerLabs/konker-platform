@@ -61,46 +61,48 @@
             <a data-th-href="@{/}" class="logo"><img data-th-attr="src=@{/resources/konker/images/konker-principal2.png}" alt="Konker" title="Konker" width="120px" /></a>
             <!--logo end-->
             <div class="nav notify-row pull-right" id="top_menu">
+
+                <!-- User alerts -->
+    			<ul class="user-info user-alert-info pull-right">
+    
+    			  <!-- Notifications -->
+    			  <li>
+    				<a data-th-href="@{/notifications}">
+                        <img id="notification-icon-off" data-th-attr="src=@{/resources/konker/images/alert-1.svg}" width="35px" />
+                        <img id="notification-icon-on" data-th-attr="src=@{/resources/konker/images/alert-2.svg}" width="35px" style="display: none;" />
+                    </a>
+    			  </li>
+    			  <!-- /notifications -->
+    
+    			</ul>
+    			<!-- /user alerts -->
+                
                 <!-- User info -->
-			<ul class="user-info pull-right">          
-			  <li class="profile-info dropdown">
-			  	<a data-toggle="dropdown" class="dropdown-toggle" href="#" aria-expanded="false"> 
-				  	<img width="44" class="img-circle avatar" alt="" 
-				  		data-th-attr="src=${@userAvatarPath.absolutePath}" 
-				  		data-th-text="${@user.name}"
-                        data-th-if="${not #strings.isEmpty(@user.name)}" />
-                    <img width="44" class="img-circle avatar" alt="" 
-                        data-th-attr="src=${@userAvatarPath.absolutePath}" 
-                        data-th-text="${@user.email}"
-                        data-th-if="${#strings.isEmpty(@user.name)}" />
-   				  	<span class="caret"></span>
-				</a>
+    			<ul class="user-info pull-right">          
+    			  <li class="profile-info dropdown">
+    			  	<a data-toggle="dropdown" class="dropdown-toggle" href="#" aria-expanded="false"> 
+    				  	<img width="44" class="img-circle avatar" alt="" 
+    				  		data-th-attr="src=${@userAvatarPath.absolutePath}" 
+    				  		data-th-text="${@user.name}"
+                            data-th-if="${not #strings.isEmpty(@user.name)}" />
+                        <img width="44" class="img-circle avatar" alt="" 
+                            data-th-attr="src=${@userAvatarPath.absolutePath}" 
+                            data-th-text="${@user.email}"
+                            data-th-if="${#strings.isEmpty(@user.name)}" />
+       				  	<span class="caret"></span>
+    				</a>
+    
+    				<!-- User action menu -->
+    				<ul class="dropdown-menu">
+                      <li><a data-th-href="@{/me}"><i class="icon-cog"></i><span data-th-text="#{nav.user.account_profile}">Conta e Perfil</span></a></li>
+                      <li><a data-th-href="@{/logout}"><i class="icon-cog"></i><span class="glyphicon glyphicon-log-out"></span><span>&nbsp;</span><span data-th-text="#{nav.user.logout}">Logout</span></a></li>
+    				</ul>
+    				<!-- /user action menu -->
+    
+    			  </li>
+    			</ul>
+    			<!-- /user info -->
 
-				<!-- User action menu -->
-				<ul class="dropdown-menu">
-                  <li><a data-th-href="@{/me}"><i class="icon-cog"></i><span data-th-text="#{nav.user.account_profile}">Conta e Perfil</span></a></li>
-                  <li><a data-th-href="@{/logout}"><i class="icon-cog"></i><span class="glyphicon glyphicon-log-out"></span><span>&nbsp;</span><span data-th-text="#{nav.user.logout}">Logout</span></a></li>
-				</ul>
-				<!-- /user action menu -->
-
-			  </li>
-			</ul>
-			<!-- /user info -->
-
-            <!-- User alerts -->
-			<ul class="user-info pull-right">
-
-			  <!-- Notifications -->
-			  <li>
-				<a data-th-href="@{/notifications}">
-                    <img id="notification-icon-off" data-th-attr="src=@{/resources/konker/images/alert-1.svg}" width="35px" />
-                    <img id="notification-icon-on" data-th-attr="src=@{/resources/konker/images/alert-2.svg}" width="35px" style="display: none;" />
-                </a>
-			  </li>
-			  <!-- /notifications -->
-
-			</ul>
-			<!-- /user alerts -->
             </div>            
         </header>
       <!--header end-->

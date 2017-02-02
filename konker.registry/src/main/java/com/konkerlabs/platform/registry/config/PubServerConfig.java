@@ -3,6 +3,7 @@ package com.konkerlabs.platform.registry.config;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.annotation.Configuration;
 
 import com.typesafe.config.Config;
@@ -21,6 +22,7 @@ public class PubServerConfig {
 	private String mqttHostName;
 	private String mqttPort;
 	private String mqttTlsPort;
+	private boolean sslEnabled;
 	
 	public PubServerConfig() {
 		Map<String, Object> defaultMap = new HashMap<>();
@@ -31,6 +33,7 @@ public class PubServerConfig {
 		defaultMap.put("pubServer.mqttHostName", "dev-server");
 		defaultMap.put("pubServer.mqttPort", "1883");
 		defaultMap.put("pubServer.mqttTlsPort", "1883");
+		defaultMap.put("pubServer.sslEnabled", false);
 		Config defaultConf = ConfigFactory.parseMap(defaultMap);
 
 		Config config = ConfigFactory.load().withFallback(defaultConf);
@@ -41,6 +44,19 @@ public class PubServerConfig {
 		setMqttHostName(config.getString("pubServer.mqttHostName"));
 		setMqttPort(config.getString("pubServer.mqttPort"));
 		setMqttTlsPort(config.getString("pubServer.mqttTlsPort"));
+		setSslEnabled(config.getBoolean("pubServer.sslEnabled"));
+
+		// Environment param overwrite file values 
+		String httpHostname = System.getenv("PUB_HTTP_HOSTNAME");
+		if (StringUtils.isNotBlank(httpHostname)) {
+			setHttpHostname(httpHostname);
+		}
+
+		String mqttHostname = System.getenv("PUB_MQTT_HOSTNAME");
+		if (StringUtils.isNotBlank(mqttHostname)) {
+			setMqttHostName(mqttHostname);
+		}
+
 	}
 
 }

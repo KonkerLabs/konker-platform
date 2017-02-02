@@ -31,6 +31,8 @@ import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
 
+import ch.qos.logback.classic.Level;
+
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
         MongoTestConfiguration.class,
@@ -61,9 +63,9 @@ public class TenantLogServiceTest extends BusinessLayerTestSupport {
 
 		String domainName = "Fo8RmPoLWz";
 
-		tenantLogRepository.insert(domainName, new Date(1484219387000L), "1");
-		tenantLogRepository.insert(domainName, new Date(1484219388000L), "2");
-		tenantLogRepository.insert(domainName, new Date(1484219389000L), "3");
+		tenantLogRepository.insert(domainName, new Date(1484219387000L), Level.WARN.levelStr, "1");
+		tenantLogRepository.insert(domainName, new Date(1484219388000L), Level.INFO.levelStr, "2");
+		tenantLogRepository.insert(domainName, new Date(1484219389000L), Level.ERROR.levelStr, "3");
 
 		Tenant tenant = Tenant.builder().domainName(domainName).build();
 
@@ -75,6 +77,10 @@ public class TenantLogServiceTest extends BusinessLayerTestSupport {
 		Assert.assertEquals("2", logs.get(1).getMessage());
 		Assert.assertEquals("3", logs.get(2).getMessage());
 
+		Assert.assertEquals("WARN", logs.get(0).getLevel());
+		Assert.assertEquals("INFO", logs.get(1).getLevel());
+		Assert.assertEquals("ERROR", logs.get(2).getLevel());
+
 		// Descending
 
 		response = tenantLogService.findByTenant(tenant, false);
@@ -85,6 +91,10 @@ public class TenantLogServiceTest extends BusinessLayerTestSupport {
 		Assert.assertEquals("2", logs.get(1).getMessage());
 		Assert.assertEquals("1", logs.get(2).getMessage());
 
+		Assert.assertEquals("ERROR", logs.get(0).getLevel());
+		Assert.assertEquals("INFO", logs.get(1).getLevel());
+		Assert.assertEquals("WARN", logs.get(2).getLevel());
+
     }
 
 	@Test
@@ -94,9 +104,10 @@ public class TenantLogServiceTest extends BusinessLayerTestSupport {
 
 		DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
 
+		String level = Level.WARN.levelStr;
 		String dataText = "2016-08-20 17:45:31";
 
-		tenantLogRepository.insert(domainName, df.parse(dataText), dataText);
+		tenantLogRepository.insert(domainName, df.parse(dataText), level, dataText);
 
 		Tenant tenant = Tenant.builder().domainName(domainName).build();
 
