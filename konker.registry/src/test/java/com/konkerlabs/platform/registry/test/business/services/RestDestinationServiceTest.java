@@ -427,7 +427,7 @@ public class RestDestinationServiceTest extends BusinessLayerTestSupport {
     	response = subject.remove(tenant, tempRestDestination.getGuid());
     	assertThat(response.isOk(), equalTo(false));
         assertThat(response.getResponseMessages(),
-                hasEntry(RestDestinationService.Validations.REST_DESTINATION_IN_USE_TRANSFORMATION.getCode(), null));
+                hasEntry(RestDestinationService.Validations.REST_DESTINATION_IN_USE_ROUTE.getCode(), null));
 
     }
 
