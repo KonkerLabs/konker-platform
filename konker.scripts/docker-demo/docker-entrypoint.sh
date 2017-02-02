@@ -38,6 +38,9 @@ if [ "$1" = "java" -a -n "$JAVA_OPTIONS" ] ; then
 	set -- java $JAVA_OPTIONS "$@"
 fi
 
+#still unstable
+#generate_mosquitto_credentials.sh
+
 /usr/local/sbin/nginx &
 mongod &
 mosquitto -c /etc/mosquitto/mosquitto.conf &

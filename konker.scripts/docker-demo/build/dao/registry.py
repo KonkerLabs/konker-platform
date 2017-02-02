@@ -60,7 +60,10 @@ def tenant_find_by_domain(domain_name):
 
 def create_tenant(args, name):
     db = db_connect()
-    org = domain_generator()
+    if args.org:
+        org = args.org
+    else:
+        org = domain_generator()
     tenant = tenant_find_by_domain(org)
     print("Info: Organization name = " + org)
     if tenant is None:
@@ -194,3 +197,16 @@ def users_count():
 
     return number_of_users
 
+def random_user_and_password():
+    user = domain_generator(12)
+    pwd = domain_generator(12)
+    hashed_password = get_hashed_password(pwd)
+    return (user, pwd, hashed_password)
+
+
+def generate_credentials(args):
+    user, pwd, hashed_pwd = random_user_and_password()
+    print("user:{}".format(user))
+    print("password:{}".format(pwd))
+    print("hash:{}".format(hashed_pwd))
+    return True

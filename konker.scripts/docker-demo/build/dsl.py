@@ -2,7 +2,7 @@
 import argparse
 import sys
 
-from dao.registry import create_user, update_user, upgrade_version
+from dao.registry import create_user, update_user, upgrade_version, generate_credentials
 
 usage = '''konker <command> [<args>]
 
@@ -54,6 +54,11 @@ class KonkerDsl(object):
         args = parser.parse_args(sys.argv[2:])
         args.func(args)
 
+    @staticmethod
+    def credentials():
+        parser = argparse.ArgumentParser(description='Generate Credentials')
+        args = parser.parse_args(sys.argv[2:])
+        generate_credentials(args)
 
 if __name__ == '__main__':
     KonkerDsl()

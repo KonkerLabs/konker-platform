@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/python26
 from pymongo import MongoClient
 from bson.dbref import DBRef
 import getopt
