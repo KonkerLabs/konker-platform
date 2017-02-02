@@ -46,36 +46,20 @@ var controller = {
             tableRow.remove();
             this.reindexRows();
         } else {
-            $(tableRow).find('input').each(function(index, row){
+            tableRow.find('input').each(function(index, row){
                 row.value = '';
-                controller.reindexRows(tableRows, parentIndex, isHeader);
             });
         }
         if(callback != undefined){
             callback();
         }
     },
-<<<<<<< HEAD
-    reindexRows : function(tableRows, parentIndex, isHeader) {
-        if(isHeader){
-            tableRows.find('tr.header-line').each( function(index, item) {
-                controller.applyNewIndex($(item), index+1, parentIndex);
-            });
-        } else {
-            tableRows = $('.transformationSteps').find('tr.restheaders')
-            tableRows.each( function(index, item) {
-                index++;
-                controller.applyNewIndex($(item).parent(), index, parentIndex);
-            });
-        }
-=======
     reindexRows : function() {
 
         $('div.step').each(function(key, value) {
             controller.applyNewIndex($(value), key + 1);
             controller.reindexHeaders(value, key);
         });
->>>>>>> 8929e93824477724a950bedfda8c6e4286c4f508
 
     },
     reindexHeaders : function(step, parentIndex) {
@@ -112,7 +96,7 @@ var controller = {
 
 $(document).ready(function() {
     controller.tableBody = $('tbody');
-    
+
     $('.transformationSteps .btn-add').on('click', function() {
         controller.addNewRow(
             $('div.step:last'),
@@ -124,54 +108,9 @@ $(document).ready(function() {
                 item.find('tr.restheaders tr.header-line:not(:first)').remove();
             });
     });
-<<<<<<< HEAD
-    $('.add-header').on('click', function() {
-        controller.addNewRow(
-            $(this).parent().parent().find("tr:last"),
-            $(this).parent().parent().parent().find('tr.header-line').length,
-            $(this).parent().parent().attr('id').split('-')[1],
-            function(item){
-                item.find('input[type=text]').each(function(input){
-                    this.value = '';
-                });
-                item.find('button.remove-header').on('click', function(){
-                    var row = $(this).closest('tr');
-                    controller.removeRow(row, $(this).parent().parent().parent().find('tr.header-line').length,
-                    true);
-                });
-            });
-    });
-    $('.remove-step').on('click', function() {
-        var row = $(this).closest('div');
-        controller.removeRow(
-            row,
-            $(this).parent().parent().parent().parent().parent().parent().parent().parent().find('tr.restparams').length,
-            undefined,
-            false,
-            function(result){
-                row.find('tr.header-line').each(function(index, headerline){
-                    controller.removeRow(
-                        headerline,
-                        row.find('tr.header-line').length,
-                        $(headerline).parent().parent().parent().parent().parent().attr('id').split('-')[1],
-                        true);
-                    });
-            });
-    });
-     $('.remove-header').on('click', function() {
-        var row = $(this).closest('tr');
-        controller.removeRow(
-            row,
-            $(this).parent().parent().parent().find('tr.header-line').length,
-            $(this).parent().parent().parent().parent().parent().parent().parent().parent().parent().parent().attr('id').split('-')[1],
-            true);
-     });
-
-=======
     $('.add-header').on('click', controller.onAddHeader);
     $('.remove-step').on('click', controller.onRemoveStep);
     $('.remove-header').on('click', controller.onRemoveHeader);
->>>>>>> 8929e93824477724a950bedfda8c6e4286c4f508
 
     $('#btnYes').click(function() {
     	$('#removeItemModal').modal('hide');
