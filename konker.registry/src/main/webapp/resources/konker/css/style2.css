@@ -296,6 +296,11 @@ hr {
 
 /*Custom Tags*/
 
+.bt-icon {
+    width: 22px;
+    padding-right: 6px;
+}
+
 .enabled-img {
 	width: 18px;
 	height: 18px;
