@@ -3,7 +3,7 @@ FROM centos:centos7
 MAINTAINER Andre Rocha <andre@konkerlabs.com>
 
 #PACKAGE SUPPORT
-RUN yum install -y wget
+RUN yum install -y wget nc
 
 #JAVA
 RUN yum -y install java-1.8.0-openjdk-devel
@@ -70,6 +70,8 @@ RUN yum install -y nginx
 #MONGO
 RUN mkdir /etc/mongo
 COPY build/mongodb/mongod.conf /etc/default/
+COPY build/mongodb/sleepstart.sh /etc/mongo/
+RUN chmod +x /etc/mongo/sleepstart.sh
 
 
 #ENTRYPONT
