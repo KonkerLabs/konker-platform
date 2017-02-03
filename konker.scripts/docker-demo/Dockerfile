@@ -59,9 +59,6 @@ RUN set -xe \
 	&& mkdir -p "$TMPDIR" \
 	&& chown -R jetty:jetty "$TMPDIR" "$JETTY_BASE"
 
-#COPY build/jetty/default_jetty /etc/default/jetty
-
-
 #nginx
 RUN yum install -y nginx
 
@@ -118,9 +115,12 @@ RUN rm /usr/bin/setup.py
 RUN ln -s /usr/bin/dsl.py /usr/bin/konker
 RUN ln -s /usr/bin/populate_users.py /usr/bin/populate_users
 
+#clean
+RUN rm -rf /var/cache/yum/*
+RUN rm -f jetty-distribution-9.4.1.v20170120.tar.gz
+
 EXPOSE 80 1883
 
 VOLUME /data/db
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
-#CMD ["java","-jar","/opt/jetty/start.jar"]
