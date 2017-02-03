@@ -42,11 +42,10 @@ fi
 echo "secure mosquitto..."
 generate_mosquitto_credentials.sh
 
-echo "starting mongo...40s"
+echo "starting mongo..."
 mongod -f /etc/default/mongod.conf &
 
 /etc/mongo/sleepstart.sh
-#sleep 40
 
 echo "populating database..."
 #Set database version
