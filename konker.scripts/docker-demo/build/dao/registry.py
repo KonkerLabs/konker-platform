@@ -6,8 +6,8 @@ import random
 from bson import DBRef
 from pymongo import MongoClient
 
-from users.migrate_user_pwd import get_hashed_password
-from users.migrate_user_roles import update_user_roles, update_to_version_0_1
+from userskonker.migrate_user_pwd import get_hashed_password
+from userskonker.migrate_user_roles import update_user_roles, update_to_version_0_1
 
 db_version = "0.1"
 
