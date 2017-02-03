@@ -47,13 +47,14 @@ var graphService = {
             var controller = graphService;
 
             $('.nvtooltip').remove(); // KRMVP-392
+            $('.nv-point').remove();
 
             // Disable showLegend and useInteractiveGuideLine flag if using multiple series
             chart = nv.models.lineChart()
                 .options({
                     duration: 0,
-                    useInteractiveGuideline: true
-                }).showLegend(true);
+                    useInteractiveGuideline: false
+                }).showLegend(false);
 
             chart.noData(controller.noDataMessage);
 
@@ -140,7 +141,7 @@ var graphService = {
             }
             result.push({
                 values : points,
-                key : '<span>' + graphService.field + '</span>' + '<span style="visibility: collapse;">' + i + '</span>',
+                key : '<span>' + graphService.field + '</span><span style="visibility: collapse;">' + i + '</span>',
                 color : graphService.lineColor
             });
         }
@@ -153,7 +154,7 @@ var graphService = {
             this.buildChart();
         }
 
-        this.data = this.prepare(data);
+        this.data = this.prepareSets(data);
         // Update the SVG with the new data and call chart
         if (typeof this.chart !== 'undefined') {
             d3.select('#chart svg').datum(this.data).call(this.chart);

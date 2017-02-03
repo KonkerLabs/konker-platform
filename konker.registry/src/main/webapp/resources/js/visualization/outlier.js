@@ -19,12 +19,13 @@ function get_segments(data) {
     return segments;
 }
 
-function get_outliers(median, segments) {
+function get_outliers(segments) {
+    var median = math.median(Object.keys(segments));
     var values = Object.keys(segments)
     var q1 = d3.quantile(values, 0.25);
     var q3 = d3.quantile(values, 0.75);
     var iqr = q3 - q1;
-    var outlier = median + 1.5 * iqr;
+    var outlier = median + 2.5 * iqr;
 
     var keys = Object.keys(segments);
     var outliers = {};
@@ -39,8 +40,7 @@ function get_outliers(median, segments) {
 
 function data_filter(data) {
     var segments = get_segments(data);
-    var median = math.median(Object.keys(segments));
-    var outliers = get_outliers(median, segments);
+    var outliers = get_outliers(segments);
     return filter(outliers, data);
 }
 

@@ -60,9 +60,9 @@ function findAndLoadDataChart() {
                     $('#chart').removeClass('hide');
                     $('#onlineRow').removeClass('hide');
                     // Used to identify outliers
-                    // var outliers = data_filter(result);
-                    // graphService.update($('#metric option:selected').val(), outliers);
-                    graphService.update($('#metric option:selected').val(),result);
+                    var outliers = data_filter(result);
+                    graphService.update($('#metric option:selected').val(), outliers);
+                    // graphService.update($('#metric option:selected').val(),result);
                 }
         	}
 
@@ -239,5 +239,15 @@ $(document).ready(function() {
         clearChartTableHideCsvButton();
         autoRefreshDataChart();
     });
+    
+    // Remove dirty elements (KRMVP-392)
+    setInterval(function() {
+        if ($('.nvtooltip').length > 1) {
+            $('.nvtooltip').remove();
+        }
+        if ($('.nv-point.hover').length > 1) {
+            graphService.chart.clearHighlights();
+        }
+    }, 150);
 
 });
