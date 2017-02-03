@@ -44,7 +44,9 @@ generate_mosquitto_credentials.sh
 
 echo "starting mongo...40s"
 mongod -f /etc/default/mongod.conf &
-sleep 40
+
+/etc/mongo/sleepstart.sh
+#sleep 40
 
 echo "populating database..."
 #Set database version
