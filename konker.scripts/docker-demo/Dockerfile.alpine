@@ -80,7 +80,7 @@ rm /usr/bin/mongosniff /usr/bin/mongoperf
 # Install mosquitto
 
 RUN apk add --update mosquitto libcrypto1.0 libssl1.0 && \
-    mkdir /work && chown nobody /work 
+    mkdir /work && chown nobody /work
 
 
 # Install nginx
@@ -169,7 +169,7 @@ COPY build/error_page/* /usr/share/nginx/html/
 
 
 ## Configure mosquitto
-RUN mkdir /var/log/mosquitto && chmod -R 777 /var/log/mosquitto && \  
+RUN mkdir /var/log/mosquitto && chmod -R 777 /var/log/mosquitto && \
     mkdir /var/lib/mosquitto && chmod -R 777 /var/lib/mosquitto && \
     apk add --update mongo-c-driver
 COPY build/plugin/konker-mosquitto-auth-plugin-ld.conf /etc/ld.so.conf.d/konker-mosquitto-auth-plugin-ld.conf
@@ -178,7 +178,7 @@ COPY build/mosquitto.conf /etc/mosquitto/mosquitto.conf
 COPY build/konker-mosquitto-auth-plugin.conf /etc/mosquitto/konker-mosquitto-auth-plugin.conf
 COPY build/konker-mqtt.conf /etc/mosquitto/conf.d/konker-mqtt.conf
 RUN  ln -s /usr/lib/libcrypto.so.1.0.0 /usr/lib/libcrypto.so.10 && \
-     ln -s /usr/lib/libssl.so.1.0.0 /usr/lib/libssl.so.10 
+     ln -s /usr/lib/libssl.so.1.0.0 /usr/lib/libssl.so.10
 
 
 #DSL for Instance Administration

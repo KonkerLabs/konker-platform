@@ -39,14 +39,23 @@ if [ "$1" = "java" -a -n "$JAVA_OPTIONS" ] ; then
 fi
 
 #still unstable
+echo "secure mosquitto..."
 generate_mosquitto_credentials.sh
 
-/usr/local/sbin/nginx &
-mongod &
-mosquitto -c /etc/mosquitto/mosquitto.conf &
-redis-server &
+echo "starting mongo...40s"
+mongod -f /etc/default/mongod.conf &
+sleep 40
+
+echo "populating database..."
 #Set database version
 konker database upgrade &
 #Set default user
 populate_users &
+
+echo "starting mosquitto..."
+mosquitto -c /etc/mosquitto/mosquitto.conf &
+
+echo "starting registry app..."
+redis-server &
+/usr/sbin/nginx &
 exec "$@"

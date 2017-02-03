@@ -25,14 +25,17 @@ RUN yum install -y mongo-c-driver && \
 yum install -y mosquitto
 
 #MONGODB
-RUN yum install -y mongodb mongodb-server && \
-	mkdir -p /data/db && \
-	mkdir /var/log/mongo
+RUN yum install -y mongodb mongodb-server
 
 #REDIS
 RUN yum install -y redis
 
 #JETTY
+ENV JETTY_HOME /opt/jetty
+ENV PATH $JETTY_HOME/bin:$PATH
+ENV JETTY_BASE /var/lib/jetty
+RUN mkdir -p "$JETTY_BASE"
+
 RUN wget http://central.maven.org/maven2/org/eclipse/jetty/jetty-distribution/9.4.1.v20170120/jetty-distribution-9.4.1.v20170120.tar.gz && \
 	tar zxvf jetty-distribution-9.4.1.v20170120.tar.gz -C /opt/ && \
 	mv /opt/jetty-distribution-9.4.1.v20170120/ /opt/jetty && \
@@ -44,9 +47,20 @@ RUN wget http://central.maven.org/maven2/org/eclipse/jetty/jetty-distribution/9.
 	chown -R jetty:jetty /opt/jetty/ && \
 	ln -s /opt/jetty/bin/jetty.sh /etc/init.d/jetty && \
 	chkconfig --add jetty && \
-	chkconfig --level 345 jetty on
+	chkconfig --level 345 jetty on && \
+	cd $JETTY_BASE \
+	&& modules="$(grep -- ^--module= "$JETTY_HOME/start.ini" | cut -d= -f2 | paste -d, -s)" \
+	&& java -jar "$JETTY_HOME/start.jar" --add-to-startd="$modules,setuid"
 
-COPY build/jetty/default_jetty /etc/default/jetty
+WORKDIR $JETTY_BASE
+
+ENV TMPDIR /tmp/jetty
+RUN set -xe \
+	&& mkdir -p "$TMPDIR" \
+	&& chown -R jetty:jetty "$TMPDIR" "$JETTY_BASE"
+
+#COPY build/jetty/default_jetty /etc/default/jetty
+
 
 #nginx
 RUN yum install -y nginx
@@ -55,7 +69,7 @@ RUN yum install -y nginx
 
 #MONGO
 RUN mkdir /etc/mongo
-COPY build/mongodb/mongod.conf /etc/mongo/
+COPY build/mongodb/mongod.conf /etc/default/
 
 
 #ENTRYPONT
@@ -63,42 +77,48 @@ COPY docker-entrypoint.sh /
 RUN chmod 777 /docker-entrypoint.sh
 
 #mosquitto-lib
-COPY build/plugin/konker-mosquitto-auth-plugin.conf /etc/ld.so.conf.d/konker-mosquitto-auth-plugin.conf
-COPY build/plugin/konker-mosquitto-auth-plugin /usr/local/lib/konker-mosquitto-auth-plugin
-COPY build/mosquitto.conf /etc/mosquitto/mosquitto.conf
-COPY build/passwords.pwd /etc/mosquitto/passwords.pwd
-COPY build/konker-mosquitt-auth-plugin.conf /etc/mosquitto/konker-mosquitto-auth-plugin.conf
-COPY build/konker-mqtt.conf /etc/mosquitto/conf.d/konker-mqtt.conf
+COPY build/mosquitto/konker-mosquitto-auth-plugin-ld.conf /etc/ld.so.conf.d/konker-mosquitto-auth-plugin-ld.conf
+COPY build/mosquitto/lib/*.so /usr/local/lib/konker-mosquitto-auth-plugin/
+COPY build/mosquitto/mosquitto.conf /etc/mosquitto/mosquitto.conf
+COPY build/mosquitto/konker-mosquitto-auth-plugin.conf /etc/mosquitto/konker-mosquitto-auth-plugin.conf
+COPY build/mosquitto/konker-mqtt.conf /etc/mosquitto/conf.d/konker-mqtt.conf
+RUN  ln -s /usr/lib/libcrypto.so.1.0.0 /usr/lib/libcrypto.so.10 && \
+     ln -s /usr/lib/libssl.so.1.0.0 /usr/lib/libssl.so.10
+COPY build/mosquitto/generate_mosquitto_credentials.sh /usr/bin
+RUN chmod +x /usr/bin/generate_mosquitto_credentials.sh
 
 #registry
-COPY build/registry.war /opt/jetty/webapps/
-COPY build/application.conf /opt/jetty/resources/
-COPY build/logback.xml /opt/jetty/webapps/resources/
-COPY build/logback.xml /opt/jetty/resources/
-COPY build/mail /opt/jetty/webapps/resources/mail/
-COPY build/mail /opt/jetty/resources/mail/
+COPY build/jetty/registry.war /var/lib/jetty/webapps/
+COPY build/jetty/application.conf /var/lib/jetty/resources/
+COPY build/jetty/logback.xml /var/lib/jetty/webapps/resources/
+COPY build/jetty/logback.xml /var/lib/jetty/resources/
+COPY build/jetty/mail /var/lib/jetty/webapps/resources/mail/
+COPY build/jetty/mail /var/lib/jetty/resources/mail/
 
 #nginx
-COPY build/nginx.conf /etc/nginx/nginx.conf
-COPY build/nginx.conf /etc/nginx/conf/nginx.conf
-COPY build/mime.types /etc/nginx/mime.types
-COPY build/conf.d /etc/nginx/conf.d
-COPY build/error_page/* /usr/share/nginx/html/
+COPY build/nginx/nginx.conf /etc/nginx/nginx.conf
+COPY build/nginx/nginx.conf /etc/nginx/conf/nginx.conf
+COPY build/nginx/mime.types /etc/nginx/mime.types
+COPY build/nginx/conf.d /etc/nginx/conf.d
+COPY build/nginx/error_page/* /usr/share/nginx/html/
 
 
 #DSL for Instance Administration
-COPY build/__init__.py /usr/bin
-COPY build/populate_users.py /usr/bin
-COPY build/dsl.py /usr/bin/
-COPY build/users/ /usr/bin/konkerusers/
-COPY build/dao/ /usr/bin/dao/
-COPY build/setup.py /usr/bin/
+COPY build/dsl/__init__.py /usr/bin
+COPY build/dsl/populate_users.py /usr/bin
+COPY build/dsl/dsl.py /usr/bin/
+COPY build/dsl/userskonker/ /usr/bin/userskonker/
+COPY build/dsl/dao/ /usr/bin/dao/
+COPY build/dsl/setup.py /usr/bin/
 RUN chmod 777 /usr/bin/setup.py
 RUN python /usr/bin/setup.py install
 RUN rm /usr/bin/setup.py
 RUN ln -s /usr/bin/dsl.py /usr/bin/konker
 RUN ln -s /usr/bin/populate_users.py /usr/bin/populate_users
 
+EXPOSE 80 1883
 
-EXPOSE 1883 80
+VOLUME /data/db
+
 ENTRYPOINT ["/docker-entrypoint.sh"]
+#CMD ["java","-jar","/opt/jetty/start.jar"]
