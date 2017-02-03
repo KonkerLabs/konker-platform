@@ -20,7 +20,7 @@ public class HotjarConfig {
 	public HotjarConfig() {
 		Map<String, Object> defaultMap = new HashMap<>();
 		defaultMap.put("hotjar.id", 0);
-		defaultMap.put("hotjar.enable", true);
+		defaultMap.put("hotjar.enable", false);
 		Config defaultConf = ConfigFactory.parseMap(defaultMap);
 
 		Config config = ConfigFactory.load().withFallback(defaultConf);
