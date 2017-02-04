@@ -15,6 +15,7 @@ Just install the Lombok plugin.
 #### Run standalone #####
 If you want to run the Konker Open Platform on your desktop, we offer a Docker image with allin resources to help you.
 Please visit : https://hub.docker.com/r/konkerlabs/konker-platform/
+
 If you need some help, please contact-us on support@konkerlabs.com
 
 ## Licence and Copyright
