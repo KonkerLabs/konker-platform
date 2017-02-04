@@ -39,7 +39,7 @@ if [ "$1" = "java" -a -n "$JAVA_OPTIONS" ] ; then
 fi
 
 #still unstable
-echo "secure mosquitto..."
+echo "securing mosquitto..."
 generate_mosquitto_credentials.sh
 
 echo "starting mongo..."
