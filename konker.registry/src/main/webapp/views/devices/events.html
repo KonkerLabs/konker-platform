@@ -101,6 +101,7 @@
                                         data-th-text="#{visualization.index.select.empty}"></option>
                                     <option
                                         data-th-each="channel : ${channels}"
+                                        data-th-if="${channel != null}"
                                         data-th-selected="${channel eq defaultChannel}"
                                         data-th-value="${channel}"
                                         data-th-text="${channel}"></option>
