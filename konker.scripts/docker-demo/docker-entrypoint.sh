@@ -38,7 +38,17 @@ if [ "$1" = "java" -a -n "$JAVA_OPTIONS" ] ; then
 	set -- java $JAVA_OPTIONS "$@"
 fi
 
-#still unstable
+echo ""
+echo ""
+echo "################################ Konker Open Platform ############################################"
+echo "##                               Version: 0.2.0-RC2                                             ##"
+echo "##                            Release date: 2017-01-03                                          ##"
+echo "##          Licence: Apache V2 (http://www.apache.org/licenses/LICENSE-2.0)                     ##"
+echo "##                         Need Support?: support@konkerlabs.com                                ##"
+echo "##################################################################################################"
+echo ""
+echo ""
+
 echo "securing mosquitto..."
 generate_mosquitto_credentials.sh
 
