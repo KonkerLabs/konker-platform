@@ -12,6 +12,11 @@ Just install the Lombok plugin.
 4. Click on Install / Update
 5. Restart the Eclipse
 
+#### Run standalone #####
+If you want to run the Konker Open Platform on your desktop, we offer a Docker image with allin resources to help you.
+Please visit : https://hub.docker.com/r/konkerlabs/konker-platform/
+If you need some help, please contact-us on support@konkerlabs.com
+
 ## Licence and Copyright
    Copyright 2017 Konker Labs
 
