@@ -46,6 +46,7 @@ import com.konkerlabs.platform.security.exceptions.SecurityException;
 import com.konkerlabs.platform.security.managers.PasswordManager;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import org.springframework.util.StringUtils;
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
@@ -362,15 +363,25 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
     @Override
     public ServiceResponse<String> generateQrCodeAccess(DeviceSecurityCredentials credentials, int width, int height) {
         try {
-        	List<String> profiles = Arrays.stream(environment.getActiveProfiles()).collect(Collectors.toList());
+
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             Base64OutputStream encoded = new Base64OutputStream(baos);
             StringBuilder content = new StringBuilder();
             content.append("{\"user\":\"" + credentials.getDevice().getUsername());
             content.append("\",\"pass\":\"" + credentials.getPassword());
-            content.append("\",\"host\":\"" + pubServerConfig.getHttpHostname());
+            if (!StringUtils.isEmpty(pubServerConfig.getHttpHostname())
+                    && !pubServerConfig.getHttpHostname().equals("localhost")) {
+                content.append("\",\"host\":\"" + pubServerConfig.getHttpHostname());
+            } else {
+                content.append("\",\"host\":\"" + "<IP>");
+            }
             content.append("\",\"ctx\":\"" + pubServerConfig.getHttpCtx());
-            content.append("\",\"host-mqtt\":\"" + pubServerConfig.getMqttHostName());
+            if (!StringUtils.isEmpty(pubServerConfig.getMqttHostName())
+                    && !pubServerConfig.getMqttHostName().equals("localhost")) {
+                content.append("\",\"host-mqtt\":\"" + pubServerConfig.getMqttHostName());
+            } else {
+                content.append("\",\"host-mqtt\":\"" + "<IP>");
+            }
             content.append("\",\"http\":\"" + pubServerConfig.getHttpPort());
             content.append("\",\"https\":\"" + pubServerConfig.getHttpsPort());
             content.append("\",\"mqtt\":\"" + pubServerConfig.getMqttPort());
