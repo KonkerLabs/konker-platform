@@ -48,25 +48,40 @@ echo "##                         Need Support?: support@konkerlabs.com          
 echo "##################################################################################################"
 echo ""
 echo ""
+echo "hhhhhhhhhhhhhhhhhhhhhyyyyyys/' "
+echo "hhhhhhhhhhhhhhhhhhhyyyyyys+.  "
+echo "hhhhhhhhhhhhhhhhhhyyyyyyo-   "
+echo "hhhhhhhhhhhhhhhhyyyyyys:'    +hy                         sho"
+echo "hhhhhhhhhhhhhhyyyyyys+'      +hy '/o+'./oooo/. .oo:+os+- sho '+o/'-+ooo+- -o/:os"
+echo "hhhhhhhhhhhhhyyyyyyo-        +hy.sh+'-yh/..:yh/-hho..+hh'sho-yh/'/hs---yh::hho:-"
+echo "hhhhhhhhhhhhyyyyyyo'         +hyyh+  ohy    ohy-hh.  -hh.shyhh/  yhsoooss+:hh'"
+echo "hhhhhhhhhdddhyyyyyhs-        +hy.sho.-yh/..:hh/-hh'  -hh.sho-yh+./hy-..-:':hh"
+echo "hhhhhhhdddddddhyhhhhy+.      :o+  :o+-./oooo/. .oo'  .oo'/o: '/o+.-+oooo+ -oo"
+echo "hhhhhdddddddddddhhhhhhy/'"
+echo "hhhhddddddddddddddhhhhhhs-"
+echo "hhdddddddddddddddddhhhhhhyo."
+echo "dddddddddddddddddddddhhhhhhy/'                                                  "
+echo ""
+echo ""
 
-echo "securing mosquitto..."
+echo "securing konker mqtt service..."
 generate_mosquitto_credentials.sh
 
-echo "starting mongo..."
+echo "starting and recovering konker database..."
 mongod -f /etc/default/mongod.conf &
 
 /etc/mongo/sleepstart.sh
 
-echo "populating database..."
+echo "populating konker database..."
 #Set database version
 konker database upgrade &
 #Set default user
 populate_users &
 
-echo "starting mosquitto..."
+echo "starting konker mqtt service..."
 mosquitto -c /etc/mosquitto/mosquitto.conf &
 
-echo "starting registry app..."
+echo "starting konker registry app..."
 redis-server &
 /usr/sbin/nginx &
 exec "$@"
