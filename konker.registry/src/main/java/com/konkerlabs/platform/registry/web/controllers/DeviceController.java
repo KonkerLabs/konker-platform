@@ -224,9 +224,6 @@ public class DeviceController implements ApplicationContextAware {
 			existsNumericMetric = true;
 		}
 
-		List<String> channelList = channels.getResult();
-        channelList.removeAll(Collections.singleton(null));
-
 		// Add objects
 		mv.addObject("device", device)
 		  .addObject("channels", channels.getResult())
