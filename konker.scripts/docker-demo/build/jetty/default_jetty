@@ -1,0 +1,5 @@
+JETTY_HOME=/opt/jetty
+JETTY_USER=jetty
+JETTY_PORT=8080
+JETTY_HOST=127.0.0.1
+JETTY_LOGS=/opt/jetty/logs/
