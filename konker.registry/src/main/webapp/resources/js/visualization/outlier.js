@@ -1,9 +1,8 @@
 function getSegments(data) {
     var segments = [];
-    
+
     for (var i = 1; i < data.length; i++) {
         segments.push(data[i - 1]["timestamp"] - data[i]["timestamp"]);
-        console.log(data[i - 1]["timestamp"] - data[i]["timestamp"]);
     }
 
     segments.sort(function(a,b) { return a - b; });
@@ -51,7 +50,5 @@ function filter(outlierLimit, data) {
         }
     }
 
-    console.log('results: ' + result.length);
-    
     return result;
 }
