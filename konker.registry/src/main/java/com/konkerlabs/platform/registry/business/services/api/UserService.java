@@ -17,6 +17,7 @@ public interface UserService {
         INVALID_PASSWORD_CONFIRMATION("service.user.validation.password.invalid.confirmation"),
         INVALID_PASSWORD_INVALID("service.user.validation.password.invalid"),
         INVALID_PASSWORD_BLACKLISTED("service.user.validation.password.invalid.blacklisted"),
+        INVALID_AVATAR("service.user.validation.avatar.invalid"),
         NO_EXIST_USER("service.user.validation.no.exist");
 
         private String code;
@@ -60,4 +61,5 @@ public interface UserService {
             String newPasswordConfirmation);
 
     ServiceResponse<User> findByEmail(String email);
+
 }

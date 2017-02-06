@@ -1,9 +1,19 @@
 package com.konkerlabs.platform.registry.business.services;
 
+import java.awt.AlphaComposite;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
-import java.text.MessageFormat;
 import java.util.Optional;
+import java.util.UUID;
+
+import javax.imageio.ImageIO;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +22,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import com.amazonaws.util.Base64;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.repositories.PasswordBlacklistRepository;
@@ -159,7 +170,24 @@ public class UserServiceImpl implements UserService {
 
         if(!StringUtils.isEmpty(user.getAvatar())
                 && user.getAvatar().contains("data:image")) {
-            ServiceResponse<String> response = uploadService.uploadBase64Img(user.getAvatar(), true);
+
+        	String base64File = user.getAvatar();
+
+    		String fileExt = base64File.split(",")[0].split("/")[1].split(";")[0];
+    		String base64Content = base64File.split(",")[1];
+    		
+    		InputStream is = new ByteArrayInputStream(Base64.decode(base64Content.getBytes()));
+
+    		ServiceResponse<InputStream> resizeReponse =  cropAndResizeAvatar(is, fileExt);
+    		if (!resizeReponse.isOk()) {
+                return ServiceResponseBuilder.<User>error()
+                        .withMessages(resizeReponse.getResponseMessages())
+                        .build();
+    		}
+    		
+    		is = resizeReponse.getResult();
+    		
+            ServiceResponse<String> response = uploadService.upload(is, getUniqueFileName(), fileExt, true);
             if(!response.getStatus().equals(ServiceResponse.Status.OK)){
                 return ServiceResponseBuilder.<User>error()
                         .withMessages(response.getResponseMessages())
@@ -185,11 +213,6 @@ public class UserServiceImpl implements UserService {
             if (!StringUtils.isEmpty(newPasswordConfirmation)) {
                 try {
                     user.setPassword(encodePassword(password));
-                    LOG.info(MessageFormat.format("User password has been changed, user \"{0}\"",
-                			fromStorage.getEmail()), 
-                			fromStorage.getTenant().toURI(), 
-                			fromStorage.getTenant().getLogLevel(), 
-                			fromStorage);
                 } catch (Exception e) {
                     LOG.error("Error encoding password for user " + fromStorage.getEmail(), 
                     		fromStorage.getTenant().toURI(), fromStorage.getTenant().getLogLevel(), fromStorage);
@@ -202,8 +225,7 @@ public class UserServiceImpl implements UserService {
 
             return ServiceResponseBuilder.<User>error()
                     .withMessage(Errors.ERROR_SAVE_USER.getCode()).build();
-        } 
-        
+        }
         try {
             fillFrom(user, fromStorage);
             userRepository.save(fromStorage);
@@ -225,6 +247,61 @@ public class UserServiceImpl implements UserService {
         }
 	}
 
+	private String getUniqueFileName() {
+		return UUID.randomUUID().toString();
+	}
+
+	private ServiceResponse<InputStream> cropAndResizeAvatar(InputStream is, String ext) {
+
+		BufferedImage avatarUploaded = null;
+		try {
+			avatarUploaded = ImageIO.read(is);
+		} catch (IOException e) {
+			return ServiceResponseBuilder.<InputStream>error().withMessage(Validations.INVALID_AVATAR.getCode())
+					.build();
+		}
+
+		// Crop
+		int width = avatarUploaded.getWidth();
+		int height = avatarUploaded.getHeight();
+
+		BufferedImage centeredImage = null;
+
+		if (height == width) {
+			centeredImage = avatarUploaded;
+		} else if (height > width) {
+			int margin = (height - width) / 2;
+			centeredImage = avatarUploaded.getSubimage(0, margin, width, width);
+		} else {
+			int margin = (width - height) / 2;
+			centeredImage = avatarUploaded.getSubimage(margin, 0, height, height);
+		}
+
+		// Resize
+		int newSize = (int) (centeredImage.getHeight() * 0.99 - 1);
+
+		BufferedImage resizedImage = new BufferedImage(newSize, newSize, centeredImage.getType());
+		Graphics2D g = resizedImage.createGraphics();
+		g.drawImage(centeredImage, 0, 0, newSize, newSize, null);
+		g.dispose();
+		g.setComposite(AlphaComposite.Src);
+		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+		// BufferedImage to InputStream
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		try {
+			ImageIO.write(resizedImage, ext, os);
+		} catch (IOException e) {
+			return ServiceResponseBuilder.<InputStream>error()
+					.withMessage(Validations.INVALID_AVATAR.getCode()).build();
+		}
+		InputStream resizedIs = new ByteArrayInputStream(os.toByteArray());
+		
+		return ServiceResponseBuilder.<InputStream>ok().withResult(resizedIs).build();
+
+	}
 
     /**
      * Fill new values from form
