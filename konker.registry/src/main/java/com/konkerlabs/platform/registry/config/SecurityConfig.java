@@ -29,6 +29,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 import com.konkerlabs.platform.registry.security.TenantUserDetailsService;
@@ -87,9 +89,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
-            http.addFilter(filter).csrf().disable()
+            http.csrf().disable()
                     .authorizeRequests().antMatchers(HttpMethod.OPTIONS).permitAll()
-                    .and().requestMatchers()
+                    .and().addFilter(filter).requestMatchers()
                     .antMatchers("/pub/**", "/sub/**").and().authorizeRequests()
                     .anyRequest().hasAuthority("DEVICE").and().httpBasic()
                     .and().headers()
@@ -114,6 +116,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
             http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         }
+        
+        @Bean
+        @Override
+        protected AuthenticationManager authenticationManager() throws Exception {
+        	return super.authenticationManager();
+        }
+        
     }
 
     @Configuration
@@ -177,13 +186,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .defaultSuccessUrl(getSuccessLoginUrl()).permitAll().and().logout()
                     .logoutSuccessUrl(getLoginPage()).and().csrf().disable();
         }
-
-
-        @Bean
-        @Override
-        protected AuthenticationManager authenticationManager() throws Exception {
-        	return super.authenticationManager();
-        }
+       
     }
     
 }
