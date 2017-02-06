@@ -414,6 +414,10 @@ ul.user-info {
 	background-color: #50c8ea;
 }
 
+.profile-info .dropdown-menu {
+    margin-left: -15px;
+}
+
 .profile-info img.avatar {
 	margin-right: 8px;
 	height: 42px;
@@ -988,6 +992,8 @@ ul.top-menu > li > a:hover, ul.top-menu > li > a:focus {
     display: block !important;
     font-size: 11px;
 }
+
+
 
 .top-nav  {
     margin-top: 7px;

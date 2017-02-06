@@ -33,6 +33,8 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
+import com.konkerlabs.platform.registry.business.services.KonkerDaoAuthenticationProvider;
+import com.konkerlabs.platform.registry.business.services.api.LoginAuditService;
 import com.konkerlabs.platform.registry.security.TenantUserDetailsService;
 import com.konkerlabs.platform.security.managers.PasswordManager;
 import com.typesafe.config.Config;
@@ -134,6 +136,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         @Autowired
         @Qualifier("tenantUserDetails")
         private UserDetailsService userDetailsService;
+
+        @Autowired
+        private LoginAuditService loginAuditService;
         
         @Setter
         @Getter
@@ -156,7 +161,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         @Override
         protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-            DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+            KonkerDaoAuthenticationProvider authenticationProvider = new KonkerDaoAuthenticationProvider();
+            authenticationProvider.setLoginAuditService(loginAuditService);
             authenticationProvider.setUserDetailsService(userDetailsService);
             authenticationProvider.setPasswordEncoder(new PlaintextPasswordEncoder() {
                 @Override
@@ -179,12 +185,21 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
-            http.headers().frameOptions().sameOrigin().and().authorizeRequests()
-                    .antMatchers("/resources/**", "/recoverpassword/**")
-                    .permitAll().anyRequest().hasAuthority("LOGIN").and().formLogin()
-                    .loginPage(getLoginPage())
-                    .defaultSuccessUrl(getSuccessLoginUrl()).permitAll().and().logout()
-                    .logoutSuccessUrl(getLoginPage()).and().csrf().disable();
+            
+            http.headers().frameOptions().sameOrigin()
+                    .and().authorizeRequests()
+                          .antMatchers("/resources/**", "/recoverpassword/**")
+                          .permitAll()
+                          .anyRequest()
+                          .hasAuthority("LOGIN")
+                    .and().formLogin()
+                          .loginPage(getLoginPage())
+                          .defaultSuccessUrl(getSuccessLoginUrl())
+                          .permitAll()
+                    .and().logout()
+                          .logoutSuccessUrl(getLoginPage())
+                    .and().csrf()
+                          .disable();
         }
        
     }

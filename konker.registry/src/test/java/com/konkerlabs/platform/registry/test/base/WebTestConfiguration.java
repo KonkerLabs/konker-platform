@@ -6,9 +6,7 @@ import static org.mockito.Mockito.when;
 import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
 import com.konkerlabs.platform.registry.business.model.enumerations.Language;
 import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
-import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.web.converters.utils.ConverterUtils;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +16,7 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.UserRepository;
+import com.konkerlabs.platform.registry.business.services.api.LoginAuditService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.security.DeviceUserDetailsService;
 import com.konkerlabs.platform.registry.security.TenantUserDetailsService;
@@ -61,6 +60,14 @@ public class WebTestConfiguration {
 		return tenantDetailService;
 	}
 
+    @Bean
+    public LoginAuditService loginAuditService(){
+        LoginAuditService loginAuditService = mock(LoginAuditService.class);
+
+        return loginAuditService;
+    }
+
+	
     @Bean
     public DeviceUserDetailsService deviceUserDetailsService(){
     	DeviceUserDetailsService instance = Mockito.mock(DeviceUserDetailsService.class);
