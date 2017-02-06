@@ -46,25 +46,35 @@ public class KonkerBasicAuthenticationFilter extends BasicAuthenticationFilter {
 		
 		String apiKey = tokens[0];
 		String pass = tokens[1];
+		String uriApiKey = null; 
 		
 		Device device = deviceRegisterService.findByApiKey(apiKey);
 		
 		if (!Optional.ofNullable(device).isPresent() && 
 				request.getRequestURI().contains("pub/")) {
 			String aux = request.getRequestURI().substring(request.getRequestURI().indexOf("pub/") + 4);
-			apiKey = aux.substring(0, aux.indexOf("/"));
-			device = deviceRegisterService.findByApiKey(apiKey);
+			uriApiKey = aux.substring(0, aux.indexOf("/"));
+			device = deviceRegisterService.findByApiKey(uriApiKey);
 			
 		} else if (!Optional.ofNullable(device).isPresent() && 
 				request.getRequestURI().contains("sub/")) {
 			String aux = request.getRequestURI().substring(request.getRequestURI().indexOf("sub/") + 4);
-			apiKey = aux.substring(0, aux.indexOf("/"));
-			device = deviceRegisterService.findByApiKey(apiKey);
+			uriApiKey = aux.substring(0, aux.indexOf("/"));
+			device = deviceRegisterService.findByApiKey(uriApiKey);
 		}
 		
 		
-		if (Optional.ofNullable(device).isPresent()) {
+		if (Optional.ofNullable(device).isPresent() && 
+				!Optional.ofNullable(uriApiKey).isPresent()) {
 			LOG.warn(MessageFormat.format("The password of device \"{0}\" is wrong. Password \"{1}\" is invalid.",
+					apiKey, pass), 
+        			device.getTenant().toURI(), 
+        			device.getTenant().getLogLevel(), 
+        			device);
+		} else if (Optional.ofNullable(device).isPresent() && 
+				Optional.ofNullable(uriApiKey).isPresent() &&
+				!uriApiKey.equals(apiKey)) {
+			LOG.warn(MessageFormat.format("The device \"{0}\" or password \"{1}\" is invalid.",
 					apiKey, pass), 
         			device.getTenant().toURI(), 
         			device.getTenant().getLogLevel(), 
