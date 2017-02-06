@@ -18,6 +18,7 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.UserRepository;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.security.DeviceUserDetailsService;
 import com.konkerlabs.platform.registry.security.TenantUserDetailsService;
 import com.konkerlabs.platform.registry.security.UserContextResolver;
@@ -95,6 +96,11 @@ public class WebTestConfiguration {
         when(converterUtils.getDateTimeFormatPattern())
                 .thenReturn("dd/MM/yyyy HH:mm:ss.SSS zzz");
         return converterUtils;
+    }
+    
+    @Bean
+    public DeviceRegisterService deviceRegistryService() {
+    	return Mockito.mock(DeviceRegisterService.class);
     }
 
 }
