@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Scope;
+import org.springframework.core.env.Environment;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,6 +42,7 @@ import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.config.EnvironmentConfig;
 import com.konkerlabs.platform.registry.web.converters.InstantToStringConverter;
 import com.konkerlabs.platform.registry.web.csv.EventCsvDownload;
 
@@ -74,6 +76,7 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     private EventSchemaService eventSchemaService;
     private User user;
     private InstantToStringConverter instantToStringConverter;
+    private EnvironmentConfig environmentConfig;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -82,12 +85,14 @@ public class DeviceVisualizationController implements ApplicationContextAware {
 
     @Autowired
     public DeviceVisualizationController(DeviceEventService deviceEventService, Tenant tenant,
-    		EventSchemaService eventSchemaService, User user, InstantToStringConverter instantToStringConverter) {
+    		EventSchemaService eventSchemaService, User user, 
+    		InstantToStringConverter instantToStringConverter, EnvironmentConfig environmentConfig) {
         this.deviceEventService = deviceEventService;
         this.tenant = tenant;
         this.eventSchemaService = eventSchemaService;
         this.user = user;
         this.instantToStringConverter = instantToStringConverter;
+        this.environmentConfig = environmentConfig;
     }
 
 	@RequestMapping(path = "/load/")
@@ -100,13 +105,13 @@ public class DeviceVisualizationController implements ApplicationContextAware {
 				    		@RequestParam String channel,
 				    		Locale locale) {
     	
-    	return doSearch(dateStart, dateEnd, online, deviceGuid, channel, locale);
+    	return doSearch(dateStart, dateEnd, online, deviceGuid, channel, locale, 100);
     	
     }
 
 	@SuppressWarnings("rawtypes")
 	private List doSearch(String dateStart, String dateEnd, boolean online, String deviceGuid,
-			String channel, Locale locale) {
+			String channel, Locale locale, int limit) {
 		if (deviceGuid.isEmpty()) {
     		Map<String, String> message = new HashMap<>();
     		message.put("message", applicationContext.getMessage(Messages.DEVICE_IS_MANDATORY.getCode(),null,locale));
@@ -133,7 +138,7 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     	
     	if (online) {
     		ServiceResponse<List<Event>> response = deviceEventService.findIncomingBy(tenant, deviceGuid, channel, null,
-        			null, false, 100);
+        			null, false, limit);
         	
     		List<EventDecorator> eventsResult = decorateEventResult(response);
     		return eventsResult;
@@ -146,7 +151,7 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     	
     	ServiceResponse<List<Event>> response = deviceEventService.findIncomingBy(tenant,
 				deviceGuid, channel, zonedDateStart.toInstant(),
-    			zonedDateEnd.toInstant(), false, 100);
+    			zonedDateEnd.toInstant(), false, limit);
     	
     	List<EventDecorator> eventsResult = decorateEventResult(response);
 		return eventsResult;
@@ -203,7 +208,9 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     				.getFields().stream()
     				.map(m -> m.getPath()).collect(Collectors.toList());
     		
-    		List events = doSearch(dateStart, dateEnd, online, deviceGuid, channel, locale);
+    		
+    		int limit = environmentConfig.getCsvDownloadRowsLimit();
+    		List events = doSearch(dateStart, dateEnd, online, deviceGuid, channel, locale, limit);
     		
     		EventCsvDownload csvDownload = new EventCsvDownload();
 			csvDownload.download(events, response, additionalHeaders);

@@ -116,3 +116,9 @@ email {
 	password="admin123"
 	baseurl="http://localhost:8080/"
 }
+
+environment {
+	preferences : {
+		csvDownloadRowsLimit = 10000
+	}
+}

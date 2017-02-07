@@ -44,6 +44,7 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceEventService
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.config.EnvironmentConfig;
 import com.konkerlabs.platform.registry.config.HotjarConfig;
 import com.konkerlabs.platform.registry.config.WebConfig;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
@@ -59,8 +60,9 @@ import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
         WebTestConfiguration.class,
         SecurityTestConfiguration.class,
         DeviceVisualizationControllerTest.DeviceTestContextConfig.class, 
-        WebConfig.class, 
-        HotjarConfig.class
+        WebConfig.class,
+        HotjarConfig.class,
+        EnvironmentConfig.class
 })
 public class DeviceVisualizationControllerTest extends WebLayerTestContext {
 

@@ -19,6 +19,7 @@ import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatche
 import com.konkerlabs.platform.registry.config.BusinessConfig;
 import com.konkerlabs.platform.registry.config.CdnConfig;
 import com.konkerlabs.platform.registry.config.EmailConfig;
+import com.konkerlabs.platform.registry.config.EnvironmentConfig;
 import com.konkerlabs.platform.registry.config.HotjarConfig;
 import com.konkerlabs.platform.registry.config.IntegrationConfig;
 import com.konkerlabs.platform.registry.config.MongoAuditConfig;
@@ -45,7 +46,8 @@ public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherSe
 		return new Class<?>[] { SecurityConfig.class, BusinessConfig.class, MongoConfig.class, MongoAuditConfig.class,
 				MqttConfig.class, SolrConfig.class, UtilitiesConfig.class, RedisConfig.class, SpringMailConfig.class,
 				SmsConfig.class, WebConfig.class, PubServerConfig.class, IntegrationConfig.class, CdnConfig.class,
-				PasswordUserConfig.class, RecaptchaConfig.class, EmailConfig.class, HotjarConfig.class };
+				PasswordUserConfig.class, RecaptchaConfig.class, EmailConfig.class, HotjarConfig.class,
+				EnvironmentConfig.class};
 	}
 
 	@Override
