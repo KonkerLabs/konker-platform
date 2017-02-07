@@ -28,14 +28,19 @@ import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.Event.EventActor;
 import com.konkerlabs.platform.registry.business.model.EventSchema;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
+import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.events.EventRepository;
 import com.konkerlabs.platform.registry.business.model.EventSchema.SchemaField;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.Validations;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 import com.mongodb.BasicDBObject;
 
@@ -61,6 +66,12 @@ public class EventSchemaServiceImpl implements EventSchemaService {
     @Autowired
     private MongoTemplate mongoTemplate;
 
+    @Autowired
+    private TenantRepository tenantRepository;
+
+    @Autowired
+    private DeviceRepository deviceRepository;
+
     /*private KonkerLogger LOG = KonkerLoggerFactory.getLogger(EventSchemaServiceImpl.class);*/
     private Logger LOG = LoggerFactory.getLogger(EventSchemaServiceImpl.class);
 
@@ -76,7 +87,8 @@ public class EventSchemaServiceImpl implements EventSchemaService {
 
         EventSchema toBeSaved = null;
         try {
-            toBeSaved = prepareSchemaFor(event.getIncoming().getDeviceGuid(),event.getIncoming().getChannel(),event.getPayload());
+            EventActor incoming = event.getIncoming();
+            toBeSaved = prepareSchemaFor(incoming.getTenantDomain(), incoming.getDeviceGuid(), incoming.getChannel(),event.getPayload());
         } catch (JsonProcessingException e) {
             return ServiceResponseBuilder.<EventSchema>error()
                     .withMessage(Validations.EVENT_INVALID_PAYLOAD.getCode()).build();
@@ -92,8 +104,9 @@ public class EventSchemaServiceImpl implements EventSchemaService {
         return ServiceResponseBuilder.<EventSchema>ok().build();
     }
 
-    private EventSchema prepareSchemaFor(String deviceId, String channel, String payload) throws JsonProcessingException {
-        ServiceResponse<EventSchema> existing = findIncomingBy(deviceId,channel);
+    private EventSchema prepareSchemaFor(String tenantDomain, String deviceId, String channel, String payload) throws JsonProcessingException {
+        Tenant tenant = tenantRepository.findByDomainName(tenantDomain);
+        ServiceResponse<EventSchema> existing = findIncomingBy(tenant, deviceId, channel);
 
         Map<String,JsonParsingService.JsonPathData> data = jsonParsingService.toFlatMap(payload);
 
@@ -143,7 +156,21 @@ public class EventSchemaServiceImpl implements EventSchemaService {
     }
 
     @Override
-    public ServiceResponse<EventSchema> findIncomingBy(String deviceGuid) {
+    public ServiceResponse<EventSchema> findIncomingBy(Tenant tenant, String deviceGuid) {
+
+        if (!Optional.ofNullable(tenant).isPresent()) {
+            return ServiceResponseBuilder.<EventSchema>error()
+                    .withMessage(CommonValidations.TENANT_NULL.getCode())
+                    .build();
+        }
+
+        Device device = deviceRepository.findByTenantAndGuid(tenant.getId(), deviceGuid);
+        if (!Optional.ofNullable(device).isPresent()) {
+            return ServiceResponseBuilder.<EventSchema> error()
+                    .withMessage(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode())
+                    .build();
+        }
+
         EventSchema existing = mongoTemplate.findOne(
                 Query.query(Criteria.where("deviceGuid").is(deviceGuid)),
                 EventSchema.class,EventSchemaService.INCOMING_COLLECTION_NAME
@@ -154,7 +181,21 @@ public class EventSchemaServiceImpl implements EventSchemaService {
     }
 
     @Override
-    public ServiceResponse<EventSchema> findIncomingBy(String deviceGuid, String channel) {
+    public ServiceResponse<EventSchema> findIncomingBy(Tenant tenant, String deviceGuid, String channel) {
+        
+        if (!Optional.ofNullable(tenant).isPresent()) {
+            return ServiceResponseBuilder.<EventSchema>error()
+                    .withMessage(CommonValidations.TENANT_NULL.getCode())
+                    .build();
+        }
+
+        Device device = deviceRepository.findByTenantAndGuid(tenant.getId(), deviceGuid);
+        if (!Optional.ofNullable(device).isPresent()) {
+            return ServiceResponseBuilder.<EventSchema> error()
+                    .withMessage(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode())
+                    .build();
+        }
+
         EventSchema existing = mongoTemplate.findOne(
                 Query.query(Criteria.where("deviceGuid")
                         .is(deviceGuid).andOperator(Criteria.where("channel").is(channel))),
@@ -166,7 +207,7 @@ public class EventSchemaServiceImpl implements EventSchemaService {
     }
 
     @Override
-    public ServiceResponse<EventSchema> findOutgoingBy(String deviceGuid, String channel) {
+    public ServiceResponse<EventSchema> findOutgoingBy(Tenant tenant, String deviceGuid, String channel) {
         return ServiceResponseBuilder.<EventSchema>ok().build();
     }
 
@@ -189,7 +230,7 @@ public class EventSchemaServiceImpl implements EventSchemaService {
 	@Override
 	public ServiceResponse<List<String>> findKnownIncomingMetricsBy(Tenant tenant, String deviceGuid, String channel, JsonNodeType nodeType) {
 
-		ServiceResponse<EventSchema> metricsResponse = findIncomingBy(deviceGuid, channel);
+		ServiceResponse<EventSchema> metricsResponse = findIncomingBy(tenant, deviceGuid, channel);
 		return filterMetricsByJsonType(metricsResponse, nodeType);
     	
 	}
@@ -197,7 +238,7 @@ public class EventSchemaServiceImpl implements EventSchemaService {
 	@Override
 	public ServiceResponse<List<String>> findKnownIncomingMetricsBy(Tenant tenant, String deviceGuid, JsonNodeType nodeType) {
 
-		ServiceResponse<EventSchema> metricsResponse = findIncomingBy(deviceGuid);
+		ServiceResponse<EventSchema> metricsResponse = findIncomingBy(tenant, deviceGuid);
 		return filterMetricsByJsonType(metricsResponse, nodeType);
     	
 	}
@@ -247,7 +288,7 @@ public class EventSchemaServiceImpl implements EventSchemaService {
 					continue;
 				}
 
-				ServiceResponse<EventSchema> schemaResponse = findIncomingBy(deviceGuid,
+				ServiceResponse<EventSchema> schemaResponse = findIncomingBy(tenant, deviceGuid,
 						event.getIncoming().getChannel());
 				EventSchema schema = schemaResponse.getResult();
 				if (schema == null) {
