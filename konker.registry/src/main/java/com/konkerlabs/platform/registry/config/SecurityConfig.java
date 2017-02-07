@@ -109,12 +109,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                                                 .map(origin -> origin)
                                                 .orElse("*"));
                             } else if (item.getKey().equals("Access-Control-Allow-Methods") && 
-                            		httpServletRequest.getRequestURI().contains("/pub")) {
+                            		httpServletRequest.getRequestURI().contains("/pub/")) {
                             	httpServletResponse.addHeader(
                             			item.getKey(),
                                         "POST");
                             } else if (item.getKey().equals("Access-Control-Allow-Methods") && 
-                            		httpServletRequest.getRequestURI().contains("/sub")) {
+                            		httpServletRequest.getRequestURI().contains("/sub/")) {
                             	httpServletResponse.addHeader(
                             			item.getKey(),
                                         "GET");
