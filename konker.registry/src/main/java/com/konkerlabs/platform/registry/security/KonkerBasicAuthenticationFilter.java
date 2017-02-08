@@ -66,16 +66,16 @@ public class KonkerBasicAuthenticationFilter extends BasicAuthenticationFilter {
 		
 		if (Optional.ofNullable(device).isPresent() && 
 				!Optional.ofNullable(uriApiKey).isPresent()) {
-			LOG.warn(MessageFormat.format("The password of device \"{0}\" is wrong. Password \"{1}\" is invalid.",
-					apiKey, pass), 
+			LOG.warn(MessageFormat.format("The password of device \"{0}\" is wrong.",
+					apiKey), 
         			device.getTenant().toURI(), 
         			device.getTenant().getLogLevel(), 
         			device);
 		} else if (Optional.ofNullable(device).isPresent() && 
 				Optional.ofNullable(uriApiKey).isPresent() &&
 				!uriApiKey.equals(apiKey)) {
-			LOG.warn(MessageFormat.format("The device \"{0}\" or password \"{1}\" is invalid.",
-					apiKey, pass), 
+			LOG.warn(MessageFormat.format("The device \"{0}\" or password is invalid.",
+					apiKey), 
         			device.getTenant().toURI(), 
         			device.getTenant().getLogLevel(), 
         			device);
