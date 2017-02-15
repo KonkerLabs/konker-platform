@@ -167,7 +167,7 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
         ServiceResponse<List<String>> response = eventSchemaService.findKnownIncomingMetricsBy(tenant, deviceGuid, "data", JsonNodeType.NUMBER);
 
         assertThat(response,isResponseOk());
-        assertThat(response.getResult().get(0),equalTo(knownMetrics));
+        assertThat(response.getResult(), equalTo(knownMetrics));
     }
 
     @Test

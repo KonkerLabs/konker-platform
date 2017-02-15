@@ -228,14 +228,11 @@ public class EventSchemaServiceImpl implements EventSchemaService {
 	@Override
 	public ServiceResponse<List<String>> findKnownIncomingMetricsBy(Tenant tenant, String deviceGuid, String channel, JsonNodeType nodeType) {
 
-        ServiceResponse<List<EventSchema>> metricsResponse = findIncomingBy(tenant, deviceGuid);
+        ServiceResponse<EventSchema> metricsResponse = findIncomingBy(tenant, deviceGuid, channel);
         if (metricsResponse.isOk()) {
-            List<String> listMetrics = new ArrayList<>();
 
-            for (EventSchema schema : metricsResponse.getResult()) {
-                List<String> result = filterMetricsByJsonType(schema, nodeType);
-                listMetrics.addAll(result);
-            }
+            EventSchema schema = metricsResponse.getResult();
+            List<String> listMetrics = filterMetricsByJsonType(schema, nodeType);
 
             return ServiceResponseBuilder.<List<String>>ok().withResult(listMetrics).build();  
         } else {
