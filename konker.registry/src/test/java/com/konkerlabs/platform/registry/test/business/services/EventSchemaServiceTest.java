@@ -167,7 +167,7 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
         ServiceResponse<List<String>> response = eventSchemaService.findKnownIncomingMetricsBy(tenant, deviceGuid, "data", JsonNodeType.NUMBER);
 
         assertThat(response,isResponseOk());
-        assertThat(response.getResult(),equalTo(knownMetrics));
+        assertThat(response.getResult().get(0),equalTo(knownMetrics));
     }
 
     @Test
@@ -219,10 +219,10 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/eventSchemas.json"})
     public void shouldFindIncomingByGeviceGuid() throws Exception {
-        ServiceResponse<EventSchema> response = eventSchemaService.findIncomingBy(tenant, deviceGuid);
+        ServiceResponse<List<EventSchema>> response = eventSchemaService.findIncomingBy(tenant, deviceGuid);
 
         assertThat(response,isResponseOk());
-        assertThat(response.getResult().getChannel(), equalTo("command"));
+        assertThat(response.getResult().get(0).getChannel(), equalTo("command"));
     }
     
     @Test
@@ -230,7 +230,7 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
     public void shouldFindIncomingByGeviceGuidWithInvalidTenant() throws Exception {
         Tenant otherTenant = tenantRepository.findByDomainName("inm");
         
-        ServiceResponse<EventSchema> response = eventSchemaService.findIncomingBy(otherTenant, deviceGuid);
+        ServiceResponse<List<EventSchema>> response = eventSchemaService.findIncomingBy(otherTenant, deviceGuid);
 
         assertThat(response, ServiceResponseMatchers.hasErrorMessage("service.device.guid.does_not_exist"));
     }

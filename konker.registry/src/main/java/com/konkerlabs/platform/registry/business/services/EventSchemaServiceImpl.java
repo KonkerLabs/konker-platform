@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +39,6 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterServ
 import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.Validations;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 import com.mongodb.BasicDBObject;
 
@@ -156,27 +154,27 @@ public class EventSchemaServiceImpl implements EventSchemaService {
     }
 
     @Override
-    public ServiceResponse<EventSchema> findIncomingBy(Tenant tenant, String deviceGuid) {
+    public ServiceResponse<List<EventSchema>> findIncomingBy(Tenant tenant, String deviceGuid) {
 
         if (!Optional.ofNullable(tenant).isPresent()) {
-            return ServiceResponseBuilder.<EventSchema>error()
+            return ServiceResponseBuilder.<List<EventSchema>>error()
                     .withMessage(CommonValidations.TENANT_NULL.getCode())
                     .build();
         }
 
         Device device = deviceRepository.findByTenantAndGuid(tenant.getId(), deviceGuid);
         if (!Optional.ofNullable(device).isPresent()) {
-            return ServiceResponseBuilder.<EventSchema> error()
+            return ServiceResponseBuilder.<List<EventSchema>> error()
                     .withMessage(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode())
                     .build();
         }
 
-        EventSchema existing = mongoTemplate.findOne(
+        List<EventSchema> existing = mongoTemplate.find(
                 Query.query(Criteria.where("deviceGuid").is(deviceGuid)),
                 EventSchema.class,EventSchemaService.INCOMING_COLLECTION_NAME
         );
 
-        return ServiceResponseBuilder.<EventSchema>ok()
+        return ServiceResponseBuilder.<List<EventSchema>>ok()
             .withResult(existing).build();
     }
 
@@ -230,46 +228,56 @@ public class EventSchemaServiceImpl implements EventSchemaService {
 	@Override
 	public ServiceResponse<List<String>> findKnownIncomingMetricsBy(Tenant tenant, String deviceGuid, String channel, JsonNodeType nodeType) {
 
-		ServiceResponse<EventSchema> metricsResponse = findIncomingBy(tenant, deviceGuid, channel);
-		return filterMetricsByJsonType(metricsResponse, nodeType);
-    	
-	}
+        ServiceResponse<List<EventSchema>> metricsResponse = findIncomingBy(tenant, deviceGuid);
+        if (metricsResponse.isOk()) {
+            List<String> listMetrics = new ArrayList<>();
+
+            for (EventSchema schema : metricsResponse.getResult()) {
+                List<String> result = filterMetricsByJsonType(schema, nodeType);
+                listMetrics.addAll(result);
+            }
+
+            return ServiceResponseBuilder.<List<String>>ok().withResult(listMetrics).build();  
+        } else {
+            return ServiceResponseBuilder.<List<String>>error().withMessages(metricsResponse.getResponseMessages())
+                    .build();
+        }
+
+    }
 
 	@Override
 	public ServiceResponse<List<String>> findKnownIncomingMetricsBy(Tenant tenant, String deviceGuid, JsonNodeType nodeType) {
 
-		ServiceResponse<EventSchema> metricsResponse = findIncomingBy(tenant, deviceGuid);
-		return filterMetricsByJsonType(metricsResponse, nodeType);
-    	
-	}
+        ServiceResponse<List<EventSchema>> metricsResponse = findIncomingBy(tenant, deviceGuid);
+        if (metricsResponse.isOk()) {
+            List<String> listMetrics = new ArrayList<>();
 
-	private ServiceResponse<List<String>> filterMetricsByJsonType(ServiceResponse<EventSchema> metricsResponse, JsonNodeType nodeType) {
+            for (EventSchema schema : metricsResponse.getResult()) {
+                List<String> result = filterMetricsByJsonType(schema, nodeType);
+                listMetrics.addAll(result);
+            }
 
-		if (metricsResponse.isOk()) {
-
-			if (metricsResponse.getResult() != null) {
-
-		    	List<String> listMetrics = metricsResponse.getResult()
-						.getFields().stream()
-						.filter(schemaField -> schemaField.getKnownTypes().contains(nodeType))
-						.map(m -> m.getPath()).collect(Collectors.toList());
-	
-		    	return ServiceResponseBuilder.<List<String>>ok()
-		                .withResult(listMetrics).build();	    	
-
-			} else {
-				return ServiceResponseBuilder.<List<String>>ok()
-		                .withResult(Collections.emptyList()).build();	    
-			}
-
-		} else {
-
-            return ServiceResponseBuilder.<List<String>>error()
-                    .withMessages(metricsResponse.getResponseMessages()).build();
-			
-		}
+            return ServiceResponseBuilder.<List<String>>ok().withResult(listMetrics).build();  
+        } else {
+            return ServiceResponseBuilder.<List<String>>error().withMessages(metricsResponse.getResponseMessages())
+                    .build();
+        }
 
 	}
+
+    private List<String> filterMetricsByJsonType(EventSchema metricsResponse, JsonNodeType nodeType) {
+
+        if (metricsResponse == null) {
+            return Collections.emptyList();
+        }
+
+        List<String> listMetrics = metricsResponse.getFields().stream()
+                .filter(schemaField -> schemaField.getKnownTypes().contains(nodeType)).map(m -> m.getPath())
+                .collect(Collectors.toList());
+
+        return listMetrics;
+
+    }
 
 	@Override
 	public ServiceResponse<EventSchema> findLastIncomingBy(Tenant tenant, String deviceGuid, JsonNodeType nodeType) {
