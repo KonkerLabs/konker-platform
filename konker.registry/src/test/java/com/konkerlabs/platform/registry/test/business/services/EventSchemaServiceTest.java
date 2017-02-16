@@ -15,6 +15,7 @@ import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.RedisTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import org.junit.Before;
 import org.junit.Test;
@@ -166,7 +167,7 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
         ServiceResponse<List<String>> response = eventSchemaService.findKnownIncomingMetricsBy(tenant, deviceGuid, "data", JsonNodeType.NUMBER);
 
         assertThat(response,isResponseOk());
-        assertThat(response.getResult(),equalTo(knownMetrics));
+        assertThat(response.getResult(), equalTo(knownMetrics));
     }
 
     @Test
@@ -213,6 +214,44 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
         assertThat(response, isResponseOk());
         assertThat(response.getResult().getChannel(), equalTo(channel));
         assertThat(response.getResult().getFields().iterator().next().getPath(), equalTo(secondField));
+    }
+    
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/eventSchemas.json"})
+    public void shouldFindIncomingByGeviceGuid() throws Exception {
+        ServiceResponse<List<EventSchema>> response = eventSchemaService.findIncomingBy(tenant, deviceGuid);
+
+        assertThat(response,isResponseOk());
+        assertThat(response.getResult().get(0).getChannel(), equalTo("command"));
+    }
+    
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/eventSchemas.json"})
+    public void shouldFindIncomingByGeviceGuidWithInvalidTenant() throws Exception {
+        Tenant otherTenant = tenantRepository.findByDomainName("inm");
+        
+        ServiceResponse<List<EventSchema>> response = eventSchemaService.findIncomingBy(otherTenant, deviceGuid);
+
+        assertThat(response, ServiceResponseMatchers.hasErrorMessage("service.device.guid.does_not_exist"));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/eventSchemas.json"})
+    public void shouldFindIncomingByGeviceGuidAndChannel() throws Exception {
+        ServiceResponse<EventSchema> response = eventSchemaService.findIncomingBy(tenant, deviceGuid, "command");
+
+        assertThat(response,isResponseOk());
+        assertThat(response.getResult().getChannel(), equalTo("command"));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/eventSchemas.json"})
+    public void shouldFindIncomingByGeviceGuidAndChannelWithInvalidTenant() throws Exception {
+        Tenant otherTenant = tenantRepository.findByDomainName("inm");
+        
+        ServiceResponse<EventSchema> response = eventSchemaService.findIncomingBy(otherTenant, deviceGuid, "command");
+
+        assertThat(response, ServiceResponseMatchers.hasErrorMessage("service.device.guid.does_not_exist"));
     }
 
 }
