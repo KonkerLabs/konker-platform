@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletResponse;
@@ -202,15 +203,17 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     					 Locale locale, HttpServletResponse response) {
     	
     	try  {
-			ServiceResponse<EventSchema> metrics = eventSchemaService.findIncomingBy(deviceGuid, channel);
-    		
-    		List<String> additionalHeaders = metrics.getResult()
-    				.getFields().stream()
-    				.map(m -> m.getPath()).collect(Collectors.toList());
-    		
-    		
-    		int limit = environmentConfig.getCsvDownloadRowsLimit();
-    		List events = doSearch(dateStart, dateEnd, online, deviceGuid, channel, locale, limit);
+			ServiceResponse<EventSchema> metrics = eventSchemaService.findIncomingBy(tenant, deviceGuid, channel);
+
+            List<String> additionalHeaders = new ArrayList<String>();
+            if (metrics.isOk()) {
+                additionalHeaders = metrics.getResult().getFields().stream()
+                        .map(m -> m.getPath())
+                        .collect(Collectors.toList());
+            }
+
+            int limit = environmentConfig.getCsvDownloadRowsLimit();
+            List events = doSearch(dateStart, dateEnd, online, deviceGuid, channel, locale, limit);
     		
     		EventCsvDownload csvDownload = new EventCsvDownload();
 			csvDownload.download(events, response, additionalHeaders);
