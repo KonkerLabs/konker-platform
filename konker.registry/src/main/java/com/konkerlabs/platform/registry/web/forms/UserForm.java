@@ -63,8 +63,6 @@ public class UserForm implements ModelBuilder<User,UserForm,Void> {
     	this.setName(model.getName());
         this.setEmail(model.getEmail());
         this.setPhone(model.getPhone());
-        this.setAvatar(model.getAvatar());
-		this.setAvatar(new UserAvatarPathUtil(model, cdnConfig).getAbsolutePath());
         this.setDateFormat(model.getDateFormat());
         this.setLanguage(model.getLanguage());
         this.setZoneId(model.getZoneId());
