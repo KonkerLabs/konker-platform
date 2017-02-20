@@ -13,6 +13,7 @@
         <module>konker.utilities</module>
         <module>konker.registry</module>
         <module>konker.security</module>
+        <module>konker.registry.api</module>
     </modules>
 
     <build>
