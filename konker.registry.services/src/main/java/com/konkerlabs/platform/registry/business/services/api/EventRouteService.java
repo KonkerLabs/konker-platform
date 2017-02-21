@@ -1,5 +1,4 @@
-package com.konkerlabs.platform.registry.business.services.routes.api;
-
+package com.konkerlabs.platform.registry.business.services.api;
 
 import java.net.URI;
 import java.util.List;

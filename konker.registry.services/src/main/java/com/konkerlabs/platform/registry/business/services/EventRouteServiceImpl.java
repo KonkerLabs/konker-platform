@@ -1,4 +1,4 @@
-package com.konkerlabs.platform.registry.business.services.routes;
+package com.konkerlabs.platform.registry.business.services;
 
 import java.net.URI;
 import java.util.List;
@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 
 import org.slf4j.Logger;
@@ -23,7 +24,6 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.SmsDestinationURIDealer;
-import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.EventRouteRepository;
@@ -31,7 +31,6 @@ import com.konkerlabs.platform.registry.business.repositories.RestDestinationRep
 import com.konkerlabs.platform.registry.business.repositories.SmsDestinationRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
-import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteService;
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
