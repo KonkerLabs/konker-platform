@@ -118,4 +118,4 @@ COPY build/conf.d /etc/nginx/conf.d
 #start
 EXPOSE 8080 80 443
 ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["java","-jar","/usr/local/jetty/start.jar"]
+CMD ["java","-jar","/usr/local/jetty/start.jar","-Dorg.eclipse.jetty.server.Request.maxFormContentSize=99900000"]

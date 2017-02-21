@@ -35,8 +35,8 @@ import org.springframework.util.MultiValueMap;
 
 import com.konkerlabs.platform.registry.business.model.Token;
 import com.konkerlabs.platform.registry.business.model.User;
-import com.konkerlabs.platform.registry.business.services.api.CaptchaService;
-import com.konkerlabs.platform.registry.business.services.api.EmailService;
+import com.konkerlabs.platform.registry.web.services.api.CaptchaService;
+import com.konkerlabs.platform.registry.web.services.api.EmailService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.TokenService;
 import com.konkerlabs.platform.registry.business.services.api.UserService;

@@ -26,9 +26,8 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.util.Base64;
 import com.amazonaws.util.IOUtils;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
-import com.konkerlabs.platform.registry.business.services.api.UploadService;
+import com.konkerlabs.platform.registry.web.services.api.UploadService;
 import com.konkerlabs.platform.registry.config.CdnConfig;
-import com.typesafe.config.Config;
 
 @Repository
 public class AwsUploadRepository implements UploadRepository {

@@ -44,7 +44,6 @@ import static org.hamcrest.MatcherAssert.*;
 @ContextConfiguration(classes = {
         MongoTestConfiguration.class,
         BusinessTestConfiguration.class,
-        SolrTestConfiguration.class,
         RedisTestConfiguration.class,
         PubServerConfig.class
 })

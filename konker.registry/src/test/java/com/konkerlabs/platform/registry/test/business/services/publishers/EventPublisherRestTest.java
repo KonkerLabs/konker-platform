@@ -46,7 +46,6 @@ import static org.mockito.Mockito.verify;
 @ContextConfiguration(classes = {
         MongoTestConfiguration.class,
         BusinessTestConfiguration.class,
-        SolrTestConfiguration.class,
         RedisTestConfiguration.class
 })
 @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/rest-destinations.json"})

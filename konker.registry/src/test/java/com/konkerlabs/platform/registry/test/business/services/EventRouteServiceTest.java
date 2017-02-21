@@ -10,9 +10,9 @@ import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.EventRouteRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
+import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.publishers.EventPublisherSms;
-import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteService;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
@@ -424,7 +424,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
         EventRoute route = subject.getByGUID(tenant, existingGuid).getResult();
 
         route.getOutgoing().setUri(URI.create(SMS_URI_FOR_DISPLAY_NAME));
-        route.getOutgoing().getData().put(EventPublisherSms.SMS_MESSAGE_STRATEGY_PARAMETER_NAME, EventPublisherSms.SMS_MESSAGE_FORWARD_STRATEGY_PARAMETER_VALUE);
+        route.getOutgoing().getData().put(EventRoute.SMS_MESSAGE_STRATEGY_PARAMETER_NAME, EventRoute.SMS_MESSAGE_FORWARD_STRATEGY_PARAMETER_VALUE);
         route.setName("Changing Name To Persist");
 
         ServiceResponse<EventRoute> response = subject.save(tenant, route);
@@ -443,7 +443,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
         EventRoute route = subject.getByGUID(tenant, existingGuid).getResult();
 
         route.getOutgoing().setUri(URI.create(SMS_URI_FOR_DISPLAY_NAME));
-        route.getOutgoing().getData().put(EventPublisherSms.SMS_MESSAGE_STRATEGY_PARAMETER_NAME, EventPublisherSms.SMS_MESSAGE_FORWARD_STRATEGY_PARAMETER_VALUE);
+        route.getOutgoing().getData().put(EventRoute.SMS_MESSAGE_STRATEGY_PARAMETER_NAME, EventRoute.SMS_MESSAGE_FORWARD_STRATEGY_PARAMETER_VALUE);
         route.setName(newRouteName);
 
         ServiceResponse<EventRoute> response = subject.update(tenant, route.getGuid(), route);

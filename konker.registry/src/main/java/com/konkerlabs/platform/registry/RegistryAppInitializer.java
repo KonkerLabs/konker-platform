@@ -8,8 +8,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration.Dynamic;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestContextListener;
 import org.springframework.web.filter.HiddenHttpMethodFilter;
@@ -31,7 +29,6 @@ import com.konkerlabs.platform.registry.config.RecaptchaConfig;
 import com.konkerlabs.platform.registry.config.RedisConfig;
 import com.konkerlabs.platform.registry.config.SecurityConfig;
 import com.konkerlabs.platform.registry.config.SmsConfig;
-import com.konkerlabs.platform.registry.config.SolrConfig;
 import com.konkerlabs.platform.registry.config.SpringMailConfig;
 import com.konkerlabs.platform.registry.config.WebConfig;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
@@ -39,12 +36,10 @@ import com.konkerlabs.platform.utilities.config.UtilitiesConfig;
 
 public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(RegistryAppInitializer.class);
-
 	@Override
 	protected Class<?>[] getRootConfigClasses() {
 		return new Class<?>[] { SecurityConfig.class, BusinessConfig.class, MongoConfig.class, MongoAuditConfig.class,
-				MqttConfig.class, SolrConfig.class, UtilitiesConfig.class, RedisConfig.class, SpringMailConfig.class,
+				MqttConfig.class, UtilitiesConfig.class, RedisConfig.class, SpringMailConfig.class,
 				SmsConfig.class, WebConfig.class, PubServerConfig.class, IntegrationConfig.class, CdnConfig.class,
 				PasswordUserConfig.class, RecaptchaConfig.class, EmailConfig.class, HotjarConfig.class,
 				EnvironmentConfig.class};

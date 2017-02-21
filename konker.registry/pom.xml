@@ -91,11 +91,6 @@
             <version>4.0.3.RELEASE</version>
         </dependency>
         <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-config</artifactId>
-            <version>4.0.3.RELEASE</version>
-        </dependency>
-        <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
             <version>3.1.0</version>
@@ -128,32 +123,6 @@
 		    <version>3.0.1.RELEASE</version>
 		</dependency>
         <dependency>
-            <groupId>org.springframework.data</groupId>
-            <artifactId>spring-data-mongodb</artifactId>
-            <version>1.8.2.RELEASE</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.httpcomponents</groupId>
-                    <artifactId>httpclient</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.data</groupId>
-            <artifactId>spring-data-solr</artifactId>
-            <version>1.5.4.RELEASE</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-databind</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.httpcomponents</groupId>
-                    <artifactId>httpclient</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
             <version>4.2.0.RELEASE</version>
@@ -180,26 +149,6 @@
             <version>1.1.3</version>
         </dependency>
         <dependency>
-            <groupId>com.konkerlabs.platform</groupId>
-            <artifactId>konker.utilities</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.konkerlabs.platform</groupId>
-            <artifactId>konker.security</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-		<dependency>
-		    <groupId>redis.clients</groupId>
-		    <artifactId>jedis</artifactId>
-		    <version>2.9.0</version>
-		</dependency>
-        <dependency>
-            <groupId>org.springframework.data</groupId>
-            <artifactId>spring-data-redis</artifactId>
-            <version>1.7.3.RELEASE</version>
-        </dependency>
-        <dependency>
             <groupId>com.lordofthejars</groupId>
             <artifactId>nosqlunit-redis</artifactId>
             <version>0.8.1</version>
@@ -221,16 +170,6 @@
 		    <version>2.4.0</version>
 		</dependency>
         <dependency>
-            <groupId>com.google.zxing</groupId>
-            <artifactId>core</artifactId>
-            <version>3.2.1</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.zxing</groupId>
-            <artifactId>javase</artifactId>
-            <version>3.2.1</version>
-        </dependency>
-        <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-s3</artifactId>
             <exclusions>
@@ -250,6 +189,11 @@
 		    <artifactId>mail</artifactId>
 		    <version>1.4.7</version>
 		</dependency>
+		<dependency>
+		    <groupId>com.konkerlabs</groupId>
+		    <artifactId>konker.registry.services</artifactId>
+		    <version>0.0.1</version>
+		</dependency>
     </dependencies>
 
     <dependencyManagement>
@@ -263,8 +207,5 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
-
-
 
 </project>
