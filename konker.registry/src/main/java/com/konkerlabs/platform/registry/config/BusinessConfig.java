@@ -3,7 +3,6 @@ package com.konkerlabs.platform.registry.config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MarkerFactory;
-import org.slf4j.helpers.BasicMarker;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -16,8 +15,10 @@ import java.util.concurrent.Executor;
 
 @Configuration
 @EnableAsync
-@ComponentScan(basePackages = {"com.konkerlabs.platform.registry.business",
-		"com.konkerlabs.platform.registry.audit.repositories"}
+@ComponentScan(basePackages = {
+		"com.konkerlabs.platform.registry.business",
+		"com.konkerlabs.platform.registry.audit.repositories",
+		"com.konkerlabs.platform.registry.web.services"}
 )
 public class BusinessConfig implements AsyncConfigurer {
 

@@ -1,9 +1,10 @@
 package com.konkerlabs.platform.registry.test.business.services;
 
-import com.konkerlabs.platform.registry.business.services.api.*;
 import com.konkerlabs.platform.registry.integration.exceptions.IntegrationException;
 import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
+import com.konkerlabs.platform.registry.web.services.api.*;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

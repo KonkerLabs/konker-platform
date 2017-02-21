@@ -35,16 +35,6 @@
             <artifactId>spring-security-config</artifactId>
             <version>4.0.3.RELEASE</version>
         </dependency>
-        <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk-s3</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.httpcomponents</groupId>
-                    <artifactId>httpclient</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
         <!-- Apache -->
         <dependency>
             <groupId>commons-codec</groupId>

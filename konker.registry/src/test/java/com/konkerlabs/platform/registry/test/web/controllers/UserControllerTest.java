@@ -39,6 +39,7 @@ import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
 import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
 import com.konkerlabs.platform.registry.web.converters.utils.ConverterUtils;
+import com.konkerlabs.platform.registry.web.services.api.AvatarService;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
@@ -54,6 +55,9 @@ public class UserControllerTest extends WebLayerTestContext {
 	private TenantService tenantService;
 
 	@Autowired
+	private AvatarService avatarService;
+
+	@Autowired
 	private User user;
 
 	@Before
@@ -64,6 +68,7 @@ public class UserControllerTest extends WebLayerTestContext {
 	public void tearDown() {
 		Mockito.reset(userService);
 		Mockito.reset(tenantService);
+		Mockito.reset(avatarService);
 	}
 
 	@Test
@@ -83,6 +88,7 @@ public class UserControllerTest extends WebLayerTestContext {
 		ServiceResponse<User> responseOk = ServiceResponseBuilder.<User>ok().build();
 		ServiceResponse<Tenant> responseTenantOk = ServiceResponseBuilder.<Tenant>ok().build();
 
+		when(avatarService.updateAvatar(Matchers.anyObject())).thenReturn(responseOk);
 		when(userService.save(Matchers.anyObject(), Matchers.anyString(), Matchers.anyString(), Matchers.anyString()))
 				.thenReturn(responseOk);
 		when(tenantService.updateLogLevel(Matchers.anyObject(), Matchers.anyObject())).thenReturn(responseTenantOk);
@@ -104,6 +110,7 @@ public class UserControllerTest extends WebLayerTestContext {
 		ServiceResponse<Tenant> responseTenantOk = ServiceResponseBuilder.<Tenant>error()
 				.withMessage(CommonValidations.RECORD_NULL.getCode()).build();
 
+		when(avatarService.updateAvatar(Matchers.anyObject())).thenReturn(responseOk);
 		when(userService.save(Matchers.anyObject(), Matchers.anyString(), Matchers.anyString(), Matchers.anyString()))
 				.thenReturn(responseOk);
 		when(tenantService.updateLogLevel(Matchers.anyObject(), Matchers.anyObject())).thenReturn(responseTenantOk);
@@ -128,8 +135,13 @@ public class UserControllerTest extends WebLayerTestContext {
 		}
 
 		@Bean
-		public UserService uerService() {
+		public UserService userService() {
 			return Mockito.mock(UserService.class);
+		}
+
+		@Bean
+		public AvatarService avatarService() {
+			return Mockito.mock(AvatarService.class);
 		}
 
 		@Bean

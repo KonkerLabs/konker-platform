@@ -1,13 +1,11 @@
-package com.konkerlabs.platform.registry.business.services;
+package com.konkerlabs.platform.registry.web.services;
 
-import com.konkerlabs.platform.registry.business.services.api.CaptchaService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.integration.exceptions.IntegrationException;
 import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
+import com.konkerlabs.platform.registry.web.services.api.CaptchaService;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
-import org.json.JSONObject;
-import org.json.JSONString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

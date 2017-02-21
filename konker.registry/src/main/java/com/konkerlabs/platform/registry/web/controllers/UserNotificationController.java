@@ -21,7 +21,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.model.UserNotification;
-import com.konkerlabs.platform.registry.business.services.api.UserNotificationService;
+import com.konkerlabs.platform.registry.web.services.api.UserNotificationService;
 
 @Controller
 @RequestMapping("/notifications")

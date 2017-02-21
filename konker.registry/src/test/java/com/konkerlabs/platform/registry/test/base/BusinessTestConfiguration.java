@@ -12,6 +12,7 @@ import static org.mockito.Mockito.mock;
 @Configuration
 @ComponentScan(basePackages = {
     "com.konkerlabs.platform.registry.business",
+    "com.konkerlabs.platform.registry.web.services",
     "com.konkerlabs.platform.utilities",
 	"com.konkerlabs.platform.registry.audit.repositories"
 },lazyInit = true)

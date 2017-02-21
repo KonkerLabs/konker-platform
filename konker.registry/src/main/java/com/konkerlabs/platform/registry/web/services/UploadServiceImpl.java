@@ -1,9 +1,10 @@
-package com.konkerlabs.platform.registry.business.services;
+package com.konkerlabs.platform.registry.web.services;
 
 import com.konkerlabs.platform.registry.business.repositories.upload.AwsUploadRepository;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
-import com.konkerlabs.platform.registry.business.services.api.UploadService;
+import com.konkerlabs.platform.registry.web.services.api.UploadService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;

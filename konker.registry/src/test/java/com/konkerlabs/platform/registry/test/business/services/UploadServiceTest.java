@@ -2,14 +2,15 @@ package com.konkerlabs.platform.registry.test.business.services;
 
 import com.amazonaws.util.Base64;
 import com.konkerlabs.platform.registry.business.repositories.upload.AwsUploadRepository;
-import com.konkerlabs.platform.registry.business.services.UploadServiceImpl;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.UploadService;
 import com.konkerlabs.platform.registry.config.CdnConfig;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.RedisTestConfiguration;
+import com.konkerlabs.platform.registry.web.services.UploadServiceImpl;
+import com.konkerlabs.platform.registry.web.services.api.UploadService;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

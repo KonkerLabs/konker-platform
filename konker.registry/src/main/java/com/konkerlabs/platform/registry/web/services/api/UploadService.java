@@ -1,6 +1,8 @@
-package com.konkerlabs.platform.registry.business.services.api;
+package com.konkerlabs.platform.registry.web.services.api;
 
 import java.io.InputStream;
+
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 
 public interface UploadService {
 

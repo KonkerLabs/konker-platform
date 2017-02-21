@@ -1,17 +1,12 @@
 package com.konkerlabs.platform.registry.web.controllers;
 
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.User;
-import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
-import com.konkerlabs.platform.registry.business.model.enumerations.Language;
-import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
-import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.TenantService;
-import com.konkerlabs.platform.registry.business.services.api.UserService;
-import com.konkerlabs.platform.registry.security.TenantUserDetailsService;
-import com.konkerlabs.platform.registry.web.converters.utils.ConverterUtils;
-import com.konkerlabs.platform.registry.web.forms.UserForm;
+import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -23,11 +18,17 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.util.List;
-import java.util.Locale;
-import java.util.stream.Collectors;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.User;
+import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
+import com.konkerlabs.platform.registry.business.model.enumerations.Language;
+import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
+import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.TenantService;
+import com.konkerlabs.platform.registry.business.services.api.UserService;
+import com.konkerlabs.platform.registry.web.forms.UserForm;
+import com.konkerlabs.platform.registry.web.services.api.AvatarService;
 
 
 @Controller()
@@ -35,19 +36,14 @@ import java.util.stream.Collectors;
 @RequestMapping("/me")
 public class UserController implements ApplicationContextAware {
 
-
-    @Autowired
-    private TenantUserDetailsService tenantUserDetailsService;
     @Autowired
     private UserService userService;
     @Autowired
-    private TenantService tenantService;
+    private AvatarService avatarService;
     @Autowired
-    private ConverterUtils converterUtils;
+    private TenantService tenantService;
 
-    private Tenant tenant;
     private User user;
-
 
     public enum Messages {
         USER_UPDATED_SUCCESSFULLY("controller.user.updated.success");
@@ -70,11 +66,7 @@ public class UserController implements ApplicationContextAware {
         this.applicationContext = applicationContext;
     }
 
-
-    public UserController(TenantUserDetailsService tenantUserDetailsService,
-                          UserService userService, Tenant tenant, User user) {
-        this.tenantUserDetailsService = tenantUserDetailsService;
-        this.tenant = tenant;
+    public UserController(UserService userService, User user) {
         this.user = user;
     }
 
@@ -97,16 +89,19 @@ public class UserController implements ApplicationContextAware {
 
 		User fromForm = userForm.toModel();
 		fromForm.setEmail(this.user.getEmail());
+		
+		// update avatar
+		ServiceResponse<User> avatarServiceResponse = avatarService.updateAvatar(fromForm);
+		if (!avatarServiceResponse.isOk()) {
+			return redirectErrorMessages(redirectAttributes, locale, avatarServiceResponse);
+		}
+		
+		// update user
 		ServiceResponse<User> serviceResponse = userService.save(fromForm, userForm.getOldPassword(),
 				userForm.getNewPassword(), userForm.getNewPasswordConfirmation());
 
 		if (!serviceResponse.getStatus().equals(ServiceResponse.Status.OK)) {
-			List<String> messages = serviceResponse.getResponseMessages().entrySet().stream()
-					.map(message -> applicationContext.getMessage(message.getKey(), message.getValue(), locale))
-					.collect(Collectors.toList());
-			redirectAttributes.addFlashAttribute("errors", messages);
-			
-			return new ModelAndView("redirect:/me");
+			return redirectErrorMessages(redirectAttributes, locale, serviceResponse);
 		}
 
 		// update tenant
@@ -115,12 +110,7 @@ public class UserController implements ApplicationContextAware {
 				newLogLevel);
 
 		if (!tenServiceResponse.getStatus().equals(ServiceResponse.Status.OK)) {
-			List<String> messages = tenServiceResponse.getResponseMessages().entrySet().stream()
-					.map(message -> applicationContext.getMessage(message.getKey(), message.getValue(), locale))
-					.collect(Collectors.toList());
-			redirectAttributes.addFlashAttribute("errors", messages);
-			
-			return new ModelAndView("redirect:/me");
+			return redirectErrorMessages(redirectAttributes, locale, tenServiceResponse);
 		} else {
 			user.getTenant().setLogLevel(newLogLevel);
 		}
@@ -128,6 +118,16 @@ public class UserController implements ApplicationContextAware {
 		// success
 		redirectAttributes.addFlashAttribute("message", applicationContext
 				.getMessage(Messages.USER_UPDATED_SUCCESSFULLY.getCode(), null, locale));
+
+		return new ModelAndView("redirect:/me");
+	}
+
+	private ModelAndView redirectErrorMessages(RedirectAttributes redirectAttributes, Locale locale,
+			ServiceResponse<?> serviceResponse) {
+		List<String> messages = serviceResponse.getResponseMessages().entrySet().stream()
+				.map(message -> applicationContext.getMessage(message.getKey(), message.getValue(), locale))
+				.collect(Collectors.toList());
+		redirectAttributes.addFlashAttribute("errors", messages);
 
 		return new ModelAndView("redirect:/me");
 	}
