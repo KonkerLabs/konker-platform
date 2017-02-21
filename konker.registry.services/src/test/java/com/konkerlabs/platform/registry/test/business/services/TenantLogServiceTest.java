@@ -31,8 +31,6 @@ import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
 
-import ch.qos.logback.classic.Level;
-
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
         MongoTestConfiguration.class,
@@ -63,9 +61,9 @@ public class TenantLogServiceTest extends BusinessLayerTestSupport {
 
 		String domainName = "Fo8RmPoLWz";
 
-		tenantLogRepository.insert(domainName, new Date(1484219387000L), Level.WARN.levelStr, "1");
-		tenantLogRepository.insert(domainName, new Date(1484219388000L), Level.INFO.levelStr, "2");
-		tenantLogRepository.insert(domainName, new Date(1484219389000L), Level.ERROR.levelStr, "3");
+		tenantLogRepository.insert(domainName, new Date(1484219387000L), "WARN", "1");
+	tenantLogRepository.insert(domainName, new Date(1484219388000L), "INFO", "2");
+		tenantLogRepository.insert(domainName, new Date(1484219389000L), "ERROR", "3");
 
 		Tenant tenant = Tenant.builder().domainName(domainName).build();
 
@@ -104,7 +102,7 @@ public class TenantLogServiceTest extends BusinessLayerTestSupport {
 
 		DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
 
-		String level = Level.WARN.levelStr;
+		String level = "WARN";
 		String dataText = "2016-08-20 17:45:31";
 
 		tenantLogRepository.insert(domainName, df.parse(dataText), level, dataText);

@@ -17,14 +17,10 @@ import com.konkerlabs.platform.registry.audit.repositories.TenantLogRepository;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.RedisTestConfiguration;
-
-import ch.qos.logback.classic.Level;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { BusinessTestConfiguration.class, 
-		MongoTestConfiguration.class,
-		RedisTestConfiguration.class })
+		MongoTestConfiguration.class })
 public class TenantLogRepositoryTest {
 
 	@Autowired
@@ -41,7 +37,7 @@ public class TenantLogRepositoryTest {
 		Assert.assertEquals(0, initialSize);
 
 		for (int i = 0; i < 10; i++) {
-			tenantLogRepository.insert(tenant.getDomainName(), new Date(), Level.WARN.levelStr, "I4PlMe5TbK");
+			tenantLogRepository.insert(tenant.getDomainName(), new Date(), "WARN", "I4PlMe5TbK");
 		}
 
 		List<TenantLog> logs = tenantLogRepository.findAll(tenant);
@@ -62,7 +58,7 @@ public class TenantLogRepositoryTest {
 		Assert.assertEquals(0, initialSize);
 
 		for (int i = 0; i < 10; i++) {
-			tenantLogRepository.insert(tenant.getDomainName(), new Date().getTime(), Level.INFO.levelStr, "LuxUkmRSB9");
+			tenantLogRepository.insert(tenant.getDomainName(), new Date().getTime(), "INFO", "LuxUkmRSB9");
 		}
 
 		List<TenantLog> logs = tenantLogRepository.findAll(tenant);
@@ -88,7 +84,7 @@ public class TenantLogRepositoryTest {
 		fSet.setAccessible(true);
 		fSet.set(repository, mongoTemplate);
 
-		repository.insert("YJgQ8Zj2j0", new Date().getTime(), Level.WARN.levelStr, "H5ITwKKqrm");
+		repository.insert("YJgQ8Zj2j0", new Date().getTime(), "WARN", "H5ITwKKqrm");
 
 	}
 

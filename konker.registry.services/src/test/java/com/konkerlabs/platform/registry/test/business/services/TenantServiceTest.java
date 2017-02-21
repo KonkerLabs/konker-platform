@@ -22,12 +22,10 @@ import com.konkerlabs.platform.registry.business.services.api.TenantService.Vali
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.RedisTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = { MongoTestConfiguration.class, BusinessTestConfiguration.class,
-		RedisTestConfiguration.class })
+@ContextConfiguration(classes = { MongoTestConfiguration.class, BusinessTestConfiguration.class })
 @UsingDataSet(locations = { "/fixtures/tenants.json", "/fixtures/users.json", "/fixtures/passwordBlacklist.json" })
 public class TenantServiceTest extends BusinessLayerTestSupport {
 

@@ -3,13 +3,6 @@ package com.konkerlabs.platform.registry.test.business.services;
 import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
 import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.isResponseOk;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.when;
-
-import java.io.InputStream;
-import java.lang.reflect.Field;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -18,8 +11,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -31,23 +22,17 @@ import com.konkerlabs.platform.registry.business.model.enumerations.Language;
 import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
 import com.konkerlabs.platform.registry.business.repositories.UserRepository;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.UserService;
-import com.konkerlabs.platform.registry.config.CdnConfig;
 import com.konkerlabs.platform.registry.config.PasswordUserConfig;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.RedisTestConfiguration;
-import com.konkerlabs.platform.registry.web.services.api.UploadService;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
         MongoTestConfiguration.class,
         BusinessTestConfiguration.class,
-        RedisTestConfiguration.class,
-        CdnConfig.class,
         PasswordUserConfig.class
 })
 @UsingDataSet(locations = {
@@ -65,9 +50,6 @@ public class UserServiceTest extends BusinessLayerTestSupport {
 
     @Autowired
     private UserService userService;
-
-    @Mock
-    private UploadService uploadService;
 
     private User user;
     private static final String oldPassword="abc123456789$$";
@@ -88,7 +70,6 @@ public class UserServiceTest extends BusinessLayerTestSupport {
 
     @After
     public void tearDown() throws Exception {
-    	Mockito.reset(uploadService);
     }
 
     @Test

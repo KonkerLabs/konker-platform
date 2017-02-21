@@ -1,0 +1,104 @@
+{
+    "dataEnrichmentExtensions": [
+        {
+            "_id": "a09b3f34-db24-11e5-8a31-7b3889d9b0ecc",
+            "_class": "com.konkerlabs.platform.registry.business.model.DataEnrichmentExtension",
+            "guid" : "aac07163-4192-4db2-89a8-6f2b2aac514cc",
+            "name": "REST-from-Prestashop-deviceDeletion",
+            "type": "REST",
+            "description": "Get REST Data from Prestahop for Device deletion",
+            "incoming": "device://konker/7d51c242-81db-11e6-a8c2-0746f010e945",
+            "containerKey": "prestashopData",
+            "parameters": {
+                "URL": "https://www.google.com/device/@{#deviceId}",
+                "User": "user",
+                "Password": "pass"
+            },
+            "active": true,
+            "tenant": {
+                "$id": "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+                "$ref": "tenants"
+            }
+        },
+        {
+            "_id": "a09b3f34-db24-11e5-8a31-7b3889d9b0eb",
+            "_class": "com.konkerlabs.platform.registry.business.model.DataEnrichmentExtension",
+            "guid" : "aac07163-4192-4db2-89a8-6f2b2aac514b",
+            "name": "REST-from-Prestashop-01",
+            "type": "REST",
+            "description": "Get REST Data from Prestahop",
+            "incoming": "device://konker/8d51c242-81db-11e6-a8c2-0746f010e945",
+            "containerKey": "prestashopData",
+            "parameters": {
+                "URL": "https://www.google.com/device/@{#deviceId}",
+                "User": "user",
+                "Password": "pass"
+            },
+            "active": true,
+            "tenant": {
+                "$id": "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+                "$ref": "tenants"
+            }
+        },
+        {
+            "_id": "a97e0d46-db26-11e5-be01-8bc8ddc000bf",
+            "_class": "com.konkerlabs.platform.registry.business.model.DataEnrichmentExtension",
+            "guid" : "aac07163-4192-4db2-89a8-6f2b2aac514c",
+            "name": "REST-from-Magento-01",
+            "type": "REST",
+            "description": "Get REST Data from Magento",
+            "incoming": "device://konker/8d51c242-81db-11e6-a8c2-0746f010e945",
+            "containerKey": "magentoData",
+            "parameters": {
+                "URL": "https://www.google.com/device/@{#deviceId}",
+                "User": "user",
+                "Password": "pass"
+            },
+            "active": true,
+            "tenant": {
+                "$id": "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+                "$ref": "tenants"
+            }
+        },
+        {
+            "_id": "a97e0d46-db26-11e5-be01-8bc8ddc000ac",
+            "_class": "com.konkerlabs.platform.registry.business.model.DataEnrichmentExtension",
+            "guid" : "aac07163-4192-4db2-89a8-6f2b2aac514d",
+            "name": "REST-from-Magento-01_1",
+            "type": "REST",
+            "description": "Get REST Data from Magento",
+            "incoming": "device://konker/abc456",
+            "containerKey": "enrich1",
+            "parameters": {
+                "URL": "https://www.google.com/device/@{deviceId}",
+                "User": "user",
+                "Password": "pass"
+            },
+            "active": true,
+            "tenant": {
+                "$id": "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+                "$ref": "tenants"
+            }
+        },
+        {
+            "_id": "a97e0d46-db26-11e5-be01-8bc8ddc000ae",
+            "_class": "com.konkerlabs.platform.registry.business.model.DataEnrichmentExtension",
+            "guid" : "aac07163-4192-4db2-89a8-6f2b2aac514e",
+            "name": "REST-from-Magento-01_2",
+            "type": "REST",
+            "description": "Get REST Data from Magento",
+            "incoming": "device://konker/abc789",
+            "containerKey": "enrich2",
+            "parameters": {
+                "URL": "https://www.google.com/device/@{#deviceId}",
+                "User": "user",
+                "Password": "pass"
+            },
+            "active": false,
+            "tenant": {
+                "$id": "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+                "$ref": "tenants"
+            }
+        }
+    ]
+}

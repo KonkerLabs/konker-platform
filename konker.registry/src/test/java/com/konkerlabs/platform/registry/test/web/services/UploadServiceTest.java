@@ -1,4 +1,4 @@
-package com.konkerlabs.platform.registry.test.business.services;
+package com.konkerlabs.platform.registry.test.web.services;
 
 import com.amazonaws.util.Base64;
 import com.konkerlabs.platform.registry.business.repositories.upload.AwsUploadRepository;

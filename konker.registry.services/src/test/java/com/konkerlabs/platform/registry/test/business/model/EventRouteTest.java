@@ -10,11 +10,12 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.UUID;
 
-import static com.konkerlabs.platform.registry.business.services.publishers.EventPublisherDevice.DEVICE_MQTT_CHANNEL;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 public class EventRouteTest {
+
+    private static final String DEVICE_MQTT_CHANNEL = "channel";
 
 	private EventRoute subject;
 	private String incomingAuthority = "0000000000000004";

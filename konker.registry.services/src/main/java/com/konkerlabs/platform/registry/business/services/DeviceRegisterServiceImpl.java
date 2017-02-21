@@ -17,8 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
-import org.springframework.core.env.Environment;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.google.zxing.BarcodeFormat;
@@ -30,7 +28,6 @@ import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.EventRouteRepository;
@@ -42,8 +39,6 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBui
 import com.konkerlabs.platform.registry.config.PubServerConfig;
 import com.konkerlabs.platform.security.exceptions.SecurityException;
 import com.konkerlabs.platform.security.managers.PasswordManager;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
 import org.springframework.util.StringUtils;
 
 @Service
@@ -66,12 +61,6 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
     @Autowired
     private PubServerConfig pubServerConfig;
-
-    @Autowired
-    private RedisTemplate<String, String> redisTemplate;
-    
-    @Autowired
-    private Environment environment;
 
     @Override
     public ServiceResponse<Device> register(Tenant tenant, Device device) {
