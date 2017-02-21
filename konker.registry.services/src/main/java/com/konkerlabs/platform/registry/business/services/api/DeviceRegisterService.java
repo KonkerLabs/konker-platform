@@ -29,6 +29,23 @@ public interface DeviceRegisterService {
 		}
 	}
 
+    public enum Messages {
+        DEVICE_REGISTERED_SUCCESSFULLY("controller.device.registered.success"),
+        DEVICE_REMOVED_SUCCESSFULLY("controller.device.removed.succesfully"),
+        DEVICE_REMOVED_UNSUCCESSFULLY("controller.device.removed.unsuccesfully"),
+        DEVICE_QRCODE_ERROR("service.device.qrcode.have_errors");
+
+        public String getCode() {
+            return code;
+        }
+
+        private String code;
+
+        Messages(String code) {
+            this.code = code;
+        }
+    }
+
     @RequiredArgsConstructor
     @Getter
     class DeviceSecurityCredentials {

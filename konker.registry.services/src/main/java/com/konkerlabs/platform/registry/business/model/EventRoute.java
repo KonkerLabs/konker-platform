@@ -2,12 +2,9 @@ package com.konkerlabs.platform.registry.business.model;
 
 import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.registry.business.services.publishers.EventPublisherSms;
 import com.konkerlabs.platform.utilities.validations.api.Validatable;
 import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
-import lombok.experimental.Tolerate;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.annotation.Id;
@@ -19,14 +16,19 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.konkerlabs.platform.registry.business.services.publishers.EventPublisherDevice.DEVICE_MQTT_CHANNEL;
-
-
 @Document(collection = "eventRoutes")
 @Data
 @Builder
 public class EventRoute implements URIDealer, Validatable {
 
+    public static final String DEVICE_MQTT_CHANNEL = "channel";
+
+    public static final String SMS_MESSAGE_STRATEGY_PARAMETER_NAME = "messageStrategy";
+    public static final String SMS_MESSAGE_FORWARD_STRATEGY_PARAMETER_VALUE = "forward";
+    public static final String SMS_MESSAGE_CUSTOM_STRATEGY_PARAMETER_VALUE = "custom";
+
+    public static final String SMS_MESSAGE_TEMPLATE_PARAMETER_NAME = "messageTemplate";
+ 
     public enum Validations {
         NAME_NULL("model.event_route.name.not_null"),
         INCOMING_ACTOR_NULL("model.event_route.incoming_actor.not_null"),
@@ -163,12 +165,12 @@ public class EventRoute implements URIDealer, Validatable {
         if (!"sms".equals(getOutgoing().getUri().getScheme())) {
             validations.put(Validations.OUTGOING_ACTOR_URI_MUST_BE_A_SMS.getCode(),null);
         } else {
-            if (EventPublisherSms.SMS_MESSAGE_CUSTOM_STRATEGY_PARAMETER_VALUE.equals(data.get(EventPublisherSms.SMS_MESSAGE_STRATEGY_PARAMETER_NAME))) {
-                if (!Optional.ofNullable(data.get(EventPublisherSms.SMS_MESSAGE_TEMPLATE_PARAMETER_NAME)).filter(t -> !t.trim().isEmpty()).isPresent())
+            if (SMS_MESSAGE_CUSTOM_STRATEGY_PARAMETER_VALUE.equals(data.get(SMS_MESSAGE_STRATEGY_PARAMETER_NAME))) {
+                if (!Optional.ofNullable(data.get(SMS_MESSAGE_TEMPLATE_PARAMETER_NAME)).filter(t -> !t.trim().isEmpty()).isPresent())
                     validations.put(Validations.OUTGOING_SMS_CUSTOM_TEXT_MANDATORY.getCode(),null);
-            } else if (!EventPublisherSms.SMS_MESSAGE_FORWARD_STRATEGY_PARAMETER_VALUE.equals(data.get(EventPublisherSms.SMS_MESSAGE_STRATEGY_PARAMETER_NAME))) {
+            } else if (!SMS_MESSAGE_FORWARD_STRATEGY_PARAMETER_VALUE.equals(data.get(SMS_MESSAGE_STRATEGY_PARAMETER_NAME))) {
                 validations.put(Validations.OUTGOING_SMS_CUSTOM_TEXT_MANDATORY.getCode(),
-                    new Object[]{data.get(EventPublisherSms.SMS_MESSAGE_STRATEGY_PARAMETER_NAME)}
+                    new Object[]{data.get(SMS_MESSAGE_STRATEGY_PARAMETER_NAME)}
                 );
             }
         }

@@ -43,7 +43,6 @@ import static org.mockito.Mockito.when;
         MongoTestConfiguration.class,
         UtilitiesConfig.class,
         BusinessTestConfiguration.class,
-        SolrTestConfiguration.class,
         RedisTestConfiguration.class,
         PubServerConfig.class
 })

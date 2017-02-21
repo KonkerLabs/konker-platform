@@ -2,11 +2,9 @@ package com.konkerlabs.platform.registry.test.web.forms;
 
 import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
-import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.SmsDestinationURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
-import com.konkerlabs.platform.registry.business.services.publishers.EventPublisherSms;
 import com.konkerlabs.platform.registry.web.forms.EventRouteForm;
 import org.junit.Before;
 import org.junit.Rule;
@@ -178,8 +176,8 @@ public class EventRouteFormTest {
                     }
                 }.toURI())
                 .data(new HashMap<String, String>() {{
-                    put(EventPublisherSms.SMS_MESSAGE_STRATEGY_PARAMETER_NAME, "custom");
-                    put(EventPublisherSms.SMS_MESSAGE_TEMPLATE_PARAMETER_NAME, "A given message template");
+                    put(EventRoute.SMS_MESSAGE_STRATEGY_PARAMETER_NAME, "custom");
+                    put(EventRoute.SMS_MESSAGE_TEMPLATE_PARAMETER_NAME, "A given message template");
                 }})
                 .build());
 

@@ -1,9 +1,6 @@
 package com.konkerlabs.platform.registry.business.services.api;
 
-import com.amazonaws.services.s3.model.S3ObjectInputStream;
-
 import java.io.InputStream;
-
 
 public interface UploadService {
 

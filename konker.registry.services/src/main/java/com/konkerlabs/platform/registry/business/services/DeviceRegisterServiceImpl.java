@@ -2,7 +2,6 @@ package com.konkerlabs.platform.registry.business.services;
 
 import java.io.ByteArrayOutputStream;
 import java.util.AbstractMap;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +40,6 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterServ
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
-import com.konkerlabs.platform.registry.web.controllers.DeviceController;
 import com.konkerlabs.platform.security.exceptions.SecurityException;
 import com.konkerlabs.platform.security.managers.PasswordManager;
 import com.typesafe.config.Config;
@@ -313,7 +311,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
             deviceRepository.delete(device);
         } catch (BusinessException e){
             return ServiceResponseBuilder.<Device>error()
-                    .withMessage(DeviceController.Messages.DEVICE_REMOVED_UNSUCCESSFULLY.getCode())
+                    .withMessage(Messages.DEVICE_REMOVED_UNSUCCESSFULLY.getCode())
                     .withResult(device)
                     .build();
         }
@@ -321,7 +319,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         LOGGER.info("Device removed. Id: {}", device.getDeviceId(), tenant.toURI(), tenant.getLogLevel());
 
         return ServiceResponseBuilder.<Device>ok()
-                .withMessage(DeviceController.Messages.DEVICE_REMOVED_SUCCESSFULLY.getCode())
+                .withMessage(Messages.DEVICE_REMOVED_SUCCESSFULLY.getCode())
                 .withResult(device)
                 .build();
     }
@@ -403,7 +401,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
             return ServiceResponseBuilder.<String> ok().withResult(result).build();
         } catch (Exception e){
             return ServiceResponseBuilder.<String> error()
-                    .withMessage(DeviceController.Messages.DEVICE_QRCODE_ERROR.getCode())
+                    .withMessage(Messages.DEVICE_QRCODE_ERROR.getCode())
                     .build();
         }
     }

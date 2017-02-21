@@ -1,10 +1,9 @@
 package com.konkerlabs.platform.registry.test.business.services.publishers;
 
 import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.SmsDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
-import com.konkerlabs.platform.registry.business.model.behaviors.SmsDestinationURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.events.EventRepository;
@@ -36,7 +35,6 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.konkerlabs.platform.registry.business.services.publishers.EventPublisherDevice.DEVICE_MQTT_CHANNEL;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -46,7 +44,6 @@ import static org.mockito.Mockito.*;
 @ContextConfiguration(classes = {
         MongoTestConfiguration.class,
         BusinessTestConfiguration.class,
-        SolrTestConfiguration.class,
         RedisTestConfiguration.class
 })
 @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/sms-destinations.json"})
@@ -101,13 +98,13 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
 
         messageTemplate = "Current field value is @{#amount}";
 
-        EventPublisherSms.class.cast(subject).setEventRepository(eventRepository);
+        EventPublisherSms.class.cast(subject);
         tenant = tenantRepository.findByDomainName("konker");
 
         data = new HashMap<String,String>();
-        data.put(EventPublisherSms.SMS_MESSAGE_STRATEGY_PARAMETER_NAME,
-                 EventPublisherSms.SMS_MESSAGE_CUSTOM_STRATEGY_PARAMETER_VALUE);
-        data.put(EventPublisherSms.SMS_MESSAGE_TEMPLATE_PARAMETER_NAME,
+        data.put(EventRoute.SMS_MESSAGE_STRATEGY_PARAMETER_NAME,
+        		 EventRoute.SMS_MESSAGE_CUSTOM_STRATEGY_PARAMETER_VALUE);
+        data.put(EventRoute.SMS_MESSAGE_TEMPLATE_PARAMETER_NAME,
                  messageTemplate);
 
         destination = destinationService.getByGUID(tenant, REGISTERED_AND_ACTIVE_DESTINATION_GUID).getResult();
@@ -173,7 +170,7 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldRaiseAnExceptionIfMessageStrategyParameterIsNull() throws Exception {
-        data.remove(EventPublisherSms.SMS_MESSAGE_STRATEGY_PARAMETER_NAME);
+        data.remove(EventRoute.SMS_MESSAGE_STRATEGY_PARAMETER_NAME);
 
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("A SMS message strategy is required");
@@ -183,7 +180,7 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldRaiseAnExceptionIfMessageStrategyParameterIsEmpty() throws Exception {
-        data.put(EventPublisherSms.SMS_MESSAGE_STRATEGY_PARAMETER_NAME,"");
+        data.put(EventRoute.SMS_MESSAGE_STRATEGY_PARAMETER_NAME,"");
 
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("A SMS message strategy is required");
@@ -193,9 +190,9 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldRaiseAnExceptionIfMessageTemplateParameterIsNullOnCustomMessageStrategy() throws Exception {
-        data.put(EventPublisherSms.SMS_MESSAGE_STRATEGY_PARAMETER_NAME,
-                 EventPublisherSms.SMS_MESSAGE_CUSTOM_STRATEGY_PARAMETER_VALUE);
-        data.remove(EventPublisherSms.SMS_MESSAGE_TEMPLATE_PARAMETER_NAME);
+        data.put(EventRoute.SMS_MESSAGE_STRATEGY_PARAMETER_NAME,
+        		 EventRoute.SMS_MESSAGE_CUSTOM_STRATEGY_PARAMETER_VALUE);
+        data.remove(EventRoute.SMS_MESSAGE_TEMPLATE_PARAMETER_NAME);
 
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("A message template is required on custom strategy");
@@ -289,8 +286,8 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
     public void onEnabledDestinationShouldSendReceivedPayloadThroughGatewayIfStrategyIsForward() throws Exception {
         String expectedMessage = event.getPayload();
 
-        data.put(EventPublisherSms.SMS_MESSAGE_STRATEGY_PARAMETER_NAME,
-                 EventPublisherSms.SMS_MESSAGE_FORWARD_STRATEGY_PARAMETER_VALUE);
+        data.put(EventRoute.SMS_MESSAGE_STRATEGY_PARAMETER_NAME,
+        		 EventRoute.SMS_MESSAGE_FORWARD_STRATEGY_PARAMETER_VALUE);
 
         subject.send(event,destinationUri,data,tenant);
 
