@@ -82,16 +82,15 @@ public class DeviceController implements ApplicationContextAware {
     
     private Tenant tenant;
     private User user;
-    private PubServerConfig pubServerConfig;
+    private PubServerConfig pubServerConfig = new PubServerConfig();
     
     @Autowired
-    public DeviceController(DeviceRegisterService deviceRegisterService, DeviceEventService deviceEventService, EventSchemaService eventSchemaService, Tenant tenant, User user, PubServerConfig pubServerConfig) {
+    public DeviceController(DeviceRegisterService deviceRegisterService, DeviceEventService deviceEventService, EventSchemaService eventSchemaService, Tenant tenant, User user) {
         this.deviceRegisterService = deviceRegisterService;
         this.deviceEventService = deviceEventService;
         this.eventSchemaService = eventSchemaService;
         this.tenant = tenant;
         this.user = user;
-        this.pubServerConfig = pubServerConfig;
     }
 
     @RequestMapping

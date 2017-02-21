@@ -31,13 +31,13 @@ public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
     @Autowired
     private PasswordBlacklistRepository passwordBlacklistRepository;
-    @Autowired
-    private PasswordUserConfig passwordUserConfig;
-    
+
+    private PasswordUserConfig passwordUserConfig; 
+
     private PasswordManager passwordManager;
 
-
     public UserServiceImpl() {
+        passwordUserConfig = new PasswordUserConfig(); 
         passwordManager = new PasswordManager();
     }
 
@@ -233,7 +233,7 @@ public class UserServiceImpl implements UserService {
      * @return String encoded password
      * @throws Exception
      */
-    private String encodePassword(String password) throws Exception {
+    private String encodePassword(String password) throws Exception {      
         if (!Optional.ofNullable(passwordManager).isPresent()) {
             passwordManager = new PasswordManager();
         }

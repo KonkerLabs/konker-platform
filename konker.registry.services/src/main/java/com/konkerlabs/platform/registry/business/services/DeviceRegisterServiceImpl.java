@@ -59,8 +59,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
     @Autowired @Qualifier("mongoEvents")
     private EventRepository eventRepository;
 
-    @Autowired
-    private PubServerConfig pubServerConfig;
+    private PubServerConfig pubServerConfig = new PubServerConfig();
 
     @Override
     public ServiceResponse<Device> register(Tenant tenant, Device device) {
