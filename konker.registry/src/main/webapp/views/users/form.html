@@ -43,7 +43,7 @@
         <div class="panel-user-fields">
             <div class="col-md-12">
                 <div class="col-md-2 col-sm-6 col-xs-5">
-                    <img data-th-src="*{avatar}"
+                    <img data-th-attr="src=${@userAvatarPath.absolutePath}"
                          data-th-if="*{avatarUploadEnabled}"
                          class="avataraccount img-responsive">
                 </div>
