@@ -40,8 +40,8 @@ public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherSe
 	protected Class<?>[] getRootConfigClasses() {
 		return new Class<?>[] { SecurityConfig.class, BusinessConfig.class, MongoConfig.class, MongoAuditConfig.class,
 				MqttConfig.class, UtilitiesConfig.class, RedisConfig.class, SpringMailConfig.class,
-				SmsConfig.class, WebConfig.class, PubServerConfig.class, IntegrationConfig.class, CdnConfig.class,
-				PasswordUserConfig.class, RecaptchaConfig.class, EmailConfig.class, HotjarConfig.class,
+				SmsConfig.class, WebConfig.class, IntegrationConfig.class, CdnConfig.class,
+				RecaptchaConfig.class, EmailConfig.class, HotjarConfig.class,
 				EnvironmentConfig.class};
 	}
 
