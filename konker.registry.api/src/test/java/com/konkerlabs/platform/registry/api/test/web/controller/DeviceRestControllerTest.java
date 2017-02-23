@@ -21,6 +21,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import com.konkerlabs.platform.registry.api.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.api.model.DeviceVO;
 import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
 import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
@@ -33,9 +34,10 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBui
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = DeviceRestController.class)
 @AutoConfigureMockMvc(secure = false)
-@ContextConfiguration(classes = { 
+@ContextConfiguration(classes = {
         WebTestConfiguration.class,
-        MongoTestConfig.class 
+        MongoTestConfig.class,
+        WebMvcConfig.class
 })
 public class DeviceRestControllerTest extends WebLayerTestContext {
 
@@ -46,7 +48,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     private Tenant tenant;
 
     private Device device1;
-    
+
     private Device device2;
 
     @Before
@@ -181,7 +183,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.result").doesNotExist());
 
     }
-    
+
 
     @Test
     public void shouldUpdateDevice() throws Exception {
@@ -213,7 +215,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 
         when(deviceRegisterService.update(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.anyString(), org.mockito.Matchers.any(Device.class)))
             .thenReturn(ServiceResponseBuilder.<Device> error().build());
-    
+
         getMockMvc().perform(MockMvcRequestBuilders.put("/devices/" + device1.getGuid())
                                                    .content(getJson(new DeviceVO(device1)))
                                                    .contentType("application/json")
@@ -265,5 +267,5 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 
     }
 
-    
+
 }
