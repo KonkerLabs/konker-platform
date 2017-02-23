@@ -7,7 +7,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Supplier;
@@ -67,6 +66,28 @@ public class DeviceController implements ApplicationContextAware {
         Messages(String code) {
             this.code = code;
         }
+    }
+    
+    public class ChannelVO {
+        private String name;
+        private boolean isDefaultChannel = false;
+
+        public ChannelVO(String channelName) {
+            this.name = channelName;
+        }
+
+        public String getName() {
+            return name;
+        }
+        
+        public void setDefault() {
+            this.isDefaultChannel = true;
+        }
+
+        public boolean isDefault() {
+            return isDefaultChannel;
+        }
+
     }
 
     private ApplicationContext applicationContext;
@@ -198,9 +219,9 @@ public class DeviceController implements ApplicationContextAware {
 		}
 		
 		// Load lists
-		ServiceResponse<List<String>> channels = eventSchemaService.findKnownIncomingChannelsBy(tenant, deviceGuid);
+		ServiceResponse<List<String>> channelsServiceResponse = eventSchemaService.findKnownIncomingChannelsBy(tenant, deviceGuid);
 
-		if (defaultChannel != null && !channels.getResult().contains(defaultChannel)) {
+		if (defaultChannel != null && !channelsServiceResponse.getResult().contains(defaultChannel)) {
 			defaultChannel = null; // invalid channel
 		}
 
@@ -224,9 +245,20 @@ public class DeviceController implements ApplicationContextAware {
 			existsNumericMetric = true;
 		}
 
+
+		// prepare a list of channel VOs to be displayed
+		List<ChannelVO> channels = new ArrayList<ChannelVO>();  
+		for (String channelName : channelsServiceResponse.getResult()) {
+            ChannelVO channelVO = new ChannelVO(channelName);
+		    if (channelVO.getName().equals(defaultChannel)) {
+                channelVO.setDefault();
+            }
+		    channels.add(channelVO);
+        }
+		
 		// Add objects
 		mv.addObject("device", device)
-		  .addObject("channels", channels.getResult())
+		  .addObject("channels", channels)
 		  .addObject("defaultChannel", defaultChannel)
 		  .addObject("metrics", listMetrics)
 		  .addObject("defaultMetric", defaultMetric)
