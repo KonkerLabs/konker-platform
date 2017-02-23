@@ -62,7 +62,7 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements Application
                 .resourceChain(true)
                 .addResolver(new VersionResourceResolver().addContentVersionStrategy("/**")).addTransformer(new CssLinkResourceTransformer());
     }
-    
+
     @Bean
     public ITemplateResolver templateResolver() {
         SpringResourceTemplateResolver templateResolver = new SpringResourceTemplateResolver();
@@ -107,12 +107,26 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements Application
     @Bean(name = "messageSource")
     public MessageSource getMessageSource() {
         ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
-        messageSource.addBasenames("/WEB-INF/i18n/global", "/WEB-INF/i18n/menu", "/WEB-INF/i18n/devices",
-				"/WEB-INF/i18n/routes", "/WEB-INF/i18n/destinations", "/WEB-INF/i18n/tenants",
-                "/WEB-INF/i18n/transformations", "/WEB-INF/i18n/integration", "/WEB-INF/i18n/visualization",
-                "/WEB-INF/i18n/users", "/WEB-INF/i18n/languages", "/WEB-INF/i18n/timezones", "/WEB-INF/i18n/dateformats",
-                "/WEB-INF/i18n/loglevels", "/WEB-INF/i18n/email", "/WEB-INF/i18n/tokens", "/WEB-INF/i18n/usernotifications",
-                "/WEB-INF/i18n/error");
+        messageSource.addBasenames(
+				"/WEB-INF/i18n/destinations",
+				"/WEB-INF/i18n/routes",
+				"/WEB-INF/i18n/tenants",
+                "/WEB-INF/i18n/dateformats",
+                "/WEB-INF/i18n/devices",
+                "classpath:/messages/devices",
+                "/WEB-INF/i18n/email",
+                "/WEB-INF/i18n/error",
+                "/WEB-INF/i18n/global",
+                "/WEB-INF/i18n/integration",
+                "/WEB-INF/i18n/languages",
+                "/WEB-INF/i18n/loglevels",
+                "/WEB-INF/i18n/menu",
+                "/WEB-INF/i18n/timezones",
+                "/WEB-INF/i18n/tokens",
+                "/WEB-INF/i18n/transformations",
+                "/WEB-INF/i18n/usernotifications",
+                "/WEB-INF/i18n/users",
+                "/WEB-INF/i18n/visualization");
         messageSource.setDefaultEncoding("UTF-8");
         return messageSource;
     }

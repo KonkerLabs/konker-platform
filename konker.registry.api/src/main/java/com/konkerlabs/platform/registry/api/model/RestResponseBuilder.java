@@ -1,7 +1,7 @@
 package com.konkerlabs.platform.registry.api.model;
 
 import java.time.Instant;
-import java.util.Map;
+import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,13 +38,13 @@ public class RestResponseBuilder<T> {
     }
 
     
-    public RestResponseBuilder<T> withMessage(String code, Object... parameters) {
-        this.response.getResponseMessages().put(code, parameters == null || parameters.length == 0 ? null : parameters);
+    public RestResponseBuilder<T> withMessage(String message) {
+        this.response.getResponseMessages().add(message);
         return this;
     }
 
-    public RestResponseBuilder<T> withMessages(Map<String, Object[]> messages) {
-        this.response.getResponseMessages().putAll(messages);
+    public RestResponseBuilder<T> withMessages(List<String> messages) {
+        this.response.getResponseMessages().addAll(messages);
         return this;
     }
 

@@ -1,12 +1,12 @@
 package com.konkerlabs.platform.registry.api.model;
 
-import lombok.*;
-
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+import lombok.Data;
 
 @Data
 @JsonInclude(Include.NON_EMPTY)
@@ -17,7 +17,7 @@ public class RestResponse<T> {
     private Long timestamp;
     private int httpStatus;
     private Status status;
-    private Map<String, Object[]> responseMessages = new HashMap<>();
+    private List<String> responseMessages = new ArrayList<>();
     private T result;
 
 }

@@ -3,8 +3,10 @@ package com.konkerlabs.platform.registry.api.web.controller;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,6 +38,9 @@ public class DeviceRestController {
 
     @Autowired
     private User user;
+
+    @Autowired
+    private MessageSource messageSource;
 
     @GetMapping(path = "/")
     public ResponseEntity<?> list() {
@@ -96,7 +101,7 @@ public class DeviceRestController {
         } else {
             return RestResponseBuilder.ok()
                                       .withHttpStatus(HttpStatus.CREATED)
-                                      .withMessages(deviceResponse.getResponseMessages())
+                                      .withMessages(getMessages(deviceResponse))
                                       .withResult(new DeviceVO(deviceResponse.getResult()))
                                       .build();
         }
@@ -129,7 +134,7 @@ public class DeviceRestController {
         } else {
             return RestResponseBuilder.ok()
                                       .withHttpStatus(HttpStatus.OK)
-                                      .withMessages(deviceResponse.getResponseMessages())
+                                      .withMessages(getMessages(deviceResponse))
                                       .build();
         }
 
@@ -147,23 +152,33 @@ public class DeviceRestController {
         } else {
             return RestResponseBuilder.ok()
                     .withHttpStatus(HttpStatus.NO_CONTENT)
-                    .withMessages(deviceResponse.getResponseMessages())
+                    .withMessages(getMessages(deviceResponse))
                     .build();
         }
 
     }
 
-    private ResponseEntity<?> createErrorResponse(ServiceResponse<?> deviceResponse) {
+    private List<String> getMessages(ServiceResponse<?> serviceResponse) {
+        List<String> messages = serviceResponse.getResponseMessages().entrySet().stream()
+                .map(v -> messageSource.getMessage(v.getKey(), v.getValue(), user.getLanguage().getLocale()))
+                .collect(Collectors.toList());
 
-        if (containsValidations(deviceResponse)) {
+        return messages;
+    }
+
+    private ResponseEntity<?> createErrorResponse(ServiceResponse<?> serviceResponse) {
+
+        if (containsValidations(serviceResponse)) {
+
             return RestResponseBuilder.error()
                                       .withHttpStatus(HttpStatus.BAD_REQUEST)
-                                      .withMessages(deviceResponse.getResponseMessages())
+                                      .withMessages(getMessages(serviceResponse))
                                       .build();
         } else {
+
             return RestResponseBuilder.error()
                                       .withHttpStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-                                      .withMessages(deviceResponse.getResponseMessages())
+                                      .withMessages(getMessages(serviceResponse))
                                       .build();                
         }
 
