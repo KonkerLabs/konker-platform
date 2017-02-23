@@ -1,9 +1,11 @@
 package com.konkerlabs.platform.registry.api.web.controller;
 
+import io.swagger.annotations.*;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -23,9 +25,17 @@ import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 
-@RestController
+@RestController()
 @Scope("request")
-@RequestMapping(value = "/devices")
+@RequestMapping(
+        value = "/devices",
+        produces = MediaType.APPLICATION_JSON_VALUE,
+        consumes = MediaType.APPLICATION_JSON_VALUE
+)
+@ApiModel(
+        description = "Device",
+        subTypes = DeviceRest.class
+)
 public class DeviceRestController {
 
     @Autowired
