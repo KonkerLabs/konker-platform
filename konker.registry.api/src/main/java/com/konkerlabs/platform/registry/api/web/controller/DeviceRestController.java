@@ -1,5 +1,7 @@
 package com.konkerlabs.platform.registry.api.web.controller;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +37,28 @@ public class DeviceRestController {
     @Autowired
     private User user;
 
+    @GetMapping(path = "/")
+    public ResponseEntity<?> list() {
+
+        Tenant tenant = user.getTenant();
+
+        ServiceResponse<List<Device>> deviceResponse = deviceRegisterService.findAll(tenant);
+
+        if (!deviceResponse.isOk()) {
+            return createErrorResponse(deviceResponse);
+        } else {
+            List<DeviceVO> listVO = new ArrayList<>();
+            for (Device device: deviceResponse.getResult()) {
+                listVO.add(new DeviceVO(device));
+            }
+            return RestResponseBuilder.ok()
+                                      .withHttpStatus(HttpStatus.OK)
+                                      .withResult(listVO)
+                                      .build();
+        }
+
+    }
+
     @GetMapping(path = "/{deviceGuid}")
     public ResponseEntity<?> read(@PathVariable("deviceGuid") String deviceGuid) {
 
@@ -59,8 +83,11 @@ public class DeviceRestController {
 
         Tenant tenant = user.getTenant();
 
-        Device device = Device.builder().name(deviceForm.getName()).deviceId(deviceForm.getId())
-                .description(deviceForm.getDescription()).build();
+        Device device = Device.builder()
+                .name(deviceForm.getName())
+                .deviceId(deviceForm.getId())
+                .description(deviceForm.getDescription())
+                .build();
 
         ServiceResponse<Device> deviceResponse = deviceRegisterService.register(tenant, device);
 
@@ -126,7 +153,7 @@ public class DeviceRestController {
 
     }
 
-    private ResponseEntity<?> createErrorResponse(ServiceResponse<Device> deviceResponse) {
+    private ResponseEntity<?> createErrorResponse(ServiceResponse<?> deviceResponse) {
 
         if (containsValidations(deviceResponse)) {
             return RestResponseBuilder.error()
@@ -142,7 +169,7 @@ public class DeviceRestController {
 
     }
 
-    private boolean containsValidations(ServiceResponse<Device> deviceResponse) {
+    private boolean containsValidations(ServiceResponse<?> deviceResponse) {
 
         Map<String, Object[]> responseMessages = deviceResponse.getResponseMessages();
 
