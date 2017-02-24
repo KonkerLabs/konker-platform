@@ -7,14 +7,14 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class DeviceRest {
+public class DeviceVO {
 
     private String id;
     private String guid;
     private String name;
     private String description;
     
-    public DeviceRest(Device device) {
+    public DeviceVO(Device device) {
         this.id   = device.getDeviceId();
         this.guid = device.getGuid();
         this.name = device.getName();
