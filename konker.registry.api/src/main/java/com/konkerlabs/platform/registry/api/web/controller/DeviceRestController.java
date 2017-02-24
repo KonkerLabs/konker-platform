@@ -92,6 +92,7 @@ public class DeviceRestController {
                 .name(deviceForm.getName())
                 .deviceId(deviceForm.getId())
                 .description(deviceForm.getDescription())
+                .active(true)
                 .build();
 
         ServiceResponse<Device> deviceResponse = deviceRegisterService.register(tenant, device);
@@ -121,7 +122,7 @@ public class DeviceRestController {
         } else {
             deviceFromDB = deviceResponse.getResult();
         }
-        
+
         // update fields
         deviceFromDB.setName(deviceForm.getName());
         deviceFromDB.setDescription(deviceForm.getDescription());
@@ -179,7 +180,7 @@ public class DeviceRestController {
             return RestResponseBuilder.error()
                                       .withHttpStatus(HttpStatus.INTERNAL_SERVER_ERROR)
                                       .withMessages(getMessages(serviceResponse))
-                                      .build();                
+                                      .build();
         }
 
     }

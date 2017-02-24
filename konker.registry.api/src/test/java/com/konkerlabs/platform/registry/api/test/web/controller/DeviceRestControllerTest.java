@@ -53,8 +53,8 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 
     @Before
     public void setUp() {
-        device1 = Device.builder().deviceId("id1").name("name1").guid("guid1").build();
-        device2 = Device.builder().deviceId("id2").name("name2").guid("guid2").build();
+        device1 = Device.builder().deviceId("id1").name("name1").guid("guid1").active(true).build();
+        device2 = Device.builder().deviceId("id2").name("name2").guid("guid2").active(false).build();
     }
 
     @After
@@ -83,9 +83,11 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.result[0].id", is("id1")))
                     .andExpect(jsonPath("$.result[0].name", is("name1")))
                     .andExpect(jsonPath("$.result[0].guid", is("guid1")))
+                    .andExpect(jsonPath("$.result[0].active", is(true)))
                     .andExpect(jsonPath("$.result[1].id", is("id2")))
                     .andExpect(jsonPath("$.result[1].name", is("name2")))
-                    .andExpect(jsonPath("$.result[1].guid", is("guid2")));
+                    .andExpect(jsonPath("$.result[1].guid", is("guid2")))
+                    .andExpect(jsonPath("$.result[1].active", is(false)));
 
     }
 
@@ -122,7 +124,8 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.result").isMap())
                     .andExpect(jsonPath("$.result.id", is("id1")))
                     .andExpect(jsonPath("$.result.name", is("name1")))
-                    .andExpect(jsonPath("$.result.guid", is("guid1")));
+                    .andExpect(jsonPath("$.result.guid", is("guid1")))
+                    .andExpect(jsonPath("$.result.active", is(true)));
 
     }
 
@@ -161,7 +164,8 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.result").isMap())
                     .andExpect(jsonPath("$.result.id", is("id1")))
                     .andExpect(jsonPath("$.result.name", is("name1")))
-                    .andExpect(jsonPath("$.result.guid", is("guid1")));
+                    .andExpect(jsonPath("$.result.guid", is("guid1")))
+                    .andExpect(jsonPath("$.result.active", is(true)));
 
     }
 
