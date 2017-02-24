@@ -166,7 +166,7 @@ public class EventRouteRestController {
 
         RouteActor routeActor = RouteActor.builder().build();
 
-        if (routeForm.getType() == RouteActorType.DEVICE) {
+        if (routeForm.getType().equalsIgnoreCase(RouteActorType.DEVICE.name())) {
             ServiceResponse<Device> deviceResponse =  deviceRegisterService.getByDeviceGuid(tenant, routeForm.getGuid());
             if (deviceResponse.isOk()) {
                 routeActor.setDisplayName(deviceResponse.getResult().getName());
@@ -197,17 +197,46 @@ public class EventRouteRestController {
             routeFromDB = routeResponse.getResult();
         }
 
+        RouteActor incoming = null;
+        ServiceResponse<RouteActor> incomingResponse = getRouteActor(tenant, routeForm.getIncoming());
+        if (incomingResponse.isOk()) {
+            incoming = incomingResponse.getResult();
+        } else {
+            return createErrorResponse(incomingResponse);
+        }
+
+        RouteActor outgoing = null;
+        ServiceResponse<RouteActor> outgoingResponse = getRouteActor(tenant, routeForm.getOutgoing());
+        if (outgoingResponse.isOk()) {
+            outgoing = outgoingResponse.getResult();
+        } else {
+            return createErrorResponse(outgoingResponse);
+        }
+
+        Transformation transformation = null;
+        ServiceResponse<Transformation> transformationResponse = getTransformation(tenant, routeForm);
+        if (transformationResponse.isOk()) {
+            transformation = transformationResponse.getResult();
+        } else {
+            return createErrorResponse(transformationResponse);
+        }
+
         // update fields
         routeFromDB.setName(routeForm.getName());
         routeFromDB.setDescription(routeForm.getDescription());
+        routeFromDB.setIncoming(incoming);
+        routeFromDB.setOutgoing(outgoing);
+        routeFromDB.setTransformation(transformation);
+        routeFromDB.setFilteringExpression(routeForm.getFilteringExpression());
+        routeFromDB.setActive(routeForm.isActive());
 
         ServiceResponse<EventRoute> updateResponse = eventRouteService.update(tenant, routeGuid, routeFromDB);
 
         if (!updateResponse.isOk()) {
-            return createErrorResponse(routeResponse);
+            return createErrorResponse(updateResponse);
 
         } else {
-            return RestResponseBuilder.ok().withHttpStatus(HttpStatus.OK).withMessages(getMessages(routeResponse))
+            return RestResponseBuilder.ok().withHttpStatus(HttpStatus.OK).withMessages(getMessages(updateResponse))
                     .build();
         }
 

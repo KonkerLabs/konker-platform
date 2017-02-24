@@ -126,6 +126,7 @@ public class DeviceRestController {
         // update fields
         deviceFromDB.setName(deviceForm.getName());
         deviceFromDB.setDescription(deviceForm.getDescription());
+        deviceFromDB.setActive(deviceForm.isActive());
 
         ServiceResponse<Device> updateResponse = deviceRegisterService.update(tenant, deviceGuid, deviceFromDB);
 

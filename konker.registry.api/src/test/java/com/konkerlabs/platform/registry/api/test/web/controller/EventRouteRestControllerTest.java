@@ -267,6 +267,15 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
         when(eventRouteService.update(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.anyString(), org.mockito.Matchers.any(EventRoute.class)))
             .thenReturn(ServiceResponseBuilder.<EventRoute> ok().withResult(route1).build());
 
+        when(deviceRegisterService.getByDeviceGuid(tenant, device1.getGuid()))
+            .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device1).build());
+
+        when(deviceRegisterService.getByDeviceGuid(tenant, device2.getGuid()))
+            .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device2).build());
+
+        when(transformationService.get(tenant, transformation1.getGuid()))
+            .thenReturn(ServiceResponseBuilder.<Transformation> ok().withResult(transformation1).build());
+
         getMockMvc().perform(MockMvcRequestBuilders.put("/routes/" + route1.getGuid())
                                                    .content(getJson(new EventRouteVO(route1)))
                                                    .contentType("application/json")
@@ -288,6 +297,15 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
 
         when(eventRouteService.update(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.anyString(), org.mockito.Matchers.any(EventRoute.class)))
             .thenReturn(ServiceResponseBuilder.<EventRoute> error().build());
+
+        when(deviceRegisterService.getByDeviceGuid(tenant, device1.getGuid()))
+            .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device1).build());
+
+        when(deviceRegisterService.getByDeviceGuid(tenant, device2.getGuid()))
+            .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device2).build());
+
+        when(transformationService.get(tenant, transformation1.getGuid()))
+            .thenReturn(ServiceResponseBuilder.<Transformation> ok().withResult(transformation1).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.put("/routes/" + route1.getGuid())
                                                    .content(getJson(new EventRouteVO(route1)))

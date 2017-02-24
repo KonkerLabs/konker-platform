@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class RouteActorVO {
 
-    private RouteActorType type;
+    private String type;
     private String guid;
     private String channel;
 
@@ -18,11 +18,14 @@ public class RouteActorVO {
         if (routeActor.isDevice()) {
             String uriPath = routeActor.getUri().getPath();
 
-            this.type = RouteActorType.DEVICE;
+            this.type = RouteActorType.DEVICE.name();
             this.guid = uriPath.startsWith("/") ? uriPath.substring(1) : uriPath;
             this.channel = routeActor.getData().get(EventRoute.DEVICE_MQTT_CHANNEL);
         } else {
-            throw new IllegalArgumentException("Not supported: " + routeActor.getUri());
+            String uriPath = routeActor.getUri().getPath();
+
+            this.type = routeActor.getUri().getScheme();
+            this.guid = uriPath.startsWith("/") ? uriPath.substring(1) : uriPath;
         }
     }
 
