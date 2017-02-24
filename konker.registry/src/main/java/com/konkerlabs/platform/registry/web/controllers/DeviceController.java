@@ -68,8 +68,33 @@ public class DeviceController implements ApplicationContextAware {
         }
     }
     
-    public class ChannelVO {
+    public static class ChannelVO {
         private String name;
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((name == null) ? 0 : name.hashCode());
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            ChannelVO other = (ChannelVO) obj;
+            if (name == null) {
+                if (other.name != null)
+                    return false;
+            } else if (!name.equals(other.name))
+                return false;
+            return true;
+        }
+
         private boolean isDefaultChannel = false;
 
         public ChannelVO(String channelName) {
@@ -87,7 +112,6 @@ public class DeviceController implements ApplicationContextAware {
         public boolean isDefault() {
             return isDefaultChannel;
         }
-
     }
 
     private ApplicationContext applicationContext;
@@ -104,6 +128,9 @@ public class DeviceController implements ApplicationContextAware {
     private Tenant tenant;
     private User user;
     private PubServerConfig pubServerConfig;
+    
+    public DeviceController() {
+    }
     
     @Autowired
     public DeviceController(DeviceRegisterService deviceRegisterService, DeviceEventService deviceEventService, EventSchemaService eventSchemaService, Tenant tenant, User user, PubServerConfig pubServerConfig) {
