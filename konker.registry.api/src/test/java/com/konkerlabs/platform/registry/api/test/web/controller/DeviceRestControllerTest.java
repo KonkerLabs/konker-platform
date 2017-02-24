@@ -240,8 +240,6 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
             .thenReturn(ServiceResponseBuilder.<Device> ok().build());
 
         getMockMvc().perform(MockMvcRequestBuilders.delete("/devices/" + device1.getGuid())
-                                                   .content(getJson(new DeviceVO(device1)))
-                                                   .contentType("application/json")
                                                    .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is2xxSuccessful())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))
@@ -259,8 +257,6 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
             .thenReturn(ServiceResponseBuilder.<Device> error().build());
 
         getMockMvc().perform(MockMvcRequestBuilders.delete("/devices/" + device1.getGuid())
-                                                   .content(getJson(new DeviceVO(device1)))
-                                                   .contentType("application/json")
                                                    .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is5xxServerError())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))

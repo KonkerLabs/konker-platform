@@ -5,7 +5,9 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.Before;
@@ -26,11 +28,15 @@ import com.konkerlabs.platform.registry.api.model.EventRouteVO;
 import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
 import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
 import com.konkerlabs.platform.registry.api.web.controller.EventRouteRestController;
+import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.Transformation;
+import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.business.services.api.TransformationService;;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = EventRouteRestController.class)
@@ -46,6 +52,12 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
     private EventRouteService eventRouteService;
 
     @Autowired
+    private DeviceRegisterService deviceRegisterService;
+
+    @Autowired
+    private TransformationService transformationService;
+
+    @Autowired
     private Tenant tenant;
 
     private Transformation transformation1;
@@ -54,16 +66,48 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
 
     private EventRoute route2;
 
+    private Device device1;
+
+    private Device device2;
+
     @Before
     public void setUp() {
         transformation1 = Transformation.builder().guid("t_guid1").build();
-        route1 = EventRoute.builder().name("name1").guid("guid1").transformation(transformation1).active(true).build();
-        route2 = EventRoute.builder().name("name2").guid("guid2").filteringExpression("val eq 2").active(false).build();
+
+        device1 = Device.builder().tenant(tenant).guid("d_guid1").build();
+        device2 = Device.builder().tenant(tenant).guid("d_guid2").build();
+
+        Map<String, String> map = new HashMap<>();
+        map.put("channel", "SBT");
+
+        RouteActor routeActor1 = RouteActor.builder().uri(device1.toURI()).data(map).build();
+        RouteActor routeActor2 = RouteActor.builder().uri(device2.toURI()).data(map).build();
+
+        route1 = EventRoute.builder()
+                .name("name1")
+                .guid("guid1")
+                .incoming(routeActor1)
+                .outgoing(routeActor2)
+                .transformation(transformation1)
+                .active(true)
+                .build();
+
+        route2 = EventRoute.builder()
+                .name("name2")
+                .guid("guid2")
+                .incoming(routeActor2)
+                .outgoing(routeActor1)
+                .filteringExpression("val eq 2")
+                .active(false)
+                .build();
+
     }
 
     @After
     public void tearDown() {
         Mockito.reset(eventRouteService);
+        Mockito.reset(deviceRegisterService);
+        Mockito.reset(transformationService);
     }
 
     @Test
@@ -160,6 +204,15 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
         when(eventRouteService.save(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(EventRoute.class)))
             .thenReturn(ServiceResponseBuilder.<EventRoute> ok().withResult(route1).build());
 
+        when(deviceRegisterService.getByDeviceGuid(tenant, device1.getGuid()))
+            .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device1).build());
+
+        when(deviceRegisterService.getByDeviceGuid(tenant, device2.getGuid()))
+            .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device2).build());
+
+        when(transformationService.get(tenant, transformation1.getGuid()))
+            .thenReturn(ServiceResponseBuilder.<Transformation> ok().withResult(transformation1).build());
+
         getMockMvc().perform(MockMvcRequestBuilders.post("/routes/")
                                                    .content(getJson(new EventRouteVO(route1)))
                                                    .contentType("application/json")
@@ -181,6 +234,15 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
 
         when(eventRouteService.save(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(EventRoute.class)))
             .thenReturn(ServiceResponseBuilder.<EventRoute> error().withMessage(EventRouteService.Validations.NAME_IN_USE.getCode()).build());
+
+        when(deviceRegisterService.getByDeviceGuid(tenant, device1.getGuid()))
+            .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device1).build());
+
+        when(deviceRegisterService.getByDeviceGuid(tenant, device2.getGuid()))
+            .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device2).build());
+
+        when(transformationService.get(tenant, transformation1.getGuid()))
+            .thenReturn(ServiceResponseBuilder.<Transformation> ok().withResult(transformation1).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.post("/routes/")
                                                .content(getJson(new EventRouteVO(route1)))
@@ -247,8 +309,6 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
             .thenReturn(ServiceResponseBuilder.<EventRoute> ok().build());
 
         getMockMvc().perform(MockMvcRequestBuilders.delete("/routes/" + route1.getGuid())
-                                                   .content(getJson(new EventRouteVO(route1)))
-                                                   .contentType("application/json")
                                                    .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is2xxSuccessful())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))
@@ -266,8 +326,6 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
             .thenReturn(ServiceResponseBuilder.<EventRoute> error().build());
 
         getMockMvc().perform(MockMvcRequestBuilders.delete("/routes/" + route1.getGuid())
-                                                   .content(getJson(new EventRouteVO(route1)))
-                                                   .contentType("application/json")
                                                    .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is5xxServerError())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))
