@@ -2,6 +2,7 @@ package com.konkerlabs.platform.registry.test.web.controllers;
 
 import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.contains;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -61,6 +62,7 @@ import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
 import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
 import com.konkerlabs.platform.registry.web.controllers.DeviceController;
+import com.konkerlabs.platform.registry.web.controllers.DeviceController.ChannelVO;
 import com.konkerlabs.platform.registry.web.converters.InstantToStringConverter;
 import com.konkerlabs.platform.registry.web.forms.DeviceRegistrationForm;
 
@@ -204,7 +206,8 @@ public class DeviceControllerTest extends WebLayerTestContext {
 				.thenReturn(ServiceResponseBuilder.<List<Event>> ok().withResult(Collections.emptyList()).build());
 
 		// find last numeric metric mocks
-		List<String> channels = new ArrayList<String>() {{ add("square"); }};
+        List<String> channels = Collections.singletonList("square");
+		List<ChannelVO> channelVOs = Collections.singletonList(new ChannelVO("square"));
 		EventSchema lastSchema = EventSchema.builder().channel("square").field(SchemaField.builder().path("rj").build()).build();
 
 		when(eventSchemaService.findKnownIncomingChannelsBy(tenant, savedDevice.getGuid()))
@@ -217,7 +220,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
 			.thenReturn(ServiceResponseBuilder.<List<String>> ok().withResult(Collections.emptyList()).build());
 
 		getMockMvc().perform(get(MessageFormat.format("/devices/{0}/events", savedDevice.getGuid())))
-				.andExpect(model().attribute("channels", channels))
+				.andExpect(model().attribute("channels", channelVOs))
 				.andExpect(model().attribute("defaultChannel", "square"))
 				.andExpect(model().attribute("metrics", Collections.emptyList()))
 				.andExpect(model().attribute("device", savedDevice))
