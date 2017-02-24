@@ -1,10 +1,12 @@
 package com.konkerlabs.platform.registry.api.web.controller;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Scope;
@@ -21,12 +23,20 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.konkerlabs.platform.registry.api.model.EventRouteVO;
 import com.konkerlabs.platform.registry.api.model.RestResponseBuilder;
+import com.konkerlabs.platform.registry.api.model.RouteActorType;
+import com.konkerlabs.platform.registry.api.model.RouteActorVO;
+import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.EventRoute;
+import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.Transformation;
 import com.konkerlabs.platform.registry.business.model.User;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
 import com.konkerlabs.platform.registry.business.services.api.EventRouteService.Validations;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.business.services.api.TransformationService;
 
 @RestController
 @Scope("request")
@@ -35,6 +45,12 @@ public class EventRouteRestController {
 
     @Autowired
     private EventRouteService eventRouteService;
+
+    @Autowired
+    private DeviceRegisterService deviceRegisterService;
+
+    @Autowired
+    private TransformationService transformationService;
 
     @Autowired
     private User user;
@@ -82,8 +98,39 @@ public class EventRouteRestController {
 
         Tenant tenant = user.getTenant();
 
-        EventRoute route = EventRoute.builder().name(routeForm.getName())
-                .description(routeForm.getDescription()).active(true).build();
+        RouteActor incoming = null;
+        ServiceResponse<RouteActor> incomingResponse = getRouteActor(tenant, routeForm.getIncoming());
+        if (incomingResponse.isOk()) {
+            incoming = incomingResponse.getResult();
+        } else {
+            return createErrorResponse(incomingResponse);
+        }
+
+        RouteActor outgoing = null;
+        ServiceResponse<RouteActor> outgoingResponse = getRouteActor(tenant, routeForm.getOutgoing());
+        if (outgoingResponse.isOk()) {
+            outgoing = outgoingResponse.getResult();
+        } else {
+            return createErrorResponse(outgoingResponse);
+        }
+
+        Transformation transformation = null;
+        ServiceResponse<Transformation> transformationResponse = getTransformation(tenant, routeForm);
+        if (transformationResponse.isOk()) {
+            transformation = transformationResponse.getResult();
+        } else {
+            return createErrorResponse(transformationResponse);
+        }
+
+        EventRoute route = EventRoute.builder()
+                .name(routeForm.getName())
+                .description(routeForm.getDescription())
+                .incoming(incoming)
+                .outgoing(outgoing)
+                .filteringExpression(routeForm.getFilteringExpression())
+                .transformation(transformation)
+                .active(true)
+                .build();
 
         ServiceResponse<EventRoute> routeResponse = eventRouteService.save(tenant, route);
 
@@ -95,6 +142,46 @@ public class EventRouteRestController {
         }
 
     }
+
+    private ServiceResponse<Transformation> getTransformation(Tenant tenant, EventRouteVO routeForm) {
+
+        String guid = routeForm.getTransformationGuid();
+
+        if (StringUtils.isNoneBlank(guid)) {
+            ServiceResponse<Transformation> transformationResponse = transformationService.get(tenant, guid);
+            if (transformationResponse.isOk()) {
+                Transformation transformation = transformationResponse.getResult();
+                return ServiceResponseBuilder.<Transformation>ok().withResult(transformation).build();
+            } else {
+                return ServiceResponseBuilder.<Transformation>error().withMessages(transformationResponse.getResponseMessages()).build();
+            }
+        }
+
+        return ServiceResponseBuilder.<Transformation>ok().withResult(null).build();
+
+    }
+
+    @SuppressWarnings("serial")
+    private ServiceResponse<RouteActor> getRouteActor(Tenant tenant, RouteActorVO routeForm) {
+
+        RouteActor routeActor = RouteActor.builder().build();
+
+        if (routeForm.getType() == RouteActorType.DEVICE) {
+            ServiceResponse<Device> deviceResponse =  deviceRegisterService.getByDeviceGuid(tenant, routeForm.getGuid());
+            if (deviceResponse.isOk()) {
+                routeActor.setDisplayName(deviceResponse.getResult().getName());
+                routeActor.setUri(deviceResponse.getResult().toURI());
+                routeActor.setData(new HashMap<String, String>() {{ put(EventRoute.DEVICE_MQTT_CHANNEL, routeForm.getChannel()); }} );
+                return ServiceResponseBuilder.<RouteActor>ok().withResult(routeActor).build();
+            } else {
+                return ServiceResponseBuilder.<RouteActor>error().withMessages(deviceResponse.getResponseMessages()).build();
+            }
+        }
+
+        return ServiceResponseBuilder.<RouteActor>ok().withResult(null).build();
+
+    }
+
 
     @PutMapping(path = "/{routeGuid}")
     public ResponseEntity<?> update(@PathVariable("routeGuid") String routeGuid, @RequestBody EventRouteVO routeForm) {

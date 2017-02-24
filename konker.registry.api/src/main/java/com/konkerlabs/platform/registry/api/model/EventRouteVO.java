@@ -15,6 +15,8 @@ public class EventRouteVO {
     private String guid;
     private String name;
     private String description;
+    private RouteActorVO incoming;
+    private RouteActorVO outgoing;
     private String filteringExpression;
     private String transformationGuid;
     private boolean active;
@@ -22,6 +24,8 @@ public class EventRouteVO {
     public EventRouteVO(EventRoute route) {
         this.guid   = route.getGuid();
         this.name   = route.getName();
+        this.incoming = new RouteActorVO(route.getIncoming());
+        this.outgoing = new RouteActorVO(route.getOutgoing());
         this.description = route.getDescription();
         this.filteringExpression = route.getFilteringExpression();
         this.transformationGuid =  Optional.ofNullable(route.getTransformation()).map(Transformation::getGuid).orElse(null);
