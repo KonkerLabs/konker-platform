@@ -50,8 +50,8 @@ import nz.net.ultraq.thymeleaf.LayoutDialect;
 @Import({SecurityConfig.class})
 public class WebMvcConfig extends WebMvcConfigurerAdapter implements ApplicationContextAware {
 
-	@Autowired
-	private WebConfig webConfig;
+    @Autowired
+    private WebConfig webConfig;
 
     private ApplicationContext applicationContext;
 
@@ -108,12 +108,9 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements Application
     public MessageSource getMessageSource() {
         ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
         messageSource.addBasenames(
-				"/WEB-INF/i18n/destinations",
-				"/WEB-INF/i18n/routes",
-				"/WEB-INF/i18n/tenants",
                 "/WEB-INF/i18n/dateformats",
+                "/WEB-INF/i18n/destinations",
                 "/WEB-INF/i18n/devices",
-                "classpath:/messages/devices",
                 "/WEB-INF/i18n/email",
                 "/WEB-INF/i18n/error",
                 "/WEB-INF/i18n/global",
@@ -121,12 +118,16 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements Application
                 "/WEB-INF/i18n/languages",
                 "/WEB-INF/i18n/loglevels",
                 "/WEB-INF/i18n/menu",
+                "/WEB-INF/i18n/routes",
+                "/WEB-INF/i18n/tenants",
                 "/WEB-INF/i18n/timezones",
                 "/WEB-INF/i18n/tokens",
                 "/WEB-INF/i18n/transformations",
                 "/WEB-INF/i18n/usernotifications",
                 "/WEB-INF/i18n/users",
-                "/WEB-INF/i18n/visualization");
+                "/WEB-INF/i18n/visualization",
+                "classpath:/messages/devices",
+                "classpath:/messages/routes");
         messageSource.setDefaultEncoding("UTF-8");
         return messageSource;
     }
@@ -143,8 +144,6 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements Application
         registry.addInterceptor(new UserDefinedLocaleHandlerInterceptor());
         super.addInterceptors(registry);
     }
-
-
 
     @Override
     public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
