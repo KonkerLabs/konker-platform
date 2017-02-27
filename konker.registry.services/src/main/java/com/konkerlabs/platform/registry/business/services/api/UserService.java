@@ -1,6 +1,8 @@
 package com.konkerlabs.platform.registry.business.services.api;
 
 
+import java.util.List;
+
 import com.konkerlabs.platform.registry.business.model.User;
 
 public interface UserService {
@@ -61,5 +63,7 @@ public interface UserService {
             String newPasswordConfirmation);
 
     ServiceResponse<User> findByEmail(String email);
+    
+    ServiceResponse<List<User>> findAll();
 
 }

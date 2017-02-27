@@ -3,6 +3,7 @@ package com.konkerlabs.platform.registry.business.services;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.text.MessageFormat;
+import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -325,6 +326,14 @@ public class UserServiceImpl implements UserService {
 		
 		User user = userRepository.findOne(email);
 		return ServiceResponseBuilder.<User>ok().withResult(user).build();
+	}
+
+	@Override
+	public ServiceResponse<List<User>> findAll() {
+		return ServiceResponseBuilder
+				.<List<User>>ok()
+				.withResult(userRepository.findAll())
+				.build();
 	}
 
 }
