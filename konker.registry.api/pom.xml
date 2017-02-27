@@ -2,17 +2,18 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <!--<parent>
-        <artifactId>konker.platform</artifactId>
-        <groupId>com.konkerlabs</groupId>
-        <version>1.0-SNAPSHOT</version>
-    </parent>-->
+
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>1.5.1.RELEASE</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
+
+    <properties>
+      <maven.compiler.source>1.8</maven.compiler.source>
+      <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
 
     <groupId>com.konkerlabs</groupId>
     <artifactId>konker.registry.api</artifactId>
@@ -23,6 +24,22 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.fakemongo</groupId>
+            <artifactId>fongo</artifactId>
+            <version>2.0.10</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- Spring Boot -->
         <dependency>
@@ -50,7 +67,7 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
-            </dependency>
+        </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -67,6 +84,22 @@
             <artifactId>konker.registry.services</artifactId>
             <version>0.0.1</version>
         </dependency>
+        <!-- doc -->
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger2</artifactId>
+            <version>2.4.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger-ui</artifactId>
+            <version>2.4.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-bean-validators</artifactId>
+            <version>2.6.1</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -77,6 +110,22 @@
                 <configuration>
                     <finalName>registry-api</finalName>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.3</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.codehaus.plexus</groupId>
+                        <artifactId>plexus-utils</artifactId>
+                        <version>3.0.22</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>
