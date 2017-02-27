@@ -5,10 +5,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.konkerlabs.platform.registry.api.model.RestResponse;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,7 +36,11 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 
 @RestController
 @Scope("request")
-@RequestMapping(value = "/devices")
+@RequestMapping(
+        value = "/devices",
+        consumes = {MediaType.APPLICATION_JSON_VALUE},
+        produces = {MediaType.APPLICATION_JSON_VALUE}
+)
 public class DeviceRestController {
 
     @Autowired
@@ -43,6 +53,9 @@ public class DeviceRestController {
     private MessageSource messageSource;
 
     @GetMapping(path = "/")
+    @ApiOperation(
+            value = "List all devices by tenant",
+            response = DeviceVO.class)
     public ResponseEntity<?> list() {
 
         Tenant tenant = user.getTenant();
@@ -65,6 +78,10 @@ public class DeviceRestController {
     }
 
     @GetMapping(path = "/{deviceGuid}")
+    @ApiOperation(
+            value = "Get  a device by guid",
+            response = RestResponse.class
+    )
     public ResponseEntity<?> read(@PathVariable("deviceGuid") String deviceGuid) {
 
         Tenant tenant = user.getTenant();
@@ -84,6 +101,7 @@ public class DeviceRestController {
     }
 
     @PostMapping
+    @ApiOperation(value = "Create a device")
     public ResponseEntity<?> create(@RequestBody DeviceVO deviceForm) {
 
         Tenant tenant = user.getTenant();
@@ -99,7 +117,7 @@ public class DeviceRestController {
         if (!deviceResponse.isOk()) {
             return createErrorResponse(deviceResponse);
         } else {
-            return RestResponseBuilder.ok()
+            return RestResponseBuilder.<DeviceVO>ok()
                                       .withHttpStatus(HttpStatus.CREATED)
                                       .withMessages(getMessages(deviceResponse))
                                       .withResult(new DeviceVO(deviceResponse.getResult()))
@@ -109,6 +127,7 @@ public class DeviceRestController {
     }
 
     @PutMapping(path = "/{deviceGuid}")
+    @ApiOperation(value = "Update a device")
     public ResponseEntity<?> update(@PathVariable("deviceGuid") String deviceGuid, @RequestBody DeviceVO deviceForm) {
 
         Tenant tenant = user.getTenant();
@@ -141,6 +160,7 @@ public class DeviceRestController {
     }
 
     @DeleteMapping(path = "/{deviceGuid}")
+    @ApiOperation(value = "Delete a device")
     public ResponseEntity<?> delete(@PathVariable("deviceGuid") String deviceGuid) {
 
         Tenant tenant = user.getTenant();
