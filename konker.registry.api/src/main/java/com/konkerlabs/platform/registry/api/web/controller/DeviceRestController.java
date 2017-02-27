@@ -56,12 +56,6 @@ public class DeviceRestController {
     @ApiOperation(
             value = "List all devices by tenant",
             response = DeviceVO.class)
-    @ApiResponses(value = {
-            @ApiResponse(code = 404, message = "You have no devices in your tenant"),
-            @ApiResponse(code = 200, message = "The list of valid devices in yout tenant"),
-            @ApiResponse(code = 400, message = "Your request have invalid body or headers"),
-            @ApiResponse(code = 403, message = "invalid access")
-    })
     public ResponseEntity<?> list() {
 
         Tenant tenant = user.getTenant();
@@ -88,12 +82,6 @@ public class DeviceRestController {
             value = "Get  a device by guid",
             response = RestResponse.class
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 404, message = "Invalid device id"),
-            @ApiResponse(code = 200, message = "Ok"),
-            @ApiResponse(code = 400, message = "Your request have invalid body or headers"),
-            @ApiResponse(code = 403, message = "invalid access")
-    })
     public ResponseEntity<?> read(@PathVariable("deviceGuid") String deviceGuid) {
 
         Tenant tenant = user.getTenant();
@@ -114,11 +102,6 @@ public class DeviceRestController {
 
     @PostMapping
     @ApiOperation(value = "Create a device")
-    @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Ok"),
-            @ApiResponse(code = 400, message = "Your request have invalid body or headers"),
-            @ApiResponse(code = 403, message = "invalid access")
-    })
     public ResponseEntity<?> create(@RequestBody DeviceVO deviceForm) {
 
         Tenant tenant = user.getTenant();
@@ -145,11 +128,6 @@ public class DeviceRestController {
 
     @PutMapping(path = "/{deviceGuid}")
     @ApiOperation(value = "Update a device")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok"),
-            @ApiResponse(code = 400, message = "Your request have invalid body or headers"),
-            @ApiResponse(code = 403, message = "invalid access")
-    })
     public ResponseEntity<?> update(@PathVariable("deviceGuid") String deviceGuid, @RequestBody DeviceVO deviceForm) {
 
         Tenant tenant = user.getTenant();
@@ -183,11 +161,6 @@ public class DeviceRestController {
 
     @DeleteMapping(path = "/{deviceGuid}")
     @ApiOperation(value = "Delete a device")
-    @ApiResponses(value = {
-            @ApiResponse(code = 204, message = "Ok"),
-            @ApiResponse(code = 400, message = "Your request have invalid body or headers"),
-            @ApiResponse(code = 403, message = "invalid access")
-    })
     public ResponseEntity<?> delete(@PathVariable("deviceGuid") String deviceGuid) {
 
         Tenant tenant = user.getTenant();
