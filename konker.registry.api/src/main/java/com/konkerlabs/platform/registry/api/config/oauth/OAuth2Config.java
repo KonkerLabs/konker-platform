@@ -51,11 +51,12 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 		users.forEach(user -> {
 			inMemory
 				.withClient(user.getEmail())
+				.secret(user.getPassword())
 				.authorizedGrantTypes("client_credentials", "password")
 				.authorities(getAuthorities(user))
 				.scopes("read")
 				.resourceIds(ResourceServer.RESOURCE_ID)
-				.secret(user.getPassword());
+				.accessTokenValiditySeconds(0);
 		});
 	}
 
