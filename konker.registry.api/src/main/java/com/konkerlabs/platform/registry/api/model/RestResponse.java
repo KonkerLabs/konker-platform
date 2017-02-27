@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Builder;
 import lombok.Data;
 
 @Data
@@ -30,7 +31,7 @@ public class RestResponse<T> {
     private Status status;
     @ApiModelProperty(value = "the error messages")
     private List<String> responseMessages = new ArrayList<>();
-    @ApiModelProperty(value = "the entity")
+    @ApiModelProperty(value = "the entity", dataType = "DeviceVO")
     private T result;
 
 }

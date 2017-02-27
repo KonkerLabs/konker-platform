@@ -134,7 +134,7 @@ public class DeviceRestController {
         if (!deviceResponse.isOk()) {
             return createErrorResponse(deviceResponse);
         } else {
-            return RestResponseBuilder.ok()
+            return RestResponseBuilder.<DeviceVO>ok()
                                       .withHttpStatus(HttpStatus.CREATED)
                                       .withMessages(getMessages(deviceResponse))
                                       .withResult(new DeviceVO(deviceResponse.getResult()))
