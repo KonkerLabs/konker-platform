@@ -16,6 +16,8 @@ public class ResourceServer extends ResourceServerConfigurerAdapter {
 			"/configuration/ui",
 			"/swagger-ui.html",
 			"/swagger-resources",
+			"/swagger-resources/configuration/ui",
+			"/swagger-resources/configuration/security",
 			"/api/docs",
 			"/v2/api-docs"
 	};

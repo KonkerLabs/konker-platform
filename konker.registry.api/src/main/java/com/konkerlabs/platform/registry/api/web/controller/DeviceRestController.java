@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.konkerlabs.platform.registry.api.config.SwaggerUIConfig;
+import com.konkerlabs.platform.registry.api.model.RestResponse;
+import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Scope;
@@ -36,9 +39,7 @@ import io.swagger.annotations.ApiOperation;
 @RestController
 @Scope("request")
 @RequestMapping(
-        value = "/devices",
-        consumes = {MediaType.APPLICATION_JSON_VALUE},
-        produces = {MediaType.APPLICATION_JSON_VALUE}
+        value = "/devices"
 )
 public class DeviceRestController {
 
