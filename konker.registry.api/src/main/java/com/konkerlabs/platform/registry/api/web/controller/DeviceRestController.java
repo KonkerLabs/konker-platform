@@ -5,17 +5,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.konkerlabs.platform.registry.api.model.RestResponse;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.konkerlabs.platform.registry.api.model.DeviceVO;
+import com.konkerlabs.platform.registry.api.model.RestResponse;
 import com.konkerlabs.platform.registry.api.model.RestResponseBuilder;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
@@ -33,6 +30,8 @@ import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.Validations;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+
+import io.swagger.annotations.ApiOperation;
 
 @RestController
 @Scope("request")
@@ -53,6 +52,7 @@ public class DeviceRestController {
     private MessageSource messageSource;
 
     @GetMapping(path = "/")
+    @PreAuthorize("hasAuthority('LIST_DEVICES')")
     @ApiOperation(
             value = "List all devices by tenant",
             response = DeviceVO.class)
@@ -70,9 +70,9 @@ public class DeviceRestController {
                 listVO.add(new DeviceVO(device));
             }
             return RestResponseBuilder.ok()
-                                      .withHttpStatus(HttpStatus.OK)
-                                      .withResult(listVO)
-                                      .build();
+                    .withHttpStatus(HttpStatus.OK)
+                    .withResult(listVO)
+                    .build();
         }
 
     }
@@ -82,6 +82,7 @@ public class DeviceRestController {
             value = "Get  a device by guid",
             response = RestResponse.class
     )
+    @PreAuthorize("hasAuthority('SHOW_DEVICE')")
     public ResponseEntity<?> read(@PathVariable("deviceGuid") String deviceGuid) {
 
         Tenant tenant = user.getTenant();
@@ -93,15 +94,16 @@ public class DeviceRestController {
         } else {
             DeviceVO obj = new DeviceVO(deviceResponse.getResult());
             return RestResponseBuilder.ok()
-                                      .withHttpStatus(HttpStatus.OK)
-                                      .withResult(obj)
-                                      .build();
+                    .withHttpStatus(HttpStatus.OK)
+                    .withResult(obj)
+                    .build();
         }
 
     }
 
     @PostMapping
     @ApiOperation(value = "Create a device")
+    @PreAuthorize("hasAuthority('ADD_DEVICE')")
     public ResponseEntity<?> create(@RequestBody DeviceVO deviceForm) {
 
         Tenant tenant = user.getTenant();
@@ -119,16 +121,17 @@ public class DeviceRestController {
             return createErrorResponse(deviceResponse);
         } else {
             return RestResponseBuilder.<DeviceVO>ok()
-                                      .withHttpStatus(HttpStatus.CREATED)
-                                      .withMessages(getMessages(deviceResponse))
-                                      .withResult(new DeviceVO(deviceResponse.getResult()))
-                                      .build();
+                    .withHttpStatus(HttpStatus.CREATED)
+                    .withMessages(getMessages(deviceResponse))
+                    .withResult(new DeviceVO(deviceResponse.getResult()))
+                    .build();
         }
 
     }
 
     @PutMapping(path = "/{deviceGuid}")
     @ApiOperation(value = "Update a device")
+    @PreAuthorize("hasAuthority('EDIT_DEVICE')")
     public ResponseEntity<?> update(@PathVariable("deviceGuid") String deviceGuid, @RequestBody DeviceVO deviceForm) {
 
         Tenant tenant = user.getTenant();
@@ -154,15 +157,16 @@ public class DeviceRestController {
 
         } else {
             return RestResponseBuilder.ok()
-                                      .withHttpStatus(HttpStatus.OK)
-                                      .withMessages(getMessages(deviceResponse))
-                                      .build();
+                    .withHttpStatus(HttpStatus.OK)
+                    .withMessages(getMessages(deviceResponse))
+                    .build();
         }
 
     }
 
     @DeleteMapping(path = "/{deviceGuid}")
     @ApiOperation(value = "Delete a device")
+    @PreAuthorize("hasAuthority('REMOVE_DEVICE')")
     public ResponseEntity<?> delete(@PathVariable("deviceGuid") String deviceGuid) {
 
         Tenant tenant = user.getTenant();
@@ -193,9 +197,9 @@ public class DeviceRestController {
         if (containsValidations(serviceResponse)) {
 
             return RestResponseBuilder.error()
-                                      .withHttpStatus(HttpStatus.BAD_REQUEST)
-                                      .withMessages(getMessages(serviceResponse))
-                                      .build();
+                    .withHttpStatus(HttpStatus.BAD_REQUEST)
+                    .withMessages(getMessages(serviceResponse))
+                    .build();
         } else {
 
             return RestResponseBuilder.error()
