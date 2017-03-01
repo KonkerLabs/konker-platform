@@ -2,6 +2,7 @@ package com.konkerlabs.platform.registry.api.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
@@ -16,7 +17,10 @@ import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger.web.UiConfiguration;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static com.google.common.collect.Lists.newArrayList;
 
@@ -30,6 +34,7 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
     public static final String authorizationScopeRead = "read";
     public static final String authorizationScopeWrite = "write";
     public static final String authorizationScopeGlobalDesc ="Access Iot Resources";
+
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
@@ -46,7 +51,8 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
                 .build()
                 .apiInfo(apiInfo())
                 .securitySchemes(newArrayList(securitySchema()))
-                .securityContexts(newArrayList(securityContext()));
+                .securityContexts(newArrayList(securityContext()))
+                .enableUrlTemplating(true);
 
     }
 
@@ -88,8 +94,10 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
 
     private ApiInfo apiInfo(){
         return new ApiInfoBuilder()
-                .title("Konker platform api")
-                .description("This is the konker platform api documentation")
+                .title("Konker Platform Api")
+                .description(
+                        "Before access endpoints please login with your " +
+                                "<a href='/v1/oauth/token?grant_type=client_credentials'>account</a>")
                 .termsOfServiceUrl("https://demo.konkerlabs.net/registry/resources/konker/pdf/termos_de_uso_20161014a-9d089e3f67c4b4ab9c83c0a0313158ef.pdf")
                 .contact(new Contact("Konker", "developers.konkerlabs.com", "support@konkerlabs.com"))
                 .license("Apache 2.0")

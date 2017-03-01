@@ -39,9 +39,7 @@ import io.swagger.annotations.ApiOperation;
 @RestController
 @Scope("request")
 @RequestMapping(
-        value = "/devices",
-        consumes = {MediaType.APPLICATION_JSON_VALUE},
-        produces = {MediaType.APPLICATION_JSON_VALUE}
+        value = "/devices"
 )
 public class DeviceRestController {
 
