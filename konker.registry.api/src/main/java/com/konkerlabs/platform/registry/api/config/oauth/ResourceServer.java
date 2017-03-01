@@ -17,7 +17,7 @@ public class ResourceServer extends ResourceServerConfigurerAdapter {
 			"/swagger-ui.html",
 			"/swagger-resources",
 			"/api/docs",
-			"/v2/api-docs",
+			"/v2/api-docs"
 	};
 
 	@Override
