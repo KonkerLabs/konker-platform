@@ -28,7 +28,7 @@ public class EventRoute implements URIDealer, Validatable {
     public static final String SMS_MESSAGE_CUSTOM_STRATEGY_PARAMETER_VALUE = "custom";
 
     public static final String SMS_MESSAGE_TEMPLATE_PARAMETER_NAME = "messageTemplate";
- 
+
     public enum Validations {
         NAME_NULL("model.event_route.name.not_null"),
         INCOMING_ACTOR_NULL("model.event_route.incoming_actor.not_null"),
@@ -45,7 +45,7 @@ public class EventRoute implements URIDealer, Validatable {
         OUTGOING_SMS_CUSTOM_TEXT_MANDATORY("model.event_route.outgoing_sms.custom_text.mandatory"),
         OUTGOING_SMS_INVALID_STRATEGY("model.event_route.outgoing_sms.invalid_strategy"),
         GUID_NULL("model.event_route.guid.not_null"),
-        INCOMING_OUTGOING_DEVICE_CHANNELS_SAME("service.event_route.incoming_outgoing_devices_channels.same");
+        INCOMING_OUTGOING_DEVICE_CHANNELS_SAME("model.event_route.incoming_outgoing_devices_channels.same");
 
         private String code;
 
@@ -212,5 +212,5 @@ public class EventRoute implements URIDealer, Validatable {
 		}
 	}
 
-	
+
 }
