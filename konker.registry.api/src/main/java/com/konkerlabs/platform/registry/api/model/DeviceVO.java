@@ -22,12 +22,14 @@ public class DeviceVO {
     private String name;
     @ApiModelProperty(value = "the device description")
     private String description;
-    
+    private boolean active;
+
     public DeviceVO(Device device) {
         this.id   = device.getDeviceId();
         this.guid = device.getGuid();
         this.name = device.getName();
         this.description = device.getDescription();
+        this.active = device.isActive();
     }
     
 }

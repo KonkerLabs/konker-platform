@@ -53,8 +53,8 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 
     @Before
     public void setUp() {
-        device1 = Device.builder().deviceId("id1").name("name1").guid("guid1").build();
-        device2 = Device.builder().deviceId("id2").name("name2").guid("guid2").build();
+        device1 = Device.builder().deviceId("id1").name("name1").guid("guid1").active(true).build();
+        device2 = Device.builder().deviceId("id2").name("name2").guid("guid2").active(false).build();
     }
 
     @After
@@ -73,20 +73,22 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .thenReturn(ServiceResponseBuilder.<List<Device>>ok().withResult(devices).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.get("/devices/")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType("application/json;charset=UTF-8"))
-                .andExpect(jsonPath("$.httpStatus", is(HttpStatus.OK.value())))
-                .andExpect(jsonPath("$.status", is("OK")))
-                .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
-                .andExpect(jsonPath("$.result", hasSize(2)))
-                .andExpect(jsonPath("$.result[0].id", is("id1")))
-                .andExpect(jsonPath("$.result[0].name", is("name1")))
-                .andExpect(jsonPath("$.result[0].guid", is("guid1")))
-                .andExpect(jsonPath("$.result[1].id", is("id2")))
-                .andExpect(jsonPath("$.result[1].name", is("name2")))
-                .andExpect(jsonPath("$.result[1].guid", is("guid2")));
+                    .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType("application/json;charset=UTF-8"))
+                    .andExpect(jsonPath("$.httpStatus", is(HttpStatus.OK.value())))
+                    .andExpect(jsonPath("$.status", is("OK")))
+                    .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                    .andExpect(jsonPath("$.result", hasSize(2)))
+                    .andExpect(jsonPath("$.result[0].id", is("id1")))
+                    .andExpect(jsonPath("$.result[0].name", is("name1")))
+                    .andExpect(jsonPath("$.result[0].guid", is("guid1")))
+                    .andExpect(jsonPath("$.result[0].active", is(true)))
+                    .andExpect(jsonPath("$.result[1].id", is("id2")))
+                    .andExpect(jsonPath("$.result[1].name", is("name2")))
+                    .andExpect(jsonPath("$.result[1].guid", is("guid2")))
+                    .andExpect(jsonPath("$.result[1].active", is(false)));
+
 
     }
 
@@ -115,17 +117,18 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device1).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.get("/devices/" + device1.getGuid())
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType("application/json;charset=UTF-8"))
-                .andExpect(jsonPath("$.httpStatus", is(HttpStatus.OK.value())))
-                .andExpect(jsonPath("$.status", is("OK")))
-                .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
-                .andExpect(jsonPath("$.result").isMap())
-                .andExpect(jsonPath("$.result.id", is("id1")))
-                .andExpect(jsonPath("$.result.name", is("name1")))
-                .andExpect(jsonPath("$.result.guid", is("guid1")));
+                    .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType("application/json;charset=UTF-8"))
+                    .andExpect(jsonPath("$.httpStatus", is(HttpStatus.OK.value())))
+                    .andExpect(jsonPath("$.status", is("OK")))
+                    .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                    .andExpect(jsonPath("$.result").isMap())
+                    .andExpect(jsonPath("$.result.id", is("id1")))
+                    .andExpect(jsonPath("$.result.name", is("name1")))
+                    .andExpect(jsonPath("$.result.guid", is("guid1")))
+                    .andExpect(jsonPath("$.result.active", is(true)));
+
 
     }
 
@@ -154,18 +157,19 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device1).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.post("/devices/")
-                .content(getJson(new DeviceVO(device1)))
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is2xxSuccessful())
-                .andExpect(content().contentType("application/json;charset=UTF-8"))
-                .andExpect(jsonPath("$.httpStatus", is(HttpStatus.CREATED.value())))
-                .andExpect(jsonPath("$.status", is("OK")))
-                .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
-                .andExpect(jsonPath("$.result").isMap())
-                .andExpect(jsonPath("$.result.id", is("id1")))
-                .andExpect(jsonPath("$.result.name", is("name1")))
-                .andExpect(jsonPath("$.result.guid", is("guid1")));
+                                                   .content(getJson(new DeviceVO(device1)))
+                                                   .contentType("application/json")
+                                                   .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().is2xxSuccessful())
+                    .andExpect(content().contentType("application/json;charset=UTF-8"))
+                    .andExpect(jsonPath("$.httpStatus", is(HttpStatus.CREATED.value())))
+                    .andExpect(jsonPath("$.status", is("OK")))
+                    .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                    .andExpect(jsonPath("$.result").isMap())
+                    .andExpect(jsonPath("$.result.id", is("id1")))
+                    .andExpect(jsonPath("$.result.name", is("name1")))
+                    .andExpect(jsonPath("$.result.guid", is("guid1")))
+                    .andExpect(jsonPath("$.result.active", is(true)));
 
     }
 
@@ -240,15 +244,14 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .thenReturn(ServiceResponseBuilder.<Device>ok().build());
 
         getMockMvc().perform(MockMvcRequestBuilders.delete("/devices/" + device1.getGuid())
-                .content(getJson(new DeviceVO(device1)))
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is2xxSuccessful())
-                .andExpect(content().contentType("application/json;charset=UTF-8"))
-                .andExpect(jsonPath("$.httpStatus", is(HttpStatus.NO_CONTENT.value())))
-                .andExpect(jsonPath("$.status", is("OK")))
-                .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
-                .andExpect(jsonPath("$.result").doesNotExist());
+                                                   .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().is2xxSuccessful())
+                    .andExpect(content().contentType("application/json;charset=UTF-8"))
+                    .andExpect(jsonPath("$.httpStatus", is(HttpStatus.NO_CONTENT.value())))
+                    .andExpect(jsonPath("$.status", is("OK")))
+                    .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                    .andExpect(jsonPath("$.result").doesNotExist());
+
 
     }
 
@@ -259,15 +262,14 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .thenReturn(ServiceResponseBuilder.<Device>error().build());
 
         getMockMvc().perform(MockMvcRequestBuilders.delete("/devices/" + device1.getGuid())
-                .content(getJson(new DeviceVO(device1)))
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is5xxServerError())
-                .andExpect(content().contentType("application/json;charset=UTF-8"))
-                .andExpect(jsonPath("$.httpStatus", is(HttpStatus.INTERNAL_SERVER_ERROR.value())))
-                .andExpect(jsonPath("$.status", is("ERROR")))
-                .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
-                .andExpect(jsonPath("$.result").doesNotExist());
+                                                   .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().is5xxServerError())
+                    .andExpect(content().contentType("application/json;charset=UTF-8"))
+                    .andExpect(jsonPath("$.httpStatus", is(HttpStatus.INTERNAL_SERVER_ERROR.value())))
+                    .andExpect(jsonPath("$.status", is("ERROR")))
+                    .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                    .andExpect(jsonPath("$.result").doesNotExist());
+
 
     }
 

@@ -5,11 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.konkerlabs.platform.registry.api.model.RestResponse;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Scope;
@@ -27,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.konkerlabs.platform.registry.api.model.DeviceVO;
+import com.konkerlabs.platform.registry.api.model.RestResponse;
 import com.konkerlabs.platform.registry.api.model.RestResponseBuilder;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
@@ -34,6 +30,8 @@ import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.Validations;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+
+import io.swagger.annotations.ApiOperation;
 
 @RestController
 @Scope("request")
@@ -114,6 +112,7 @@ public class DeviceRestController {
                 .name(deviceForm.getName())
                 .deviceId(deviceForm.getId())
                 .description(deviceForm.getDescription())
+                .active(true)
                 .build();
 
         ServiceResponse<Device> deviceResponse = deviceRegisterService.register(tenant, device);
@@ -149,6 +148,7 @@ public class DeviceRestController {
         // update fields
         deviceFromDB.setName(deviceForm.getName());
         deviceFromDB.setDescription(deviceForm.getDescription());
+        deviceFromDB.setActive(deviceForm.isActive());
 
         ServiceResponse<Device> updateResponse = deviceRegisterService.update(tenant, deviceGuid, deviceFromDB);
 
@@ -203,9 +203,9 @@ public class DeviceRestController {
         } else {
 
             return RestResponseBuilder.error()
-                    .withHttpStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .withMessages(getMessages(serviceResponse))
-                    .build();
+                                      .withHttpStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+                                      .withMessages(getMessages(serviceResponse))
+                                      .build();
         }
 
     }

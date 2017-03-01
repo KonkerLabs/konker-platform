@@ -10,6 +10,8 @@ import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
 import com.konkerlabs.platform.registry.business.model.enumerations.Language;
 import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
+import com.konkerlabs.platform.registry.business.services.api.TransformationService;
 
 @Configuration
 public class WebTestConfiguration {
@@ -33,6 +35,16 @@ public class WebTestConfiguration {
     @Bean
     public DeviceRegisterService deviceRegistryService() {
         return Mockito.mock(DeviceRegisterService.class);
+    }
+
+    @Bean
+    public EventRouteService eventRouteService() {
+        return Mockito.mock(EventRouteService.class);
+    }
+
+    @Bean
+    public TransformationService transformationService() {
+        return Mockito.mock(TransformationService.class);
     }
 
 }
