@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
@@ -22,6 +23,7 @@ import com.konkerlabs.platform.security.managers.PasswordManager;
 
 @Configuration
 @EnableAuthorizationServer
+@Import({MethodSecurityConfig.class})
 public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(OAuth2Config.class);
