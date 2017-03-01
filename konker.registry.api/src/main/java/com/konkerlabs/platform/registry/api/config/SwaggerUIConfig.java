@@ -96,8 +96,8 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
         return new ApiInfoBuilder()
                 .title("Konker Platform Api")
                 .description(
-                        "Before access endpoints please login with your " +
-                                "<a href='/v1/oauth/token?grant_type=client_credentials'>account</a>")
+                        "Before access endpoints please " +
+                                "<a href='/v1/oauth/token?grant_type=client_credentials' target='_blank'>login</a>")
                 .termsOfServiceUrl("https://demo.konkerlabs.net/registry/resources/konker/pdf/termos_de_uso_20161014a-9d089e3f67c4b4ab9c83c0a0313158ef.pdf")
                 .contact(new Contact("Konker", "developers.konkerlabs.com", "support@konkerlabs.com"))
                 .license("Apache 2.0")
