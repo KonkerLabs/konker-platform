@@ -4,6 +4,8 @@ import static com.konkerlabs.platform.registry.test.base.matchers.ServiceRespons
 import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.isResponseOk;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import java.util.List;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -52,6 +54,7 @@ public class UserServiceTest extends BusinessLayerTestSupport {
     private UserService userService;
 
     private User user;
+    private List<User> users;
     private static final String oldPassword="abc123456789$$";
     private static final String oldPasswordWrong="password";
     private static final String newPassword="123456789abc$$";
@@ -66,6 +69,7 @@ public class UserServiceTest extends BusinessLayerTestSupport {
     	MockitoAnnotations.initMocks(this);
 
         user = userRepository.findOne("admin@konkerlabs.com");
+        users = userRepository.findAll();
     }
 
     @After
@@ -254,6 +258,15 @@ public class UserServiceTest extends BusinessLayerTestSupport {
         Assert.assertNotNull(serviceResponse);
         assertThat(serviceResponse, isResponseOk());
         Assert.assertEquals(user, serviceResponse.getResult());
-
     }
+    
+    @Test
+    public void shouldReturnAllUsers() {
+        ServiceResponse<List<User>> serviceResponse = userService.findAll();
+        
+        Assert.assertNotNull(serviceResponse);
+        assertThat(serviceResponse, isResponseOk());
+        Assert.assertEquals(users, serviceResponse.getResult());
+    }
+     
 }

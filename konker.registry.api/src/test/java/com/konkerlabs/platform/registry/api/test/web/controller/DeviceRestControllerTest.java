@@ -70,7 +70,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
         devices.add(device2);
 
         when(deviceRegisterService.findAll(tenant))
-            .thenReturn(ServiceResponseBuilder.<List<Device>> ok().withResult(devices).build());
+                .thenReturn(ServiceResponseBuilder.<List<Device>>ok().withResult(devices).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.get("/devices/")
                     .accept(MediaType.APPLICATION_JSON))
@@ -89,22 +89,24 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.result[1].guid", is("guid2")))
                     .andExpect(jsonPath("$.result[1].active", is(false)));
 
+
     }
 
     @Test
     public void shouldTryListDevicesWithInternalError() throws Exception {
 
         when(deviceRegisterService.findAll(tenant))
-            .thenReturn(ServiceResponseBuilder.<List<Device>> error().build());
+                .thenReturn(ServiceResponseBuilder.<List<Device>>error().build());
 
         getMockMvc().perform(MockMvcRequestBuilders.get("/devices/")
-                    .accept(MediaType.APPLICATION_JSON))
-                    .andExpect(status().is5xxServerError())
-                    .andExpect(content().contentType("application/json;charset=UTF-8"))
-                    .andExpect(jsonPath("$.httpStatus", is(HttpStatus.INTERNAL_SERVER_ERROR.value())))
-                    .andExpect(jsonPath("$.status", is("ERROR")))
-                    .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
-                    .andExpect(jsonPath("$.result").doesNotExist());
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is5xxServerError())
+                .andExpect(content().contentType("application/json;charset=UTF-8"))
+                .andExpect(jsonPath("$.httpStatus", is(HttpStatus.INTERNAL_SERVER_ERROR.value())))
+                .andExpect(jsonPath("$.status", is("ERROR")))
+                .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
+                .andExpect(jsonPath("$.result").doesNotExist());
 
     }
 
@@ -112,7 +114,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     public void shouldReadDevice() throws Exception {
 
         when(deviceRegisterService.getByDeviceGuid(tenant, device1.getGuid()))
-            .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device1).build());
+                .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device1).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.get("/devices/" + device1.getGuid())
                     .accept(MediaType.APPLICATION_JSON))
@@ -127,22 +129,24 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.result.guid", is("guid1")))
                     .andExpect(jsonPath("$.result.active", is(true)));
 
+
     }
 
     @Test
     public void shouldTryReadDeviceWithBadRequest() throws Exception {
 
         when(deviceRegisterService.getByDeviceGuid(tenant, device1.getGuid()))
-            .thenReturn(ServiceResponseBuilder.<Device> error().withMessage(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode()).build());
+                .thenReturn(ServiceResponseBuilder.<Device>error().withMessage(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode()).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.get("/devices/" + device1.getGuid())
-                    .accept(MediaType.APPLICATION_JSON))
-                    .andExpect(status().is4xxClientError())
-                    .andExpect(content().contentType("application/json;charset=UTF-8"))
-                    .andExpect(jsonPath("$.httpStatus", is(HttpStatus.BAD_REQUEST.value())))
-                    .andExpect(jsonPath("$.status", is("ERROR")))
-                    .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
-                    .andExpect(jsonPath("$.result").doesNotExist());
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is4xxClientError())
+                .andExpect(content().contentType("application/json;charset=UTF-8"))
+                .andExpect(jsonPath("$.httpStatus", is(HttpStatus.BAD_REQUEST.value())))
+                .andExpect(jsonPath("$.status", is("ERROR")))
+                .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
+                .andExpect(jsonPath("$.result").doesNotExist());
 
     }
 
@@ -150,7 +154,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     public void shouldCreateDevice() throws Exception {
 
         when(deviceRegisterService.register(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(Device.class)))
-            .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device1).build());
+                .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device1).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.post("/devices/")
                                                    .content(getJson(new DeviceVO(device1)))
@@ -173,18 +177,18 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     public void shouldTryCreateDeviceWithBadRequest() throws Exception {
 
         when(deviceRegisterService.register(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(Device.class)))
-            .thenReturn(ServiceResponseBuilder.<Device> error().withMessage(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode()).build());
+                .thenReturn(ServiceResponseBuilder.<Device>error().withMessage(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode()).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.post("/devices/")
-                                               .content(getJson(new DeviceVO(device1)))
-                                               .contentType("application/json")
-                                               .accept(MediaType.APPLICATION_JSON))
-                    .andExpect(status().is4xxClientError())
-                    .andExpect(content().contentType("application/json;charset=UTF-8"))
-                    .andExpect(jsonPath("$.httpStatus", is(HttpStatus.BAD_REQUEST.value())))
-                    .andExpect(jsonPath("$.status", is("ERROR")))
-                    .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
-                    .andExpect(jsonPath("$.result").doesNotExist());
+                .content(getJson(new DeviceVO(device1)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().is4xxClientError())
+                .andExpect(content().contentType("application/json;charset=UTF-8"))
+                .andExpect(jsonPath("$.httpStatus", is(HttpStatus.BAD_REQUEST.value())))
+                .andExpect(jsonPath("$.status", is("ERROR")))
+                .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
+                .andExpect(jsonPath("$.result").doesNotExist());
 
     }
 
@@ -193,21 +197,21 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     public void shouldUpdateDevice() throws Exception {
 
         when(deviceRegisterService.getByDeviceGuid(tenant, device1.getGuid()))
-            .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device1).build());
+                .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device1).build());
 
         when(deviceRegisterService.update(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.anyString(), org.mockito.Matchers.any(Device.class)))
-            .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device1).build());
+                .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device1).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.put("/devices/" + device1.getGuid())
-                                                   .content(getJson(new DeviceVO(device1)))
-                                                   .contentType("application/json")
-                                                   .accept(MediaType.APPLICATION_JSON))
-                    .andExpect(status().is2xxSuccessful())
-                    .andExpect(content().contentType("application/json;charset=UTF-8"))
-                    .andExpect(jsonPath("$.httpStatus", is(HttpStatus.OK.value())))
-                    .andExpect(jsonPath("$.status", is("OK")))
-                    .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
-                    .andExpect(jsonPath("$.result").doesNotExist());
+                .content(getJson(new DeviceVO(device1)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().is2xxSuccessful())
+                .andExpect(content().contentType("application/json;charset=UTF-8"))
+                .andExpect(jsonPath("$.httpStatus", is(HttpStatus.OK.value())))
+                .andExpect(jsonPath("$.status", is("OK")))
+                .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
+                .andExpect(jsonPath("$.result").doesNotExist());
 
     }
 
@@ -215,21 +219,21 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     public void shouldTryUpdateDeviceWithInternalError() throws Exception {
 
         when(deviceRegisterService.getByDeviceGuid(tenant, device1.getGuid()))
-            .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device1).build());
+                .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device1).build());
 
         when(deviceRegisterService.update(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.anyString(), org.mockito.Matchers.any(Device.class)))
-            .thenReturn(ServiceResponseBuilder.<Device> error().build());
+                .thenReturn(ServiceResponseBuilder.<Device>error().build());
 
         getMockMvc().perform(MockMvcRequestBuilders.put("/devices/" + device1.getGuid())
-                                                   .content(getJson(new DeviceVO(device1)))
-                                                   .contentType("application/json")
-                                                   .accept(MediaType.APPLICATION_JSON))
-                    .andExpect(status().is5xxServerError())
-                    .andExpect(content().contentType("application/json;charset=UTF-8"))
-                    .andExpect(jsonPath("$.httpStatus", is(HttpStatus.INTERNAL_SERVER_ERROR.value())))
-                    .andExpect(jsonPath("$.status", is("ERROR")))
-                    .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
-                    .andExpect(jsonPath("$.result").doesNotExist());
+                .content(getJson(new DeviceVO(device1)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().is5xxServerError())
+                .andExpect(content().contentType("application/json;charset=UTF-8"))
+                .andExpect(jsonPath("$.httpStatus", is(HttpStatus.INTERNAL_SERVER_ERROR.value())))
+                .andExpect(jsonPath("$.status", is("ERROR")))
+                .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
+                .andExpect(jsonPath("$.result").doesNotExist());
 
     }
 
@@ -237,7 +241,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     public void shouldDeleteDevice() throws Exception {
 
         when(deviceRegisterService.remove(tenant, device1.getGuid()))
-            .thenReturn(ServiceResponseBuilder.<Device> ok().build());
+                .thenReturn(ServiceResponseBuilder.<Device>ok().build());
 
         getMockMvc().perform(MockMvcRequestBuilders.delete("/devices/" + device1.getGuid())
                                                    .accept(MediaType.APPLICATION_JSON))
@@ -248,13 +252,14 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
                     .andExpect(jsonPath("$.result").doesNotExist());
 
+
     }
 
     @Test
     public void shouldTryDeleteDeviceWithInternalError() throws Exception {
 
         when(deviceRegisterService.remove(tenant, device1.getGuid()))
-            .thenReturn(ServiceResponseBuilder.<Device> error().build());
+                .thenReturn(ServiceResponseBuilder.<Device>error().build());
 
         getMockMvc().perform(MockMvcRequestBuilders.delete("/devices/" + device1.getGuid())
                                                    .accept(MediaType.APPLICATION_JSON))
@@ -264,6 +269,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.status", is("ERROR")))
                     .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
                     .andExpect(jsonPath("$.result").doesNotExist());
+
 
     }
 
