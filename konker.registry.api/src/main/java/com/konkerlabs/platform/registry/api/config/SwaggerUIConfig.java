@@ -9,17 +9,27 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.service.ApiInfo;
-import springfox.documentation.service.Contact;
+import springfox.documentation.service.*;
 import springfox.documentation.spi.DocumentationType;
+import springfox.documentation.spi.service.contexts.SecurityContext;
 import springfox.documentation.spring.web.plugins.Docket;
+import springfox.documentation.swagger.web.UiConfiguration;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
-import springfox.documentation.swagger2.web.Swagger2Controller;
+
+import java.util.List;
+
+import static com.google.common.collect.Lists.newArrayList;
 
 @EnableWebMvc
 @Configuration
 @EnableSwagger2
 public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
+
+    public static final String securitySchemaOAuth2 = "oauth2schema";
+    public static final String authorizationScopeTrust = "trust";
+    public static final String authorizationScopeRead = "read";
+    public static final String authorizationScopeWrite = "write";
+    public static final String authorizationScopeGlobalDesc ="Access Iot Resources";
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
@@ -34,9 +44,47 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
                 .apis(RequestHandlerSelectors.withClassAnnotation(RestController.class))
                 .paths(PathSelectors.any())
                 .build()
-                .apiInfo(apiInfo());
+                .apiInfo(apiInfo())
+                .securitySchemes(newArrayList(securitySchema()))
+                .securityContexts(newArrayList(securityContext()));
+
     }
 
+
+    private BasicAuth basicSecuritySchema() {
+        return new BasicAuth("basic");
+    }
+
+    private OAuth securitySchema() {
+
+        ClientCredentialsGrant cliGrantType =
+                new ClientCredentialsGrant("/v1/oauth/token");
+
+        return new OAuth(
+                securitySchemaOAuth2,
+                newArrayList(
+                        new AuthorizationScope(authorizationScopeTrust, authorizationScopeGlobalDesc),
+                        new AuthorizationScope(authorizationScopeRead, authorizationScopeGlobalDesc),
+                        new AuthorizationScope(authorizationScopeWrite, authorizationScopeGlobalDesc)
+                ),
+                newArrayList(cliGrantType));
+    }
+
+    private SecurityContext securityContext() {
+        return SecurityContext.builder()
+                .securityReferences(defaultAuth())
+                .forPaths(PathSelectors.any())
+                .build();
+    }
+
+    private List<SecurityReference> defaultAuth() {
+        AuthorizationScope[] authorizationScopes = new AuthorizationScope[3];
+        authorizationScopes[0] = new AuthorizationScope(authorizationScopeTrust, authorizationScopeGlobalDesc);
+        authorizationScopes[1] = new AuthorizationScope(authorizationScopeRead, authorizationScopeGlobalDesc);
+        authorizationScopes[2] = new AuthorizationScope(authorizationScopeWrite, authorizationScopeGlobalDesc);
+        return newArrayList(
+                new SecurityReference(securitySchemaOAuth2, authorizationScopes));
+    }
 
     private ApiInfo apiInfo(){
         return new ApiInfoBuilder()
@@ -46,6 +94,7 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
                 .contact(new Contact("Konker", "developers.konkerlabs.com", "support@konkerlabs.com"))
                 .license("Apache 2.0")
                 .licenseUrl("http://www.apache.org/licenses/LICENSE-2.0")
+                .version("v2")
                 .build();
     }
 
