@@ -2,11 +2,14 @@ package com.konkerlabs.platform.registry.api.web.controller;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Scope;
@@ -41,7 +44,7 @@ import com.konkerlabs.platform.registry.business.services.api.TransformationServ
 @RestController
 @Scope("request")
 @RequestMapping(value = "/routes")
-public class EventRouteRestController {
+public class EventRouteRestController implements InitializingBean {
 
     @Autowired
     private EventRouteService eventRouteService;
@@ -57,6 +60,8 @@ public class EventRouteRestController {
 
     @Autowired
     private MessageSource messageSource;
+
+    private Set<String> validationsCode = new HashSet<>();
 
     @GetMapping(path = "/")
     public ResponseEntity<?> list() {
@@ -166,7 +171,7 @@ public class EventRouteRestController {
 
         RouteActor routeActor = RouteActor.builder().build();
 
-        if (routeForm.getType().equalsIgnoreCase(RouteActorType.DEVICE.name())) {
+        if (RouteActorType.DEVICE.name().equalsIgnoreCase(routeForm.getType())) {
             ServiceResponse<Device> deviceResponse =  deviceRegisterService.getByDeviceGuid(tenant, routeForm.getGuid());
             if (deviceResponse.isOk()) {
                 routeActor.setDisplayName(deviceResponse.getResult().getName());
@@ -284,13 +289,35 @@ public class EventRouteRestController {
 
         Map<String, Object[]> responseMessages = routeResponse.getResponseMessages();
 
-        for (Validations value : EventRouteService.Validations.values()) {
-            if (responseMessages.containsKey(value.getCode())) {
+        for (String key: responseMessages.keySet()) {
+            if (validationsCode.contains(key)) {
                 return true;
             }
         }
 
         return false;
+
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+
+        for (Validations value : EventRouteService.Validations.values()) {
+            validationsCode.add(value.getCode());
+        }
+
+        for (com.konkerlabs.platform.registry.business.model.EventRoute.Validations value : EventRoute.Validations.values()) {
+            validationsCode.add(value.getCode());
+        }
+
+        for (com.konkerlabs.platform.registry.business.model.Transformation.Validations value : Transformation.Validations.values()) {
+            validationsCode.add(value.getCode());
+        }
+
+        for (com.konkerlabs.platform.registry.business.services.api.TransformationService.Validations value : TransformationService.Validations.values()) {
+            validationsCode.add(value.getCode());
+        }
+
     }
 
 }

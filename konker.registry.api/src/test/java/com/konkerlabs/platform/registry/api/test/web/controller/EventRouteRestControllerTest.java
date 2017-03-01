@@ -194,6 +194,7 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.httpStatus", is(HttpStatus.BAD_REQUEST.value())))
                     .andExpect(jsonPath("$.status", is("ERROR")))
                     .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                    .andExpect(jsonPath("$.responseMessages").exists())
                     .andExpect(jsonPath("$.result").doesNotExist());
 
     }
@@ -253,10 +254,64 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.httpStatus", is(HttpStatus.BAD_REQUEST.value())))
                     .andExpect(jsonPath("$.status", is("ERROR")))
                     .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                    .andExpect(jsonPath("$.responseMessages").exists())
                     .andExpect(jsonPath("$.result").doesNotExist());
 
     }
 
+    @Test
+    public void shouldTryCreateEventRouteWithInvalidOutgoing() throws Exception {
+
+        when(eventRouteService.save(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(EventRoute.class)))
+            .thenReturn(ServiceResponseBuilder.<EventRoute> ok().withResult(route1).build());
+
+        when(deviceRegisterService.getByDeviceGuid(tenant, device1.getGuid()))
+            .thenReturn(ServiceResponseBuilder.<Device> error().withMessage(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode()).withResult(device1).build());
+
+        when(deviceRegisterService.getByDeviceGuid(tenant, device2.getGuid()))
+            .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device2).build());
+
+        when(transformationService.get(tenant, transformation1.getGuid()))
+            .thenReturn(ServiceResponseBuilder.<Transformation> ok().withResult(transformation1).build());
+
+        getMockMvc().perform(MockMvcRequestBuilders.post("/routes/")
+                                                   .content(getJson(new EventRouteVO(route1)))
+                                                   .contentType("application/json")
+                                                   .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().is5xxServerError())
+                    .andExpect(content().contentType("application/json;charset=UTF-8"))
+                    .andExpect(jsonPath("$.httpStatus", is(HttpStatus.INTERNAL_SERVER_ERROR.value())))
+                    .andExpect(jsonPath("$.status", is("ERROR")))
+                    .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                    .andExpect(jsonPath("$.result").doesNotExist());
+
+    }
+
+    @Test
+    public void shouldTryCreateEventRouteWithInvalidTransformation() throws Exception {
+
+        when(deviceRegisterService.getByDeviceGuid(tenant, device1.getGuid()))
+            .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device1).build());
+
+        when(deviceRegisterService.getByDeviceGuid(tenant, device2.getGuid()))
+            .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device2).build());
+
+        when(transformationService.get(tenant, transformation1.getGuid()))
+            .thenReturn(ServiceResponseBuilder.<Transformation> error().withMessage(TransformationService.Validations.TRANSFORMATION_NOT_FOUND.getCode()).build());
+
+        getMockMvc().perform(MockMvcRequestBuilders.post("/routes/")
+                                               .content(getJson(new EventRouteVO(route1)))
+                                               .contentType("application/json")
+                                               .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().is4xxClientError())
+                    .andExpect(content().contentType("application/json;charset=UTF-8"))
+                    .andExpect(jsonPath("$.httpStatus", is(HttpStatus.BAD_REQUEST.value())))
+                    .andExpect(jsonPath("$.status", is("ERROR")))
+                    .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                    .andExpect(jsonPath("$.responseMessages").exists())
+                    .andExpect(jsonPath("$.result").doesNotExist());
+
+    }
 
     @Test
     public void shouldUpdateEventRoute() throws Exception {
@@ -285,6 +340,69 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.httpStatus", is(HttpStatus.OK.value())))
                     .andExpect(jsonPath("$.status", is("OK")))
                     .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                    .andExpect(jsonPath("$.result").doesNotExist());
+
+    }
+
+    @Test
+    public void shouldUpdateEventRouteWithoutTransformation() throws Exception {
+
+        when(eventRouteService.getByGUID(tenant, route2.getGuid()))
+            .thenReturn(ServiceResponseBuilder.<EventRoute> ok().withResult(route2).build());
+
+        when(eventRouteService.update(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.anyString(), org.mockito.Matchers.any(EventRoute.class)))
+            .thenReturn(ServiceResponseBuilder.<EventRoute> ok().withResult(route2).build());
+
+        when(deviceRegisterService.getByDeviceGuid(tenant, device1.getGuid()))
+            .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device1).build());
+
+        when(deviceRegisterService.getByDeviceGuid(tenant, device2.getGuid()))
+            .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device2).build());
+
+        getMockMvc().perform(MockMvcRequestBuilders.put("/routes/" + route2.getGuid())
+                                                   .content(getJson(new EventRouteVO(route2)))
+                                                   .contentType("application/json")
+                                                   .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().is2xxSuccessful())
+                    .andExpect(content().contentType("application/json;charset=UTF-8"))
+                    .andExpect(jsonPath("$.httpStatus", is(HttpStatus.OK.value())))
+                    .andExpect(jsonPath("$.status", is("OK")))
+                    .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                    .andExpect(jsonPath("$.result").doesNotExist());
+
+    }
+
+    @Test
+    public void shouldTryUpdateEventRouteWithoutOutgoing() throws Exception {
+
+        when(eventRouteService.getByGUID(tenant, route1.getGuid()))
+            .thenReturn(ServiceResponseBuilder.<EventRoute> ok().withResult(route1).build());
+
+        when(eventRouteService.update(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.anyString(), org.mockito.Matchers.any(EventRoute.class)))
+            .thenReturn(ServiceResponseBuilder.<EventRoute> error().withMessage(EventRoute.Validations.OUTGOING_ACTOR_CHANNEL_NULL.getCode()).build());
+
+        when(deviceRegisterService.getByDeviceGuid(tenant, device1.getGuid()))
+            .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device1).build());
+
+        when(deviceRegisterService.getByDeviceGuid(tenant, device2.getGuid()))
+            .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device2).build());
+
+        when(transformationService.get(tenant, transformation1.getGuid()))
+            .thenReturn(ServiceResponseBuilder.<Transformation> ok().withResult(transformation1).build());
+
+        EventRouteVO eventRouteWithoutOutgoingOutgoing = new EventRouteVO(route1);
+        eventRouteWithoutOutgoingOutgoing.getOutgoing().setType(null);
+
+        getMockMvc().perform(MockMvcRequestBuilders.put("/routes/" + route1.getGuid())
+                                                   .content(getJson(eventRouteWithoutOutgoingOutgoing))
+                                                   .contentType("application/json")
+                                                   .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().is4xxClientError())
+                    .andExpect(content().contentType("application/json;charset=UTF-8"))
+                    .andExpect(jsonPath("$.httpStatus", is(HttpStatus.BAD_REQUEST.value())))
+                    .andExpect(jsonPath("$.status", is("ERROR")))
+                    .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                    .andExpect(jsonPath("$.responseMessages").exists())
                     .andExpect(jsonPath("$.result").doesNotExist());
 
     }
