@@ -18,9 +18,9 @@ public class RestResponseBuilder<T> {
 
     public static <T> RestResponseBuilder<T> ok() {
         RestResponse<T> response = new RestResponse<T>();
-        response.setStatus(RestResponse.Status.OK);
+        response.setStatus(RestResponse.Status.SUCCESS);
         response.setTimestamp(Instant.now().getEpochSecond());
-        
+
         return new RestResponseBuilder<T>(response).withHttpStatus(HttpStatus.OK);
     };
 
@@ -28,7 +28,7 @@ public class RestResponseBuilder<T> {
         RestResponse<T> response = new RestResponse<T>();
         response.setStatus(RestResponse.Status.ERROR);
         response.setTimestamp(Instant.now().getEpochSecond());
-        
+
         return new RestResponseBuilder<T>(response).withHttpStatus(HttpStatus.BAD_REQUEST);
     };
 
@@ -37,14 +37,14 @@ public class RestResponseBuilder<T> {
         return this;
     }
 
-    
+
     public RestResponseBuilder<T> withMessage(String message) {
-        this.response.getResponseMessages().add(message);
+        this.response.getMessages().add(message);
         return this;
     }
 
     public RestResponseBuilder<T> withMessages(List<String> messages) {
-        this.response.getResponseMessages().addAll(messages);
+        this.response.getMessages().addAll(messages);
         return this;
     }
 
@@ -55,8 +55,13 @@ public class RestResponseBuilder<T> {
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public ResponseEntity build() {
-        this.response.setHttpStatus(httpStatus.value());
+        this.response.setCode(httpStatus.value());
         return new ResponseEntity(this.response, httpStatus);
+    }
+
+    public RestResponse<T> getResponse() {
+        this.response.setCode(httpStatus.value());
+        return this.response;
     }
 
 }

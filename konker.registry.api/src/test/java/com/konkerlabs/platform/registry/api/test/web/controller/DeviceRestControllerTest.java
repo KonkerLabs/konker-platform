@@ -26,6 +26,7 @@ import com.konkerlabs.platform.registry.api.model.DeviceVO;
 import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
 import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
 import com.konkerlabs.platform.registry.api.web.controller.DeviceRestController;
+import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
@@ -37,7 +38,8 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBui
 @ContextConfiguration(classes = {
         WebTestConfiguration.class,
         MongoTestConfig.class,
-        WebMvcConfig.class
+        WebMvcConfig.class,
+        CrudResponseAdvice.class
 })
 public class DeviceRestControllerTest extends WebLayerTestContext {
 
@@ -77,8 +79,8 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                                                    .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))
-                    .andExpect(jsonPath("$.httpStatus", is(HttpStatus.OK.value())))
-                    .andExpect(jsonPath("$.status", is("OK")))
+                    .andExpect(jsonPath("$.code", is(HttpStatus.OK.value())))
+                    .andExpect(jsonPath("$.status", is("success")))
                     .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
                     .andExpect(jsonPath("$.result", hasSize(2)))
                     .andExpect(jsonPath("$.result[0].id", is("id1")))
@@ -104,9 +106,10 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is5xxServerError())
                 .andExpect(content().contentType("application/json;charset=UTF-8"))
-                .andExpect(jsonPath("$.httpStatus", is(HttpStatus.INTERNAL_SERVER_ERROR.value())))
-                .andExpect(jsonPath("$.status", is("ERROR")))
+                .andExpect(jsonPath("$.code", is(HttpStatus.INTERNAL_SERVER_ERROR.value())))
+                .andExpect(jsonPath("$.status", is("error")))
                 .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
+                .andExpect(jsonPath("$.messages").doesNotExist())
                 .andExpect(jsonPath("$.result").doesNotExist());
 
     }
@@ -122,8 +125,8 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                     .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))
-                    .andExpect(jsonPath("$.httpStatus", is(HttpStatus.OK.value())))
-                    .andExpect(jsonPath("$.status", is("OK")))
+                    .andExpect(jsonPath("$.code", is(HttpStatus.OK.value())))
+                    .andExpect(jsonPath("$.status", is("success")))
                     .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
                     .andExpect(jsonPath("$.result").isMap())
                     .andExpect(jsonPath("$.result.id", is("id1")))
@@ -145,9 +148,10 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError())
                 .andExpect(content().contentType("application/json;charset=UTF-8"))
-                .andExpect(jsonPath("$.httpStatus", is(HttpStatus.BAD_REQUEST.value())))
-                .andExpect(jsonPath("$.status", is("ERROR")))
+                .andExpect(jsonPath("$.code", is(HttpStatus.BAD_REQUEST.value())))
+                .andExpect(jsonPath("$.status", is("error")))
                 .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
+                .andExpect(jsonPath("$.messages").exists())
                 .andExpect(jsonPath("$.result").doesNotExist());
 
     }
@@ -164,8 +168,8 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                                                    .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is2xxSuccessful())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))
-                    .andExpect(jsonPath("$.httpStatus", is(HttpStatus.CREATED.value())))
-                    .andExpect(jsonPath("$.status", is("OK")))
+                    .andExpect(jsonPath("$.code", is(HttpStatus.CREATED.value())))
+                    .andExpect(jsonPath("$.status", is("success")))
                     .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
                     .andExpect(jsonPath("$.result").isMap())
                     .andExpect(jsonPath("$.result.id", is("id1")))
@@ -187,9 +191,10 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError())
                 .andExpect(content().contentType("application/json;charset=UTF-8"))
-                .andExpect(jsonPath("$.httpStatus", is(HttpStatus.BAD_REQUEST.value())))
-                .andExpect(jsonPath("$.status", is("ERROR")))
+                .andExpect(jsonPath("$.code", is(HttpStatus.BAD_REQUEST.value())))
+                .andExpect(jsonPath("$.status", is("error")))
                 .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
+                .andExpect(jsonPath("$.messages").exists())
                 .andExpect(jsonPath("$.result").doesNotExist());
 
     }
@@ -209,9 +214,8 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().is2xxSuccessful())
-                .andExpect(content().contentType("application/json;charset=UTF-8"))
-                .andExpect(jsonPath("$.httpStatus", is(HttpStatus.OK.value())))
-                .andExpect(jsonPath("$.status", is("OK")))
+                .andExpect(jsonPath("$.code", is(HttpStatus.OK.value())))
+                .andExpect(jsonPath("$.status", is("success")))
                 .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
                 .andExpect(jsonPath("$.result").doesNotExist());
 
@@ -232,9 +236,10 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().is5xxServerError())
                 .andExpect(content().contentType("application/json;charset=UTF-8"))
-                .andExpect(jsonPath("$.httpStatus", is(HttpStatus.INTERNAL_SERVER_ERROR.value())))
-                .andExpect(jsonPath("$.status", is("ERROR")))
+                .andExpect(jsonPath("$.code", is(HttpStatus.INTERNAL_SERVER_ERROR.value())))
+                .andExpect(jsonPath("$.status", is("error")))
                 .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
+                .andExpect(jsonPath("$.messages").doesNotExist())
                 .andExpect(jsonPath("$.result").doesNotExist());
 
     }
@@ -250,8 +255,8 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                                                    .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is2xxSuccessful())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))
-                    .andExpect(jsonPath("$.httpStatus", is(HttpStatus.NO_CONTENT.value())))
-                    .andExpect(jsonPath("$.status", is("OK")))
+                    .andExpect(jsonPath("$.code", is(HttpStatus.NO_CONTENT.value())))
+                    .andExpect(jsonPath("$.status", is("success")))
                     .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
                     .andExpect(jsonPath("$.result").doesNotExist());
 
@@ -262,18 +267,18 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     public void shouldTryDeleteDeviceWithInternalError() throws Exception {
 
         when(deviceRegisterService.remove(tenant, device1.getGuid()))
-                .thenReturn(ServiceResponseBuilder.<Device>error().build());
+                .thenReturn(ServiceResponseBuilder.<Device>error().withMessage(DeviceRegisterService.Messages.DEVICE_REMOVED_UNSUCCESSFULLY.getCode()).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.delete("/devices/" + device1.getGuid())
                                                    .contentType("application/json")
                                                    .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is5xxServerError())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))
-                    .andExpect(jsonPath("$.httpStatus", is(HttpStatus.INTERNAL_SERVER_ERROR.value())))
-                    .andExpect(jsonPath("$.status", is("ERROR")))
+                    .andExpect(jsonPath("$.code", is(HttpStatus.INTERNAL_SERVER_ERROR.value())))
+                    .andExpect(jsonPath("$.status", is("error")))
                     .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                    .andExpect(jsonPath("$.messages").exists())
                     .andExpect(jsonPath("$.result").doesNotExist());
-
 
     }
 
