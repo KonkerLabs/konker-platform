@@ -49,7 +49,7 @@ public class DeviceRestController implements InitializingBean {
     @GetMapping(path = "/")
     @PreAuthorize("hasAuthority('LIST_DEVICES')")
     @ApiOperation(
-            value = "List all devices by tenant",
+            value = "List all devices by organization",
             response = DeviceVO.class)
     public List<DeviceVO> list() throws BadServiceResponseException {
 
@@ -71,7 +71,7 @@ public class DeviceRestController implements InitializingBean {
 
     @GetMapping(path = "/{deviceGuid}")
     @ApiOperation(
-            value = "Get  a device by guid",
+            value = "Get a device by guid",
             response = RestResponse.class
     )
     @PreAuthorize("hasAuthority('SHOW_DEVICE')")

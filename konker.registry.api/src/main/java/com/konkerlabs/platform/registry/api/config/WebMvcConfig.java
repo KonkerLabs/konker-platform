@@ -36,11 +36,11 @@ public class WebMvcConfig  {
                 errorAttributes.remove("path");
                 errorAttributes.remove("exception");
                 errorAttributes.remove("error");
-                errorAttributes.put("httpStatus", errorAttributes.get("status"));
-                errorAttributes.put("status", "ERROR");
+                errorAttributes.put("code", errorAttributes.get("status"));
+                errorAttributes.put("status", "error");
 
                 Object message = errorAttributes.get("message");
-                errorAttributes.put("responseMessages", Arrays.asList(message));
+                errorAttributes.put("messages", Arrays.asList(message));
                 errorAttributes.remove("message");
 
                 return errorAttributes;

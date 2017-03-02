@@ -3,6 +3,7 @@ package com.konkerlabs.platform.registry.api.model;
 import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -10,8 +11,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class RouteActorVO {
 
+    @ApiModelProperty(value = "type", allowableValues = "DEVICE")
     private String type;
+    @ApiModelProperty(value = "actor guid")
     private String guid;
+    @ApiModelProperty(value = "actor channel")
     private String channel;
 
     public RouteActorVO(RouteActor routeActor) {
