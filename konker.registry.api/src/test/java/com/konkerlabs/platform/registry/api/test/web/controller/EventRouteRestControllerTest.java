@@ -28,6 +28,7 @@ import com.konkerlabs.platform.registry.api.model.EventRouteVO;
 import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
 import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
 import com.konkerlabs.platform.registry.api.web.controller.EventRouteRestController;
+import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.Tenant;
@@ -44,7 +45,8 @@ import com.konkerlabs.platform.registry.business.services.api.TransformationServ
 @ContextConfiguration(classes = {
         WebTestConfiguration.class,
         MongoTestConfig.class,
-        WebMvcConfig.class
+        WebMvcConfig.class,
+        CrudResponseAdvice.class
 })
 public class EventRouteRestControllerTest extends WebLayerTestContext {
 

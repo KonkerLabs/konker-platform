@@ -26,6 +26,7 @@ import com.konkerlabs.platform.registry.api.model.DeviceVO;
 import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
 import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
 import com.konkerlabs.platform.registry.api.web.controller.DeviceRestController;
+import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
@@ -37,7 +38,8 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBui
 @ContextConfiguration(classes = {
         WebTestConfiguration.class,
         MongoTestConfig.class,
-        WebMvcConfig.class
+        WebMvcConfig.class,
+        CrudResponseAdvice.class
 })
 public class DeviceRestControllerTest extends WebLayerTestContext {
 
@@ -212,7 +214,6 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().is2xxSuccessful())
-                .andExpect(content().contentType("application/json;charset=UTF-8"))
                 .andExpect(jsonPath("$.code", is(HttpStatus.OK.value())))
                 .andExpect(jsonPath("$.status", is("success")))
                 .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))

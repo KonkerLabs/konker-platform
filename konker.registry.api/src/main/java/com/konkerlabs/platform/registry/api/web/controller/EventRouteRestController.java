@@ -4,17 +4,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Scope;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,8 +19,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
 import com.konkerlabs.platform.registry.api.model.EventRouteVO;
-import com.konkerlabs.platform.registry.api.model.RestResponseBuilder;
 import com.konkerlabs.platform.registry.api.model.RouteActorType;
 import com.konkerlabs.platform.registry.api.model.RouteActorVO;
 import com.konkerlabs.platform.registry.business.model.Device;
@@ -38,7 +33,6 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterServ
 import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
 import com.konkerlabs.platform.registry.business.services.api.EventRouteService.Validations;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.TransformationService;
 
 @RestController
@@ -58,74 +52,50 @@ public class EventRouteRestController implements InitializingBean {
     @Autowired
     private User user;
 
-    @Autowired
-    private MessageSource messageSource;
-
     private Set<String> validationsCode = new HashSet<>();
 
     @GetMapping(path = "/")
-    public ResponseEntity<?> list() {
+    public List<EventRouteVO> list() throws BadServiceResponseException {
 
         Tenant tenant = user.getTenant();
 
         ServiceResponse<List<EventRoute>> routeResponse = eventRouteService.getAll(tenant);
 
         if (!routeResponse.isOk()) {
-            return createErrorResponse(routeResponse);
+            throw new BadServiceResponseException(user, routeResponse, validationsCode);
         } else {
             List<EventRouteVO> listVO = new ArrayList<>();
             for (EventRoute route : routeResponse.getResult()) {
                 listVO.add(new EventRouteVO(route));
             }
-            return RestResponseBuilder.ok().withHttpStatus(HttpStatus.OK).withResult(listVO).build();
+            return listVO;
         }
 
     }
 
     @GetMapping(path = "/{routeGuid}")
-    public ResponseEntity<?> read(@PathVariable("routeGuid") String routeGuid) {
+    public EventRouteVO read(@PathVariable("routeGuid") String routeGuid) throws BadServiceResponseException {
 
         Tenant tenant = user.getTenant();
 
         ServiceResponse<EventRoute> routeResponse = eventRouteService.getByGUID(tenant, routeGuid);
 
         if (!routeResponse.isOk()) {
-            return createErrorResponse(routeResponse);
+            throw new BadServiceResponseException(user, routeResponse, validationsCode);
         } else {
-            EventRouteVO obj = new EventRouteVO(routeResponse.getResult());
-            return RestResponseBuilder.ok().withHttpStatus(HttpStatus.OK).withResult(obj).build();
+            return new EventRouteVO(routeResponse.getResult());
         }
 
     }
 
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody EventRouteVO routeForm) {
+    public EventRouteVO create(@RequestBody EventRouteVO routeForm) throws BadServiceResponseException {
 
         Tenant tenant = user.getTenant();
 
-        RouteActor incoming = null;
-        ServiceResponse<RouteActor> incomingResponse = getRouteActor(tenant, routeForm.getIncoming());
-        if (incomingResponse.isOk()) {
-            incoming = incomingResponse.getResult();
-        } else {
-            return createErrorResponse(incomingResponse);
-        }
-
-        RouteActor outgoing = null;
-        ServiceResponse<RouteActor> outgoingResponse = getRouteActor(tenant, routeForm.getOutgoing());
-        if (outgoingResponse.isOk()) {
-            outgoing = outgoingResponse.getResult();
-        } else {
-            return createErrorResponse(outgoingResponse);
-        }
-
-        Transformation transformation = null;
-        ServiceResponse<Transformation> transformationResponse = getTransformation(tenant, routeForm);
-        if (transformationResponse.isOk()) {
-            transformation = transformationResponse.getResult();
-        } else {
-            return createErrorResponse(transformationResponse);
-        }
+        RouteActor incoming = getRouteActor(tenant, routeForm.getIncoming());
+        RouteActor outgoing = getRouteActor(tenant, routeForm.getOutgoing());
+        Transformation transformation = getTransformation(tenant, routeForm);
 
         EventRoute route = EventRoute.builder()
                 .name(routeForm.getName())
@@ -140,15 +110,14 @@ public class EventRouteRestController implements InitializingBean {
         ServiceResponse<EventRoute> routeResponse = eventRouteService.save(tenant, route);
 
         if (!routeResponse.isOk()) {
-            return createErrorResponse(routeResponse);
+            throw new BadServiceResponseException(user, routeResponse, validationsCode);
         } else {
-            return RestResponseBuilder.ok().withHttpStatus(HttpStatus.CREATED).withMessages(getMessages(routeResponse))
-                    .withResult(new EventRouteVO(routeResponse.getResult())).build();
+            return new EventRouteVO(routeResponse.getResult());
         }
 
     }
 
-    private ServiceResponse<Transformation> getTransformation(Tenant tenant, EventRouteVO routeForm) {
+    private Transformation getTransformation(Tenant tenant, EventRouteVO routeForm) throws BadServiceResponseException {
 
         String guid = routeForm.getTransformationGuid();
 
@@ -156,18 +125,18 @@ public class EventRouteRestController implements InitializingBean {
             ServiceResponse<Transformation> transformationResponse = transformationService.get(tenant, guid);
             if (transformationResponse.isOk()) {
                 Transformation transformation = transformationResponse.getResult();
-                return ServiceResponseBuilder.<Transformation>ok().withResult(transformation).build();
+                return transformation;
             } else {
-                return ServiceResponseBuilder.<Transformation>error().withMessages(transformationResponse.getResponseMessages()).build();
+                throw new BadServiceResponseException(user, transformationResponse, validationsCode);
             }
         }
 
-        return ServiceResponseBuilder.<Transformation>ok().withResult(null).build();
+        return null;
 
     }
 
     @SuppressWarnings("serial")
-    private ServiceResponse<RouteActor> getRouteActor(Tenant tenant, RouteActorVO routeForm) {
+    private RouteActor getRouteActor(Tenant tenant, RouteActorVO routeForm) throws BadServiceResponseException {
 
         RouteActor routeActor = RouteActor.builder().build();
 
@@ -177,19 +146,19 @@ public class EventRouteRestController implements InitializingBean {
                 routeActor.setDisplayName(deviceResponse.getResult().getName());
                 routeActor.setUri(deviceResponse.getResult().toURI());
                 routeActor.setData(new HashMap<String, String>() {{ put(EventRoute.DEVICE_MQTT_CHANNEL, routeForm.getChannel()); }} );
-                return ServiceResponseBuilder.<RouteActor>ok().withResult(routeActor).build();
+                return routeActor;
             } else {
-                return ServiceResponseBuilder.<RouteActor>error().withMessages(deviceResponse.getResponseMessages()).build();
+                throw new BadServiceResponseException(user, deviceResponse, validationsCode);
             }
         }
 
-        return ServiceResponseBuilder.<RouteActor>ok().withResult(null).build();
+        return null;
 
     }
 
 
     @PutMapping(path = "/{routeGuid}")
-    public ResponseEntity<?> update(@PathVariable("routeGuid") String routeGuid, @RequestBody EventRouteVO routeForm) {
+    public void update(@PathVariable("routeGuid") String routeGuid, @RequestBody EventRouteVO routeForm) throws BadServiceResponseException {
 
         Tenant tenant = user.getTenant();
 
@@ -197,34 +166,14 @@ public class EventRouteRestController implements InitializingBean {
         ServiceResponse<EventRoute> routeResponse = eventRouteService.getByGUID(tenant, routeGuid);
 
         if (!routeResponse.isOk()) {
-            return createErrorResponse(routeResponse);
+            throw new BadServiceResponseException(user, routeResponse, validationsCode);
         } else {
             routeFromDB = routeResponse.getResult();
         }
 
-        RouteActor incoming = null;
-        ServiceResponse<RouteActor> incomingResponse = getRouteActor(tenant, routeForm.getIncoming());
-        if (incomingResponse.isOk()) {
-            incoming = incomingResponse.getResult();
-        } else {
-            return createErrorResponse(incomingResponse);
-        }
-
-        RouteActor outgoing = null;
-        ServiceResponse<RouteActor> outgoingResponse = getRouteActor(tenant, routeForm.getOutgoing());
-        if (outgoingResponse.isOk()) {
-            outgoing = outgoingResponse.getResult();
-        } else {
-            return createErrorResponse(outgoingResponse);
-        }
-
-        Transformation transformation = null;
-        ServiceResponse<Transformation> transformationResponse = getTransformation(tenant, routeForm);
-        if (transformationResponse.isOk()) {
-            transformation = transformationResponse.getResult();
-        } else {
-            return createErrorResponse(transformationResponse);
-        }
+        RouteActor incoming = getRouteActor(tenant, routeForm.getIncoming());
+        RouteActor outgoing = getRouteActor(tenant, routeForm.getOutgoing());
+        Transformation transformation = getTransformation(tenant, routeForm);
 
         // update fields
         routeFromDB.setName(routeForm.getName());
@@ -238,64 +187,21 @@ public class EventRouteRestController implements InitializingBean {
         ServiceResponse<EventRoute> updateResponse = eventRouteService.update(tenant, routeGuid, routeFromDB);
 
         if (!updateResponse.isOk()) {
-            return createErrorResponse(updateResponse);
-
-        } else {
-            return RestResponseBuilder.ok().withHttpStatus(HttpStatus.OK).withMessages(getMessages(updateResponse))
-                    .build();
+            throw new BadServiceResponseException(user, updateResponse, validationsCode);
         }
 
     }
 
     @DeleteMapping(path = "/{routeGuid}")
-    public ResponseEntity<?> delete(@PathVariable("routeGuid") String routeGuid) {
+    public void delete(@PathVariable("routeGuid") String routeGuid) throws BadServiceResponseException {
 
         Tenant tenant = user.getTenant();
 
         ServiceResponse<EventRoute> routeResponse = eventRouteService.remove(tenant, routeGuid);
 
         if (!routeResponse.isOk()) {
-            return createErrorResponse(routeResponse);
-        } else {
-            return RestResponseBuilder.ok().withHttpStatus(HttpStatus.NO_CONTENT)
-                    .withMessages(getMessages(routeResponse)).build();
+            throw new BadServiceResponseException(user, routeResponse, validationsCode);
         }
-
-    }
-
-    private List<String> getMessages(ServiceResponse<?> serviceResponse) {
-        List<String> messages = serviceResponse.getResponseMessages().entrySet().stream()
-                .map(v -> messageSource.getMessage(v.getKey(), v.getValue(), user.getLanguage().getLocale()))
-                .collect(Collectors.toList());
-
-        return messages;
-    }
-
-    private ResponseEntity<?> createErrorResponse(ServiceResponse<?> serviceResponse) {
-
-        if (containsValidations(serviceResponse)) {
-
-            return RestResponseBuilder.error().withHttpStatus(HttpStatus.BAD_REQUEST)
-                    .withMessages(getMessages(serviceResponse)).build();
-        } else {
-
-            return RestResponseBuilder.error().withHttpStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .withMessages(getMessages(serviceResponse)).build();
-        }
-
-    }
-
-    private boolean containsValidations(ServiceResponse<?> routeResponse) {
-
-        Map<String, Object[]> responseMessages = routeResponse.getResponseMessages();
-
-        for (String key: responseMessages.keySet()) {
-            if (validationsCode.contains(key)) {
-                return true;
-            }
-        }
-
-        return false;
 
     }
 
