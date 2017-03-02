@@ -8,9 +8,9 @@
 	    <option data-th-value="${''}"
                 data-th-text="#{visualization.index.select.empty}"></option>
 		<option data-th-each="metric : ${metrics}"
-	    	data-th-value="${metric}"
-            data-th-selected="${metric eq defaultMetric}"
-	        data-th-text="${metric}"></option>
+	    	data-th-value="${metric.name}"
+	        data-th-text="${metric.name}"
+	        data-th-selected="${metric.isDefault()}"></option>
 	 </select>
 </div>
 </body>
