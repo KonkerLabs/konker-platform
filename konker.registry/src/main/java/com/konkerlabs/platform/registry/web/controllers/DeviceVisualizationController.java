@@ -42,6 +42,7 @@ import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.web.controllers.DeviceController.MetricVO;
 import com.konkerlabs.platform.registry.web.converters.InstantToStringConverter;
 import com.konkerlabs.platform.registry.web.csv.EventCsvDownload;
 
@@ -174,7 +175,7 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     
     @RequestMapping("/loading/metrics/")
     @PreAuthorize("hasAuthority('VIEW_DEVICE_CHART')")
-    public ModelAndView loadMetrics(@RequestParam String deviceGuid, 
+    public ModelAndView loadMetrics(@RequestParam String deviceGuid,
     								@RequestParam String channel) {
     	ServiceResponse<List<String>> metricsResponse = eventSchemaService.findKnownIncomingMetricsBy(tenant, deviceGuid, channel, JsonNodeType.NUMBER);
     	
@@ -183,11 +184,19 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     	}
     	
     	String defaultMetric = CollectionUtils.isEmpty(metricsResponse.getResult()) ? null : metricsResponse.getResult().get(0);
-    	
-    	return new ModelAndView("devices/visualization/metrics", "metrics", metricsResponse.getResult())
-    			.addObject("defaultMetric", defaultMetric);
+
+        List<MetricVO> metrics = new ArrayList<MetricVO>();
+        for (String metricName : metricsResponse.getResult()) {
+            MetricVO metricVO = new MetricVO(metricName);
+            if (metricVO.getName().equals(defaultMetric)) {
+                metricVO.setDefault();
+            }
+            metrics.add(metricVO);
+        }
+
+    	return new ModelAndView("devices/visualization/metrics", "metrics", metrics);
     }
-    
+
     @RequestMapping(path = "/csv/download")
     @PreAuthorize("hasAuthority('EXPORT_DEVICE_CSV')")
     public void download(@RequestParam(required = false) String dateStart,
@@ -212,9 +221,9 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     		EventCsvDownload csvDownload = new EventCsvDownload();
 			csvDownload.download(events, response, additionalHeaders);
 		} catch (IOException | SecurityException | NoSuchMethodException e) {
-			LOGGER.error("Error to generate CSV", 
+			LOGGER.error("Error to generate CSV",
 						Device.builder().guid(deviceGuid).build().toURI(),
-						Device.builder().guid(deviceGuid).build().getLogLevel(), 
+						Device.builder().guid(deviceGuid).build().getLogLevel(),
 						e);
 		}
     }

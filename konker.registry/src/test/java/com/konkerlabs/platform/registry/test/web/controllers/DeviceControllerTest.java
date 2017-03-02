@@ -63,6 +63,7 @@ import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
 import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
 import com.konkerlabs.platform.registry.web.controllers.DeviceController;
 import com.konkerlabs.platform.registry.web.controllers.DeviceController.ChannelVO;
+import com.konkerlabs.platform.registry.web.controllers.DeviceController.MetricVO;
 import com.konkerlabs.platform.registry.web.converters.InstantToStringConverter;
 import com.konkerlabs.platform.registry.web.forms.DeviceRegistrationForm;
 
@@ -111,7 +112,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
 
 		device = builder.build();
 		device.setActive(true);
-		
+
 		savedDevice = builder.id("deviceId").active(true).build();
 
 		deviceForm = new DeviceRegistrationForm();
@@ -125,6 +126,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
 	@After
 	public void tearDown() {
 		Mockito.reset(deviceRegisterService);
+		Mockito.reset(deviceEventService);
 		Mockito.reset(eventSchemaService);
 	}
 
@@ -221,7 +223,6 @@ public class DeviceControllerTest extends WebLayerTestContext {
 
 		getMockMvc().perform(get(MessageFormat.format("/devices/{0}/events", savedDevice.getGuid())))
 				.andExpect(model().attribute("channels", channelVOs))
-				.andExpect(model().attribute("defaultChannel", "square"))
 				.andExpect(model().attribute("metrics", Collections.emptyList()))
 				.andExpect(model().attribute("device", savedDevice))
 				.andExpect(model().attribute("hasAnyEvent", false))
@@ -231,6 +232,46 @@ public class DeviceControllerTest extends WebLayerTestContext {
 		verify(deviceRegisterService).getByDeviceGuid(tenant, savedDevice.getGuid());
 		verify(deviceEventService).findIncomingBy(tenant, savedDevice.getGuid(), null, null, null, false, 50);
 	}
+
+    @Test
+    @WithMockUser(authorities={"VIEW_DEVICE_LOG"})
+    public void shouldShowDeviceEventListWithNumericMetric() throws Exception {
+        savedDevice.setRegistrationDate(Instant.now());
+        when(deviceRegisterService.getByDeviceGuid(tenant, savedDevice.getGuid()))
+                .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(savedDevice).build());
+        when(deviceEventService.findIncomingBy(tenant, savedDevice.getGuid(), null, null, null, false, 50))
+                .thenReturn(ServiceResponseBuilder.<List<Event>> ok().withResult(Collections.emptyList()).build());
+        when(deviceEventService.findOutgoingBy(tenant, savedDevice.getGuid(), null, null, null, false, 50))
+                .thenReturn(ServiceResponseBuilder.<List<Event>> ok().withResult(Collections.emptyList()).build());
+
+        // find last numeric metric mocks
+        List<String> channels = Collections.singletonList("square");
+        List<ChannelVO> channelVOs = Collections.singletonList(new ChannelVO("square"));
+        EventSchema lastSchema = EventSchema.builder().channel("square").field(SchemaField.builder().path("rj").build()).build();
+
+        List<String> metrics = Collections.singletonList("lumens");
+        List<MetricVO> metricVOs = Collections.singletonList(new MetricVO("lumens"));
+
+        when(eventSchemaService.findKnownIncomingChannelsBy(tenant, savedDevice.getGuid()))
+            .thenReturn(ServiceResponseBuilder.<List<String>> ok().withResult(channels).build());
+        when(eventSchemaService.findLastIncomingBy(tenant, savedDevice.getGuid(), JsonNodeType.NUMBER))
+            .thenReturn(ServiceResponseBuilder.<EventSchema> ok().withResult(lastSchema).build());
+        when(eventSchemaService.findKnownIncomingMetricsBy(tenant, savedDevice.getGuid(), "square", JsonNodeType.NUMBER))
+            .thenReturn(ServiceResponseBuilder.<List<String>> ok().withResult(metrics).build());
+        when(eventSchemaService.findKnownIncomingMetricsBy(tenant, savedDevice.getGuid(), JsonNodeType.NUMBER))
+            .thenReturn(ServiceResponseBuilder.<List<String>> ok().withResult(metrics).build());
+
+        getMockMvc().perform(get(MessageFormat.format("/devices/{0}/events", savedDevice.getGuid())))
+                .andExpect(model().attribute("channels", channelVOs))
+                .andExpect(model().attribute("metrics", metricVOs))
+                .andExpect(model().attribute("device", savedDevice))
+                .andExpect(model().attribute("hasAnyEvent", false))
+                .andExpect(model().attribute("existsNumericMetric", true))
+                .andExpect(view().name("devices/events"));
+
+        verify(deviceRegisterService).getByDeviceGuid(tenant, savedDevice.getGuid());
+        verify(deviceEventService).findIncomingBy(tenant, savedDevice.getGuid(), null, null, null, false, 50);
+    }
 
 	@Test
 	@WithMockUser(authorities={"EDIT_DEVICE"})
@@ -281,8 +322,8 @@ public class DeviceControllerTest extends WebLayerTestContext {
 		verify(deviceRegisterService).update(eq(tenant), eq(savedDevice.getId()), eq(device));
 	}
 
-	
-	
+
+
 	@Test
 	@WithMockUser(authorities={"REMOVE_DEVICE"})
 	public void shouldRedirectToListDevicesAndShowSuccessMessageAfterDeletionSucceed() throws Exception {

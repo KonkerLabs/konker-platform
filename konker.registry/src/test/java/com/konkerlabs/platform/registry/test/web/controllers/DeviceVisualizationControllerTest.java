@@ -14,6 +14,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.After;
@@ -51,6 +52,7 @@ import com.konkerlabs.platform.registry.security.UserContextResolver;
 import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
 import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
+import com.konkerlabs.platform.registry.web.controllers.DeviceController.MetricVO;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
@@ -58,8 +60,8 @@ import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
         WebMvcConfig.class,
         WebTestConfiguration.class,
         SecurityTestConfiguration.class,
-        DeviceVisualizationControllerTest.DeviceTestContextConfig.class, 
-        WebConfig.class, 
+        DeviceVisualizationControllerTest.DeviceTestContextConfig.class,
+        WebConfig.class,
         HotjarConfig.class
 })
 public class DeviceVisualizationControllerTest extends WebLayerTestContext {
@@ -67,7 +69,7 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     private static final String DEVICE_GUID = "169897e9-ed44-41d1-978d-d244d78e9a67";
     private static final String CHANNEL = "datain";
     private static final String TENANT_DOMAIN = "inmetrics.com";
-    
+
     @Autowired
 	private ApplicationContext applicationContext;
     @Autowired
@@ -83,7 +85,7 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     @Autowired
     private User user;
 
-    
+
     private List<String> channels;
 	private EventSchema eventSchema;
 	private List<Event> eventsList;
@@ -91,7 +93,7 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
 	private Instant endTimestamp;
 	private String dateStart = "01/10/2016 17:47:20";
 	private String dateEnd = "04/10/2016 17:47:20";
-	
+
     @Before
     public void setUp() {
 
@@ -101,16 +103,16 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     	channels = Arrays.asList("channelin", "channelout", "channelin2");
 
     	eventSchema = EventSchema.builder().channel(CHANNEL).deviceGuid(DEVICE_GUID)
-    			.field(SchemaField.builder().build()).build();
-    	
+    			.field(SchemaField.builder().path("temp").knownType(JsonNodeType.NUMBER).build()).build();
+
     	eventsList = new ArrayList<>();
-    	
+
 		Event event = Event.builder().timestamp(Instant.ofEpochSecond(1475603097l))
     			.incoming(EventActor.builder().tenantDomain(TENANT_DOMAIN).deviceGuid(DEVICE_GUID).channel(CHANNEL).build())
     			.outgoing(EventActor.builder().tenantDomain(TENANT_DOMAIN).deviceGuid(DEVICE_GUID).channel(CHANNEL).build())
     			.payload("{\"a\": 109, \"b\": 111}").build();
 		eventsList.add(event);
-    	
+
     	LocalDateTime start = LocalDateTime.parse(dateStart, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
     	LocalDateTime end = LocalDateTime.parse(dateEnd, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
     	ZonedDateTime zonedDateStart = ZonedDateTime.of(start, ZoneId.of("America/Sao_Paulo"));
@@ -123,19 +125,19 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     public void tearDown() {
         Mockito.reset(eventSchemaService);
     }
-    
+
     @Test
     @WithMockUser(authorities={"VIEW_DEVICE_CHART"})
     public void shouldLoadChannels() throws Exception {
     	when(eventSchemaService.findKnownIncomingChannelsBy(tenant, DEVICE_GUID))
     		.thenReturn(ServiceResponseBuilder.<List<String>>ok()
     				.withResult(channels).build());
-    	
+
     	getMockMvc().perform(get("/devices/visualization/loading/channel/").param("deviceGuid", DEVICE_GUID))
     		.andExpect(model().attribute("channels", equalTo(channels)))
     		.andExpect(view().name("devices/visualization/channels"));
     }
-    
+
     @Test
     @WithMockUser(authorities={"VIEW_DEVICE_CHART"})
     public void shouldLoadMetrics() throws Exception {
@@ -147,58 +149,60 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     	when(eventSchemaService.findKnownIncomingMetricsBy(tenant, DEVICE_GUID, CHANNEL, JsonNodeType.NUMBER))
 			.thenReturn(ServiceResponseBuilder.<List<String>>ok()
 			.withResult(new ArrayList<String>(listMetrics)).build());
-    	
+
+        List<MetricVO> metricVOs = Collections.singletonList(new MetricVO("temp"));
+
     	getMockMvc().perform(get("/devices/visualization/loading/metrics/").param("deviceGuid", DEVICE_GUID).param("channel", CHANNEL))
-    		.andExpect(model().attribute("metrics", equalTo(listMetrics)))
+    		.andExpect(model().attribute("metrics", equalTo(metricVOs)))
     		.andExpect(view().name("devices/visualization/metrics"));
     }
-    
+
     @Test
     @WithMockUser(authorities={"VIEW_DEVICE_CHART"})
     public void shouldReturnDeviceIsMandatoryMessage() throws Exception {
-    	
+
     	getMockMvc().perform(get("/devices/visualization/load/").param("dateStart", "").param("dateEnd", "").param("online", "false")
     			.param("deviceGuid", "").param("channel", CHANNEL))
     			.andExpect(content().json("[{'message':'Device is mandatory'}]"));
     }
-    
+
     @Test
     @WithMockUser(authorities={"VIEW_DEVICE_CHART"})
     public void shouldReturnChannelIsMandatoryMessage() throws Exception {
-    	
+
     	getMockMvc().perform(get("/devices/visualization/load/").param("dateStart", "").param("dateEnd", "").param("online", "false")
     			.param("deviceGuid", DEVICE_GUID).param("channel", ""))
     			.andExpect(content().json("[{'message':'Channel is mandatory'}]"));
     }
-    
+
     @Test
     @WithMockUser(authorities={"VIEW_DEVICE_CHART"})
     public void shouldReturnDateStartIsMandatoryMessage() throws Exception {
-    	
+
     	getMockMvc().perform(get("/devices/visualization/load/").param("dateStart", "").param("dateEnd", "").param("online", "false")
     			.param("deviceGuid", DEVICE_GUID).param("channel", CHANNEL))
     			.andExpect(content().json("[{'message':'Dt/hr start is mandatory'}]"));
     }
-    
+
     @Test
     @WithMockUser(authorities={"VIEW_DEVICE_CHART"})
     public void shouldReturnDateEndIsMandatoryMessage() throws Exception {
-    	
+
     	getMockMvc().perform(get("/devices/visualization/load/").param("dateStart", dateStart).param("dateEnd", "").param("online", "false")
     			.param("deviceGuid", DEVICE_GUID).param("channel", CHANNEL))
     			.andExpect(content().json("[{'message':'Dt/hr end is mandatory'}]"));
     }
-    
+
     @Test
     @WithMockUser(authorities={"VIEW_DEVICE_CHART"})
     public void shouldReturnDataOnline() throws Exception {
     	when(userContextResolver.getObject()).thenReturn(user);
-    	
+
     	when(deviceEventService.findIncomingBy(tenant, DEVICE_GUID, CHANNEL, null, null, false, 100))
 			.thenReturn(ServiceResponseBuilder.<List<Event>>ok()
 				.withResult(eventsList).build());
-    	
-    	
+
+
     	getMockMvc().perform(get("/devices/visualization/load/").param("dateStart", "").param("dateEnd", "").param("online", "true")
     			.param("deviceGuid", DEVICE_GUID).param("channel", CHANNEL))
     			.andExpect(content().json("[{'timestampFormated': '04/10/2016 14:44:57.000 BRT',"
@@ -207,7 +211,7 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     					+ "'tenantDomain':'inmetrics.com','deviceGuid':'169897e9-ed44-41d1-978d-d244d78e9a67','channel':'datain'},"
     					+ "'payload':'{\"a\": 109, \"b\": 111}'}]"));
     }
-    
+
     @Test
     @WithMockUser(authorities={"VIEW_DEVICE_CHART"})
     public void shouldReturnDataByDateRange() throws Exception {
@@ -225,7 +229,7 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     					+ "'tenantDomain':'inmetrics.com','deviceGuid':'169897e9-ed44-41d1-978d-d244d78e9a67','channel':'datain'},"
     					+ "'payload':'{\"a\": 109, \"b\": 111}'}]"));
     }
-    
+
     @Configuration
     static class DeviceTestContextConfig {
     	@Bean
@@ -234,7 +238,7 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
         }
         @Bean
         public DeviceEventService deviceEventService() { return Mockito.mock(DeviceEventService.class); }
-        
+
         @Bean
         public EventSchemaService eventSchemaService() {
         	return Mockito.mock(EventSchemaService.class);

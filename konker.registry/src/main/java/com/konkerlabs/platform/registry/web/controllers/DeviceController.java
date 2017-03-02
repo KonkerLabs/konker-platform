@@ -114,6 +114,52 @@ public class DeviceController implements ApplicationContextAware {
         }
     }
 
+    public static class MetricVO {
+        private String name;
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((name == null) ? 0 : name.hashCode());
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            MetricVO other = (MetricVO) obj;
+            if (name == null) {
+                if (other.name != null)
+                    return false;
+            } else if (!name.equals(other.name))
+                return false;
+            return true;
+        }
+
+        private boolean isDefaultMetric = false;
+
+        public MetricVO(String channelName) {
+            this.name = channelName;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setDefault() {
+            this.isDefaultMetric = true;
+        }
+
+        public boolean isDefault() {
+            return isDefaultMetric;
+        }
+    }
+
     private ApplicationContext applicationContext;
 
     @Override
@@ -208,7 +254,7 @@ public class DeviceController implements ApplicationContextAware {
     	Instant instantStart = StringUtils.isNotEmpty(dateStart) ? ZonedDateTime.of(LocalDateTime.parse(dateStart, dtf), ZoneId.of(user.getZoneId().getId())).toInstant() : null;
     	Instant instantEnd = StringUtils.isNotEmpty(dateEnd) ? ZonedDateTime.of(LocalDateTime.parse(dateEnd, dtf), ZoneId.of(user.getZoneId().getId())).toInstant() : null;
 
-		ModelAndView mv = new ModelAndView("devices/events-incoming", "recentIncomingEvents", 
+		ModelAndView mv = new ModelAndView("devices/events-incoming", "recentIncomingEvents",
 				deviceEventService.findIncomingBy(tenant, deviceGuid, null, instantStart, instantEnd, false, 50).getResult());
 
 		return mv;
@@ -224,7 +270,7 @@ public class DeviceController implements ApplicationContextAware {
     	Instant instantStart = StringUtils.isNotEmpty(dateStart) ? ZonedDateTime.of(LocalDateTime.parse(dateStart, dtf), ZoneId.of(user.getZoneId().getId())).toInstant() : null;
     	Instant instantEnd = StringUtils.isNotEmpty(dateEnd) ? ZonedDateTime.of(LocalDateTime.parse(dateEnd, dtf), ZoneId.of(user.getZoneId().getId())).toInstant() : null;
 
-		ModelAndView mv = new ModelAndView("devices/events-outgoing", "recentOutgoingEvents", 
+		ModelAndView mv = new ModelAndView("devices/events-outgoing", "recentOutgoingEvents",
 				deviceEventService.findOutgoingBy(tenant, deviceGuid, null, instantStart, instantEnd, false, 50).getResult());
 
 		return mv;
@@ -236,7 +282,7 @@ public class DeviceController implements ApplicationContextAware {
 
 		String defaultChannel = null;
 		String defaultMetric = null;
-		List<String> listMetrics = null;
+		List<String> listMetrics = new ArrayList<>();
 
 		// Try to find the last numeric metric
 		ServiceResponse<EventSchema> lastEvent = eventSchemaService.findLastIncomingBy(tenant, deviceGuid, JsonNodeType.NUMBER);
@@ -272,23 +318,30 @@ public class DeviceController implements ApplicationContextAware {
 			existsNumericMetric = true;
 		}
 
+		// prepare a list of VOs to be displayed
 
-		// prepare a list of channel VOs to be displayed
-		List<ChannelVO> channels = new ArrayList<ChannelVO>();  
-		for (String channelName : channelsServiceResponse.getResult()) {
+        List<ChannelVO> channels = new ArrayList<ChannelVO>();
+        for (String channelName : channelsServiceResponse.getResult()) {
             ChannelVO channelVO = new ChannelVO(channelName);
-		    if (channelVO.getName().equals(defaultChannel)) {
+            if (channelVO.getName().equals(defaultChannel)) {
                 channelVO.setDefault();
             }
-		    channels.add(channelVO);
+            channels.add(channelVO);
         }
-		
+
+        List<MetricVO> metrics = new ArrayList<MetricVO>();
+        for (String metricName : listMetrics) {
+            MetricVO metricVO = new MetricVO(metricName);
+            if (metricVO.getName().equals(defaultMetric)) {
+                metricVO.setDefault();
+            }
+            metrics.add(metricVO);
+        }
+
 		// Add objects
 		mv.addObject("device", device)
 		  .addObject("channels", channels)
-		  .addObject("defaultChannel", defaultChannel)
-		  .addObject("metrics", listMetrics)
-		  .addObject("defaultMetric", defaultMetric)
+		  .addObject("metrics", metrics)
 		  .addObject("existsNumericMetric", existsNumericMetric);
 
 	}
