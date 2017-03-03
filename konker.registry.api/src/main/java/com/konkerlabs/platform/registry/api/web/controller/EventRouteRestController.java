@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
+import com.konkerlabs.platform.registry.api.model.EventRouteInputVO;
 import com.konkerlabs.platform.registry.api.model.EventRouteVO;
 import com.konkerlabs.platform.registry.api.model.RestResponse;
 import com.konkerlabs.platform.registry.api.model.RouteActorType;
@@ -105,7 +106,7 @@ public class EventRouteRestController implements InitializingBean {
     @PostMapping
     @PreAuthorize("hasAuthority('CREATE_DEVICE_ROUTE')")
     @ApiOperation(value = "Create a route")
-    public EventRouteVO create(@RequestBody EventRouteVO routeForm) throws BadServiceResponseException {
+    public EventRouteVO create(@RequestBody EventRouteInputVO routeForm) throws BadServiceResponseException {
 
         Tenant tenant = user.getTenant();
 
@@ -133,7 +134,7 @@ public class EventRouteRestController implements InitializingBean {
 
     }
 
-    private Transformation getTransformation(Tenant tenant, EventRouteVO routeForm) throws BadServiceResponseException {
+    private Transformation getTransformation(Tenant tenant, EventRouteInputVO routeForm) throws BadServiceResponseException {
 
         String guid = routeForm.getTransformationGuid();
 
@@ -176,7 +177,7 @@ public class EventRouteRestController implements InitializingBean {
     @PutMapping(path = "/{routeGuid}")
     @PreAuthorize("hasAuthority('EDIT_DEVICE_ROUTE')")
     @ApiOperation(value = "Update a route")
-    public void update(@PathVariable("routeGuid") String routeGuid, @RequestBody EventRouteVO routeForm) throws BadServiceResponseException {
+    public void update(@PathVariable("routeGuid") String routeGuid, @RequestBody EventRouteInputVO routeForm) throws BadServiceResponseException {
 
         Tenant tenant = user.getTenant();
 

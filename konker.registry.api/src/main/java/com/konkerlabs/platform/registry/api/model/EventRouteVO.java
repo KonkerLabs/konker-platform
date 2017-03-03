@@ -8,30 +8,19 @@ import com.konkerlabs.platform.registry.business.model.Transformation;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Data
+@EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor
 @ApiModel(
         value = "Route",
         discriminator = "com.konkerlabs.platform.registry.api.model")
-public class EventRouteVO {
+public class EventRouteVO extends EventRouteInputVO {
 
-    @ApiModelProperty(value = "the route guid")
+    @ApiModelProperty(value = "the route guid", position = 0)
     private String guid;
-    @ApiModelProperty(value = "the route name")
-    private String name;
-    @ApiModelProperty(value = "the route description")
-    private String description;
-    @ApiModelProperty(value = "the route incoming")
-    private RouteActorVO incoming;
-    @ApiModelProperty(value = "the route outgoing")
-    private RouteActorVO outgoing;
-    @ApiModelProperty(value = "the route filtering expression")
-    private String filteringExpression;
-    @ApiModelProperty(value = "the route transformation guid")
-    private String transformationGuid;
-    private boolean active;
 
     public EventRouteVO(EventRoute route) {
         this.guid   = route.getGuid();
