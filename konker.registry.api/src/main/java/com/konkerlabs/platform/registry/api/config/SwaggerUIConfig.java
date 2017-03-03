@@ -102,7 +102,7 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
                 .contact(new Contact("Konker", "developers.konkerlabs.com", "support@konkerlabs.com"))
                 .license("Apache 2.0")
                 .licenseUrl("http://www.apache.org/licenses/LICENSE-2.0")
-                .version("v2")
+                .version("v1")
                 .build();
     }
 
