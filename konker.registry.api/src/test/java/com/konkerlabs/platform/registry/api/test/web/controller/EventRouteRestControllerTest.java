@@ -474,4 +474,22 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
 
     }
 
+    @Test
+    public void shouldTryDeleteNonexistentEventRoute() throws Exception {
+
+        when(eventRouteService.remove(tenant, route1.getGuid()))
+            .thenReturn(ServiceResponseBuilder.<EventRoute> error().withMessage(EventRouteService.Validations.EVENT_ROUTE_NOT_FOUND.getCode()).build());
+
+        getMockMvc().perform(MockMvcRequestBuilders.delete("/routes/" + route1.getGuid())
+                                                   .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().is4xxClientError())
+                    .andExpect(content().contentType("application/json;charset=UTF-8"))
+                    .andExpect(jsonPath("$.code", is(HttpStatus.NOT_FOUND.value())))
+                    .andExpect(jsonPath("$.status", is("error")))
+                    .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                    .andExpect(jsonPath("$.messages").exists())
+                    .andExpect(jsonPath("$.result").doesNotExist());
+
+    }
+
 }

@@ -2,6 +2,7 @@ package com.konkerlabs.platform.registry.api.web.wrapper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
 import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
+import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
 import com.konkerlabs.platform.registry.api.model.RestResponseBuilder;
 
 @ControllerAdvice(basePackages = "com.konkerlabs.platform.registry.api.web.controller")
@@ -62,23 +64,28 @@ public class CrudResponseAdvice implements ResponseBodyAdvice<Object> {
     public ResponseEntity<?> exception(BadServiceResponseException e) {
 
         if (e.hasValidationsError()) {
-            return RestResponseBuilder.error().withHttpStatus(HttpStatus.BAD_REQUEST).withMessages(getI18NMessages(e)).build();
+            return RestResponseBuilder.error().withHttpStatus(HttpStatus.BAD_REQUEST).withMessages(getI18NMessages(e.getResponseMessages(), e.getLocale())).build();
 
         } else {
-            return RestResponseBuilder.error().withHttpStatus(HttpStatus.INTERNAL_SERVER_ERROR).withMessages(getI18NMessages(e)).build();
+            return RestResponseBuilder.error().withHttpStatus(HttpStatus.INTERNAL_SERVER_ERROR).withMessages(getI18NMessages(e.getResponseMessages(), e.getLocale())).build();
 
         }
 
     }
 
-    private List<String> getI18NMessages(BadServiceResponseException e) {
+    @ExceptionHandler(NotFoundResponseException.class)
+    public ResponseEntity<?> exception(NotFoundResponseException e) {
 
-        Map<String, Object[]> map = e.getResponseMessages();
+         return RestResponseBuilder.error().withHttpStatus(HttpStatus.NOT_FOUND).withMessages(getI18NMessages(e.getResponseMessages(), e.getLocale())).build();
+
+    }
+
+    private List<String> getI18NMessages(Map<String, Object[]> map, Locale locale) {
 
         List<String> messages = new ArrayList<>();
 
         for (Entry<String, Object[]> v:  map.entrySet()) {
-            messages.add(messageSource.getMessage(v.getKey(), v.getValue(), e.getLocale()));
+            messages.add(messageSource.getMessage(v.getKey(), v.getValue(), locale));
         }
 
         return messages;

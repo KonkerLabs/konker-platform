@@ -21,14 +21,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
+import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
 import com.konkerlabs.platform.registry.api.model.DeviceInputVO;
 import com.konkerlabs.platform.registry.api.model.DeviceVO;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.Validations;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.Validations;
 
 import io.swagger.annotations.ApiOperation;
 
@@ -147,14 +148,18 @@ public class DeviceRestController implements InitializingBean {
     @DeleteMapping(path = "/{deviceGuid}")
     @ApiOperation(value = "Delete a device")
     @PreAuthorize("hasAuthority('REMOVE_DEVICE')")
-    public void delete(@PathVariable("deviceGuid") String deviceGuid) throws BadServiceResponseException {
+    public void delete(@PathVariable("deviceGuid") String deviceGuid) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
 
         ServiceResponse<Device> deviceResponse = deviceRegisterService.remove(tenant, deviceGuid);
 
         if (!deviceResponse.isOk()) {
-            throw new BadServiceResponseException(user, deviceResponse, validationsCode);
+            if (deviceResponse.getResponseMessages().containsKey(Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode())) {
+                throw new NotFoundResponseException(user, deviceResponse);
+            } else {
+                throw new BadServiceResponseException(user, deviceResponse, validationsCode);
+            }
         }
 
     }
@@ -162,7 +167,11 @@ public class DeviceRestController implements InitializingBean {
     @Override
     public void afterPropertiesSet() throws Exception {
 
-        for (Validations value : DeviceRegisterService.Validations.values()) {
+        for (com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.Validations value : DeviceRegisterService.Validations.values()) {
+            validationsCode.add(value.getCode());
+        }
+
+        for (com.konkerlabs.platform.registry.business.model.Device.Validations value : Device.Validations.values()) {
             validationsCode.add(value.getCode());
         }
 

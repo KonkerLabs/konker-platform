@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
+import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
 import com.konkerlabs.platform.registry.api.model.EventRouteInputVO;
 import com.konkerlabs.platform.registry.api.model.EventRouteVO;
 import com.konkerlabs.platform.registry.api.model.RestResponse;
@@ -214,14 +215,18 @@ public class EventRouteRestController implements InitializingBean {
     @DeleteMapping(path = "/{routeGuid}")
     @PreAuthorize("hasAuthority('REMOVE_DEVICE_ROUTE')")
     @ApiOperation(value = "Delete a route")
-    public void delete(@PathVariable("routeGuid") String routeGuid) throws BadServiceResponseException {
+    public void delete(@PathVariable("routeGuid") String routeGuid) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
 
         ServiceResponse<EventRoute> routeResponse = eventRouteService.remove(tenant, routeGuid);
 
         if (!routeResponse.isOk()) {
-            throw new BadServiceResponseException(user, routeResponse, validationsCode);
+            if (routeResponse.getResponseMessages().containsKey(Validations.EVENT_ROUTE_NOT_FOUND.getCode())) {
+                throw new NotFoundResponseException(user, routeResponse);
+            } else {
+                throw new BadServiceResponseException(user, routeResponse, validationsCode);
+            }
         }
 
     }

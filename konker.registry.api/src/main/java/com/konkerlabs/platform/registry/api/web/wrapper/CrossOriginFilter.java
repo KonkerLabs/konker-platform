@@ -23,10 +23,10 @@ public class CrossOriginFilter implements Filter {
     public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)
             throws IOException, ServletException {
 
-        log.info("Applying CORS filter");
+        log.debug("Applying CORS filter");
         HttpServletResponse response = (HttpServletResponse) resp;
         response.setHeader("Access-Control-Allow-Origin", "*");
-        response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE");
+        response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE");
         response.setHeader("Access-Control-Max-Age", "0");
         chain.doFilter(req, resp);
     }

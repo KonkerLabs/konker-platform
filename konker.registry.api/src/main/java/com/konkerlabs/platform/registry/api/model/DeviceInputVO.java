@@ -12,13 +12,13 @@ import lombok.NoArgsConstructor;
         discriminator = "com.konkerlabs.platform.registry.api.model")
 public class DeviceInputVO {
 
-    @ApiModelProperty(value = "the device id", position = 1)
+    @ApiModelProperty(value = "the device id", example = "serialNumber", required = true, position = 1)
     protected String id;
-    @ApiModelProperty(value = "the device name", position = 2)
+    @ApiModelProperty(value = "the device name", example = "Device001", required = true, position = 2)
     protected String name;
-    @ApiModelProperty(value = "the device description", position = 3)
+    @ApiModelProperty(value = "the device description", example = "energy storage device", position = 3)
     protected String description;
-    @ApiModelProperty(position = 4)
+    @ApiModelProperty(example = "true", position = 4)
     protected boolean active = true;
 
 }

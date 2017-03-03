@@ -12,19 +12,19 @@ import lombok.NoArgsConstructor;
         discriminator = "com.konkerlabs.platform.registry.api.model")
 public class EventRouteInputVO {
 
-    @ApiModelProperty(value = "the route name", position = 1)
+    @ApiModelProperty(value = "the route name", required = true, position = 1)
     protected String name;
     @ApiModelProperty(value = "the route description", position = 2)
     protected String description;
-    @ApiModelProperty(value = "the route incoming", position = 3)
+    @ApiModelProperty(value = "the route incoming", required = true, position = 3)
     protected RouteActorVO incoming;
-    @ApiModelProperty(value = "the route outgoing", position = 4)
+    @ApiModelProperty(value = "the route outgoing", required = true, position = 4)
     protected RouteActorVO outgoing;
     @ApiModelProperty(value = "the route filtering expression", position = 5)
     protected String filteringExpression;
     @ApiModelProperty(value = "the route transformation guid", position = 6)
     protected String transformationGuid;
-    @ApiModelProperty(position = 7)
+    @ApiModelProperty(example = "true", position = 7)
     protected boolean active;
 
 }
