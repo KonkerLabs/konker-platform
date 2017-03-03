@@ -193,10 +193,10 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
                     .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is4xxClientError())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))
-                    .andExpect(jsonPath("$.code", is(HttpStatus.BAD_REQUEST.value())))
-                    .andExpect(jsonPath("$.status", is("error")))
-                    .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
-                    .andExpect(jsonPath("$.messages").exists())
+                    .andExpect(jsonPath("$.code", is(HttpStatus.NOT_FOUND.value())))
+                    .andExpect(jsonPath("$.status", is("success")))
+                    .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
+                    .andExpect(jsonPath("$.messages").doesNotExist())
                     .andExpect(jsonPath("$.result").doesNotExist());
 
     }

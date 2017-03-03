@@ -5,21 +5,22 @@ import java.util.Optional;
 import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.Transformation;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Data
+@EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor
-public class EventRouteVO {
+@ApiModel(
+        value = "Route",
+        discriminator = "com.konkerlabs.platform.registry.api.model")
+public class EventRouteVO extends EventRouteInputVO {
 
+    @ApiModelProperty(value = "the route guid", position = 0)
     private String guid;
-    private String name;
-    private String description;
-    private RouteActorVO incoming;
-    private RouteActorVO outgoing;
-    private String filteringExpression;
-    private String transformationGuid;
-    private boolean active;
 
     public EventRouteVO(EventRoute route) {
         this.guid   = route.getGuid();

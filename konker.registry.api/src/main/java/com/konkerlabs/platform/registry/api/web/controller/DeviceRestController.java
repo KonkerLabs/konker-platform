@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
+import com.konkerlabs.platform.registry.api.model.DeviceInputVO;
 import com.konkerlabs.platform.registry.api.model.DeviceVO;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
@@ -49,7 +50,7 @@ public class DeviceRestController implements InitializingBean {
     @GetMapping(path = "/")
     @PreAuthorize("hasAuthority('LIST_DEVICES')")
     @ApiOperation(
-            value = "List all devices by tenant",
+            value = "List all devices by organization",
             response = DeviceVO.class)
     public List<DeviceVO> list() throws BadServiceResponseException {
 
@@ -71,7 +72,7 @@ public class DeviceRestController implements InitializingBean {
 
     @GetMapping(path = "/{deviceGuid}")
     @ApiOperation(
-            value = "Get  a device by guid",
+            value = "Get a device by guid",
             response = RestResponse.class
     )
     @PreAuthorize("hasAuthority('SHOW_DEVICE')")
@@ -82,7 +83,7 @@ public class DeviceRestController implements InitializingBean {
         ServiceResponse<Device> deviceResponse = deviceRegisterService.getByDeviceGuid(tenant, deviceGuid);
 
         if (!deviceResponse.isOk()) {
-            throw new BadServiceResponseException(user, deviceResponse, validationsCode);
+            return null;
         } else {
             return new DeviceVO(deviceResponse.getResult());
         }
@@ -92,7 +93,7 @@ public class DeviceRestController implements InitializingBean {
     @PostMapping
     @ApiOperation(value = "Create a device")
     @PreAuthorize("hasAuthority('ADD_DEVICE')")
-    public DeviceVO create(@RequestBody DeviceVO deviceForm) throws BadServiceResponseException {
+    public DeviceVO create(@RequestBody DeviceInputVO deviceForm) throws BadServiceResponseException {
 
         Tenant tenant = user.getTenant();
 
@@ -116,7 +117,7 @@ public class DeviceRestController implements InitializingBean {
     @PutMapping(path = "/{deviceGuid}")
     @ApiOperation(value = "Update a device")
     @PreAuthorize("hasAuthority('EDIT_DEVICE')")
-    public void update(@PathVariable("deviceGuid") String deviceGuid, @RequestBody DeviceVO deviceForm) throws BadServiceResponseException {
+    public void update(@PathVariable("deviceGuid") String deviceGuid, @RequestBody DeviceInputVO deviceForm) throws BadServiceResponseException {
 
         Tenant tenant = user.getTenant();
 
