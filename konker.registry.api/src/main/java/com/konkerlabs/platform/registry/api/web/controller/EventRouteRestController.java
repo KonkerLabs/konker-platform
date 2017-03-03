@@ -96,7 +96,7 @@ public class EventRouteRestController implements InitializingBean {
         ServiceResponse<EventRoute> routeResponse = eventRouteService.getByGUID(tenant, routeGuid);
 
         if (!routeResponse.isOk()) {
-            throw new BadServiceResponseException(user, routeResponse, validationsCode);
+            return null;
         } else {
             return new EventRouteVO(routeResponse.getResult());
         }

@@ -83,7 +83,7 @@ public class DeviceRestController implements InitializingBean {
         ServiceResponse<Device> deviceResponse = deviceRegisterService.getByDeviceGuid(tenant, deviceGuid);
 
         if (!deviceResponse.isOk()) {
-            throw new BadServiceResponseException(user, deviceResponse, validationsCode);
+            return null;
         } else {
             return new DeviceVO(deviceResponse.getResult());
         }
