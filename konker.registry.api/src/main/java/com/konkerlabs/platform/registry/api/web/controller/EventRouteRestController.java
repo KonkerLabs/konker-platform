@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
+import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
 import com.konkerlabs.platform.registry.api.model.EventRouteInputVO;
 import com.konkerlabs.platform.registry.api.model.EventRouteVO;
 import com.konkerlabs.platform.registry.api.model.RestResponse;
@@ -36,7 +37,9 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterServ
 import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
 import com.konkerlabs.platform.registry.business.services.api.EventRouteService.Validations;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.TransformationService;
@@ -44,6 +47,7 @@ import com.konkerlabs.platform.registry.business.services.api.TransformationServ
 @RestController
 @Scope("request")
 @RequestMapping(value = "/routes")
+@Api(tags = "routes")
 public class EventRouteRestController implements InitializingBean {
 
     @Autowired
@@ -106,7 +110,9 @@ public class EventRouteRestController implements InitializingBean {
     @PostMapping
     @PreAuthorize("hasAuthority('CREATE_DEVICE_ROUTE')")
     @ApiOperation(value = "Create a route")
-    public EventRouteVO create(@RequestBody EventRouteInputVO routeForm) throws BadServiceResponseException {
+    public EventRouteVO create(
+            @ApiParam(name = "body", required = true)
+            @RequestBody EventRouteInputVO routeForm) throws BadServiceResponseException {
 
         Tenant tenant = user.getTenant();
 
@@ -177,7 +183,10 @@ public class EventRouteRestController implements InitializingBean {
     @PutMapping(path = "/{routeGuid}")
     @PreAuthorize("hasAuthority('EDIT_DEVICE_ROUTE')")
     @ApiOperation(value = "Update a route")
-    public void update(@PathVariable("routeGuid") String routeGuid, @RequestBody EventRouteInputVO routeForm) throws BadServiceResponseException {
+    public void update(
+            @PathVariable("routeGuid") String routeGuid,
+            @ApiParam(name = "body", required = true)
+            @RequestBody EventRouteInputVO routeForm) throws BadServiceResponseException {
 
         Tenant tenant = user.getTenant();
 
@@ -214,14 +223,18 @@ public class EventRouteRestController implements InitializingBean {
     @DeleteMapping(path = "/{routeGuid}")
     @PreAuthorize("hasAuthority('REMOVE_DEVICE_ROUTE')")
     @ApiOperation(value = "Delete a route")
-    public void delete(@PathVariable("routeGuid") String routeGuid) throws BadServiceResponseException {
+    public void delete(@PathVariable("routeGuid") String routeGuid) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
 
         ServiceResponse<EventRoute> routeResponse = eventRouteService.remove(tenant, routeGuid);
 
         if (!routeResponse.isOk()) {
-            throw new BadServiceResponseException(user, routeResponse, validationsCode);
+            if (routeResponse.getResponseMessages().containsKey(Validations.EVENT_ROUTE_NOT_FOUND.getCode())) {
+                throw new NotFoundResponseException(user, routeResponse);
+            } else {
+                throw new BadServiceResponseException(user, routeResponse, validationsCode);
+            }
         }
 
     }
