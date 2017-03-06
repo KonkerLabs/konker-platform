@@ -50,13 +50,14 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
                 .apiInfo(apiInfo())
                 .securitySchemes(newArrayList(securitySchema()))
                 .securityContexts(newArrayList(securityContext()))
-                .operationOrdering(getOperationOrdering())
+                // .operationOrdering(getOperationOrdering()) try with swagger 2.7.0
                 .tags(new Tag("devices", "Operations to list and edit devices"),
                       new Tag("routes", "Operations to list and edit routes"))
                 .enableUrlTemplating(true);
 
     }
 
+    @SuppressWarnings("unused")
     private Ordering<Operation> getOperationOrdering() {
         return new Ordering<Operation>() {
             @Override
