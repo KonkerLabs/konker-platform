@@ -31,13 +31,16 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterServ
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.Validations;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 @RestController
 @Scope("request")
 @RequestMapping(
         value = "/devices"
 )
+@Api(tags = "devices")
 public class DeviceRestController implements InitializingBean {
 
     @Autowired
@@ -94,7 +97,9 @@ public class DeviceRestController implements InitializingBean {
     @PostMapping
     @ApiOperation(value = "Create a device")
     @PreAuthorize("hasAuthority('ADD_DEVICE')")
-    public DeviceVO create(@RequestBody DeviceInputVO deviceForm) throws BadServiceResponseException {
+    public DeviceVO create(
+            @ApiParam(name = "body", required = true)
+            @RequestBody DeviceInputVO deviceForm) throws BadServiceResponseException {
 
         Tenant tenant = user.getTenant();
 
@@ -118,7 +123,10 @@ public class DeviceRestController implements InitializingBean {
     @PutMapping(path = "/{deviceGuid}")
     @ApiOperation(value = "Update a device")
     @PreAuthorize("hasAuthority('EDIT_DEVICE')")
-    public void update(@PathVariable("deviceGuid") String deviceGuid, @RequestBody DeviceInputVO deviceForm) throws BadServiceResponseException {
+    public void update(
+            @PathVariable("deviceGuid") String deviceGuid,
+            @ApiParam(name = "body", required = true)
+            @RequestBody DeviceInputVO deviceForm) throws BadServiceResponseException {
 
         Tenant tenant = user.getTenant();
 

@@ -2,11 +2,13 @@ package com.konkerlabs.platform.registry.api.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+
+import com.google.common.collect.Ordering;
+
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
@@ -14,13 +16,9 @@ import springfox.documentation.service.*;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spi.service.contexts.SecurityContext;
 import springfox.documentation.spring.web.plugins.Docket;
-import springfox.documentation.swagger.web.UiConfiguration;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import static com.google.common.collect.Lists.newArrayList;
 
@@ -52,11 +50,25 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
                 .apiInfo(apiInfo())
                 .securitySchemes(newArrayList(securitySchema()))
                 .securityContexts(newArrayList(securityContext()))
+                .operationOrdering(getOperationOrdering())
+                .tags(new Tag("devices", "Operations to list and edit devices"),
+                      new Tag("routes", "Operations to list and edit routes"))
                 .enableUrlTemplating(true);
 
     }
 
+    private Ordering<Operation> getOperationOrdering() {
+        return new Ordering<Operation>() {
+            @Override
+            public int compare(Operation left, Operation right) {
+                int result = left.getMethod().compareTo(right.getMethod());
+                if (result != 0) return result;
 
+                return 0;
+            }};
+    }
+
+    @SuppressWarnings("unused")
     private BasicAuth basicSecuritySchema() {
         return new BasicAuth("basic");
     }

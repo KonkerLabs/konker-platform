@@ -37,7 +37,9 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterServ
 import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
 import com.konkerlabs.platform.registry.business.services.api.EventRouteService.Validations;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.TransformationService;
@@ -45,6 +47,7 @@ import com.konkerlabs.platform.registry.business.services.api.TransformationServ
 @RestController
 @Scope("request")
 @RequestMapping(value = "/routes")
+@Api(tags = "routes")
 public class EventRouteRestController implements InitializingBean {
 
     @Autowired
@@ -107,7 +110,9 @@ public class EventRouteRestController implements InitializingBean {
     @PostMapping
     @PreAuthorize("hasAuthority('CREATE_DEVICE_ROUTE')")
     @ApiOperation(value = "Create a route")
-    public EventRouteVO create(@RequestBody EventRouteInputVO routeForm) throws BadServiceResponseException {
+    public EventRouteVO create(
+            @ApiParam(name = "body", required = true)
+            @RequestBody EventRouteInputVO routeForm) throws BadServiceResponseException {
 
         Tenant tenant = user.getTenant();
 
@@ -178,7 +183,10 @@ public class EventRouteRestController implements InitializingBean {
     @PutMapping(path = "/{routeGuid}")
     @PreAuthorize("hasAuthority('EDIT_DEVICE_ROUTE')")
     @ApiOperation(value = "Update a route")
-    public void update(@PathVariable("routeGuid") String routeGuid, @RequestBody EventRouteInputVO routeForm) throws BadServiceResponseException {
+    public void update(
+            @PathVariable("routeGuid") String routeGuid,
+            @ApiParam(name = "body", required = true)
+            @RequestBody EventRouteInputVO routeForm) throws BadServiceResponseException {
 
         Tenant tenant = user.getTenant();
 
