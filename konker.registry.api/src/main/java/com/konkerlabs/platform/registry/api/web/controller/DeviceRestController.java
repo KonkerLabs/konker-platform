@@ -65,11 +65,7 @@ public class DeviceRestController implements InitializingBean {
         if (!deviceResponse.isOk()) {
             throw new BadServiceResponseException(user, deviceResponse, validationsCode);
         } else {
-            List<DeviceVO> listVO = new ArrayList<>();
-            for (Device device: deviceResponse.getResult()) {
-                listVO.add(new DeviceVO(device));
-            }
-            return listVO;
+            return new DeviceVO().apply(deviceResponse.getResult());
         }
 
     }
@@ -89,7 +85,7 @@ public class DeviceRestController implements InitializingBean {
         if (!deviceResponse.isOk()) {
             return null;
         } else {
-            return new DeviceVO(deviceResponse.getResult());
+            return new DeviceVO().apply(deviceResponse.getResult());
         }
 
     }
@@ -115,7 +111,7 @@ public class DeviceRestController implements InitializingBean {
         if (!deviceResponse.isOk()) {
             throw new BadServiceResponseException(user, deviceResponse, validationsCode);
         } else {
-            return new DeviceVO(deviceResponse.getResult());
+            return new DeviceVO().apply(deviceResponse.getResult());
         }
 
     }

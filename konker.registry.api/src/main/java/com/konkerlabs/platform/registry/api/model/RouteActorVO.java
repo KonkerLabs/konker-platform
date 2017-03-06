@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.api.model;
 
+import com.konkerlabs.platform.registry.api.model.core.SerializableVO;
 import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
 
@@ -9,7 +10,8 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class RouteActorVO {
+public class RouteActorVO
+        implements SerializableVO<RouteActor, RouteActorVO> {
 
     @ApiModelProperty(value = "type", allowableValues = "DEVICE")
     private String type;
@@ -33,4 +35,13 @@ public class RouteActorVO {
         }
     }
 
+    @Override
+    public RouteActorVO apply(RouteActor t) {
+        return null;
+    }
+
+    @Override
+    public RouteActor applyDB(RouteActor t) {
+        return t;
+    }
 }
