@@ -1,9 +1,11 @@
 package com.konkerlabs.platform.registry.business.services;
 
 import java.io.ByteArrayOutputStream;
+import java.text.MessageFormat;
 import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -17,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.stereotype.Service;
 
 import com.google.zxing.BarcodeFormat;
@@ -71,13 +74,13 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     noDevice.toURI(),
                     noDevice.getTenant().getLogLevel());
             return ServiceResponseBuilder.<Device>error()
-                    .withMessage(CommonValidations.TENANT_NULL.getCode(), null)
+                    .withMessage(CommonValidations.TENANT_NULL.getCode())
                     .build();
         }
 
         if (!Optional.ofNullable(device).isPresent()) {
             return ServiceResponseBuilder.<Device>error()
-                    .withMessage(CommonValidations.RECORD_NULL.getCode(), null)
+                    .withMessage(CommonValidations.RECORD_NULL.getCode())
                     .build();
         }
 
@@ -86,7 +89,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     Device.builder().guid("NULL").tenant(tenant).build().toURI(),
                     device.getLogLevel());
             return ServiceResponseBuilder.<Device>error()
-                    .withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode(), null)
+                    .withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode())
                     .build();
         }
 
@@ -98,7 +101,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     Device.builder().guid("NULL").tenant(tenant).build().toURI(),
                     device.getLogLevel());
             return ServiceResponseBuilder.<Device>error()
-                    .withMessage(CommonValidations.GENERIC_ERROR.getCode(), null)
+                    .withMessage(CommonValidations.GENERIC_ERROR.getCode())
                     .build();
         }
 
@@ -121,7 +124,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     Device.builder().guid("NULL").tenant(tenant).build().toURI(),
                     device.getLogLevel());
             return ServiceResponseBuilder.<Device>error()
-                    .withMessage(Validations.DEVICE_ID_ALREADY_REGISTERED.getCode(), null)
+                    .withMessage(Validations.DEVICE_ID_ALREADY_REGISTERED.getCode())
                     .build();
         }
 
@@ -157,14 +160,14 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
     public ServiceResponse<Device> switchEnabledDisabled(Tenant tenant, String guid) {
         if (!Optional.ofNullable(guid).isPresent())
             return ServiceResponseBuilder.<Device>error()
-                    .withMessage(Validations.DEVICE_GUID_NULL.getCode(), null)
+                    .withMessage(Validations.DEVICE_GUID_NULL.getCode())
                     .build();
 
         Device found = getByDeviceGuid(tenant, guid).getResult();
 
         if (!Optional.ofNullable(found).isPresent())
             return ServiceResponseBuilder.<Device>error()
-                    .withMessage(Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode(), null)
+                    .withMessage(Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode())
                     .build();
 
         found.setActive(!found.isActive());
@@ -190,11 +193,11 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
                 LOGGER.info("Password generated for device id: {}", existingDevice.getDeviceId(), tenant.toURI(), tenant.getLogLevel());
 
-                return ServiceResponseBuilder.<DeviceSecurityCredentials>ok() 
+                return ServiceResponseBuilder.<DeviceSecurityCredentials>ok()
                         .withResult(new DeviceSecurityCredentials(saved,randomPassword)).build();
             } catch (SecurityException e) {
                 return ServiceResponseBuilder.<DeviceSecurityCredentials>error()
-                        .withMessage(CommonValidations.GENERIC_ERROR.getCode(), null).build();
+                        .withMessage(CommonValidations.GENERIC_ERROR.getCode()).build();
             }
 
         } else
@@ -202,28 +205,28 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .withMessages(serviceResponse.getResponseMessages()).build();
     }
 
-    
+
     @Override
     public ServiceResponse<Device> update(Tenant tenant, String guid, Device updatingDevice) {
         if (!Optional.ofNullable(tenant).isPresent())
             return ServiceResponseBuilder.<Device>error()
-                    .withMessage(CommonValidations.TENANT_NULL.getCode(), null)
+                    .withMessage(CommonValidations.TENANT_NULL.getCode())
                     .build();
 
         if (!Optional.ofNullable(guid).isPresent())
             return ServiceResponseBuilder.<Device>error()
-                    .withMessage(Validations.DEVICE_GUID_NULL.getCode(), null)
+                    .withMessage(Validations.DEVICE_GUID_NULL.getCode())
                     .build();
 
         if (!Optional.ofNullable(updatingDevice).isPresent())
             return ServiceResponseBuilder.<Device>error()
-                    .withMessage(CommonValidations.RECORD_NULL.getCode(), null)
+                    .withMessage(CommonValidations.RECORD_NULL.getCode())
                     .build();
 
         Device deviceFromDB = getByDeviceGuid(tenant, guid).getResult();
         if (deviceFromDB == null) {
             return ServiceResponseBuilder.<Device>error()
-                    .withMessage(Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode(), null)
+                    .withMessage(Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode())
                     .build();
         }
 
@@ -254,12 +257,12 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
         if(!Optional.ofNullable(guid).isPresent())
             return ServiceResponseBuilder.<Device>error()
-                    .withMessage(Validations.DEVICE_GUID_NULL.getCode(), null)
+                    .withMessage(Validations.DEVICE_GUID_NULL.getCode())
                     .build();
 
         if (!Optional.ofNullable(tenant).isPresent())
             return ServiceResponseBuilder.<Device>error()
-                    .withMessage(CommonValidations.TENANT_NULL.getCode(), null)
+                    .withMessage(CommonValidations.TENANT_NULL.getCode())
                     .build();
 
         //find device
@@ -316,23 +319,23 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 	@Override
 	public ServiceResponse<Device> getByDeviceGuid(Tenant tenant, String guid) {
 		if (!Optional.ofNullable(tenant).isPresent())
-			return ServiceResponseBuilder.<Device> error().withMessage(CommonValidations.TENANT_NULL.getCode(), null)
+			return ServiceResponseBuilder.<Device> error().withMessage(CommonValidations.TENANT_NULL.getCode())
 					.build();
 
         if (!Optional.ofNullable(guid).isPresent())
-			return ServiceResponseBuilder.<Device> error().withMessage(Validations.DEVICE_GUID_NULL.getCode(), null)
+			return ServiceResponseBuilder.<Device> error().withMessage(Validations.DEVICE_GUID_NULL.getCode())
 					.build();
 
 		Tenant existingTenant = tenantRepository.findByName(tenant.getName());
 
 		if (!Optional.ofNullable(tenant).isPresent())
 			return ServiceResponseBuilder.<Device> error()
-					.withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode(), null).build();
+					.withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();
 
 		Device device = deviceRepository.findByTenantAndGuid(existingTenant.getId(), guid);
 		if (!Optional.ofNullable(device).isPresent()) {
 			return ServiceResponseBuilder.<Device> error()
-					.withMessage(Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode(), null).build();
+					.withMessage(Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode()).build();
 		}
 
 		return ServiceResponseBuilder.<Device> ok().withResult(device).build();
@@ -392,6 +395,62 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .withMessage(Messages.DEVICE_QRCODE_ERROR.getCode())
                     .build();
         }
+    }
+
+    @Override
+    public ServiceResponse<DeviceDataURLs> getDeviceDataURLs(Tenant tenant, Device device, Locale locale) {
+
+        if (!Optional.ofNullable(tenant).isPresent()) {
+            return ServiceResponseBuilder.<DeviceDataURLs>error()
+                    .withMessage(CommonValidations.TENANT_NULL.getCode())
+                    .build();
+        }
+
+        if (!Optional.ofNullable(device).isPresent()) {
+            return ServiceResponseBuilder.<DeviceDataURLs>error()
+                    .withMessage(CommonValidations.RECORD_NULL.getCode())
+                    .build();
+        }
+
+        if (!device.getTenant().getGuid().equals(tenant.getGuid())) {
+            return ServiceResponseBuilder.<DeviceDataURLs>error()
+                    .withMessage(Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode())
+                    .build();
+        }
+
+        ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
+        messageSource.setBasename("classpath:/messages/devices");
+        messageSource.setDefaultEncoding("UTF-8");
+
+        String httpHostname = pubServerConfig.getHttpHostname();
+        String mqttHostName = pubServerConfig.getMqttHostName();
+        String channelMsg = messageSource.getMessage("model.device.channel", null, locale);
+        String username = device.getApiKey();
+
+        if (httpHostname.equalsIgnoreCase("localhost")) {
+            httpHostname = "<ip>";
+        }
+        if (mqttHostName.equalsIgnoreCase("localhost")) {
+            mqttHostName = "<ip>";
+        }
+        if (StringUtils.hasText(tenant.getDataApiDomain())) {
+            httpHostname = tenant.getDataApiDomain();
+            mqttHostName = tenant.getDataApiDomain();
+        }
+
+        DeviceDataURLs deviceDataURLs = DeviceRegisterService.DeviceDataURLs.builder()
+            .httpURLPub(MessageFormat.format("http://{0}:{1}/pub/{2}/<{3}>", httpHostname, pubServerConfig.getHttpPort(), username, channelMsg))
+            .httpURLSub(MessageFormat.format("http://{0}:{1}/sub/{2}/<{3}>", httpHostname, pubServerConfig.getHttpPort(), username, channelMsg))
+            .httpsURLPub(MessageFormat.format("https://{0}:{1}/pub/{2}/<{3}>", httpHostname, pubServerConfig.getHttpsPort(), username, channelMsg))
+            .httpsURLSub(MessageFormat.format("https://{0}:{1}/sub/{2}/<{3}>", httpHostname, pubServerConfig.getHttpsPort(), username, channelMsg))
+            .mqttURL(MessageFormat.format("mqtt://{0}:{1}", mqttHostName, pubServerConfig.getMqttPort()))
+            .mqttsURL(MessageFormat.format("mqtts://{0}:{1}", mqttHostName, pubServerConfig.getMqttTlsPort()))
+            .mqttPubTopic(MessageFormat.format("pub/{0}/<{1}>", username, channelMsg))
+            .mqttSubTopic(MessageFormat.format("sub/{0}/<{1}>", username, channelMsg))
+            .build();
+
+        return ServiceResponseBuilder.<DeviceDataURLs>ok().withResult(deviceDataURLs).build();
+
     }
 
 }

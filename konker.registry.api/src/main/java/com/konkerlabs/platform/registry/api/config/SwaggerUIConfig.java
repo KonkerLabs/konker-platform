@@ -52,6 +52,7 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
                 .securityContexts(newArrayList(securityContext()))
                 // .operationOrdering(getOperationOrdering()) try with swagger 2.7.0
                 .tags(new Tag("devices", "Operations to list and edit devices"),
+                      new Tag("device credentials", "Operations to manage device credentials (username, password and URLs)"),
                       new Tag("routes", "Operations to list and edit routes"))
                 .enableUrlTemplating(true);
 

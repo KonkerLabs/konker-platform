@@ -10,6 +10,7 @@ import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.DeviceDataURLs;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
@@ -34,6 +35,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
@@ -497,6 +499,50 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
         assertThat(incomingEvents.getResult().size(), equalTo(0));
         assertThat(outgoingEvents.getResult().size(), equalTo(0));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/events-incoming.json", "/fixtures/events-outgoing.json"})
+    public void shouldGetDeviceDataURLs() {
+
+        device.setTenant(currentTenant);
+        device.setApiKey("njmKcpfPAs");
+
+        ServiceResponse<DeviceDataURLs> serviceResponse = deviceRegisterService.getDeviceDataURLs(currentTenant, device, Locale.US);
+
+        assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.OK));
+        assertThat(serviceResponse.getResult().getHttpsURLPub(), equalTo("https://dev-server:443/pub/njmKcpfPAs/<Channel>"));
+        assertThat(serviceResponse.getResult().getHttpsURLSub(), equalTo("https://dev-server:443/sub/njmKcpfPAs/<Channel>"));
+        assertThat(serviceResponse.getResult().getHttpURLPub(), equalTo("http://dev-server:8080/pub/njmKcpfPAs/<Channel>"));
+        assertThat(serviceResponse.getResult().getHttpURLSub(), equalTo("http://dev-server:8080/sub/njmKcpfPAs/<Channel>"));
+        assertThat(serviceResponse.getResult().getMqttURL(), equalTo("mqtt://dev-server:1883"));
+        assertThat(serviceResponse.getResult().getMqttsURL(), equalTo("mqtts://dev-server:1883"));
+        assertThat(serviceResponse.getResult().getMqttPubTopic(), equalTo("pub/njmKcpfPAs/<Channel>"));
+        assertThat(serviceResponse.getResult().getMqttSubTopic(), equalTo("sub/njmKcpfPAs/<Channel>"));
+
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/events-incoming.json", "/fixtures/events-outgoing.json"})
+    public void shouldGetDeviceDataURLsWithTenantDataApiDomain() {
+
+        currentTenant.setDataApiDomain("api.host");
+
+        device.setTenant(currentTenant);
+        device.setApiKey("njmKcpfPAs");
+
+        ServiceResponse<DeviceDataURLs> serviceResponse = deviceRegisterService.getDeviceDataURLs(currentTenant, device, new Locale("pt" , "BR"));
+
+        assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.OK));
+        assertThat(serviceResponse.getResult().getHttpsURLPub(), equalTo("https://api.host:443/pub/njmKcpfPAs/<Canal>"));
+        assertThat(serviceResponse.getResult().getHttpsURLSub(), equalTo("https://api.host:443/sub/njmKcpfPAs/<Canal>"));
+        assertThat(serviceResponse.getResult().getHttpURLPub(), equalTo("http://api.host:8080/pub/njmKcpfPAs/<Canal>"));
+        assertThat(serviceResponse.getResult().getHttpURLSub(), equalTo("http://api.host:8080/sub/njmKcpfPAs/<Canal>"));
+        assertThat(serviceResponse.getResult().getMqttURL(), equalTo("mqtt://api.host:1883"));
+        assertThat(serviceResponse.getResult().getMqttsURL(), equalTo("mqtts://api.host:1883"));
+        assertThat(serviceResponse.getResult().getMqttPubTopic(), equalTo("pub/njmKcpfPAs/<Canal>"));
+        assertThat(serviceResponse.getResult().getMqttSubTopic(), equalTo("sub/njmKcpfPAs/<Canal>"));
+
     }
 
     @Test
