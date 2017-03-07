@@ -5,8 +5,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public interface SerializableVO<T, R>
-        extends Function<T, R> {
+public interface SerializableVO<T, R> {
 
 
     /**
@@ -14,7 +13,6 @@ public interface SerializableVO<T, R>
      * @param t
      * @return VO
      */
-    @Override
     R apply(T t);
 
     /**
@@ -22,7 +20,7 @@ public interface SerializableVO<T, R>
      * @param t
      * @return DB
      */
-    T applyDB(T t);
+    T patchDB(T t);
 
     /**
      * Serialize list of objects from DB to VO
@@ -31,9 +29,9 @@ public interface SerializableVO<T, R>
      */
     @Transient
     default List<R> apply(List<T> t) {
-        return t.stream()
+        return t.parallelStream()
                     .map(i -> apply(i))
-                    .collect(Collectors.<R> toList());
+                    .collect(Collectors.toList());
 
     }
 

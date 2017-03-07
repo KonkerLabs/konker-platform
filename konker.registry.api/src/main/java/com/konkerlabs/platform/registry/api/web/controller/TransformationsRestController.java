@@ -3,12 +3,9 @@ package com.konkerlabs.platform.registry.api.web.controller;
 import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
 import com.konkerlabs.platform.registry.api.exceptions.NotAuthorizedResponseException;
 import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
-import com.konkerlabs.platform.registry.api.model.DeviceVO;
 import com.konkerlabs.platform.registry.api.model.TransformationVO;
-import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Transformation;
 import com.konkerlabs.platform.registry.business.model.User;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.TransformationService;
 import io.swagger.annotations.Api;
@@ -17,14 +14,12 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Stream;
 
 @RestController
 @Scope("request")
@@ -45,7 +40,7 @@ public class TransformationsRestController implements InitializingBean {
 
 
     @GetMapping(path = "/")
-    @PreAuthorize("hasAuthority('LIST_DEVICES')")
+    @PreAuthorize("hasAuthority('LIST_TRANSFORMATION')")
     @ApiOperation(
             value = "List all transformations by organization")
     public List<TransformationVO> list() throws BadServiceResponseException, NotFoundResponseException {
@@ -70,7 +65,7 @@ public class TransformationsRestController implements InitializingBean {
     @PreAuthorize("hasAuthority('SHOW_TRANSFORMATION')")
     @ApiOperation(
             value = "Get the transformation by guid")
-    public TransformationVO get(@PathVariable("guid") String guid) throws NotFoundResponseException, BadServiceResponseException, NotAuthorizedResponseException {
+    public TransformationVO read(@PathVariable("guid") String guid) throws NotFoundResponseException, BadServiceResponseException, NotAuthorizedResponseException {
         ServiceResponse<Transformation> response =
                 transformationService.get(user.getTenant(), guid);
 
@@ -100,9 +95,10 @@ public class TransformationsRestController implements InitializingBean {
     @PreAuthorize("hasAuthority('EDIT_TRANSFORMATION')")
     @ApiOperation(
             value = "Edit the transformation by guid")
-    public void put(@PathVariable("guid") String guid, @RequestBody TransformationVO vo)
+    public void update(@PathVariable("guid") String guid, @RequestBody TransformationVO vo)
             throws BadServiceResponseException, NotFoundResponseException, NotAuthorizedResponseException {
         if(!guid.equals(vo.getGuid())){
+            validationsCode.add(TransformationService.Validations.TRANSFORMATION_NOT_FOUND.getCode());
             throw new BadServiceResponseException(user, null, validationsCode);
         }
         ServiceResponse<Transformation> fromDB =
@@ -112,7 +108,7 @@ public class TransformationsRestController implements InitializingBean {
             throw new NotFoundResponseException(user, fromDB);
         }
 
-        Transformation toDB = vo.applyDB(fromDB.getResult());
+        Transformation toDB = vo.patchDB(fromDB.getResult());
         ServiceResponse<Transformation> response =
                 transformationService.update(user.getTenant(), guid, toDB);
 
@@ -123,9 +119,49 @@ public class TransformationsRestController implements InitializingBean {
                 throw new NotAuthorizedResponseException(user, response, validationsCode);
             }
         }
-
     }
 
+    @PostMapping(path = "/")
+    @PreAuthorize("hasAuthority('CREATE_TRANSFORMATION')")
+    @ApiOperation(
+            value = "Create the transformation")
+    public TransformationVO create(@RequestBody TransformationVO vo)
+            throws BadServiceResponseException, NotFoundResponseException, NotAuthorizedResponseException {
+
+        Transformation toDB = vo.patchDB(Transformation.builder().build());
+        ServiceResponse<Transformation> response =
+                transformationService.register(user.getTenant(), toDB);
+
+        if(!response.isOk()){
+            if(response.getResponseMessages()
+                    .containsKey(TransformationService.Validations
+                            .TRANSFORMATION_NAME_IN_USE)){
+                throw new BadServiceResponseException(user, response, validationsCode);
+            }
+        }
+
+        return new TransformationVO().apply(response.getResult());
+    }
+
+    @DeleteMapping("/{guid}")
+    @PreAuthorize("hasAuthority('REMOVE_TRANSFORMATION')")
+    @ApiOperation(
+            value = "Remove the transformation by guid")
+    public void delete(@PathVariable("guid") String guid) throws BadServiceResponseException, NotAuthorizedResponseException {
+
+        if(StringUtils.isEmpty(guid)){
+            validationsCode.add(TransformationService.Validations.TRANSFORMATION_NOT_FOUND.getCode());
+            throw new BadServiceResponseException(user, null, validationsCode);
+        }
+        ServiceResponse<Transformation> response = transformationService.remove(user.getTenant(), guid);
+        if(!response.isOk()){
+            if(response.getResponseMessages().containsKey(TransformationService.Validations.TRANSFORMATION_BELONG_ANOTHER_TENANT)){
+                throw new NotAuthorizedResponseException(user, response, validationsCode);
+            } else {
+                throw new BadServiceResponseException(user, response, validationsCode);
+            }
+        }
+    }
 
     @Override
     public void afterPropertiesSet() throws Exception {

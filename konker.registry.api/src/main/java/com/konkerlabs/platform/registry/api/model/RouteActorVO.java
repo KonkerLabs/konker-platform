@@ -20,28 +20,27 @@ public class RouteActorVO
     @ApiModelProperty(value = "actor channel")
     private String channel;
 
-    public RouteActorVO(RouteActor routeActor) {
-        if (routeActor.isDevice()) {
-            String uriPath = routeActor.getUri().getPath();
-
-            this.type = RouteActorType.DEVICE.name();
-            this.guid = uriPath.startsWith("/") ? uriPath.substring(1) : uriPath;
-            this.channel = routeActor.getData().get(EventRoute.DEVICE_MQTT_CHANNEL);
-        } else {
-            String uriPath = routeActor.getUri().getPath();
-
-            this.type = routeActor.getUri().getScheme();
-            this.guid = uriPath.startsWith("/") ? uriPath.substring(1) : uriPath;
-        }
-    }
-
     @Override
     public RouteActorVO apply(RouteActor t) {
-        return null;
+        RouteActorVO vo = new RouteActorVO();
+        if (t.isDevice()) {
+            String uriPath = t.getUri().getPath();
+
+            vo.type = RouteActorType.DEVICE.name();
+            vo.guid = uriPath.startsWith("/") ? uriPath.substring(1) : uriPath;
+            vo.channel = t.getData().get(EventRoute.DEVICE_MQTT_CHANNEL);
+        } else {
+            String uriPath = t.getUri().getPath();
+
+            vo.type = t.getUri().getScheme();
+            vo.guid = uriPath.startsWith("/") ? uriPath.substring(1) : uriPath;
+        }
+
+        return vo;
     }
 
     @Override
-    public RouteActor applyDB(RouteActor t) {
+    public RouteActor patchDB(RouteActor t) {
         return t;
     }
 }

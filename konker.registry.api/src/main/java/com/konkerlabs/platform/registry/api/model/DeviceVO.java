@@ -8,6 +8,11 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Transient;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
 
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -21,26 +26,19 @@ public class DeviceVO extends DeviceInputVO
     @ApiModelProperty(value = "the device guid", position = 0)
     private String guid;
 
-    public DeviceVO(Device device) {
-        this.id     = device.getDeviceId();
-        this.guid   = device.getGuid();
-        this.name   = device.getName();
-        this.description = device.getDescription();
-        this.active = device.isActive();
-    }
-
     @Override
     public DeviceVO apply(Device t) {
-        this.setGuid(t.getGuid());
-        this.setName(t.getName());
-        this.setDescription(t.getDescription());
-        this.setActive(t.isActive());
-        this.setId(t.getId());
-        return this;
+        DeviceVO vo = new DeviceVO();
+        vo.setGuid(t.getGuid());
+        vo.setName(t.getName());
+        vo.setDescription(t.getDescription());
+        vo.setActive(t.isActive());
+        vo.setId(t.getDeviceId());
+        return vo;
     }
 
     @Override
-    public Device applyDB(Device t) {
+    public Device patchDB(Device t) {
         t.setActive(this.isActive());
         t.setName(this.getName());
         t.setDescription(this.getDescription());

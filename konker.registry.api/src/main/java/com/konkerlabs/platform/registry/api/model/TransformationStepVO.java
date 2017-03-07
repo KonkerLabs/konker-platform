@@ -38,7 +38,7 @@ public class TransformationStepVO
     }
 
     @Override
-    public TransformationStep applyDB(TransformationStep t) {
+    public TransformationStep patchDB(TransformationStep t) {
         return t;
     }
 }

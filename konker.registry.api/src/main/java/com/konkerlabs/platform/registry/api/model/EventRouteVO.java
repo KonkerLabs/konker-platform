@@ -26,27 +26,28 @@ implements SerializableVO<EventRoute, EventRouteVO> {
 
     @Override
     public EventRouteVO apply(EventRoute t) {
-        this.guid   = t.getGuid();
-        this.name   = t.getName();
-        this.incoming = new RouteActorVO().apply(t.getIncoming());
-        this.outgoing = new RouteActorVO().apply(t.getOutgoing());
-        this.description = t.getDescription();
-        this.filteringExpression = t.getFilteringExpression();
-        this.transformationGuid =  Optional.ofNullable(t.getTransformation()).map(Transformation::getGuid).orElse(null);
-        this.active = t.isActive();
-        return this;
+        EventRouteVO vo = new EventRouteVO();
+        vo.guid   = t.getGuid();
+        vo.name   = t.getName();
+        vo.incoming = new RouteActorVO().apply(t.getIncoming());
+        vo.outgoing = new RouteActorVO().apply(t.getOutgoing());
+        vo.description = t.getDescription();
+        vo.filteringExpression = t.getFilteringExpression();
+        vo.transformationGuid =  Optional.ofNullable(t.getTransformation()).map(Transformation::getGuid).orElse(null);
+        vo.active = t.isActive();
+        return vo;
     }
 
     @Override
-    public EventRoute applyDB(EventRoute t) {
+    public EventRoute patchDB(EventRoute t) {
         t.setGuid(this.getGuid());
         t.setName(this.getName());
         t.setActive(this.isActive());
-        t.setIncoming(new RouteActorVO().apply(t.getIncoming()).applyDB(t.getIncoming()));
-        t.setOutgoing(new RouteActorVO().apply(t.getOutgoing()).applyDB(t.getOutgoing()));
+        t.setIncoming(new RouteActorVO().apply(t.getIncoming()).patchDB(t.getIncoming()));
+        t.setOutgoing(new RouteActorVO().apply(t.getOutgoing()).patchDB(t.getOutgoing()));
         t.setDescription(this.getDescription());
         t.setTransformation(new TransformationVO()
-                .apply(t.getTransformation()).applyDB(t.getTransformation()));
+                .apply(t.getTransformation()).patchDB(t.getTransformation()));
 
         return t;
     }

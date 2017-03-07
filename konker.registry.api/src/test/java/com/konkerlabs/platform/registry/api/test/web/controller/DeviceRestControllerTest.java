@@ -34,7 +34,7 @@ import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = DeviceRestController.class)
@@ -153,9 +153,9 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .andExpect(status().is4xxClientError())
                 .andExpect(content().contentType("application/json;charset=UTF-8"))
                 .andExpect(jsonPath("$.code", is(HttpStatus.NOT_FOUND.value())))
-                .andExpect(jsonPath("$.status", is("success")))
+                .andExpect(jsonPath("$.status", is("error")))
                 .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
-                .andExpect(jsonPath("$.messages").doesNotExist())
+                .andExpect(jsonPath("$.messages[0]", is("Device GUID does not exist")))
                 .andExpect(jsonPath("$.result").doesNotExist());
 
     }
@@ -167,7 +167,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device1).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.post("/devices/")
-                                                   .content(getJson(new DeviceVO(device1)))
+                                                   .content(getJson(new DeviceVO().apply(device1)))
                                                    .contentType("application/json")
                                                    .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is2xxSuccessful())
@@ -190,7 +190,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .thenReturn(ServiceResponseBuilder.<Device>error().withMessage(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode()).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.post("/devices/")
-                .content(getJson(new DeviceVO(device1)))
+                .content(getJson(new DeviceVO().apply(device1)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError())
@@ -214,7 +214,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device1).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.put("/devices/" + device1.getGuid())
-                .content(getJson(new DeviceVO(device1)))
+                .content(getJson(new DeviceVO().apply(device1)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().is2xxSuccessful())
@@ -235,7 +235,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .thenReturn(ServiceResponseBuilder.<Device>error().build());
 
         getMockMvc().perform(MockMvcRequestBuilders.put("/devices/" + device1.getGuid())
-                .content(getJson(new DeviceVO(device1)))
+                .content(getJson(new DeviceVO().apply(device1)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().is5xxServerError())

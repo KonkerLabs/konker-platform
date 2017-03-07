@@ -76,14 +76,14 @@ public class DeviceRestController implements InitializingBean {
             response = RestResponse.class
     )
     @PreAuthorize("hasAuthority('SHOW_DEVICE')")
-    public DeviceVO read(@PathVariable("deviceGuid") String deviceGuid) throws BadServiceResponseException {
+    public DeviceVO read(@PathVariable("deviceGuid") String deviceGuid) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
 
         ServiceResponse<Device> deviceResponse = deviceRegisterService.getByDeviceGuid(tenant, deviceGuid);
 
         if (!deviceResponse.isOk()) {
-            return null;
+            throw new NotFoundResponseException(user, deviceResponse);
         } else {
             return new DeviceVO().apply(deviceResponse.getResult());
         }
