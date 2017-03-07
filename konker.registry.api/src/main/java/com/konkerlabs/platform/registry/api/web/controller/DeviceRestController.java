@@ -65,11 +65,7 @@ public class DeviceRestController implements InitializingBean {
         if (!deviceResponse.isOk()) {
             throw new BadServiceResponseException(user, deviceResponse, validationsCode);
         } else {
-            List<DeviceVO> listVO = new ArrayList<>();
-            for (Device device: deviceResponse.getResult()) {
-                listVO.add(new DeviceVO(device));
-            }
-            return listVO;
+            return new DeviceVO().apply(deviceResponse.getResult());
         }
 
     }
@@ -80,16 +76,16 @@ public class DeviceRestController implements InitializingBean {
             response = RestResponse.class
     )
     @PreAuthorize("hasAuthority('SHOW_DEVICE')")
-    public DeviceVO read(@PathVariable("deviceGuid") String deviceGuid) throws BadServiceResponseException {
+    public DeviceVO read(@PathVariable("deviceGuid") String deviceGuid) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
 
         ServiceResponse<Device> deviceResponse = deviceRegisterService.getByDeviceGuid(tenant, deviceGuid);
 
         if (!deviceResponse.isOk()) {
-            return null;
+            throw new NotFoundResponseException(user, deviceResponse);
         } else {
-            return new DeviceVO(deviceResponse.getResult());
+            return new DeviceVO().apply(deviceResponse.getResult());
         }
 
     }
@@ -115,7 +111,7 @@ public class DeviceRestController implements InitializingBean {
         if (!deviceResponse.isOk()) {
             throw new BadServiceResponseException(user, deviceResponse, validationsCode);
         } else {
-            return new DeviceVO(deviceResponse.getResult());
+            return new DeviceVO().apply(deviceResponse.getResult());
         }
 
     }

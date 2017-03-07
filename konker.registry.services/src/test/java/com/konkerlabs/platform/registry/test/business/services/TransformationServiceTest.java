@@ -165,7 +165,8 @@ public class TransformationServiceTest extends BusinessLayerTestSupport {
 
         response = subject.get(tenant, ANOTHER_TENANTS_TRANSFORMATION_GUID);
 
-        assertThat(response, isResponseOk());
+        assertThat(response,
+                hasErrorMessage(TransformationService.Validations.TRANSFORMATION_NOT_FOUND.getCode()));
         assertThat(response.getResult(), nullValue());
     }
 
