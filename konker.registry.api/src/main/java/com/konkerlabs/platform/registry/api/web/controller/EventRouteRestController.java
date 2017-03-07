@@ -89,14 +89,14 @@ public class EventRouteRestController implements InitializingBean {
             value = "Get a route by guid",
             response = RestResponse.class
     )
-    public EventRouteVO read(@PathVariable("routeGuid") String routeGuid) throws BadServiceResponseException {
+    public EventRouteVO read(@PathVariable("routeGuid") String routeGuid) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
 
         ServiceResponse<EventRoute> routeResponse = eventRouteService.getByGUID(tenant, routeGuid);
 
         if (!routeResponse.isOk()) {
-            return null;
+            throw new NotFoundResponseException(user, routeResponse);
         } else {
             return new EventRouteVO().apply(routeResponse.getResult());
         }
