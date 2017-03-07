@@ -30,6 +30,8 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
+import com.konkerlabs.platform.registry.business.services.KonkerDaoAuthenticationProvider;
+import com.konkerlabs.platform.registry.business.services.api.LoginAuditService;
 import com.konkerlabs.platform.registry.security.TenantUserDetailsService;
 import com.konkerlabs.platform.security.managers.PasswordManager;
 import com.typesafe.config.Config;
@@ -53,7 +55,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         put("Access-Control-Allow-Credentials", "true");
         put("Access-Control-Allow-Headers", "Authorization,Content-Type");
     }};
-    
+
     @Configuration
     @Order(1)
     public static class ApiWebSecurityConfig extends WebSecurityConfigurerAdapter {
@@ -120,15 +122,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         @Autowired
         @Qualifier("tenantUserDetails")
         private UserDetailsService userDetailsService;
-        
+
+        @Autowired
+        private LoginAuditService loginAuditService;
+
         @Setter
         @Getter
         private String loginPage;
-        
+
         @Setter
         @Getter
         private String successLoginUrl;
-        
+
         public FormWebSecurityConfig() {
         	Map<String, Object> defaultMap = new HashMap<>();
         	defaultMap.put("security.loginPage", "/login");
@@ -142,7 +147,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         @Override
         protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-            DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+            KonkerDaoAuthenticationProvider authenticationProvider = new KonkerDaoAuthenticationProvider();
+            authenticationProvider.setLoginAuditService(loginAuditService);
             authenticationProvider.setUserDetailsService(userDetailsService);
             authenticationProvider.setPasswordEncoder(new PlaintextPasswordEncoder() {
                 @Override
@@ -180,5 +186,5 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         	return super.authenticationManager();
         }
     }
-    
+
 }
