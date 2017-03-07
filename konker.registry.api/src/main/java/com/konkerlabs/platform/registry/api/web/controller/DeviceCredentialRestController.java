@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
+import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
 import com.konkerlabs.platform.registry.api.model.DeviceSecurityCredentialsVO;
 import com.konkerlabs.platform.registry.api.model.RestResponse;
 import com.konkerlabs.platform.registry.business.model.Device;
@@ -51,14 +52,14 @@ public class DeviceCredentialRestController implements InitializingBean {
     @PreAuthorize("hasAuthority('SHOW_DEVICE')")
     public DeviceSecurityCredentialsVO read(
             @ApiParam(required = true)
-            @PathVariable("deviceGuid") String deviceGuid) throws BadServiceResponseException {
+            @PathVariable("deviceGuid") String deviceGuid) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
 
         ServiceResponse<Device> deviceResponse = deviceRegisterService.getByDeviceGuid(tenant, deviceGuid);
 
         if (!deviceResponse.isOk()) {
-            return null;
+            throw new NotFoundResponseException(user, deviceResponse);
         } else {
 
             Device device = deviceResponse.getResult();
