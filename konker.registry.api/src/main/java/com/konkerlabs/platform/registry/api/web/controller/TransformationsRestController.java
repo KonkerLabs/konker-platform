@@ -69,12 +69,12 @@ public class TransformationsRestController implements InitializingBean {
         ServiceResponse<Transformation> response =
                 transformationService.get(user.getTenant(), guid);
 
-        if(!response.isOk()) {
+        if(!response.isOk() || response.getResult() == null) {
             if(response.getResponseMessages()
-                    .containsKey(TransformationService.Validations.TRANSFORMATION_NOT_FOUND)){
+                    .containsKey(TransformationService.Validations.TRANSFORMATION_NOT_FOUND.getCode())){
                 throw new NotFoundResponseException(user, response);
             } else if(response.getResponseMessages()
-                    .containsKey(TransformationService.Validations.TRANSFORMATION_BELONG_ANOTHER_TENANT)){
+                    .containsKey(TransformationService.Validations.TRANSFORMATION_BELONG_ANOTHER_TENANT.getCode())){
                 throw new NotAuthorizedResponseException(
                         user,
                         response,
@@ -115,9 +115,12 @@ public class TransformationsRestController implements InitializingBean {
         if(!response.isOk()){
             if(response.getResponseMessages()
                     .containsKey(TransformationService.Validations
-                            .TRANSFORMATION_BELONG_ANOTHER_TENANT)){
+                            .TRANSFORMATION_BELONG_ANOTHER_TENANT.getCode())){
+                throw new NotAuthorizedResponseException(user, response, validationsCode);
+            } else {
                 throw new NotAuthorizedResponseException(user, response, validationsCode);
             }
+
         }
     }
 
@@ -135,7 +138,7 @@ public class TransformationsRestController implements InitializingBean {
         if(!response.isOk()){
             if(response.getResponseMessages()
                     .containsKey(TransformationService.Validations
-                            .TRANSFORMATION_NAME_IN_USE)){
+                            .TRANSFORMATION_NAME_IN_USE.getCode())){
                 throw new BadServiceResponseException(user, response, validationsCode);
             }
         }
@@ -155,7 +158,9 @@ public class TransformationsRestController implements InitializingBean {
         }
         ServiceResponse<Transformation> response = transformationService.remove(user.getTenant(), guid);
         if(!response.isOk()){
-            if(response.getResponseMessages().containsKey(TransformationService.Validations.TRANSFORMATION_BELONG_ANOTHER_TENANT)){
+            if(response.getResponseMessages()
+                    .containsKey(TransformationService.Validations
+                            .TRANSFORMATION_BELONG_ANOTHER_TENANT.getCode())){
                 throw new NotAuthorizedResponseException(user, response, validationsCode);
             } else {
                 throw new BadServiceResponseException(user, response, validationsCode);
