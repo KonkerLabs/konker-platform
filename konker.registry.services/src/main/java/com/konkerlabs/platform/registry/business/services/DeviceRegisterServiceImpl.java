@@ -18,8 +18,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Scope;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.stereotype.Service;
 
 import com.google.zxing.BarcodeFormat;
@@ -58,9 +58,6 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
     @Autowired
     private EventRouteRepository eventRouteRepository;
-
-    @Autowired
-    private MessageSource messageSource;
 
     @Autowired @Qualifier("mongoEvents")
     private EventRepository eventRepository;
@@ -420,6 +417,10 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .withMessage(Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode())
                     .build();
         }
+
+        ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
+        messageSource.setBasename("classpath:/messages/devices");
+        messageSource.setDefaultEncoding("UTF-8");
 
         String httpHostname = pubServerConfig.getHttpHostname();
         String mqttHostName = pubServerConfig.getMqttHostName();
