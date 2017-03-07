@@ -20,7 +20,7 @@ public class ControllerScopeTest {
 	@Test
 	public void shouldAllControllersBeRequestScope() throws ClassNotFoundException, IOException {
 
-		Class[] classes = getClasses("com.konkerlabs");
+		Class[] classes = getClasses("com.konkerlabs.platform.registry.web.controllers");
 
 		// check if the class scanner is working
 		assertTrue(classes.length > 10);
