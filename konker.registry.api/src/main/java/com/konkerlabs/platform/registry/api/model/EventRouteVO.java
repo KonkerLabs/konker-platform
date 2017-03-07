@@ -2,6 +2,7 @@ package com.konkerlabs.platform.registry.api.model;
 
 import java.util.Optional;
 
+import com.konkerlabs.platform.registry.api.model.core.SerializableVO;
 import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.Transformation;
 
@@ -17,20 +18,37 @@ import lombok.NoArgsConstructor;
 @ApiModel(
         value = "Route",
         discriminator = "com.konkerlabs.platform.registry.api.model")
-public class EventRouteVO extends EventRouteInputVO {
+public class EventRouteVO extends EventRouteInputVO
+implements SerializableVO<EventRoute, EventRouteVO> {
 
     @ApiModelProperty(value = "the route guid", position = 0)
     private String guid;
 
-    public EventRouteVO(EventRoute route) {
-        this.guid   = route.getGuid();
-        this.name   = route.getName();
-        this.incoming = new RouteActorVO(route.getIncoming());
-        this.outgoing = new RouteActorVO(route.getOutgoing());
-        this.description = route.getDescription();
-        this.filteringExpression = route.getFilteringExpression();
-        this.transformationGuid =  Optional.ofNullable(route.getTransformation()).map(Transformation::getGuid).orElse(null);
-        this.active = route.isActive();
+    @Override
+    public EventRouteVO apply(EventRoute t) {
+        EventRouteVO vo = new EventRouteVO();
+        vo.guid   = t.getGuid();
+        vo.name   = t.getName();
+        vo.incoming = new RouteActorVO().apply(t.getIncoming());
+        vo.outgoing = new RouteActorVO().apply(t.getOutgoing());
+        vo.description = t.getDescription();
+        vo.filteringExpression = t.getFilteringExpression();
+        vo.transformationGuid =  Optional.ofNullable(t.getTransformation()).map(Transformation::getGuid).orElse(null);
+        vo.active = t.isActive();
+        return vo;
     }
 
+    @Override
+    public EventRoute patchDB(EventRoute t) {
+        t.setGuid(this.getGuid());
+        t.setName(this.getName());
+        t.setActive(this.isActive());
+        t.setIncoming(new RouteActorVO().apply(t.getIncoming()).patchDB(t.getIncoming()));
+        t.setOutgoing(new RouteActorVO().apply(t.getOutgoing()).patchDB(t.getOutgoing()));
+        t.setDescription(this.getDescription());
+        t.setTransformation(new TransformationVO()
+                .apply(t.getTransformation()).patchDB(t.getTransformation()));
+
+        return t;
+    }
 }

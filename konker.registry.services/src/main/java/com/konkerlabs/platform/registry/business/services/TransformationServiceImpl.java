@@ -103,8 +103,16 @@ public class TransformationServiceImpl extends AbstractURLBlacklistValidation im
 
 	@Override
 	public ServiceResponse<Transformation> get(Tenant tenant, String guid) {
-		return ServiceResponseBuilder.<Transformation> ok()
-				.withResult(transformationRepository.findByTenantIdAndTransformationGuid(tenant.getId(), guid)).build();
+		Transformation transformation =
+				transformationRepository.findByTenantIdAndTransformationGuid(tenant.getId(), guid);
+		if(transformation != null){
+			return ServiceResponseBuilder.<Transformation> ok()
+					.withResult(transformation).build();
+		} else {
+			return ServiceResponseBuilder.<Transformation> error()
+					.withMessage(Validations.TRANSFORMATION_NOT_FOUND.getCode()).build();
+		}
+
 	}
 
 	@Override
