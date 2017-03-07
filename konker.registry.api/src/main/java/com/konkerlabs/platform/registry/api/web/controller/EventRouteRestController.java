@@ -1,6 +1,5 @@
 package com.konkerlabs.platform.registry.api.web.controller;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -29,6 +28,7 @@ import com.konkerlabs.platform.registry.api.model.RouteActorType;
 import com.konkerlabs.platform.registry.api.model.RouteActorVO;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.EventRoute;
+import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.Transformation;
@@ -36,6 +36,7 @@ import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
 import com.konkerlabs.platform.registry.business.services.api.EventRouteService.Validations;
+import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -58,6 +59,9 @@ public class EventRouteRestController implements InitializingBean {
 
     @Autowired
     private TransformationService transformationService;
+
+    @Autowired
+    private RestDestinationService restDestinationService;
 
     @Autowired
     private User user;
@@ -159,8 +163,12 @@ public class EventRouteRestController implements InitializingBean {
 
         RouteActor routeActor = RouteActor.builder().build();
 
+        if (routeForm == null) {
+            return null;
+        }
+
         if (RouteActorType.DEVICE.name().equalsIgnoreCase(routeForm.getType())) {
-            ServiceResponse<Device> deviceResponse =  deviceRegisterService.getByDeviceGuid(tenant, routeForm.getGuid());
+            ServiceResponse<Device> deviceResponse = deviceRegisterService.getByDeviceGuid(tenant, routeForm.getGuid());
             if (deviceResponse.isOk()) {
                 routeActor.setDisplayName(deviceResponse.getResult().getName());
                 routeActor.setUri(deviceResponse.getResult().toURI());
@@ -168,6 +176,16 @@ public class EventRouteRestController implements InitializingBean {
                 return routeActor;
             } else {
                 throw new BadServiceResponseException(user, deviceResponse, validationsCode);
+            }
+        } else if (RouteActorType.REST.name().equalsIgnoreCase(routeForm.getType())) {
+            ServiceResponse<RestDestination> restResponse = restDestinationService.getByGUID(tenant, routeForm.getGuid());
+            if (restResponse.isOk()) {
+                routeActor.setDisplayName(restResponse.getResult().getName());
+                routeActor.setUri(restResponse.getResult().toURI());
+                routeActor.setData(new HashMap<String, String>() {} );
+                return routeActor;
+            } else {
+                throw new BadServiceResponseException(user, restResponse, validationsCode);
             }
         }
 
