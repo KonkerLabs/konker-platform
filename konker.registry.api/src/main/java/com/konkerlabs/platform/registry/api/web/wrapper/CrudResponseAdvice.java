@@ -49,10 +49,6 @@ public class CrudResponseAdvice implements ResponseBodyAdvice<Object> {
             httpStatus = HttpStatus.NO_CONTENT;
         } else if (name.equals("create")) {
             httpStatus = HttpStatus.CREATED;
-        } else if (name.equals("read")) {
-            if (body == null) {
-                httpStatus = HttpStatus.NOT_FOUND;
-            }
         }
 
         response.setStatusCode(httpStatus);
