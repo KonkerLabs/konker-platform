@@ -217,7 +217,7 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
             .thenReturn(ServiceResponseBuilder.<Transformation> ok().withResult(transformation1).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.post("/routes/")
-                                                   .content(getJson(new EventRouteVO(route1)))
+                                                   .content(getJson(new EventRouteVO().apply(route1)))
                                                    .contentType("application/json")
                                                    .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is2xxSuccessful())
@@ -248,7 +248,7 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
             .thenReturn(ServiceResponseBuilder.<Transformation> ok().withResult(transformation1).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.post("/routes/")
-                                               .content(getJson(new EventRouteVO(route1)))
+                                               .content(getJson(new EventRouteVO().apply(route1)))
                                                .contentType("application/json")
                                                .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is4xxClientError())
@@ -277,7 +277,7 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
             .thenReturn(ServiceResponseBuilder.<Transformation> ok().withResult(transformation1).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.post("/routes/")
-                                                   .content(getJson(new EventRouteVO(route1)))
+                                                   .content(getJson(new EventRouteVO().apply(route1)))
                                                    .contentType("application/json")
                                                    .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is5xxServerError())
@@ -302,7 +302,7 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
             .thenReturn(ServiceResponseBuilder.<Transformation> error().withMessage(TransformationService.Validations.TRANSFORMATION_NOT_FOUND.getCode()).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.post("/routes/")
-                                               .content(getJson(new EventRouteVO(route1)))
+                                               .content(getJson(new EventRouteVO().apply(route1)))
                                                .contentType("application/json")
                                                .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is4xxClientError())
@@ -334,7 +334,7 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
             .thenReturn(ServiceResponseBuilder.<Transformation> ok().withResult(transformation1).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.put("/routes/" + route1.getGuid())
-                                                   .content(getJson(new EventRouteVO(route1)))
+                                                   .content(getJson(new EventRouteVO().apply(route1)))
                                                    .contentType("application/json")
                                                    .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is2xxSuccessful())
@@ -362,7 +362,7 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
             .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device2).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.put("/routes/" + route2.getGuid())
-                                                   .content(getJson(new EventRouteVO(route2)))
+                                                   .content(getJson(new EventRouteVO().apply(route2)))
                                                    .contentType("application/json")
                                                    .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is2xxSuccessful())
@@ -392,7 +392,7 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
         when(transformationService.get(tenant, transformation1.getGuid()))
             .thenReturn(ServiceResponseBuilder.<Transformation> ok().withResult(transformation1).build());
 
-        EventRouteVO eventRouteWithoutOutgoingOutgoing = new EventRouteVO(route1);
+        EventRouteVO eventRouteWithoutOutgoingOutgoing = new EventRouteVO().apply(route1);
         eventRouteWithoutOutgoingOutgoing.getOutgoing().setType(null);
 
         getMockMvc().perform(MockMvcRequestBuilders.put("/routes/" + route1.getGuid())
@@ -428,7 +428,7 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
             .thenReturn(ServiceResponseBuilder.<Transformation> ok().withResult(transformation1).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.put("/routes/" + route1.getGuid())
-                                                   .content(getJson(new EventRouteVO(route1)))
+                                                   .content(getJson(new EventRouteVO().apply(route1)))
                                                    .contentType("application/json")
                                                    .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is5xxServerError())

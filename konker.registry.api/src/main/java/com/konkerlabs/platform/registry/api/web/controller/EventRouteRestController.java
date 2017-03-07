@@ -78,11 +78,7 @@ public class EventRouteRestController implements InitializingBean {
         if (!routeResponse.isOk()) {
             throw new BadServiceResponseException(user, routeResponse, validationsCode);
         } else {
-            List<EventRouteVO> listVO = new ArrayList<>();
-            for (EventRoute route : routeResponse.getResult()) {
-                listVO.add(new EventRouteVO(route));
-            }
-            return listVO;
+            return new EventRouteVO().apply(routeResponse.getResult());
         }
 
     }
@@ -102,7 +98,7 @@ public class EventRouteRestController implements InitializingBean {
         if (!routeResponse.isOk()) {
             return null;
         } else {
-            return new EventRouteVO(routeResponse.getResult());
+            return new EventRouteVO().apply(routeResponse.getResult());
         }
 
     }
@@ -135,7 +131,7 @@ public class EventRouteRestController implements InitializingBean {
         if (!routeResponse.isOk()) {
             throw new BadServiceResponseException(user, routeResponse, validationsCode);
         } else {
-            return new EventRouteVO(routeResponse.getResult());
+            return new EventRouteVO().apply(routeResponse.getResult());
         }
 
     }
