@@ -1,6 +1,5 @@
 package com.konkerlabs.platform.registry.api.web.controller;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -20,16 +19,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
 import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
-import com.konkerlabs.platform.registry.api.model.DeviceVO;
 import com.konkerlabs.platform.registry.api.model.RestDestinationInputVO;
 import com.konkerlabs.platform.registry.api.model.RestDestinationVO;
 import com.konkerlabs.platform.registry.api.model.RestResponse;
-import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.RestDestination;
+import com.konkerlabs.platform.registry.business.model.RestDestination.Validations;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.Validations;
 import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 
@@ -52,51 +48,47 @@ public class RestDestinationController implements InitializingBean {
     private Set<String> validationsCode = new HashSet<>();
 
     @GetMapping(path = "/")
-    @PreAuthorize("hasAuthority('LIST_DEVICES')")
+    @PreAuthorize("hasAuthority('LIST_REST_DESTINATIONS')")
     @ApiOperation(
-            value = "List all devices by organization",
-            response = DeviceVO.class)
+            value = "List all rest destinations by organization",
+            response = RestDestinationVO.class)
     public List<RestDestinationVO> list() throws BadServiceResponseException {
 
         Tenant tenant = user.getTenant();
 
-        ServiceResponse<List<RestDestination>> deviceResponse = restDestinationService.findAll(tenant);
+        ServiceResponse<List<RestDestination>> restDestinationResponse = restDestinationService.findAll(tenant);
 
-        if (!deviceResponse.isOk()) {
-            throw new BadServiceResponseException(user, deviceResponse, validationsCode);
+        if (!restDestinationResponse.isOk()) {
+            throw new BadServiceResponseException(user, restDestinationResponse, validationsCode);
         } else {
-            List<RestDestinationVO> listVO = new ArrayList<>();
-            for (RestDestination device: deviceResponse.getResult()) {
-                listVO.add(new RestDestinationVO(device));
-            }
-            return listVO;
+            return new RestDestinationVO().apply(restDestinationResponse.getResult());
         }
 
     }
 
-    @GetMapping(path = "/{deviceGuid}")
+    @GetMapping(path = "/{restDestinationGuid}")
     @ApiOperation(
-            value = "Get a device by guid",
+            value = "Get a rest destination by guid",
             response = RestResponse.class
     )
-    @PreAuthorize("hasAuthority('SHOW_DEVICE')")
-    public RestDestinationVO read(@PathVariable("deviceGuid") String deviceGuid) throws BadServiceResponseException {
+    @PreAuthorize("hasAuthority('SHOW_REST_DESTINATION')")
+    public RestDestinationVO read(@PathVariable("restDestinationGuid") String restDestinationGuid) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
 
-        ServiceResponse<RestDestination> deviceResponse = restDestinationService.getByGUID(tenant, deviceGuid);
+        ServiceResponse<RestDestination> restDestinationResponse = restDestinationService.getByGUID(tenant, restDestinationGuid);
 
-        if (!deviceResponse.isOk()) {
-            return null;
+        if (!restDestinationResponse.isOk()) {
+            throw new NotFoundResponseException(user, restDestinationResponse);
         } else {
-            return new RestDestinationVO(deviceResponse.getResult());
+            return new RestDestinationVO().apply(restDestinationResponse.getResult());
         }
 
     }
 
     @PostMapping
-    @ApiOperation(value = "Create a device")
-    @PreAuthorize("hasAuthority('ADD_DEVICE')")
+    @ApiOperation(value = "Create a rest destination")
+    @PreAuthorize("hasAuthority('CREATE_REST_DESTINATION')")
     public RestDestinationVO create(
             @ApiParam(name = "body", required = true)
             @RequestBody RestDestinationInputVO restDestinationForm) throws BadServiceResponseException {
@@ -108,7 +100,7 @@ public class RestDestinationController implements InitializingBean {
                 .method(restDestinationForm.getMethod())
                 .headers(restDestinationForm.getHeaders())
                 .serviceURI(restDestinationForm.getServiceURI())
-                .serviceUsername(restDestinationForm.getServiceUserName())
+                .serviceUsername(restDestinationForm.getServiceUsername())
                 .servicePassword(restDestinationForm.getServicePassword())
                 .active(true)
                 .build();
@@ -118,59 +110,59 @@ public class RestDestinationController implements InitializingBean {
         if (!restDestinationResponse.isOk()) {
             throw new BadServiceResponseException(user, restDestinationResponse, validationsCode);
         } else {
-            return new RestDestinationVO(restDestinationResponse.getResult());
+            return new RestDestinationVO().apply(restDestinationResponse.getResult());
         }
 
     }
 
-    @PutMapping(path = "/{deviceGuid}")
-    @ApiOperation(value = "Update a device")
-    @PreAuthorize("hasAuthority('EDIT_DEVICE')")
+    @PutMapping(path = "/{restDestinationGuid}")
+    @ApiOperation(value = "Update a rest destination")
+    @PreAuthorize("hasAuthority('EDIT_REST_DESTINATION')")
     public void update(
-            @PathVariable("deviceGuid") String deviceGuid,
+            @PathVariable("restDestinationGuid") String restDestinationGuid,
             @ApiParam(name = "body", required = true)
-            @RequestBody RestDestinationInputVO deviceForm) throws BadServiceResponseException {
+            @RequestBody RestDestinationInputVO restDestinationForm) throws BadServiceResponseException {
 
         Tenant tenant = user.getTenant();
 
         RestDestination restDestinationFromDB = null;
-        ServiceResponse<RestDestination> deviceResponse = restDestinationService.getByGUID(tenant, deviceGuid);
+        ServiceResponse<RestDestination> restDestinationResponse = restDestinationService.getByGUID(tenant, restDestinationGuid);
 
-        if (!deviceResponse.isOk()) {
-            throw new BadServiceResponseException(user, deviceResponse, validationsCode);
+        if (!restDestinationResponse.isOk()) {
+            throw new BadServiceResponseException(user, restDestinationResponse, validationsCode);
         } else {
-            restDestinationFromDB = deviceResponse.getResult();
+            restDestinationFromDB = restDestinationResponse.getResult();
         }
 
         // update fields
-        restDestinationFromDB.setName(deviceForm.getName());
-        restDestinationFromDB.setMethod(deviceForm.getMethod());
-        restDestinationFromDB.setHeaders(deviceForm.getHeaders());
-        restDestinationFromDB.setServiceURI(deviceForm.getServiceURI());
-        restDestinationFromDB.setServiceUsername(deviceForm.getServiceUserName());
-        restDestinationFromDB.setServicePassword(deviceForm.getServicePassword());
-        restDestinationFromDB.setActive(deviceForm.isActive());
+        restDestinationFromDB.setName(restDestinationForm.getName());
+        restDestinationFromDB.setMethod(restDestinationForm.getMethod());
+        restDestinationFromDB.setHeaders(restDestinationForm.getHeaders());
+        restDestinationFromDB.setServiceURI(restDestinationForm.getServiceURI());
+        restDestinationFromDB.setServiceUsername(restDestinationForm.getServiceUsername());
+        restDestinationFromDB.setServicePassword(restDestinationForm.getServicePassword());
+        restDestinationFromDB.setActive(restDestinationForm.isActive());
 
-        ServiceResponse<RestDestination> updateResponse = restDestinationService.update(tenant, deviceGuid, restDestinationFromDB);
+        ServiceResponse<RestDestination> updateResponse = restDestinationService.update(tenant, restDestinationGuid, restDestinationFromDB);
 
         if (!updateResponse.isOk()) {
-            throw new BadServiceResponseException(user, deviceResponse, validationsCode);
+            throw new BadServiceResponseException(user, restDestinationResponse, validationsCode);
 
         }
 
     }
 
-    @DeleteMapping(path = "/{deviceGuid}")
-    @ApiOperation(value = "Delete a device")
-    @PreAuthorize("hasAuthority('REMOVE_DEVICE')")
-    public void delete(@PathVariable("deviceGuid") String deviceGuid) throws BadServiceResponseException, NotFoundResponseException {
+    @DeleteMapping(path = "/{restDestinationGuid}")
+    @ApiOperation(value = "Delete a rest destination")
+    @PreAuthorize("hasAuthority('REMOVE_REST_DESTINATION')")
+    public void delete(@PathVariable("restDestinationGuid") String restDestinationGuid) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
 
-        ServiceResponse<RestDestination> restDestinationResponse = restDestinationService.remove(tenant, deviceGuid);
+        ServiceResponse<RestDestination> restDestinationResponse = restDestinationService.remove(tenant, restDestinationGuid);
 
         if (!restDestinationResponse.isOk()) {
-            if (restDestinationResponse.getResponseMessages().containsKey(Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode())) {
+            if (restDestinationResponse.getResponseMessages().containsKey(RestDestinationService.Validations.DESTINATION_NOT_FOUND.getCode())) {
                 throw new NotFoundResponseException(user, restDestinationResponse);
             } else {
                 throw new BadServiceResponseException(user, restDestinationResponse, validationsCode);
@@ -181,12 +173,11 @@ public class RestDestinationController implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-
-        for (com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.Validations value : DeviceRegisterService.Validations.values()) {
+        for (Validations value : Validations.values()) {
             validationsCode.add(value.getCode());
         }
 
-        for (com.konkerlabs.platform.registry.business.model.Device.Validations value : Device.Validations.values()) {
+        for (RestDestinationService.Validations value : RestDestinationService.Validations.values()) {
             validationsCode.add(value.getCode());
         }
 

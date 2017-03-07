@@ -27,7 +27,7 @@ public class RestDestinationInputVO {
 	protected String serviceURI;
 	
 	@ApiModelProperty(value = "Username to authentication on the address of rest destination", example = "myaccount@konkerlabs.com", position = 5)
-	protected String serviceUserName;
+	protected String serviceUsername;
 
 	@ApiModelProperty(value = "Password to authentication on the address of rest destination", example = "mypassword123", position = 6)
 	protected String servicePassword;
