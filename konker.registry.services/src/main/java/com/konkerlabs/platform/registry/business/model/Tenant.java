@@ -17,6 +17,7 @@ public class Tenant implements URIDealer {
     private String id;
     private String name;
     private String domainName;
+    private String dataApiDomain; // subscrive and publish events API domain name
     private LogLevel logLevel = LogLevel.WARNING;
 
     public static final String URI_SCHEME = "tenant";
@@ -35,7 +36,7 @@ public class Tenant implements URIDealer {
     public String getGuid() {
         return id;
     }
-    
+
 	public LogLevel getLogLevel() {
 		return Optional.ofNullable(logLevel).orElse(LogLevel.WARNING);
 	}

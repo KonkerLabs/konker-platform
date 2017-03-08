@@ -53,4 +53,9 @@ public class WebTestConfiguration {
     	return Mockito.mock(RestDestinationService.class);
     }
 
+    @Bean
+    public RestDestinationService restDestinationService() {
+        return Mockito.mock(RestDestinationService.class);
+    }
+
 }
