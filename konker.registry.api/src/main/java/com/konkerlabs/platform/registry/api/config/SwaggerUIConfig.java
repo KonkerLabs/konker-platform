@@ -31,7 +31,7 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
     public static final String authorizationScopeTrust = "trust";
     public static final String authorizationScopeRead = "read";
     public static final String authorizationScopeWrite = "write";
-    public static final String authorizationScopeGlobalDesc ="Access Iot Resources";
+    public static final String authorizationScopeGlobalDesc = "Access Iot Resources";
 
 
     @Override
@@ -52,8 +52,9 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
                 .securityContexts(newArrayList(securityContext()))
                 // .operationOrdering(getOperationOrdering()) try with swagger 2.7.0
                 .tags(new Tag("devices", "Operations to list and edit devices"),
-                      new Tag("device credentials", "Operations to manage device credentials (username, password and URLs)"),
-                      new Tag("routes", "Operations to list and edit routes"))
+                        new Tag("device credentials", "Operations to manage device credentials (username, password and URLs)"),
+                        new Tag("routes", "Operations to list and edit routes"),
+                        new Tag("rest transformations", "Operations to manage Rest Transformations"))
                 .enableUrlTemplating(true);
 
     }
@@ -67,7 +68,8 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
                 if (result != 0) return result;
 
                 return 0;
-            }};
+            }
+        };
     }
 
     @SuppressWarnings("unused")
@@ -106,7 +108,7 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
                 new SecurityReference(securitySchemaOAuth2, authorizationScopes));
     }
 
-    private ApiInfo apiInfo(){
+    private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
                 .title("Konker Platform Api")
                 .description(

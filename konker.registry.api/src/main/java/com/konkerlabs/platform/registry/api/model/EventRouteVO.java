@@ -46,7 +46,7 @@ implements SerializableVO<EventRoute, EventRouteVO> {
         t.setIncoming(new RouteActorVO().apply(t.getIncoming()).patchDB(t.getIncoming()));
         t.setOutgoing(new RouteActorVO().apply(t.getOutgoing()).patchDB(t.getOutgoing()));
         t.setDescription(this.getDescription());
-        t.setTransformation(new TransformationVO()
+        t.setTransformation(new RestTransformationVO()
                 .apply(t.getTransformation()).patchDB(t.getTransformation()));
 
         return t;

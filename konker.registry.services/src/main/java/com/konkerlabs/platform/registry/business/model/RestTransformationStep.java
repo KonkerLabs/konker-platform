@@ -16,7 +16,8 @@ public class RestTransformationStep extends TransformationStep {
         ATTRIBUTES_METHOD_MISSING("model.transformation.rest.attributes.method.missing"),
         ATTRIBUTES_URL_MISSING("model.transformation.rest.attributes.url.missing"),
         ATTRIBUTES_USERNAME_MISSING("model.transformation.rest.attributes.username.missing"),
-        ATTRIBUTES_PASSWORD_MISSING("model.transformation.rest.attributes.password.missing");
+        ATTRIBUTES_PASSWORD_MISSING("model.transformation.rest.attributes.password.missing"),
+        ATTRIBUTES_METHOD_INVALID("model.transformation.rest.attributes.method.invalid");
 
         private String code;
 
@@ -35,6 +36,7 @@ public class RestTransformationStep extends TransformationStep {
     public static final String REST_USERNAME_ATTRIBUTE_NAME = "username";
     public static final String REST_PASSWORD_ATTRIBUTE_NAME = "password";
     public static final String URI_SCHEME = "resttransformationstep";
+    public static final List<String> VALID_METHODS = Arrays.asList("POST", "GET", "PUT");
 
 
     @Override
@@ -84,6 +86,8 @@ public class RestTransformationStep extends TransformationStep {
                     validations.put(Validations.ATTRIBUTES_USERNAME_MISSING.getCode(),null);
                 if (!attr.containsKey(REST_PASSWORD_ATTRIBUTE_NAME))
                     validations.put(Validations.ATTRIBUTES_PASSWORD_MISSING.getCode(),null);
+                if(!VALID_METHODS.contains(attr.get(REST_ATTRIBUTE_METHOD)))
+                    validations.put(Validations.ATTRIBUTES_METHOD_INVALID.getCode(),null);
             });
 
         return Optional.of(validations).filter(stringMap -> !stringMap.isEmpty());

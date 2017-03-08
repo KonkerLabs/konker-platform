@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -41,16 +42,19 @@ public class CrudResponseAdvice implements ResponseBodyAdvice<Object> {
             Class<? extends HttpMessageConverter<?>> selectedConverterType, ServerHttpRequest request,
             ServerHttpResponse response) {
 
-        String name = returnType.getMethod().getName();
-
         HttpStatus httpStatus = HttpStatus.OK;
 
-        if (name.equals("delete")) {
+        if (request.getMethod().equals(HttpMethod.DELETE)) {
             httpStatus = HttpStatus.NO_CONTENT;
-        } else if (name.equals("create")) {
+        } else if (request.getMethod().equals(HttpMethod.POST)) {
             httpStatus = HttpStatus.CREATED;
+        } else if (request.getMethod().equals(HttpMethod.PUT)){
+            httpStatus = HttpStatus.OK;
+        } else if (request.getMethod().equals(HttpMethod.GET)) {
+            if (body == null) {
+                httpStatus = HttpStatus.NOT_FOUND;
+            }
         }
-
         response.setStatusCode(httpStatus);
         return RestResponseBuilder.ok().withHttpStatus(httpStatus).withResult(body).getResponse();
 
