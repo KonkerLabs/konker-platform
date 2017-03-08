@@ -403,7 +403,7 @@ public class RestDestinationServiceTest extends BusinessLayerTestSupport {
     public void shouldRemoveDestinationSuccesfully() {
     	ServiceResponse<RestDestination> response = null;
 
-    	RestDestination tempRestDestination = RestDestination.builder().name("LOMoHYKvTs").serviceURI("http://host.com/").build();
+    	RestDestination tempRestDestination = RestDestination.builder().name("LOMoHYKvTs").method("GET").serviceURI("http://host.com/").build();
 
     	// register
     	response = subject.register(tenant, tempRestDestination);
@@ -419,7 +419,7 @@ public class RestDestinationServiceTest extends BusinessLayerTestSupport {
     public void shouldNotRemoveDestinationWithRouteInUse() {
     	ServiceResponse<RestDestination> response = null;
 
-    	RestDestination tempRestDestination = RestDestination.builder().name("LOMoHYKvTs").serviceURI("http://host.com/").build();
+    	RestDestination tempRestDestination = RestDestination.builder().name("LOMoHYKvTs").method("GET").serviceURI("http://host.com/").build();
 
     	// register
     	response = subject.register(tenant, tempRestDestination);
@@ -435,6 +435,14 @@ public class RestDestinationServiceTest extends BusinessLayerTestSupport {
         assertThat(response.getResponseMessages(),
                 hasEntry(RestDestinationService.Validations.REST_DESTINATION_IN_USE_ROUTE.getCode(), null));
 
+    }
+    
+    @Test
+    public void shouldReturnErrorIfDestinationMethodInvalidWhenRegister() {
+        newRestDestination.setMethod("XGET");
+        ServiceResponse<RestDestination> response = subject.register(tenant, newRestDestination);
+        assertThat(response, hasErrorMessage(RestDestinationService.Validations.METHOD_INVALID.getCode()));
+        assertThat(newRestDestination.getId(), nullValue());
     }
 
 }
