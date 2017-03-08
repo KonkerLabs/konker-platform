@@ -37,8 +37,6 @@ public class TransformationsRestController implements InitializingBean {
     @Autowired
     private User user;
     private Set<String> validationsCode = new HashSet<>();
-    private static List<String> VALID_REST_VERBS = Arrays.asList("GET", "POST", "PUT", "DELETE");
-
 
     @GetMapping(path = "/")
     @PreAuthorize("hasAuthority('LIST_TRANSFORMATION')")
