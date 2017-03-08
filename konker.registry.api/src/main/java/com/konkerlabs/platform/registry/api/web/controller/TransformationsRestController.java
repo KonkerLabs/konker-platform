@@ -28,7 +28,7 @@ import java.util.Set;
 @RequestMapping(
         value = "/restTransformations"
 )
-@Api(tags = "restTransformations")
+@Api(tags = "rest transformations")
 public class TransformationsRestController implements InitializingBean {
 
 
