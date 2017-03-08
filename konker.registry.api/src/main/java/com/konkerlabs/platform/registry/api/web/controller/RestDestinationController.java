@@ -90,7 +90,10 @@ public class RestDestinationController implements InitializingBean {
     @ApiOperation(value = "Create a rest destination")
     @PreAuthorize("hasAuthority('CREATE_REST_DESTINATION')")
     public RestDestinationVO create(
-            @ApiParam(name = "body", required = true)
+            @ApiParam(
+            		name = "body", 
+            		value = "JSON filled with the fields described in Model and Example Value beside", 
+            		required = true)
             @RequestBody RestDestinationInputVO restDestinationForm) throws BadServiceResponseException {
 
         Tenant tenant = user.getTenant();
@@ -120,7 +123,10 @@ public class RestDestinationController implements InitializingBean {
     @PreAuthorize("hasAuthority('EDIT_REST_DESTINATION')")
     public void update(
             @PathVariable("restDestinationGuid") String restDestinationGuid,
-            @ApiParam(name = "body", required = true)
+            @ApiParam(
+            		name = "body", 
+            		value = "JSON filled with the fields described in Model and Example Value beside",
+            		required = true)
             @RequestBody RestDestinationInputVO restDestinationForm) throws BadServiceResponseException {
 
         Tenant tenant = user.getTenant();
