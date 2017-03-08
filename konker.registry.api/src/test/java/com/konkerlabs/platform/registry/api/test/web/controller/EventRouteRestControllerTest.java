@@ -34,8 +34,10 @@ import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.Transformation;
 import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
+import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
+import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.TransformationService;;
 
@@ -57,6 +59,9 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
     private DeviceRegisterService deviceRegisterService;
 
     @Autowired
+    private RestDestinationService restDestinationService;
+
+    @Autowired
     private TransformationService transformationService;
 
     @Autowired
@@ -68,9 +73,13 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
 
     private EventRoute route2;
 
+    private EventRoute route3;
+
     private Device device1;
 
     private Device device2;
+
+    private RestDestination rest1;
 
     @Before
     public void setUp() {
@@ -79,11 +88,14 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
         device1 = Device.builder().tenant(tenant).guid("d_guid1").build();
         device2 = Device.builder().tenant(tenant).guid("d_guid2").build();
 
+        rest1 = RestDestination.builder().tenant(tenant).guid("r_guid1").build();
+
         Map<String, String> map = new HashMap<>();
         map.put("channel", "SBT");
 
         RouteActor routeActor1 = RouteActor.builder().uri(device1.toURI()).data(map).build();
         RouteActor routeActor2 = RouteActor.builder().uri(device2.toURI()).data(map).build();
+        RouteActor routeActor3 = RouteActor.builder().uri(rest1.toURI()).data(map).build();
 
         route1 = EventRoute.builder()
                 .name("name1")
@@ -101,6 +113,14 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
                 .outgoing(routeActor1)
                 .filteringExpression("val eq 2")
                 .active(false)
+                .build();
+
+        route3 = EventRoute.builder()
+                .name("name3")
+                .guid("guid3")
+                .incoming(routeActor1)
+                .outgoing(routeActor3)
+                .active(true)
                 .build();
 
     }
@@ -194,9 +214,9 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
                     .andExpect(status().is4xxClientError())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))
                     .andExpect(jsonPath("$.code", is(HttpStatus.NOT_FOUND.value())))
-                    .andExpect(jsonPath("$.status", is("success")))
+                    .andExpect(jsonPath("$.status", is("error")))
                     .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
-                    .andExpect(jsonPath("$.messages").doesNotExist())
+                    .andExpect(jsonPath("$.messages").exists())
                     .andExpect(jsonPath("$.result").doesNotExist());
 
     }
@@ -228,6 +248,42 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.result").isMap())
                     .andExpect(jsonPath("$.result.name", is("name1")))
                     .andExpect(jsonPath("$.result.guid", is("guid1")))
+                    .andExpect(jsonPath("$.result.incoming.type", is("DEVICE")))
+                    .andExpect(jsonPath("$.result.incoming.guid", is("d_guid1")))
+                    .andExpect(jsonPath("$.result.outgoing.type", is("DEVICE")))
+                    .andExpect(jsonPath("$.result.outgoing.guid", is("d_guid2")))
+                    .andExpect(jsonPath("$.result.active", is(true)));
+
+    }
+
+    @Test
+    public void shouldCreateEventRouteToRestDestination() throws Exception {
+
+        when(eventRouteService.save(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(EventRoute.class)))
+            .thenReturn(ServiceResponseBuilder.<EventRoute> ok().withResult(route3).build());
+
+        when(deviceRegisterService.getByDeviceGuid(tenant, device1.getGuid()))
+            .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device1).build());
+
+        when(restDestinationService.getByGUID(tenant, rest1.getGuid()))
+            .thenReturn(ServiceResponseBuilder.<RestDestination> ok().withResult(rest1).build());
+
+        getMockMvc().perform(MockMvcRequestBuilders.post("/routes/")
+                                                   .content(getJson(new EventRouteVO().apply(route3)))
+                                                   .contentType("application/json")
+                                                   .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().is2xxSuccessful())
+                    .andExpect(content().contentType("application/json;charset=UTF-8"))
+                    .andExpect(jsonPath("$.code", is(HttpStatus.CREATED.value())))
+                    .andExpect(jsonPath("$.status", is("success")))
+                    .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                    .andExpect(jsonPath("$.result").isMap())
+                    .andExpect(jsonPath("$.result.name", is("name3")))
+                    .andExpect(jsonPath("$.result.guid", is("guid3")))
+                    .andExpect(jsonPath("$.result.incoming.type", is("DEVICE")))
+                    .andExpect(jsonPath("$.result.incoming.guid", is("d_guid1")))
+                    .andExpect(jsonPath("$.result.outgoing.type", is("REST")))
+                    .andExpect(jsonPath("$.result.outgoing.guid", is("r_guid1")))
                     .andExpect(jsonPath("$.result.active", is(true)));
 
     }
@@ -277,7 +333,7 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
             .thenReturn(ServiceResponseBuilder.<Transformation> ok().withResult(transformation1).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.post("/routes/")
-                                                   .content(getJson(new EventRouteVO().apply(route1)))
+                                                   .content(getJson(new EventRouteVO().apply(route3)))
                                                    .contentType("application/json")
                                                    .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is5xxServerError())

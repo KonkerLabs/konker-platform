@@ -187,6 +187,10 @@ public class EventRoute implements URIDealer, Validatable {
 			return "device".equals(Optional.ofNullable(getUri()).map(URI::getScheme).orElse(""));
 		}
 
+	    public boolean isRestDestination() {
+	        return "rest".equals(Optional.ofNullable(getUri()).map(URI::getScheme).orElse(""));
+	    }
+
 		public boolean compareAndCheckIfDevicesChannelsAreEqual(RouteActor route) {
 			boolean areEqual = false;
 
