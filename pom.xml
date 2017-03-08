@@ -15,6 +15,7 @@
         <module>konker.security</module>
         <module>konker.registry.services</module>
         <module>konker.registry.api</module>
+        <module>konker.registry.data</module>
     </modules>
 
     <build>
