@@ -20,6 +20,7 @@ public class WebMvcConfig  {
         messageSource.addBasenames("classpath:/messages/devices");
         messageSource.addBasenames("classpath:/messages/routes");
         messageSource.addBasenames("classpath:/messages/transformations");
+        messageSource.addBasenames("classpath:/messages/rest-destination");
         messageSource.setDefaultEncoding("UTF-8");
 
         return messageSource;
