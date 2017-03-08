@@ -11,8 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.Singular;
 import org.springframework.data.annotation.Transient;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Data
@@ -21,8 +20,8 @@ import java.util.stream.Collectors;
 @ApiModel(
         value = "Transformation",
         discriminator = "com.konkerlabs.platform.registry.api.model")
-public class TransformationVO
-        implements SerializableVO<Transformation, TransformationVO> {
+public class RestTransformationVO
+        implements SerializableVO<Transformation, RestTransformationVO> {
 
     private String id;
     private String name;
@@ -30,18 +29,18 @@ public class TransformationVO
     private String description;
 
     @Singular
-    private List<TransformationStepVO> steps = new LinkedList<>();
+    private List<RestTransformationStepVO> steps = new LinkedList<>();
 
 
     @Transient
     @Override
-    public TransformationVO apply(Transformation t) {
-        TransformationVO r = new TransformationVO();
+    public RestTransformationVO apply(Transformation t) {
+        RestTransformationVO r = new RestTransformationVO();
         r.setId(t.getId());
         r.setGuid(t.getGuid());
         r.setName(t.getName());
         r.setDescription(t.getDescription());
-        r.setSteps(new TransformationStepVO().apply(t.getSteps()));
+        r.setSteps(new RestTransformationStepVO().apply(t.getSteps()));
         return r;
     }
 
@@ -50,8 +49,16 @@ public class TransformationVO
         t.setDescription(this.getDescription());
         t.setName(this.getName());
         t.setSteps(this.getSteps().stream()
-                .map( i -> i.patchDB(new RestTransformationStep(i.getAttributes())))
-                .collect(Collectors.toList()));
+                .map(i -> {
+                            return new RestTransformationStep(new HashMap<String, Object>() {{
+                                put(RestTransformationStep.REST_ATTRIBUTE_METHOD, i.getMethod());
+                                put(RestTransformationStep.REST_URL_ATTRIBUTE_NAME, i.getUrl());
+                                put(RestTransformationStep.REST_USERNAME_ATTRIBUTE_NAME, i.getUser());
+                                put(RestTransformationStep.REST_PASSWORD_ATTRIBUTE_NAME, i.getPassword());
+                                put(RestTransformationStep.REST_ATTRIBUTE_HEADERS, i.getHeaders());
+                            }});
+                        }
+                ).collect(Collectors.toList()));
         return t;
     }
 }
