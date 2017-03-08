@@ -1,5 +1,7 @@
 package com.konkerlabs.platform.registry.api.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.konkerlabs.platform.registry.api.model.core.SerializableVO;
 import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
@@ -10,14 +12,15 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
+@JsonInclude(Include.NON_EMPTY)
 public class RouteActorVO
         implements SerializableVO<RouteActor, RouteActorVO> {
 
-    @ApiModelProperty(value = "type", allowableValues = "DEVICE")
+    @ApiModelProperty(position = 0, value = "type", allowableValues = "DEVICE,REST")
     private String type;
-    @ApiModelProperty(value = "actor guid")
+    @ApiModelProperty(position = 1, value = "actor (device or rest destination) guid")
     private String guid;
-    @ApiModelProperty(value = "actor channel")
+    @ApiModelProperty(position = 2, value = "actor channel")
     private String channel;
 
     @Override
@@ -29,6 +32,11 @@ public class RouteActorVO
             vo.type = RouteActorType.DEVICE.name();
             vo.guid = uriPath.startsWith("/") ? uriPath.substring(1) : uriPath;
             vo.channel = t.getData().get(EventRoute.DEVICE_MQTT_CHANNEL);
+        } else if (t.isRestDestination()) {
+            String uriPath = t.getUri().getPath();
+
+            vo.type = RouteActorType.REST.name();
+            vo.guid = uriPath.startsWith("/") ? uriPath.substring(1) : uriPath;
         } else {
             String uriPath = t.getUri().getPath();
 
