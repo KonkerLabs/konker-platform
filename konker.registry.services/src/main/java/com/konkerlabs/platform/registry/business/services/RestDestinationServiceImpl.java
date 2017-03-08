@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.business.services;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -14,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.EventRouteRepository;
 import com.konkerlabs.platform.registry.business.repositories.RestDestinationRepository;
@@ -36,6 +36,8 @@ public class RestDestinationServiceImpl extends AbstractURLBlacklistValidation i
 	private RestDestinationRepository restRepository;
     @Autowired
     private EventRouteRepository eventRouteRepository;
+    
+    private List<String> methods = Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH");
 
 	@Override
 	public ServiceResponse<List<RestDestination>> findAll(Tenant tenant) {
@@ -88,6 +90,11 @@ public class RestDestinationServiceImpl extends AbstractURLBlacklistValidation i
 		if (!Optional.ofNullable(destination).isPresent())
 			return ServiceResponseBuilder.<RestDestination> error().withMessage(CommonValidations.RECORD_NULL.getCode())
 					.build();
+		
+		if (!methods.contains(destination.getMethod())) {
+			return ServiceResponseBuilder.<RestDestination> error().withMessage(Validations.METHOD_INVALID.getCode())
+					.build();
+		}
 
 		Tenant existingTenant = tenantRepository.findByDomainName(tenant.getDomainName());
 

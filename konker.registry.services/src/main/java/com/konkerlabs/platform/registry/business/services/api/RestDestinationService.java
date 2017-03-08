@@ -11,7 +11,8 @@ public interface RestDestinationService {
 		GUID_NULL("service.rest_destination.guid.not_null"), 
 		DESTINATION_NOT_FOUND("service.rest_destination.not_found"), 
 		NAME_IN_USE("service.rest_destination.name.in_use"),
-		REST_DESTINATION_IN_USE_ROUTE("service.rest_destination.in_use_route");
+		REST_DESTINATION_IN_USE_ROUTE("service.rest_destination.in_use_route"),
+		METHOD_INVALID("service.rest_destination.method.invalid");
 
 		private String code;
 
