@@ -25,7 +25,8 @@ public interface RestDestinationService {
 	}
 	
     enum Messages {
-    	REST_DESTINATION_REMOVED_SUCCESSFULLY("service.rest_destination.removed_succesfully");
+    	REST_DESTINATION_REMOVED_SUCCESSFULLY("service.rest_destination.removed_succesfully"), 
+    	REST_DESTINATION_REMOVED_UNSUCCESSFULLY("service.rest_destination.removed_unsuccesfully");
 
         public String getCode() {
             return code;
