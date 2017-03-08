@@ -53,7 +53,7 @@ public class RestTransformationVO
                             return new RestTransformationStep(new HashMap<String, Object>() {{
                                 put(RestTransformationStep.REST_ATTRIBUTE_METHOD, i.getMethod());
                                 put(RestTransformationStep.REST_URL_ATTRIBUTE_NAME, i.getUrl());
-                                put(RestTransformationStep.REST_USERNAME_ATTRIBUTE_NAME, i.getUser());
+                                put(RestTransformationStep.REST_USERNAME_ATTRIBUTE_NAME, i.getUsername());
                                 put(RestTransformationStep.REST_PASSWORD_ATTRIBUTE_NAME, i.getPassword());
                                 put(RestTransformationStep.REST_ATTRIBUTE_HEADERS, i.getHeaders());
                             }});

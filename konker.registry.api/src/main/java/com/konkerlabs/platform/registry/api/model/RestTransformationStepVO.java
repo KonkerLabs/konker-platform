@@ -27,7 +27,7 @@ public class RestTransformationStepVO
     private IntegrationType type = IntegrationType.REST;
     private String method;
     private String url;
-    private String user;
+    private String username;
     private String password;
     private Map<String, String> headers = new LinkedHashMap<>();
 
@@ -38,7 +38,7 @@ public class RestTransformationStepVO
         r.setType(IntegrationType.REST);
         r.setMethod((String) t.getAttributes()
                 .get(RestTransformationStep.REST_ATTRIBUTE_METHOD));
-        r.setUser((String) t.getAttributes()
+        r.setUsername((String) t.getAttributes()
                 .get(RestTransformationStep.REST_USERNAME_ATTRIBUTE_NAME));
         r.setPassword((String) t.getAttributes()
                 .get(RestTransformationStep.REST_PASSWORD_ATTRIBUTE_NAME));

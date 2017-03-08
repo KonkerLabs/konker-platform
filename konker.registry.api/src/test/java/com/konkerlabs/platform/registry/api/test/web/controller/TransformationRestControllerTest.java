@@ -88,6 +88,7 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
                                                     put("url", url1);
                                                     put("username", username);
                                                     put("password", password);
+                                                    put("headers", null);
                                                 }})
                                         .build())
                         .build();
@@ -106,6 +107,7 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
                                                     put("url", url2);
                                                     put("username", username);
                                                     put("password", password);
+                                                    put("headers", null);
                                                 }})
                                         .build())
                         .build();
