@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 
+import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
@@ -17,6 +18,7 @@ import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.UserRepository;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.LoginAuditService;
+import com.konkerlabs.platform.registry.security.DeviceUserDetailsService;
 
 @Configuration
 public class WebTestConfiguration {
@@ -42,6 +44,16 @@ public class WebTestConfiguration {
         LoginAuditService loginAuditService = mock(LoginAuditService.class);
 
         return loginAuditService;
+    }
+
+    @Bean
+    public DeviceUserDetailsService deviceUserDetailsService(){
+        DeviceUserDetailsService instance = Mockito.mock(DeviceUserDetailsService.class);
+
+        Mockito.when(instance.loadUserByUsername(Mockito.anyString()))
+            .thenReturn(Device.builder().deviceId("123").build());
+
+        return instance;
     }
 
     @Bean

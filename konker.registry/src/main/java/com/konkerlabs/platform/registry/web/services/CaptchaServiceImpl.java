@@ -1,26 +1,20 @@
 package com.konkerlabs.platform.registry.web.services;
 
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
-import com.konkerlabs.platform.registry.integration.exceptions.IntegrationException;
-import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
-import com.konkerlabs.platform.registry.web.services.api.CaptchaService;
-import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.stereotype.Service;
-
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.web.services.api.CaptchaService;
+import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 
 /**
  * Created by Felipe on 03/01/17.
@@ -29,10 +23,10 @@ import java.util.Map;
 public class CaptchaServiceImpl implements CaptchaService {
 
     @Autowired
-    private HttpGateway httpGateway;
+    private JsonParsingService jsonParsingService;
 
     @Autowired
-    private JsonParsingService jsonParsingService;
+    private CaptchaRestClient restClient;
 
     private Logger LOG = LoggerFactory.getLogger(CaptchaServiceImpl.class);
 
@@ -60,12 +54,10 @@ public class CaptchaServiceImpl implements CaptchaService {
         String body;
         Map<String, Object> result;
         try {
-            body = httpGateway.request(
-                    HttpMethod.POST,
-                    new HttpHeaders(),
-                    finalUrl.toURI(), MediaType.APPLICATION_JSON, null, null, null);
+            body = restClient.request(
+                    finalUrl.toURI());
             result = jsonParsingService.toMap(body);
-        } catch (URISyntaxException | IOException | IntegrationException | IllegalArgumentException e) {
+        } catch (Exception e) {
             LOG.error("Captcha processing error", e);
             return ServiceResponseBuilder.<Boolean>error().withResult(Boolean.FALSE).build();
         }
@@ -75,4 +67,6 @@ public class CaptchaServiceImpl implements CaptchaService {
             return ServiceResponseBuilder.<Boolean>error().withResult(Boolean.FALSE).build();
         }
     }
+
+
 }
