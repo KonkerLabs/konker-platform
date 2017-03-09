@@ -107,6 +107,11 @@
             <artifactId>validation-api</artifactId>
             <version>1.1.0.Final</version>
         </dependency>
+        <dependency>
+            <groupId>org.skyscreamer</groupId>
+            <artifactId>jsonassert</artifactId>
+            <version>1.2.3</version>
+        </dependency>
         <!-- Thymeleaf -->
         <dependency>
             <groupId>org.thymeleaf</groupId>
@@ -128,22 +133,18 @@
 		    <artifactId>thymeleaf-extras-springsecurity4</artifactId>
 		    <version>3.0.1.RELEASE</version>
 		</dependency>
-        <!-- Misc -->
-		<dependency>
-		    <groupId>org.skyscreamer</groupId>
-		    <artifactId>jsonassert</artifactId>
-		    <version>1.2.3</version>
-		</dependency>
-		<dependency>
-		    <groupId>net.sf.supercsv</groupId>
-		    <artifactId>super-csv</artifactId>
-		    <version>2.4.0</version>
-		</dependency>
-		<dependency>
-		    <groupId>net.sf.supercsv</groupId>
-		    <artifactId>super-csv-dozer</artifactId>
-		    <version>2.4.0</version>
-		</dependency>
+        <!-- CSV -->
+        <dependency>
+            <groupId>net.sf.supercsv</groupId>
+            <artifactId>super-csv</artifactId>
+            <version>2.4.0</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.supercsv</groupId>
+            <artifactId>super-csv-dozer</artifactId>
+            <version>2.4.0</version>
+        </dependency>
+        <!-- Amazon -->
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-s3</artifactId>
@@ -159,6 +160,7 @@
            <artifactId>httpclient</artifactId>
            <version>4.5.2</version>
        	</dependency>
+        <!-- Mail -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context-support</artifactId>
@@ -169,6 +171,7 @@
 		    <artifactId>mail</artifactId>
 		    <version>1.4.7</version>
 		</dependency>
+        <!-- Konker -->
 		<dependency>
 		    <groupId>com.konkerlabs</groupId>
 		    <artifactId>konker.registry.services</artifactId>

@@ -52,7 +52,6 @@ import com.konkerlabs.platform.registry.config.PubServerConfig;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
-import com.konkerlabs.platform.registry.web.controllers.DeviceController;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -483,7 +482,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
         assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.OK));
         assertThat(serviceResponse.getResponseMessages(),
-                hasEntry(DeviceController.Messages.DEVICE_REMOVED_SUCCESSFULLY.getCode(), null));
+                hasEntry(DeviceRegisterService.Messages.DEVICE_REMOVED_SUCCESSFULLY.getCode(), null));
     }
 
     @Test

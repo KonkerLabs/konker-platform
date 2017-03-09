@@ -109,7 +109,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
 
 		device = builder.build();
 		device.setActive(true);
-		
+
 		savedDevice = builder.id("deviceId").active(true).build();
 
 		deviceForm = new DeviceRegistrationForm();
@@ -173,7 +173,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
 
 		getMockMvc().perform(post("/devices/save").params(deviceData))
 				.andExpect(flash().attribute("message", applicationContext.getMessage(
-						DeviceController.Messages.DEVICE_REGISTERED_SUCCESSFULLY.getCode(), null, Locale.ENGLISH)))
+				        DeviceRegisterService.Messages.DEVICE_REGISTERED_SUCCESSFULLY.getCode(), null, Locale.ENGLISH)))
 				.andExpect(redirectedUrl(MessageFormat.format("/devices/{0}", savedDevice.getGuid())));
 
 		verify(deviceRegisterService).register(eq(tenant), eq(device));
@@ -272,14 +272,14 @@ public class DeviceControllerTest extends WebLayerTestContext {
 
 		getMockMvc().perform(put(MessageFormat.format("/devices/{0}", savedDevice.getId())).params(deviceData))
 				.andExpect(flash().attribute("message", applicationContext.getMessage(
-						DeviceController.Messages.DEVICE_REGISTERED_SUCCESSFULLY.getCode(), null, Locale.ENGLISH)))
+				        DeviceRegisterService.Messages.DEVICE_REGISTERED_SUCCESSFULLY.getCode(), null, Locale.ENGLISH)))
 				.andExpect(redirectedUrl(MessageFormat.format("/devices/{0}", savedDevice.getGuid())));
 
 		verify(deviceRegisterService).update(eq(tenant), eq(savedDevice.getId()), eq(device));
 	}
 
-	
-	
+
+
 	@Test
 	@WithMockUser(authorities={"REMOVE_DEVICE"})
 	public void shouldRedirectToListDevicesAndShowSuccessMessageAfterDeletionSucceed() throws Exception {
@@ -297,7 +297,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
 
 		getMockMvc().perform(delete("/devices/{0}", device.getId()))
 				.andExpect(flash().attribute("message", applicationContext.getMessage(
-						DeviceController.Messages.DEVICE_REMOVED_SUCCESSFULLY.getCode(), null, Locale.ENGLISH)))
+				        DeviceRegisterService.Messages.DEVICE_REMOVED_SUCCESSFULLY.getCode(), null, Locale.ENGLISH)))
 				.andExpect(redirectedUrl("/devices"));
 
 		verify(deviceRegisterService).remove(tenant, device.getId());

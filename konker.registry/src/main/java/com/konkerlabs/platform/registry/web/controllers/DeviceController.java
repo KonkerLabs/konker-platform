@@ -51,23 +51,6 @@ import com.konkerlabs.platform.registry.web.forms.DeviceRegistrationForm;
 public class DeviceController implements ApplicationContextAware {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(DeviceController.class);
-	
-    public enum Messages {
-        DEVICE_REGISTERED_SUCCESSFULLY("controller.device.registered.success"),
-        DEVICE_REMOVED_SUCCESSFULLY("controller.device.removed.succesfully"),
-        DEVICE_REMOVED_UNSUCCESSFULLY("controller.device.removed.unsuccesfully"),
-        DEVICE_QRCODE_ERROR("service.device.qrcode.have_errors");
-
-        public String getCode() {
-            return code;
-        }
-
-        private String code;
-
-        Messages(String code) {
-            this.code = code;
-        }
-    }
 
     private ApplicationContext applicationContext;
 
@@ -79,11 +62,11 @@ public class DeviceController implements ApplicationContextAware {
     private DeviceRegisterService deviceRegisterService;
     private DeviceEventService deviceEventService;
     private EventSchemaService eventSchemaService;
-    
+
     private Tenant tenant;
     private User user;
     private PubServerConfig pubServerConfig = new PubServerConfig();
-    
+
     @Autowired
     public DeviceController(DeviceRegisterService deviceRegisterService, DeviceEventService deviceEventService, EventSchemaService eventSchemaService, Tenant tenant, User user) {
         this.deviceRegisterService = deviceRegisterService;
@@ -159,7 +142,7 @@ public class DeviceController implements ApplicationContextAware {
     	Instant instantStart = StringUtils.isNotEmpty(dateStart) ? ZonedDateTime.of(LocalDateTime.parse(dateStart, dtf), ZoneId.of(user.getZoneId().getId())).toInstant() : null;
     	Instant instantEnd = StringUtils.isNotEmpty(dateEnd) ? ZonedDateTime.of(LocalDateTime.parse(dateEnd, dtf), ZoneId.of(user.getZoneId().getId())).toInstant() : null;
 
-		ModelAndView mv = new ModelAndView("devices/events-incoming", "recentIncomingEvents", 
+		ModelAndView mv = new ModelAndView("devices/events-incoming", "recentIncomingEvents",
 				deviceEventService.findIncomingBy(tenant, deviceGuid, null, instantStart, instantEnd, false, 50).getResult());
 
 		return mv;
@@ -175,7 +158,7 @@ public class DeviceController implements ApplicationContextAware {
     	Instant instantStart = StringUtils.isNotEmpty(dateStart) ? ZonedDateTime.of(LocalDateTime.parse(dateStart, dtf), ZoneId.of(user.getZoneId().getId())).toInstant() : null;
     	Instant instantEnd = StringUtils.isNotEmpty(dateEnd) ? ZonedDateTime.of(LocalDateTime.parse(dateEnd, dtf), ZoneId.of(user.getZoneId().getId())).toInstant() : null;
 
-		ModelAndView mv = new ModelAndView("devices/events-outgoing", "recentOutgoingEvents", 
+		ModelAndView mv = new ModelAndView("devices/events-outgoing", "recentOutgoingEvents",
 				deviceEventService.findOutgoingBy(tenant, deviceGuid, null, instantStart, instantEnd, false, 50).getResult());
 
 		return mv;
@@ -195,7 +178,7 @@ public class DeviceController implements ApplicationContextAware {
 			defaultChannel = lastEvent.getResult().getChannel();
 			defaultMetric = lastEvent.getResult().getFields().iterator().next().getPath();
 		}
-		
+
 		// Load lists
 		ServiceResponse<List<String>> channels = eventSchemaService.findKnownIncomingChannelsBy(tenant, deviceGuid);
 
@@ -214,10 +197,10 @@ public class DeviceController implements ApplicationContextAware {
 	    	}
 
 		}
-		
+
 		// Check if there is any numeric metric
 		boolean existsNumericMetric = false;
-		
+
 		ServiceResponse<List<String>> allNumericMetrics = eventSchemaService.findKnownIncomingMetricsBy(tenant, deviceGuid, JsonNodeType.NUMBER);
 		if (allNumericMetrics.isOk() && !allNumericMetrics.getResult().isEmpty()) {
 			existsNumericMetric = true;
@@ -266,7 +249,7 @@ public class DeviceController implements ApplicationContextAware {
         ServiceResponse<Device> serviceResponse = deviceRegisterService.remove(tenant, deviceGuid);
         if (serviceResponse.isOk()) {
             redirectAttributes.addFlashAttribute("message",
-                    applicationContext.getMessage(Messages.DEVICE_REMOVED_SUCCESSFULLY.getCode(), null, locale)
+                    applicationContext.getMessage(DeviceRegisterService.Messages.DEVICE_REMOVED_SUCCESSFULLY.getCode(), null, locale)
             );
         } else {
             List<String> messages = serviceResponse.getResponseMessages()
@@ -340,7 +323,7 @@ public class DeviceController implements ApplicationContextAware {
 
         if (serviceResponse.getStatus().equals(ServiceResponse.Status.OK)) {
             redirectAttributes.addFlashAttribute("message",
-                    applicationContext.getMessage(Messages.DEVICE_REGISTERED_SUCCESSFULLY.getCode(), null, locale));
+                    applicationContext.getMessage(DeviceRegisterService.Messages.DEVICE_REGISTERED_SUCCESSFULLY.getCode(), null, locale));
             return new ModelAndView(MessageFormat.format("redirect:/devices/{0}", serviceResponse.getResult().getGuid()));
         } else {
             List<String> messages = serviceResponse.getResponseMessages()
