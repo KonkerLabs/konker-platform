@@ -1,6 +1,5 @@
 package com.konkerlabs.platform.registry.test.data.services;
 
-import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.not;
@@ -34,6 +33,7 @@ import com.konkerlabs.platform.registry.test.data.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.data.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.data.base.MongoTestConfiguration;
 import com.konkerlabs.platform.registry.test.data.base.RedisTestConfiguration;
+import com.konkerlabs.platform.registry.test.data.base.ServiceResponseMatchers;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -106,14 +106,14 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
     public void shouldRaiseAnExceptionIfDeviceIsNull() throws Exception {
         ServiceResponse<Event> response = deviceEventService.logIncomingEvent(null, event);
 
-        assertThat(response,hasErrorMessage(DeviceEventService.Validations.DEVICE_NULL.getCode()));
+        assertThat(response,ServiceResponseMatchers.hasErrorMessage(DeviceEventService.Validations.DEVICE_NULL.getCode()));
     }
 
     @Test
     public void shouldRaiseAnExceptionIfEventIsNull() throws Exception {
         ServiceResponse<Event> response = deviceEventService.logIncomingEvent(device, null);
 
-        assertThat(response,hasErrorMessage(DeviceEventService.Validations.EVENT_NULL.getCode()));
+        assertThat(response,ServiceResponseMatchers.hasErrorMessage(DeviceEventService.Validations.EVENT_NULL.getCode()));
     }
 
     @Test
@@ -122,7 +122,7 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
 
         ServiceResponse<Event> response = deviceEventService.logIncomingEvent(device, event);
 
-        assertThat(response,hasErrorMessage(DeviceEventService.Validations.EVENT_PAYLOAD_NULL.getCode()));
+        assertThat(response,ServiceResponseMatchers.hasErrorMessage(DeviceEventService.Validations.EVENT_PAYLOAD_NULL.getCode()));
     }
 
     @Test
@@ -131,7 +131,7 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
 
         ServiceResponse<Event> response = deviceEventService.logIncomingEvent(device, event);
 
-        assertThat(response,hasErrorMessage(DeviceEventService.Validations.EVENT_PAYLOAD_NULL.getCode()));
+        assertThat(response,ServiceResponseMatchers.hasErrorMessage(DeviceEventService.Validations.EVENT_PAYLOAD_NULL.getCode()));
     }
 
     @Test
