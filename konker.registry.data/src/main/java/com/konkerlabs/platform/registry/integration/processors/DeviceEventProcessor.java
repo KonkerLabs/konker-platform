@@ -16,6 +16,7 @@ import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.data.services.api.DeviceLogEventService;
 import com.konkerlabs.platform.registry.data.services.routes.api.EventRouteExecutor;
 
 @Component
@@ -45,10 +46,10 @@ public class DeviceEventProcessor {
 
     private EventRouteExecutor eventRouteExecutor;
     private DeviceRegisterService deviceRegisterService;
-    private DeviceEventService deviceEventService;
+    private DeviceLogEventService deviceEventService;
 
     @Autowired
-    public DeviceEventProcessor(DeviceEventService deviceEventService,
+    public DeviceEventProcessor(DeviceLogEventService deviceEventService,
                                 EventRouteExecutor eventRouteExecutor,
                                 DeviceRegisterService deviceRegisterService) {
         this.deviceEventService = deviceEventService;

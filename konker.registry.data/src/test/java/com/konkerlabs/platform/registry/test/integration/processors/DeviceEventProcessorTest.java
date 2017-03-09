@@ -1,9 +1,6 @@
 package com.konkerlabs.platform.registry.test.integration.processors;
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.same;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
@@ -41,10 +38,14 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBui
 import com.konkerlabs.platform.registry.data.config.RedisConfig;
 import com.konkerlabs.platform.registry.data.services.routes.api.EventRouteExecutor;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
+import com.konkerlabs.platform.registry.test.data.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.data.base.IntegrationLayerTestContext;
+import com.konkerlabs.platform.registry.test.data.base.MongoTestConfiguration;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
+        MongoTestConfiguration.class,
+        BusinessTestConfiguration.class,
         IntegrationLayerTestContext.class,
         DeviceEventProcessorTest.BusinessLayerConfiguration.class, RedisConfig.class
 })
@@ -164,39 +165,6 @@ public class DeviceEventProcessorTest {
         thrown.expectMessage(DeviceEventProcessor.Messages.CHANNEL_MISSING.getCode());
 
         subject.process(sourceApiKey, null, originalPayload);
-    }
-
-    @Test
-    public void shouldLogIncomingEvent() throws Exception {
-        when(deviceRegisterService.findByApiKey(sourceApiKey)).thenReturn(device);
-        when(deviceEventService.logIncomingEvent(device, event)).thenReturn(ServiceResponseBuilder.<Event>ok().withResult(event).build());
-
-        subject.process(sourceApiKey, incomingChannel, originalPayload);
-
-        verify(deviceEventService).logIncomingEvent(device, event);
-    }
-
-    @Test
-    public void shouldForwardIncomingMessageToDestinationDevice() throws Exception {
-        when(deviceRegisterService.findByApiKey(sourceApiKey)).thenReturn(device);
-        when(deviceEventService.logIncomingEvent(device, event)).thenReturn(ServiceResponseBuilder.<Event>ok().withResult(event).build());
-
-        ResultCaptor<URI> returnCaptor = new ResultCaptor<URI>();
-
-        doAnswer(returnCaptor).when(device).toURI();
-        subject.process(sourceApiKey, incomingChannel, originalPayload);
-
-        verify(eventRouteExecutor).execute(eq(event), same(returnCaptor.getResult()));
-    }
-
-    @Test
-    public void shouldNotLogAnyEventIfIncomingDeviceIsDisabled() throws Exception {
-        device.setActive(false);
-        when(deviceRegisterService.findByApiKey(sourceApiKey)).thenReturn(device);
-
-        subject.process(sourceApiKey, incomingChannel, originalPayload);
-
-        verify(deviceEventService, never()).logIncomingEvent(any(), any());
     }
 
     @Test

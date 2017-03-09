@@ -12,9 +12,9 @@ import com.konkerlabs.platform.registry.data.services.publishers.EventPublisherS
 import com.konkerlabs.platform.registry.data.services.publishers.api.EventPublisher;
 import com.konkerlabs.platform.registry.integration.exceptions.IntegrationException;
 import com.konkerlabs.platform.registry.integration.gateways.SMSMessageGateway;
-import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
-import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
+import com.konkerlabs.platform.registry.test.data.base.BusinessLayerTestSupport;
+import com.konkerlabs.platform.registry.test.data.base.BusinessTestConfiguration;
+import com.konkerlabs.platform.registry.test.data.base.MongoTestConfiguration;
 import com.konkerlabs.platform.registry.test.data.base.*;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import org.junit.After;

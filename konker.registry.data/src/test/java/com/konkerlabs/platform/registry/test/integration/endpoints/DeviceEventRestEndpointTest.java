@@ -31,10 +31,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
 import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.services.JedisTaskService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.data.config.WebMvcConfig;
+import com.konkerlabs.platform.registry.data.services.JedisTaskService;
 import com.konkerlabs.platform.registry.integration.endpoints.DeviceEventRestEndpoint;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
 import com.konkerlabs.platform.registry.test.data.base.BusinessTestConfiguration;

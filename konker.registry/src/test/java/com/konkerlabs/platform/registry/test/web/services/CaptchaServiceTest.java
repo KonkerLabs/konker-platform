@@ -47,7 +47,7 @@ public class CaptchaServiceTest {
         Assert.assertTrue(captchaService.validateCaptcha("", "", "").getResult());
     }
 
-    @Test (expected = URISyntaxException.class)
+    @Test
     @SuppressWarnings("unchecked")
     public void shouldBeUnsuccessfulCaptchaValidation() throws IOException{
 
@@ -57,6 +57,7 @@ public class CaptchaServiceTest {
                 .thenThrow(IOException.class);
         Assert.assertFalse(captchaService.validateCaptcha("", "", "").getResult());
 
+        Mockito.reset(captchaRestClient);
         when(captchaRestClient.request(Mockito.any(URI.class)))
                 .thenReturn(new String(JSON_UNSUCCESSFUL));
         Assert.assertFalse(captchaService.validateCaptcha("", "", "").getResult());

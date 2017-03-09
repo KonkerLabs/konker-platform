@@ -1,20 +1,15 @@
 package com.konkerlabs.platform.registry.test.business.repositories;
 
-import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
-import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
-import com.konkerlabs.platform.registry.business.repositories.events.EventRepository;
-import com.konkerlabs.platform.registry.business.repositories.events.EventRepositoryMongoImpl;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
-import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.RedisTestConfiguration;
-import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.notNullValue;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.function.Supplier;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -25,26 +20,27 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.time.Instant;
-import java.util.function.Supplier;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.notNullValue;
+import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
+import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
+import com.konkerlabs.platform.registry.business.repositories.events.EventRepository;
+import com.konkerlabs.platform.registry.business.repositories.events.EventRepositoryMongoImpl;
+import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
+import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
+import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
         BusinessTestConfiguration.class,
-        MongoTestConfiguration.class,
-        RedisTestConfiguration.class
+        MongoTestConfiguration.class
 })
 @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json"})
 public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
@@ -60,11 +56,6 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
     private EventRepository eventRepository;
     @Autowired
     private MongoTemplate mongoTemplate;
-
-    @Autowired
-    private RedisConnectionFactory redisConnectionFactory;
-    @Autowired
-    private RedisTemplate<String, String> redisTemplate;
 
     private Tenant tenant;
     private String incomingPayload;

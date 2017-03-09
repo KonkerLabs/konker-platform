@@ -1,34 +1,14 @@
 package com.konkerlabs.platform.registry.test.data.services.publishers;
 
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
-import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
-import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
-import com.konkerlabs.platform.registry.config.PubServerConfig;
-import com.konkerlabs.platform.registry.data.services.publishers.EventPublisherDevice;
-import com.konkerlabs.platform.registry.data.services.publishers.api.EventPublisher;
-import com.konkerlabs.platform.registry.integration.gateways.MqttMessageGateway;
-import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
-import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
-import com.konkerlabs.platform.registry.test.data.base.*;
-import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.mockito.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import static com.konkerlabs.platform.registry.data.services.publishers.EventPublisherDevice.DEVICE_MQTT_CHANNEL;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.net.URI;
 import java.text.MessageFormat;
@@ -37,15 +17,43 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.mockito.Mockito.*;
-import static org.hamcrest.Matchers.*;
-import static com.konkerlabs.platform.registry.data.services.publishers.EventPublisherDevice.DEVICE_MQTT_CHANNEL;
-import static org.hamcrest.MatcherAssert.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.mockito.InOrder;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
+import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.config.PubServerConfig;
+import com.konkerlabs.platform.registry.data.services.api.DeviceLogEventService;
+import com.konkerlabs.platform.registry.data.services.publishers.EventPublisherDevice;
+import com.konkerlabs.platform.registry.data.services.publishers.api.EventPublisher;
+import com.konkerlabs.platform.registry.integration.gateways.MqttMessageGateway;
+import com.konkerlabs.platform.registry.test.data.base.BusinessLayerTestSupport;
+import com.konkerlabs.platform.registry.test.data.base.BusinessTestConfiguration;
+import com.konkerlabs.platform.registry.test.data.base.MongoTestConfiguration;
+import com.konkerlabs.platform.registry.test.data.base.RedisTestConfiguration;
+import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
-        MongoTestConfiguration.class,
         BusinessTestConfiguration.class,
+        MongoTestConfiguration.class,
         RedisTestConfiguration.class,
         PubServerConfig.class
 })
@@ -75,7 +83,7 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
     private EventPublisher subject;
 
     @Mock
-    private DeviceEventService deviceEventService;
+    private DeviceLogEventService deviceLogEventService;
 
     private Event event;
     private URI destinationUri;
@@ -97,7 +105,7 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
 
-        ((EventPublisherDevice)subject).setDeviceEventService(deviceEventService);
+        ((EventPublisherDevice)subject).setDeviceLogEventService(deviceLogEventService);
 
         device = deviceRegisterService.findByTenantDomainNameAndDeviceGuid(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_GUID);
         event = Event.builder()
@@ -133,7 +141,7 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
 
     @After
     public void tearDown() throws Exception {
-        Mockito.reset(deviceEventService);
+        Mockito.reset(deviceLogEventService);
     }
 
     @Test
@@ -237,13 +245,13 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
         subject.send(event,destinationUri,data,device.getTenant());
 
         verify(mqttMessageGateway,never()).send(anyString(),anyString());
-        verify(deviceEventService,never()).logIncomingEvent(Mockito.any() , Mockito.any());
-        verify(deviceEventService,never()).logOutgoingEvent(Mockito.any() , Mockito.any());
+        verify(deviceLogEventService,never()).logIncomingEvent(Mockito.any() , Mockito.any());
+        verify(deviceLogEventService,never()).logOutgoingEvent(Mockito.any() , Mockito.any());
     }
 
     @Test
     public void shouldSendAnEventThroughGatewayIfDeviceIsEnabled() throws Exception {
-        when(deviceEventService.logOutgoingEvent(Mockito.any(Device.class), Mockito.any(Event.class))).thenReturn(
+        when(deviceLogEventService.logOutgoingEvent(Mockito.any(Device.class), Mockito.any(Event.class))).thenReturn(
                 ServiceResponseBuilder.<Event>ok().build()
         );
 
@@ -262,9 +270,9 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
         assertThat(event.getIncoming().getChannel(), equalTo(INPUT_CHANNEL));
         subject.send(event,destinationUri,data,device.getTenant());
 
-        InOrder inOrder = inOrder(mqttMessageGateway,deviceEventService);
+        InOrder inOrder = inOrder(mqttMessageGateway,deviceLogEventService);
 
         inOrder.verify(mqttMessageGateway).send(event.getPayload(),expectedMqttTopic);
-        inOrder.verify(deviceEventService).logOutgoingEvent(eq(device), eq(event));
+        inOrder.verify(deviceLogEventService).logOutgoingEvent(eq(device), eq(event));
     }
 }

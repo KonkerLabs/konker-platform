@@ -1,11 +1,10 @@
 package com.konkerlabs.platform.registry.business.services.api;
 
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-
 import java.time.Instant;
 import java.util.List;
+
+import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.Tenant;
 
 public interface DeviceEventService {
 
@@ -26,10 +25,6 @@ public interface DeviceEventService {
             this.code = code;
         }
     }
-
-    ServiceResponse<Event> logIncomingEvent(Device device, Event event);
-
-    ServiceResponse<Event> logOutgoingEvent(Device device, Event event);
 
     /**
      * Return all existing incoming device events by provided arguments

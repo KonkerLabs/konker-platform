@@ -37,7 +37,6 @@ import com.konkerlabs.platform.registry.config.EmailConfig;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.RedisTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.SpringMailTestConfiguration;
 import com.konkerlabs.platform.registry.web.services.api.UserNotificationService;
 import com.konkerlabs.platform.registry.web.services.api.UserNotificationService.Validations;
@@ -45,8 +44,11 @@ import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(
-        classes = { MongoTestConfiguration.class, BusinessTestConfiguration.class, RedisTestConfiguration.class,
-                SpringMailTestConfiguration.class, EmailConfig.class })
+        classes = {
+                MongoTestConfiguration.class,
+                BusinessTestConfiguration.class,
+                SpringMailTestConfiguration.class,
+                EmailConfig.class })
 @UsingDataSet(locations = { "/fixtures/users.json", "/fixtures/userNotifications.json" })
 @ActiveProfiles("email")
 public class UserNotificationServiceTest extends BusinessLayerTestSupport {
@@ -65,7 +67,7 @@ public class UserNotificationServiceTest extends BusinessLayerTestSupport {
     private static final String SCHEDULED_MAINTENANCE_NOTIFICATION_UUID = "3619171e-c776-11e6-b1b3-0390d185f031";
     private static final String PAYMENT_PENDING_NOTIFICATION_UUID = "5bc88bb8-c783-11e6-ba41-67cba8a1ccf9";
     private static final String CHANGE_PASSWORD_NOTIFICATION_UUID = "ba5f1372-c783-11e6-a93f-733a6e9632e2";
-    
+
     private static final String POSTED_CORRELATION_UUID = "5fa49178-c85f-11e6-9f92-4f0a7c448bbc";
 
     @Autowired
@@ -498,24 +500,24 @@ public class UserNotificationServiceTest extends BusinessLayerTestSupport {
         assertThat(markReadResp, hasErrorMessage(Validations.USER_NOTIFICATION_NULL_UUID.getCode()));
     }
 
-    
+
     // ======================= post ========================= //
     @Test
     public void shouldPostWhenCallPost() {
         assertThat("x", not(userNotificationService.hasNewNotifications(user).getResult()));
 
-        
+
         UserNotification newNotification = UserNotification.builder().subject("My Subject").body("My Body").correlationUuid(POSTED_CORRELATION_UUID).build();
         ServiceResponse<UserNotification> resp = userNotificationService.postNotification(user, newNotification);
         assertThat(resp, isResponseOk());
-        
+
         assertThat(resp.getResult().getUuid(), notNullValue());
         assertThat(resp.getResult().getCorrelationUuid(), equalTo(POSTED_CORRELATION_UUID));
-        
+
         assertThat("x", userNotificationService.hasNewNotifications(user).getResult());
         assertThat(userNotificationService.unmarkHasNewNotifications(user), isResponseOk());
         assertThat("x", not(userNotificationService.hasNewNotifications(user).getResult()));
-        
+
     }
 
 }

@@ -1,13 +1,10 @@
 package com.konkerlabs.platform.registry.data.services.publishers;
 
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.data.services.publishers.api.EventPublisher;
-import com.konkerlabs.platform.registry.integration.gateways.MqttMessageGateway;
+import java.net.URI;
+import java.text.MessageFormat;
+import java.util.Map;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +12,14 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
-import java.net.URI;
-import java.text.MessageFormat;
-import java.util.Map;
-import java.util.Optional;
+import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.data.services.api.DeviceLogEventService;
+import com.konkerlabs.platform.registry.data.services.publishers.api.EventPublisher;
+import com.konkerlabs.platform.registry.integration.gateways.MqttMessageGateway;
 
 @Service("device")
 @Scope(BeanDefinition.SCOPE_SINGLETON)
@@ -34,7 +35,7 @@ public class EventPublisherDevice implements EventPublisher {
 
     private MqttMessageGateway mqttMessageGateway;
     private DeviceRegisterService deviceRegisterService;
-    private DeviceEventService deviceEventService;
+    private DeviceLogEventService deviceLogEventService;
 
     @Autowired
     public EventPublisherDevice(MqttMessageGateway mqttMessageGateway,
@@ -44,8 +45,8 @@ public class EventPublisherDevice implements EventPublisher {
     }
 
     @Autowired
-    public void setDeviceEventService(DeviceEventService deviceEventService) {
-        this.deviceEventService = deviceEventService;
+    public void setDeviceLogEventService(DeviceLogEventService deviceLogEventService) {
+        this.deviceLogEventService = deviceLogEventService;
     }
 
     @Override
@@ -85,7 +86,7 @@ public class EventPublisherDevice implements EventPublisher {
             String destinationTopic = MessageFormat.format(MQTT_OUTGOING_TOPIC_TEMPLATE,
                     outgoingDevice.getApiKey(), data.get(DEVICE_MQTT_CHANNEL));
             mqttMessageGateway.send(outgoingEvent.getPayload(), destinationTopic);
-            ServiceResponse<Event> response = deviceEventService.logOutgoingEvent(outgoingDevice, outgoingEvent);
+            ServiceResponse<Event> response = deviceLogEventService.logOutgoingEvent(outgoingDevice, outgoingEvent);
 
             if (!response.isOk())
                 LOGGER.error("Failed to forward event to its destination",

@@ -1,17 +1,14 @@
-package com.konkerlabs.platform.registry.test.business.services;
+package com.konkerlabs.platform.registry.test.data.services;
 
 import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 
 import java.text.MessageFormat;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -26,27 +23,29 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.events.EventRepository;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
-import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
-import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
+import com.konkerlabs.platform.registry.data.services.api.DeviceLogEventService;
+import com.konkerlabs.platform.registry.test.data.base.BusinessLayerTestSupport;
+import com.konkerlabs.platform.registry.test.data.base.BusinessTestConfiguration;
+import com.konkerlabs.platform.registry.test.data.base.MongoTestConfiguration;
+import com.konkerlabs.platform.registry.test.data.base.RedisTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
         MongoTestConfiguration.class,
+        RedisTestConfiguration.class,
+        BusinessTestConfiguration.class,
         BusinessTestConfiguration.class,
         PubServerConfig.class
 })
 @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json"})
-public class DeviceEventServiceTest extends BusinessLayerTestSupport {
+public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -55,7 +54,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
     private TenantRepository tenantRepository;
 
     @Autowired
-    private DeviceEventService deviceEventService;
+    private DeviceLogEventService deviceEventService;
 
     @Autowired
     private DeviceRepository deviceRepository;
@@ -104,67 +103,48 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldReturnAnErrorMessageIfTenantIsNullWhenFindingBy() throws Exception {
+    public void shouldRaiseAnExceptionIfDeviceIsNull() throws Exception {
+        ServiceResponse<Event> response = deviceEventService.logIncomingEvent(null, event);
 
-        ServiceResponse<List<Event>> serviceResponse = deviceEventService.findIncomingBy(
-                null,
-                device.getId(),channel,
-                firstEventTimestamp,
-                null,
-                false,
-                null
-        );
-
-        assertThat(serviceResponse, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
+        assertThat(response,hasErrorMessage(DeviceEventService.Validations.DEVICE_NULL.getCode()));
     }
 
     @Test
-    public void shouldReturnAnErrorMessageIfDeviceIdIsNullWhenFindingBy() throws Exception {
+    public void shouldRaiseAnExceptionIfEventIsNull() throws Exception {
+        ServiceResponse<Event> response = deviceEventService.logIncomingEvent(device, null);
 
-        ServiceResponse<List<Event>> serviceResponse = deviceEventService.findIncomingBy(
-                tenant,
-                null,channel,
-                firstEventTimestamp,
-                null,
-                false,
-                null
-        );
-
-        assertThat(serviceResponse, hasErrorMessage(DeviceRegisterService.Validations.DEVICE_GUID_NULL.getCode()));
+        assertThat(response,hasErrorMessage(DeviceEventService.Validations.EVENT_NULL.getCode()));
     }
 
     @Test
-    public void shouldReturnAnErrorMessageIfStartInstantIsNullAndLimitIsNullWhenFindingBy() throws Exception {
+    public void shouldRaiseAnExceptionIfPayloadIsNull() throws Exception {
+        event.setPayload(null);
 
-        ServiceResponse<List<Event>> serviceResponse = deviceEventService.findIncomingBy(
-                tenant,
-                device.getId(),channel,
-                null,
-                null,
-                false,
-                null
-        );
+        ServiceResponse<Event> response = deviceEventService.logIncomingEvent(device, event);
 
-        assertThat(serviceResponse, hasErrorMessage(DeviceEventService.Validations.LIMIT_NULL.getCode()));
+        assertThat(response,hasErrorMessage(DeviceEventService.Validations.EVENT_PAYLOAD_NULL.getCode()));
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json"})
-    public void shouldFindAllRequestEvents() throws Exception {
-        ServiceResponse<List<Event>> serviceResponse = deviceEventService.findIncomingBy(
-                tenant,
-                device.getGuid(),"command",
-                firstEventTimestamp,
-                null,
-                false,
-                null
-        );
+    public void shouldRaiseAnExceptionIfPayloadIsEmpty() throws Exception {
+        event.setPayload("");
 
-        assertThat(serviceResponse.getResult(),notNullValue());
-        assertThat(serviceResponse.getResult(),hasSize(3));
+        ServiceResponse<Event> response = deviceEventService.logIncomingEvent(device, event);
 
-        assertThat(serviceResponse.getResult().get(0).getTimestamp().toEpochMilli(),
-                equalTo(lastEventTimestamp.toEpochMilli()));
+        assertThat(response,hasErrorMessage(DeviceEventService.Validations.EVENT_PAYLOAD_NULL.getCode()));
+    }
+
+    @Test
+    public void shouldLogFirstDeviceEvent() throws Exception {
+        deviceEventService.logIncomingEvent(device, event);
+
+        Event last = eventRepository.findIncomingBy(tenant,device.getGuid(),channel,event.getTimestamp().minusSeconds(1l), null, false, 1).get(0);
+
+        assertThat(last, notNullValue());
+
+        long gap = Duration.between(last.getTimestamp(), Instant.now()).abs().getSeconds();
+
+        assertThat(gap, not(greaterThan(60L)));
     }
 
 }

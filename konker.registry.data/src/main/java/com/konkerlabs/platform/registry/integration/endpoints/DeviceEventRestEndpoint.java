@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.services.JedisTaskService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.data.services.JedisTaskService;
 import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
 import com.konkerlabs.platform.registry.integration.serializers.EventJsonView;
@@ -98,7 +98,7 @@ public class DeviceEventRestEndpoint {
                                                   HttpServletResponse httpResponse) {
 
     	DeferredResult<List<EventVO>> deferredResult = new DeferredResult<>(waitTime.orElse(new Long("0")), Collections.emptyList());
-    	
+
     	Device device = deviceRegisterService.findByApiKey(apiKey);
 
     	if (!principal.getApiKey().equals(apiKey)) {
@@ -119,17 +119,17 @@ public class DeviceEventRestEndpoint {
             httpResponse.setStatus(HttpStatus.BAD_REQUEST.value());
             return deferredResult;
         }
-    	
+
     	if (!Optional.of(device).isPresent()) {
     		deferredResult.setErrorResult(applicationContext.getMessage(Messages.DEVICE_NOT_FOUND.getCode(), null, locale));
             httpResponse.setStatus(HttpStatus.BAD_REQUEST.value());
     		return deferredResult;
     	}
-    	
+
     	Instant startTimestamp = offset.isPresent() ? Instant.ofEpochMilli(offset.get()) : null;
     	boolean asc = offset.isPresent();
     	Integer limit = offset.isPresent() ? 50 : 1;
-    	
+
     	ServiceResponse<List<Event>> response = deviceEventService.findOutgoingBy(device.getTenant(), device.getGuid(),
     			channel, startTimestamp, null, asc, limit);
 
@@ -175,7 +175,7 @@ public class DeviceEventRestEndpoint {
 
         return new ResponseEntity<EventResponse>(
         		EventResponse.builder().code(String.valueOf(HttpStatus.OK.value()))
-        		.message(HttpStatus.OK.name()).build(), 
+        		.message(HttpStatus.OK.name()).build(),
         		HttpStatus.OK);
     }
 

@@ -1,4 +1,4 @@
-package com.konkerlabs.platform.registry.business.services;
+package com.konkerlabs.platform.registry.data.services;
 
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
