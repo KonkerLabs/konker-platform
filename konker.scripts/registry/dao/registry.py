@@ -210,3 +210,40 @@ def generate_credentials(args):
     print("password:{}".format(pwd))
     print("hash:{}".format(hashed_pwd))
     return True
+
+def find_incomingEvents_by_timestamp(timestamp, tenant):
+    db = db_connect()
+    try:
+        if tenant is None:
+            incomingEvents = db.incomingEvents.find({"$and": [ 
+                {"ts": {"$gte": timestamp}}
+            ]})
+        else :
+            incomingEvents = db.incomingEvents.find({"$and": [ 
+                {"ts": {"$gte": timestamp}},
+                {"incoming.tenantDomain": {"$eq": tenant}}
+            ]})
+            
+    except Exception as e:
+        print(e)
+        sys.exit(1)
+    return incomingEvents
+
+def find_outgoingEvents_by_timestamp(timestamp, tenant):
+    db = db_connect()
+    try:
+        if tenant is None:
+            outgoingEvents = db.outgoingEvents.find({"$and": [ 
+                {"ts": {"$gte": timestamp}}
+            ]})
+        else :
+            outgoingEvents = db.outgoingEvents.find({"$and": [ 
+                {"ts": {"$gte": timestamp}},
+                {"outgoing.tenantDomain": {"$eq": tenant}}
+            ]})
+            
+    except Exception as e:
+        print(e)
+        sys.exit(1)
+    return outgoingEvents
+
