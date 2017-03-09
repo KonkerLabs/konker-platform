@@ -38,10 +38,10 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceEventService
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
-import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteExecutor;
-import com.konkerlabs.platform.registry.config.RedisConfig;
+import com.konkerlabs.platform.registry.data.config.RedisConfig;
+import com.konkerlabs.platform.registry.data.services.routes.api.EventRouteExecutor;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
-import com.konkerlabs.platform.registry.test.base.IntegrationLayerTestContext;
+import com.konkerlabs.platform.registry.test.data.base.IntegrationLayerTestContext;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
@@ -72,7 +72,7 @@ public class DeviceEventProcessorTest {
     private EventRouteExecutor eventRouteExecutor;
     @Autowired
     private DeviceRegisterService deviceRegisterService;
-    
+
     private Instant firstEventTimestamp;
     private Instant secondEventTimestamp;
 

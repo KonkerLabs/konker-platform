@@ -16,7 +16,7 @@ import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.routes.api.EventRouteExecutor;
+import com.konkerlabs.platform.registry.data.services.routes.api.EventRouteExecutor;
 
 @Component
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)

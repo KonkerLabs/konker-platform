@@ -1,27 +1,27 @@
 package com.konkerlabs.platform.registry.integration.gateways;
 
-import com.konkerlabs.platform.registry.config.IntegrationConfig;
-import com.konkerlabs.platform.registry.integration.exceptions.IntegrationException;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
-import org.apache.http.Header;
+import static java.text.MessageFormat.format;
+
+import java.net.URI;
+import java.util.Optional;
+import java.util.function.Supplier;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Base64Utils;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import java.net.URI;
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.function.Supplier;
-
-import static java.text.MessageFormat.format;
+import com.konkerlabs.platform.registry.data.config.IntegrationConfig;
+import com.konkerlabs.platform.registry.integration.exceptions.IntegrationException;
 
 @Component
 public class HttpGatewayImpl implements HttpGateway {

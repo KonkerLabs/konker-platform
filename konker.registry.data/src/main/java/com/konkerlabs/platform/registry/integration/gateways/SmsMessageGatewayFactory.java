@@ -6,7 +6,7 @@ import org.springframework.beans.factory.SmartFactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.konkerlabs.platform.registry.config.SmsConfig;
+import com.konkerlabs.platform.registry.data.config.SmsConfig;
 
 @Component
 public class SmsMessageGatewayFactory implements SmartFactoryBean<SMSMessageGateway> {

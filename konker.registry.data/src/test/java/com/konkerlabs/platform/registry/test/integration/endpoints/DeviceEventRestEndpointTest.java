@@ -37,14 +37,16 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterServ
 import com.konkerlabs.platform.registry.data.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.integration.endpoints.DeviceEventRestEndpoint;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
-import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
-import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
+import com.konkerlabs.platform.registry.test.data.base.BusinessTestConfiguration;
+import com.konkerlabs.platform.registry.test.data.base.SecurityTestConfiguration;
+import com.konkerlabs.platform.registry.test.data.base.WebLayerTestContext;
+import com.konkerlabs.platform.registry.test.data.base.WebTestConfiguration;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
 @ContextConfiguration(classes = {
+        BusinessTestConfiguration.class,
         WebMvcConfig.class,
         WebTestConfiguration.class,
         SecurityTestConfiguration.class,
@@ -78,7 +80,6 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
     @Autowired
     private JedisTaskService jedisTaskService;
 
-    private String DEVICE_ID = "95c14b36ba2b43f1";
     private String DEVICE_USER = "tug6g6essh4m";
     private String VALID_CHANNEL = "data";
     private String INVALID_CHANNEL_SIZE = "abcabcabcabcabcabcabcabcabcabcabc";
@@ -192,6 +193,7 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
         }
 
         @Bean
+        @SuppressWarnings("unchecked")
         public RedisTemplate<String, String> redisTemplate() {
             return Mockito.mock(RedisTemplate.class);
         }

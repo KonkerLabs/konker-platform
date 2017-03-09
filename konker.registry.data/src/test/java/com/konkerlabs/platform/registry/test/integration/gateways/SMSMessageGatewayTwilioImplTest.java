@@ -3,7 +3,8 @@ package com.konkerlabs.platform.registry.test.integration.gateways;
 import com.konkerlabs.platform.registry.integration.exceptions.IntegrationException;
 import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
 import com.konkerlabs.platform.registry.integration.gateways.SMSMessageGatewayTwilioImpl;
-import com.konkerlabs.platform.registry.test.base.IntegrationLayerTestContext;
+import com.konkerlabs.platform.registry.test.data.base.IntegrationLayerTestContext;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

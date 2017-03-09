@@ -114,7 +114,6 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements Application
                 "/WEB-INF/i18n/email",
                 "/WEB-INF/i18n/error",
                 "/WEB-INF/i18n/global",
-                "/WEB-INF/i18n/integration",
                 "/WEB-INF/i18n/languages",
                 "/WEB-INF/i18n/loglevels",
                 "/WEB-INF/i18n/menu",
