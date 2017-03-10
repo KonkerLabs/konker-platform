@@ -211,8 +211,8 @@ def generate_credentials(args):
     print("hash:{}".format(hashed_pwd))
     return True
 
-def find_incomingEvents_by_timestamp(timestamp, tenant):
-    db = db_connect()
+def find_incomingEvents_by_timestamp(timestamp, tenant, host):
+    db = db_connect(host=host)
     try:
         if tenant is None:
             incomingEvents = db.incomingEvents.find({"$and": [ 
@@ -229,8 +229,8 @@ def find_incomingEvents_by_timestamp(timestamp, tenant):
         sys.exit(1)
     return incomingEvents
 
-def find_outgoingEvents_by_timestamp(timestamp, tenant):
-    db = db_connect()
+def find_outgoingEvents_by_timestamp(timestamp, tenant, host):
+    db = db_connect(host=host)
     try:
         if tenant is None:
             outgoingEvents = db.outgoingEvents.find({"$and": [ 

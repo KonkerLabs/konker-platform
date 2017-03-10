@@ -13,15 +13,15 @@ db_version = "0.1"
 
 def db_connect(host="localhost", port=9042, keyspace="registrykeyspace"):
     try:
-        cluster = Cluster()
+        cluster = Cluster([host])
         session = cluster.connect(keyspace)
     except Exception as e:
         print(e)
         sys.exit(1)
     return session
 
-def save_incoming_events(event):
-    db = db_connect()
+def save_incoming_events(event, host):
+    db = db_connect(host=host)
     
     try:
         db.execute(
@@ -37,8 +37,8 @@ def save_incoming_events(event):
         print(e)
         sys.exit(1)
         
-def save_outgoing_events(event):
-    db = db_connect()
+def save_outgoing_events(event, host):
+    db = db_connect(host=host)
     
     try:
         db.execute(
@@ -57,8 +57,42 @@ def save_outgoing_events(event):
         print(e)
         sys.exit(1)
     
-def create_incoming_events_table():
-    db = db_connect()
+def find_incomingEvents_by_timestamp(timestamp, tenant, host):
+    db = db_connect(host=host)
+    try:
+        if tenant is None:
+            query = "SELECT * FROM incoming_events WHERE timestamp >= {param1} ALLOW FILTERING"
+            incomingEvents = db.execute(query.format(param1=str(timestamp)))
+            
+        else :
+            query = "SELECT * FROM incoming_events WHERE timestamp >= {param1} and tenant_domain = '{param2}' ALLOW FILTERING"
+            incomingEvents = db.execute(query.format(param1=str(timestamp), param2=str(tenant)))
+            
+    except Exception as e:
+        print(e)
+        sys.exit(1)
+    return incomingEvents
+
+# def find_outgoingEvents_by_timestamp(timestamp, tenant, host):
+#     db = db_connect(host=host)
+#     try:
+#         if tenant is None:
+#             outgoingEvents = db.outgoingEvents.find({"$and": [ 
+#                 {"ts": {"$gte": timestamp}}
+#             ]})
+#         else :
+#             outgoingEvents = db.outgoingEvents.find({"$and": [ 
+#                 {"ts": {"$gte": timestamp}},
+#                 {"outgoing.tenantDomain": {"$eq": tenant}}
+#             ]})
+#             
+#     except Exception as e:
+#         print(e)
+#         sys.exit(1)
+#     return outgoingEvents
+    
+def create_incoming_events_table(host):
+    db = db_connect(host=host)
     
     try:
         db.execute(
@@ -79,8 +113,8 @@ def create_incoming_events_table():
         print(e)
         sys.exit(1)
 
-def create_outgoing_events_table():
-    db = db_connect()
+def create_outgoing_events_table(host):
+    db = db_connect(host=host)
     
     try:
         db.execute(
