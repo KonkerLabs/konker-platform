@@ -11,7 +11,6 @@ PWD_PUB=`cat /tmp/mqtt_pub_credentials.txt | grep "password:"  | awk -F: '{print
 HSH_PUB=`cat /tmp/mqtt_pub_credentials.txt | grep "hash:"  | awk -F: '{print $2}'`
 
 
-
 cat >> /var/lib/jetty/resources/application.conf << EOF
 
 

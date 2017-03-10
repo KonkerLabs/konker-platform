@@ -20,7 +20,7 @@ docker run -p 80:80 -p 443:443 -p 1883:1883 -p 8883:8883 --name konker-webapp-de
 ```
 
 #Usage
-Access your localhost:8080/registry
+Access your localhost/registry
 
 
 ##Environment Variables
