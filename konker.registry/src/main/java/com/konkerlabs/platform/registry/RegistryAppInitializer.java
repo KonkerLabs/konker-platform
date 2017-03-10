@@ -19,14 +19,10 @@ import com.konkerlabs.platform.registry.config.CdnConfig;
 import com.konkerlabs.platform.registry.config.EmailConfig;
 import com.konkerlabs.platform.registry.config.EnvironmentConfig;
 import com.konkerlabs.platform.registry.config.HotjarConfig;
-import com.konkerlabs.platform.registry.config.IntegrationConfig;
 import com.konkerlabs.platform.registry.config.MongoAuditConfig;
 import com.konkerlabs.platform.registry.config.MongoConfig;
-import com.konkerlabs.platform.registry.config.MqttConfig;
-import com.konkerlabs.platform.registry.config.PasswordUserConfig;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
 import com.konkerlabs.platform.registry.config.RecaptchaConfig;
-import com.konkerlabs.platform.registry.config.RedisConfig;
 import com.konkerlabs.platform.registry.config.SecurityConfig;
 import com.konkerlabs.platform.registry.config.SmsConfig;
 import com.konkerlabs.platform.registry.config.SpringMailConfig;
@@ -39,8 +35,8 @@ public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherSe
 	@Override
 	protected Class<?>[] getRootConfigClasses() {
 		return new Class<?>[] { SecurityConfig.class, BusinessConfig.class, MongoConfig.class, MongoAuditConfig.class,
-				MqttConfig.class, UtilitiesConfig.class, RedisConfig.class, SpringMailConfig.class,
-				SmsConfig.class, WebConfig.class, IntegrationConfig.class, CdnConfig.class,
+				UtilitiesConfig.class, SpringMailConfig.class,
+				SmsConfig.class, WebConfig.class, CdnConfig.class,
 				RecaptchaConfig.class, EmailConfig.class, HotjarConfig.class,
 				EnvironmentConfig.class};
 	}
@@ -59,7 +55,7 @@ public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherSe
 	protected Filter[] getServletFilters() {
 		return new Filter[] { new HiddenHttpMethodFilter(), new ResourceUrlEncodingFilter() };
 	}
-	
+
 	@Override
 	protected void customizeRegistration(Dynamic registration) {
 		registration.setInitParameter("throwExceptionIfNoHandlerFound", "true");
@@ -85,7 +81,7 @@ public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherSe
 		if (isSslFeaturesEnabled()) {
 			profiles.add("ssl");
 		}
-		
+
         servletContext.setInitParameter("spring.profiles.active", StringUtils.arrayToCommaDelimitedString(profiles.toArray()));
 	}
 
@@ -93,17 +89,17 @@ public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherSe
 		SmsConfig config = new SmsConfig();
 		return config.isEnabled();
 	}
-	
+
 	private boolean isEmailFeaturesEnabled() {
 		EmailConfig config = new EmailConfig();
 		return config.isEnabled();
 	}
-	
+
 	private boolean isCdnFeaturesEnabled() {
 		CdnConfig config = new CdnConfig();
 		return config.isEnabled();
 	}
-	
+
 	private boolean isSslFeaturesEnabled() {
 		PubServerConfig config = new PubServerConfig();
 		return config.isSslEnabled();

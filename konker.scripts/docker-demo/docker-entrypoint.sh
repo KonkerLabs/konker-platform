@@ -81,6 +81,9 @@ populate_users &
 echo "starting konker mqtt service..."
 mosquitto -c /etc/mosquitto/mosquitto.conf &
 
+echo "starting konker registry data ingestion..."
+java -Dconfig.file=/var/lib/jetty/resources/application.conf -jar /var/lib/konker/registry-data.jar --server.port=9090 &
+
 echo "starting konker registry app..."
 redis-server &
 /usr/sbin/nginx &

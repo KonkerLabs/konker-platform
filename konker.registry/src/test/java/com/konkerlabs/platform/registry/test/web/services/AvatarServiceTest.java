@@ -26,19 +26,14 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.konkerlabs.platform.registry.business.model.User;
-import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
-import com.konkerlabs.platform.registry.business.model.enumerations.Language;
-import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
 import com.konkerlabs.platform.registry.business.repositories.UserRepository;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
-import com.konkerlabs.platform.registry.business.services.api.UserService;
 import com.konkerlabs.platform.registry.config.CdnConfig;
 import com.konkerlabs.platform.registry.config.PasswordUserConfig;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.RedisTestConfiguration;
 import com.konkerlabs.platform.registry.web.services.api.AvatarService;
 import com.konkerlabs.platform.registry.web.services.api.UploadService;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
@@ -47,7 +42,6 @@ import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 @ContextConfiguration(classes = {
         MongoTestConfiguration.class,
         BusinessTestConfiguration.class,
-        RedisTestConfiguration.class,
         CdnConfig.class,
         PasswordUserConfig.class
 })
@@ -86,11 +80,11 @@ public class AvatarServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldSaveAvatar() throws Exception {
-    	
+
     	uploadService = Mockito.mock(UploadService.class);
 		when(uploadService.upload(any(InputStream.class), anyString(), anyString(), anyBoolean()))
 				.thenReturn(ServiceResponseBuilder.<String>ok().withResult("d7ATmlS0Xq").build());
-		
+
 		Field myField = avatarService.getClass().getDeclaredField("uploadService"); // fails here
 		myField.setAccessible(true);
 		myField.set(avatarService, uploadService);
