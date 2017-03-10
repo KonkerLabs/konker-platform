@@ -7,7 +7,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Supplier;
@@ -40,6 +39,7 @@ import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.DeviceDataURLs;
 import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
@@ -267,16 +267,20 @@ public class DeviceController implements ApplicationContextAware {
     @PreAuthorize("hasAuthority('CREATE_DEVICE_KEYS')")
     public ModelAndView password(@PathVariable String deviceGuid, RedirectAttributes redirectAttributes, Locale locale) {
         ServiceResponse<Device> serviceResponse = deviceRegisterService.getByDeviceGuid(tenant, deviceGuid);
+
         if (serviceResponse.isOk()) {
+
             Device device = serviceResponse.getResult();
+            String username = device.getApiKey();
+
+            ServiceResponse<DeviceDataURLs> serviceURLResponse = deviceRegisterService.getDeviceDataURLs(tenant, device, user.getLanguage().getLocale());
 
             return new ModelAndView("devices/password")
                     .addObject("action", MessageFormat.format("/devices/{0}/password", deviceGuid))
                     .addObject("deviceGuid", device.getDeviceId())
-                    .addObject("apiKey", device.getApiKey())
+                    .addObject("apiKey", username)
                     .addObject("device", device)
-                    .addObject("pubServerInfo", pubServerConfig);
-
+                    .addObject("deviceDataURLs", serviceURLResponse.getResult());
 
         } else {
             redirectAttributes.addFlashAttribute("message",

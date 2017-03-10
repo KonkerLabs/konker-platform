@@ -2,7 +2,7 @@ package com.konkerlabs.platform.registry.api.test.web.controller;
 
 
 import com.konkerlabs.platform.registry.api.config.WebMvcConfig;
-import com.konkerlabs.platform.registry.api.model.TransformationVO;
+import com.konkerlabs.platform.registry.api.model.RestTransformationVO;
 import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
 import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
 import com.konkerlabs.platform.registry.api.web.controller.TransformationsRestController;
@@ -24,7 +24,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.Arrays;
@@ -89,6 +88,7 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
                                                     put("url", url1);
                                                     put("username", username);
                                                     put("password", password);
+                                                    put("headers", null);
                                                 }})
                                         .build())
                         .build();
@@ -107,6 +107,7 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
                                                     put("url", url2);
                                                     put("username", username);
                                                     put("password", password);
+                                                    put("headers", null);
                                                 }})
                                         .build())
                         .build();
@@ -144,18 +145,18 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
                 .andExpect(jsonPath("$.result[0].description", is(DESCRIPTION1)))
                 .andExpect(jsonPath("$.result[0].steps", hasSize(1)))
                 .andExpect(jsonPath("$.result[0].steps[0].type", is("REST")))
-                .andExpect(jsonPath("$.result[0].steps[0].attributes.username", is(username)))
-                .andExpect(jsonPath("$.result[0].steps[0].attributes.url", is(url1)))
-                .andExpect(jsonPath("$.result[0].steps[0].attributes.password", is(password)))
+                .andExpect(jsonPath("$.result[0].steps[0].username", is(username)))
+                .andExpect(jsonPath("$.result[0].steps[0].url", is(url1)))
+                .andExpect(jsonPath("$.result[0].steps[0].password", is(password)))
                 .andExpect(jsonPath("$.result[1].id", is(ID2)))
                 .andExpect(jsonPath("$.result[1].name", is(NAME2)))
                 .andExpect(jsonPath("$.result[1].guid", is(GUID2)))
                 .andExpect(jsonPath("$.result[1].description", is(DESCRIPTION2)))
                 .andExpect(jsonPath("$.result[1].steps", hasSize(1)))
                 .andExpect(jsonPath("$.result[1].steps[0].type", is("REST")))
-                .andExpect(jsonPath("$.result[1].steps[0].attributes.username", is(username)))
-                .andExpect(jsonPath("$.result[1].steps[0].attributes.url", is(url2)))
-                .andExpect(jsonPath("$.result[1].steps[0].attributes.password", is(password)));;
+                .andExpect(jsonPath("$.result[1].steps[0].username", is(username)))
+                .andExpect(jsonPath("$.result[1].steps[0].url", is(url2)))
+                .andExpect(jsonPath("$.result[1].steps[0].password", is(password)));;
 
     }
 
@@ -180,9 +181,9 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
                 .andExpect(jsonPath("$.result.guid", is(GUID1)))
                 .andExpect(jsonPath("$.result.steps", hasSize(1)))
                 .andExpect(jsonPath("$.result.steps[0].type", is("REST")))
-                .andExpect(jsonPath("$.result.steps[0].attributes.username", is(username)))
-                .andExpect(jsonPath("$.result.steps[0].attributes.url", is(url1)))
-                .andExpect(jsonPath("$.result.steps[0].attributes.password", is(password)));
+                .andExpect(jsonPath("$.result.steps[0].username", is(username)))
+                .andExpect(jsonPath("$.result.steps[0].url", is(url1)))
+                .andExpect(jsonPath("$.result.steps[0].password", is(password)));
 
     }
 
@@ -206,7 +207,7 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
                 .steps(validTransformation1.getSteps())
                 .build();
 
-        TransformationVO vo = new TransformationVO().apply(newTransformation);
+        RestTransformationVO vo = new RestTransformationVO().apply(newTransformation);
 
         when(transformationService.register(tenant, newTransformation))
                 .thenReturn(ServiceResponseBuilder.<Transformation> ok().withResult(newTransformationResult).build());
@@ -227,9 +228,9 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
                 .andExpect(jsonPath("$.result.guid", is(GUID1)))
                 .andExpect(jsonPath("$.result.steps", hasSize(1)))
                 .andExpect(jsonPath("$.result.steps[0].type", is("REST")))
-                .andExpect(jsonPath("$.result.steps[0].attributes.username", is(username)))
-                .andExpect(jsonPath("$.result.steps[0].attributes.url", is(url1)))
-                .andExpect(jsonPath("$.result.steps[0].attributes.password", is(password)));
+                .andExpect(jsonPath("$.result.steps[0].username", is(username)))
+                .andExpect(jsonPath("$.result.steps[0].url", is(url1)))
+                .andExpect(jsonPath("$.result.steps[0].password", is(password)));
 
     }
 
@@ -244,7 +245,7 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
                 .steps(validTransformation1.getSteps())
                 .build();
 
-        TransformationVO vo = new TransformationVO().apply(changedValues);
+        RestTransformationVO vo = new RestTransformationVO().apply(changedValues);
 
         when(transformationService.get(tenant, GUID1))
                 .thenReturn(ServiceResponseBuilder.<Transformation>ok()

@@ -1,9 +1,13 @@
 package com.konkerlabs.platform.registry.business.services.api;
 
 import java.util.List;
+import java.util.Locale;
 
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+
+import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -13,9 +17,9 @@ public interface DeviceRegisterService {
 	enum Validations {
 		DEVICE_ID_NULL("service.device.id.not_null"),
 		DEVICE_GUID_NULL("service.device.guid.not_null"),
-		DEVICE_ID_ALREADY_REGISTERED("service.device.id.already_registered"), 
-		DEVICE_ID_DOES_NOT_EXIST("service.device.id.does_not_exist"), 
-		DEVICE_GUID_DOES_NOT_EXIST("service.device.guid.does_not_exist"), 
+		DEVICE_ID_ALREADY_REGISTERED("service.device.id.already_registered"),
+		DEVICE_ID_DOES_NOT_EXIST("service.device.id.does_not_exist"),
+		DEVICE_GUID_DOES_NOT_EXIST("service.device.guid.does_not_exist"),
 		DEVICE_HAVE_EVENTROUTES("service.device.have_eventroutes");
 
 		public String getCode() {
@@ -55,6 +59,19 @@ public interface DeviceRegisterService {
         private String password;
     }
 
+    @Data
+    @Builder
+    class DeviceDataURLs {
+        private String httpURLPub;
+        private String httpURLSub;
+        private String httpsURLPub;
+        private String httpsURLSub;
+        private String mqttURL;
+        private String mqttsURL;
+        private String mqttPubTopic;
+        private String mqttSubTopic;
+    }
+
 	/**
 	 * Persists a new Device.
 	 *
@@ -69,10 +86,10 @@ public interface DeviceRegisterService {
 
 	/**
 	 * Updates an already existent Tenant.
-	 * 
+	 *
 	 * If the deviceGuid does not exist in this tenant, an error is created. The
 	 * tenant must exist.
-	 * 
+	 *
 	 * @param tenant
 	 * @param device
 	 * @return
@@ -81,7 +98,7 @@ public interface DeviceRegisterService {
 
 	/**
 	 * TODO @andre implement throwable flow Remove a device in logical way
-	 * 
+	 *
 	 * @param guid
 	 * @return ServiceResponse<Device>
 	 */
@@ -89,9 +106,9 @@ public interface DeviceRegisterService {
 
 	/**
 	 * Returns all devices (enabled or disabled) owned by the provided tenant.
-	 * 
+	 *
 	 * If no device is owned by this tenant, returns an empty List instead.
-	 * 
+	 *
 	 * @param tenant
 	 * @return
 	 */
@@ -100,9 +117,9 @@ public interface DeviceRegisterService {
 
 	/**
 	 * Returns a device by its deviceGuid and tenant.
-	 * 
+	 *
 	 * If the device does not exist, returns an error
-	 * 
+	 *
 	 * @param tenant
 	 * @param guid
 	 * @return
@@ -111,21 +128,21 @@ public interface DeviceRegisterService {
 
 	/**
 	 * Returns a device associated with the provided API Key.
-	 * 
+	 *
 	 * If the device does not exist, returns an error
-	 * 
+	 *
 	 * @param apiKey
 	 * @return
 	 */
 	// TODO: should be moved to a KEYs service
 	Device findByApiKey(String apiKey);
 
-	
+
 	/**
 	 * Returns a device by its deviceGuid and tenant name.
-	 * 
+	 *
 	 * If the device does not exist, returns an error
-	 * 
+	 *
 	 * @param tenantDomainName
 	 * @param deviceGuid
 	 * @return
@@ -134,9 +151,9 @@ public interface DeviceRegisterService {
 
 	/**
 	 * Enables or disables a device
-	 * 
+	 *
 	 * If the device does not exist, returns an error
-	 * 
+	 *
 	 * @param tenant
 	 * @param guid
 	 * @return
@@ -151,6 +168,16 @@ public interface DeviceRegisterService {
 	 * @return A random password used to create the token
 	 */
 	ServiceResponse<DeviceSecurityCredentials> generateSecurityPassword(Tenant tenant, String guid);
+
+	/**
+	 * Return device URLs for publish and subscribe events
+	 *
+	 * @param tenant
+	 * @param device
+	 * @param locale
+	 * @return
+	 */
+	ServiceResponse<DeviceDataURLs> getDeviceDataURLs(Tenant tenant, Device device, Locale locale);
 
 	/**
 	 * Generates a security token for an existing device
