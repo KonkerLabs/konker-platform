@@ -17,20 +17,16 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.codec.Base64;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
-import org.springframework.stereotype.Component;
 
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 
-@Component("customBasicAuthFilter")
-@Scope(BeanDefinition.SCOPE_PROTOTYPE)
 public class KonkerBasicAuthenticationFilter extends BasicAuthenticationFilter {
 
 	private Logger LOG = LoggerFactory.getLogger(KonkerBasicAuthenticationFilter.class);
 
     private DeviceRegisterService deviceRegisterService;
 
-	@Autowired
 	public KonkerBasicAuthenticationFilter(AuthenticationManager authenticationManager) {
 		super(authenticationManager);
 	}
@@ -44,7 +40,7 @@ public class KonkerBasicAuthenticationFilter extends BasicAuthenticationFilter {
 		String[] tokens = extractAndDecodeHeader(header, request);
 
 		String apiKey = tokens[0];
-		String pass = tokens[1];
+		// String pass = tokens[1];
 		String uriApiKey = null;
 
 		Device device = deviceRegisterService.findByApiKey(apiKey);

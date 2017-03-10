@@ -76,7 +76,7 @@
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
-            <version>4.2.0.RELEASE</version>
+            <version>4.2.2.RELEASE</version>
             <scope>test</scope>
         </dependency>
         <!-- Compile scope -->
