@@ -1,6 +1,8 @@
 #! /usr/bin/env python2
 import argparse
 import sys
+import datetime
+
 from dao.registry import find_incomingEvents_by_timestamp, find_outgoingEvents_by_timestamp
 from dao.registryCassandra import save_incoming_events, save_outgoing_events, create_incoming_events_table, create_outgoing_events_table
 from bson.json_util import default
@@ -8,6 +10,7 @@ from __builtin__ import int
 
 
 def main():
+    print "Migration started, wait... "
     parser = argparse.ArgumentParser()
     parser.add_argument("-t", "--timestamp", default=3600000, type=int, help="Timestamp to filter events")
     parser.add_argument("-o", "--tenant", default=None, help="Tenant to filter events")
@@ -21,14 +24,10 @@ def main():
     create_incoming_events_table(args.ipcassandra);
     create_outgoing_events_table(args.ipcassandra);
     
-    for incoming in incomingEvents:
-        print incoming
-        save_incoming_events(incoming, args.ipcassandra)
-        
-    for outgoing in outgoingEvents:
-        print outgoing
-        save_outgoing_events(outgoing, args.ipcassandra)
-
+    save_incoming_events(incomingEvents, args.ipcassandra)
+    save_outgoing_events(outgoingEvents, args.ipcassandra)
+    
+    print "Migration finished. "
 
 if __name__ == '__main__':
     main()

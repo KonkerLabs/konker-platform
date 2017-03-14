@@ -2,6 +2,7 @@
 import sys
 import string
 import random
+import json
 
 from bson import DBRef
 from pymongo import MongoClient
@@ -247,3 +248,51 @@ def find_outgoingEvents_by_timestamp(timestamp, tenant, host):
         sys.exit(1)
     return outgoingEvents
 
+def save_incoming_events(incomingEvents, host):
+    db = db_connect(host=host)
+    
+    allEvents = []
+    
+    for incoming in incomingEvents:
+        allEvents.append({
+            "ts" : incoming.timestamp,
+            "incoming" : {
+                "deviceGuid" : incoming.device_guid,
+                "tenantDomain" : incoming.tenant_domain,
+                "channel" : incoming.channel,
+                "deviceId" : incoming.device_id
+            },
+            "payload" : incoming.payload
+        })
+    
+    try:
+        db.incomingEvents.insert_many(allEvents)
+        
+    except Exception as e:
+        print(e)
+        sys.exit(1)
+        
+def save_outgoing_events(outgoingEvents, host):
+    db = db_connect(host=host)
+    
+    allEvents = []
+    
+    for outgoing in outgoingEvents:
+        allEvents.append({
+            "ts" : outgoing.timestamp,
+            "incoming" : json.loads(outgoing.incoming),
+            "outgoing" : {
+                "deviceGuid" : outgoing.device_guid,
+                "tenantDomain" : outgoing.tenant_domain,
+                "channel" : outgoing.channel,
+                "deviceId" : outgoing.device_id
+            },
+            "payload" : outgoing.payload
+        })
+    
+    try:
+        db.outgoingEvents.insert_many(allEvents)
+        
+    except Exception as e:
+        print(e)
+        sys.exit(1)

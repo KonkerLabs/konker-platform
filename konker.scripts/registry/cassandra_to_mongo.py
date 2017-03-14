@@ -1,13 +1,16 @@
 #! /usr/bin/env python2
 import argparse
 import sys
-# from dao.registry import find_incomingEvents_by_timestamp, find_outgoingEvents_by_timestamp
+import datetime
+
+from dao.registry import save_incoming_events, save_outgoing_events
 from dao.registryCassandra import find_incomingEvents_by_timestamp, find_outgoingEvents_by_timestamp
 from bson.json_util import default
 from __builtin__ import int
 
 
 def main():
+    print "Migration started, wait... "
     parser = argparse.ArgumentParser()
     parser.add_argument("-t", "--timestamp", default=3600000, type=int, help="Timestamp to filter events")
     parser.add_argument("-o", "--tenant", default=None, help="Tenant to filter events")
@@ -15,20 +18,13 @@ def main():
     parser.add_argument("-c", "--ipcassandra", default="localhost", help="IP of cassandra")
     args = parser.parse_args()
     
-    incomingEvents = find_incomingEvents_by_timestamp(args.timestamp, args.tenant, args.ipmongo)
-#     outgoingEvents = find_outgoingEvents_by_timestamp(args.timestamp, args.tenant, args.ipmongo)
+    incomingEvents = find_incomingEvents_by_timestamp(args.timestamp, args.tenant, args.ipcassandra)
+    outgoingEvents = find_outgoingEvents_by_timestamp(args.timestamp, args.tenant, args.ipcassandra)
     
-#     create_incoming_events_table(args.ipcassandra);
-#     create_outgoing_events_table(args.ipcassandra);
-#     
-    for incoming in incomingEvents:
-        print incoming
-#         save_incoming_events(incoming, args.ipcassandra)
-#         
-#     for outgoing in outgoingEvents:
-#         print outgoing
-#         save_outgoing_events(outgoing, args.ipcassandra)
+    save_incoming_events(incomingEvents, args.ipmongo)
+    save_outgoing_events(outgoingEvents, args.ipmongo)
 
+    print "Migration finished. "
 
 if __name__ == '__main__':
     main()
