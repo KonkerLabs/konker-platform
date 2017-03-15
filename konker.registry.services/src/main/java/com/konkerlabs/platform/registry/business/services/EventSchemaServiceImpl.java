@@ -153,8 +153,7 @@ public class EventSchemaServiceImpl implements EventSchemaService {
         return Optional.empty();
     }
 
-    @Override
-    public ServiceResponse<List<EventSchema>> findIncomingBy(Tenant tenant, String deviceGuid) {
+    private ServiceResponse<List<EventSchema>> findIncomingBy(Tenant tenant, String deviceGuid) {
 
         if (!Optional.ofNullable(tenant).isPresent()) {
             return ServiceResponseBuilder.<List<EventSchema>>error()
