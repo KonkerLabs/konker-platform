@@ -262,7 +262,7 @@ public class UserServiceTest extends BusinessLayerTestSupport {
     
     @Test
     public void shouldReturnAllUsers() {
-        ServiceResponse<List<User>> serviceResponse = userService.findAll();
+        ServiceResponse<List<User>> serviceResponse = userService.findAll(user.getTenant());
         
         Assert.assertNotNull(serviceResponse);
         assertThat(serviceResponse, isResponseOk());

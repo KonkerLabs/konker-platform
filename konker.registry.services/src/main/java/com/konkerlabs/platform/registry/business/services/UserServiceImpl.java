@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
+import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.repositories.PasswordBlacklistRepository;
 import com.konkerlabs.platform.registry.business.repositories.UserRepository;
@@ -329,10 +330,18 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public ServiceResponse<List<User>> findAll() {
+	public ServiceResponse<List<User>> findAll(Tenant tenant) {
 		return ServiceResponseBuilder
 				.<List<User>>ok()
-				.withResult(userRepository.findAll())
+				.withResult(userRepository.findAllByTenantId(tenant.getId()))
+				.build();
+	}
+
+	@Override
+	public ServiceResponse<User> findByTenantAndEmail(Tenant tenant, String email) {
+		return ServiceResponseBuilder
+				.<User>ok()
+				.withResult(userRepository.findAllByTenantIdAndEmail(tenant.getId(), email))
 				.build();
 	}
 
