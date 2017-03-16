@@ -8,30 +8,13 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration.Dynamic;
 
+import com.konkerlabs.platform.registry.config.*;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestContextListener;
 import org.springframework.web.filter.HiddenHttpMethodFilter;
 import org.springframework.web.servlet.resource.ResourceUrlEncodingFilter;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
-import com.konkerlabs.platform.registry.config.BusinessConfig;
-import com.konkerlabs.platform.registry.config.CdnConfig;
-import com.konkerlabs.platform.registry.config.EmailConfig;
-import com.konkerlabs.platform.registry.config.EnvironmentConfig;
-import com.konkerlabs.platform.registry.config.HotjarConfig;
-import com.konkerlabs.platform.registry.config.IntegrationConfig;
-import com.konkerlabs.platform.registry.config.MongoAuditConfig;
-import com.konkerlabs.platform.registry.config.MongoConfig;
-import com.konkerlabs.platform.registry.config.MqttConfig;
-import com.konkerlabs.platform.registry.config.PasswordUserConfig;
-import com.konkerlabs.platform.registry.config.PubServerConfig;
-import com.konkerlabs.platform.registry.config.RecaptchaConfig;
-import com.konkerlabs.platform.registry.config.RedisConfig;
-import com.konkerlabs.platform.registry.config.SecurityConfig;
-import com.konkerlabs.platform.registry.config.SmsConfig;
-import com.konkerlabs.platform.registry.config.SpringMailConfig;
-import com.konkerlabs.platform.registry.config.WebConfig;
-import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.utilities.config.UtilitiesConfig;
 
 public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
@@ -42,7 +25,7 @@ public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherSe
 				MqttConfig.class, UtilitiesConfig.class, RedisConfig.class, SpringMailConfig.class,
 				SmsConfig.class, WebConfig.class, IntegrationConfig.class, CdnConfig.class,
 				RecaptchaConfig.class, EmailConfig.class, HotjarConfig.class,
-				EnvironmentConfig.class};
+				EnvironmentConfig.class, CassandraConfig.class, EventStorageConfig.class};
 	}
 
 	@Override

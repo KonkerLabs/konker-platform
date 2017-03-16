@@ -9,13 +9,17 @@ import com.konkerlabs.platform.registry.business.model.validation.CommonValidati
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.events.api.EventRepository;
 import com.konkerlabs.platform.registry.business.services.api.*;
+import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -25,8 +29,6 @@ import java.util.function.Supplier;
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
 public class DeviceEventServiceImpl implements DeviceEventService {
 
-    @Autowired
-    @Qualifier("mongoEvents")
     private EventRepository eventRepository;
     @Autowired
     private EventSchemaService eventSchemaService;
@@ -36,6 +38,20 @@ public class DeviceEventServiceImpl implements DeviceEventService {
     private DeviceRegisterService deviceRegisterService;
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
+    @Autowired
+    private EventStorageConfig eventStorageConfig;
+    @Autowired
+    private ApplicationContext applicationContext;
+
+
+    @PostConstruct
+    public void init(){
+        eventRepository =
+                (EventRepository) applicationContext.getBean(
+                        eventStorageConfig.getEventRepositoryBean()
+                );
+    }
+
 
     @Override
     public ServiceResponse<Event> logIncomingEvent(Device device, Event event) {

@@ -15,9 +15,9 @@ public class EventStorageConfig {
     private String eventRepositoryBean;
     public EventStorageConfig() {
         Map<String, Object> defaultMap = new HashMap<>();
-        defaultMap.put("eventstorage.repositorybean", "cassandraEvents");
+        defaultMap.put("eventstorage.bean", "cassandraEvents");
         Config defaultConf = ConfigFactory.parseMap(defaultMap);
         Config config = ConfigFactory.load().withFallback(defaultConf);
-        setEventRepositoryBean(config.getString("eventstorage.repositorybean"));
+        setEventRepositoryBean(config.getString("eventstorage.bean"));
     }
 }

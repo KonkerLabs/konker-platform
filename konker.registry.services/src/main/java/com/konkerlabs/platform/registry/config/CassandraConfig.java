@@ -54,4 +54,6 @@ public class CassandraConfig extends AbstractCassandraConfiguration {
     protected String getContactPoints() {
         return seedHost;
     }
+
+
 }
