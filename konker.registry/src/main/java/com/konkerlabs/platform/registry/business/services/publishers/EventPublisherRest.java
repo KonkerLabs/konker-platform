@@ -5,7 +5,7 @@ import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
-import com.konkerlabs.platform.registry.business.repositories.events.EventRepository;
+import com.konkerlabs.platform.registry.business.repositories.events.api.EventRepository;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.publishers.api.EventPublisher;

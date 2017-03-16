@@ -6,7 +6,7 @@ import com.konkerlabs.platform.registry.business.model.SmsDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
-import com.konkerlabs.platform.registry.business.repositories.events.EventRepository;
+import com.konkerlabs.platform.registry.business.repositories.events.api.EventRepository;
 import com.konkerlabs.platform.registry.business.services.api.SmsDestinationService;
 import com.konkerlabs.platform.registry.business.services.publishers.EventPublisherSms;
 import com.konkerlabs.platform.registry.business.services.publishers.api.EventPublisher;

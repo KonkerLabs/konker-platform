@@ -6,7 +6,7 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
-import com.konkerlabs.platform.registry.business.repositories.events.EventRepository;
+import com.konkerlabs.platform.registry.business.repositories.events.api.EventRepository;
 import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.publishers.EventPublisherRest;
 import com.konkerlabs.platform.registry.business.services.publishers.api.EventPublisher;
@@ -35,7 +35,6 @@ import java.net.URI;
 import java.text.MessageFormat;
 import java.time.Instant;
 
-import static com.konkerlabs.platform.registry.business.services.publishers.EventPublisherDevice.DEVICE_MQTT_CHANNEL;
 import static info.solidsoft.mockito.java8.LambdaMatcher.argLambda;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;

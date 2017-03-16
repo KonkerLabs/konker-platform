@@ -6,7 +6,7 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
-import com.konkerlabs.platform.registry.business.repositories.events.EventRepository;
+import com.konkerlabs.platform.registry.business.repositories.events.api.EventRepository;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
@@ -25,13 +25,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import redis.clients.jedis.JedisPubSub;
 
 import java.text.MessageFormat;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import java.util.concurrent.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
