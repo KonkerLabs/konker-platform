@@ -2,6 +2,7 @@ package com.konkerlabs.platform.registry.api.web.controller;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.factory.InitializingBean;
@@ -64,9 +65,9 @@ public class UserRestController implements InitializingBean {
 
     }
 
-    @GetMapping(path = "/{email}")
+    @GetMapping(path = "/{email:.+}")
     @ApiOperation(
-            value = "Get a user by guid",
+            value = "Get a user by email",
             response = RestResponse.class
     )
     public UserVO read(@PathVariable("email") String email) throws BadServiceResponseException, NotFoundResponseException {
@@ -86,12 +87,12 @@ public class UserRestController implements InitializingBean {
     @PostMapping
     @ApiOperation(value = "Create a user")
     public UserVO create(
-            @ApiParam(name = "body", required = true)
+            @ApiParam(name = "body", value = "JSON filled with the fields described in Model and Example Value beside", required = true)
             @RequestBody UserVO userForm) throws BadServiceResponseException {
 
         Tenant tenant = user.getTenant();
 
-        User user = User.builder()
+        User userFromForm = User.builder()
         		.email(userForm.getEmail())
         		.password(userForm.getPassword())
         		.phone(userForm.getPhone())
@@ -100,7 +101,7 @@ public class UserRestController implements InitializingBean {
                 .tenant(tenant)
                 .build();
 
-        ServiceResponse<User> userResponse = userService.save(user, user.getPassword(), user.getPassword());
+        ServiceResponse<User> userResponse = userService.save(userFromForm, userFromForm.getPassword(), userFromForm.getPassword());
 
         if (!userResponse.isOk()) {
             throw new BadServiceResponseException(user, userResponse, validationsCode);
@@ -110,11 +111,11 @@ public class UserRestController implements InitializingBean {
 
     }
 
-    @PutMapping(path = "/{email}")
+    @PutMapping(path = "/{email:.+}")
     @ApiOperation(value = "Update a user")
     public void update(
             @PathVariable("email") String email,
-            @ApiParam(name = "body", required = true)
+            @ApiParam(name = "body", value = "JSON filled with the fields described in Model and Example Value beside", required = true)
             @RequestBody UserInputVO userForm) throws BadServiceResponseException {
 
         Tenant tenant = user.getTenant();
@@ -129,7 +130,9 @@ public class UserRestController implements InitializingBean {
         }
 
         // update fields
-        userFromDB.setPassword(userForm.getPassword());
+        if (Optional.ofNullable(userForm.getPassword()).isPresent() && !userForm.getPassword().isEmpty()) {
+        	userFromDB.setPassword(userForm.getPassword());
+        }
         userFromDB.setPhone(userForm.getPhone());
         userFromDB.setName(userForm.getName());
         userFromDB.setNotificationViaEmail(userForm.isNotificationViaEmail());
@@ -142,24 +145,6 @@ public class UserRestController implements InitializingBean {
         }
 
     }
-
-//    @DeleteMapping(path = "/{email}")
-//    @ApiOperation(value = "Delete a user")
-//    public void delete(@PathVariable("email") String email) throws BadServiceResponseException, NotFoundResponseException {
-//
-//        Tenant tenant = user.getTenant();
-//
-//        ServiceResponse<User> userResponse = userService.remove(tenant, email);
-//
-//        if (!userResponse.isOk()) {
-//            if (userResponse.getResponseMessages().containsKey(Validations.NO_EXIST_USER.getCode())) {
-//                throw new NotFoundResponseException(user, userResponse);
-//            } else {
-//                throw new BadServiceResponseException(user, userResponse, validationsCode);
-//            }
-//        }
-//
-//    }
 
     @Override
     public void afterPropertiesSet() throws Exception {

@@ -13,6 +13,7 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterServ
 import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
 import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.TransformationService;
+import com.konkerlabs.platform.registry.business.services.api.UserService;
 
 @Configuration
 public class WebTestConfiguration {
@@ -51,5 +52,10 @@ public class WebTestConfiguration {
     @Bean
     public RestDestinationService restDestinationService() {
     	return Mockito.mock(RestDestinationService.class);
+    }
+    
+    @Bean
+    public UserService userService() {
+    	return Mockito.mock(UserService.class);
     }
 }

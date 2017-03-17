@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @ApiModel(
-        value = "USer Input",
+        value = "User Input",
         discriminator = "com.konkerlabs.platform.registry.api.model")
 public class UserInputVO {
 

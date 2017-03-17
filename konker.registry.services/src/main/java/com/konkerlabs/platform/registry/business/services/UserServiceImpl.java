@@ -339,9 +339,18 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public ServiceResponse<User> findByTenantAndEmail(Tenant tenant, String email) {
+		User user = userRepository.findAllByTenantIdAndEmail(tenant.getId(), email);
+		
+		if (!Optional.ofNullable(user).isPresent()) {
+			return ServiceResponseBuilder
+					.<User>error()
+					.withMessage(Validations.NO_EXIST_USER.getCode())
+					.build();
+		}
+		
 		return ServiceResponseBuilder
 				.<User>ok()
-				.withResult(userRepository.findAllByTenantIdAndEmail(tenant.getId(), email))
+				.withResult(user)
 				.build();
 	}
 

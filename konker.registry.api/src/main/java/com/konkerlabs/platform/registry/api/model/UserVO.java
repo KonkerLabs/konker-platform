@@ -25,9 +25,9 @@ public class UserVO extends UserInputVO implements SerializableVO<User, UserVO> 
 	public UserVO apply(User t) {
 		UserVO vo = new UserVO();
 		vo.setEmail(t.getEmail());
-		vo.setPassword(t.getPassword());
 		vo.setPhone(t.getPhone());
 		vo.setName(t.getName());
+		vo.setNotificationViaEmail(t.isNotificationViaEmail());
 		return vo;
 	}
 
@@ -37,6 +37,7 @@ public class UserVO extends UserInputVO implements SerializableVO<User, UserVO> 
 		t.setPassword(this.getPassword());
 		t.setName(this.getName());
 		t.setPhone(this.getPhone());
+		t.setNotificationViaEmail(this.isNotificationViaEmail());
 		return t;
 	}
 }
