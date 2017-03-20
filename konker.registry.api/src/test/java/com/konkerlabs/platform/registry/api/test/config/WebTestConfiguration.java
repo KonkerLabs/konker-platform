@@ -12,6 +12,7 @@ import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
 import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
+import com.konkerlabs.platform.registry.business.services.api.RoleService;
 import com.konkerlabs.platform.registry.business.services.api.TransformationService;
 import com.konkerlabs.platform.registry.business.services.api.UserService;
 
@@ -57,5 +58,10 @@ public class WebTestConfiguration {
     @Bean
     public UserService userService() {
     	return Mockito.mock(UserService.class);
+    }
+    
+    @Bean
+    public RoleService roleService() {
+    	return Mockito.mock(RoleService.class);
     }
 }

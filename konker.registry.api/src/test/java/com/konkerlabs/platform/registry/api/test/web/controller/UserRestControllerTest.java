@@ -3,6 +3,7 @@ package com.konkerlabs.platform.registry.api.test.web.controller;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -32,8 +33,10 @@ import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
 import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
 import com.konkerlabs.platform.registry.api.web.controller.UserRestController;
 import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
+import com.konkerlabs.platform.registry.business.model.Role;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
+import com.konkerlabs.platform.registry.business.services.api.RoleService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.UserService;
 
@@ -52,11 +55,17 @@ public class UserRestControllerTest extends WebLayerTestContext {
     private UserService userService;
 
     @Autowired
+    private RoleService roleService;
+
+    
+    @Autowired
     private Tenant tenant;
 
     private User user1;
 
     private User user2;
+    
+    private Role role;
 
     @Before
     public void setUp() {
@@ -75,6 +84,11 @@ public class UserRestControllerTest extends WebLayerTestContext {
 	    			.phone("99997777")
 	    			.notificationViaEmail(false)
 	    			.build();
+        
+        role = Role.builder()
+        			.id("1")
+        			.name("ROLE_IOT_USER")
+        			.build();
     }
 
     @After
@@ -100,12 +114,12 @@ public class UserRestControllerTest extends WebLayerTestContext {
         .andExpect(jsonPath("$.status", is("success")))
         .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
         .andExpect(jsonPath("$.result", hasSize(2)))
-        .andExpect(jsonPath("$.result[0].password", is("pass123")))
+        .andExpect(jsonPath("$.result[0].password", isEmptyOrNullString()))
         .andExpect(jsonPath("$.result[0].phone", is("99998888")))
         .andExpect(jsonPath("$.result[0].name", is("Fake User Hum")))
         .andExpect(jsonPath("$.result[0].notificationViaEmail", is(true)))
         .andExpect(jsonPath("$.result[0].email", is("fakeuser1@domain.com")))
-        .andExpect(jsonPath("$.result[1].password", is("pass321")))
+        .andExpect(jsonPath("$.result[1].password", isEmptyOrNullString()))
         .andExpect(jsonPath("$.result[1].phone", is("99997777")))
         .andExpect(jsonPath("$.result[1].name", is("Fake User Dois")))
         .andExpect(jsonPath("$.result[1].notificationViaEmail", is(false)))
@@ -146,7 +160,7 @@ public class UserRestControllerTest extends WebLayerTestContext {
         .andExpect(jsonPath("$.status", is("success")))
         .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
         .andExpect(jsonPath("$.result").isMap())
-        .andExpect(jsonPath("$.result.password", is("pass123")))
+        .andExpect(jsonPath("$.result.password", isEmptyOrNullString()))
         .andExpect(jsonPath("$.result.phone", is("99998888")))
         .andExpect(jsonPath("$.result.name", is("Fake User Hum")))
         .andExpect(jsonPath("$.result.notificationViaEmail", is(true)))
@@ -181,6 +195,9 @@ public class UserRestControllerTest extends WebLayerTestContext {
     			org.mockito.Matchers.anyString(), 
     			org.mockito.Matchers.anyString()))
     	.thenReturn(ServiceResponseBuilder.<User>ok().withResult(user1).build());
+    	
+    	when(roleService.findByName(org.mockito.Matchers.anyString()))
+    		.thenReturn(ServiceResponseBuilder.<Role>ok().withResult(role).build());
 
     	getMockMvc().perform(MockMvcRequestBuilders.post("/users/")
     			.content(getJson(new UserVO().apply(user1)))
@@ -192,7 +209,7 @@ public class UserRestControllerTest extends WebLayerTestContext {
     	.andExpect(jsonPath("$.status", is("success")))
     	.andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
     	.andExpect(jsonPath("$.result").isMap())
-    	.andExpect(jsonPath("$.result.password", is("pass123")))
+    	.andExpect(jsonPath("$.result.password", isEmptyOrNullString()))
         .andExpect(jsonPath("$.result.phone", is("99998888")))
         .andExpect(jsonPath("$.result.name", is("Fake User Hum")))
         .andExpect(jsonPath("$.result.notificationViaEmail", is(true)))

@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.api.web.controller;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -21,11 +22,17 @@ import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException
 import com.konkerlabs.platform.registry.api.model.RestResponse;
 import com.konkerlabs.platform.registry.api.model.UserInputVO;
 import com.konkerlabs.platform.registry.api.model.UserVO;
+import com.konkerlabs.platform.registry.business.model.Role;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
+import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
+import com.konkerlabs.platform.registry.business.model.enumerations.Language;
+import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
+import com.konkerlabs.platform.registry.business.services.api.RoleService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.UserService;
 import com.konkerlabs.platform.registry.business.services.api.UserService.Validations;
+import com.konkerlabs.platform.registry.business.services.api.UserService.Errors;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -39,8 +46,13 @@ import io.swagger.annotations.ApiParam;
 @Api(tags = "users")
 public class UserRestController implements InitializingBean {
 
-    @Autowired
+    private static final String ROLE_IOT_USER = "ROLE_IOT_USER";
+
+	@Autowired
     private UserService userService;
+    
+    @Autowired
+    private RoleService roleService;
 
     @Autowired
     private User user;
@@ -91,6 +103,7 @@ public class UserRestController implements InitializingBean {
             @RequestBody UserVO userForm) throws BadServiceResponseException {
 
         Tenant tenant = user.getTenant();
+        Role role = roleService.findByName(ROLE_IOT_USER).getResult();
 
         User userFromForm = User.builder()
         		.email(userForm.getEmail())
@@ -99,6 +112,10 @@ public class UserRestController implements InitializingBean {
                 .name(userForm.getName())
                 .notificationViaEmail(userForm.isNotificationViaEmail())
                 .tenant(tenant)
+                .dateFormat(DateFormat.YYYYMMDD)
+                .zoneId(TimeZone.AMERICA_SAO_PAULO)
+                .language(Language.PT_BR)
+                .roles(Collections.singletonList(role))
                 .build();
 
         ServiceResponse<User> userResponse = userService.save(userFromForm, userFromForm.getPassword(), userFromForm.getPassword());
@@ -130,14 +147,16 @@ public class UserRestController implements InitializingBean {
         }
 
         // update fields
+        String password = "";
         if (Optional.ofNullable(userForm.getPassword()).isPresent() && !userForm.getPassword().isEmpty()) {
         	userFromDB.setPassword(userForm.getPassword());
+        	password = userForm.getPassword();
         }
         userFromDB.setPhone(userForm.getPhone());
         userFromDB.setName(userForm.getName());
         userFromDB.setNotificationViaEmail(userForm.isNotificationViaEmail());
 
-        ServiceResponse<User> updateResponse = userService.save(userFromDB, userFromDB.getPassword(), userFromDB.getPassword());
+        ServiceResponse<User> updateResponse = userService.save(userFromDB, password, password);
 
         if (!updateResponse.isOk()) {
             throw new BadServiceResponseException(user, userResponse, validationsCode);
@@ -150,6 +169,10 @@ public class UserRestController implements InitializingBean {
     public void afterPropertiesSet() throws Exception {
 
         for (Validations value : UserService.Validations.values()) {
+            validationsCode.add(value.getCode());
+        }
+        
+        for (Errors value : UserService.Errors.values()) {
             validationsCode.add(value.getCode());
         }
 
