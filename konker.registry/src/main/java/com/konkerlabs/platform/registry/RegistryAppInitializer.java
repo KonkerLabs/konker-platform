@@ -15,14 +15,12 @@ import org.springframework.web.filter.HiddenHttpMethodFilter;
 import org.springframework.web.servlet.resource.ResourceUrlEncodingFilter;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
-import com.konkerlabs.platform.utilities.config.UtilitiesConfig;
-
 public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
 
 	@Override
 	protected Class<?>[] getRootConfigClasses() {
 		return new Class<?>[] { SecurityConfig.class, BusinessConfig.class, MongoConfig.class, MongoAuditConfig.class,
-				UtilitiesConfig.class, SpringMailConfig.class,
+				SpringMailConfig.class,
 				SmsConfig.class, WebConfig.class, CdnConfig.class,
 				RecaptchaConfig.class, EmailConfig.class, HotjarConfig.class,
 				EnvironmentConfig.class, CassandraConfig
