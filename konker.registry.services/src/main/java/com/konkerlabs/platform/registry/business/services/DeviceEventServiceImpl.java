@@ -4,9 +4,12 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
+import com.konkerlabs.platform.registry.business.repositories.events.api.EventRepository;
+import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
@@ -14,19 +17,32 @@ import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.registry.business.repositories.events.EventRepository;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+
+import javax.annotation.PostConstruct;
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
 public class DeviceEventServiceImpl implements DeviceEventService {
 
     @Autowired
-    @Qualifier("mongoEvents")
+    private ApplicationContext applicationContext;
+    @Autowired
+    private EventStorageConfig eventStorageConfig;
     private EventRepository eventRepository;
+
+
+    @PostConstruct
+    public void init(){
+        eventRepository =
+                (EventRepository) applicationContext.getBean(
+                        eventStorageConfig.getEventRepositoryBean()
+                );
+    }
+
 
     @Override
     public ServiceResponse<List<Event>> findIncomingBy(Tenant tenant,

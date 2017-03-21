@@ -1,12 +1,12 @@
-package com.konkerlabs.platform.registry.config;
+package com.konkerlabs.platform.registry.data.config;
 
 import com.konkerlabs.platform.registry.business.model.converters.InstantReadConverter;
 import com.konkerlabs.platform.registry.business.model.converters.InstantWriteConverter;
 import com.konkerlabs.platform.registry.business.model.converters.URIReadConverter;
 import com.konkerlabs.platform.registry.business.model.converters.URIWriteConverter;
+import com.konkerlabs.platform.registry.config.CassandraConfig;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -34,10 +34,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 @Configuration
-public class CassandraConfig
-        extends AbstractClusterConfiguration
+public class CassandraDataConfig  extends AbstractClusterConfiguration
         implements BeanClassLoaderAware {
 
 
@@ -76,9 +74,9 @@ public class CassandraConfig
         this.seedPort = seedPort;
     }
 
-    public CassandraConfig() {
+    public CassandraDataConfig() {
         Map<String, Object> defaultMap = new HashMap<>();
-        defaultMap.put("cassandra.clustername", "konker");
+        defaultMap.put("cassandra.clustername", "cluster1");
         defaultMap.put("cassandra.keyspace", "registrykeyspace");
         defaultMap.put("cassandra.hostname", "localhost");
         defaultMap.put("cassandra.port", 9042);

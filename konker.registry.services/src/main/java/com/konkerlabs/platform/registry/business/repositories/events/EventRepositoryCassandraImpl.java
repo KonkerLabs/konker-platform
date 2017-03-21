@@ -48,8 +48,8 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
     @Autowired
     private DeviceRepository deviceRepository;
 
-    public static final String INCOMMINGTABLE = "incomming";
-    public static final String OUTGOINGTABLE = "outgoing";
+    public static final String INCOMMINGTABLE = "incoming_events";
+    public static final String OUTGOINGTABLE = "outgoing_events";
 
     @Override
     protected Event doSave(Tenant tenant, Event event, Type type) throws BusinessException {
@@ -188,9 +188,9 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
 class CassandraIncommingEvent {
     @PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, name = "device_guid", ordinal = 0)
     private String deviceGuid;
-    @PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, name = "tentant_domain", ordinal = 1)
+    @PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, name = "tenant_domain", ordinal = 1)
     private String tenantDomain;
-    @PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, name = "channel", ordinal = 2)
+    @PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, name = "channel", ordinal = 2)
     private String channel;
     @PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, name = "timestamp", ordering = Ordering.ASCENDING, ordinal = 3)
     private Instant timestamp;
@@ -206,9 +206,9 @@ class CassandraIncommingEvent {
 class CassandraOutgoingEvent {
     @PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, name = "device_guid", ordinal = 0)
     private String deviceGuid;
-    @PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, name = "tentant_domain", ordinal = 1)
+    @PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, name = "tenant_domain", ordinal = 1)
     private String tenantDomain;
-    @PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, name = "channel", ordinal = 2)
+    @PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, name = "channel", ordinal = 2)
     private String channel;
     @PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, ordering = Ordering.ASCENDING, ordinal = 3)
     private Instant timestamp;
