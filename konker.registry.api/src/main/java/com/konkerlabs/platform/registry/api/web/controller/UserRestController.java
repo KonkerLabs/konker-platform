@@ -117,8 +117,13 @@ public class UserRestController implements InitializingBean {
                 .language(Language.PT_BR)
                 .roles(Collections.singletonList(role))
                 .build();
+        
+        String password = null;
+        if (Optional.ofNullable(userForm.getPassword()).isPresent() && !userForm.getPassword().isEmpty()) {
+        	password = userForm.getPassword();
+        }
 
-        ServiceResponse<User> userResponse = userService.save(userFromForm, userFromForm.getPassword(), userFromForm.getPassword());
+        ServiceResponse<User> userResponse = userService.save(userFromForm, password, password);
 
         if (!userResponse.isOk()) {
             throw new BadServiceResponseException(user, userResponse, validationsCode);
