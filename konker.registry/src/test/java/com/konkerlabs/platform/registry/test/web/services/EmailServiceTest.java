@@ -4,7 +4,12 @@ import static com.konkerlabs.platform.registry.test.base.matchers.ServiceRespons
 import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.isResponseOk;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -22,7 +27,6 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponse.St
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.RedisTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.SpringMailTestConfiguration;
 import com.konkerlabs.platform.registry.web.services.api.EmailService;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
@@ -31,7 +35,6 @@ import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 @ContextConfiguration(classes = {
         MongoTestConfiguration.class,
         BusinessTestConfiguration.class,
-        RedisTestConfiguration.class,
         SpringMailTestConfiguration.class
 })
 @UsingDataSet(locations = {"/fixtures/users.json"})
@@ -45,7 +48,7 @@ public class EmailServiceTest extends BusinessLayerTestSupport {
 
     @Autowired
     private UserRepository userRepository;
-    
+
     private String sender = "no-reply@konkerlabs.com";
     private String subject = "Recover Password";
     private String templaNameHtml = "html/email-recover-pass";
@@ -58,7 +61,7 @@ public class EmailServiceTest extends BusinessLayerTestSupport {
     public void setUp() throws Exception {
     	receivers = userRepository.findAll();
     	receiversCopied = Arrays.asList(userRepository.findOne("admin@konkerlabs.com"));
-    	
+
     	templateParam.put("link", "http://localhost:8080/8a4fd7bd-503e-4e4a-b85e-5501305c7a98");
     	templateParam.put("name", "no-reply");
     }
@@ -66,70 +69,70 @@ public class EmailServiceTest extends BusinessLayerTestSupport {
     @Test
     public void shouldRaiseAnExceptionIfSenderIsNull() throws Exception {
     	ServiceResponse<Status> response = emailService.send(null, receivers, receiversCopied, subject, templaNameHtml, templateParam, Locale.ENGLISH);
-    	
+
     	assertThat(response, hasErrorMessage(EmailService.Validations.SENDER_NULL.getCode()));
     }
-    
+
     @Test
     public void shouldRaiseAnExceptionIfSenderIsEmpty() throws Exception {
     	ServiceResponse<Status> response = emailService.send("", receivers, receiversCopied, subject, templaNameHtml, templateParam, Locale.ENGLISH);
-    	
+
     	assertThat(response, hasErrorMessage(EmailService.Validations.SENDER_NULL.getCode()));
     }
-    
+
     @Test
     public void shouldRaiseAnExceptionIfReceiversIsNull() throws Exception {
     	ServiceResponse<Status> response = emailService.send(sender, null, receiversCopied, subject, templaNameHtml, templateParam, Locale.ENGLISH);
-    	
+
     	assertThat(response, hasErrorMessage(EmailService.Validations.RECEIVERS_NULL.getCode()));
     }
-    
+
     @Test
     public void shouldRaiseAnExceptionIfReceiversIsEmpty() throws Exception {
     	ServiceResponse<Status> response = emailService.send(sender, new ArrayList<>(), receiversCopied, subject, templaNameHtml, templateParam, Locale.ENGLISH);
-    	
+
     	assertThat(response, hasErrorMessage(EmailService.Validations.RECEIVERS_NULL.getCode()));
     }
-     
+
     @Test
     public void shouldRaiseAnExceptionIfSubjectIsNull() throws Exception {
     	ServiceResponse<Status> response = emailService.send(sender, receivers, receiversCopied, null, templaNameHtml, templateParam, Locale.ENGLISH);
-    	
+
     	assertThat(response, hasErrorMessage(EmailService.Validations.SUBJECT_EMPTY.getCode()));
     }
-    
+
     @Test
     public void shouldRaiseAnExceptionIfSubjectIsEmpty() throws Exception {
     	ServiceResponse<Status> response = emailService.send(sender, receivers, receiversCopied, "", templaNameHtml, templateParam, Locale.ENGLISH);
-    	
+
     	assertThat(response, hasErrorMessage(EmailService.Validations.SUBJECT_EMPTY.getCode()));
     }
-    
+
     @Test
     public void shouldRaiseAnExceptionIfBodyIsNull() throws Exception {
     	ServiceResponse<Status> response = emailService.send(sender, receivers, receiversCopied, subject, null, templateParam, Locale.ENGLISH);
-    	
+
     	assertThat(response, hasErrorMessage(EmailService.Validations.BODY_EMPTY.getCode()));
     }
-    
+
     @Test
     public void shouldRaiseAnExceptionIfBodyIsEmpty() throws Exception {
     	ServiceResponse<Status> response = emailService.send(sender, receivers, receiversCopied, subject, "", templateParam, Locale.ENGLISH);
-    	
+
     	assertThat(response, hasErrorMessage(EmailService.Validations.BODY_EMPTY.getCode()));
     }
-    
+
     @Test
     public void shouldSendAnEmailHtmlTemplate() throws Exception {
     	ServiceResponse<Status> response = emailService.send(sender, receivers, receiversCopied, subject, templaNameHtml, templateParam, Locale.ENGLISH);
-    	
+
     	assertThat(response, isResponseOk());
     }
-    
+
     @Test
     public void shouldSendAnEmailTxtTemplate() throws Exception {
     	ServiceResponse<Status> response = emailService.send(sender, receivers, receiversCopied, subject, templaNameTxt, templateParam, Locale.ENGLISH);
-    	
+
     	assertThat(response, isResponseOk());
     }
 

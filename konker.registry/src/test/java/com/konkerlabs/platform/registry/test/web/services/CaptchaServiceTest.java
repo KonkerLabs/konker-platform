@@ -1,9 +1,10 @@
 package com.konkerlabs.platform.registry.test.web.services;
 
-import com.konkerlabs.platform.registry.integration.exceptions.IntegrationException;
-import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
-import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
-import com.konkerlabs.platform.registry.web.services.api.*;
+import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -15,10 +16,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.net.URISyntaxException;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.when;
+import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
+import com.konkerlabs.platform.registry.web.services.CaptchaRestClient;
+import com.konkerlabs.platform.registry.web.services.api.CaptchaService;
 
 /**
  * Created by Felipe on 04/01/17.
@@ -29,49 +29,46 @@ import static org.mockito.Mockito.when;
         CaptchaServiceTest.CaptchaTestContextConfig.class
 })
 public class CaptchaServiceTest {
+
     @Autowired
     CaptchaService captchaService;
 
     @Autowired
-    private HttpGateway httpGateway;
+    private CaptchaRestClient captchaRestClient;
 
     private static final String JSON_SUCCESSFUL = "{\"success\" : \"True\"}";
     private static final String JSON_UNSUCCESSFUL = "{\"success\" : \"False\"}";
 
     @Test
-    public void shouldBeSuccessfulCaptchaValidation(){
-        try {
-            when(httpGateway.request(any(), any(), any(), any(), any(),  any(), any()))
-                    .thenReturn(JSON_SUCCESSFUL);
-        } catch (IntegrationException e) {
-            e.printStackTrace();
-        }
+    public void shouldBeSuccessfulCaptchaValidation() throws IOException{
+        when(captchaRestClient.request(Mockito.any(URI.class)))
+                .thenReturn(new String(JSON_SUCCESSFUL));
 
         Assert.assertTrue(captchaService.validateCaptcha("", "", "").getResult());
     }
 
-    @Test (expected = URISyntaxException.class)
-    public void shouldBeUnsuccessfulCaptchaValidation(){
-        try {
-            Assert.assertFalse(captchaService.validateCaptcha(null, null, null).getResult());
+    @Test
+    @SuppressWarnings("unchecked")
+    public void shouldBeUnsuccessfulCaptchaValidation() throws IOException{
 
-            when(httpGateway.request(any(), any(), any(), any(), any(),  any(), any()))
-                    .thenThrow(URISyntaxException.class);
-            Assert.assertFalse(captchaService.validateCaptcha("", "", "").getResult());
+        Assert.assertFalse(captchaService.validateCaptcha(null, null, null).getResult());
 
-            when(httpGateway.request(any(), any(), any(), any(), any(),  any(), any()))
-                    .thenReturn(JSON_UNSUCCESSFUL);
-            Assert.assertFalse(captchaService.validateCaptcha("", "", "").getResult());
-        } catch (IntegrationException e) {
-            e.printStackTrace();
-        }
+        when(captchaRestClient.request(Mockito.any(URI.class)))
+                .thenThrow(IOException.class);
+        Assert.assertFalse(captchaService.validateCaptcha("", "", "").getResult());
+
+        Mockito.reset(captchaRestClient);
+        when(captchaRestClient.request(Mockito.any(URI.class)))
+                .thenReturn(new String(JSON_UNSUCCESSFUL));
+        Assert.assertFalse(captchaService.validateCaptcha("", "", "").getResult());
+
     }
 
     @Configuration
     static class CaptchaTestContextConfig {
         @Bean
-        public HttpGateway httpGateway() {
-            return Mockito.mock(HttpGateway.class);
+        public CaptchaRestClient captchaRestClient() {
+            return Mockito.mock(CaptchaRestClient.class);
         }
     }
 

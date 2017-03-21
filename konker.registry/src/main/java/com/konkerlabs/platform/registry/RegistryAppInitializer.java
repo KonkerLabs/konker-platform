@@ -22,10 +22,11 @@ public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherSe
 	@Override
 	protected Class<?>[] getRootConfigClasses() {
 		return new Class<?>[] { SecurityConfig.class, BusinessConfig.class, MongoConfig.class, MongoAuditConfig.class,
-				MqttConfig.class, UtilitiesConfig.class, RedisConfig.class, SpringMailConfig.class,
-				SmsConfig.class, WebConfig.class, IntegrationConfig.class, CdnConfig.class,
+				UtilitiesConfig.class, SpringMailConfig.class,
+				SmsConfig.class, WebConfig.class, CdnConfig.class,
 				RecaptchaConfig.class, EmailConfig.class, HotjarConfig.class,
-				EnvironmentConfig.class, CassandraConfig.class, EventStorageConfig.class};
+				EnvironmentConfig.class, CassandraConfig
+				.class, EventStorageConfig.class};
 	}
 
 	@Override
@@ -42,7 +43,7 @@ public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherSe
 	protected Filter[] getServletFilters() {
 		return new Filter[] { new HiddenHttpMethodFilter(), new ResourceUrlEncodingFilter() };
 	}
-	
+
 	@Override
 	protected void customizeRegistration(Dynamic registration) {
 		registration.setInitParameter("throwExceptionIfNoHandlerFound", "true");
@@ -68,7 +69,7 @@ public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherSe
 		if (isSslFeaturesEnabled()) {
 			profiles.add("ssl");
 		}
-		
+
         servletContext.setInitParameter("spring.profiles.active", StringUtils.arrayToCommaDelimitedString(profiles.toArray()));
 	}
 
@@ -76,17 +77,17 @@ public class RegistryAppInitializer extends AbstractAnnotationConfigDispatcherSe
 		SmsConfig config = new SmsConfig();
 		return config.isEnabled();
 	}
-	
+
 	private boolean isEmailFeaturesEnabled() {
 		EmailConfig config = new EmailConfig();
 		return config.isEnabled();
 	}
-	
+
 	private boolean isCdnFeaturesEnabled() {
 		CdnConfig config = new CdnConfig();
 		return config.isEnabled();
 	}
-	
+
 	private boolean isSslFeaturesEnabled() {
 		PubServerConfig config = new PubServerConfig();
 		return config.isSslEnabled();

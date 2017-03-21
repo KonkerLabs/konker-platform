@@ -86,7 +86,7 @@ RUN  ln -s /usr/lib/libcrypto.so.1.0.0 /usr/lib/libcrypto.so.10 && \
 COPY build/mosquitto/generate_mosquitto_credentials.sh /usr/bin
 RUN chmod +x /usr/bin/generate_mosquitto_credentials.sh
 
-#registry
+#registry web
 COPY build/jetty/registry.war /var/lib/jetty/webapps/
 COPY build/jetty/application.conf /var/lib/jetty/resources/
 COPY build/jetty/logback.xml /var/lib/jetty/webapps/resources/
@@ -94,6 +94,9 @@ COPY build/jetty/logback.xml /var/lib/jetty/resources/
 COPY build/jetty/mail /var/lib/jetty/webapps/resources/mail/
 COPY build/jetty/mail /var/lib/jetty/resources/mail/
 
+#registry data
+RUN  mkdir /var/lib/konker
+COPY build/konker/registry-data.jar /var/lib/konker/
 #nginx
 COPY build/nginx/nginx.conf /etc/nginx/nginx.conf
 COPY build/nginx/nginx.conf /etc/nginx/conf/nginx.conf

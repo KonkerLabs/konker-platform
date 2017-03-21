@@ -77,6 +77,12 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <version>4.3.2.RELEASE</version>
+            <scope>test</scope>
+        </dependency>
         <!-- Compile scope -->
         <dependency>
             <groupId>org.springframework</groupId>
@@ -105,7 +111,12 @@
             <artifactId>validation-api</artifactId>
             <version>1.1.0.Final</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.skyscreamer</groupId>
+            <artifactId>jsonassert</artifactId>
+            <version>1.2.3</version>
+        </dependency>
+        <!-- Thymeleaf -->
         <dependency>
             <groupId>org.thymeleaf</groupId>
             <artifactId>thymeleaf-spring4</artifactId>
@@ -126,44 +137,18 @@
 		    <artifactId>thymeleaf-extras-springsecurity4</artifactId>
 		    <version>3.0.1.RELEASE</version>
 		</dependency>
+        <!-- CSV -->
         <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-test</artifactId>
-            <version>4.2.0.RELEASE</version>
-            <scope>test</scope>
+            <groupId>net.sf.supercsv</groupId>
+            <artifactId>super-csv</artifactId>
+            <version>2.4.0</version>
         </dependency>
         <dependency>
-            <groupId>org.springframework.integration</groupId>
-            <artifactId>spring-integration-mqtt</artifactId>
-            <version>4.2.4.RELEASE</version>
+            <groupId>net.sf.supercsv</groupId>
+            <artifactId>super-csv-dozer</artifactId>
+            <version>2.4.0</version>
         </dependency>
-        <dependency>
-            <groupId>com.lordofthejars</groupId>
-            <artifactId>nosqlunit-redis</artifactId>
-            <version>0.8.1</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.guava</groupId>
-                    <artifactId>guava</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-		<dependency>
-		    <groupId>org.skyscreamer</groupId>
-		    <artifactId>jsonassert</artifactId>
-		    <version>1.2.3</version>
-		</dependency>
-		<dependency>
-		    <groupId>net.sf.supercsv</groupId>
-		    <artifactId>super-csv</artifactId>
-		    <version>2.4.0</version>
-		</dependency>
-		<dependency>
-		    <groupId>net.sf.supercsv</groupId>
-		    <artifactId>super-csv-dozer</artifactId>
-		    <version>2.4.0</version>
-		</dependency>
+        <!-- Amazon -->
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-s3</artifactId>
@@ -179,11 +164,18 @@
            <artifactId>httpclient</artifactId>
            <version>4.5.2</version>
        	</dependency>
+        <!-- Mail -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context-support</artifactId>
+            <version>4.3.6.RELEASE</version>
+        </dependency>
 		<dependency>
 		    <groupId>javax.mail</groupId>
 		    <artifactId>mail</artifactId>
 		    <version>1.4.7</version>
 		</dependency>
+        <!-- Konker -->
 		<dependency>
 		    <groupId>com.konkerlabs</groupId>
 		    <artifactId>konker.registry.services</artifactId>

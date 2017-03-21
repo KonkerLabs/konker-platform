@@ -7,7 +7,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Supplier;
@@ -52,23 +51,6 @@ import com.konkerlabs.platform.registry.web.forms.DeviceRegistrationForm;
 public class DeviceController implements ApplicationContextAware {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(DeviceController.class);
-
-    public enum Messages {
-        DEVICE_REGISTERED_SUCCESSFULLY("controller.device.registered.success"),
-        DEVICE_REMOVED_SUCCESSFULLY("controller.device.removed.succesfully"),
-        DEVICE_REMOVED_UNSUCCESSFULLY("controller.device.removed.unsuccesfully"),
-        DEVICE_QRCODE_ERROR("service.device.qrcode.have_errors");
-
-        public String getCode() {
-            return code;
-        }
-
-        private String code;
-
-        Messages(String code) {
-            this.code = code;
-        }
-    }
 
     private ApplicationContext applicationContext;
 
@@ -267,7 +249,7 @@ public class DeviceController implements ApplicationContextAware {
         ServiceResponse<Device> serviceResponse = deviceRegisterService.remove(tenant, deviceGuid);
         if (serviceResponse.isOk()) {
             redirectAttributes.addFlashAttribute("message",
-                    applicationContext.getMessage(Messages.DEVICE_REMOVED_SUCCESSFULLY.getCode(), null, locale)
+                    applicationContext.getMessage(DeviceRegisterService.Messages.DEVICE_REMOVED_SUCCESSFULLY.getCode(), null, locale)
             );
         } else {
             List<String> messages = serviceResponse.getResponseMessages()
@@ -317,22 +299,16 @@ public class DeviceController implements ApplicationContextAware {
 
         if (serviceResponse.isOk()) {
             DeviceRegisterService.DeviceSecurityCredentials credentials = serviceResponse.getResult();
-
-            ServiceResponse<DeviceDataURLs> serviceURLResponse =
-                    deviceRegisterService.getDeviceDataURLs(
-                            tenant, credentials.getDevice(),
-                            user.getLanguage().getLocale()
-                    );
-
             ServiceResponse<String> base64QrCode =
                     deviceRegisterService.generateQrCodeAccess(credentials, 200, 200);
 
-
+            Device device = credentials.getDevice();
+            ServiceResponse<DeviceDataURLs> serviceURLResponse = deviceRegisterService.getDeviceDataURLs(tenant, device, user.getLanguage().getLocale());
 
             return new ModelAndView("devices/password")
                     .addObject("action", MessageFormat.format("/devices/{0}/password", deviceGuid))
                     .addObject("password", credentials.getPassword())
-                    .addObject("device", credentials.getDevice())
+                    .addObject("device", device)
                     .addObject("pubServerInfo", pubServerConfig)
                     .addObject("qrcode", base64QrCode.getResult())
                     .addObject("deviceDataURLs", serviceURLResponse.getResult());
@@ -355,7 +331,7 @@ public class DeviceController implements ApplicationContextAware {
 
         if (serviceResponse.getStatus().equals(ServiceResponse.Status.OK)) {
             redirectAttributes.addFlashAttribute("message",
-                    applicationContext.getMessage(Messages.DEVICE_REGISTERED_SUCCESSFULLY.getCode(), null, locale));
+                    applicationContext.getMessage(DeviceRegisterService.Messages.DEVICE_REGISTERED_SUCCESSFULLY.getCode(), null, locale));
             return new ModelAndView(MessageFormat.format("redirect:/devices/{0}", serviceResponse.getResult().getGuid()));
         } else {
             List<String> messages = serviceResponse.getResponseMessages()
