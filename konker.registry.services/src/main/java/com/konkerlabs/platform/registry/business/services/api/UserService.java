@@ -3,6 +3,7 @@ package com.konkerlabs.platform.registry.business.services.api;
 
 import java.util.List;
 
+import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
 
 public interface UserService {
@@ -64,6 +65,8 @@ public interface UserService {
 
     ServiceResponse<User> findByEmail(String email);
     
-    ServiceResponse<List<User>> findAll();
+    ServiceResponse<List<User>> findAll(Tenant tenant);
+
+	ServiceResponse<User> findByTenantAndEmail(Tenant tenant, String email);
 
 }

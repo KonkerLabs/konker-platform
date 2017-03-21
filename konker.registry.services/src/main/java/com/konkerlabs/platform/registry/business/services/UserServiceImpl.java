@@ -9,11 +9,13 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
+import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.repositories.PasswordBlacklistRepository;
 import com.konkerlabs.platform.registry.business.repositories.UserRepository;
@@ -94,8 +96,20 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public ServiceResponse<User> save(User user, String newPassword, String newPasswordConfirmation) {
-    	User fromStorage = userRepository.findOne(user.getEmail());
-
+		if (!Optional.ofNullable(user.getEmail()).isPresent()) {
+			return ServiceResponseBuilder.<User>error()
+					.withMessage(Validations.INVALID_USER_EMAIL.getCode())
+					.build();
+		}
+		
+		if (!Optional.ofNullable(newPassword).isPresent()) {
+			return ServiceResponseBuilder.<User>error()
+					.withMessage(Validations.INVALID_PASSWORD_INVALID.getCode())
+					.build();
+		}
+		
+    	User fromStorage = Optional.ofNullable(userRepository.findOne(user.getEmail())).orElse(user);
+    	
         if (!Optional.ofNullable(fromStorage).isPresent() ||
                 !Optional.ofNullable(user.getEmail()).isPresent()
                 || !user.getEmail().equals(fromStorage.getEmail())) {
@@ -192,13 +206,16 @@ public class UserServiceImpl implements UserService {
         try {
             fillFrom(user, fromStorage);
             userRepository.save(fromStorage);
-            Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
-                    .ifPresent(authentication -> {
-                        User principal = (User) Optional.ofNullable(authentication.getPrincipal())
-                        		.filter(p -> !p.equals("anonymousUser")).orElse(User.builder().build());
-
-						fillFrom(fromStorage, principal);
-                    });
+            
+            if (SecurityContextHolder.getContext().getAuthentication() instanceof UsernamePasswordAuthenticationToken) {
+            	Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
+            	.ifPresent(authentication -> {
+            		User principal = (User) Optional.ofNullable(authentication.getPrincipal())
+            				.filter(p -> !p.equals("anonymousUser")).orElse(User.builder().build());
+            		
+            		fillFrom(fromStorage, principal);
+            	});
+            }
 
             return ServiceResponseBuilder.<User>ok().withResult(fromStorage).build();
         } catch (Exception e) {
@@ -329,10 +346,27 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public ServiceResponse<List<User>> findAll() {
+	public ServiceResponse<List<User>> findAll(Tenant tenant) {
 		return ServiceResponseBuilder
 				.<List<User>>ok()
-				.withResult(userRepository.findAll())
+				.withResult(userRepository.findAllByTenantId(tenant.getId()))
+				.build();
+	}
+
+	@Override
+	public ServiceResponse<User> findByTenantAndEmail(Tenant tenant, String email) {
+		User user = userRepository.findAllByTenantIdAndEmail(tenant.getId(), email);
+		
+		if (!Optional.ofNullable(user).isPresent()) {
+			return ServiceResponseBuilder
+					.<User>error()
+					.withMessage(Validations.NO_EXIST_USER.getCode())
+					.build();
+		}
+		
+		return ServiceResponseBuilder
+				.<User>ok()
+				.withResult(user)
 				.build();
 	}
 
