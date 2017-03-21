@@ -38,14 +38,16 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
     private JsonParsingService jsonParsingService;
     @Autowired
     private ApplicationContext applicationContext;
-    @Autowired
+    @Autowired(required = false)
     private CassandraTemplate cassandraTemplate;
-    @Autowired
+    @Autowired(required = false)
     private CassandraOperations cassandraOperations;
     @Autowired
     private TenantRepository tenantRepository;
+
     @Autowired
     private DeviceRepository deviceRepository;
+
     public static final String INCOMMINGTABLE = "incomming";
     public static final String OUTGOINGTABLE = "outgoing";
 
@@ -209,10 +211,10 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
 @Builder
 @Table(value = EventRepositoryCassandraImpl.INCOMMINGTABLE)
 class CassandraIncommingEvent {
-    @PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, name = "tentant_domain", ordinal = 0)
-    private String tenantDomain;
-    @PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, name = "device_guid", ordinal = 1)
+    @PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, name = "device_guid", ordinal = 0)
     private String deviceGuid;
+    @PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, name = "tentant_domain", ordinal = 1)
+    private String tenantDomain;
     @PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, name = "channel", ordinal = 2)
     private String channel;
     @PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, name = "timestamp", ordering = Ordering.ASCENDING, ordinal = 3)
@@ -227,10 +229,10 @@ class CassandraIncommingEvent {
 @Builder
 @Table(value = EventRepositoryCassandraImpl.OUTGOINGTABLE)
 class CassandraOutgoingEvent {
-    @PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, name = "tentant_domain", ordinal = 0)
-    private String tenantDomain;
-    @PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, name = "device_guid", ordinal = 1)
+    @PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, name = "device_guid", ordinal = 0)
     private String deviceGuid;
+    @PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, name = "tentant_domain", ordinal = 1)
+    private String tenantDomain;
     @PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, name = "channel", ordinal = 2)
     private String channel;
     @PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, ordering = Ordering.ASCENDING, ordinal = 3)
