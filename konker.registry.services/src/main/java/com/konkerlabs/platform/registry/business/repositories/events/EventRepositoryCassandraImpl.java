@@ -52,11 +52,6 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
     public static final String OUTGOINGTABLE = "outgoing";
 
     @Override
-    public Event saveIncoming(Tenant tenant, Event event) throws BusinessException {
-        return cassandraOperations.insert(event);
-    }
-
-    @Override
     protected Event doSave(Tenant tenant, Event event, Type type) throws BusinessException {
         Optional.ofNullable(tenant)
                 .filter(tenant1 -> Optional.ofNullable(tenant1.getDomainName()).filter(s -> !s.isEmpty()).isPresent())
@@ -120,26 +115,6 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
 
         );
         return event;
-    }
-
-    @Override
-    public Event saveOutgoing(Tenant tenant, Event event) throws BusinessException {
-        return null;
-    }
-
-    @Override
-    public List<Event> findIncomingBy(Tenant tenant, String deviceGuid, String channel, Instant startInstant, Instant endInstant, boolean ascending, Integer limit) throws BusinessException {
-        return null;
-    }
-
-    @Override
-    public List<Event> findOutgoingBy(Tenant tenant, String deviceGuid, String channel, Instant startInstant, Instant endInstant, boolean ascending, Integer limit) throws BusinessException {
-        return null;
-    }
-
-    @Override
-    public void removeBy(Tenant tenant, String deviceGuid) throws BusinessException {
-
     }
 
     @Override

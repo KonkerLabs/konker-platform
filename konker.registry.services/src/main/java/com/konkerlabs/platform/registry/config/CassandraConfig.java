@@ -6,29 +6,48 @@ import com.konkerlabs.platform.registry.business.model.converters.URIReadConvert
 import com.konkerlabs.platform.registry.business.model.converters.URIWriteConverter;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import lombok.Data;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.BeanClassLoaderAware;
+import org.springframework.cassandra.config.CassandraCqlClusterFactoryBean;
+import org.springframework.cassandra.config.ClusterBuilderConfigurer;
+import org.springframework.cassandra.config.java.AbstractClusterConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.cassandra.config.CassandraClusterFactoryBean;
+import org.springframework.data.cassandra.config.CassandraEntityClassScanner;
 import org.springframework.data.cassandra.config.CassandraSessionFactoryBean;
-import org.springframework.data.cassandra.config.java.AbstractCassandraConfiguration;
+import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.convert.CassandraConverter;
 import org.springframework.data.cassandra.convert.CustomConversions;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.CassandraAdminOperations;
 import org.springframework.data.cassandra.core.CassandraAdminTemplate;
-import org.springframework.data.cassandra.repository.config.EnableCassandraRepositories;
+import org.springframework.data.cassandra.core.CassandraOperations;
+import org.springframework.data.cassandra.core.CassandraTemplate;
+import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
+import org.springframework.data.cassandra.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.mapping.SimpleUserTypeResolver;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
-public class CassandraConfig extends AbstractCassandraConfiguration {
+@Configuration
+public class CassandraConfig
+        extends AbstractClusterConfiguration
+        implements BeanClassLoaderAware {
 
 
     private String clusterName;
     private String keyspace;
     private String seedHost;
     private int seedPort;
+    protected ClassLoader beanClassLoader;
+    private Logger LOG = LoggerFactory.getLogger(CassandraConfig.class);
 
     public void setClusterName(String clusterName) {
         this.clusterName = clusterName;
@@ -61,7 +80,7 @@ public class CassandraConfig extends AbstractCassandraConfiguration {
     public CassandraConfig() {
         Map<String, Object> defaultMap = new HashMap<>();
         defaultMap.put("cassandra.clustername", "konker");
-        defaultMap.put("cassandra.keyspace", "koknerevents");
+        defaultMap.put("cassandra.keyspace", "konkerevents");
         defaultMap.put("cassandra.hostname", "localhost");
         defaultMap.put("cassandra.port", 9042);
         Config defaultConf = ConfigFactory.parseMap(defaultMap);
@@ -72,7 +91,7 @@ public class CassandraConfig extends AbstractCassandraConfiguration {
         setSeedPort(config.getInt("cassandra.port"));
     }
 
-    @Override
+
     protected String getKeyspaceName() {
         return keyspace;
     }
@@ -92,19 +111,51 @@ public class CassandraConfig extends AbstractCassandraConfiguration {
         return seedHost;
     }
 
-    @Override
-    public CassandraAdminOperations cassandraTemplate() throws Exception {
 
-        return super.cassandraTemplate();
+    @Bean
+    public CassandraAdminOperations cassandraTemplate() throws Exception {
+        return new CassandraAdminTemplate(this.session().getObject(), this.cassandraConverter());
     }
 
-    @Override
+    public void setBeanClassLoader(ClassLoader classLoader) {
+        this.beanClassLoader = classLoader;
+    }
+
+    public String[] getEntityBasePackages() {
+        return new String[]{this.getClass().getPackage().getName()};
+    }
+
+
+    public CassandraOperations template() {
+        CassandraTemplate cassandraTemplate = null;
+        try {
+            cassandraTemplate =
+                    new CassandraTemplate(
+                            session().getObject(),
+                            this.cassandraConverter()
+                    );
+        } catch (ClassNotFoundException e) {
+            LOG.error("Error in cassandraTemplate instance", e);
+        }
+        return cassandraTemplate;
+    }
+
+
     public CustomConversions customConversions() {
         return new CustomConversions(converters);
     }
 
-    public static final List<Converter<?,?>> converters = Arrays.asList(
-            new Converter[] {
+    @Override
+    protected ClusterBuilderConfigurer getClusterBuilderConfigurer() {
+        return super.getClusterBuilderConfigurer();
+    }
+
+    public SchemaAction getSchemaAction() {
+        return SchemaAction.NONE;
+    }
+
+    public static final List<Converter<?, ?>> converters = Arrays.asList(
+            new Converter[]{
                     new InstantReadConverter(),
                     new InstantWriteConverter(),
                     new URIReadConverter(),
@@ -112,25 +163,50 @@ public class CassandraConfig extends AbstractCassandraConfiguration {
             }
     );
 
-    @Override
-    @Bean(name = "cassandraSession")
+
+    @Bean
     public CassandraSessionFactoryBean session() throws ClassNotFoundException {
-        CassandraSessionFactoryBean session = new CassandraSessionFactoryBean();
-        session.setCluster(this.cluster().getObject());
-        session.setConverter(this.cassandraConverter());
-        session.setKeyspaceName(this.getKeyspaceName());
-        session.setSchemaAction(this.getSchemaAction());
-        session.setStartupScripts(this.getStartupScripts());
-        session.setShutdownScripts(this.getShutdownScripts());
+        CassandraSessionFactoryBean session = null;
+        if (this.cluster() != null && this.cluster().getObject() != null) {
+            session = new CassandraSessionFactoryBean();
+            session.setCluster(this.cluster().getObject());
+            session.setConverter(this.cassandraConverter());
+            session.setKeyspaceName(this.getKeyspaceName());
+            session.setSchemaAction(this.getSchemaAction());
+            session.setStartupScripts(this.getStartupScripts());
+            session.setShutdownScripts(this.getShutdownScripts());
+
+        }
         return session;
     }
 
-    @Override
-    @Bean(name = "cassandraConverter")
+    @Bean
     public CassandraConverter cassandraConverter() throws ClassNotFoundException {
         MappingCassandraConverter mappingCassandraConverter =
                 new MappingCassandraConverter(this.cassandraMapping());
         mappingCassandraConverter.setCustomConversions(this.customConversions());
         return mappingCassandraConverter;
     }
+
+    @Bean
+    public CassandraMappingContext cassandraMapping() throws ClassNotFoundException {
+        BasicCassandraMappingContext mappingContext = new BasicCassandraMappingContext();
+        mappingContext.setBeanClassLoader(this.beanClassLoader);
+        mappingContext.setInitialEntitySet(CassandraEntityClassScanner.scan(this.getEntityBasePackages()));
+        CustomConversions customConversions = this.customConversions();
+        mappingContext.setCustomConversions(customConversions);
+        mappingContext.setSimpleTypeHolder(customConversions.getSimpleTypeHolder());
+        mappingContext.setUserTypeResolver(new SimpleUserTypeResolver(this.cluster().getObject(), this.getKeyspaceName()));
+        return mappingContext;
+    }
+
+    /*@Bean
+    public CassandraClusterFactoryBean defaultCluster() {
+        CassandraClusterFactoryBean cluster = new CassandraClusterFactoryBean();
+        cluster.setContactPoints(getContactPoints());
+        cluster.setPort(getPort());
+        return cluster;
+    }*/
+
+
 }

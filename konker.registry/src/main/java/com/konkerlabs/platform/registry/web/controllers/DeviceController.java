@@ -317,15 +317,25 @@ public class DeviceController implements ApplicationContextAware {
 
         if (serviceResponse.isOk()) {
             DeviceRegisterService.DeviceSecurityCredentials credentials = serviceResponse.getResult();
+
+            ServiceResponse<DeviceDataURLs> serviceURLResponse =
+                    deviceRegisterService.getDeviceDataURLs(
+                            tenant, credentials.getDevice(),
+                            user.getLanguage().getLocale()
+                    );
+
             ServiceResponse<String> base64QrCode =
                     deviceRegisterService.generateQrCodeAccess(credentials, 200, 200);
+
+
 
             return new ModelAndView("devices/password")
                     .addObject("action", MessageFormat.format("/devices/{0}/password", deviceGuid))
                     .addObject("password", credentials.getPassword())
                     .addObject("device", credentials.getDevice())
                     .addObject("pubServerInfo", pubServerConfig)
-                    .addObject("qrcode", base64QrCode.getResult());
+                    .addObject("qrcode", base64QrCode.getResult())
+                    .addObject("deviceDataURLs", serviceURLResponse.getResult());
         } else {
             List<String> messages = serviceResponse.getResponseMessages()
                     .entrySet().stream()
