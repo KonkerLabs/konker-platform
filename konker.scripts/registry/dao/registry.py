@@ -254,17 +254,29 @@ def save_incoming_events(incomingEvents, host):
     allEvents = []
     
     for incoming in incomingEvents:
-        allEvents.append({
-            "ts" : incoming.timestamp,
-            "incoming" : {
-                "deviceGuid" : incoming.device_guid,
-                "tenantDomain" : incoming.tenant_domain,
-                "channel" : incoming.channel,
-                "deviceId" : incoming.device_id
-            },
-            "payload" : incoming.payload
-        })
-    
+        if incoming.deleted:
+            allEvents.append({
+                "ts" : incoming.timestamp,
+                "incoming" : {
+                    "deviceGuid" : incoming.device_guid,
+                    "tenantDomain" : incoming.tenant_domain,
+                    "channel" : incoming.channel,
+                    "deviceId" : incoming.device_id
+                },
+                "payload" : incoming.payload,
+                "deleted" : incoming.deleted
+            })
+        else:
+            allEvents.append({
+                "ts" : incoming.timestamp,
+                "incoming" : {
+                    "deviceGuid" : incoming.device_guid,
+                    "tenantDomain" : incoming.tenant_domain,
+                    "channel" : incoming.channel,
+                    "deviceId" : incoming.device_id
+                },
+                "payload" : incoming.payload
+            })
     try:
         db.incomingEvents.insert_many(allEvents)
         
@@ -278,17 +290,31 @@ def save_outgoing_events(outgoingEvents, host):
     allEvents = []
     
     for outgoing in outgoingEvents:
-        allEvents.append({
-            "ts" : outgoing.timestamp,
-            "incoming" : json.loads(outgoing.incoming),
-            "outgoing" : {
-                "deviceGuid" : outgoing.device_guid,
-                "tenantDomain" : outgoing.tenant_domain,
-                "channel" : outgoing.channel,
-                "deviceId" : outgoing.device_id
-            },
-            "payload" : outgoing.payload
-        })
+        if outgoing.deleted:
+            allEvents.append({
+                "ts" : outgoing.timestamp,
+                "incoming" : json.loads(outgoing.incoming),
+                "outgoing" : {
+                    "deviceGuid" : outgoing.device_guid,
+                    "tenantDomain" : outgoing.tenant_domain,
+                    "channel" : outgoing.channel,
+                    "deviceId" : outgoing.device_id
+                },
+                "payload" : outgoing.payload,
+                "deleted" : outgoing.deleted
+            })
+        else:
+            allEvents.append({
+                "ts" : outgoing.timestamp,
+                "incoming" : json.loads(outgoing.incoming),
+                "outgoing" : {
+                    "deviceGuid" : outgoing.device_guid,
+                    "tenantDomain" : outgoing.tenant_domain,
+                    "channel" : outgoing.channel,
+                    "deviceId" : outgoing.device_id
+                },
+                "payload" : outgoing.payload
+            })
     
     try:
         db.outgoingEvents.insert_many(allEvents)
