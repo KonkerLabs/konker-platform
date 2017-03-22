@@ -10,6 +10,7 @@ import java.time.Duration;
 import java.time.Instant;
 
 import com.konkerlabs.platform.registry.business.repositories.events.api.EventRepository;
+import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -42,7 +43,8 @@ import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
         RedisTestConfiguration.class,
         BusinessTestConfiguration.class,
         BusinessTestConfiguration.class,
-        PubServerConfig.class
+        PubServerConfig.class,
+        EventStorageConfig.class
 })
 @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json"})
 public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {

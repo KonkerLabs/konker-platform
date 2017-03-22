@@ -13,6 +13,7 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 
+import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -47,7 +48,9 @@ import com.konkerlabs.platform.registry.test.data.base.MongoTestConfiguration;
         MongoTestConfiguration.class,
         BusinessTestConfiguration.class,
         IntegrationLayerTestContext.class,
-        DeviceEventProcessorTest.BusinessLayerConfiguration.class, RedisConfig.class
+        DeviceEventProcessorTest.BusinessLayerConfiguration.class,
+        RedisConfig.class,
+        EventStorageConfig.class
 })
 public class DeviceEventProcessorTest {
 
