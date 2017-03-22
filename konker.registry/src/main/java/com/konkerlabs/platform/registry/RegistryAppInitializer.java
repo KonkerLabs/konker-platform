@@ -8,8 +8,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration.Dynamic;
 
-import com.konkerlabs.platform.registry.config.*;
-import com.konkerlabs.platform.utilities.parsers.json.JsonParsingServiceImpl;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestContextListener;
 import org.springframework.web.filter.HiddenHttpMethodFilter;
