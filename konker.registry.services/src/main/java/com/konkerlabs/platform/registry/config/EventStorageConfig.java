@@ -17,9 +17,29 @@ public class EventStorageConfig {
 
     public EventStorageConfig() {
         Map<String, Object> defaultMap = new HashMap<>();
-        defaultMap.put("eventstorage.bean", "mongoEvents");
+        defaultMap.put("eventstorage.bean", EventStorageConfigType.MONGODB.bean());
         Config defaultConf = ConfigFactory.parseMap(defaultMap);
         Config config = ConfigFactory.load().withFallback(defaultConf);
         setEventRepositoryBean(config.getString("eventstorage.bean"));
+    }
+
+    @Bean
+    public EventStorageConfig instance(){
+        return new EventStorageConfig();
+    }
+
+    public enum EventStorageConfigType {
+        MONGODB("mongoEvents"),
+        CASSANDRA("cassandraEvents");
+
+        private String bean;
+
+        EventStorageConfigType(String bean) {
+            this.bean = bean;
+        }
+
+        public String bean(){
+            return this.bean;
+        }
     }
 }

@@ -10,6 +10,7 @@ import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanClassLoaderAware;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cassandra.config.ClusterBuilderConfigurer;
 import org.springframework.cassandra.config.java.AbstractClusterConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -29,10 +30,7 @@ import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.SimpleUserTypeResolver;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 @Configuration
@@ -41,12 +39,15 @@ public class CassandraConfig
         implements BeanClassLoaderAware {
 
 
-    private String clusterName;
-    private String keyspace;
-    private String seedHost;
-    private int seedPort;
+    protected String clusterName;
+    protected String keyspace;
+    protected String seedHost;
+    protected int seedPort;
     protected ClassLoader beanClassLoader;
-    private Logger LOG = LoggerFactory.getLogger(CassandraConfig.class);
+    @Autowired
+    protected EventStorageConfig eventStorageConfig;
+    private static final Logger LOG = LoggerFactory.getLogger(CassandraConfig.class);
+
 
     public void setClusterName(String clusterName) {
         this.clusterName = clusterName;
@@ -83,11 +84,21 @@ public class CassandraConfig
         defaultMap.put("cassandra.hostname", "localhost");
         defaultMap.put("cassandra.port", 9042);
         Config defaultConf = ConfigFactory.parseMap(defaultMap);
-        Config config = ConfigFactory.load().withFallback(defaultConf);
-        setClusterName(config.getString("cassandra.clustername"));
-        setKeyspace(config.getString("cassandra.keyspace"));
-        setSeedHost(config.getString("cassandra.hostname"));
-        setSeedPort(config.getInt("cassandra.port"));
+        try {
+            Config config = ConfigFactory.load().withFallback(defaultConf);
+            setClusterName(config.getString("cassandra.clustername"));
+            setKeyspace(config.getString("cassandra.keyspace"));
+            setSeedHost(config.getString("cassandra.hostname"));
+            setSeedPort(config.getInt("cassandra.port"));
+        } catch (Exception e) {
+            LOG.warn(String.format("Cassandra is not configured, using default cassandra config\n" +
+                            "cassandra.clustername: {0}\n" +
+                            "cassandra.keyspace: {1}\n" +
+                            "cassandra.hostname: {2}\n" +
+                            "cassandra.port: {3}\n",
+                    getClusterName(), getKeyspace(), getSeedHost(), getSeedPort())
+            );
+        }
     }
 
 
@@ -113,7 +124,13 @@ public class CassandraConfig
 
     @Bean
     public CassandraAdminOperations cassandraTemplate() throws Exception {
-        return new CassandraAdminTemplate(this.session().getObject(), this.cassandraConverter());
+        if(Optional.ofNullable(this.session()).isPresent() &&
+                Optional.ofNullable(this.cassandraConverter()).isPresent()){
+            return new CassandraAdminTemplate(this.session().getObject(), this.cassandraConverter());
+        } else {
+            return null;
+        }
+
     }
 
     public void setBeanClassLoader(ClassLoader classLoader) {
@@ -166,46 +183,63 @@ public class CassandraConfig
     @Bean
     public CassandraSessionFactoryBean session() throws ClassNotFoundException {
         CassandraSessionFactoryBean session = null;
-        if (this.cluster() != null && this.cluster().getObject() != null) {
-            session = new CassandraSessionFactoryBean();
-            session.setCluster(this.cluster().getObject());
-            session.setConverter(this.cassandraConverter());
-            session.setKeyspaceName(this.getKeyspaceName());
-            session.setSchemaAction(this.getSchemaAction());
-            session.setStartupScripts(this.getStartupScripts());
-            session.setShutdownScripts(this.getShutdownScripts());
-
+        try {
+            if (eventStorageConfig.getEventRepositoryBean()
+                    .equals(EventStorageConfig.EventStorageConfigType.CASSANDRA.bean()) &&
+                    this.cluster() != null && this.cluster().getObject() != null) {
+                session = new CassandraSessionFactoryBean();
+                session.setCluster(this.cluster().getObject());
+                session.setConverter(this.cassandraConverter());
+                session.setKeyspaceName(this.getKeyspaceName());
+                session.setSchemaAction(this.getSchemaAction());
+                session.setStartupScripts(this.getStartupScripts());
+                session.setShutdownScripts(this.getShutdownScripts());
+            } else {
+                LOG.debug("Cassandra is not configured as event storage...");
+            }
+        } catch (Exception e) {
+            LOG.error("Fail trying to create the cassandra session client...", e);
         }
+
         return session;
     }
 
     @Bean
     public CassandraConverter cassandraConverter() throws ClassNotFoundException {
-        MappingCassandraConverter mappingCassandraConverter =
-                new MappingCassandraConverter(this.cassandraMapping());
-        mappingCassandraConverter.setCustomConversions(this.customConversions());
-        return mappingCassandraConverter;
+        try {
+            if (eventStorageConfig.getEventRepositoryBean()
+                    .equals(EventStorageConfig.EventStorageConfigType.CASSANDRA.bean())){
+                MappingCassandraConverter mappingCassandraConverter =
+                        new MappingCassandraConverter(this.cassandraMapping());
+                mappingCassandraConverter.setCustomConversions(this.customConversions());
+                return mappingCassandraConverter;
+            }
+        } catch (Exception e){
+            LOG.error("Fail trying to create the cassandra converters...", e);
+        }
+
+        return null;
     }
 
     @Bean
     public CassandraMappingContext cassandraMapping() throws ClassNotFoundException {
-        BasicCassandraMappingContext mappingContext = new BasicCassandraMappingContext();
-        mappingContext.setBeanClassLoader(this.beanClassLoader);
-        mappingContext.setInitialEntitySet(CassandraEntityClassScanner.scan(this.getEntityBasePackages()));
-        CustomConversions customConversions = this.customConversions();
-        mappingContext.setCustomConversions(customConversions);
-        mappingContext.setSimpleTypeHolder(customConversions.getSimpleTypeHolder());
-        mappingContext.setUserTypeResolver(new SimpleUserTypeResolver(this.cluster().getObject(), this.getKeyspaceName()));
-        return mappingContext;
+        try {
+            BasicCassandraMappingContext mappingContext = new BasicCassandraMappingContext();
+            mappingContext.setBeanClassLoader(this.beanClassLoader);
+            mappingContext.setInitialEntitySet(CassandraEntityClassScanner.scan(this.getEntityBasePackages()));
+            CustomConversions customConversions = this.customConversions();
+            mappingContext.setCustomConversions(customConversions);
+            mappingContext.setSimpleTypeHolder(customConversions.getSimpleTypeHolder());
+            mappingContext.setUserTypeResolver(new SimpleUserTypeResolver(this.cluster().getObject(), this.getKeyspaceName()));
+            return mappingContext;
+        } catch (Exception e){
+            LOG.error("Fail trying to create the cassandra mapping...", e);
+        }
+        return null;
     }
 
-    /*@Bean
-    public CassandraClusterFactoryBean defaultCluster() {
-        CassandraClusterFactoryBean cluster = new CassandraClusterFactoryBean();
-        cluster.setContactPoints(getContactPoints());
-        cluster.setPort(getPort());
-        return cluster;
-    }*/
-
-
+    @Override
+    protected List<String> getStartupScripts() {
+        return super.getStartupScripts();
+    }
 }

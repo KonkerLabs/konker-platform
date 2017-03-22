@@ -196,6 +196,8 @@ class CassandraIncommingEvent {
     private Instant timestamp;
     @Column("device_id")
     private String deviceId;
+    @Column("deleted")
+    private Boolean deleted;
     @Column("payload")
     private String payload;
 }
@@ -214,6 +216,8 @@ class CassandraOutgoingEvent {
     private Instant timestamp;
     @Column("device_id")
     private String deviceId;
+    @Column("deleted")
+    private Boolean deleted;
     @Column("payload")
     private String payload;
     @Column("incomming")

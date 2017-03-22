@@ -40,10 +40,17 @@ public class DeviceLogEventServiceImpl implements DeviceLogEventService {
 
     @PostConstruct
     public void init(){
-        eventRepository =
-                (EventRepository) applicationContext.getBean(
-                        eventStorageConfig.getEventRepositoryBean()
-                );
+        try {
+            eventRepository =
+                    (EventRepository) applicationContext.getBean(
+                            eventStorageConfig.getEventRepositoryBean()
+                    );
+        } catch (Exception e){
+            eventRepository =
+                    (EventRepository) applicationContext.getBean(
+                            EventStorageConfig.EventStorageConfigType.MONGODB.bean()
+                    );
+        }
     }
 
     @Override
