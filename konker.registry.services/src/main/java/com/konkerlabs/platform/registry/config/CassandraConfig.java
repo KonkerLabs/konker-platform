@@ -13,6 +13,7 @@ import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cassandra.config.ClusterBuilderConfigurer;
 import org.springframework.cassandra.config.java.AbstractClusterConfiguration;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -44,6 +45,9 @@ public class CassandraConfig
     protected String seedHost;
     protected int seedPort;
     protected ClassLoader beanClassLoader;
+    @Autowired
+    private ApplicationContext applicationContext;
+
     @Autowired
     protected EventStorageConfig eventStorageConfig;
     private static final Logger LOG = LoggerFactory.getLogger(CassandraConfig.class);
@@ -99,6 +103,27 @@ public class CassandraConfig
                     getClusterName(), getKeyspace(), getSeedHost(), getSeedPort())
             );
         }
+        if(eventStorageConfig.getEventRepositoryBean()
+                .equals(EventStorageConfig.EventStorageConfigType.CASSANDRA)){
+            try {
+
+                CassandraSessionFactoryBean session = session();
+                applicationContext.getAutowireCapableBeanFactory().autowireBean(session);
+                applicationContext.getAutowireCapableBeanFactory()
+                        .initializeBean(session, "CassandraSessionFactoryBean");
+
+                CassandraAdminOperations cassandraTemplate = cassandraTemplate();
+                applicationContext.getAutowireCapableBeanFactory().autowireBean(cassandraTemplate);
+                applicationContext.getAutowireCapableBeanFactory()
+                        .initializeBean(cassandraTemplate, "CassandraAdminOperations");
+            } catch (Exception e) {
+                LOG.error("Error creating Cassandra template bean");
+            }
+
+        } else {
+            LOG.debug("Cassandra is not configured as event storage...");
+        }
+
     }
 
 
@@ -122,7 +147,7 @@ public class CassandraConfig
     }
 
 
-    @Bean
+    /*@Bean*/
     public CassandraAdminOperations cassandraTemplate() throws Exception {
         try{
             if(Optional.ofNullable(this.session()).isPresent() &&
@@ -187,7 +212,7 @@ public class CassandraConfig
     );
 
 
-    @Bean
+    /*@Bean*/
     public CassandraSessionFactoryBean session() throws ClassNotFoundException {
         CassandraSessionFactoryBean session = null;
         try {

@@ -32,6 +32,7 @@ public class DeviceEventServiceImpl implements DeviceEventService {
     private ApplicationContext applicationContext;
     @Autowired
     private EventStorageConfig eventStorageConfig;
+
     private EventRepository eventRepository;
 
 
