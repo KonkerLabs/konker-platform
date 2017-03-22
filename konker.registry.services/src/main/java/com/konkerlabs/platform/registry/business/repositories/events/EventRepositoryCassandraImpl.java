@@ -4,6 +4,7 @@ package com.konkerlabs.platform.registry.business.repositories.events;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
@@ -15,6 +16,8 @@ import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 import com.mongodb.util.JSON;
 import lombok.Builder;
 import lombok.Data;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cassandra.core.Ordering;
 import org.springframework.cassandra.core.PrimaryKeyType;
@@ -27,9 +30,11 @@ import org.springframework.data.cassandra.mapping.Table;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Repository("cassandraEvents")
 public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
@@ -50,6 +55,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
 
     public static final String INCOMMINGTABLE = "incoming_events";
     public static final String OUTGOINGTABLE = "outgoing_events";
+    private static final Logger LOG = LoggerFactory.getLogger(EventRepositoryCassandraImpl.class);
 
     @Override
     protected Event doSave(Tenant tenant, Event event, Type type) throws BusinessException {
@@ -119,14 +125,14 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
 
     @Override
     protected List<Event> doFindBy(Tenant tenant,
-                                 String deviceGuid,
-                                 String channel,
-                                 Instant startInstant,
-                                 Instant endInstant,
-                                 boolean ascending,
-                                 Integer limit,
-                                 Type type,
-                                 boolean isDeleted) throws BusinessException {
+                                   String deviceGuid,
+                                   String channel,
+                                   Instant startInstant,
+                                   Instant endInstant,
+                                   boolean ascending,
+                                   Integer limit,
+                                   Type type,
+                                   boolean isDeleted) throws BusinessException {
 
         Optional.ofNullable(tenant)
                 .filter(tenant1 -> Optional.ofNullable(tenant1.getDomainName()).filter(s -> !s.isEmpty()).isPresent())
@@ -139,27 +145,86 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
             throw new IllegalArgumentException("Limit cannot be null when start instant isn't provided");
 
         Select queryIncomming = QueryBuilder.select().from(INCOMMINGTABLE);
-        queryIncomming.where(QueryBuilder.eq("tentant_domain", tenant.getDomainName()));
+        queryIncomming.where(QueryBuilder.eq("tenant_domain", tenant.getDomainName()));
         queryIncomming.where(QueryBuilder.eq("device_guid", deviceGuid));
-        queryIncomming.where(QueryBuilder.eq("channel", channel));
-        queryIncomming.where(QueryBuilder.gte("timestamp", startInstant));
-        queryIncomming.where(QueryBuilder.lte("timestamp", endInstant));
+        Optional.ofNullable(channel).ifPresent(value -> {
+            queryIncomming.where(QueryBuilder.eq("channel", value));
+        });
+
+        Optional.ofNullable(startInstant).ifPresent(value -> {
+            queryIncomming.where(QueryBuilder.gte("timestamp", value));
+        });
+        Optional.ofNullable(endInstant).ifPresent(value -> {
+            queryIncomming.where(QueryBuilder.lte("timestamp", value));
+        });
 
 
-        Select queryOutgoing = QueryBuilder.select().from(INCOMMINGTABLE);
-        queryOutgoing.where(QueryBuilder.eq("tentant_domain", tenant.getDomainName()));
+        Select queryOutgoing = QueryBuilder.select().from(OUTGOINGTABLE);
+        queryOutgoing.where(QueryBuilder.eq("tenant_domain", tenant.getDomainName()));
         queryOutgoing.where(QueryBuilder.eq("device_guid", deviceGuid));
-        queryOutgoing.where(QueryBuilder.eq("channel", channel));
-        queryOutgoing.where(QueryBuilder.gte("timestamp", startInstant));
-        queryOutgoing.where(QueryBuilder.lte("timestamp", endInstant));
+        Optional.ofNullable(channel).ifPresent(value -> {
+            queryOutgoing.where(QueryBuilder.eq("channel", value));
+        });
 
-        List<CassandraIncommingEvent> incommingEvents =
-                cassandraOperations.select(queryIncomming, CassandraIncommingEvent.class);
+        Optional.ofNullable(startInstant).ifPresent(value -> {
+            queryOutgoing.where(QueryBuilder.gte("timestamp", value));
+        });
+        Optional.ofNullable(endInstant).ifPresent(value -> {
+            queryOutgoing.where(QueryBuilder.lte("timestamp", value));
+        });
 
-        List<CassandraOutgoingEvent> outgoingEvents =
-                cassandraOperations.select(queryIncomming, CassandraOutgoingEvent.class);
+        List<Event> events = new ArrayList<>();
+        if(type.equals(Type.INCOMING)){
+            List<CassandraIncommingEvent> incommingEvents =
+                    cassandraOperations.select(queryIncomming, CassandraIncommingEvent.class);
+            events.addAll(incommingEvents.stream().map(incoming -> {
+                return Event.builder().incoming(
+                        Event.EventActor.builder()
+                                .deviceGuid(incoming.getDeviceGuid())
+                                .tenantDomain(incoming.getTenantDomain())
+                                .channel(incoming.getChannel())
+                                .deviceId(incoming.getDeviceId())
+                                .build())
+                        .outgoing(null)
+                        .payload(incoming.getPayload())
+                        .timestamp(incoming.getTimestamp())
+                        .build();
+            }).collect(Collectors.toList()));
 
-        List<Event> events = Collections.EMPTY_LIST;
+        }
+        if(type.equals(Type.OUTGOING)){
+            List<CassandraOutgoingEvent> outgoingEvents =
+                    cassandraOperations.select(queryOutgoing, CassandraOutgoingEvent.class);
+
+            events.addAll(outgoingEvents.stream().map(outgoing -> {
+                return Event.builder().outgoing(
+                        Event.EventActor.builder()
+                                .deviceGuid(outgoing.getDeviceGuid())
+                                .tenantDomain(outgoing.getTenantDomain())
+                                .channel(outgoing.getChannel())
+                                .deviceId(outgoing.getDeviceId())
+                                .build())
+                        .incoming(Optional.ofNullable(outgoing.getIncomming())
+                                .map(incoming -> {
+                                    try {
+                                        Map<String, Object> incomingMap = jsonParsingService.toMap(outgoing.getIncomming());
+                                        return Event.EventActor.builder()
+                                                .deviceGuid(Optional.ofNullable(incomingMap.get("deviceGuid")).isPresent() ? incomingMap.get("deviceGuid").toString() : null)
+                                                .tenantDomain(Optional.ofNullable(incomingMap.get("tenantDomain")).isPresent() ? incomingMap.get("tenantDomain").toString() : null)
+                                                .channel(Optional.ofNullable(incomingMap.get("channel")).isPresent() ? incomingMap.get("channel").toString() : null)
+                                                .deviceId(Optional.ofNullable(incomingMap.get("deviceId")).isPresent() ? incomingMap.get("deviceId").toString() : null)
+                                                .build();
+                                    } catch (JsonProcessingException e) {
+                                        LOG.error("Error transforming incoming message : " + outgoing.getIncomming(), e);
+                                    }
+                                    return null;
+                                }).orElse(null))
+                        .payload(outgoing.getPayload())
+                        .timestamp(outgoing.getTimestamp())
+                        .build();
+            }).collect(Collectors.toList()));
+        }
+
         return events;
     }
 
@@ -173,7 +238,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
 
         Delete query = QueryBuilder.delete()
                 .from(type.equals(Type.INCOMING) ? INCOMMINGTABLE : OUTGOINGTABLE)
-                .where(QueryBuilder.eq("tentant_domain", tenant.getDomainName()))
+                .where(QueryBuilder.eq("tenant_domain", tenant.getDomainName()))
                 .and(QueryBuilder.eq("device_guid", deviceGuid))
                 .ifExists();
 

@@ -124,12 +124,19 @@ public class CassandraConfig
 
     @Bean
     public CassandraAdminOperations cassandraTemplate() throws Exception {
-        if(Optional.ofNullable(this.session()).isPresent() &&
-                Optional.ofNullable(this.cassandraConverter()).isPresent()){
-            return new CassandraAdminTemplate(this.session().getObject(), this.cassandraConverter());
-        } else {
-            return null;
+        try{
+            if(Optional.ofNullable(this.session()).isPresent() &&
+                    Optional.ofNullable(this.cassandraConverter()).isPresent()){
+                return new CassandraAdminTemplate(this.session().getObject(), this.cassandraConverter());
+            } else {
+                return null;
+            }
+        } catch (Exception e){
+            LOG.error("Error construct Cassandra Template", e);
         }
+
+        return null;
+
 
     }
 
