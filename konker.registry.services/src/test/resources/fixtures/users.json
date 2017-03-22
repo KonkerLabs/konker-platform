@@ -3,10 +3,8 @@
     {
       "_id" : "admin@konkerlabs.com",
       "tenant" : {
-        "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
-        "_class" : "com.konkerlabs.platform.registry.model.Tenant",
-        "name" : "Konker",
-      	"domainName" : "konker"
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref": "tenants"
       },
       "_class" : "com.konkerlabs.platform.registry.model.User",
       "password" : "PBKDF2WithHmac$SHA256$10000$Ssrhh8AflmSv8FvTN1hILw==$vPJFFlOE1CBxmjMSw2TrCBiQZXjLgYZQKDso9k/T59Y=",
@@ -19,10 +17,8 @@
     {
       "_id" : "foo@konkerlabs.com",
       "tenant" : {
-        "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
-        "_class" : "com.konkerlabs.platform.registry.model.Tenant",
-        "name" : "Konker",
-      	"domainName" : "konker"
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref": "tenants"
       },
       "_class" : "com.konkerlabs.platform.registry.model.User",
       "password" : "PBKDF2WithHmac$SHA256$10000$Ssrhh8AflmSv8FvTN1hILw==$vPJFFlOE1CBxmjMSw2TrCBiQZXjLgYZQKDso9k/T59Y=",
@@ -34,10 +30,8 @@
     {
       "_id" : "bar@konkerlabs.com",
       "tenant" : {
-        "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
-        "_class" : "com.konkerlabs.platform.registry.model.Tenant",
-        "name" : "Konker",
-      	"domainName" : "konker"
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref": "tenants"
       },
       "_class" : "com.konkerlabs.platform.registry.model.User",
       "password" : "PBKDF2WithHmac$SHA256$10000$Ssrhh8AflmSv8FvTN1hILw==$vPJFFlOE1CBxmjMSw2TrCBiQZXjLgYZQKDso9k/T59Y=",
