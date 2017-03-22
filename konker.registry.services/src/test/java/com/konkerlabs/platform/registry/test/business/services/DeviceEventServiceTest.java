@@ -10,6 +10,7 @@ import com.konkerlabs.platform.registry.business.repositories.events.api.EventRe
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
@@ -37,7 +38,7 @@ import static org.hamcrest.Matchers.*;
 @ContextConfiguration(classes = {
         MongoTestConfiguration.class,
         BusinessTestConfiguration.class,
-        PubServerConfig.class
+        PubServerConfig.class, EventStorageConfig.class
 })
 @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json"})
 public class DeviceEventServiceTest extends BusinessLayerTestSupport {
