@@ -47,6 +47,7 @@ import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.DeviceSecurityCredentials;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
@@ -541,5 +542,26 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     }
 
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json"})
+    public void shouldGenerateSecurityCredentials() {
+    	Device device = deviceRegisterService
+                .findByTenantDomainNameAndDeviceGuid(currentTenant.getDomainName(), THE_DEVICE_GUID);
+    	
+    	ServiceResponse<DeviceSecurityCredentials> credentials = deviceRegisterService.generateSecurityPassword(device.getTenant(), device.getGuid());
+    	
+    	assertThat(credentials.getStatus(), equalTo(ServiceResponse.Status.OK));
+    	assertThat(credentials.getResult().getDevice().getApiKey(), is(not(device.getApiKey())));
+    	assertThat(credentials.getResult().getDevice().getSecurityHash(), is(not(device.getSecurityHash())));
+    }
+    
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json"})
+    public void shouldReturnErrorWhenGenerateSecurityCredentials() {
+    	ServiceResponse<DeviceSecurityCredentials> credentials = deviceRegisterService
+    			.generateSecurityPassword(currentTenant, ANOTHER_DEVICE_GUID);
+    	
+    	assertThat(credentials.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+    }
 
 }

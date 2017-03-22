@@ -189,6 +189,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                 PasswordManager passwordManager = new PasswordManager();
                 String randomPassword = passwordManager.generateRandomPassword(12);
                 existingDevice.setSecurityHash(passwordManager.createHash(randomPassword));
+                existingDevice.regenerateApiKey();
                 Device saved = deviceRepository.save(existingDevice);
 
                 LOGGER.info("Password generated for device id: {}", existingDevice.getDeviceId(), tenant.toURI(), tenant.getLogLevel());
