@@ -102,6 +102,10 @@ public class Device implements URIDealer, Validatable, UserDetails {
 
 	public void onRegistration() {
 		setRegistrationDate(Instant.now());
+		regenerateApiKey();
+	}
+	
+	public void regenerateApiKey() {
 		setApiKey(new BigInteger(60, new Random()).toString(32));
 	}
 
