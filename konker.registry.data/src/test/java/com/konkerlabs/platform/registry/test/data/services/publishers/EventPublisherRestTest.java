@@ -10,6 +10,7 @@ import java.net.URI;
 import java.text.MessageFormat;
 import java.time.Instant;
 
+import com.konkerlabs.platform.registry.business.repositories.events.api.EventRepository;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -34,7 +35,6 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
-import com.konkerlabs.platform.registry.business.repositories.events.EventRepository;
 import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.data.services.publishers.api.EventPublisher;
 import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;

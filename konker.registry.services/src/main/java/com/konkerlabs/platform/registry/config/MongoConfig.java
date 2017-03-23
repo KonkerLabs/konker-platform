@@ -32,13 +32,13 @@ public class MongoConfig extends AbstractMongoConfiguration {
     
     public MongoConfig() {
     	Map<String, Object> defaultMap = new HashMap<>();
-    	defaultMap.put("mongo.hostname", "localhost");
-    	defaultMap.put("mongo.port", 27017);
+    	defaultMap.put("impl.hostname", "localhost");
+    	defaultMap.put("impl.port", 27017);
     	Config defaultConf = ConfigFactory.parseMap(defaultMap);
 
     	Config config = ConfigFactory.load().withFallback(defaultConf);
-    	setHostname(config.getString("mongo.hostname"));
-    	setPort(config.getInt("mongo.port"));
+    	setHostname(config.getString("impl.hostname"));
+    	setPort(config.getInt("impl.port"));
     }
 
 	public static final List<Converter<?,?>> converters = Arrays.asList(

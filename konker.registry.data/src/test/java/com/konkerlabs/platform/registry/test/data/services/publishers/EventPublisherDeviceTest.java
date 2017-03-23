@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -55,7 +56,8 @@ import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
         BusinessTestConfiguration.class,
         MongoTestConfiguration.class,
         RedisTestConfiguration.class,
-        PubServerConfig.class
+        PubServerConfig.class,
+        EventStorageConfig.class
 })
 @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json"})
 public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
