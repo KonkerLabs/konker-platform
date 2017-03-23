@@ -103,26 +103,6 @@ public class CassandraConfig
                     getClusterName(), getKeyspace(), getSeedHost(), getSeedPort())
             );
         }
-        /*if(eventStorageConfig.getEventRepositoryBean()
-                .equals(EventStorageConfig.EventStorageConfigType.CASSANDRA.bean())){
-            try {
-
-                CassandraSessionFactoryBean session = session();
-                applicationContext.getAutowireCapableBeanFactory().autowireBean(session);
-                applicationContext.getAutowireCapableBeanFactory()
-                        .initializeBean(session, "CassandraSessionFactoryBean");
-
-                CassandraAdminOperations cassandraTemplate = cassandraTemplate();
-                applicationContext.getAutowireCapableBeanFactory().autowireBean(cassandraTemplate);
-                applicationContext.getAutowireCapableBeanFactory()
-                        .initializeBean(cassandraTemplate, "CassandraAdminOperations");
-            } catch (Exception e) {
-                LOG.error("Error creating Cassandra template bean");
-            }
-
-        } else {
-            LOG.debug("Cassandra is not configured as event storage...");
-        }*/
 
     }
 

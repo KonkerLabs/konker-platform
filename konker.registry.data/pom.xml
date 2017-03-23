@@ -131,7 +131,6 @@
             <artifactId>spring-data-cassandra</artifactId>
             <version>1.5.1.RELEASE</version>
             <optional>true</optional>
-            <scope>provided</scope>
         </dependency>
     </dependencies>
 
