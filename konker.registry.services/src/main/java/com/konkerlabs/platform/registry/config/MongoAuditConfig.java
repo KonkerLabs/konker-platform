@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry.config;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,8 @@ import com.konkerlabs.platform.registry.business.model.converters.URIReadConvert
 import com.konkerlabs.platform.registry.business.model.converters.URIWriteConverter;
 import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
+import com.mongodb.MongoCredential;
+import com.mongodb.ServerAddress;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
@@ -31,16 +34,22 @@ public class MongoAuditConfig extends AbstractMongoConfiguration {
 
 	private String hostname;
     private Integer port;
+    private String username;
+    private String password;
     
     public MongoAuditConfig() {
     	Map<String, Object> defaultMap = new HashMap<>();
     	defaultMap.put("mongoAudit.hostname", "localhost");
     	defaultMap.put("mongoAudit.port", 27017);
+    	defaultMap.put("mongoAudit.username", "admin");
+    	defaultMap.put("mongoAudit.password", "admin");
     	Config defaultConf = ConfigFactory.parseMap(defaultMap);
 
     	Config config = ConfigFactory.load().withFallback(defaultConf);
     	setHostname(config.getString("mongoAudit.hostname"));
     	setPort(config.getInt("mongoAudit.port"));
+    	setUsername(config.getString("mongoAudit.username"));
+    	setPassword(config.getString("mongoAudit.password"));
     }
 
     public static final List<Converter<?,?>> converters = Arrays.asList(
@@ -63,9 +72,10 @@ public class MongoAuditConfig extends AbstractMongoConfiguration {
 
 	@Override
     public Mongo mongo() throws Exception {
-		return new MongoClient(getHostname(),
-                getPort()
-        );
+		MongoCredential credential = MongoCredential.createCredential(getUsername(), getDatabaseName(), getPassword().toCharArray());
+    	ServerAddress address = new ServerAddress(getHostname(), getPort());
+    	
+        return new MongoClient(address, Collections.singletonList(credential));
     }
 
     @Override

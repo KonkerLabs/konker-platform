@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry.config;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,8 @@ import com.konkerlabs.platform.registry.business.model.converters.URIReadConvert
 import com.konkerlabs.platform.registry.business.model.converters.URIWriteConverter;
 import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
+import com.mongodb.MongoCredential;
+import com.mongodb.ServerAddress;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
@@ -29,16 +32,23 @@ public class MongoConfig extends AbstractMongoConfiguration {
 
     private String hostname;
     private Integer port;
+    private String username;
+    private String password;
     
     public MongoConfig() {
     	Map<String, Object> defaultMap = new HashMap<>();
     	defaultMap.put("mongo.hostname", "localhost");
     	defaultMap.put("mongo.port", 27017);
+    	defaultMap.put("mongo.username", "admin");
+    	defaultMap.put("mongo.password", "admin");
     	Config defaultConf = ConfigFactory.parseMap(defaultMap);
 
     	Config config = ConfigFactory.load().withFallback(defaultConf);
     	setHostname(config.getString("mongo.hostname"));
     	setPort(config.getInt("mongo.port"));
+    	setUsername(config.getString("mongo.username"));
+    	setPassword(config.getString("mongo.password"));
+    	
     }
 
 	public static final List<Converter<?,?>> converters = Arrays.asList(
@@ -57,13 +67,15 @@ public class MongoConfig extends AbstractMongoConfiguration {
 
     @Override
     public Mongo mongo() throws Exception {
-        return new MongoClient(getHostname(),
-                getPort()
-        );
+    	MongoCredential credential = MongoCredential.createCredential(getUsername(), getDatabaseName(), getPassword().toCharArray());
+    	ServerAddress address = new ServerAddress(getHostname(), getPort());
+    	
+        return new MongoClient(address, Collections.singletonList(credential));
     }
 
     @Override
     public CustomConversions customConversions() {
         return new CustomConversions(converters);
     }
+    
 }
