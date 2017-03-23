@@ -48,8 +48,8 @@ public class CassandraConfig
     @Autowired
     private ApplicationContext applicationContext;
 
-    @Autowired
-    protected EventStorageConfig eventStorageConfig;
+
+    protected EventStorageConfig eventStorageConfig = new EventStorageConfig();
     private static final Logger LOG = LoggerFactory.getLogger(CassandraConfig.class);
 
 
@@ -103,8 +103,8 @@ public class CassandraConfig
                     getClusterName(), getKeyspace(), getSeedHost(), getSeedPort())
             );
         }
-        if(eventStorageConfig.getEventRepositoryBean()
-                .equals(EventStorageConfig.EventStorageConfigType.CASSANDRA)){
+        /*if(eventStorageConfig.getEventRepositoryBean()
+                .equals(EventStorageConfig.EventStorageConfigType.CASSANDRA.bean())){
             try {
 
                 CassandraSessionFactoryBean session = session();
@@ -122,7 +122,7 @@ public class CassandraConfig
 
         } else {
             LOG.debug("Cassandra is not configured as event storage...");
-        }
+        }*/
 
     }
 
@@ -147,7 +147,7 @@ public class CassandraConfig
     }
 
 
-    /*@Bean*/
+    @Bean
     public CassandraAdminOperations cassandraTemplate() throws Exception {
         try{
             if(Optional.ofNullable(this.session()).isPresent() &&
@@ -157,7 +157,7 @@ public class CassandraConfig
                 return null;
             }
         } catch (Exception e){
-            LOG.error("Error construct Cassandra Template", e);
+            LOG.error("Error construct Cassandra Template");
         }
 
         return null;
@@ -183,7 +183,7 @@ public class CassandraConfig
                             this.cassandraConverter()
                     );
         } catch (ClassNotFoundException e) {
-            LOG.error("Error in cassandraTemplate instance", e);
+            LOG.error("Error in cassandraTemplate instance");
         }
         return cassandraTemplate;
     }
@@ -212,7 +212,7 @@ public class CassandraConfig
     );
 
 
-    /*@Bean*/
+    @Bean
     public CassandraSessionFactoryBean session() throws ClassNotFoundException {
         CassandraSessionFactoryBean session = null;
         try {
@@ -230,7 +230,7 @@ public class CassandraConfig
                 LOG.debug("Cassandra is not configured as event storage...");
             }
         } catch (Exception e) {
-            LOG.error("Fail trying to create the cassandra session client...", e);
+            LOG.error("Fail trying to create the cassandra session client...");
         }
 
         return session;

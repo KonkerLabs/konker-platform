@@ -23,10 +23,10 @@ public class EventStorageConfig {
         setEventRepositoryBean(config.getString("eventstorage.bean"));
     }
 
-    @Bean
+    /*@Bean
     public EventStorageConfig instance(){
         return new EventStorageConfig();
-    }
+    }*/
 
     public enum EventStorageConfigType {
         MONGODB("mongoEvents"),

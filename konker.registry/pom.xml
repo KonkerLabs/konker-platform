@@ -26,6 +26,10 @@
                     </webApp>
                     <reload>manual</reload>
                     <scanIntervalSeconds>2</scanIntervalSeconds>
+                    <httpConnector>
+                        <port>8180</port>
+                    </httpConnector>
+
                 </configuration>
             </plugin>
             <plugin>
@@ -176,6 +180,12 @@
             <groupId>com.konkerlabs</groupId>
             <artifactId>konker.registry.services</artifactId>
             <version>0.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-cassandra</artifactId>
+            <version>1.5.1.RELEASE</version>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 
