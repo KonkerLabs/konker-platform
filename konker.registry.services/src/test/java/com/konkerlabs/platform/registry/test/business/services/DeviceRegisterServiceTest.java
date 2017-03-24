@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -59,7 +60,8 @@ import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 @ContextConfiguration(classes = {
         MongoTestConfiguration.class,
         BusinessTestConfiguration.class,
-		PubServerConfig.class})
+		PubServerConfig.class,
+        EventStorageConfig.class})
 @ActiveProfiles("ssl")
 public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 

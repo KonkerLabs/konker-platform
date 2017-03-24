@@ -1,7 +1,6 @@
 package com.konkerlabs.platform.registry.config;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +33,7 @@ public class MongoConfig extends AbstractMongoConfiguration {
     private Integer port;
     private String username;
     private String password;
-    
+
     public MongoConfig() {
     	Map<String, Object> defaultMap = new HashMap<>();
     	defaultMap.put("mongo.hostname", "localhost");
@@ -48,7 +47,7 @@ public class MongoConfig extends AbstractMongoConfiguration {
     	setPort(config.getInt("mongo.port"));
     	setUsername(config.getString("mongo.username"));
     	setPassword(config.getString("mongo.password"));
-    	
+
     }
 
 	public static final List<Converter<?,?>> converters = Arrays.asList(
@@ -69,7 +68,7 @@ public class MongoConfig extends AbstractMongoConfiguration {
     public Mongo mongo() throws Exception {
     	MongoCredential credential = MongoCredential.createCredential(getUsername(), getDatabaseName(), getPassword().toCharArray());
     	ServerAddress address = new ServerAddress(getHostname(), getPort());
-    	
+
         return new MongoClient(address, Collections.singletonList(credential));
     }
 
@@ -77,5 +76,5 @@ public class MongoConfig extends AbstractMongoConfiguration {
     public CustomConversions customConversions() {
         return new CustomConversions(converters);
     }
-    
+
 }

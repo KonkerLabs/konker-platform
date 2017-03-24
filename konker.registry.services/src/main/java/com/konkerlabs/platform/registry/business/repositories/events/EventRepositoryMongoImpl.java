@@ -6,10 +6,10 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
+import com.konkerlabs.platform.registry.business.repositories.events.api.BaseEventRepositoryImpl;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Sort;
@@ -21,36 +21,16 @@ import org.springframework.stereotype.Repository;
 
 import java.text.MessageFormat;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Repository("mongoEvents")
-public class EventRepositoryMongoImpl implements EventRepository {
+public class EventRepositoryMongoImpl extends BaseEventRepositoryImpl {
 
-    public static final String EVENTS_INCOMING_COLLECTION_NAME = "incomingEvents";
-    public static final String EVENTS_OUTGOING_COLLECTION_NAME = "outgoingEvents";
 
-    private enum Type {
-        INCOMING("incoming",EVENTS_INCOMING_COLLECTION_NAME),
-        OUTGOING("outgoing",EVENTS_OUTGOING_COLLECTION_NAME);
-
-        private String actorFieldName;
-        private String collectionName;
-
-        public String getActorFieldName() {
-            return actorFieldName;
-        }
-
-        public String getCollectionName() {
-            return collectionName;
-        }
-
-        Type(String actorFieldName, String collectionName) {
-            this.actorFieldName = actorFieldName;
-            this.collectionName = collectionName;
-        }
-    }
 
     @Autowired
     private JsonParsingService jsonParsingService;
@@ -63,17 +43,7 @@ public class EventRepositoryMongoImpl implements EventRepository {
     @Autowired
     private DeviceRepository deviceRepository;
 
-    @Override
-    public Event saveIncoming(Tenant tenant, Event event) throws BusinessException {
-        return doSave(tenant,event, Type.INCOMING);
-    }
-
-    @Override
-    public Event saveOutgoing(Tenant tenant, Event event) throws BusinessException {
-        return doSave(tenant,event, Type.OUTGOING);
-    }
-
-    private Event doSave(Tenant tenant, Event event, Type type) throws BusinessException {
+    protected Event doSave(Tenant tenant, Event event, Type type) throws BusinessException {
         Optional.ofNullable(tenant)
                 .filter(tenant1 -> Optional.ofNullable(tenant1.getDomainName()).filter(s -> !s.isEmpty()).isPresent())
                 .orElseThrow(() -> new BusinessException(CommonValidations.TENANT_NULL.getCode()));
@@ -140,39 +110,7 @@ public class EventRepositoryMongoImpl implements EventRepository {
         return event;
     }
 
-    @Override
-    public List<Event> findIncomingBy(Tenant tenant,
-                                      String deviceGuid,
-                                      String channel,
-                                      Instant startInstant,
-                                      Instant endInstant,
-                                      boolean ascending,
-                                      Integer limit) throws BusinessException {
-        return doFindBy(tenant,deviceGuid,channel,startInstant,endInstant,ascending,limit, Type.INCOMING, false);
-    }
-
-    @Override
-    public List<Event> findOutgoingBy(Tenant tenant,
-                                      String deviceGuid,
-                                      String channel,
-                                      Instant startInstant,
-                                      Instant endInstant,
-                                      boolean ascending,
-                                      Integer limit) throws BusinessException {
-        return doFindBy(tenant,deviceGuid,channel,startInstant,endInstant,ascending,limit, Type.OUTGOING, false);
-    }
-
-    @Override
-    public void removeBy(Tenant tenant, String deviceGuid) throws BusinessException {
-        try {
-            doRemoveBy(tenant, deviceGuid, Type.INCOMING);
-            doRemoveBy(tenant, deviceGuid, Type.OUTGOING);
-        } catch (Exception e){
-            throw new BusinessException(e.getMessage(), e);
-        }
-    }
-
-    private List<Event> doFindBy(Tenant tenant,
+    protected List<Event> doFindBy(Tenant tenant,
                                  String deviceGuid,
                                  String channel,
                                  Instant startInstant,
@@ -271,7 +209,7 @@ public class EventRepositoryMongoImpl implements EventRepository {
      * @param type
      * @throws Exception
      */
-    private void doRemoveBy(Tenant tenant, String deviceGuid, Type type) throws Exception {
+    protected void doRemoveBy(Tenant tenant, String deviceGuid, Type type) throws Exception {
         Optional.ofNullable(tenant)
                 .filter(tenant1 -> Optional.ofNullable(tenant1.getDomainName()).filter(s -> !s.isEmpty()).isPresent())
                 .orElseThrow(() -> new IllegalArgumentException("Tenant cannot be null"));

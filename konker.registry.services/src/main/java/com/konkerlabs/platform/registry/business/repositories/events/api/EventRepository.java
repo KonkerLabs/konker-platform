@@ -1,4 +1,4 @@
-package com.konkerlabs.platform.registry.business.repositories.events;
+package com.konkerlabs.platform.registry.business.repositories.events.api;
 
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Event;
@@ -8,6 +8,9 @@ import java.time.Instant;
 import java.util.List;
 
 public interface EventRepository {
+
+    String EVENTS_INCOMING_COLLECTION_NAME = "incomingEvents";
+    String EVENTS_OUTGOING_COLLECTION_NAME = "outgoingEvents";
 
     enum Validations {
         INCOMING_DEVICE_ID_DOES_NOT_EXIST("repository.events.incoming_device.not_found"),
@@ -29,6 +32,7 @@ public interface EventRepository {
         Validations(String code) {
             this.code = code;
         }
+
     }
 
     Event saveIncoming(Tenant tenant, Event event) throws BusinessException;
@@ -52,5 +56,4 @@ public interface EventRepository {
                                Integer limit) throws BusinessException;
 
     void removeBy(Tenant tenant, String deviceGuid) throws BusinessException;
-
 }
