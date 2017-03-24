@@ -27,7 +27,7 @@
                     <reload>manual</reload>
                     <scanIntervalSeconds>2</scanIntervalSeconds>
                     <httpConnector>
-                        <port>8180</port>
+                        <port>8080</port>
                     </httpConnector>
 
                 </configuration>
