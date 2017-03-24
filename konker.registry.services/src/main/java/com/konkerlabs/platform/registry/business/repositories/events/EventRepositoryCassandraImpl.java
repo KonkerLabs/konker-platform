@@ -30,10 +30,7 @@ import org.springframework.data.cassandra.mapping.Table;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Repository("cassandraEvents")
@@ -95,31 +92,40 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
             ).orElseThrow(() -> new BusinessException(Validations.OUTGOING_DEVICE_ID_DOES_NOT_EXIST.getCode()));
         }
 
-        event.getIncoming().setTenantDomain(tenant.getDomainName());
-        cassandraOperations.insert(
-                type.equals(Type.INCOMING)
-                        ? CassandraIncommingEvent
-                        .builder()
-                        .tenantDomain(event.getIncoming().getTenantDomain())
-                        .deviceGuid(event.getIncoming().getDeviceGuid())
-                        .deviceId(event.getIncoming().getDeviceId())
-                        .channel(event.getIncoming().getChannel())
-                        .timestamp(event.getTimestamp())
-                        .payload(event.getPayload())
-                        .build()
-                        : CassandraOutgoingEvent
-                        .builder()
-                        .tenantDomain(event.getIncoming().getTenantDomain())
-                        .deviceGuid(event.getIncoming().getDeviceGuid())
-                        .deviceId(event.getIncoming().getDeviceId())
-                        .channel(event.getIncoming().getChannel())
-                        .timestamp(event.getTimestamp())
-                        .payload(event.getPayload())
-                        .incomming(JSON.serialize(event.getIncoming()))
-                        .build()
-
-
-        );
+        if (type.equals(Type.INCOMING)) {
+            event.getIncoming().setTenantDomain(tenant.getDomainName());
+            cassandraOperations.insert(
+                    CassandraIncommingEvent
+                            .builder()
+                            .tenantDomain(event.getIncoming().getTenantDomain())
+                            .deviceGuid(event.getIncoming().getDeviceGuid())
+                            .deviceId(event.getIncoming().getDeviceId())
+                            .channel(event.getIncoming().getChannel())
+                            .timestamp(event.getTimestamp())
+                            .payload(event.getPayload())
+                            .deleted(false)
+                            .build());
+        } else {
+            event.getOutgoing().setTenantDomain(tenant.getDomainName());
+            Map<String, String> incommingMap = new HashMap(){{
+                put("tenantDomain", event.getIncoming().getTenantDomain());
+                put("deviceGuid", event.getIncoming().getDeviceGuid());
+                put("deviceId", event.getIncoming().getDeviceGuid());
+                put("channel", event.getIncoming().getChannel());
+            }};
+            cassandraOperations.insert(
+                    CassandraOutgoingEvent
+                            .builder()
+                            .tenantDomain(event.getOutgoing().getTenantDomain())
+                            .deviceGuid(event.getOutgoing().getDeviceGuid())
+                            .deviceId(event.getOutgoing().getDeviceId())
+                            .channel(event.getOutgoing().getChannel())
+                            .timestamp(event.getTimestamp())
+                            .payload(event.getPayload())
+                            .incomming(JSON.serialize(incommingMap))
+                            .deleted(false)
+                            .build());
+        }
         return event;
     }
 
@@ -174,7 +180,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
         });
 
         List<Event> events = new ArrayList<>();
-        if(type.equals(Type.INCOMING)){
+        if (type.equals(Type.INCOMING)) {
             List<CassandraIncommingEvent> incommingEvents =
                     cassandraOperations.select(queryIncomming, CassandraIncommingEvent.class);
             events.addAll(incommingEvents.stream().map(incoming -> {
@@ -192,7 +198,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
             }).collect(Collectors.toList()));
 
         }
-        if(type.equals(Type.OUTGOING)){
+        if (type.equals(Type.OUTGOING)) {
             List<CassandraOutgoingEvent> outgoingEvents =
                     cassandraOperations.select(queryOutgoing, CassandraOutgoingEvent.class);
 
@@ -285,6 +291,6 @@ class CassandraOutgoingEvent {
     private Boolean deleted;
     @Column("payload")
     private String payload;
-    @Column("incomming")
+    @Column("incoming")
     private String incomming;
 }
