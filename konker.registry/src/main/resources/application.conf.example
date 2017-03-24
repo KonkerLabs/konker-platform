@@ -122,3 +122,13 @@ environment {
 		csvDownloadRowsLimit = 10000
 	}
 }
+
+eventstorage {
+    bean=mongoEvents
+}
+cassandra {
+    clustername=local
+    keyspace=registrykeyspace
+    contactpoints=localhost
+    port=9042
+}

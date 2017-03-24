@@ -26,6 +26,10 @@
                     </webApp>
                     <reload>manual</reload>
                     <scanIntervalSeconds>2</scanIntervalSeconds>
+                    <httpConnector>
+                        <port>8080</port>
+                    </httpConnector>
+
                 </configuration>
             </plugin>
             <plugin>
@@ -129,10 +133,10 @@
             <version>2.0.1</version>
         </dependency>
         <dependency>
-		    <groupId>org.thymeleaf.extras</groupId>
-		    <artifactId>thymeleaf-extras-springsecurity4</artifactId>
-		    <version>3.0.1.RELEASE</version>
-		</dependency>
+            <groupId>org.thymeleaf.extras</groupId>
+            <artifactId>thymeleaf-extras-springsecurity4</artifactId>
+            <version>3.0.1.RELEASE</version>
+        </dependency>
         <!-- CSV -->
         <dependency>
             <groupId>net.sf.supercsv</groupId>
@@ -156,27 +160,33 @@
             </exclusions>
         </dependency>
         <dependency>
-           <groupId>org.apache.httpcomponents</groupId>
-           <artifactId>httpclient</artifactId>
-           <version>4.5.2</version>
-       	</dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.2</version>
+        </dependency>
         <!-- Mail -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context-support</artifactId>
             <version>4.3.6.RELEASE</version>
         </dependency>
-		<dependency>
-		    <groupId>javax.mail</groupId>
-		    <artifactId>mail</artifactId>
-		    <version>1.4.7</version>
-		</dependency>
+        <dependency>
+            <groupId>javax.mail</groupId>
+            <artifactId>mail</artifactId>
+            <version>1.4.7</version>
+        </dependency>
         <!-- Konker -->
-		<dependency>
-		    <groupId>com.konkerlabs</groupId>
-		    <artifactId>konker.registry.services</artifactId>
-		    <version>0.0.1</version>
-		</dependency>
+        <dependency>
+            <groupId>com.konkerlabs</groupId>
+            <artifactId>konker.registry.services</artifactId>
+            <version>0.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-cassandra</artifactId>
+            <version>1.5.1.RELEASE</version>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 
     <dependencyManagement>

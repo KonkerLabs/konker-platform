@@ -1,39 +1,57 @@
 package com.konkerlabs.platform.registry.data.services;
 
-import java.time.Instant;
-import java.util.Optional;
-import java.util.function.Supplier;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.context.annotation.Scope;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Service;
-
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.EventSchema;
-import com.konkerlabs.platform.registry.business.repositories.events.EventRepository;
+import com.konkerlabs.platform.registry.business.repositories.events.api.EventRepository;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService.Validations;
 import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import com.konkerlabs.platform.registry.data.services.api.DeviceLogEventService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Scope;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.PostConstruct;
+import java.time.Instant;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
 public class DeviceLogEventServiceImpl implements DeviceLogEventService {
 
     @Autowired
-    @Qualifier("mongoEvents")
+    private ApplicationContext applicationContext;
+    @Autowired
+    private EventStorageConfig eventStorageConfig;
     private EventRepository eventRepository;
-
     @Autowired
     private EventSchemaService eventSchemaService;
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
+
+
+    @PostConstruct
+    public void init(){
+        try {
+            eventRepository =
+                    (EventRepository) applicationContext.getBean(
+                            eventStorageConfig.getEventRepositoryBean()
+                    );
+        } catch (Exception e){
+            eventRepository =
+                    (EventRepository) applicationContext.getBean(
+                            EventStorageConfig.EventStorageConfigType.MONGODB.bean()
+                    );
+        }
+    }
 
     @Override
     public ServiceResponse<Event> logIncomingEvent(Device device, Event event) {

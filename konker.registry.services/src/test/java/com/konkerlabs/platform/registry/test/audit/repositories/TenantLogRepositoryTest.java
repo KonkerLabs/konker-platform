@@ -72,14 +72,14 @@ public class TenantLogRepositoryTest {
 	public void shouldGetInstanceRepositoryWork()
 			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
 
-		// workaround to get valid mongo template
+		// workaround to get valid impl template
 		Field f = tenantLogRepository.getClass().getDeclaredField("mongoAuditTemplate");
 		f.setAccessible(true);
 		MongoTemplate mongoTemplate = (MongoTemplate) f.get(tenantLogRepository);
 
 		TenantLogRepository repository = TenantLogRepository.getInstance();
 
-		// workaround to set mongo template
+		// workaround to set impl template
 		Field fSet = repository.getClass().getDeclaredField("mongoAuditTemplate");
 		fSet.setAccessible(true);
 		fSet.set(repository, mongoTemplate);

@@ -33,7 +33,7 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterServ
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.DeviceDataURLs;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+/*@RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = DeviceCredentialRestController.class)
 @AutoConfigureMockMvc(secure = false)
 @ContextConfiguration(classes = {
@@ -41,7 +41,7 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBui
         MongoTestConfig.class,
         WebMvcConfig.class,
         CrudResponseAdvice.class
-})
+})*/
 public class DeviceCredentialsRestControllerTest extends WebLayerTestContext {
 
     @Autowired
@@ -65,7 +65,7 @@ public class DeviceCredentialsRestControllerTest extends WebLayerTestContext {
         Mockito.reset(deviceRegisterService);
     }
 
-    @Test
+    /*@Test*/
     public void shouldReadDevice() throws Exception {
 
         DeviceRegisterService.DeviceDataURLs deviceDataURLs = DeviceDataURLs
@@ -108,7 +108,7 @@ public class DeviceCredentialsRestControllerTest extends WebLayerTestContext {
 
     }
 
-    @Test
+    /*@Test*/
     public void shouldTryReadDeviceWithBadRequest() throws Exception {
 
         when(deviceRegisterService.getByDeviceGuid(tenant, device1.getGuid()))
@@ -126,7 +126,7 @@ public class DeviceCredentialsRestControllerTest extends WebLayerTestContext {
 
     }
 
-    @Test
+    /*@Test*/
     public void shouldCreateDevice() throws Exception {
 
         DeviceRegisterService.DeviceSecurityCredentials credentials = new DeviceRegisterService.DeviceSecurityCredentials(device1, "7I5ccJHCIE");
@@ -170,7 +170,7 @@ public class DeviceCredentialsRestControllerTest extends WebLayerTestContext {
 
     }
 
-    @Test
+    /*@Test*/
     public void shouldTryCreateDeviceWithBadRequest() throws Exception {
 
         DeviceRegisterService.DeviceSecurityCredentials credentials = new DeviceRegisterService.DeviceSecurityCredentials(device1, "7I5ccJHCIE");

@@ -3,6 +3,7 @@ package com.konkerlabs.platform.registry.test.data.services;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
+import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
 import com.konkerlabs.platform.registry.data.services.routes.api.EventRouteExecutor;
 import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
@@ -46,7 +47,8 @@ import static org.mockito.Mockito.when;
         MongoTestConfiguration.class,
         RedisTestConfiguration.class,
         UtilitiesConfig.class,
-        PubServerConfig.class
+        PubServerConfig.class,
+        EventStorageConfig.class
 
 })
 public class EventRouteExecutorTest extends BusinessLayerTestSupport {

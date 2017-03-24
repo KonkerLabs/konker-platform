@@ -50,7 +50,7 @@ import com.konkerlabs.platform.registry.web.forms.DeviceRegistrationForm;
 @RequestMapping(value = "devices")
 public class DeviceController implements ApplicationContextAware {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(DeviceController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DeviceController.class);
 
     private ApplicationContext applicationContext;
 
@@ -110,111 +110,111 @@ public class DeviceController implements ApplicationContextAware {
                 .addObject("method", "put");
     }
 
-	@RequestMapping("/{deviceGuid}/events")
-	@PreAuthorize("hasAuthority('VIEW_DEVICE_LOG')")
-	public ModelAndView deviceEvents(@PathVariable String deviceGuid) {
-		Device device = deviceRegisterService.getByDeviceGuid(tenant, deviceGuid).getResult();
+    @RequestMapping("/{deviceGuid}/events")
+    @PreAuthorize("hasAuthority('VIEW_DEVICE_LOG')")
+    public ModelAndView deviceEvents(@PathVariable String deviceGuid) {
+        Device device = deviceRegisterService.getByDeviceGuid(tenant, deviceGuid).getResult();
 
-		ModelAndView mv = new ModelAndView("devices/events");
+        ModelAndView mv = new ModelAndView("devices/events");
 
-		List<Event> incomingEvents = deviceEventService.findIncomingBy(tenant, device.getGuid(), null, null, null, false, 50).getResult();
-		List<Event> outgoingEvents = deviceEventService.findOutgoingBy(tenant, device.getGuid(), null, null, null, false, 50).getResult();
+        List<Event> incomingEvents = deviceEventService.findIncomingBy(tenant, device.getGuid(), null, null, null, false, 50).getResult();
+        List<Event> outgoingEvents = deviceEventService.findOutgoingBy(tenant, device.getGuid(), null, null, null, false, 50).getResult();
 
-		boolean hasAnyEvent = !incomingEvents.isEmpty() || !outgoingEvents.isEmpty();
+        boolean hasAnyEvent = !incomingEvents.isEmpty() || !outgoingEvents.isEmpty();
 
-		mv.addObject("userDateFormat", user.getDateFormat().name())
-		  .addObject("recentIncomingEvents", incomingEvents)
-		  .addObject("recentOutgoingEvents", outgoingEvents)
-		  .addObject("hasAnyEvent", hasAnyEvent);
+        mv.addObject("userDateFormat", user.getDateFormat().name())
+                .addObject("recentIncomingEvents", incomingEvents)
+                .addObject("recentOutgoingEvents", outgoingEvents)
+                .addObject("hasAnyEvent", hasAnyEvent);
 
-		addChartObjects(device, mv);
+        addChartObjects(device, mv);
 
-		return mv;
-	}
+        return mv;
+    }
 
-	@RequestMapping("/{deviceGuid}/events/incoming")
-	@PreAuthorize("hasAuthority('VIEW_DEVICE_LOG')")
-	public ModelAndView loadIncomingEvents(@PathVariable String deviceGuid,
-			@RequestParam(required = false) String dateStart,
-   		 	@RequestParam(required = false) String dateEnd) {
+    @RequestMapping("/{deviceGuid}/events/incoming")
+    @PreAuthorize("hasAuthority('VIEW_DEVICE_LOG')")
+    public ModelAndView loadIncomingEvents(@PathVariable String deviceGuid,
+                                           @RequestParam(required = false) String dateStart,
+                                           @RequestParam(required = false) String dateEnd) {
 
-    	DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss", user.getLanguage().getLocale());
-    	Instant instantStart = StringUtils.isNotEmpty(dateStart) ? ZonedDateTime.of(LocalDateTime.parse(dateStart, dtf), ZoneId.of(user.getZoneId().getId())).toInstant() : null;
-    	Instant instantEnd = StringUtils.isNotEmpty(dateEnd) ? ZonedDateTime.of(LocalDateTime.parse(dateEnd, dtf), ZoneId.of(user.getZoneId().getId())).toInstant() : null;
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss", user.getLanguage().getLocale());
+        Instant instantStart = StringUtils.isNotEmpty(dateStart) ? ZonedDateTime.of(LocalDateTime.parse(dateStart, dtf), ZoneId.of(user.getZoneId().getId())).toInstant() : null;
+        Instant instantEnd = StringUtils.isNotEmpty(dateEnd) ? ZonedDateTime.of(LocalDateTime.parse(dateEnd, dtf), ZoneId.of(user.getZoneId().getId())).toInstant() : null;
 
-		ModelAndView mv = new ModelAndView("devices/events-incoming", "recentIncomingEvents",
-				deviceEventService.findIncomingBy(tenant, deviceGuid, null, instantStart, instantEnd, false, 50).getResult());
+        ModelAndView mv = new ModelAndView("devices/events-incoming", "recentIncomingEvents",
+                deviceEventService.findIncomingBy(tenant, deviceGuid, null, instantStart, instantEnd, false, 50).getResult());
 
-		return mv;
-	}
+        return mv;
+    }
 
-	@RequestMapping("/{deviceGuid}/events/outgoing")
-	@PreAuthorize("hasAuthority('VIEW_DEVICE_LOG')")
-	public ModelAndView loadOutgoingEvents(@PathVariable String deviceGuid,
-			@RequestParam(required = false) String dateStart,
-   		 	@RequestParam(required = false) String dateEnd) {
+    @RequestMapping("/{deviceGuid}/events/outgoing")
+    @PreAuthorize("hasAuthority('VIEW_DEVICE_LOG')")
+    public ModelAndView loadOutgoingEvents(@PathVariable String deviceGuid,
+                                           @RequestParam(required = false) String dateStart,
+                                           @RequestParam(required = false) String dateEnd) {
 
-    	DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss", user.getLanguage().getLocale());
-    	Instant instantStart = StringUtils.isNotEmpty(dateStart) ? ZonedDateTime.of(LocalDateTime.parse(dateStart, dtf), ZoneId.of(user.getZoneId().getId())).toInstant() : null;
-    	Instant instantEnd = StringUtils.isNotEmpty(dateEnd) ? ZonedDateTime.of(LocalDateTime.parse(dateEnd, dtf), ZoneId.of(user.getZoneId().getId())).toInstant() : null;
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss", user.getLanguage().getLocale());
+        Instant instantStart = StringUtils.isNotEmpty(dateStart) ? ZonedDateTime.of(LocalDateTime.parse(dateStart, dtf), ZoneId.of(user.getZoneId().getId())).toInstant() : null;
+        Instant instantEnd = StringUtils.isNotEmpty(dateEnd) ? ZonedDateTime.of(LocalDateTime.parse(dateEnd, dtf), ZoneId.of(user.getZoneId().getId())).toInstant() : null;
 
-		ModelAndView mv = new ModelAndView("devices/events-outgoing", "recentOutgoingEvents",
-				deviceEventService.findOutgoingBy(tenant, deviceGuid, null, instantStart, instantEnd, false, 50).getResult());
+        ModelAndView mv = new ModelAndView("devices/events-outgoing", "recentOutgoingEvents",
+                deviceEventService.findOutgoingBy(tenant, deviceGuid, null, instantStart, instantEnd, false, 50).getResult());
 
-		return mv;
-	}
+        return mv;
+    }
 
-	private void addChartObjects(Device device, ModelAndView mv) {
+    private void addChartObjects(Device device, ModelAndView mv) {
 
-		String deviceGuid = device.getGuid();
+        String deviceGuid = device.getGuid();
 
-		String defaultChannel = null;
-		String defaultMetric = null;
-		List<String> listMetrics = null;
+        String defaultChannel = null;
+        String defaultMetric = null;
+        List<String> listMetrics = null;
 
-		// Try to find the last numeric metric
-		ServiceResponse<EventSchema> lastEvent = eventSchemaService.findLastIncomingBy(tenant, deviceGuid, JsonNodeType.NUMBER);
-		if (lastEvent.isOk() && lastEvent.getResult() != null) {
-			defaultChannel = lastEvent.getResult().getChannel();
-			defaultMetric = lastEvent.getResult().getFields().iterator().next().getPath();
-		}
+        // Try to find the last numeric metric
+        ServiceResponse<EventSchema> lastEvent = eventSchemaService.findLastIncomingBy(tenant, deviceGuid, JsonNodeType.NUMBER);
+        if (lastEvent.isOk() && lastEvent.getResult() != null) {
+            defaultChannel = lastEvent.getResult().getChannel();
+            defaultMetric = lastEvent.getResult().getFields().iterator().next().getPath();
+        }
 
-		// Load lists
-		ServiceResponse<List<String>> channels = eventSchemaService.findKnownIncomingChannelsBy(tenant, deviceGuid);
+        // Load lists
+        ServiceResponse<List<String>> channels = eventSchemaService.findKnownIncomingChannelsBy(tenant, deviceGuid);
 
-		if (defaultChannel != null && !channels.getResult().contains(defaultChannel)) {
-			defaultChannel = null; // invalid channel
-		}
+        if (defaultChannel != null && !channels.getResult().contains(defaultChannel)) {
+            defaultChannel = null; // invalid channel
+        }
 
-		if (defaultChannel != null) {
+        if (defaultChannel != null) {
 
-			ServiceResponse<List<String>> metrics = eventSchemaService.findKnownIncomingMetricsBy(tenant, deviceGuid, defaultChannel, JsonNodeType.NUMBER);
+            ServiceResponse<List<String>> metrics = eventSchemaService.findKnownIncomingMetricsBy(tenant, deviceGuid, defaultChannel, JsonNodeType.NUMBER);
 
-	    	listMetrics = metrics.isOk() ? metrics.getResult() : new ArrayList<>();
+            listMetrics = metrics.isOk() ? metrics.getResult() : new ArrayList<>();
 
-	    	if (defaultMetric != null && !listMetrics.contains(defaultMetric)) {
-	    		defaultMetric = null; // invalid metric
-	    	}
+            if (defaultMetric != null && !listMetrics.contains(defaultMetric)) {
+                defaultMetric = null; // invalid metric
+            }
 
-		}
+        }
 
-		// Check if there is any numeric metric
-		boolean existsNumericMetric = false;
+        // Check if there is any numeric metric
+        boolean existsNumericMetric = false;
 
-		ServiceResponse<List<String>> allNumericMetrics = eventSchemaService.findKnownIncomingMetricsBy(tenant, deviceGuid, JsonNodeType.NUMBER);
-		if (allNumericMetrics.isOk() && !allNumericMetrics.getResult().isEmpty()) {
-			existsNumericMetric = true;
-		}
+        ServiceResponse<List<String>> allNumericMetrics = eventSchemaService.findKnownIncomingMetricsBy(tenant, deviceGuid, JsonNodeType.NUMBER);
+        if (allNumericMetrics.isOk() && !allNumericMetrics.getResult().isEmpty()) {
+            existsNumericMetric = true;
+        }
 
-		// Add objects
-		mv.addObject("device", device)
-		  .addObject("channels", channels.getResult())
-		  .addObject("defaultChannel", defaultChannel)
-		  .addObject("metrics", listMetrics)
-		  .addObject("defaultMetric", defaultMetric)
-		  .addObject("existsNumericMetric", existsNumericMetric);
+        // Add objects
+        mv.addObject("device", device)
+                .addObject("channels", channels.getResult())
+                .addObject("defaultChannel", defaultChannel)
+                .addObject("metrics", listMetrics)
+                .addObject("defaultMetric", defaultMetric)
+                .addObject("existsNumericMetric", existsNumericMetric);
 
-	}
+    }
 
     @RequestMapping(path = "/save", method = RequestMethod.POST)
     @PreAuthorize("hasAuthority('ADD_DEVICE')")
