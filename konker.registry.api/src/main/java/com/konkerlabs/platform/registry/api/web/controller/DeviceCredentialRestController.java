@@ -76,7 +76,7 @@ public class DeviceCredentialRestController implements InitializingBean {
     }
 
     @PostMapping(path = "/{deviceGuid}")
-    @ApiOperation(value = "Create a new device password. It will not be possible to recover the generated password again, so store it safely.")
+    @ApiOperation(value = "Create a new device username and password. It will not be possible to recover the generated password again, so store it safely.")
     @PreAuthorize("hasAuthority('CREATE_DEVICE_KEYS')")
     public DeviceSecurityCredentialsVO create(
             @ApiParam(required = true)
