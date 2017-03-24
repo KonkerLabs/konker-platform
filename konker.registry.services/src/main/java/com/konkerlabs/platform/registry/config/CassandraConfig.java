@@ -129,14 +129,14 @@ public class CassandraConfig
 
     @Bean
     public CassandraAdminOperations cassandraTemplate() throws Exception {
-        try{
-            if(Optional.ofNullable(this.session()).isPresent() &&
-                    Optional.ofNullable(this.cassandraConverter()).isPresent()){
+        try {
+            if (Optional.ofNullable(this.session()).isPresent() &&
+                    Optional.ofNullable(this.cassandraConverter()).isPresent()) {
                 return new CassandraAdminTemplate(this.session().getObject(), this.cassandraConverter());
             } else {
                 return null;
             }
-        } catch (Exception e){
+        } catch (Exception e) {
             LOG.error("Error construct Cassandra Template");
         }
 
@@ -196,19 +196,15 @@ public class CassandraConfig
     public CassandraSessionFactoryBean session() throws ClassNotFoundException {
         CassandraSessionFactoryBean session = null;
         try {
-            if (eventStorageConfig.getEventRepositoryBean()
-                    .equals(EventStorageConfig.EventStorageConfigType.CASSANDRA.bean()) &&
-                    this.cluster() != null && this.cluster().getObject() != null) {
-                session = new CassandraSessionFactoryBean();
-                session.setCluster(this.cluster().getObject());
-                session.setConverter(this.cassandraConverter());
-                session.setKeyspaceName(this.getKeyspaceName());
-                session.setSchemaAction(this.getSchemaAction());
-                session.setStartupScripts(this.getStartupScripts());
-                session.setShutdownScripts(this.getShutdownScripts());
-            } else {
-                LOG.debug("Cassandra is not configured as event storage...");
-            }
+
+            session = new CassandraSessionFactoryBean();
+            session.setCluster(this.cluster().getObject());
+            session.setConverter(this.cassandraConverter());
+            session.setKeyspaceName(this.getKeyspaceName());
+            session.setSchemaAction(this.getSchemaAction());
+            session.setStartupScripts(this.getStartupScripts());
+            session.setShutdownScripts(this.getShutdownScripts());
+
         } catch (Exception e) {
             LOG.error("Fail trying to create the cassandra session client...");
         }
@@ -219,14 +215,12 @@ public class CassandraConfig
     @Bean
     public CassandraConverter cassandraConverter() throws ClassNotFoundException {
         try {
-            if (eventStorageConfig.getEventRepositoryBean()
-                    .equals(EventStorageConfig.EventStorageConfigType.CASSANDRA.bean())){
-                MappingCassandraConverter mappingCassandraConverter =
-                        new MappingCassandraConverter(this.cassandraMapping());
-                mappingCassandraConverter.setCustomConversions(this.customConversions());
-                return mappingCassandraConverter;
-            }
-        } catch (Exception e){
+            MappingCassandraConverter mappingCassandraConverter =
+                    new MappingCassandraConverter(this.cassandraMapping());
+            mappingCassandraConverter.setCustomConversions(this.customConversions());
+            return mappingCassandraConverter;
+
+        } catch (Exception e) {
             LOG.error("Fail trying to create the cassandra converters...", e);
         }
 
@@ -244,7 +238,7 @@ public class CassandraConfig
             mappingContext.setSimpleTypeHolder(customConversions.getSimpleTypeHolder());
             mappingContext.setUserTypeResolver(new SimpleUserTypeResolver(this.cluster().getObject(), this.getKeyspaceName()));
             return mappingContext;
-        } catch (Exception e){
+        } catch (Exception e) {
             LOG.error("Fail trying to create the cassandra mapping...", e);
         }
         return null;
