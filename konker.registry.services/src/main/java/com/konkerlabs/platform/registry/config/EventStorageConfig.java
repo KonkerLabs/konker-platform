@@ -23,11 +23,6 @@ public class EventStorageConfig {
         setEventRepositoryBean(config.getString("eventstorage.bean"));
     }
 
-    /*@Bean
-    public EventStorageConfig instance(){
-        return new EventStorageConfig();
-    }*/
-
     public enum EventStorageConfigType {
         MONGODB("mongoEvents"),
         CASSANDRA("cassandraEvents");
