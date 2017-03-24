@@ -185,7 +185,6 @@
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-cassandra</artifactId>
             <version>1.5.1.RELEASE</version>
-            <optional>true</optional>
         </dependency>
     </dependencies>
 
