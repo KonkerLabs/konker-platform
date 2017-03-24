@@ -38,7 +38,7 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+/*@RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = RestDestinationController.class)
 @AutoConfigureMockMvc(secure = false)
 @ContextConfiguration(classes = {
@@ -46,7 +46,7 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBui
         MongoTestConfig.class,
         WebMvcConfig.class,
         CrudResponseAdvice.class
-})
+})*/
 public class RestDestinationControllerTest extends WebLayerTestContext {
 
     @Autowired

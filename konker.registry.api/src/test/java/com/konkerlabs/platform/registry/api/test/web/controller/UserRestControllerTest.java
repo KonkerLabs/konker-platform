@@ -40,7 +40,7 @@ import com.konkerlabs.platform.registry.business.services.api.RoleService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.UserService;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+/*@RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = UserRestController.class)
 @AutoConfigureMockMvc(secure = false)
 @ContextConfiguration(classes = {
@@ -48,7 +48,7 @@ import com.konkerlabs.platform.registry.business.services.api.UserService;
         MongoTestConfig.class,
         WebMvcConfig.class,
         CrudResponseAdvice.class
-})
+})*/
 public class UserRestControllerTest extends WebLayerTestContext {
 
     @Autowired

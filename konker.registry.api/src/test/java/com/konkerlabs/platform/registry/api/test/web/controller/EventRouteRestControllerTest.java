@@ -40,7 +40,7 @@ import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
 import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.TransformationService;;
-
+/*
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = EventRouteRestController.class)
 @AutoConfigureMockMvc(secure = false)
@@ -49,7 +49,7 @@ import com.konkerlabs.platform.registry.business.services.api.TransformationServ
         MongoTestConfig.class,
         WebMvcConfig.class,
         CrudResponseAdvice.class
-})
+})*/
 public class EventRouteRestControllerTest extends WebLayerTestContext {
 
     @Autowired

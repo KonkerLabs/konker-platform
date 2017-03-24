@@ -113,7 +113,7 @@
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-cassandra</artifactId>
             <version>1.5.1.RELEASE</version>
-            <scope>system</scope>
+            <scope>runtime</scope>
         </dependency>
     </dependencies>
 
@@ -144,14 +144,4 @@
             </plugin>
         </plugins>
     </build>
-    <!--<dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.springframework.data</groupId>
-                <artifactId>spring-data-cassandra</artifactId>
-                <version>1.5.1.RELEASE</version>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>-->
 </project>

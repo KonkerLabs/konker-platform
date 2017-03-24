@@ -33,7 +33,7 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterServ
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.DeviceDataURLs;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+/*@RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = DeviceCredentialRestController.class)
 @AutoConfigureMockMvc(secure = false)
 @ContextConfiguration(classes = {
@@ -41,7 +41,7 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBui
         MongoTestConfig.class,
         WebMvcConfig.class,
         CrudResponseAdvice.class
-})
+})*/
 public class DeviceCredentialsRestControllerTest extends WebLayerTestContext {
 
     @Autowired
