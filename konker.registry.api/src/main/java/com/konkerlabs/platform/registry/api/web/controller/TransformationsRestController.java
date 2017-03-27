@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.api.web.controller;
 
+import com.konkerlabs.platform.registry.api.exceptions.BadRequestResponseException;
 import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
 import com.konkerlabs.platform.registry.api.exceptions.NotAuthorizedResponseException;
 import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
@@ -94,10 +95,9 @@ public class TransformationsRestController implements InitializingBean {
     @ApiOperation(
             value = "Edit the transformation by guid")
     public void update(@PathVariable("guid") String guid, @RequestBody RestTransformationVO vo)
-            throws BadServiceResponseException, NotFoundResponseException, NotAuthorizedResponseException {
+            throws BadServiceResponseException, NotFoundResponseException, NotAuthorizedResponseException, BadRequestResponseException {
         if (!guid.equals(vo.getGuid())) {
-            validationsCode.add(TransformationService.Validations.TRANSFORMATION_NOT_FOUND.getCode());
-            throw new BadServiceResponseException(user, null, validationsCode);
+            throw new BadRequestResponseException(user, null, validationsCode);
         }
         ServiceResponse<Transformation> fromDB =
                 transformationService.get(user.getTenant(), guid);
@@ -145,11 +145,10 @@ public class TransformationsRestController implements InitializingBean {
     @PreAuthorize("hasAuthority('REMOVE_TRANSFORMATION')")
     @ApiOperation(
             value = "Remove the transformation by guid")
-    public void delete(@PathVariable("guid") String guid) throws BadServiceResponseException, NotAuthorizedResponseException {
+    public void delete(@PathVariable("guid") String guid) throws BadServiceResponseException, NotAuthorizedResponseException, BadRequestResponseException {
 
         if (StringUtils.isEmpty(guid)) {
-            validationsCode.add(TransformationService.Validations.TRANSFORMATION_NOT_FOUND.getCode());
-            throw new BadServiceResponseException(user, null, validationsCode);
+            throw new BadRequestResponseException(user, null, validationsCode);
         }
         ServiceResponse<Transformation> response = transformationService.remove(user.getTenant(), guid);
         if (!response.isOk()) {
@@ -158,7 +157,7 @@ public class TransformationsRestController implements InitializingBean {
                             .TRANSFORMATION_BELONG_ANOTHER_TENANT.getCode())) {
                 throw new NotAuthorizedResponseException(user, response, validationsCode);
             } else {
-                throw new BadServiceResponseException(user, response, validationsCode);
+                throw new BadRequestResponseException(user, response, validationsCode);
             }
         }
     }

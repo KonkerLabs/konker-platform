@@ -6,6 +6,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.konkerlabs.platform.registry.api.exceptions.BadRequestResponseException;
+import com.konkerlabs.platform.registry.api.exceptions.NotAuthorizedResponseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.core.MethodParameter;
@@ -39,8 +41,8 @@ public class CrudResponseAdvice implements ResponseBodyAdvice<Object> {
 
     @Override
     public Object beforeBodyWrite(Object body, MethodParameter returnType, MediaType selectedContentType,
-            Class<? extends HttpMessageConverter<?>> selectedConverterType, ServerHttpRequest request,
-            ServerHttpResponse response) {
+                                  Class<? extends HttpMessageConverter<?>> selectedConverterType, ServerHttpRequest request,
+                                  ServerHttpResponse response) {
 
         HttpStatus httpStatus = HttpStatus.OK;
 
@@ -48,7 +50,7 @@ public class CrudResponseAdvice implements ResponseBodyAdvice<Object> {
             httpStatus = HttpStatus.NO_CONTENT;
         } else if (request.getMethod().equals(HttpMethod.POST)) {
             httpStatus = HttpStatus.CREATED;
-        } else if (request.getMethod().equals(HttpMethod.PUT)){
+        } else if (request.getMethod().equals(HttpMethod.PUT)) {
             httpStatus = HttpStatus.OK;
         } else if (request.getMethod().equals(HttpMethod.GET)) {
             if (body == null) {
@@ -76,16 +78,39 @@ public class CrudResponseAdvice implements ResponseBodyAdvice<Object> {
     @ExceptionHandler(NotFoundResponseException.class)
     public ResponseEntity<?> exception(NotFoundResponseException e) {
 
-         return RestResponseBuilder.error().withHttpStatus(HttpStatus.NOT_FOUND).withMessages(getI18NMessages(e.getResponseMessages(), e.getLocale())).build();
+        return RestResponseBuilder.error().withHttpStatus(HttpStatus.NOT_FOUND).withMessages(getI18NMessages(e.getResponseMessages(), e.getLocale())).build();
 
     }
+
+    @ExceptionHandler(NotAuthorizedResponseException.class)
+    public ResponseEntity<?> exception(NotAuthorizedResponseException e) {
+
+        return RestResponseBuilder.error()
+                .withHttpStatus(HttpStatus.FORBIDDEN)
+                .withMessages(getI18NMessages(e.getResponseMessages(), e.getLocale())).build();
+
+    }
+
+    @ExceptionHandler(BadRequestResponseException.class)
+    public ResponseEntity<?> exception(BadRequestResponseException e) {
+
+        return RestResponseBuilder.error()
+                .withHttpStatus(HttpStatus.BAD_REQUEST)
+                .withMessages(getI18NMessages(e.getResponseMessages(), e.getLocale())).build();
+
+    }
+
 
     private List<String> getI18NMessages(Map<String, Object[]> map, Locale locale) {
 
         List<String> messages = new ArrayList<>();
 
-        for (Entry<String, Object[]> v:  map.entrySet()) {
-            messages.add(messageSource.getMessage(v.getKey(), v.getValue(), locale));
+        if (map != null) {
+
+
+            for (Entry<String, Object[]> v : map.entrySet()) {
+                messages.add(messageSource.getMessage(v.getKey(), v.getValue(), locale));
+            }
         }
 
         return messages;

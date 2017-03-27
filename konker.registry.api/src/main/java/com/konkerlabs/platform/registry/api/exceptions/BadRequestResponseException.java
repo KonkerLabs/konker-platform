@@ -1,13 +1,14 @@
 package com.konkerlabs.platform.registry.api.exceptions;
 
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 
-public class BadServiceResponseException extends Exception {
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
+public class BadRequestResponseException extends Exception {
 
     private static final long serialVersionUID = -854909746416282903L;
 
@@ -17,7 +18,7 @@ public class BadServiceResponseException extends Exception {
 
     private Locale locale;
 
-    public BadServiceResponseException(User user, ServiceResponse<?> serviceResponse, Set<String> validationsCode) {
+    public BadRequestResponseException(User user, ServiceResponse<?> serviceResponse, Set<String> validationsCode) {
 
         if (serviceResponse != null &&
                 serviceResponse.getResponseMessages() != null) {

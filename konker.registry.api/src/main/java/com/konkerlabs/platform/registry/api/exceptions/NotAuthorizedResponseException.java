@@ -19,7 +19,8 @@ public class NotAuthorizedResponseException extends Exception {
 
     public NotAuthorizedResponseException(User user, ServiceResponse<?> serviceResponse, Set<String> validationsCode) {
 
-        if (serviceResponse.getResponseMessages() != null) {
+        if (serviceResponse != null &&
+                serviceResponse.getResponseMessages() != null) {
             for (String key : serviceResponse.getResponseMessages().keySet()) {
                 if (validationsCode.contains(key)) {
                     validationsError = true;
@@ -28,7 +29,7 @@ public class NotAuthorizedResponseException extends Exception {
             }
         }
 
-        this.responseMessages = serviceResponse.getResponseMessages();
+        this.responseMessages = serviceResponse != null ? serviceResponse.getResponseMessages() : null;
         this.locale = user.getLanguage().getLocale();
 
     }
