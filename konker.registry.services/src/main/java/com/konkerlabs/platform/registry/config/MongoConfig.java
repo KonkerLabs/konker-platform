@@ -20,6 +20,7 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
 import lombok.Data;
+import org.springframework.util.StringUtils;
 
 @Configuration
 @EnableMongoRepositories(basePackages = "com.konkerlabs.platform.registry.business.repositories")
@@ -35,15 +36,17 @@ public class MongoConfig extends AbstractMongoConfiguration {
     	Map<String, Object> defaultMap = new HashMap<>();
     	defaultMap.put("mongo.hostname", "localhost");
     	defaultMap.put("mongo.port", 27017);
-    	defaultMap.put("mongo.username", "admin");
-    	defaultMap.put("mongo.password", "admin");
+    	defaultMap.put("mongo.username", "");
+        defaultMap.put("mongo.password", "");
     	Config defaultConf = ConfigFactory.parseMap(defaultMap);
 
     	Config config = ConfigFactory.load().withFallback(defaultConf);
     	setHostname(config.getString("mongo.hostname"));
     	setPort(config.getInt("mongo.port"));
-    	setUsername(config.getString("mongo.username"));
-    	setPassword(config.getString("mongo.password"));
+    	setUsername(Optional.ofNullable(config.getString("mongo.username")).isPresent()
+                ? config.getString("mongo.username") : null);
+    	setPassword(Optional.ofNullable(config.getString("mongo.password")).isPresent()
+                ? config.getString("mongo.password") : null);
 
     }
 
@@ -63,10 +66,18 @@ public class MongoConfig extends AbstractMongoConfiguration {
 
     @Override
     public Mongo mongo() throws Exception {
-    	MongoCredential credential = MongoCredential.createCredential(getUsername(), getDatabaseName(), getPassword().toCharArray());
-    	ServerAddress address = new ServerAddress(getHostname(), getPort());
+        ServerAddress address = new ServerAddress(getHostname(), getPort());
+        if(!StringUtils.isEmpty(getUsername()) && !StringUtils.isEmpty(getPassword())){
+            try {
+                MongoCredential credential = MongoCredential.createCredential(getUsername(), getDatabaseName(), getPassword().toCharArray());
+                return new MongoClient(address, Collections.singletonList(credential));
+            } catch (Exception e){
+                return new MongoClient(address);
+            }
+        } else {
+            return new MongoClient(address);
+        }
 
-        return new MongoClient(address, Collections.singletonList(credential));
     }
 
     @Override

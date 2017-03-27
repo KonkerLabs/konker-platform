@@ -15,7 +15,7 @@ public class NotFoundResponseException extends Exception {
     private Locale locale;
 
     public NotFoundResponseException(User user, ServiceResponse<?> serviceResponse) {
-        this.responseMessages = serviceResponse.getResponseMessages();
+        this.responseMessages = serviceResponse != null ? serviceResponse.getResponseMessages() : null;
         this.locale = user.getLanguage().getLocale();
     }
 
