@@ -28,6 +28,7 @@ import java.net.URI;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Supplier;
@@ -112,6 +113,7 @@ public class EventRouteControllerTest extends WebLayerTestContext {
 
     private EventRouteForm routeForm;
     private String routeGuid = "71fb0d48-674b-4f64-a3e5-0256ff3a63af";
+    private String otherRouteGuid = "71fb0d48-674b-4f64-a3e5-0256ff3a63bg";
 
     @Before
     public void setUp() throws Exception {
@@ -452,6 +454,26 @@ public class EventRouteControllerTest extends WebLayerTestContext {
                 .andExpect(flash().attribute("message",
                     applicationContext.getMessage(ROUTE_REMOVED_SUCCESSFULLY.getCode(),null,Locale.ENGLISH)
                 ))
+                .andExpect(redirectedUrl("/routes"));
+
+        verify(eventRouteService).remove(tenant, newRoute.getGuid());
+    }
+    
+    @Test
+    @WithMockUser(authorities={"REMOVE_DEVICE_ROUTE"})
+    public void shoudlReturnMessageAfterTryRemoveInexistentRoute() throws Exception {
+        newRoute.setGuid(otherRouteGuid);
+        
+        ServiceResponse<EventRoute> responseDelete = ServiceResponseBuilder.<EventRoute>error()
+                .withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();
+        spy(responseDelete);
+
+        when(eventRouteService.remove(tenant, newRoute.getGuid())).thenReturn(responseDelete);
+        List<String> messages = Collections.singletonList(
+        		applicationContext.getMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode(),null,Locale.ENGLISH));
+
+        getMockMvc().perform(delete("/routes/{0}", newRoute.getGuid()))
+                .andExpect(flash().attribute("errors", messages))
                 .andExpect(redirectedUrl("/routes"));
 
         verify(eventRouteService).remove(tenant, newRoute.getGuid());
