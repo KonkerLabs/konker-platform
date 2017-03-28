@@ -183,10 +183,19 @@ public class EventRouteController implements ApplicationContextAware {
     public ModelAndView remove(@PathVariable("routeGUID") String routeGUID,
                                RedirectAttributes redirectAttributes, Locale locale) {
         ServiceResponse<EventRoute> serviceResponse = eventRouteService.remove(tenant, routeGUID);
+        
+        if (serviceResponse.isOk()) {
+        	redirectAttributes.addFlashAttribute("message",
+        			applicationContext.getMessage(Messages.ROUTE_REMOVED_SUCCESSFULLY.getCode(),null,locale));
+        } else {
+        	List<String> messages = serviceResponse.getResponseMessages()
+        			.entrySet()
+        			.stream()
+        			.map(message -> applicationContext.getMessage(message.getKey(), message.getValue(), locale))
+        			.collect(Collectors.toList());
+        	redirectAttributes.addFlashAttribute("errors", messages);
+        }
 
-        redirectAttributes.addFlashAttribute("message",
-                applicationContext.getMessage(Messages.ROUTE_REMOVED_SUCCESSFULLY.getCode(),null,locale)
-        );
 
         return new ModelAndView("redirect:/routes");
     }
