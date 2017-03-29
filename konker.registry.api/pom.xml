@@ -18,6 +18,29 @@
     <groupId>com.konkerlabs</groupId>
     <artifactId>konker.registry.api</artifactId>
 
+    <profiles>
+        <profile>
+            <id>mongodb</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+        </profile>
+        <profile>
+            <id>cassandra</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>com.konkerlabs</groupId>
+                    <artifactId>konker.registry.services.storage.cassandra</artifactId>
+                    <version>0.0.1</version>
+                    <optional>true</optional>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
+
     <dependencies>
         <!-- Test Scope -->
         <dependency>

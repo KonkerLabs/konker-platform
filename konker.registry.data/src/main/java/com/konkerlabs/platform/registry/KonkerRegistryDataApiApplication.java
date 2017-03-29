@@ -1,4 +1,4 @@
-package com.konkerlabs.platform.registry.data;
+package com.konkerlabs.platform.registry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
