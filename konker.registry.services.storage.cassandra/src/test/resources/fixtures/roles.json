@@ -1,0 +1,430 @@
+{
+  "roles" : [
+	    {
+	    "_id" : "58542d56861bd736c42a0202",
+	    "name" : "ROLE_IOT_USER",
+	    "privileges" : [ 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1e2"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1e3"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1e4"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1e5"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1e6"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1e7"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1e8"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1e9"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1ea"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1eb"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1ec"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1ed"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1ee"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1ef"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1f0"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1f1"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1f2"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1f3"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1f4"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1f5"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1f6"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1f7"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1f8"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1f9"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1fa"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1ff"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab200"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab201"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab202"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab203"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab204"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab205"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab206"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "585bcc7840bce8c571ba0237"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "585bcc7840bce8c571ba0239"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "585bcc7840bce8c571ba023a"
+	        }
+	    ]
+	},
+	    {
+	    "_id" : "58542d56861bd736c42a0203",
+	    "name" : "ROLE_ANALYTICS_USER",
+	    "privileges" : [ 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1e2"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1e3"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1e4"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1e5"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1e6"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1e7"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1e8"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab207"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab208"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab209"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab20a"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab20b"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab20c"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab20d"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab20e"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab20f"
+	        }
+	    ]
+	},
+	    {
+	    "_id" : "58542d56861bd736c42a0204",
+	    "name" : "ROLE_SUPER_USER",
+	    "privileges" : [ 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1e2"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1e3"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1e4"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1e5"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1e6"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1e7"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1e8"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1e9"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1ea"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1eb"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1ec"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1ed"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1ee"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1ef"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1f0"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1f1"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1f2"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1f3"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1f4"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1f5"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1f6"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1f7"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1f8"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1f9"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1fa"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1fb"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1fc"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1fd"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1fe"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab1ff"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab200"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab201"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab202"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab203"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab204"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab205"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab206"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab207"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab208"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab209"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab20a"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab20b"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab20c"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab20d"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab20e"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "5858266439f11e61b1fab20f"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "585bcc7840bce8c571ba0237"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "585bcc7840bce8c571ba0238"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "585bcc7840bce8c571ba0239"
+	        }, 
+	        {
+	            "$ref" : "privileges",
+	            "$id" : "585bcc7840bce8c571ba023a"
+	        }
+	    ]
+	}
+  ]
+}
