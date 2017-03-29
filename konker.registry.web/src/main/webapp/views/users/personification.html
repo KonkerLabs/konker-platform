@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html data-layout-decorate="layouts/default" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<style>
+		a, a:hover, a:focus {
+		    color: #4aaf51;
+		    text-decoration: none;
+		    -o-transition: all .3s;
+		    -moz-transition: all .3s;
+		    -webkit-transition: all .3s;
+		    -ms-transition: all .3s;
+		    transition: all .3s;
+		}
+        .panel-edit-user {
+            display: none;
+        }
+        .marginTop {
+        	margin-top: 25px;
+        }
+	</style>
+</head>
+<body>
+<div data-layout-fragment="content" class="col-md-offset-1">
+    <div>
+        <h1 class="page-title" data-th-text="#{users.personification.title}"></h1>
+        <div class="alert alert-danger" role="alert" data-th-if="${errors != null and !errors.empty}">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <ul>
+            <li data-th-each="error : ${errors}" data-th-text="${error}"></li>
+            </ul>
+        </div>
+        <div class="alert alert-success" role="alert" data-th-if="${message != null}">
+            <span data-th-text="${message}"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    </div>
+    <form data-th-action="@{__${action}__}" data-th-object="${user}"
+          method="post" class="form-horizontal">
+
+        <input type="hidden" name="_method" data-th-value="${method}" data-th-if="${method != null}"/>
+
+        <div class="panel-user-fields">
+            <div class="col-md-12">
+            	<div class="row col-md-5 pull-left">
+                	<p>
+                		<label class="control-label"
+							data-th-text="#{users.form.email}"
+                            for="email-show"></label>
+                        <input class="form-control"
+                        	type="text"
+                            id="email-show"
+                            name="email"
+                            data-th-value="*{email}"/>
+                    </p>  
+                </div>
+                <div class="col-md-3 pull-left marginTop">
+                	<button type="submit" class="btn btn-theme"  data-th-text="#{controller.user.personification.btn.change}">Change</button>
+                </div>
+            </div>
+        </div>
+    </form>
+    
+</div>
+
+</body>
+</html>
