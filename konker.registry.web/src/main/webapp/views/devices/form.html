@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html data-layout-decorate="layouts/default">
+<head>
+</head>
+<body>
+    <div data-layout-fragment="content">
+        <fieldset>
+            <div>
+                <h1 class="page-title" data-th-text="#{devices.form.legend}"></h1>
+            </div>
+            <div class="alert alert-danger" role="alert" data-th-if="${errors != null and !errors.empty}">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <ul>
+                <li data-th-each="error : ${errors}" data-th-text="${error}"></li>
+                </ul>
+            </div>
+            <form data-th-action="@{__${action}__}" data-th-object="${device}"
+                  method="post" class="form-horizontal">
+                <input type="hidden" name="_method" data-th-value="${method}" data-th-if="${method != null}"/>
+                <div class="form-group">
+                    <label class="col-sm-1 control-label"
+                           data-th-text="#{devices.form.id}"
+                           for="deviceId"></label>
+                    <div class="col-sm-4">
+                        <input data-th-disabled="${isEditing != null}" type="text" data-th-field="*{deviceId}"
+                               data-th-placeholder="#{devices.form.id.placeholder}"
+                               class="form-control"
+                               autofocus
+                               id="deviceId"
+                               name="deviceId"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-1 control-label"
+                           data-th-text="#{devices.form.name}"
+                           for="name"></label>
+                    <div class="col-sm-4">
+                        <input type="text" data-th-field="*{name}"
+                               class="form-control"
+                               id="name" name="name"
+                               data-th-placeholder="#{devices.form.name.placeholder}"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-1 control-label"
+                           data-th-text="#{devices.form.description}"
+                           for="description"></label>
+                    <div class="col-sm-6">
+                        <textarea id="description" class="form-control" name="description"
+                                  data-th-placeholder="#{devices.form.description.placeholder}"
+                                  data-th-field="*{description}">
+                        </textarea>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-1 control-label"
+                           data-th-text="#{devices.form.active}"
+                           for="active">Active?</label>
+                    <div class="col-sm-2">
+                    	<label class="switch">
+	                        <input type="checkbox" 
+                               data-th-field="*{active}"
+                               id="active"
+                               name="active"/>
+	                    </label>
+                        
+                    </div>
+                </div>
+                <button type="submit"
+                        class="btn btn-success">
+                    <img data-th-attr="src=@{/resources/konker/images/icons-bt/save-icon-bt-01.svg}"
+                         class="icon-menu" />
+                    <span data-th-text="#{nav.save}"></span>
+                </button>
+                <a data-th-href="@{/devices}"
+                   class="btn btn-default">
+                    <img data-th-src="@{/resources/konker/images/icons-bt/back-icon-bt-01.svg}" class="bt-icon">
+                    <span data-th-text="#{nav.back}"></span>
+                </a>
+                <!-- delete item -->
+                <a class="btn btn-default confirm-delete"
+                   data-th-if="*{deviceId} != null">
+                    <img data-th-src="@{/resources/konker/images/icons-bt/trash-icon-bt-01.svg}" class="bt-icon">
+                    <span data-th-text="#{nav.remove}"></span>
+                </a>
+
+                <div class="modal" id="removeItemModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                    <div class="modal-alignment-helper">
+                        <div class="modal-dialog modal-align-center">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    <h3 class="modal-title" data-th-text="#{nav.remove}">Remove</h3>
+                                </div>
+                                <div class="modal-body">
+                                    <p data-th-text="#{devices.form.modal.remove.firstLine}">You are about to remove this Device.</p>
+                                    <p data-th-text="#{devices.form.modal.remove.secondLine}">Do you want to proceed?</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" id="btnYes" class="btn btn-primary" data-th-text="#{nav.yes}">Yes</button>
+                                    <button type="button" data-dismiss="modal" aria-hidden="true" class="btn btn-default" data-th-text=#{nav.no}>No</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </form>
+        </fieldset>
+    </div>
+<div data-layout-fragment="script">
+    <script data-th-attr="src=@{/resources/js/devices/form.js}"></script>
+</div>
+</body>
+</html>

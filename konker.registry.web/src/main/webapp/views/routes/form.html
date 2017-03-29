@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html data-layout-decorate="layouts/default" xmlns:th="http://www.thymeleaf.org">
+<head>
+</head>
+<body>
+<div data-layout-fragment="content">
+    <fieldset>
+        <div>
+            <h1 class="page-title" data-th-text="#{routes.form.legend}"></h1>
+        </div>
+        <div class="alert alert-danger" role="alert" data-th-if="${errors != null and !errors.empty}">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <ul>
+            <li data-th-each="error : ${errors}" data-th-text="${error}"></li>
+            </ul>
+        </div>
+        <form data-th-action="@{__${action}__}" action="#" data-th-object="${route}"
+              method="post" class="form-horizontal" autocomplete="off">
+            <input type="hidden" name="_method" data-th-value="${method}" data-th-if="${method != null}"/>
+            <div class="form-group">
+                <label class="col-sm-1 control-label"
+                       data-th-text="#{routes.form.name}"
+                       for="name"></label>
+                <div class="col-sm-4">
+                    <input type="text" data-th-field="*{name}"
+                           class="form-control"
+                           id="name"
+                           name="name" 
+                           data-th-placeholder="#{routes.form.name.placeholder}"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-1 control-label"
+                       data-th-text="#{routes.form.description}"
+                       for="description"></label>
+                <div class="col-sm-6">
+                    <textarea id="description" class="form-control" name="description"
+                              data-th-placeholder="#{routes.form.description.placeholder}" data-th-field="*{description}">
+                    </textarea>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-1 control-label"
+                       data-th-text="#{routes.form.incoming.device}"
+                       for="incomingAuthority"></label>
+                <div class="col-sm-4">
+                    <select
+                        class="form-control col-md-12"
+                        data-th-field="*{incoming.authorityId}"
+                        id="incomingAuthority" name="incomingAuthority">
+                        <option data-th-each="device : ${allDevices}"
+                                data-th-value="${device.guid}"
+                                data-th-text="${device.deviceId + ' - ' + device.name}"></option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-1 control-label"
+                       data-th-text="#{routes.form.incoming.channel}"
+                       for="incomingChannel"></label>
+                <div class="col-sm-4">
+                    <input type="text" data-th-field="*{incoming.authorityData['channel']}"
+                           class="form-control"
+                           id="incomingChannel"
+                           name="incomingChannel" data-th-placeholder="#{routes.form.incoming.channel.placeholder}"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-1 radio control-label"
+                       data-th-text="#{routes.form.outgoing.type}"></label>
+                <div class="col-sm-4">
+                    <label class="radio-inline">
+                        <input type="radio" name="outgoingScheme"
+                               data-th-text="#{routes.form.outgoing.type.device}"
+                               value="device" data-th-checked="*{outgoingScheme == 'device'}"></input>
+                    </label>
+                    <label class="radio-inline" data-th-if="${#lists.contains(@environment.getActiveProfiles(), 'sms')
+                    								       && #authorization.expression('hasAnyRole(''ROLE_SUPER_USER'')')}">
+                        <input type="radio" name="outgoingScheme"
+                               data-th-text="#{routes.form.outgoing.type.sms}" data-th-if="${#lists.contains(@environment.getActiveProfiles(), 'sms')}"
+                               value="sms" data-th-checked="*{outgoingScheme == 'sms'}"></input>
+                    </label>
+                    <label class="radio-inline">
+                        <input type="radio" name="outgoingScheme"
+                               data-th-text="#{routes.form.outgoing.type.rest}"
+                               value="rest" data-th-checked="*{outgoingScheme == 'rest'}"></input>
+                    </label>
+                </div>
+            </div>
+            <div id="outgoingFragment">
+                <data-th-block data-th-include="routes/device-outgoing :: outgoing"
+                               data-th-if="*{outgoingScheme == 'device'}">
+                </data-th-block>
+                <data-th-block data-th-include="routes/sms-outgoing :: outgoing"
+                               data-th-if="*{outgoingScheme == 'sms'}">
+                </data-th-block>
+                <data-th-block data-th-include="routes/rest-outgoing :: outgoing"
+                               data-th-if="*{outgoingScheme == 'rest'}">
+                </data-th-block>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-1 control-label"
+                       data-th-text="#{routes.form.message_filter}"
+                       for="filteringExpression"></label>
+                <div class="col-sm-7">
+                    <input type="text" data-th-field="*{filteringExpression}"
+                           class="form-control"
+                           id="filteringExpression"
+                           name="filteringExpression" data-th-placeholder="#{routes.form.message_filter.placeholder}"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-1 control-label"
+                       data-th-text="#{routes.form.transformation_chain}"
+                       for="transformation"></label>
+                <div class="col-sm-4">
+                    <select class="form-control col-md-12"
+                            data-th-field="*{transformation}"
+                            id="transformation" name="transformation">
+                        <option data-th-value="${''}"
+                                data-th-text="#{routes.form.transformation.empty}"></option>
+                        <option data-th-each="trans : ${allTransformations}"
+                                data-th-value="${trans.id}"
+                                data-th-text="${trans.name}"></option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-1 control-label"
+                       data-th-text="#{routes.form.active}"
+                       for="active"></label>
+                <div class="col-sm-4">
+                	<label class="switch">
+	                    <input type="checkbox" data-th-field="*{active}"
+	                           id="active"
+	                           name="active"/>
+	                </label>
+                </div>
+            </div>
+            <button type="submit"
+                    class="btn btn-success">
+               <img data-th-src="@{/resources/konker/images/icons-bt/save-icon-bt-01.svg}" class="bt-icon">
+               <span data-th-text="#{nav.save}"></span>
+            </button>
+            <a data-th-href="@{/routes}"
+               class="btn btn-default">
+               <img data-th-src="@{/resources/konker/images/icons-bt/back-icon-bt-01.svg}" class="bt-icon">
+               <span data-th-text="#{nav.back}"></span>
+            </a>
+            <a class="btn btn-default confirm-delete"
+               data-th-if="*{id} != null">
+               <img data-th-src="@{/resources/konker/images/icons-bt/trash-icon-bt-01.svg}" class="bt-icon">
+               <span data-th-text="#{nav.remove}"></span>
+            </a>
+
+            <div class="modal" id="removeItemModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                <div class="modal-alignment-helper">
+                    <div class="modal-dialog modal-align-center">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                <h3 class="modal-title" data-th-text="#{nav.remove}">Remove</h3>
+                            </div>
+                            <div class="modal-body">
+                                <p data-th-text="#{routes.form.modal.remove.firstLine}">You are about to remove this Route.</p>
+                                <p data-th-text="#{routes.form.modal.remove.secondLine}">Do you want to proceed?</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" id="btnYes" class="btn btn-primary" data-th-text="#{nav.yes}">Yes</button>
+                                <button type="button" data-dismiss="modal" aria-hidden="true" class="btn btn-default" data-th-text=#{nav.no}>No</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+        
+        <div class="ajax-loading"></div>
+  
+    </fieldset>
+</div>
+<div data-layout-fragment="script">
+    <script data-th-attr="src=@{/resources/js/routes/form.js(v2)}" type="text/javascript"></script>
+</div>
+</body>
+</html>

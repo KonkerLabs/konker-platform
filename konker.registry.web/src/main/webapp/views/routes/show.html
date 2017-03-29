@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html data-layout-decorate="layouts/default">
+<head>
+</head>
+<body>
+<div data-layout-fragment="content">
+    <fieldset disabled="" class="form-horizontal">
+        <div>
+            <h1 class="page-title" data-th-text="#{routes.show.legend}"></h1>
+        </div>
+        <div class="alert alert-success" role="alert" data-th-if="${message != null}">
+            <span data-th-text="${message}"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-1 control-label"
+                   data-th-text="#{routes.show.name}"
+                   for="name"></label>
+            <div class="col-sm-4">
+                <input type="text" data-th-value="${route.name}"
+                       class="form-control"
+                       id="name"
+                       name="name"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-1 control-label"
+                   data-th-text="#{routes.show.description}"
+                   for="description"></label>
+            <div class="col-sm-6">
+                <textarea id="description" class="form-control" name="description"
+                          data-th-text="${route.description}">
+                </textarea>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-1 control-label"
+                   data-th-text="#{routes.show.incoming.device}"
+                   for="incomingAuthority"></label>
+            <div class="col-sm-4">
+                <select class="form-control col-md-12" data-th-field="${route.incoming.authorityId}"
+                        id="incomingAuthority" name="incomingAuthority">
+                    <option data-th-each="device : ${allDevices}"
+                            data-th-value="${device.guid}"
+                            data-th-text="${device.deviceId + ' - ' + device.name}"></option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-1 control-label"
+                   data-th-text="#{routes.show.incoming.channel}"
+                   for="incomingChannel"></label>
+            <div class="col-sm-4">
+                <input type="text" data-th-value="${route.incoming.authorityData['channel']}"
+                       class="form-control"
+                       id="incomingChannel"
+                       name="incomingChannel"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-1 radio control-label"
+                   data-th-text="#{routes.show.outgoing.type}"></label>
+            <div class="col-sm-4">
+                <label class="radio-inline">
+                    <input type="radio" name="outgoingScheme"
+                           data-th-text="#{routes.show.outgoing.type.device}" 
+                           value="device" data-th-checked="${route.outgoingScheme == 'device'}"></input>
+                </label>
+                <label class="radio-inline">
+                    <input type="radio" name="outgoingScheme"
+                           data-th-text="#{routes.show.outgoing.type.sms}" data-th-if="${#lists.contains(@environment.getActiveProfiles(), 'sms')}"
+                           value="sms" data-th-checked="${route.outgoingScheme == 'sms'}"></input>
+                </label>
+                <label class="radio-inline">
+                    <input type="radio" name="outgoingScheme"
+                           data-th-text="#{routes.show.outgoing.type.rest}"
+                           value="rest" data-th-checked="${route.outgoingScheme == 'rest'}"></input>
+                </label>
+            </div>
+        </div>
+        <data-th-block data-th-include="routes/device-outgoing :: outgoing"
+                       data-th-if="${route.outgoingScheme == 'device'}">
+        </data-th-block>
+        <data-th-block data-th-include="routes/sms-outgoing :: outgoing"
+                       data-th-if="${route.outgoingScheme == 'sms'}">
+        </data-th-block>
+        <data-th-block data-th-include="routes/rest-outgoing :: outgoing"
+                       data-th-if="${route.outgoingScheme == 'rest'}">
+        </data-th-block>
+        <div class="form-group">
+            <label class="col-sm-1 control-label"
+                   data-th-text="#{routes.show.message_filter}"
+                   for="filteringExpression"></label>
+            <div class="col-sm-4">
+                <input type="text" data-th-value="${route.filteringExpression}"
+                       class="form-control"
+                       id="filteringExpression"
+                       name="filteringExpression"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-1 control-label"
+                   data-th-text="#{routes.show.transformation_chain}"
+                   for="transformation"></label>
+            <div class="col-sm-4">
+                <select class="form-control" data-th-field="${route.transformation}"
+                        id="transformation" name="transformation">
+                    <option data-th-value="${''}"
+                            data-th-text="#{routes.show.transformation.none}"></option>
+                    <option data-th-each="trans : ${allTransformations}"
+                            data-th-value="${trans.id}"
+                            data-th-text="${trans.name}"></option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-1 control-label"
+                   data-th-text="#{routes.show.active}"
+                   for="active"></label>
+            <div class="col-sm-4">
+	            <label class="switch">
+	                <input type="checkbox" data-th-field="${route.active}"
+	                       id="active"
+	                       name="active"/>
+	            </label>
+            </div>
+        </div>
+    </fieldset>
+    <a data-th-href="@{/routes}"
+       class="btn btn-default">
+       <img data-th-src="@{/resources/konker/images/icons-bt/back-icon-bt-01.svg}" class="bt-icon">
+       <span data-th-text="#{nav.back}"></span>
+    </a>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html data-layout-decorate="layouts/default">
+<head>
+</head>
+<body>
+<div data-layout-fragment="content">
+    <fieldset>
+        <div>
+            <h1 class="page-title" data-th-text="#{destinations.sms.index.legend}"></h1>
+        </div>
+
+        <div class="alert alert-success" role="alert" data-th-if="${message != null}">
+            <span data-th-text="${message}"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <a data-th-href="@{/destinations/sms/new}" class="btn btn-default action pull-right" data-th-text="#{nav.new}">New</a>
+        <table class="table table-bordered">
+            <thead>
+            <tr>
+                <th class="col-md-1" data-th-text="#{destinations.sms.index.name}">Name</th>
+                <th class="col-md-2" data-th-text="#{destinations.sms.index.number}">Phone Number</th>
+                <th class="col-md-1" data-th-text="#{destinations.sms.index.active}">Active?</th>
+                <th class="col-md-1 text-center" data-th-text="#{destinations.sms.index.actions}">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr data-th-each="destination : ${allDestinations}">
+                <td data-th-text="${destination.name}"></td>
+                <td data-th-text="${destination.phoneNumber}"></td>
+                <td>
+                    <img data-konker-enabled-img="${destination.active}"></img>
+                </td>
+                <td class="text-center">
+                    <a data-th-href="@{/destinations/sms/{id}(id=${destination.guid})}" class="btn btn-default" data-th-text="#{nav.show}">
+                        Show
+                    </a>
+                    <a data-th-href="@{/destinations/sms/{id}/edit(id=${destination.guid})}" class="btn btn-default" data-th-text="#{nav.edit}">
+                        Edit
+                    </a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </fieldset>
+</div>
+</body>
+</html>

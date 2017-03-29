@@ -40,7 +40,6 @@ import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
 import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.TransformationService;;
-/*
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = EventRouteRestController.class)
 @AutoConfigureMockMvc(secure = false)
@@ -49,7 +48,7 @@ import com.konkerlabs.platform.registry.business.services.api.TransformationServ
         MongoTestConfig.class,
         WebMvcConfig.class,
         CrudResponseAdvice.class
-})*/
+})
 public class EventRouteRestControllerTest extends WebLayerTestContext {
 
     @Autowired
@@ -132,7 +131,7 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
         Mockito.reset(transformationService);
     }
 
-    /*@Test*/
+    @Test
     public void shouldListEventRoutes() throws Exception {
 
         List<EventRoute> routes = new ArrayList<>();
@@ -164,7 +163,7 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
 
     }
 
-    /*@Test*/
+    @Test
     public void shouldTryListEventRoutesWithInternalError() throws Exception {
 
         when(eventRouteService.getAll(tenant))
@@ -181,7 +180,7 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
 
     }
 
-    /*@Test*/
+    @Test
     public void shouldReadEventRoute() throws Exception {
 
         when(eventRouteService.getByGUID(tenant, route1.getGuid()))
@@ -203,7 +202,7 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
 
     }
 
-    /*@Test*/
+    @Test
     public void shouldTryReadEventRouteWithBadRequest() throws Exception {
 
         when(eventRouteService.getByGUID(tenant, route1.getGuid()))
@@ -221,7 +220,7 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
 
     }
 
-    /*@Test*/
+    @Test
     public void shouldCreateEventRoute() throws Exception {
 
         when(eventRouteService.save(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(EventRoute.class)))
@@ -256,7 +255,7 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
 
     }
 
-    /*@Test*/
+    @Test
     public void shouldCreateEventRouteToRestDestination() throws Exception {
 
         when(eventRouteService.save(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(EventRoute.class)))
@@ -288,7 +287,7 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
 
     }
 
-    /*@Test*/
+    @Test
     public void shouldTryCreateEventRouteWithBadRequest() throws Exception {
 
         when(eventRouteService.save(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(EventRoute.class)))
@@ -317,7 +316,7 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
 
     }
 
-    /*@Test*/
+    @Test
     public void shouldTryCreateEventRouteWithInvalidOutgoing() throws Exception {
 
         when(eventRouteService.save(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(EventRoute.class)))
@@ -345,7 +344,7 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
 
     }
 
-    /*@Test*/
+    @Test
     public void shouldTryCreateEventRouteWithInvalidTransformation() throws Exception {
 
         when(deviceRegisterService.getByDeviceGuid(tenant, device1.getGuid()))
@@ -371,7 +370,7 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
 
     }
 
-    /*@Test*/
+    @Test
     public void shouldUpdateEventRoute() throws Exception {
 
         when(eventRouteService.getByGUID(tenant, route1.getGuid()))
@@ -402,7 +401,7 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
 
     }
 
-    /*@Test*/
+    @Test
     public void shouldUpdateEventRouteWithoutTransformation() throws Exception {
 
         when(eventRouteService.getByGUID(tenant, route2.getGuid()))
@@ -430,7 +429,7 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
 
     }
 
-    /*@Test*/
+    @Test
     public void shouldTryUpdateEventRouteWithoutOutgoing() throws Exception {
 
         when(eventRouteService.getByGUID(tenant, route1.getGuid()))
@@ -465,7 +464,7 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
 
     }
 
-    /*@Test*/
+    @Test
     public void shouldTryUpdateEventRouteWithInternalError() throws Exception {
 
         when(eventRouteService.getByGUID(tenant, route1.getGuid()))
@@ -496,7 +495,7 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
 
     }
 
-    /*@Test*/
+    @Test
     public void shouldDeleteEventRoute() throws Exception {
 
         when(eventRouteService.remove(tenant, route1.getGuid()))
@@ -513,7 +512,7 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
 
     }
 
-    /*@Test*/
+    @Test
     public void shouldTryDeleteEventRouteWithInternalError() throws Exception {
 
         when(eventRouteService.remove(tenant, route1.getGuid()))
@@ -530,7 +529,7 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
 
     }
 
-    /*@Test*/
+    @Test
     public void shouldTryDeleteNonexistentEventRoute() throws Exception {
 
         when(eventRouteService.remove(tenant, route1.getGuid()))

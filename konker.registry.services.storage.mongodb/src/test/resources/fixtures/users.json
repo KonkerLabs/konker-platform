@@ -1,0 +1,44 @@
+{
+  "users" : [
+    {
+      "_id" : "admin@konkerlabs.com",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref": "tenants"
+      },
+      "_class" : "com.konkerlabs.platform.registry.model.User",
+      "password" : "PBKDF2WithHmac$SHA256$10000$Ssrhh8AflmSv8FvTN1hILw==$vPJFFlOE1CBxmjMSw2TrCBiQZXjLgYZQKDso9k/T59Y=",
+      "name":"Konker Admin",
+      "language": "EN",
+      "zoneId": "AMERICA_SAO_PAULO",
+      "dateFormat":"YYYYMMDD",
+      "notificationViaEmail" : true
+    },
+    {
+      "_id" : "foo@konkerlabs.com",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref": "tenants"
+      },
+      "_class" : "com.konkerlabs.platform.registry.model.User",
+      "password" : "PBKDF2WithHmac$SHA256$10000$Ssrhh8AflmSv8FvTN1hILw==$vPJFFlOE1CBxmjMSw2TrCBiQZXjLgYZQKDso9k/T59Y=",
+      "name":"Konker Admin",
+      "language": "EN",
+      "zoneId": "AMERICA_SAO_PAULO",
+      "dateFormat":"YYYYMMDD"
+    },
+    {
+      "_id" : "bar@konkerlabs.com",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref": "tenants"
+      },
+      "_class" : "com.konkerlabs.platform.registry.model.User",
+      "password" : "PBKDF2WithHmac$SHA256$10000$Ssrhh8AflmSv8FvTN1hILw==$vPJFFlOE1CBxmjMSw2TrCBiQZXjLgYZQKDso9k/T59Y=",
+      "name":"Konker Admin",
+      "language": "EN",
+      "zoneId": "AMERICA_SAO_PAULO",
+      "dateFormat":"YYYYMMDD"
+    }
+  ]
+}

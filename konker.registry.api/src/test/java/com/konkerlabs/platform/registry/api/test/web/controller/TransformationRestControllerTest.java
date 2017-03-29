@@ -36,7 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/*@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = TransformationsRestController.class)
 @AutoConfigureMockMvc(secure = false)
 @ContextConfiguration(classes = {
@@ -44,7 +44,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         MongoTestConfig.class,
         WebMvcConfig.class,
         CrudResponseAdvice.class
-})*/
+})
 public class TransformationRestControllerTest extends WebLayerTestContext {
 
     @Autowired
@@ -119,7 +119,7 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
         Mockito.reset(transformationService);
     }
 
-    /*@Test*/
+    @Test
     public void shouldListTransformations() throws Exception {
 
         when(transformationService.getAll(tenant))
@@ -160,7 +160,7 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
 
     }
 
-    /*@Test*/
+    @Test
     public void shouldReadTransformation() throws Exception {
         when(transformationService.get(tenant, GUID1))
                 .thenReturn(ServiceResponseBuilder.<Transformation>ok()
@@ -187,7 +187,7 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
 
     }
 
-    /*@Test*/
+    @Test
     public void shouldCreateTransformation() throws Exception {
         Transformation newTransformation = Transformation.builder()
                 .id(null)
@@ -234,7 +234,7 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
 
     }
 
-    /*@Test*/
+    @Test
     public void shouldUpdateTransformation() throws Exception {
         Transformation changedValues = Transformation.builder()
                 .id(ID1)
@@ -263,7 +263,7 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
                 .andExpect(content().contentType("application/json;charset=UTF-8"));
     }
 
-    /*@Test*/
+    @Test
     public void shouldDeleteDevice() throws Exception {
         when(transformationService.remove(tenant, GUID1))
                 .thenReturn(ServiceResponseBuilder.<Transformation> ok().build());

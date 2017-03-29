@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html data-layout-decorate="layouts/default">
+
+<head>
+</head>
+
+<body>
+    <div data-layout-fragment="content">
+        <fieldset>
+            <div>
+                <h1 class="page-title" data-th-text="#{usernotifications.index.legend}"></h1>
+            </div>
+            <div class="row" data-th-if="${messageCount > 0}">
+                <div class="col-md-4 sidebar">
+                    <input type="button" class="btn" id="mark-all-read-btn" data-th-value="#{usernotifications.index.mark_all_read}" value="Mark All Read">
+                    <div class="list-group" id="notification-summary">
+                    </div>
+                </div>
+                <div class="col-md-8" id="notification-target">
+                </div>
+            </div>
+            <div class="row" data-th-if="${messageCount == 0}">
+                <p align="center" data-th-text="#{usernotifications.index.no_notifications}">You have no messages</p>
+            </div>
+            <div class="hidden">
+                <script id="notification-template" type="x-tmpl-mustache">
+                    <div class="row" id="notification-header">
+                        <div class="col-md-9">
+                            <h2 class="sub-header" id="notification-subject">{{subject}}</h2>
+                            <p class="small">{{notification-date-label}}: <span id="notification-date">{{dateTime}}</span>
+                            </p>
+                        </div>
+                        <div class="col-md-3">
+                            <h2 class="sub-header"><input type="button" class="btn" id="mark-read-btn" value="{{mark-read-btn}}" />
+                                    <input type="button" class="btn" id="mark-unread-btn" value="{{mark-unread-btn}}" /></h2>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <p id="notification-body">{{body}}</p>
+                    </div>
+                </script>
+                <script id="notification-header-template" type="x-tmpl-mustache">
+                    <a href="#" class="list-group-item notification-summary-item" id="{{uuid}}">
+                        <p>{{subject}}</p>
+                        <p><small>{{dateTime}}</small></p>
+                    </a>
+                </script>
+            </div>
+        </fieldset>
+
+    </div>
+    <div data-layout-fragment="script">
+        <!-- https://unpkg.com/axios/dist/ -->
+        <script data-th-attr="src=@{/resources/konker/scripts/axios.min.js}"></script>
+        <script data-th-attr="src=@{/resources/konker/scripts/mustache.min.js}"></script>
+        <script type="text/javascript" data-th-inline="javascript">
+        var mustacheTranslation = {
+            "mark-read-btn": [[#{usernotifications.index.mark_read}]],
+            "mark-unread-btn": [[#{usernotifications.index.mark_unread}]],
+            "notification-date-label": [[#{usernotifications.index.date}]]
+        };
+        </script>
+        <script data-th-attr="src=@{/resources/js/notifications/index.js}"></script>
+    </div>
+</body>
+
+</html>
