@@ -38,7 +38,7 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 
-/*@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = RestDestinationController.class)
 @AutoConfigureMockMvc(secure = false)
 @ContextConfiguration(classes = {
@@ -46,7 +46,7 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBui
         MongoTestConfig.class,
         WebMvcConfig.class,
         CrudResponseAdvice.class
-})*/
+})
 public class RestDestinationControllerTest extends WebLayerTestContext {
 
     @Autowired
@@ -89,7 +89,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
         Mockito.reset(restDestinationService);
     }
 
-    /*@Test*/
+    @Test
     public void shouldListRestDestinations() throws Exception {
         List<RestDestination> restDestinations = new ArrayList<>();
         restDestinations.add(restDestination1);
@@ -131,7 +131,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
         .andExpect(jsonPath("$.result[1].active", is(false)));
     }
 
-    /*@Test*/
+    @Test
     public void shouldReturnInternalErrorWhenListRestDestinations() throws Exception {
         when(restDestinationService.findAll(tenant))
                 .thenReturn(ServiceResponseBuilder.<List<RestDestination>>error().build());
@@ -149,7 +149,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
         .andExpect(jsonPath("$.result").doesNotExist());
     }
 
-    /*@Test*/
+    @Test
     public void shouldReadRestDestinationByGuid() throws Exception {
         when(restDestinationService.getByGUID(tenant, restDestination1.getGuid()))
         	.thenReturn(
@@ -179,7 +179,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
         .andExpect(jsonPath("$.result.active", is(true)));
     }
 
-    /*@Test*/
+    @Test
     public void shouldReturnNotFoundWhenReadByGuid() throws Exception {
         when(restDestinationService.getByGUID(tenant, restDestination1.getGuid()))
         	.thenReturn(
@@ -202,7 +202,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
         .andExpect(jsonPath("$.result").doesNotExist());
     }
 
-    /*@Test*/
+    @Test
     public void shouldCreateRestDestination() throws Exception {
         when(
         	restDestinationService
@@ -230,7 +230,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
         .andExpect(jsonPath("$.result.active", is(true)));
     }
 
-    /*@Test*/
+    @Test
     public void shouldTryCreateRestDestinationWithBadRequest() throws Exception {
         when(
         	restDestinationService
@@ -255,7 +255,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
 
     }
 
-    /*@Test*/
+    @Test
     public void shouldUpdateRestDestination() throws Exception {
         when(
         	restDestinationService
@@ -280,7 +280,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
 
     }
 
-    /*@Test*/
+    @Test
     public void shouldReturnInternalErrorWhenUpdateRestDestination() throws Exception {
     	when(
     		restDestinationService
@@ -306,7 +306,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
     	.andExpect(jsonPath("$.result").doesNotExist());
     }
 
-    /*@Test*/
+    @Test
     public void shouldDeleteRestDestination() throws Exception {
         when(restDestinationService.remove(tenant, restDestination1.getGuid()))
                 .thenReturn(ServiceResponseBuilder.<RestDestination>ok().build());
@@ -323,7 +323,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
         .andExpect(jsonPath("$.result").doesNotExist());
     }
 
-    /*@Test*/
+    @Test
     public void shouldReturnInternalErrorWhenDeleteRestDestination() throws Exception {
     	when(restDestinationService.remove(tenant, restDestination1.getGuid()))
     	.thenReturn(ServiceResponseBuilder
@@ -344,7 +344,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
         .andExpect(jsonPath("$.result").doesNotExist());
     }
 
-    /*@Test*/
+    @Test
     public void shouldTryDeleteNonexistentRestDestination() throws Exception {
     	when(restDestinationService.remove(tenant, restDestination1.getGuid()))
     	.thenReturn(

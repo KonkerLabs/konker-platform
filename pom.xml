@@ -11,9 +11,11 @@
 
     <modules>
         <module>konker.utilities</module>
-        <module>konker.registry</module>
         <module>konker.security</module>
-        <module>konker.registry.services</module>
+        <module>konker.registry.services.core</module>
+        <module>konker.registry.services.storage.cassandra</module>
+        <module>konker.registry.services.storage.mongodb</module>
+        <module>konker.registry.web</module>
         <module>konker.registry.api</module>
         <module>konker.registry.data</module>
     </modules>

@@ -18,6 +18,28 @@
     <groupId>com.konkerlabs</groupId>
     <artifactId>konker.registry.data</artifactId>
 
+    <profiles>
+        <profile>
+            <id>mongodb</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+        </profile>
+        <profile>
+            <id>cassandra</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>com.konkerlabs</groupId>
+                    <artifactId>konker.registry.services.storage.cassandra</artifactId>
+                    <version>0.0.1</version>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
+
     <dependencies>
         <!-- Spring Boot -->
         <dependency>
@@ -52,7 +74,12 @@
         <!-- Konker -->
         <dependency>
             <groupId>com.konkerlabs</groupId>
-            <artifactId>konker.registry.services</artifactId>
+            <artifactId>konker.registry.services.core</artifactId>
+            <version>0.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.konkerlabs</groupId>
+            <artifactId>konker.registry.services.storage.mongodb</artifactId>
             <version>0.0.1</version>
         </dependency>
         <!-- HTTP -->
@@ -125,12 +152,6 @@
             <artifactId>mockito-java8</artifactId>
             <version>0.3.1</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.data</groupId>
-            <artifactId>spring-data-cassandra</artifactId>
-            <version>1.5.1.RELEASE</version>
-            <optional>true</optional>
         </dependency>
     </dependencies>
 
