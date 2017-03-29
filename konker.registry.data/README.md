@@ -15,5 +15,5 @@ mvn clean install package spring-boot:repackage -Pcassandra
 
 Usage:
 ```
-java -jar target/registry.api.jar
+java -jar target/registry.data.jar
 ```
