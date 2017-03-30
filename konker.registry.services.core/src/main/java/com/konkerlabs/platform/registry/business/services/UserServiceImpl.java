@@ -336,7 +336,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public ServiceResponse<User> findByEmail(String email) {
-		if (!Optional.ofNullable(email).isPresent()) {
+		if (!Optional.ofNullable(email).isPresent() || email.isEmpty()) {
 			return ServiceResponseBuilder.<User>error()
                     .withMessage(Validations.NO_EXIST_USER.getCode()).build();
 		}

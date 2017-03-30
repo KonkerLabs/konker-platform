@@ -6,6 +6,7 @@ target
 /.gitignore
 **/.project
 /konker.registry/src/main/resources/application.conf
+/konker.registry.web/src/main/resources/application.conf
 /konker.registry.api/src/main/resources/application.conf
 /konker.registry.data/src/main/resources/application.conf
 /konker.scripts/docker/build/application.conf
