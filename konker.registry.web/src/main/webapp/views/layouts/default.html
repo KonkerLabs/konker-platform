@@ -116,35 +116,35 @@
                           <span class="titlemenu">IOT</span>
                   </li>
 
-                  <li class="sub-menu" th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'')')}">
+                  <li class="sub-menu" th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'', ''ROLE_IOT_READ_ONLY'')')}">
                       <a data-th-href="@{/devices}">
                           <img data-th-attr="src=@{/resources/konker/images/icons-menu/icon-device2.svg}" class="icon-menu" />
                           <span data-th-text="#{nav.menu.devices}">Dispositivos</span>
                       </a>                      
                   </li>
 
-                  <li class="sub-menu" th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'')')}">
+                  <li class="sub-menu" th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'', ''ROLE_IOT_READ_ONLY'')')}">
                       <a data-th-href="@{/routes}">
                           <img data-th-attr="src=@{/resources/konker/images/icons-menu/icon-route.svg}" class="icon-menu" />
                           <span data-th-text="#{nav.menu.routes}">Roteador de eventos</span>
                       </a>                      
                   </li>
 
-                  <li class="sub-menu" th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'')')}">
+                  <li class="sub-menu" th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'', ''ROLE_IOT_READ_ONLY'')')}">
                       <a data-th-href="@{/transformation}">
                           <img data-th-attr="src=@{/resources/konker/images/icons-menu/icon-transform.svg}" class="icon-menu" />
                           <span data-th-text="#{nav.menu.transformations}">Transformações</span>
                       </a>                     
                   </li>
 
-                  <li class="sub-menu" th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'')')}">
+                  <li class="sub-menu" th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'', ''ROLE_IOT_READ_ONLY'')')}">
                       <a data-th-href="@{/destinations/rest}">
                           <img data-th-attr="src=@{/resources/konker/images/icons-menu/icon-rest6.svg}" class="icon-menu" />
                           <span data-th-text="#{nav.menu.rest_destinations}">Destinos REST</span>
                       </a>
                   </li>
 
-                  <li class="sub-menu" th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'')')}">
+                  <li class="sub-menu" th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'', ''ROLE_IOT_READ_ONLY'')')}">
                       <a data-th-href="@{/tenants/log}">
                           <img data-th-attr="src=@{/resources/konker/images/icons-menu/icon-debug4.svg}" class="icon-menu" />
                           <span data-th-text="#{nav.menu.debug_messages}">Debug</span>
