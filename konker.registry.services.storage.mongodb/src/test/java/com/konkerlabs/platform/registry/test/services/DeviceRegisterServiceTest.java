@@ -1,31 +1,22 @@
-package com.konkerlabs.platform.registry.test.business.services;
+package com.konkerlabs.platform.registry.test.services;
 
-import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasAllErrors;
-import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
-import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.isResponseOk;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
-
-import java.time.Duration;
-import java.time.Instant;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
+import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
+import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
+import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.DeviceSecurityCredentials;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.config.EventStorageConfig;
+import com.konkerlabs.platform.registry.config.PubServerConfig;
+import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
+import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
+import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -39,22 +30,18 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
-import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
-import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
-import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.DeviceSecurityCredentials;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.config.PubServerConfig;
-import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
-import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
-import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
@@ -517,8 +504,8 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldGetAValidQrCodeForCredentials() {
-        DeviceRegisterService.DeviceSecurityCredentials credentials
-                = new DeviceRegisterService.DeviceSecurityCredentials(device, THE_DEVICE_PASSWORD);
+        DeviceSecurityCredentials credentials
+                = new DeviceSecurityCredentials(device, THE_DEVICE_PASSWORD);
         ServiceResponse<String> qrCode =
                 deviceRegisterService.generateQrCodeAccess(credentials, 200, 200);
         assertThat(qrCode.getStatus(), equalTo(ServiceResponse.Status.OK));
