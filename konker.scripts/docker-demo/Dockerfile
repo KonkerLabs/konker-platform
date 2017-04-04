@@ -12,6 +12,7 @@ RUN yum -y install java-1.8.0-openjdk-devel
 RUN rpm -iUvh http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-9.noarch.rpm  && \
 yum update -y && \
 yum install -y python python-pip && \
+    pip install --upgrade pip && \
 	pip install pymongo
 
 #MOSQUITTO
@@ -97,6 +98,11 @@ COPY build/jetty/mail /var/lib/jetty/resources/mail/
 #registry data
 RUN  mkdir /var/lib/konker
 COPY build/konker/registry-data.jar /var/lib/konker/
+
+#usage statistics feature
+RUN pip install requests
+COPY build/konker/usage-statistics.py /var/lib/konker/
+
 #nginx
 COPY build/nginx/nginx.conf /etc/nginx/nginx.conf
 COPY build/nginx/nginx.conf /etc/nginx/conf/nginx.conf
