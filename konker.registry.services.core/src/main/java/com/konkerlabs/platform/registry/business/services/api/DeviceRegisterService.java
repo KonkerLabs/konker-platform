@@ -3,6 +3,7 @@ package com.konkerlabs.platform.registry.business.services.api;
 import java.util.List;
 import java.util.Locale;
 
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 
@@ -82,7 +83,7 @@ public interface DeviceRegisterService {
 	 * @param device
 	 * @return
 	 */
-	ServiceResponse<Device> register(Tenant tenant, Device device);
+	ServiceResponse<Device> register(Tenant tenant, Application application, Device device);
 
 	/**
 	 * Updates an already existent Tenant.
@@ -94,7 +95,7 @@ public interface DeviceRegisterService {
 	 * @param device
 	 * @return
 	 */
-	ServiceResponse<Device> update(Tenant tenant, String guid, Device device);
+	ServiceResponse<Device> update(Tenant tenant, Application application, String guid, Device device);
 
 	/**
 	 * TODO @andre implement throwable flow Remove a device in logical way
@@ -102,7 +103,7 @@ public interface DeviceRegisterService {
 	 * @param guid
 	 * @return ServiceResponse<Device>
 	 */
-	ServiceResponse<Device> remove(Tenant tenant, String guid);
+	ServiceResponse<Device> remove(Tenant tenant, Application application, String guid);
 
 	/**
 	 * Returns all devices (enabled or disabled) owned by the provided tenant.
@@ -112,7 +113,7 @@ public interface DeviceRegisterService {
 	 * @param tenant
 	 * @return
 	 */
-	ServiceResponse<List<Device>> findAll(Tenant tenant);
+	ServiceResponse<List<Device>> findAll(Tenant tenant, Application application);
 
 
 	/**
@@ -124,7 +125,7 @@ public interface DeviceRegisterService {
 	 * @param guid
 	 * @return
 	 */
-	ServiceResponse<Device> getByDeviceGuid(Tenant tenant, String guid);
+	ServiceResponse<Device> getByDeviceGuid(Tenant tenant, Application application, String guid);
 
 	/**
 	 * Returns a device associated with the provided API Key.
@@ -158,7 +159,7 @@ public interface DeviceRegisterService {
 	 * @param guid
 	 * @return
 	 */
-	ServiceResponse<Device> switchEnabledDisabled(Tenant tenant, String guid);
+	ServiceResponse<Device> switchEnabledDisabled(Tenant tenant, Application application, String guid);
 
 	/**
 	 * Generates a security token for an existing device
@@ -167,7 +168,7 @@ public interface DeviceRegisterService {
 	 * @param guid
 	 * @return A random password used to create the token
 	 */
-	ServiceResponse<DeviceSecurityCredentials> generateSecurityPassword(Tenant tenant, String guid);
+	ServiceResponse<DeviceSecurityCredentials> generateSecurityPassword(Tenant tenant, Application application, String guid);
 
 	/**
 	 * Return device URLs for publish and subscribe events
@@ -177,7 +178,7 @@ public interface DeviceRegisterService {
 	 * @param locale
 	 * @return
 	 */
-	ServiceResponse<DeviceDataURLs> getDeviceDataURLs(Tenant tenant, Device device, Locale locale);
+	ServiceResponse<DeviceDataURLs> getDeviceDataURLs(Tenant tenant, Application application, Device device, Locale locale);
 
 	/**
 	 * Generates a security token for an existing device
