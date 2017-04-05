@@ -24,7 +24,8 @@ public class Application implements URIDealer {
 	private String name;
 	private String friendlyName;
 	private String description;
-	private String guid;
+	private String qualifier;
+	private String registrationDate;
 	
 	@DBRef
 	private Tenant tenant;
@@ -39,6 +40,11 @@ public class Application implements URIDealer {
 	@Override
 	public String getContext() {
 		return getTenant() != null ? getTenant().getDomainName() : null;
+	}
+	
+	@Override
+	public String getGuid() {
+		return name;
 	}
 	
 	public enum Validations {
@@ -71,5 +77,5 @@ public class Application implements URIDealer {
 
 		return Optional.of(validations).filter(map -> !map.isEmpty());
 	}
-	
+
 }

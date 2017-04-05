@@ -35,13 +35,16 @@ public class ApplicationServiceImpl implements ApplicationService {
     private ServiceResponse<Application> basicValidate(Tenant tenant, Application application) {
 		if (!Optional.ofNullable(tenant).isPresent()) {
 			Application app = Application.builder()
-					.guid("NULL")
+					.name("NULL")
 					.tenant(Tenant.builder().domainName("unknow_domain").build())
 					.build();
 			
-			LOGGER.debug(CommonValidations.TENANT_NULL.getCode(),
-					app.toURI(),
-					app.getTenant().getLogLevel());
+			if(LOGGER.isDebugEnabled()){
+				LOGGER.debug(CommonValidations.TENANT_NULL.getCode(),
+						app.toURI(),
+						app.getTenant().getLogLevel());
+			}
+
 			return ServiceResponseBuilder.<Application>error()
 					.withMessage(CommonValidations.TENANT_NULL.getCode())
 					.build();
@@ -49,7 +52,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 		
 		if (!tenantRepository.exists(tenant.getId())) {
 			LOGGER.debug("device cannot exists",
-					Application.builder().guid("NULL").tenant(tenant).build().toURI(),
+					Application.builder().name("NULL").tenant(tenant).build().toURI(),
 					tenant.getLogLevel());
 			return ServiceResponseBuilder.<Application>error()
 					.withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode())
@@ -58,13 +61,14 @@ public class ApplicationServiceImpl implements ApplicationService {
 		
 		if (!Optional.ofNullable(application).isPresent()) {
 			Application app = Application.builder()
-					.guid("NULL")
+					.name("NULL")
 					.tenant(tenant)
 					.build();
-			
-			LOGGER.debug(Validations.APPLICATION_NULL.getCode(),
-					app.toURI(),
-					app.getTenant().getLogLevel());
+			if(LOGGER.isDebugEnabled()){
+				LOGGER.debug(Validations.APPLICATION_NULL.getCode(),
+						app.toURI(),
+						app.getTenant().getLogLevel());
+			}
 			
 			return ServiceResponseBuilder.<Application>error()
 					.withMessage(Validations.APPLICATION_NULL.getCode())
@@ -85,7 +89,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 		
 		if (validations.isPresent()) {
 			LOGGER.debug("error saving application", 
-					Application.builder().guid("NULL").tenant(tenant).build().toURI(),
+					Application.builder().name("NULL").tenant(tenant).build().toURI(),
 					tenant.getLogLevel());
 			return ServiceResponseBuilder.<Application>error()
 					.withMessages(validations.get())
@@ -94,7 +98,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 		
 		if (applicationRepository.findOne(application.getName()) != null) {
 			LOGGER.debug("error saving application",
-					Application.builder().guid("NULL").tenant(tenant).build().toURI(),
+					Application.builder().name("NULL").tenant(tenant).build().toURI(),
 					tenant.getLogLevel());
             return ServiceResponseBuilder.<Application>error()
                     .withMessage(Validations.APPLICATION_ALREADY_REGISTERED.getCode())

@@ -10,8 +10,11 @@ public interface TransformationRepository extends MongoRepository<Transformation
     @Query("{ 'tenant.id' : ?0 }")
     List<Transformation> findAllByTenantId(String tenantId);
 
-    @Query("{ 'tenant.id' : ?0, 'name' : ?1 }")
-    List<Transformation> findByName(String tenantId, String name);
+    @Query("{ 'application.id' : ?0")
+    List<Transformation> findAllByApplicationId(String id);
+
+    @Query("{ 'tenant.id' : ?0, 'application.id' : ?1, 'name' : ?2 }")
+    List<Transformation> findByName(String tenantId, String applicationId, String name);
 
     @Query("{ 'tenant.id' : ?0, 'guid' : ?1 }")
     Transformation findByTenantIdAndTransformationGuid(String id, String guid);

@@ -21,7 +21,9 @@ import com.konkerlabs.platform.registry.business.services.api.TransformationServ
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
-public class TransformationServiceImpl extends AbstractURLBlacklistValidation implements TransformationService {
+public class TransformationServiceImpl
+        extends AbstractURLBlacklistValidation
+        implements TransformationService {
 
     private Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
@@ -34,13 +36,14 @@ public class TransformationServiceImpl extends AbstractURLBlacklistValidation im
 
 
     @Override
-    public ServiceResponse<List<Transformation>> getAll(Tenant tenant) {
+    public ServiceResponse<List<Transformation>> getAll(Tenant tenant, Application application) {
         return ServiceResponseBuilder.<List<Transformation>>ok()
                 .withResult(transformationRepository.findAllByTenantId(tenant.getId())).build();
     }
 
     @Override
-    public ServiceResponse<Transformation> register(Tenant tenant, Transformation transformation) {
+    public ServiceResponse<Transformation> register(Tenant tenant, Application application,
+                                                    Transformation transformation) {
         if (!Optional.ofNullable(tenant).isPresent())
             return ServiceResponseBuilder.<Transformation>error().withMessage(CommonValidations.TENANT_NULL.getCode())
                     .build();
@@ -61,13 +64,15 @@ public class TransformationServiceImpl extends AbstractURLBlacklistValidation im
         if (validations.isPresent())
             return ServiceResponseBuilder.<Transformation>error().withMessages(validations.get()).build();
 
-        if (Optional.ofNullable(transformationRepository.findByName(tenant.getId(), transformation.getName()))
+        if (Optional.ofNullable(transformationRepository.findByName(
+                tenant.getId(), application.getId(), transformation.getName()))
                 .filter(transformations -> !transformations.isEmpty()).isPresent()) {
             return ServiceResponseBuilder.<Transformation>error()
                     .withMessage(Validations.TRANSFORMATION_NAME_IN_USE.getCode()).build();
         }
 
-        Optional<Map<String, Object[]>> blacklistValidations = verifyIfUrlMatchesBlacklist(transformation.getSteps());
+        Optional<Map<String, Object[]>> blacklistValidations =
+                verifyIfUrlMatchesBlacklist(transformation.getSteps());
 
         if (blacklistValidations.isPresent())
             return ServiceResponseBuilder.<Transformation>error().withMessages(blacklistValidations.get()).build();
@@ -95,7 +100,7 @@ public class TransformationServiceImpl extends AbstractURLBlacklistValidation im
     }
 
     @Override
-    public ServiceResponse<Transformation> get(Tenant tenant, String guid) {
+    public ServiceResponse<Transformation> get(Tenant tenant, Application application, String guid) {
         Transformation transformation =
                 transformationRepository.findByTenantIdAndTransformationGuid(tenant.getId(), guid);
         if (transformation != null) {
@@ -109,7 +114,8 @@ public class TransformationServiceImpl extends AbstractURLBlacklistValidation im
     }
 
     @Override
-    public ServiceResponse<Transformation> update(Tenant tenant, String guid, Transformation transformation) {
+    public ServiceResponse<Transformation> update(Tenant tenant, Application application,
+                                                  String guid, Transformation transformation) {
         if (!Optional.ofNullable(tenant).isPresent())
             return ServiceResponseBuilder.<Transformation>error().withMessage(CommonValidations.TENANT_NULL.getCode())
                     .build();
@@ -122,7 +128,7 @@ public class TransformationServiceImpl extends AbstractURLBlacklistValidation im
             return ServiceResponseBuilder.<Transformation>error()
                     .withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();
 
-        Transformation fromDb = get(tenant, guid).getResult();
+        Transformation fromDb = get(tenant, application, guid).getResult();
 
         if (!Optional.ofNullable(fromDb).isPresent())
             return ServiceResponseBuilder.<Transformation>error()
@@ -137,7 +143,8 @@ public class TransformationServiceImpl extends AbstractURLBlacklistValidation im
         if (validations.isPresent())
             return ServiceResponseBuilder.<Transformation>error().withMessages(validations.get()).build();
 
-        if (Optional.ofNullable(transformationRepository.findByName(fromDb.getTenant().getId(), fromDb.getName()))
+        if (Optional.ofNullable(transformationRepository
+                .findByName(fromDb.getTenant().getId(), application.getId(), fromDb.getName()))
                 .filter(transformations -> !transformations.isEmpty()).orElseGet(ArrayList<Transformation>::new)
                 .stream().anyMatch(transformation1 -> !transformation1.getId().equals(fromDb.getId()))) {
             return ServiceResponseBuilder.<Transformation>error()
@@ -157,7 +164,7 @@ public class TransformationServiceImpl extends AbstractURLBlacklistValidation im
     }
 
     @Override
-    public ServiceResponse<Transformation> remove(Tenant tenant, String transformationGuid) {
+    public ServiceResponse<Transformation> remove(Tenant tenant, Application application, String transformationGuid) {
 
         Transformation transformation = transformationRepository.findByGuid(transformationGuid);
         List<EventRoute> eventRoutes = Collections.emptyList();
