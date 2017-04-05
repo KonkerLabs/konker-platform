@@ -83,14 +83,14 @@ public class DeviceEventRestEndpoint {
     }
 
     @RequestMapping(
-            value = "sub/{apiKey}/{channel}",
+            value = { "sub/{apiKey}", "sub/{apiKey}/{channel}" },
             method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @JsonView(EventJsonView.class)
     public DeferredResult<List<EventVO>> subEvent(HttpServletRequest servletRequest,
                                                   @PathVariable("apiKey") String apiKey,
-                                                  @PathVariable("channel") String channel,
+                                                  @PathVariable(name="channel", required=false) String channel,
                                                   @AuthenticationPrincipal Device principal,
                                                   @RequestParam(name = "offset", required = false) Optional<Long> offset,
                                                   @RequestParam(name = "waitTime", required = false) Optional<Long> waitTime,
@@ -114,7 +114,8 @@ public class DeviceEventRestEndpoint {
     	}
 
 
-    	if(channel == null || channel.length() > 32 || Pattern.compile("[^A-Za-z0-9_-]").matcher(channel).find()){
+    	if(Optional.ofNullable(channel).isPresent() && 
+    			(channel.length() > 32 || Pattern.compile("[^A-Za-z0-9_-]").matcher(channel).find())){
             deferredResult.setErrorResult(applicationContext.getMessage(Messages.INVALID_CHANNEL_PATTERN.getCode(), null, locale));
             httpResponse.setStatus(HttpStatus.BAD_REQUEST.value());
             return deferredResult;
@@ -137,7 +138,10 @@ public class DeviceEventRestEndpoint {
             deferredResult.setResult(EventVO.from(response.getResult()));
 
     	} else {
-    		CompletableFuture.supplyAsync(() -> {return jedisTaskService.subscribeToChannel(apiKey+"."+channel, startTimestamp, asc, limit);}, executor)
+    		CompletableFuture.supplyAsync(() -> {
+    			String subChannel = Optional.ofNullable(channel).isPresent() ? apiKey+"."+channel : apiKey;
+    			return jedisTaskService.subscribeToChannel(subChannel, startTimestamp, asc, limit);
+    		}, executor)
     		.whenCompleteAsync((result, throwable) -> deferredResult.setResult(EventVO.from(result)), executor);
     	}
 
