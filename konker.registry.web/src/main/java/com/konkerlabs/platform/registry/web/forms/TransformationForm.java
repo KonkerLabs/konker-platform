@@ -1,6 +1,8 @@
 package com.konkerlabs.platform.registry.web.forms;
 
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.RestTransformationStep;
+import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.Transformation;
 import com.konkerlabs.platform.registry.business.model.enumerations.SupportedHttpMethod;
 import com.konkerlabs.platform.registry.web.forms.api.ModelBuilder;
@@ -19,11 +21,21 @@ public class TransformationForm implements ModelBuilder<Transformation, Transfor
     private String id;
     private String name;
     private String description;
+    private String applicationId;
     private List<TransformationStepForm> steps = new LinkedList() {
         {
             add(new TransformationStepForm());
         }
     };
+
+    public TransformationForm(){
+        super();
+    }
+
+    public TransformationForm(Tenant tenant){
+        super();
+        applicationId = tenant.getDomainName();
+    }
 
     @Data
     public static class TransformationStepForm {
@@ -143,6 +155,7 @@ public class TransformationForm implements ModelBuilder<Transformation, Transfor
                 .id(getId())
                 .name(getName())
                 .description(getDescription())
+                .application(Application.builder().id(getApplicationId()).build())
                 .steps(
                         steps.stream()
                                 .map(transformationStep -> RestTransformationStep.builder()
@@ -163,6 +176,7 @@ public class TransformationForm implements ModelBuilder<Transformation, Transfor
         setId(model.getId());
         setName(model.getName());
         setDescription(model.getDescription());
+        setApplicationId(model.getApplication().getId());
         getSteps().clear();
         model.getSteps().stream().forEachOrdered(transformationStep ->
                 getSteps().add(

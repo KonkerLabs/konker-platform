@@ -1,0 +1,30 @@
+{
+  "devices": [
+    {
+      "_class" : "com.konkerlabs.platform.registry.model.Application",
+      "_id" : "Konker",
+      "guid" : "5cc12e27-6b1a-4fae-87e8-2f01b922233c",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
+      },
+      "name" : "Test name",
+      "description" : "Description",
+      "registrationDate" : 1453320973747,
+      "active" : true
+    },
+    {
+      "_class" : "com.konkerlabs.platform.registry.model.Device",
+      "_id" : "InMetrics",
+      "guid" : "8363c556-84ea-11e6-92a2-4b01fea7e243",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
+      },
+      "name" : "Test name 2",
+      "description" : "Description",
+      "registrationDate" : 1453320973747,
+      "active" : true
+    }
+  ]
+}

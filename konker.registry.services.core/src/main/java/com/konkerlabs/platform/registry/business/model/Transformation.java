@@ -39,6 +39,8 @@ public class Transformation implements URIDealer, Validatable {
     private String name;
     private String guid;
     private String description;
+    @DBRef
+    private Application application;
     @Singular
     private List<TransformationStep> steps = new LinkedList<>();
 
