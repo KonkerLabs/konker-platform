@@ -66,11 +66,6 @@ public class DeviceEventServiceImpl implements DeviceEventService {
                     .withMessage(CommonValidations.TENANT_NULL.getCode(), null)
                     .build();
 
-        if (!Optional.ofNullable(deviceGuid).filter(s -> !s.isEmpty()).isPresent())
-            return ServiceResponseBuilder.<List<Event>>error()
-                    .withMessage(DeviceRegisterService.Validations.DEVICE_GUID_NULL.getCode(), null)
-                    .build();
-
 //        if (!Optional.ofNullable(channel).filter(s -> !s.isEmpty()).isPresent())
 //            return ServiceResponseBuilder.<List<Event>>error()
 //                    .withMessage(Validations.CHANNEL_NULL.getCode(), null)

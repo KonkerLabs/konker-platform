@@ -123,8 +123,6 @@ public class EventRepositoryMongoImpl extends BaseEventRepositoryImpl {
         Optional.ofNullable(tenant)
                 .filter(tenant1 -> Optional.ofNullable(tenant1.getDomainName()).filter(s -> !s.isEmpty()).isPresent())
                 .orElseThrow(() -> new IllegalArgumentException("Tenant cannot be null"));
-        Optional.ofNullable(deviceGuid).filter(s -> !s.isEmpty())
-                .orElseThrow(() -> new IllegalArgumentException("Device ID cannot be null or empty"));
 
         if (!Optional.ofNullable(startInstant).isPresent() &&
                 !Optional.ofNullable(limit).isPresent())
@@ -132,11 +130,7 @@ public class EventRepositoryMongoImpl extends BaseEventRepositoryImpl {
 
         List<Criteria> criterias = new ArrayList<>();
 
-        criterias.add(
-            Criteria.where(MessageFormat.format("{0}.{1}", type.getActorFieldName(),"deviceGuid"))
-            .is(deviceGuid)
-        );
-
+        Optional.ofNullable(deviceGuid).ifPresent(instant -> criterias.add(Criteria.where(MessageFormat.format("{0}.{1}", type.getActorFieldName(),"deviceGuid")).is(deviceGuid)));
         Optional.ofNullable(startInstant).ifPresent(instant -> criterias.add(Criteria.where("ts").gt(instant.toEpochMilli())));
         Optional.ofNullable(endInstant).ifPresent(instant -> criterias.add(Criteria.where("ts").lte(instant.toEpochMilli())));
         Optional.ofNullable(isDeleted)
