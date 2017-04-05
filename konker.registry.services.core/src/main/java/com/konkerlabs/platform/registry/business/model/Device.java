@@ -79,6 +79,9 @@ public class Device implements URIDealer, Validatable, UserDetails {
     private LogLevel logLevel;
 //	private List<Event> events;
 	private boolean active;
+	
+	@DBRef
+    private Application application;
 
 	public Optional<Map<String, Object[]>> applyValidations() {
 
