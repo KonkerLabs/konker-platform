@@ -2,6 +2,7 @@ package com.konkerlabs.platform.registry.business.services;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,8 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBui
 public class ApplicationServiceImpl implements ApplicationService {
 
     private Logger LOGGER = LoggerFactory.getLogger(ApplicationServiceImpl.class);
+    
+    private Pattern regex = Pattern.compile("[$&+,:;=?@#|'<>.-^*()%!\\s{2,}]");
 
     @Autowired
     private ApplicationRepository applicationRepository;
@@ -60,6 +63,10 @@ public class ApplicationServiceImpl implements ApplicationService {
 			return ServiceResponseBuilder.<Application>error()
 					.withMessage(Validations.APPLICATION_NULL.getCode())
 					.build();
+		}
+		
+		if (regex.matcher(application.getName()).find()) {
+			System.out.println("chegou");
 		}
 		
 		return null;

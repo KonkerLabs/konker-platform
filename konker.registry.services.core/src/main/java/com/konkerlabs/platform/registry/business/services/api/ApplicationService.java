@@ -8,10 +8,7 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 public interface ApplicationService {
 
 	enum Validations {
-		APPLICATION_NULL("service.application.null"),
-		NAME_NULL_EMPTY("service.application.name.not_null"),
-		NAME_INVALID("service.application.name.invalid"),
-		FRIENDLY_NAME_NULL_EMPTY("service.application.friendly.name.not_null");
+		APPLICATION_NULL("service.application.null");
 
 		public String getCode() {
 			return code;

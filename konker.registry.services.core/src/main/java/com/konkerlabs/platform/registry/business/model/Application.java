@@ -36,4 +36,20 @@ public class Application implements URIDealer {
 		return getTenant() != null ? getTenant().getDomainName() : null;
 	}
 	
+	enum Validations {
+		NAME_NULL_EMPTY("model.application.name.not_null"),
+		NAME_INVALID("model.application.name.invalid"),
+		FRIENDLY_NAME_NULL_EMPTY("model.application.friendly.name.not_null");
+
+		public String getCode() {
+			return code;
+		}
+
+		private String code;
+
+		Validations(String code) {
+			this.code = code;
+		}
+	}
+	
 }
