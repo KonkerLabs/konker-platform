@@ -79,6 +79,10 @@ public class DeviceLogEventServiceImpl implements DeviceLogEventService {
             try {
                 Event saved = eventRepository.saveOutgoing(device.getTenant(), event);
                 redisTemplate.convertAndSend(
+                        device.getApiKey(),
+                        device.getGuid());
+                
+                redisTemplate.convertAndSend(
                         device.getApiKey() + "." + event.getOutgoing().getChannel(),
                         device.getGuid());
 
