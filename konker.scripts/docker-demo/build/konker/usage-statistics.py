@@ -65,7 +65,7 @@ def get_last_incoming_message():
     return last["ts"]
 
 def send_statistics(devicesCount, lastRegisteredEvent, incomingEventsCount, lastIncomingReceivedEvent):
-    url = 'http://localhost:8080/v1/usagestatistics/anonymous'
+    url = 'https://http://umc.konkerlabs.net/stats'
     data = {"timestamp" : int(time.time()),
             "instalationId" : instalationId,
             "devicesCount" : devicesCount,
@@ -80,7 +80,12 @@ def send_statistics(devicesCount, lastRegisteredEvent, incomingEventsCount, last
 
 ###########################################################################
 
-if os.environ.get('USAGE_STATS').lower() == 'disabled' or os.environ.get('USAGE_STATS').lower() == 'false':
+usageStatsParam = ''
+
+if os.environ.get('USAGE_STATS') is not None:
+    usageStatsParam = os.environ.get('USAGE_STATS')
+
+if usageStatsParam.lower() == 'disabled' or usageStatsParam.lower() == 'false':
     sys.stdout.write("usage statistics is disabled...\n")
     sys.stdout.flush()
     exit(0);
