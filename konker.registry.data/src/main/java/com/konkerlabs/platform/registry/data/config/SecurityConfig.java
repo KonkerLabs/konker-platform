@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import javax.servlet.Filter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -26,14 +28,17 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.data.security.KonkerBasicAuthenticationFilter;
+import com.konkerlabs.platform.registry.data.security.KonkerParamsAuthenticationFilter;
 import com.konkerlabs.platform.security.managers.PasswordManager;
 
 @Configuration
+@EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true)
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+@Order(org.springframework.boot.autoconfigure.security.SecurityProperties.ACCESS_OVERRIDE_ORDER)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SecurityConfig.class);
@@ -77,12 +82,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         KonkerBasicAuthenticationFilter filter = new KonkerBasicAuthenticationFilter(authenticationManager());
         filter.setDeviceRegisterService(deviceRegisterService);
 
+        Filter paramsAuthFilter = new KonkerParamsAuthenticationFilter(authenticationManager());
+
         http.csrf().disable()
                 .authorizeRequests()
                 .antMatchers(HttpMethod.OPTIONS)
                     .permitAll()
                 .and()
                     .addFilter(filter)
+                    .addFilterAfter(paramsAuthFilter, BasicAuthenticationFilter.class)
                     .requestMatchers()
                     .antMatchers("/pub/**", "/sub/**")
                 .and()
