@@ -11,5 +11,8 @@ public interface ApplicationRepository extends MongoRepository<Application,Strin
 
     @Query("{ 'tenant.id' : ?0 }")
     List<Application> findAllByTenant(String tenantId);
+    
+    @Query("{ 'tenant.id' : ?0, '_id' : ?1  }")
+    Application findByTenantAndName(String tenantId, String name);
    
 }

@@ -1,0 +1,14 @@
+{
+  "applications" : [
+    {
+      "_id" : "smartffkonker",
+      "_class" : "com.konkerlabs.platform.registry.model.Application",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
+      },
+      "friendlyName" : "Konker Smart Frig",
+      "description" : "Konker Smart Frig - take pic, tells temperatue"
+    }
+  ]
+}

@@ -8,7 +8,10 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 public interface ApplicationService {
 
 	enum Validations {
-		APPLICATION_NULL("service.application.null");
+		APPLICATION_NULL("service.application.null"),
+		APPLICATION_ALREADY_REGISTERED("service.application.already.registered"),
+		APPLICATION_DOES_NOT_EXIST("service.application.does.not.exist"),
+		NAME_IS_NULL("service.application.name.null");
 
 		public String getCode() {
 			return code;
@@ -17,6 +20,20 @@ public interface ApplicationService {
 		private String code;
 
 		Validations(String code) {
+			this.code = code;
+		}
+	}
+	
+	public enum Messages {
+		APPLICATION_REMOVED_SUCCESSFULLY("controller.application.removed.succesfully");
+
+		public String getCode() {
+			return code;
+		}
+
+		private String code;
+
+		Messages(String code) {
 			this.code = code;
 		}
 	}
@@ -36,22 +53,22 @@ public interface ApplicationService {
 	/**
 	 * Updates an already existent Tenant.
 	 *
-	 * If the applicationGuid does not exist in this tenant, an error is created. The
+	 * If the applicationName does not exist in this tenant, an error is created. The
 	 * tenant must exist.
 	 *
 	 * @param tenant
 	 * @param application
 	 * @return
 	 */
-	ServiceResponse<Application> update(Tenant tenant, String guid, Application application);
+	ServiceResponse<Application> update(Tenant tenant, String name, Application application);
 
 	/**
 	 * Removes the application that exists in this tenant.
 	 *
-	 * @param guid
+	 * @param name
 	 * @return ServiceResponse<Application>
 	 */
-	ServiceResponse<Application> remove(Tenant tenant, String guid);
+	ServiceResponse<Application> remove(Tenant tenant, String name);
 
 	/**
 	 * Returns all applications owned by the provided tenant.
@@ -64,15 +81,15 @@ public interface ApplicationService {
 
 
 	/**
-	 * Returns a application by its applicationGuid and tenant.
+	 * Returns a application by its applicationName and tenant.
 	 *
 	 * If the application does not exist, returns an error
 	 *
 	 * @param tenant
-	 * @param guid
+	 * @param name
 	 * @return
 	 */
-	ServiceResponse<Application> getByApplicationGuid(Tenant tenant, String guid);
+	ServiceResponse<Application> getByApplicationName(Tenant tenant, String name);
 
 
 }

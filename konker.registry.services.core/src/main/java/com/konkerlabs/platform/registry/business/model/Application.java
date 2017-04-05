@@ -1,5 +1,10 @@
 package com.konkerlabs.platform.registry.business.model;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.regex.Pattern;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -36,7 +41,7 @@ public class Application implements URIDealer {
 		return getTenant() != null ? getTenant().getDomainName() : null;
 	}
 	
-	enum Validations {
+	public enum Validations {
 		NAME_NULL_EMPTY("model.application.name.not_null"),
 		NAME_INVALID("model.application.name.invalid"),
 		FRIENDLY_NAME_NULL_EMPTY("model.application.friendly.name.not_null");
@@ -50,6 +55,21 @@ public class Application implements URIDealer {
 		Validations(String code) {
 			this.code = code;
 		}
+	}
+	
+	public Optional<Map<String, Object[]>> applyValidations() {
+		Pattern regex = Pattern.compile("[$&+,:;=?@#|'<>.-^*()%!\\s{2,}]");
+		
+		Map<String, Object[]> validations = new HashMap<>();
+
+		if (getName() != null && regex.matcher(getName()).find())
+			validations.put(Validations.NAME_INVALID.code,null);
+		if (getName() == null || getName().isEmpty())
+			validations.put(Validations.NAME_NULL_EMPTY.code,null);
+		if (getFriendlyName() == null || getFriendlyName().isEmpty())
+			validations.put(Validations.FRIENDLY_NAME_NULL_EMPTY.code,null);
+
+		return Optional.of(validations).filter(map -> !map.isEmpty());
 	}
 	
 }
