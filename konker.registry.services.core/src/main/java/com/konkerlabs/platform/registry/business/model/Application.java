@@ -20,6 +20,7 @@ public class Application implements URIDealer {
 	private String friendlyName;
 	private String description;
 	private String qualifier;
+	private String registrationDate;
 	
 	@DBRef
 	private Tenant tenant;

@@ -155,7 +155,7 @@ public class TransformationForm implements ModelBuilder<Transformation, Transfor
                 .id(getId())
                 .name(getName())
                 .description(getDescription())
-                .application(Application.builder().id(getApplicationId()).build())
+                .application(Application.builder().name(getApplicationId()).build())
                 .steps(
                         steps.stream()
                                 .map(transformationStep -> RestTransformationStep.builder()
@@ -176,7 +176,7 @@ public class TransformationForm implements ModelBuilder<Transformation, Transfor
         setId(model.getId());
         setName(model.getName());
         setDescription(model.getDescription());
-        setApplicationId(model.getApplication().getId());
+        setApplicationId(model.getApplication().getName());
         getSteps().clear();
         model.getSteps().stream().forEachOrdered(transformationStep ->
                 getSteps().add(

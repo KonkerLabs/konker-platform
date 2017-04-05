@@ -62,7 +62,7 @@ public class TransformationController implements ApplicationContextAware {
     public ModelAndView index() {
         return new ModelAndView("transformations/index")
                 .addObject("transformations", transformationService.getAll(
-                        tenant, Application.builder().id(tenant.getDomainName()).build()).getResult());
+                        tenant, Application.builder().name(tenant.getDomainName()).build()).getResult());
     }
 
     @RequestMapping("new")
@@ -112,7 +112,7 @@ public class TransformationController implements ApplicationContextAware {
                         .fillFrom(
                                 transformationService.get(
                                         tenant,
-                                        Application.builder().id(tenant.getDomainName()).build(),
+                                        Application.builder().name(tenant.getDomainName()).build(),
                                         transformationGuid).getResult()));
     }
 
@@ -125,7 +125,7 @@ public class TransformationController implements ApplicationContextAware {
                                 .fillFrom(
                                         transformationService.get(
                                                 tenant,
-                                                Application.builder().id(tenant.getDomainName()).build(),
+                                                Application.builder().name(tenant.getDomainName()).build(),
                                                 transformationGuid).getResult()))
                 .addObject("action", MessageFormat.format("/transformation/{0}", transformationGuid))
                 .addObject("method", "put");
@@ -140,7 +140,7 @@ public class TransformationController implements ApplicationContextAware {
         ServiceResponse<Transformation> response =
                 transformationService.update(
                         tenant,
-                        Application.builder().id(tenant.getDomainName()).build(),
+                        Application.builder().name(tenant.getDomainName()).build(),
                         transformationGuid, transformationForm.toModel());
 
         switch (response.getStatus()) {
@@ -174,7 +174,7 @@ public class TransformationController implements ApplicationContextAware {
         ServiceResponse<Transformation> serviceResponse =
                 transformationService.remove(
                         tenant,
-                        Application.builder().id(tenant.getDomainName()).build(),
+                        Application.builder().name(tenant.getDomainName()).build(),
                         transformationGuid);
 
         switch (serviceResponse.getStatus()) {
