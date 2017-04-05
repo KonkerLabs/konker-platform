@@ -65,7 +65,7 @@ def get_last_incoming_message():
     return last["ts"]
 
 def send_statistics(devicesCount, lastRegisteredEvent, incomingEventsCount, lastIncomingReceivedEvent):
-    url = 'https://http://umc.konkerlabs.net/stats'
+    url = 'https://umc.konkerlabs.net/stats'
     data = {"timestamp" : int(time.time()),
             "instalationId" : instalationId,
             "devicesCount" : devicesCount,
