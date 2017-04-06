@@ -10,7 +10,8 @@
       "friendlyName" : "Konker Smart Frig",
       "description" : "Konker Smart Frig - take pic, tells temperatue",
       "registrationDate" : 1453320973747,
-      "active" : true
+      "active" : true,
+      "qualifier": "konker"
     }
   ]
 }

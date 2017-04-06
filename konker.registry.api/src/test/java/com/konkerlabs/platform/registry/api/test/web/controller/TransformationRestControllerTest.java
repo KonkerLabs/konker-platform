@@ -79,14 +79,12 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
     @Before
     public void setUp() {
         application = Application.builder()
-                .id(tenant.getDomainName())
                 .name(tenant.getDomainName() + "Name")
                 .description(tenant.getDomainName() + "desc")
                 .tenant(tenant)
                 .build();
 
         applicationOwnerIsSomeOther = Application.builder()
-                .id(tenant.getDomainName() + "other")
                 .name(tenant.getDomainName() + "otherName")
                 .description(tenant.getDomainName() + "otherDesc")
                 .tenant(tenant)
@@ -150,7 +148,7 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
                         )).build());
 
         getMockMvc().perform(MockMvcRequestBuilders
-                .get(MessageFormat.format("{0}/{1}",  application.getId(), BASEPATH))
+                .get(MessageFormat.format("{0}/{1}",  application.getName(), BASEPATH))
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -214,7 +212,7 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
                         .withResult(validTransformation1).build());
 
         getMockMvc().perform(MockMvcRequestBuilders
-                .get(MessageFormat.format("{0}/{1}/{2}",BASEPATH, applicationOwnerIsSomeOther.getId(), GUID1))
+                .get(MessageFormat.format("{0}/{1}/{2}",BASEPATH, applicationOwnerIsSomeOther.getName(), GUID1))
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError());
@@ -248,7 +246,7 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
                 .thenReturn(ServiceResponseBuilder.<Transformation> ok().withResult(newTransformationResult).build());
 
         getMockMvc().perform(MockMvcRequestBuilders
-                .post(MessageFormat.format("{0}/{1}/",  application.getId(), BASEPATH))
+                .post(MessageFormat.format("{0}/{1}/",  application.getName(), BASEPATH))
                 .content(getJson(vo))
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
@@ -291,7 +289,7 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
                 .thenReturn(ServiceResponseBuilder.<Transformation> ok().withResult(changedValues).build());
 
         getMockMvc().perform(MockMvcRequestBuilders
-                .put(MessageFormat.format("{0}/{1}/{2}",  application.getId(), BASEPATH, GUID1))
+                .put(MessageFormat.format("{0}/{1}/{2}",  application.getName(), BASEPATH, GUID1))
                 .content(getJson(vo))
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
@@ -320,7 +318,7 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
                 .thenReturn(ServiceResponseBuilder.<Transformation> ok().withResult(changedValues).build());
 
         getMockMvc().perform(MockMvcRequestBuilders
-                .put(MessageFormat.format("{0}/{1}/{2}", application.getId(), BASEPATH, GUID1))
+                .put(MessageFormat.format("{0}/{1}/{2}", application.getName(), BASEPATH, GUID1))
                 .content(getJson(vo))
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
@@ -344,7 +342,7 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
                 .thenReturn(ServiceResponseBuilder.<Transformation> ok().build());
 
         getMockMvc().perform(MockMvcRequestBuilders
-                .delete(MessageFormat.format("{0}/{1}/{2}", application.getId(), BASEPATH, GUID1))
+                .delete(MessageFormat.format("{0}/{1}/{2}", application.getName(), BASEPATH, GUID1))
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError());

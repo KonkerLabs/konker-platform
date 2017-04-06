@@ -1,15 +1,6 @@
 package com.konkerlabs.platform.registry.business.services;
 
-import java.util.*;
-
 import com.konkerlabs.platform.registry.business.model.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Service;
-
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.EventRouteRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
@@ -18,6 +9,14 @@ import com.konkerlabs.platform.registry.business.services.api.AbstractURLBlackli
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.TransformationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
+
+import java.util.*;
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
@@ -65,7 +64,7 @@ public class TransformationServiceImpl
             return ServiceResponseBuilder.<Transformation>error().withMessages(validations.get()).build();
 
         if (Optional.ofNullable(transformationRepository.findByName(
-                tenant.getId(), application.getId(), transformation.getName()))
+                tenant.getId(), application.getName(), transformation.getName()))
                 .filter(transformations -> !transformations.isEmpty()).isPresent()) {
             return ServiceResponseBuilder.<Transformation>error()
                     .withMessage(Validations.TRANSFORMATION_NAME_IN_USE.getCode()).build();
@@ -144,7 +143,7 @@ public class TransformationServiceImpl
             return ServiceResponseBuilder.<Transformation>error().withMessages(validations.get()).build();
 
         if (Optional.ofNullable(transformationRepository
-                .findByName(fromDb.getTenant().getId(), application.getId(), fromDb.getName()))
+                .findByName(fromDb.getTenant().getId(), application.getName(), fromDb.getName()))
                 .filter(transformations -> !transformations.isEmpty()).orElseGet(ArrayList<Transformation>::new)
                 .stream().anyMatch(transformation1 -> !transformation1.getId().equals(fromDb.getId()))) {
             return ServiceResponseBuilder.<Transformation>error()

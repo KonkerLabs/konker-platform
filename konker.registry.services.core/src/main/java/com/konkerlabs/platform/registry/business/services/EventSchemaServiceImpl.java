@@ -1,14 +1,23 @@
 package com.konkerlabs.platform.registry.business.services;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
+import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
+import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.model.Event.EventActor;
+import com.konkerlabs.platform.registry.business.model.EventSchema.SchemaField;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
+import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
+import com.konkerlabs.platform.registry.business.repositories.events.api.EventRepository;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
+import com.mongodb.BasicDBObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,27 +29,9 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
-import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.Event.EventActor;
-import com.konkerlabs.platform.registry.business.model.EventSchema;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
-import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
-import com.konkerlabs.platform.registry.business.repositories.events.api.EventRepository;
-import com.konkerlabs.platform.registry.business.model.EventSchema.SchemaField;
-import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
-import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
-import com.mongodb.BasicDBObject;
+import java.io.IOException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
@@ -209,8 +200,8 @@ public class EventSchemaServiceImpl implements EventSchemaService {
     }
 
     @Override
-    public ServiceResponse<List<String>> findKnownIncomingChannelsBy(Tenant tenant, String deviceGuid) {
-        ServiceResponse<Device> deviceServiceResponse = deviceRegisterService.getByDeviceGuid(tenant,deviceGuid);
+    public ServiceResponse<List<String>> findKnownIncomingChannelsBy(Tenant tenant, Application application, String deviceGuid) {
+        ServiceResponse<Device> deviceServiceResponse = deviceRegisterService.getByDeviceGuid(tenant, application, deviceGuid);
 
         if (deviceServiceResponse.isOk()) {
             return ServiceResponseBuilder.<List<String>>ok()

@@ -1,27 +1,5 @@
 package com.konkerlabs.platform.registry.business.services;
 
-import java.io.ByteArrayOutputStream;
-import java.text.MessageFormat;
-import java.util.AbstractMap;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.apache.commons.codec.binary.Base64OutputStream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.support.ReloadableResourceBundleMessageSource;
-import org.springframework.stereotype.Service;
-
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
@@ -45,7 +23,22 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBui
 import com.konkerlabs.platform.registry.config.PubServerConfig;
 import com.konkerlabs.platform.security.exceptions.SecurityException;
 import com.konkerlabs.platform.security.managers.PasswordManager;
+import org.apache.commons.codec.binary.Base64OutputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
+import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+
+import java.io.ByteArrayOutputStream;
+import java.text.MessageFormat;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
@@ -193,7 +186,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .withMessage(Validations.DEVICE_GUID_NULL.getCode())
                     .build();
 
-        Device found = getByDeviceGuid(tenant, guid).getResult();
+        Device found = getByDeviceGuid(tenant, application, guid).getResult();
 
         if (!Optional.ofNullable(found).isPresent())
             return ServiceResponseBuilder.<Device>error()
@@ -211,7 +204,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
     @Override
     public ServiceResponse<DeviceSecurityCredentials> generateSecurityPassword(Tenant tenant, Application application, String guid) {
-        ServiceResponse<Device> serviceResponse = getByDeviceGuid(tenant, guid);
+        ServiceResponse<Device> serviceResponse = getByDeviceGuid(tenant, application, guid);
 
         if (serviceResponse.isOk()) {
             try {
@@ -254,7 +247,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .withMessage(CommonValidations.RECORD_NULL.getCode())
                     .build();
 
-        Device deviceFromDB = getByDeviceGuid(tenant, guid).getResult();
+        Device deviceFromDB = getByDeviceGuid(tenant, application, guid).getResult();
         if (deviceFromDB == null) {
             return ServiceResponseBuilder.<Device>error()
                     .withMessage(Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode())
