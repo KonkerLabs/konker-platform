@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.api.web.controller;
 
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -48,12 +49,15 @@ public class IncomingEventsRestController implements InitializingBean {
         "### Query Search Terms\n\n" +
         "* `device`\n\n" +
         "* `channel`\n\n" +
-        "* `timestamp`\n\n" +
+        "* `timestamp`: ISO 8601 format\n\n" +
         "\n\n" +
         "### Query Examples\n\n" +
-        "* `q=device:818599ad-0000-0000-0000-000000000000`\n\n" +
-        "* `q=channel:temperature+device:818599ad-0000-0000-0000-000000000000`\n\n" +
-        "* `q=channel:temperature`\n\n";
+        "* `q=device==818599ad-0000-0000-0000-000000000000`\n\n" +
+        "* `q=channel==temperature;device==818599ad-0000-0000-0000-000000000000`\n\n" +
+        "* `q=channel==temperature`\n\n" +
+        "* `timestamp==2017-04-05T14:50:00+01:00`\n\n" +
+        "* `timestamp==2017-04-05T14:55:00-01:00`\n\n" +
+        "* `timestamp==2017-04-05T13:54:30.891Z;timestamp==2017-04-05T13:56:30.891Z`\n\n";
 
     @GetMapping(path = "/{application}/")
     @PreAuthorize("hasAuthority('VIEW_DEVICE_LOG')")
@@ -84,8 +88,10 @@ public class IncomingEventsRestController implements InitializingBean {
         EventsFilter filter = new EventsFilter(query);
         String deviceGuid = filter.getDeviceGuid();
         String channel = filter.getChannel();
+        Instant startingTimestamp = filter.getStartingTimestamp();
+        Instant endTimestamp = filter.getEndTimestamp();
 
-        ServiceResponse<List<Event>> restDestinationResponse = deviceEventService.findIncomingBy(tenant, deviceGuid, channel, null, null, ascending, 3);
+        ServiceResponse<List<Event>> restDestinationResponse = deviceEventService.findIncomingBy(tenant, deviceGuid, channel, startingTimestamp, endTimestamp, ascending, limit);
 
         if (!restDestinationResponse.isOk()) {
             throw new BadServiceResponseException(user, restDestinationResponse, validationsCode);
