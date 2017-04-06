@@ -34,7 +34,7 @@ import io.swagger.annotations.ApiParam;
 @Scope("request")
 @RequestMapping(value = "/incomingEvents")
 @Api(tags = "events")
-public class IncomingEventsController implements InitializingBean {
+public class IncomingEventsRestController implements InitializingBean {
 
     @Autowired
     private DeviceEventService deviceEventService;
@@ -44,18 +44,29 @@ public class IncomingEventsController implements InitializingBean {
 
     private Set<String> validationsCode = new HashSet<>();
 
+    private static final String SEACH_NOTES =
+        "### Query Search Terms\n\n" +
+        "* `device`\n\n" +
+        "* `channel`\n\n" +
+        "* `timestamp`\n\n" +
+        "\n\n" +
+        "### Query Examples\n\n" +
+        "* `q=device:818599ad-0000-0000-0000-000000000000`\n\n" +
+        "* `q=channel:temperature+device:818599ad-0000-0000-0000-000000000000`\n\n" +
+        "* `q=channel:temperature`\n\n";
+
     @GetMapping(path = "/{application}/")
     @PreAuthorize("hasAuthority('VIEW_DEVICE_LOG')")
     @ApiOperation(
             value = "Search incoming events",
             response = EventVO.class,
-            notes = "Search qualifiers:<br><ul><li>deviceGuid</li><li>channel</li></ul>",
+            notes = SEACH_NOTES,
             produces = "application/json"
             )
     public List<EventVO> list(
             @ApiParam(value = "Application ID", required = true)
             @PathVariable(value = "application") String application,
-            @ApiParam(value = "The search terms", example = "deviceGuid:818599ad-3502-4e70-a852-fc7af8e0a9f4")
+            @ApiParam(value = "Query string", example = "deviceGuid:818599ad-3502-4e70-a852-fc7af8e0a9f4")
             @RequestParam(required = false, defaultValue = "", name = "q") String query,
             @ApiParam(value = "The sort order", allowableValues = "newest,oldest")
             @RequestParam(required = false, defaultValue = "newest") String sort,

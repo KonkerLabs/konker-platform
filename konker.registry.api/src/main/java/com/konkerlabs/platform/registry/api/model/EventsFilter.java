@@ -38,7 +38,7 @@ public class EventsFilter {
             throw new BadRequestResponseException("Invalid filter: " + filter);
         }
 
-        if (tokens[0].equalsIgnoreCase("deviceGuid")) {
+        if (tokens[0].equalsIgnoreCase("device")) {
             this.deviceGuid = tokens[1];
         } else if (tokens[0].equalsIgnoreCase("channel")) {
             this.channel = tokens[1];
