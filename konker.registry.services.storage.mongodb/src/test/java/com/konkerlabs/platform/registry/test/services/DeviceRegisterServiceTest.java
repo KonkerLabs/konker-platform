@@ -99,7 +99,14 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     public void setUp() {
         currentTenant = tenantRepository.findByName("Konker");
         emptyTenant = tenantRepository.findByName("EmptyTenant");
-        currentApplication = applicationRepository.findByTenantAndName(currentTenant.getId(), "smartffkonker");
+        currentApplication = Application.builder()
+                .name("smartffkonker")
+                .friendlyName("Konker Smart Frig")
+                .qualifier("konker")
+                .registrationDate("1453320973747")
+                .tenant(currentTenant)
+                .description("Konker Smart Frig - take pic, tells temperatue")
+                .build();
 
         rawDevice = Device.builder().deviceId("94c32b36cd2b43f1").name("Device name")
                 .description("Description").active(true)
