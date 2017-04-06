@@ -1,49 +1,26 @@
 package com.konkerlabs.platform.registry.api.web.controller;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
+import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
+import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
+import com.konkerlabs.platform.registry.api.model.*;
+import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
+import com.konkerlabs.platform.registry.business.services.api.*;
+import com.konkerlabs.platform.registry.business.services.api.EventRouteService.Validations;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
-import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
-import com.konkerlabs.platform.registry.api.model.EventRouteInputVO;
-import com.konkerlabs.platform.registry.api.model.EventRouteVO;
-import com.konkerlabs.platform.registry.api.model.RestResponse;
-import com.konkerlabs.platform.registry.api.model.RouteActorType;
-import com.konkerlabs.platform.registry.api.model.RouteActorVO;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.EventRoute;
-import com.konkerlabs.platform.registry.business.model.RestDestination;
-import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.Transformation;
-import com.konkerlabs.platform.registry.business.model.User;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
-import com.konkerlabs.platform.registry.business.services.api.EventRouteService.Validations;
-import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.TransformationService;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @RestController
 @Scope("request")
@@ -145,7 +122,7 @@ public class EventRouteRestController implements InitializingBean {
         String guid = routeForm.getTransformationGuid();
 
         if (StringUtils.isNoneBlank(guid)) {
-            ServiceResponse<Transformation> transformationResponse = transformationService.get(tenant, guid);
+            ServiceResponse<Transformation> transformationResponse = transformationService.get(tenant, null, guid);
             if (transformationResponse.isOk()) {
                 Transformation transformation = transformationResponse.getResult();
                 return transformation;
@@ -168,7 +145,7 @@ public class EventRouteRestController implements InitializingBean {
         }
 
         if (RouteActorType.DEVICE.name().equalsIgnoreCase(routeForm.getType())) {
-            ServiceResponse<Device> deviceResponse = deviceRegisterService.getByDeviceGuid(tenant, routeForm.getGuid());
+            ServiceResponse<Device> deviceResponse = deviceRegisterService.getByDeviceGuid(tenant, null, routeForm.getGuid());
             if (deviceResponse.isOk()) {
                 routeActor.setDisplayName(deviceResponse.getResult().getName());
                 routeActor.setUri(deviceResponse.getResult().toURI());

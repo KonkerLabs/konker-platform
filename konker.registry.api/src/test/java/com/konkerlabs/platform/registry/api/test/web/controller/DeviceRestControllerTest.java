@@ -1,16 +1,15 @@
 package com.konkerlabs.platform.registry.api.test.web.controller;
 
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.util.ArrayList;
-import java.util.List;
-
+import com.konkerlabs.platform.registry.api.config.WebMvcConfig;
+import com.konkerlabs.platform.registry.api.model.DeviceVO;
+import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
+import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
+import com.konkerlabs.platform.registry.api.web.controller.DeviceRestController;
+import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
+import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,16 +24,12 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import com.konkerlabs.platform.registry.api.config.WebMvcConfig;
-import com.konkerlabs.platform.registry.api.model.DeviceVO;
-import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
-import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
-import com.konkerlabs.platform.registry.api.web.controller.DeviceRestController;
-import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = DeviceRestController.class)
@@ -75,7 +70,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
         devices.add(device1);
         devices.add(device2);
 
-        when(deviceRegisterService.findAll(tenant))
+        when(deviceRegisterService.findAll(tenant, null))
                 .thenReturn(ServiceResponseBuilder.<List<Device>>ok().withResult(devices).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.get("/devices/")
@@ -102,7 +97,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryListDevicesWithInternalError() throws Exception {
 
-        when(deviceRegisterService.findAll(tenant))
+        when(deviceRegisterService.findAll(tenant, null))
                 .thenReturn(ServiceResponseBuilder.<List<Device>>error().build());
 
         getMockMvc().perform(MockMvcRequestBuilders.get("/devices/")
@@ -121,7 +116,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldReadDevice() throws Exception {
 
-        when(deviceRegisterService.getByDeviceGuid(tenant, device1.getGuid()))
+        when(deviceRegisterService.getByDeviceGuid(tenant, null, device1.getGuid()))
                 .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device1).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.get("/devices/" + device1.getGuid())
@@ -144,7 +139,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryReadDeviceWithBadRequest() throws Exception {
 
-        when(deviceRegisterService.getByDeviceGuid(tenant, device1.getGuid()))
+        when(deviceRegisterService.getByDeviceGuid(tenant, null, device1.getGuid()))
                 .thenReturn(ServiceResponseBuilder.<Device>error().withMessage(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode()).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.get("/devices/" + device1.getGuid())
@@ -163,7 +158,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldCreateDevice() throws Exception {
 
-        when(deviceRegisterService.register(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(Device.class)))
+        when(deviceRegisterService.register(org.mockito.Matchers.any(Tenant.class), null, org.mockito.Matchers.any(Device.class)))
                 .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device1).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.post("/devices/")
@@ -186,7 +181,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryCreateDeviceWithBadRequest() throws Exception {
 
-        when(deviceRegisterService.register(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(Device.class)))
+        when(deviceRegisterService.register(org.mockito.Matchers.any(Tenant.class), null, org.mockito.Matchers.any(Device.class)))
                 .thenReturn(ServiceResponseBuilder.<Device>error().withMessage(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode()).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.post("/devices/")
@@ -207,10 +202,10 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldUpdateDevice() throws Exception {
 
-        when(deviceRegisterService.getByDeviceGuid(tenant, device1.getGuid()))
+        when(deviceRegisterService.getByDeviceGuid(tenant, null, device1.getGuid()))
                 .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device1).build());
 
-        when(deviceRegisterService.update(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.anyString(), org.mockito.Matchers.any(Device.class)))
+        when(deviceRegisterService.update(org.mockito.Matchers.any(Tenant.class), null, org.mockito.Matchers.anyString(), org.mockito.Matchers.any(Device.class)))
                 .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device1).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.put("/devices/" + device1.getGuid())
@@ -228,10 +223,10 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryUpdateDeviceWithInternalError() throws Exception {
 
-        when(deviceRegisterService.getByDeviceGuid(tenant, device1.getGuid()))
+        when(deviceRegisterService.getByDeviceGuid(tenant, null, device1.getGuid()))
                 .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device1).build());
 
-        when(deviceRegisterService.update(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.anyString(), org.mockito.Matchers.any(Device.class)))
+        when(deviceRegisterService.update(org.mockito.Matchers.any(Tenant.class), null, org.mockito.Matchers.anyString(), org.mockito.Matchers.any(Device.class)))
                 .thenReturn(ServiceResponseBuilder.<Device>error().build());
 
         getMockMvc().perform(MockMvcRequestBuilders.put("/devices/" + device1.getGuid())
@@ -251,7 +246,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldDeleteDevice() throws Exception {
 
-        when(deviceRegisterService.remove(tenant, device1.getGuid()))
+        when(deviceRegisterService.remove(tenant, null, device1.getGuid()))
                 .thenReturn(ServiceResponseBuilder.<Device>ok().build());
 
         getMockMvc().perform(MockMvcRequestBuilders.delete("/devices/" + device1.getGuid())
@@ -270,7 +265,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryDeleteDeviceWithInternalError() throws Exception {
 
-        when(deviceRegisterService.remove(tenant, device1.getGuid()))
+        when(deviceRegisterService.remove(tenant, null, device1.getGuid()))
                 .thenReturn(ServiceResponseBuilder.<Device>error().withMessage(DeviceRegisterService.Messages.DEVICE_REMOVED_UNSUCCESSFULLY.getCode()).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.delete("/devices/" + device1.getGuid())
@@ -289,7 +284,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryDeleteNonexistentEventRoute() throws Exception {
 
-        when(deviceRegisterService.remove(tenant, device1.getGuid()))
+        when(deviceRegisterService.remove(tenant, null, device1.getGuid()))
                 .thenReturn(ServiceResponseBuilder.<Device>error().withMessage(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode()).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.delete("/devices/" + device1.getGuid())

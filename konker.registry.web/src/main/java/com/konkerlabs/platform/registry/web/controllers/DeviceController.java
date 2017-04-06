@@ -1,5 +1,29 @@
 package com.konkerlabs.platform.registry.web.controllers;
 
+import com.fasterxml.jackson.databind.node.JsonNodeType;
+import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.DeviceDataURLs;
+import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.config.PubServerConfig;
+import com.konkerlabs.platform.registry.web.forms.DeviceRegistrationForm;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.annotation.Scope;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 import java.text.MessageFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -11,39 +35,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.annotation.Scope;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import com.fasterxml.jackson.databind.node.JsonNodeType;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.EventSchema;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.User;
-import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.DeviceDataURLs;
-import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.config.PubServerConfig;
-import com.konkerlabs.platform.registry.web.forms.DeviceRegistrationForm;
 
 @Controller
 @Scope("request")
@@ -79,7 +70,7 @@ public class DeviceController implements ApplicationContextAware {
     @RequestMapping
     @PreAuthorize("hasAuthority('LIST_DEVICES')")
     public ModelAndView index() {
-        List<Device> all = deviceRegisterService.findAll(tenant).getResult();
+        List<Device> all = deviceRegisterService.findAll(tenant, null).getResult();
         return new ModelAndView("devices/index", "devices", all);
     }
 
@@ -96,7 +87,7 @@ public class DeviceController implements ApplicationContextAware {
     public ModelAndView show(@PathVariable("deviceGuid") String deviceGuid) {
         return new ModelAndView(
                 "devices/show", "device",
-                deviceRegisterService.getByDeviceGuid(tenant, deviceGuid).getResult()
+                deviceRegisterService.getByDeviceGuid(tenant, null, deviceGuid).getResult()
         );
     }
 
@@ -104,7 +95,7 @@ public class DeviceController implements ApplicationContextAware {
     @PreAuthorize("hasAuthority('EDIT_DEVICE')")
     public ModelAndView edit(@PathVariable("deviceGuid") String deviceGuid) {
         return new ModelAndView("devices/form")
-                .addObject("device", new DeviceRegistrationForm().fillFrom(deviceRegisterService.getByDeviceGuid(tenant, deviceGuid).getResult()))
+                .addObject("device", new DeviceRegistrationForm().fillFrom(deviceRegisterService.getByDeviceGuid(tenant, null, deviceGuid).getResult()))
                 .addObject("isEditing", true)
                 .addObject("action", MessageFormat.format("/devices/{0}", deviceGuid))
                 .addObject("method", "put");
@@ -113,7 +104,7 @@ public class DeviceController implements ApplicationContextAware {
     @RequestMapping("/{deviceGuid}/events")
     @PreAuthorize("hasAuthority('VIEW_DEVICE_LOG')")
     public ModelAndView deviceEvents(@PathVariable String deviceGuid) {
-        Device device = deviceRegisterService.getByDeviceGuid(tenant, deviceGuid).getResult();
+        Device device = deviceRegisterService.getByDeviceGuid(tenant, null, deviceGuid).getResult();
 
         ModelAndView mv = new ModelAndView("devices/events");
 
@@ -180,7 +171,7 @@ public class DeviceController implements ApplicationContextAware {
         }
 
         // Load lists
-        ServiceResponse<List<String>> channels = eventSchemaService.findKnownIncomingChannelsBy(tenant, deviceGuid);
+        ServiceResponse<List<String>> channels = eventSchemaService.findKnownIncomingChannelsBy(tenant, null, deviceGuid);
 
         if (defaultChannel != null && !channels.getResult().contains(defaultChannel)) {
             defaultChannel = null; // invalid channel
@@ -223,7 +214,7 @@ public class DeviceController implements ApplicationContextAware {
                                 Locale locale) {
 
         return doSave(
-                () -> deviceRegisterService.register(tenant, deviceForm.toModel()),
+                () -> deviceRegisterService.register(tenant, null, deviceForm.toModel()),
                 deviceForm, locale,
                 redirectAttributes, "");
     }
@@ -235,7 +226,7 @@ public class DeviceController implements ApplicationContextAware {
                                  RedirectAttributes redirectAttributes, Locale locale) {
 
         return doSave(
-                () -> deviceRegisterService.update(tenant, deviceGuid, deviceForm.toModel()),
+                () -> deviceRegisterService.update(tenant, null, deviceGuid, deviceForm.toModel()),
                 deviceForm, locale,
                 redirectAttributes, "put");
     }
@@ -246,7 +237,7 @@ public class DeviceController implements ApplicationContextAware {
                                @ModelAttribute("deviceForm") DeviceRegistrationForm deviceForm,
                                RedirectAttributes redirectAttributes, Locale locale) {
 
-        ServiceResponse<Device> serviceResponse = deviceRegisterService.remove(tenant, deviceGuid);
+        ServiceResponse<Device> serviceResponse = deviceRegisterService.remove(tenant, null, deviceGuid);
         if (serviceResponse.isOk()) {
             redirectAttributes.addFlashAttribute("message",
                     applicationContext.getMessage(DeviceRegisterService.Messages.DEVICE_REMOVED_SUCCESSFULLY.getCode(), null, locale)
@@ -266,14 +257,14 @@ public class DeviceController implements ApplicationContextAware {
     @RequestMapping(path = "/{deviceGuid}/password", method = RequestMethod.GET)
     @PreAuthorize("hasAuthority('CREATE_DEVICE_KEYS')")
     public ModelAndView password(@PathVariable String deviceGuid, RedirectAttributes redirectAttributes, Locale locale) {
-        ServiceResponse<Device> serviceResponse = deviceRegisterService.getByDeviceGuid(tenant, deviceGuid);
+        ServiceResponse<Device> serviceResponse = deviceRegisterService.getByDeviceGuid(tenant, null, deviceGuid);
 
         if (serviceResponse.isOk()) {
 
             Device device = serviceResponse.getResult();
             String username = device.getApiKey();
 
-            ServiceResponse<DeviceDataURLs> serviceURLResponse = deviceRegisterService.getDeviceDataURLs(tenant, device, user.getLanguage().getLocale());
+            ServiceResponse<DeviceDataURLs> serviceURLResponse = deviceRegisterService.getDeviceDataURLs(tenant, null, device, user.getLanguage().getLocale());
 
             return new ModelAndView("devices/password")
                     .addObject("action", MessageFormat.format("/devices/{0}/password", deviceGuid))
@@ -295,7 +286,7 @@ public class DeviceController implements ApplicationContextAware {
                                          RedirectAttributes redirectAttributes,
                                          Locale locale) {
         ServiceResponse<DeviceRegisterService.DeviceSecurityCredentials> serviceResponse = deviceRegisterService
-                .generateSecurityPassword(tenant, deviceGuid);
+                .generateSecurityPassword(tenant, null, deviceGuid);
 
         if (serviceResponse.isOk()) {
             DeviceRegisterService.DeviceSecurityCredentials credentials = serviceResponse.getResult();
@@ -303,7 +294,7 @@ public class DeviceController implements ApplicationContextAware {
                     deviceRegisterService.generateQrCodeAccess(credentials, 200, 200);
 
             Device device = credentials.getDevice();
-            ServiceResponse<DeviceDataURLs> serviceURLResponse = deviceRegisterService.getDeviceDataURLs(tenant, device, user.getLanguage().getLocale());
+            ServiceResponse<DeviceDataURLs> serviceURLResponse = deviceRegisterService.getDeviceDataURLs(tenant, null, device, user.getLanguage().getLocale());
 
             return new ModelAndView("devices/password")
                     .addObject("action", MessageFormat.format("/devices/{0}/password", deviceGuid))

@@ -1,39 +1,19 @@
 package com.konkerlabs.platform.registry.test.web.controllers;
 
-import static com.konkerlabs.platform.registry.business.model.Device.builder;
-import static com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer.DEVICE_URI_SCHEME;
-import static com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer.REST_DESTINATION_URI_SCHEME;
-import static com.konkerlabs.platform.registry.business.model.behaviors.SmsDestinationURIDealer.SMS_URI_SCHEME;
-import static com.konkerlabs.platform.registry.web.controllers.EventRouteController.Messages.ROUTE_REMOVED_SUCCESSFULLY;
-import static java.text.MessageFormat.format;
-import static java.util.Arrays.asList;
-import static org.hamcrest.Matchers.equalTo;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
-
-import java.net.URI;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.function.Supplier;
-
+import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
 import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.services.api.*;
+import com.konkerlabs.platform.registry.config.CdnConfig;
+import com.konkerlabs.platform.registry.config.HotjarConfig;
+import com.konkerlabs.platform.registry.config.WebConfig;
+import com.konkerlabs.platform.registry.config.WebMvcConfig;
+import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
+import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
+import com.konkerlabs.platform.registry.web.controllers.EventRouteController;
+import com.konkerlabs.platform.registry.web.forms.EventRouteForm;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -49,30 +29,24 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.EventRoute;
-import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
-import com.konkerlabs.platform.registry.business.model.RestDestination;
-import com.konkerlabs.platform.registry.business.model.SmsDestination;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.Transformation;
-import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
-import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
-import com.konkerlabs.platform.registry.business.services.api.SmsDestinationService;
-import com.konkerlabs.platform.registry.business.services.api.TransformationService;
-import com.konkerlabs.platform.registry.config.CdnConfig;
-import com.konkerlabs.platform.registry.config.HotjarConfig;
-import com.konkerlabs.platform.registry.config.WebConfig;
-import com.konkerlabs.platform.registry.config.WebMvcConfig;
-import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
-import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
-import com.konkerlabs.platform.registry.web.controllers.EventRouteController;
-import com.konkerlabs.platform.registry.web.forms.EventRouteForm;
+import java.net.URI;
+import java.text.MessageFormat;
+import java.util.*;
+import java.util.function.Supplier;
+
+import static com.konkerlabs.platform.registry.business.model.Device.builder;
+import static com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer.DEVICE_URI_SCHEME;
+import static com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer.REST_DESTINATION_URI_SCHEME;
+import static com.konkerlabs.platform.registry.business.model.behaviors.SmsDestinationURIDealer.SMS_URI_SCHEME;
+import static com.konkerlabs.platform.registry.web.controllers.EventRouteController.Messages.ROUTE_REMOVED_SUCCESSFULLY;
+import static java.text.MessageFormat.format;
+import static java.util.Arrays.asList;
+import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
@@ -118,13 +92,13 @@ public class EventRouteControllerTest extends WebLayerTestContext {
     @Before
     public void setUp() throws Exception {
         List<Transformation> transformations = new ArrayList<>();
-        when(transformationService.getAll(tenant)).thenReturn(
+        when(transformationService.getAll(tenant, null)).thenReturn(
                 ServiceResponseBuilder.<List<Transformation>>ok()
                         .withResult(transformations).build()
         );
 
         List<Device> devices = new ArrayList<>();
-        when(deviceRegisterService.findAll(tenant)).thenReturn(
+        when(deviceRegisterService.findAll(tenant, null)).thenReturn(
                 ServiceResponseBuilder.<List<Device>>ok()
                         .withResult(devices).build()
         );

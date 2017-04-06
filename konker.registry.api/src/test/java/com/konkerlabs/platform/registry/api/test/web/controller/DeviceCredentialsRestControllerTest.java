@@ -1,12 +1,16 @@
 package com.konkerlabs.platform.registry.api.test.web.controller;
 
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
+import com.konkerlabs.platform.registry.api.config.WebMvcConfig;
+import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
+import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
+import com.konkerlabs.platform.registry.api.web.controller.DeviceCredentialRestController;
+import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
+import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.User;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.DeviceDataURLs;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,17 +25,10 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import com.konkerlabs.platform.registry.api.config.WebMvcConfig;
-import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
-import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
-import com.konkerlabs.platform.registry.api.web.controller.DeviceCredentialRestController;
-import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.User;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.DeviceDataURLs;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = DeviceCredentialRestController.class)
@@ -80,10 +77,10 @@ public class DeviceCredentialsRestControllerTest extends WebLayerTestContext {
                 .mqttsURL("mqttsURL")
                 .build();
 
-        when(deviceRegisterService.getByDeviceGuid(tenant, device1.getGuid()))
+        when(deviceRegisterService.getByDeviceGuid(tenant, null, device1.getGuid()))
                 .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device1).build());
 
-        when(deviceRegisterService.getDeviceDataURLs(tenant, device1, user.getLanguage().getLocale()))
+        when(deviceRegisterService.getDeviceDataURLs(tenant, null, device1, user.getLanguage().getLocale()))
                 .thenReturn(ServiceResponseBuilder.<DeviceDataURLs>ok().withResult(deviceDataURLs).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.get("/deviceCredentials/" + device1.getGuid())
@@ -111,7 +108,7 @@ public class DeviceCredentialsRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryReadDeviceWithBadRequest() throws Exception {
 
-        when(deviceRegisterService.getByDeviceGuid(tenant, device1.getGuid()))
+        when(deviceRegisterService.getByDeviceGuid(tenant, null, device1.getGuid()))
                 .thenReturn(ServiceResponseBuilder.<Device>error().withMessage(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode()).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.get("/deviceCredentials/" + device1.getGuid())
@@ -143,10 +140,10 @@ public class DeviceCredentialsRestControllerTest extends WebLayerTestContext {
                 .mqttsURL("mqttsURL")
                 .build();
 
-        when(deviceRegisterService.generateSecurityPassword(tenant, device1.getGuid()))
+        when(deviceRegisterService.generateSecurityPassword(tenant, null, device1.getGuid()))
                  .thenReturn(ServiceResponseBuilder.<DeviceRegisterService.DeviceSecurityCredentials>ok().withResult(credentials).build());
 
-        when(deviceRegisterService.getDeviceDataURLs(tenant, device1, user.getLanguage().getLocale()))
+        when(deviceRegisterService.getDeviceDataURLs(tenant, null, device1, user.getLanguage().getLocale()))
                 .thenReturn(ServiceResponseBuilder.<DeviceDataURLs>ok().withResult(deviceDataURLs).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.post("/deviceCredentials/" + device1.getGuid())
@@ -175,7 +172,7 @@ public class DeviceCredentialsRestControllerTest extends WebLayerTestContext {
 
         DeviceRegisterService.DeviceSecurityCredentials credentials = new DeviceRegisterService.DeviceSecurityCredentials(device1, "7I5ccJHCIE");
 
-        when(deviceRegisterService.generateSecurityPassword(tenant, device1.getGuid()))
+        when(deviceRegisterService.generateSecurityPassword(tenant, null, device1.getGuid()))
                  .thenReturn(ServiceResponseBuilder.<DeviceRegisterService.DeviceSecurityCredentials>error().withResult(credentials).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.post("/deviceCredentials/" + device1.getGuid())

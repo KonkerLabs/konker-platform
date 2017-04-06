@@ -1,39 +1,28 @@
 package com.konkerlabs.platform.registry.api.web.controller;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import com.konkerlabs.platform.registry.api.model.RestResponse;
-
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
 import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
 import com.konkerlabs.platform.registry.api.model.DeviceInputVO;
 import com.konkerlabs.platform.registry.api.model.DeviceVO;
+import com.konkerlabs.platform.registry.api.model.RestResponse;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.Validations;
-
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @RestController
 @Scope("request")
@@ -60,7 +49,7 @@ public class DeviceRestController implements InitializingBean {
 
         Tenant tenant = user.getTenant();
 
-        ServiceResponse<List<Device>> deviceResponse = deviceRegisterService.findAll(tenant);
+        ServiceResponse<List<Device>> deviceResponse = deviceRegisterService.findAll(tenant, null);
 
         if (!deviceResponse.isOk()) {
             throw new BadServiceResponseException(user, deviceResponse, validationsCode);
@@ -80,7 +69,7 @@ public class DeviceRestController implements InitializingBean {
 
         Tenant tenant = user.getTenant();
 
-        ServiceResponse<Device> deviceResponse = deviceRegisterService.getByDeviceGuid(tenant, deviceGuid);
+        ServiceResponse<Device> deviceResponse = deviceRegisterService.getByDeviceGuid(tenant, null, deviceGuid);
 
         if (!deviceResponse.isOk()) {
             throw new NotFoundResponseException(user, deviceResponse);
@@ -106,7 +95,7 @@ public class DeviceRestController implements InitializingBean {
                 .active(true)
                 .build();
 
-        ServiceResponse<Device> deviceResponse = deviceRegisterService.register(tenant, device);
+        ServiceResponse<Device> deviceResponse = deviceRegisterService.register(tenant, null, device);
 
         if (!deviceResponse.isOk()) {
             throw new BadServiceResponseException(user, deviceResponse, validationsCode);
@@ -127,7 +116,7 @@ public class DeviceRestController implements InitializingBean {
         Tenant tenant = user.getTenant();
 
         Device deviceFromDB = null;
-        ServiceResponse<Device> deviceResponse = deviceRegisterService.getByDeviceGuid(tenant, deviceGuid);
+        ServiceResponse<Device> deviceResponse = deviceRegisterService.getByDeviceGuid(tenant, null, deviceGuid);
 
         if (!deviceResponse.isOk()) {
             throw new BadServiceResponseException(user, deviceResponse, validationsCode);
@@ -140,7 +129,7 @@ public class DeviceRestController implements InitializingBean {
         deviceFromDB.setDescription(deviceForm.getDescription());
         deviceFromDB.setActive(deviceForm.isActive());
 
-        ServiceResponse<Device> updateResponse = deviceRegisterService.update(tenant, deviceGuid, deviceFromDB);
+        ServiceResponse<Device> updateResponse = deviceRegisterService.update(tenant, null, deviceGuid, deviceFromDB);
 
         if (!updateResponse.isOk()) {
             throw new BadServiceResponseException(user, deviceResponse, validationsCode);
@@ -156,7 +145,7 @@ public class DeviceRestController implements InitializingBean {
 
         Tenant tenant = user.getTenant();
 
-        ServiceResponse<Device> deviceResponse = deviceRegisterService.remove(tenant, deviceGuid);
+        ServiceResponse<Device> deviceResponse = deviceRegisterService.remove(tenant, null, deviceGuid);
 
         if (!deviceResponse.isOk()) {
             if (deviceResponse.getResponseMessages().containsKey(Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode())) {

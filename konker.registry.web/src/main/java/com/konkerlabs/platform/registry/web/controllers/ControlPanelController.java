@@ -1,23 +1,14 @@
 package com.konkerlabs.platform.registry.web.controllers;
 
-import java.util.List;
-
+import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.services.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.EventRoute;
-import com.konkerlabs.platform.registry.business.model.RestDestination;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.Transformation;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
-import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.TransformationService;
+import java.util.List;
 
 @Controller
 @Scope("request")
@@ -48,7 +39,7 @@ public class ControlPanelController {
 		int transformationsCount = 0;
 		int restDestinationsCount = 0;
 
-		ServiceResponse<List<Device>> deviceResponse = deviceRegisterService.findAll(tenant);
+		ServiceResponse<List<Device>> deviceResponse = deviceRegisterService.findAll(tenant, null);
 		if (deviceResponse.isOk()) {
 			devicesCount = deviceResponse.getResult().size();
 		}
@@ -58,7 +49,7 @@ public class ControlPanelController {
 			routesCount = routesResponse.getResult().size();
 		}
 		
-		ServiceResponse<List<Transformation>> transformationResponse = transformationService.getAll(tenant);
+		ServiceResponse<List<Transformation>> transformationResponse = transformationService.getAll(tenant, null);
 		if (transformationResponse.isOk()) {
 			transformationsCount = transformationResponse.getResult().size();
 		}

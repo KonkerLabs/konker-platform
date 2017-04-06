@@ -5,7 +5,10 @@ import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseExcepti
 import com.konkerlabs.platform.registry.api.exceptions.NotAuthorizedResponseException;
 import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
 import com.konkerlabs.platform.registry.api.model.RestTransformationVO;
-import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.Transformation;
+import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.TransformationService;
@@ -18,8 +21,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
-import javax.swing.text.html.Option;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 @RestController
 @Scope("request")
@@ -206,7 +211,7 @@ public class TransformationsRestController implements InitializingBean {
 
     public Application getApplication(Tenant tenant, String applicationId)
             throws NotFoundResponseException {
-        ServiceResponse<Application> applicationResponse = applicationService.findById(
+        ServiceResponse<Application> applicationResponse = applicationService.getByApplicationName(
                 user.getTenant(), applicationId);
 
         if (!applicationResponse.isOk()
