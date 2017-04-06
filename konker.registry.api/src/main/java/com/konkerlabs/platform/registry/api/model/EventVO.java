@@ -1,5 +1,8 @@
 package com.konkerlabs.platform.registry.api.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.konkerlabs.platform.registry.api.model.core.SerializableVO;
@@ -20,16 +23,16 @@ import lombok.NoArgsConstructor;
 @JsonInclude(Include.NON_EMPTY)
 public class EventVO implements SerializableVO<Event, EventVO> {
 
-    @ApiModelProperty(value = "timestamp (ISO 8601 format)", position = 0)
+    @ApiModelProperty(value = "timestamp (ISO 8601 format)", position = 0, example = "2017-04-05T13:55:20.150Z")
     private String timestamp;
 
-    @ApiModelProperty(value = "incoming", position = 0)
+    @ApiModelProperty(value = "incoming", position = 1)
     private EventActorVO incoming;
 
-    @ApiModelProperty(value = "outgoing", position = 0)
+    @ApiModelProperty(value = "outgoing", position = 2)
     private EventActorVO outgoing;
 
-    @ApiModelProperty(value = "payload", position = 1)
+    @ApiModelProperty(value = "payload", position = 3, example = "{\"temperature\": 18, \"unit\": \"celsius\"}")
     private String payload;
 
     @Override

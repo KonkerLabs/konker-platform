@@ -18,10 +18,10 @@ import lombok.NoArgsConstructor;
 @JsonInclude(Include.NON_EMPTY)
 public class EventActorVO implements SerializableVO<EventActor, EventActorVO> {
 
-    @ApiModelProperty(value = "device guid", position = 0)
+    @ApiModelProperty(value = "device guid", position = 0, example = "818599ad-0000-0000-0000-000000000000")
     private String deviceGuid;
 
-    @ApiModelProperty(value = "channel", position = 1)
+    @ApiModelProperty(value = "channel", position = 1, example = "temperature")
     private String channel;
 
     @Override

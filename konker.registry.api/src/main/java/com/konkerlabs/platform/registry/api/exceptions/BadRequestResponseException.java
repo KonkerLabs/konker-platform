@@ -5,7 +5,6 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 public class BadRequestResponseException extends Exception {
@@ -15,6 +14,8 @@ public class BadRequestResponseException extends Exception {
     private boolean validationsError = false;
 
     private Map<String, Object[]> responseMessages;
+
+    private String message;
 
     private Locale locale;
 
@@ -35,12 +36,20 @@ public class BadRequestResponseException extends Exception {
 
     }
 
+    public BadRequestResponseException(String message) {
+        this.message = message;
+    }
+
     public boolean hasValidationsError() {
         return validationsError;
     }
 
     public Map<String, Object[]> getResponseMessages() {
         return responseMessages;
+    }
+
+    public String getMessage() {
+        return message;
     }
 
     public Locale getLocale() {

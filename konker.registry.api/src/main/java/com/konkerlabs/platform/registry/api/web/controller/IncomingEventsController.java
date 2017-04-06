@@ -9,12 +9,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.konkerlabs.platform.registry.api.exceptions.BadRequestResponseException;
 import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
 import com.konkerlabs.platform.registry.api.model.EventVO;
-import com.konkerlabs.platform.registry.api.model.RestDestinationVO;
+import com.konkerlabs.platform.registry.api.model.EventsFilter;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.RestDestination.Validations;
 import com.konkerlabs.platform.registry.business.model.Tenant;
@@ -25,6 +28,7 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 @RestController
 @Scope("request")
@@ -40,16 +44,37 @@ public class IncomingEventsController implements InitializingBean {
 
     private Set<String> validationsCode = new HashSet<>();
 
-    @GetMapping(path = "/")
+    @GetMapping(path = "/{application}/")
     @PreAuthorize("hasAuthority('VIEW_DEVICE_LOG')")
     @ApiOperation(
-            value = "List all rest destinations by organization",
-            response = RestDestinationVO.class)
-    public List<EventVO> list() throws BadServiceResponseException {
+            value = "Search incoming events",
+            response = EventVO.class,
+            notes = "Search qualifiers:<br><ul><li>deviceGuid</li><li>channel</li></ul>",
+            produces = "application/json"
+            )
+    public List<EventVO> list(
+            @ApiParam(value = "Application ID", required = true)
+            @PathVariable(value = "application") String application,
+            @ApiParam(value = "The search terms", example = "deviceGuid:818599ad-3502-4e70-a852-fc7af8e0a9f4")
+            @RequestParam(required = false, defaultValue = "", name = "q") String query,
+            @ApiParam(value = "The sort order", allowableValues = "newest,oldest")
+            @RequestParam(required = false, defaultValue = "newest") String sort,
+            @ApiParam(value = "The number of results returned")
+            @RequestParam(required = false, defaultValue = "100") Integer limit
+        ) throws BadServiceResponseException, BadRequestResponseException {
 
         Tenant tenant = user.getTenant();
 
-        ServiceResponse<List<Event>> restDestinationResponse = deviceEventService.findIncomingBy(tenant, null, null, null, null, false, 3);
+        boolean ascending = false;
+        if (sort.equalsIgnoreCase("oldest")) {
+            ascending = true;
+        }
+
+        EventsFilter filter = new EventsFilter(query);
+        String deviceGuid = filter.getDeviceGuid();
+        String channel = filter.getChannel();
+
+        ServiceResponse<List<Event>> restDestinationResponse = deviceEventService.findIncomingBy(tenant, deviceGuid, channel, null, null, ascending, 3);
 
         if (!restDestinationResponse.isOk()) {
             throw new BadServiceResponseException(user, restDestinationResponse, validationsCode);

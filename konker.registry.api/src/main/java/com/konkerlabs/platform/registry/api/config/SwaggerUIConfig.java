@@ -18,6 +18,8 @@ import springfox.documentation.spi.service.contexts.SecurityContext;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
+import java.util.List;
+
 import static com.google.common.collect.Lists.newArrayList;
 
 @EnableWebMvc
@@ -26,6 +28,8 @@ import static com.google.common.collect.Lists.newArrayList;
 public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
 
     public static final String securitySchemaOAuth2 = "oauth2schema";
+    public static final String authorizationScopeRead = "read";
+    public static final String authorizationScopeGlobalDesc = "Access IoT Resources";
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
@@ -49,7 +53,7 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
                         new Tag("routes", "Operations to list and edit routes"),
                         new Tag("events", "Operations to list incoming and outgoing device events"),
                         new Tag("rest transformations", "Operations to manage Rest Transformations"))
-                .enableUrlTemplating(true);
+                .enableUrlTemplating(false);
 
     }
 
@@ -78,14 +82,24 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
 
         return new OAuth(
                 securitySchemaOAuth2,
-                newArrayList(),
+                newArrayList(
+                         new AuthorizationScope(authorizationScopeRead, authorizationScopeGlobalDesc)
+                ),
                 newArrayList(cliGrantType));
     }
 
     private SecurityContext securityContext() {
         return SecurityContext.builder()
+                .securityReferences(defaultAuth())
                 .forPaths(PathSelectors.any())
                 .build();
+    }
+
+    private List<SecurityReference> defaultAuth() {
+        AuthorizationScope[] authorizationScopes = new AuthorizationScope[1];
+        authorizationScopes[0] = new AuthorizationScope(authorizationScopeRead, authorizationScopeGlobalDesc);
+        return newArrayList(
+                new SecurityReference(securitySchemaOAuth2, authorizationScopes));
     }
 
     private ApiInfo apiInfo() {
