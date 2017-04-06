@@ -9,7 +9,7 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Res
 @Configuration
 @EnableResourceServer
 public class ResourceServer extends ResourceServerConfigurerAdapter {
-	
+
 	public static final String RESOURCE_ID = "registryapi";
 	private static final String[] PUBLIC_RESOURCES = new String[]{
 			"/oauth/token",
@@ -27,7 +27,6 @@ public class ResourceServer extends ResourceServerConfigurerAdapter {
 		http
 			.authorizeRequests()
 				.antMatchers(PUBLIC_RESOURCES).permitAll()
-				.antMatchers("/").access("#oauth2.hasScope('read')")
 				.anyRequest().authenticated();
 	}
 

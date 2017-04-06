@@ -18,8 +18,6 @@ import springfox.documentation.spi.service.contexts.SecurityContext;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
-import java.util.List;
-
 import static com.google.common.collect.Lists.newArrayList;
 
 @EnableWebMvc
@@ -28,11 +26,6 @@ import static com.google.common.collect.Lists.newArrayList;
 public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
 
     public static final String securitySchemaOAuth2 = "oauth2schema";
-    public static final String authorizationScopeTrust = "trust";
-    public static final String authorizationScopeRead = "read";
-    public static final String authorizationScopeWrite = "write";
-    public static final String authorizationScopeGlobalDesc = "Access Iot Resources";
-
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
@@ -85,28 +78,14 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
 
         return new OAuth(
                 securitySchemaOAuth2,
-                newArrayList(
-                        new AuthorizationScope(authorizationScopeTrust, authorizationScopeGlobalDesc),
-                        new AuthorizationScope(authorizationScopeRead, authorizationScopeGlobalDesc),
-                        new AuthorizationScope(authorizationScopeWrite, authorizationScopeGlobalDesc)
-                ),
+                newArrayList(),
                 newArrayList(cliGrantType));
     }
 
     private SecurityContext securityContext() {
         return SecurityContext.builder()
-                .securityReferences(defaultAuth())
                 .forPaths(PathSelectors.any())
                 .build();
-    }
-
-    private List<SecurityReference> defaultAuth() {
-        AuthorizationScope[] authorizationScopes = new AuthorizationScope[3];
-        authorizationScopes[0] = new AuthorizationScope(authorizationScopeTrust, authorizationScopeGlobalDesc);
-        authorizationScopes[1] = new AuthorizationScope(authorizationScopeRead, authorizationScopeGlobalDesc);
-        authorizationScopes[2] = new AuthorizationScope(authorizationScopeWrite, authorizationScopeGlobalDesc);
-        return newArrayList(
-                new SecurityReference(securitySchemaOAuth2, authorizationScopes));
     }
 
     private ApiInfo apiInfo() {
