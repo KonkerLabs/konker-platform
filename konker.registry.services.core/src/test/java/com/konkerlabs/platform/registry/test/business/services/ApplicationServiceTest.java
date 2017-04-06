@@ -68,6 +68,7 @@ public class ApplicationServiceTest extends BusinessLayerTestSupport {
     					.description("Konker Smart Frig - take pic, tells temperatue")
     					.tenant(currentTenant)
                         .qualifier("konker")
+                .registrationDate("1453320973747")
                         .build();
     	
     	otherApplication = Application.builder()
@@ -76,6 +77,7 @@ public class ApplicationServiceTest extends BusinessLayerTestSupport {
 				.description("Konker Smart Frig - take pic, tells temperatue")
 				.tenant(currentTenant)
                 .qualifier("konker")
+                .registrationDate("1453320973747")
 				.build();
     }
 
