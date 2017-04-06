@@ -160,7 +160,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
     @Override
     public ServiceResponse<List<Device>> findAll(Tenant tenant, Application application) {
-        List<Device> all = deviceRepository.findAllByTenant(tenant.getId());
+        List<Device> all = deviceRepository.findAllByTenantIdAndApplicationName(tenant.getId(), application.getName());
         return ServiceResponseBuilder.<List<Device>>ok().withResult(all).build();
     }
 
@@ -177,7 +177,6 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                 deviceGuid
         );
     }
-
 
     @Override
     public ServiceResponse<Device> switchEnabledDisabled(Tenant tenant, Application application, String guid) {
@@ -236,6 +235,12 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
             return ServiceResponseBuilder.<Device>error()
                     .withMessage(CommonValidations.TENANT_NULL.getCode())
                     .build();
+        
+        if (!Optional.ofNullable(application).isPresent()) {
+        	return ServiceResponseBuilder.<Device>error()
+        			.withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode())
+        			.build();
+        }
 
         if (!Optional.ofNullable(guid).isPresent())
             return ServiceResponseBuilder.<Device>error()
@@ -288,9 +293,14 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
             return ServiceResponseBuilder.<Device>error()
                     .withMessage(CommonValidations.TENANT_NULL.getCode())
                     .build();
+        
+        if (!Optional.ofNullable(application).isPresent())
+            return ServiceResponseBuilder.<Device>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode())
+                    .build();
 
         //find device
-        Device device = deviceRepository.findByTenantAndGuid(tenant.getId(), guid);
+        Device device = deviceRepository.findByTenantAndApplicationAndGuid(tenant.getId(), application.getName(), guid);
 
         if(!Optional.ofNullable(device).isPresent()){
             return ServiceResponseBuilder.<Device>error()
@@ -345,6 +355,11 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 		if (!Optional.ofNullable(tenant).isPresent())
 			return ServiceResponseBuilder.<Device> error().withMessage(CommonValidations.TENANT_NULL.getCode())
 					.build();
+		
+		if (!Optional.ofNullable(application).isPresent())
+			return ServiceResponseBuilder.<Device> error()
+					.withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode())
+					.build();
 
         if (!Optional.ofNullable(guid).isPresent())
 			return ServiceResponseBuilder.<Device> error().withMessage(Validations.DEVICE_GUID_NULL.getCode())
@@ -355,8 +370,14 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 		if (!Optional.ofNullable(tenant).isPresent())
 			return ServiceResponseBuilder.<Device> error()
 					.withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();
+		
+		if (!applicationRepository.exists(application.getName())) {
+            return ServiceResponseBuilder.<Device>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode())
+                    .build();
+        }
 
-		Device device = deviceRepository.findByTenantAndGuid(existingTenant.getId(), guid);
+		Device device = deviceRepository.findByTenantAndApplicationAndGuid(existingTenant.getId(), application.getName(), guid);
 		if (!Optional.ofNullable(device).isPresent()) {
 			return ServiceResponseBuilder.<Device> error()
 					.withMessage(Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode()).build();
@@ -427,6 +448,12 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         if (!Optional.ofNullable(tenant).isPresent()) {
             return ServiceResponseBuilder.<DeviceDataURLs>error()
                     .withMessage(CommonValidations.TENANT_NULL.getCode())
+                    .build();
+        }
+        
+        if (!Optional.ofNullable(application).isPresent()) {
+            return ServiceResponseBuilder.<DeviceDataURLs>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode())
                     .build();
         }
 

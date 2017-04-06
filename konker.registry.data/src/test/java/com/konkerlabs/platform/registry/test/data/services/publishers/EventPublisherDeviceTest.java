@@ -33,10 +33,12 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
+import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
@@ -59,7 +61,7 @@ import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
         PubServerConfig.class,
         EventStorageConfig.class
 })
-@UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json"})
+@UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json", "/fixtures/applications.json"})
 public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
 
     private static final String THE_DEVICE_GUID = "7d51c242-81db-11e6-a8c2-0746f010e945";
@@ -76,6 +78,9 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
 
     @Autowired
     private TenantRepository tenantRepository;
+    
+    @Autowired
+    private ApplicationRepository applicationRepository;
 
     @Autowired
     private MqttMessageGateway mqttMessageGateway;
@@ -239,10 +244,11 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
     @Test
     public void shouldNotSendAnyEventThroughGatewayIfDeviceIsDisabled() throws Exception {
         Tenant tenant = tenantRepository.findByName("Konker");
+        Application application = applicationRepository.findByTenantAndName(tenant.getId(), "smartffkonker");
 
         Optional.of(deviceRegisterService.findByTenantDomainNameAndDeviceGuid(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_GUID))
             .filter(device -> !device.isActive())
-            .orElseGet(() -> deviceRegisterService.switchEnabledDisabled(tenant, THE_DEVICE_GUID).getResult());
+            .orElseGet(() -> deviceRegisterService.switchEnabledDisabled(tenant, application, THE_DEVICE_GUID).getResult());
 
         subject.send(event,destinationUri,data,device.getTenant());
 
@@ -258,10 +264,11 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
         );
 
         Tenant tenant = tenantRepository.findByName("Konker");
+        Application application = applicationRepository.findByTenantAndName(tenant.getId(), "smartffkonker");
 
         Optional.of(deviceRegisterService.findByTenantDomainNameAndDeviceGuid(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_GUID))
                 .filter(Device::isActive)
-                .orElseGet(() -> deviceRegisterService.switchEnabledDisabled(tenant, THE_DEVICE_GUID).getResult());
+                .orElseGet(() -> deviceRegisterService.switchEnabledDisabled(tenant, application, THE_DEVICE_GUID).getResult());
 
         device = deviceRegisterService.findByTenantDomainNameAndDeviceGuid(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_GUID);
 
