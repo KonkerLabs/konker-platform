@@ -106,10 +106,14 @@
             <version>1.3.0</version>
         </dependency>
         <!-- Konker -->
-        <!-- Konker -->
         <dependency>
             <groupId>com.konkerlabs</groupId>
             <artifactId>konker.registry.services.core</artifactId>
+            <version>0.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.konkerlabs</groupId>
+            <artifactId>konker.registry.services.storage.mongodb</artifactId>
             <version>0.0.1</version>
         </dependency>
         <!-- doc -->
