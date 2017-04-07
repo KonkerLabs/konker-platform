@@ -11,6 +11,7 @@ import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
@@ -30,6 +31,11 @@ public class WebTestConfiguration {
     @Bean
     public Tenant tenant() {
         return Tenant.builder().name("konker").domainName("konker").id("id").build();
+    }
+
+    @Bean
+    public Application application() {
+        return Application.builder().name("konker").build();
     }
 
     @Bean

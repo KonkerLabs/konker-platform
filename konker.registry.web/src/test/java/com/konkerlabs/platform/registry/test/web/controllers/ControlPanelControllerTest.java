@@ -33,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         WebMvcConfig.class,
         WebTestConfiguration.class,
         SecurityTestConfiguration.class,
-        DeviceVisualizationControllerTest.DeviceTestContextConfig.class, 
+        DeviceVisualizationControllerTest.DeviceTestContextConfig.class,
         EventRouteControllerTest.EventRouteTestContextConfig.class,
         WebConfig.class,
         CdnConfig.class,
@@ -43,6 +43,9 @@ public class ControlPanelControllerTest extends WebLayerTestContext {
 
 	@Autowired
 	private Tenant tenant;
+
+    @Autowired
+    private Application application;
 
 	@Autowired
 	private DeviceRegisterService deviceRegisterService;
@@ -86,11 +89,11 @@ public class ControlPanelControllerTest extends WebLayerTestContext {
 		destinations.add(RestDestination.builder().build());
 		destinations.add(RestDestination.builder().build());
 
-		when(deviceRegisterService.findAll(tenant, null))
+		when(deviceRegisterService.findAll(tenant, application))
 				.thenReturn(ServiceResponseBuilder.<List<Device>>ok().withResult(devices).build());
-		when(eventRouteService.getAll(tenant))
+		when(eventRouteService.getAll(tenant, application))
 				.thenReturn(ServiceResponseBuilder.<List<EventRoute>>ok().withResult(routes).build());
-		when(transformationService.getAll(tenant, null))
+		when(transformationService.getAll(tenant, application))
 				.thenReturn(ServiceResponseBuilder.<List<Transformation>>ok().withResult(transformations).build());
 		when(restDestinationService.findAll(tenant))
 				.thenReturn(ServiceResponseBuilder.<List<RestDestination>>ok().withResult(destinations).build());

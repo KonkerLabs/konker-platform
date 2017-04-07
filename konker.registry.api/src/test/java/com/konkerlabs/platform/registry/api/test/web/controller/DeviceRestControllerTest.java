@@ -52,29 +52,24 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 
     @Autowired
     private DeviceRegisterService deviceRegisterService;
-    
+
     @Autowired
     private ApplicationService applicationService;
 
     @Autowired
     private Tenant tenant;
 
+    @Autowired
+    private Application application;
+
     private Device device1;
 
     private Device device2;
-    
-    private Application application;
-    
+
     private String BASEPATH = "devices";
 
     @Before
     public void setUp() {
-    	application = Application.builder()
-                .name(tenant.getDomainName() + "Default")
-                .description(tenant.getDomainName() + " default")
-                .tenant(tenant)
-                .build();
-    	
         device1 = Device.builder().deviceId("id1").name("name1").guid("guid1").application(application).active(true).build();
         device2 = Device.builder().deviceId("id2").name("name2").guid("guid2").application(application).active(false).build();
     }
@@ -93,7 +88,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 
         when(deviceRegisterService.findAll(tenant, application))
                 .thenReturn(ServiceResponseBuilder.<List<Device>>ok().withResult(devices).build());
-        
+
         when(applicationService.getByApplicationName(tenant, application.getName()))
         		.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
 
@@ -123,7 +118,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 
         when(deviceRegisterService.findAll(tenant, application))
                 .thenReturn(ServiceResponseBuilder.<List<Device>>error().build());
-        
+
         when(applicationService.getByApplicationName(tenant, application.getName()))
 				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
 
@@ -145,7 +140,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 
         when(deviceRegisterService.getByDeviceGuid(tenant, application, device1.getGuid()))
                 .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device1).build());
-        
+
         when(applicationService.getByApplicationName(tenant, application.getName()))
 				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
 
@@ -174,7 +169,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 
         when(applicationService.getByApplicationName(tenant, application.getName()))
 				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
-        
+
         getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH, device1.getGuid()))
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON))
@@ -196,7 +191,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 
         when(applicationService.getByApplicationName(tenant, application.getName()))
 				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
-        
+
         getMockMvc().perform(MockMvcRequestBuilders.post(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH))
                                                    .content(getJson(new DeviceVO().apply(device1)))
                                                    .contentType("application/json")
@@ -222,7 +217,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 
         when(applicationService.getByApplicationName(tenant, application.getName()))
 				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
-        
+
         getMockMvc().perform(MockMvcRequestBuilders.post(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH))
                 .content(getJson(new DeviceVO().apply(device1)))
                 .contentType(MediaType.APPLICATION_JSON)
@@ -249,7 +244,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 
         when(applicationService.getByApplicationName(tenant, application.getName()))
 				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
-        
+
         getMockMvc().perform(MockMvcRequestBuilders.put(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH, device1.getGuid()))
                 .content(getJson(new DeviceVO().apply(device1)))
                 .contentType(MediaType.APPLICATION_JSON)
@@ -273,7 +268,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 
         when(applicationService.getByApplicationName(tenant, application.getName()))
 				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
-        
+
         getMockMvc().perform(MockMvcRequestBuilders.put(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH, device1.getGuid()))
                 .content(getJson(new DeviceVO().apply(device1)))
                 .contentType(MediaType.APPLICATION_JSON)
@@ -296,7 +291,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 
         when(applicationService.getByApplicationName(tenant, application.getName()))
 				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
-        
+
         getMockMvc().perform(MockMvcRequestBuilders.delete(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH, device1.getGuid()))
                                                    .contentType("application/json")
                                                    .accept(MediaType.APPLICATION_JSON))
@@ -318,7 +313,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 
         when(applicationService.getByApplicationName(tenant, application.getName()))
 				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
-        
+
         getMockMvc().perform(MockMvcRequestBuilders.delete(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH, device1.getGuid()))
                                                    .contentType("application/json")
                                                    .accept(MediaType.APPLICATION_JSON))
@@ -340,7 +335,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 
         when(applicationService.getByApplicationName(tenant, application.getName()))
 				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
-        
+
         getMockMvc().perform(MockMvcRequestBuilders.delete(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH, device1.getGuid()))
                                            .contentType("application/json")
                                            .accept(MediaType.APPLICATION_JSON))

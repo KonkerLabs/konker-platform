@@ -56,6 +56,9 @@ public class TransformationController implements ApplicationContextAware {
     @Autowired
     private Tenant tenant;
 
+    @Autowired
+    private Application application;
+
     @RequestMapping
     @PreAuthorize("hasAuthority('LIST_TRANSFORMATION')")
     public ModelAndView index() {
@@ -114,7 +117,7 @@ public class TransformationController implements ApplicationContextAware {
                         .fillFrom(
                                 transformationService.get(
                                         tenant,
-                                        Application.builder().name(tenant.getDomainName()).build(),
+                                        application,
                                         transformationGuid).getResult()));
     }
 
@@ -127,7 +130,7 @@ public class TransformationController implements ApplicationContextAware {
                                 .fillFrom(
                                         transformationService.get(
                                                 tenant,
-                                                Application.builder().name(tenant.getDomainName()).build(),
+                                                application,
                                                 transformationGuid).getResult()))
                 .addObject("action", MessageFormat.format("/transformation/{0}", transformationGuid))
                 .addObject("method", "put");
@@ -142,7 +145,7 @@ public class TransformationController implements ApplicationContextAware {
         ServiceResponse<Transformation> response =
                 transformationService.update(
                         tenant,
-                        Application.builder().name(tenant.getDomainName()).build(),
+                        application,
                         transformationGuid, transformationForm.toModel());
 
         switch (response.getStatus()) {
@@ -176,7 +179,7 @@ public class TransformationController implements ApplicationContextAware {
         ServiceResponse<Transformation> serviceResponse =
                 transformationService.remove(
                         tenant,
-                        Application.builder().name(tenant.getDomainName()).build(),
+                        application,
                         transformationGuid);
 
         switch (serviceResponse.getStatus()) {

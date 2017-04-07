@@ -62,6 +62,8 @@ public class EventRoute implements URIDealer, Validatable {
     private String id;
     @DBRef
     private Tenant tenant;
+    @DBRef
+    private Application application;
     private String name;
     private String description;
     private RouteActor incoming;

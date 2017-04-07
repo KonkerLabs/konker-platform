@@ -18,6 +18,9 @@ public class ControlPanelController {
 	@Autowired
 	private Tenant tenant;
 
+    @Autowired
+    private Application application;
+
 	@Autowired
 	private DeviceRegisterService deviceRegisterService;
 
@@ -39,26 +42,26 @@ public class ControlPanelController {
 		int transformationsCount = 0;
 		int restDestinationsCount = 0;
 
-		ServiceResponse<List<Device>> deviceResponse = deviceRegisterService.findAll(tenant, null);
+		ServiceResponse<List<Device>> deviceResponse = deviceRegisterService.findAll(tenant, application);
 		if (deviceResponse.isOk()) {
 			devicesCount = deviceResponse.getResult().size();
 		}
-		
-		ServiceResponse<List<EventRoute>> routesResponse = eventRouteService.getAll(tenant);
+
+		ServiceResponse<List<EventRoute>> routesResponse = eventRouteService.getAll(tenant, application);
 		if (routesResponse.isOk()) {
 			routesCount = routesResponse.getResult().size();
 		}
-		
-		ServiceResponse<List<Transformation>> transformationResponse = transformationService.getAll(tenant, null);
+
+		ServiceResponse<List<Transformation>> transformationResponse = transformationService.getAll(tenant, application);
 		if (transformationResponse.isOk()) {
 			transformationsCount = transformationResponse.getResult().size();
 		}
-		
+
 		ServiceResponse<List<RestDestination>> destinationsResponse = restDestinationService.findAll(tenant);
 		if (destinationsResponse.isOk()) {
 			restDestinationsCount = destinationsResponse.getResult().size();
 		}
-		
+
 		mv.addObject("devicesCount", devicesCount);
 		mv.addObject("routesCount", routesCount);
 		mv.addObject("transformationsCount", transformationsCount);

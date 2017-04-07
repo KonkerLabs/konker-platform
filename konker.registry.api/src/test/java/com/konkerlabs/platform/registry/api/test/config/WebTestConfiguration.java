@@ -4,6 +4,7 @@ import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
@@ -23,6 +24,11 @@ public class WebTestConfiguration {
     @Bean
     public Tenant tenant() {
         return Tenant.builder().name("konker").domainName("konker").id("id").build();
+    }
+
+    @Bean
+    public Application application() {
+        return Application.builder().name("konker").build();
     }
 
     @Bean
@@ -50,26 +56,26 @@ public class WebTestConfiguration {
     public TransformationService transformationService() {
         return Mockito.mock(TransformationService.class);
     }
-    
+
     @Bean
     public RestDestinationService restDestinationService() {
     	return Mockito.mock(RestDestinationService.class);
     }
-    
+
     @Bean
     public UserService userService() {
     	return Mockito.mock(UserService.class);
     }
-    
+
     @Bean
     public RoleService roleService() {
     	return Mockito.mock(RoleService.class);
     }
-    
+
     @Bean
     public ApplicationService applicationService() {
     	return Mockito.mock(ApplicationService.class);
     }
-    
-    
+
+
 }

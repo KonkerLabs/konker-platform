@@ -65,23 +65,25 @@ public class DeviceController implements ApplicationContextAware {
     private EventSchemaService eventSchemaService;
 
     private Tenant tenant;
+    private Application application;
     private User user;
     private PubServerConfig pubServerConfig = new PubServerConfig();
 
     @Autowired
-    public DeviceController(DeviceRegisterService deviceRegisterService, DeviceEventService deviceEventService, EventSchemaService eventSchemaService, Tenant tenant, User user) {
+    public DeviceController(DeviceRegisterService deviceRegisterService, DeviceEventService deviceEventService, EventSchemaService eventSchemaService, Tenant tenant, Application application, User user) {
         this.deviceRegisterService = deviceRegisterService;
         this.deviceEventService = deviceEventService;
         this.eventSchemaService = eventSchemaService;
         this.tenant = tenant;
+        this.application = application;
         this.user = user;
     }
 
     @RequestMapping
     @PreAuthorize("hasAuthority('LIST_DEVICES')")
     public ModelAndView index() {
-        List<Device> all = deviceRegisterService.findAll(tenant, 
-        		Application.builder().name(tenant.getDomainName()).build()).getResult();
+        List<Device> all = deviceRegisterService.findAll(tenant,
+        		application).getResult();
         return new ModelAndView("devices/index", "devices", all);
     }
 
@@ -99,8 +101,8 @@ public class DeviceController implements ApplicationContextAware {
         return new ModelAndView(
                 "devices/show", "device",
                 deviceRegisterService.getByDeviceGuid(
-                		tenant, 
-                		Application.builder().name(tenant.getDomainName()).build(), 
+                		tenant,
+                		application,
                 		deviceGuid).getResult()
         );
     }
@@ -110,8 +112,8 @@ public class DeviceController implements ApplicationContextAware {
     public ModelAndView edit(@PathVariable("deviceGuid") String deviceGuid) {
         return new ModelAndView("devices/form")
                 .addObject("device", new DeviceRegistrationForm().fillFrom(deviceRegisterService.getByDeviceGuid(
-                		tenant, 
-                		Application.builder().name(tenant.getDomainName()).build(), 
+                		tenant,
+                		application,
                 		deviceGuid).getResult()))
                 .addObject("isEditing", true)
                 .addObject("action", MessageFormat.format("/devices/{0}", deviceGuid))
@@ -122,8 +124,8 @@ public class DeviceController implements ApplicationContextAware {
     @PreAuthorize("hasAuthority('VIEW_DEVICE_LOG')")
     public ModelAndView deviceEvents(@PathVariable String deviceGuid) {
         Device device = deviceRegisterService.getByDeviceGuid(
-        		tenant, 
-        		Application.builder().name(tenant.getDomainName()).build(), 
+        		tenant,
+        		application,
         		deviceGuid).getResult();
 
         ModelAndView mv = new ModelAndView("devices/events");
@@ -192,8 +194,8 @@ public class DeviceController implements ApplicationContextAware {
 
         // Load lists
         ServiceResponse<List<String>> channels = eventSchemaService.findKnownIncomingChannelsBy(
-        		tenant, 
-        		Application.builder().name(tenant.getDomainName()).build(), 
+        		tenant,
+        		application,
         		deviceGuid);
 
         if (defaultChannel != null && !channels.getResult().contains(defaultChannel)) {
@@ -238,8 +240,8 @@ public class DeviceController implements ApplicationContextAware {
 
         return doSave(
                 () -> deviceRegisterService.register(
-                		tenant, 
-                		Application.builder().name(tenant.getDomainName()).build(), 
+                		tenant,
+                		application,
                 		deviceForm.toModel()),
                 deviceForm, locale,
                 redirectAttributes, "");
@@ -253,9 +255,9 @@ public class DeviceController implements ApplicationContextAware {
 
         return doSave(
                 () -> deviceRegisterService.update(
-                		tenant, 
-                		Application.builder().name(tenant.getDomainName()).build(), 
-                		deviceGuid, 
+                		tenant,
+                		application,
+                		deviceGuid,
                 		deviceForm.toModel()),
                 deviceForm, locale,
                 redirectAttributes, "put");
@@ -268,8 +270,8 @@ public class DeviceController implements ApplicationContextAware {
                                RedirectAttributes redirectAttributes, Locale locale) {
 
         ServiceResponse<Device> serviceResponse = deviceRegisterService.remove(
-        		tenant, 
-        		Application.builder().name(tenant.getDomainName()).build(), 
+        		tenant,
+        		application,
         		deviceGuid);
         if (serviceResponse.isOk()) {
             redirectAttributes.addFlashAttribute("message",
@@ -291,8 +293,8 @@ public class DeviceController implements ApplicationContextAware {
     @PreAuthorize("hasAuthority('CREATE_DEVICE_KEYS')")
     public ModelAndView password(@PathVariable String deviceGuid, RedirectAttributes redirectAttributes, Locale locale) {
         ServiceResponse<Device> serviceResponse = deviceRegisterService.getByDeviceGuid(
-        		tenant, 
-        		Application.builder().name(tenant.getDomainName()).build(), 
+        		tenant,
+        		application,
         		deviceGuid);
 
         if (serviceResponse.isOk()) {
@@ -301,9 +303,9 @@ public class DeviceController implements ApplicationContextAware {
             String username = device.getApiKey();
 
             ServiceResponse<DeviceDataURLs> serviceURLResponse = deviceRegisterService.getDeviceDataURLs(
-            		tenant, 
-            		Application.builder().name(tenant.getDomainName()).build(), 
-            		device, 
+            		tenant,
+            		application,
+            		device,
             		user.getLanguage().getLocale());
 
             return new ModelAndView("devices/password")
@@ -326,7 +328,7 @@ public class DeviceController implements ApplicationContextAware {
                                          RedirectAttributes redirectAttributes,
                                          Locale locale) {
         ServiceResponse<DeviceRegisterService.DeviceSecurityCredentials> serviceResponse = deviceRegisterService
-                .generateSecurityPassword(tenant, Application.builder().name(tenant.getDomainName()).build(), deviceGuid);
+                .generateSecurityPassword(tenant, application, deviceGuid);
 
         if (serviceResponse.isOk()) {
             DeviceRegisterService.DeviceSecurityCredentials credentials = serviceResponse.getResult();
@@ -335,9 +337,9 @@ public class DeviceController implements ApplicationContextAware {
 
             Device device = credentials.getDevice();
             ServiceResponse<DeviceDataURLs> serviceURLResponse = deviceRegisterService.getDeviceDataURLs(
-            		tenant, 
-            		Application.builder().name(tenant.getDomainName()).build(), 
-            		device, 
+            		tenant,
+            		application,
+            		device,
             		user.getLanguage().getLocale());
 
             return new ModelAndView("devices/password")

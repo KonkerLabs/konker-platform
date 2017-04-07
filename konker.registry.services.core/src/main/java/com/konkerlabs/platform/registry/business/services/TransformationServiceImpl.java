@@ -170,8 +170,9 @@ public class TransformationServiceImpl
         Transformation transformation = transformationRepository.findByGuid(transformationGuid);
         List<EventRoute> eventRoutes = Collections.emptyList();
 
-        if(transformation != null){
-            eventRoutes = eventRouteRepository.findByTenantIdAndTransformationId(tenant.getId(),
+        if(transformation != null) {
+            eventRoutes = eventRouteRepository.findByTransformationId(tenant.getId(),
+                    application.getName(),
                     transformation.getId());
         } else {
             return ServiceResponseBuilder.<Transformation>error()

@@ -55,6 +55,8 @@ public class EventRouteController implements ApplicationContextAware {
     private TransformationService transformationService;
     @Autowired
     private Tenant tenant;
+    @Autowired
+    private Application application;
     private ApplicationContext applicationContext;
 
     @ModelAttribute("allDevices")
@@ -80,7 +82,7 @@ public class EventRouteController implements ApplicationContextAware {
     @RequestMapping
     @PreAuthorize("hasAuthority('LIST_ROUTES')")
     public ModelAndView index() {
-        return new ModelAndView("routes/index","routes", eventRouteService.getAll(tenant).getResult());
+        return new ModelAndView("routes/index","routes", eventRouteService.getAll(tenant, application).getResult());
     }
 
     @RequestMapping("new")
@@ -98,7 +100,7 @@ public class EventRouteController implements ApplicationContextAware {
 
         return doSave(() -> {
             eventRouteForm.setAdditionalSupplier(() -> tenant.getDomainName());
-            return eventRouteService.save(tenant, eventRouteForm.toModel());
+            return eventRouteService.save(tenant, application, eventRouteForm.toModel());
         },eventRouteForm,locale,redirectAttributes, "");
 
     }
@@ -106,14 +108,14 @@ public class EventRouteController implements ApplicationContextAware {
     @RequestMapping(value = "/{routeGUID}", method = RequestMethod.GET)
     @PreAuthorize("hasAuthority('SHOW_DEVICE_ROUTE')")
     public ModelAndView show(@PathVariable("routeGUID") String routeGUID) {
-        return new ModelAndView("routes/show","route",new EventRouteForm().fillFrom(eventRouteService.getByGUID(tenant, routeGUID).getResult()));
+        return new ModelAndView("routes/show","route",new EventRouteForm().fillFrom(eventRouteService.getByGUID(tenant, application, routeGUID).getResult()));
     }
 
     @RequestMapping("/{routeId}/edit")
     @PreAuthorize("hasAuthority('EDIT_DEVICE_ROUTE')")
     public ModelAndView edit(@PathVariable String routeId) {
         return new ModelAndView("routes/form")
-            .addObject("route",new EventRouteForm().fillFrom(eventRouteService.getByGUID(tenant, routeId).getResult()))
+            .addObject("route",new EventRouteForm().fillFrom(eventRouteService.getByGUID(tenant, application, routeId).getResult()))
             .addObject("action", MessageFormat.format("/routes/{0}",routeId))
             .addObject("method", "put");
     }
@@ -125,8 +127,8 @@ public class EventRouteController implements ApplicationContextAware {
                                  RedirectAttributes redirectAttributes, Locale locale) {
 
         return doSave(() -> {
-            eventRouteForm.setAdditionalSupplier(() -> tenant.getDomainName());            
-            return eventRouteService.update(tenant, routeGUID, eventRouteForm.toModel());
+            eventRouteForm.setAdditionalSupplier(() -> tenant.getDomainName());
+            return eventRouteService.update(tenant, application, routeGUID, eventRouteForm.toModel());
         },eventRouteForm,locale,redirectAttributes,"put");
 
     }
@@ -171,8 +173,8 @@ public class EventRouteController implements ApplicationContextAware {
     @PreAuthorize("hasAuthority('REMOVE_DEVICE_ROUTE')")
     public ModelAndView remove(@PathVariable("routeGUID") String routeGUID,
                                RedirectAttributes redirectAttributes, Locale locale) {
-        ServiceResponse<EventRoute> serviceResponse = eventRouteService.remove(tenant, routeGUID);
-        
+        ServiceResponse<EventRoute> serviceResponse = eventRouteService.remove(tenant, application, routeGUID);
+
         if (serviceResponse.isOk()) {
         	redirectAttributes.addFlashAttribute("message",
         			applicationContext.getMessage(Messages.ROUTE_REMOVED_SUCCESSFULLY.getCode(),null,locale));
