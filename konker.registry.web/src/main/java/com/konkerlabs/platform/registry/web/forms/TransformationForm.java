@@ -2,17 +2,15 @@ package com.konkerlabs.platform.registry.web.forms;
 
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.RestTransformationStep;
-import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.Transformation;
 import com.konkerlabs.platform.registry.business.model.enumerations.SupportedHttpMethod;
 import com.konkerlabs.platform.registry.web.forms.api.ModelBuilder;
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.StringUtils;
 
 @Data
 public class TransformationForm implements ModelBuilder<Transformation, TransformationForm, Void> {
@@ -21,7 +19,7 @@ public class TransformationForm implements ModelBuilder<Transformation, Transfor
     private String id;
     private String name;
     private String description;
-    private String applicationId;
+    private Application application;
     private List<TransformationStepForm> steps = new LinkedList() {
         {
             add(new TransformationStepForm());
@@ -30,11 +28,6 @@ public class TransformationForm implements ModelBuilder<Transformation, Transfor
 
     public TransformationForm(){
         super();
-    }
-
-    public TransformationForm(Tenant tenant){
-        super();
-        applicationId = tenant.getDomainName();
     }
 
     @Data
@@ -155,7 +148,7 @@ public class TransformationForm implements ModelBuilder<Transformation, Transfor
                 .id(getId())
                 .name(getName())
                 .description(getDescription())
-                .application(Application.builder().name(getApplicationId()).build())
+                .application(getApplication())
                 .steps(
                         steps.stream()
                                 .map(transformationStep -> RestTransformationStep.builder()
@@ -176,7 +169,7 @@ public class TransformationForm implements ModelBuilder<Transformation, Transfor
         setId(model.getId());
         setName(model.getName());
         setDescription(model.getDescription());
-        setApplicationId(model.getApplication().getName());
+        setApplication(model.getApplication());
         getSteps().clear();
         model.getSteps().stream().forEachOrdered(transformationStep ->
                 getSteps().add(

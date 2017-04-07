@@ -1,22 +1,24 @@
 package com.konkerlabs.platform.registry.business.model;
 
+import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
-import org.springframework.data.mongodb.core.mapping.Document;
-
-import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
-
-import lombok.Builder;
-import lombok.Data;
-
 @Data
 @Builder
 @Document(collection="applications")
+@AllArgsConstructor
+@NoArgsConstructor
 public class Application implements URIDealer {
 	
 	

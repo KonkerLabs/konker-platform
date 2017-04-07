@@ -75,9 +75,7 @@ public class TransformationControllerTest extends WebLayerTestContext {
     @Before
     public void setUp() {
         application = Application.builder()
-                .name(tenant.getDomainName() + "Name")
-                .description(tenant.getDomainName() + "desc")
-                .tenant(tenant)
+                .name(tenant.getDomainName())
                 .build();
 
         transformations = new ArrayList<>();
@@ -89,7 +87,9 @@ public class TransformationControllerTest extends WebLayerTestContext {
                         put("username", username);
                         put("password", password);
                     }
-                }).build()).build();
+                }).build())
+                .application(application)
+                .build();
 
         transformations.add(transformation);
 
@@ -99,6 +99,7 @@ public class TransformationControllerTest extends WebLayerTestContext {
         transformationForm.setSteps(transformation.getSteps().stream()
                 .map(transformationStep -> new TransformationForm.TransformationStepForm(method, url, username, password))
                 .collect(Collectors.toList()));
+        transformationForm.setApplication(application);
 
         transformationData = new LinkedMultiValueMap<>();
         transformationData.add("name", transformation.getName());
@@ -107,6 +108,7 @@ public class TransformationControllerTest extends WebLayerTestContext {
         transformationData.add("steps[0].url", url);
         transformationData.add("steps[0].username", username);
         transformationData.add("steps[0].password", password);
+        transformationData.add("application.name", application.getName());
 
         serviceResponse = ServiceResponseBuilder.<Transformation> ok().withResult(transformation)
                 .<Transformation> build();

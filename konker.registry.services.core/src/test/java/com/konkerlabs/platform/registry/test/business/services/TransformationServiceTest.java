@@ -57,6 +57,7 @@ public class TransformationServiceTest extends BusinessLayerTestSupport {
         tenant = tenantRepository.findByDomainName("konker");
 
         application = Application.builder()
+                .name("konker")
                 .tenant(Tenant.builder().domainName("konker")
                         .id("71fb0d48-674b-4f64-a3e5-0256ff3a63af")
                         .build()).build();
@@ -75,7 +76,9 @@ public class TransformationServiceTest extends BusinessLayerTestSupport {
                                             put(RestTransformationStep.REST_ATTRIBUTE_HEADERS, new HashMap<String, String>());
                                         }})
                                 .build()
-                ).build();
+                )
+                .application(application)
+                .build();
     }
 
     @Test

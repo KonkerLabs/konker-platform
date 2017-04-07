@@ -263,7 +263,7 @@ public class ApplicationServiceTest extends BusinessLayerTestSupport {
     	
     	assertThat(response, isResponseOk());
     	assertThat(response.getResult(), notNullValue());
-    	assertThat(response.getResult(), hasSize(1));
+    	assertThat(response.getResult(), hasSize(2));
     }
     
     @Test

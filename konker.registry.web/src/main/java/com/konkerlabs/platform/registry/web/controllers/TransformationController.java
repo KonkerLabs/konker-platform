@@ -1,14 +1,11 @@
 package com.konkerlabs.platform.registry.web.controllers;
 
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.Transformation;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.TransformationService;
+import com.konkerlabs.platform.registry.web.forms.TransformationForm;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -24,10 +21,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.Transformation;
-import com.konkerlabs.platform.registry.business.services.api.TransformationService;
-import com.konkerlabs.platform.registry.web.forms.TransformationForm;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("transformation")
@@ -62,7 +61,10 @@ public class TransformationController implements ApplicationContextAware {
     public ModelAndView index() {
         return new ModelAndView("transformations/index")
                 .addObject("transformations", transformationService.getAll(
-                        tenant, Application.builder().name(tenant.getDomainName()).build()).getResult());
+                        tenant,
+                        Application.builder()
+                                .name(tenant.getDomainName()).build()
+                ).getResult());
     }
 
     @RequestMapping("new")

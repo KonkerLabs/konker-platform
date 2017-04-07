@@ -101,7 +101,9 @@ public class TransformationServiceImpl
     @Override
     public ServiceResponse<Transformation> get(Tenant tenant, Application application, String guid) {
         Transformation transformation =
-                transformationRepository.findByTenantIdAndTransformationGuid(tenant.getId(), guid);
+                transformationRepository.findByTenantIdApplicationIdAndTransformationGuid(
+                        tenant.getId(), guid, application.getName());
+
         if (transformation != null) {
             return ServiceResponseBuilder.<Transformation>ok()
                     .withResult(transformation).build();
