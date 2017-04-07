@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.business.services;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -105,6 +106,9 @@ public class ApplicationServiceImpl implements ApplicationService {
                     .build();
 		}
 		
+		application.setTenant(tenant);
+		application.setRegistrationDate(Instant.now());
+		application.setQualifier(tenant.getName());
 		Application save = applicationRepository.save(application);
 		LOGGER.info("Application created. Name: {}", save.getName(), tenant.toURI(), tenant.getLogLevel());
 		
@@ -120,7 +124,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 		
 		if (!Optional.ofNullable(name).isPresent())
             return ServiceResponseBuilder.<Application>error()
-                    .withMessage(Validations.NAME_IS_NULL.getCode())
+                    .withMessage(Validations.APPLICATION_NAME_IS_NULL.getCode())
                     .build();
 		
 		Application appFromDB = getByApplicationName(tenant, name).getResult();
@@ -157,7 +161,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 		
 		if (!Optional.ofNullable(name).isPresent()) {
 			return ServiceResponseBuilder.<Application>error()
-                    .withMessage(Validations.NAME_IS_NULL.getCode())
+                    .withMessage(Validations.APPLICATION_NAME_IS_NULL.getCode())
                     .build();
 		}
 		
@@ -194,7 +198,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 		}
 		if (!Optional.ofNullable(name).isPresent()) {
 			return ServiceResponseBuilder.<Application>error()
-					.withMessage(Validations.NAME_IS_NULL.getCode())
+					.withMessage(Validations.APPLICATION_NAME_IS_NULL.getCode())
 					.build();
 		}
 		

@@ -11,7 +11,8 @@ public interface ApplicationService {
 		APPLICATION_NULL("service.application.null"),
 		APPLICATION_ALREADY_REGISTERED("service.application.already.registered"),
 		APPLICATION_DOES_NOT_EXIST("service.application.does.not.exist"),
-		NAME_IS_NULL("service.application.name.null");
+		APPLICATION_NAME_IS_NULL("service.application.name.null"),
+		APPLICATION_NOT_FOUND("service.application.not_found");
 
 		public String getCode() {
 			return code;

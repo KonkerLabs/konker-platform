@@ -9,6 +9,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -27,7 +28,7 @@ public class Application implements URIDealer {
 	private String friendlyName;
 	private String description;
 	private String qualifier;
-	private String registrationDate;
+	private Instant registrationDate;
 	
 	@DBRef
 	private Tenant tenant;

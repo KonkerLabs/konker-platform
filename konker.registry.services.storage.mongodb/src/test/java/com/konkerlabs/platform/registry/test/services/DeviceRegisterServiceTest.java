@@ -109,7 +109,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 				.description("Konker Smart Frig - take pic, tells temperatue")
 				.tenant(currentTenant)
                 .qualifier("konker")
-                .registrationDate("1453320973747")
+                .registrationDate(Instant.ofEpochMilli(1453320973747L))
 				.build();
 
         rawDevice = Device.builder().deviceId("94c32b36cd2b43f1").name("Device name")

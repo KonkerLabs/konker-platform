@@ -36,7 +36,7 @@ import io.swagger.annotations.ApiParam;
 @RestController
 @Scope("request")
 @RequestMapping(value = "/restDestinations")
-@Api(tags = "restDestinations")
+@Api(tags = "rest destinations")
 public class RestDestinationController implements InitializingBean {
 
     @Autowired

@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.time.Instant;
 import java.util.List;
 
 import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
@@ -68,7 +69,7 @@ public class ApplicationServiceTest extends BusinessLayerTestSupport {
     					.description("Konker Smart Frig - take pic, tells temperatue")
     					.tenant(currentTenant)
                         .qualifier("konker")
-                .registrationDate("1453320973747")
+                .registrationDate(Instant.ofEpochMilli(1453320973747L))
                         .build();
     	
     	otherApplication = Application.builder()
@@ -77,7 +78,7 @@ public class ApplicationServiceTest extends BusinessLayerTestSupport {
 				.description("Konker Smart Frig - take pic, tells temperatue")
 				.tenant(currentTenant)
                 .qualifier("konker")
-                .registrationDate("1453320973747")
+                .registrationDate(Instant.ofEpochMilli(1453320973747L))
 				.build();
     }
 
@@ -189,7 +190,7 @@ public class ApplicationServiceTest extends BusinessLayerTestSupport {
     public void shouldReturnErrorIfUpdatingAppNameNull() throws Exception {
     	ServiceResponse<Application> serviceResponse = applicationService.update(currentTenant, null, application);
     	
-    	assertThat(serviceResponse, hasErrorMessage(Validations.NAME_IS_NULL.getCode()));
+    	assertThat(serviceResponse, hasErrorMessage(Validations.APPLICATION_NAME_IS_NULL.getCode()));
     }
     
     @Test
@@ -236,7 +237,7 @@ public class ApplicationServiceTest extends BusinessLayerTestSupport {
     public void shouldReturnErrorIfRemovingAppNameNull() throws Exception {
     	ServiceResponse<Application> serviceResponse = applicationService.remove(currentTenant, null);
     	
-    	assertThat(serviceResponse, hasErrorMessage(Validations.NAME_IS_NULL.getCode()));
+    	assertThat(serviceResponse, hasErrorMessage(Validations.APPLICATION_NAME_IS_NULL.getCode()));
     }
     
     @Test
@@ -279,7 +280,7 @@ public class ApplicationServiceTest extends BusinessLayerTestSupport {
     public void shouldReturnErrorGetAppByNameNull() throws Exception {
     	ServiceResponse<Application> response = applicationService.getByApplicationName(application.getTenant(), null);
     	
-    	assertThat(response, hasErrorMessage(Validations.NAME_IS_NULL.getCode()));
+    	assertThat(response, hasErrorMessage(Validations.APPLICATION_NAME_IS_NULL.getCode()));
     }
     
     @Test
