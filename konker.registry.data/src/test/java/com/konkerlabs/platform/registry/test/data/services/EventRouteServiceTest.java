@@ -75,6 +75,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     private Tenant tenant;
     private Application application;
     private Tenant emptyTenant;
+    private Application emptyApplication;
     private Transformation transformation;
 
     @Before
@@ -82,6 +83,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
         tenant = tenantRepository.findByDomainName("konker");
         application = applicationRepository.findByTenantAndName(tenant.getId(), "konker");
         emptyTenant = tenantRepository.findByDomainName("empty");
+        emptyApplication = applicationRepository.findByTenantAndName(emptyTenant.getId(), "smartffkonker");
 
         transformation = Transformation.builder().id(TRANSFORMATION_ID_IN_USE).build();
 
@@ -240,7 +242,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
     public void shouldReturnValidationMessageGuidIsNullWhenUpdating() throws Exception {
         ServiceResponse<EventRoute> response = subject.update(tenant, application, null, route);
 
@@ -248,7 +250,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
     public void shouldReturnValidationMessageGuidIsEmptyWhenUpdating() throws Exception {
         ServiceResponse<EventRoute> response = subject.update(tenant, application, "", route);
 
@@ -322,7 +324,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
         assertThat(allRoutes.get(8).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63bc"));
 
 
-        allRoutes = subject.getAll(emptyTenant, application).getResult();
+        allRoutes = subject.getAll(emptyTenant, emptyApplication).getResult();
         assertThat(allRoutes, notNullValue());
         assertThat(allRoutes, empty());
     }
@@ -504,7 +506,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json"})
     public void shouldReturnErrorMessageIfRouteDoesNotBelongToTenantWhenFindByGUID() throws Exception {
-        ServiceResponse<EventRoute> response = subject.getByGUID(emptyTenant, application, existingGuid);
+        ServiceResponse<EventRoute> response = subject.getByGUID(emptyTenant, emptyApplication, existingGuid);
 
         assertThat(response, hasErrorMessage(EventRouteService.Validations.EVENT_ROUTE_NOT_FOUND.getCode()));
     }

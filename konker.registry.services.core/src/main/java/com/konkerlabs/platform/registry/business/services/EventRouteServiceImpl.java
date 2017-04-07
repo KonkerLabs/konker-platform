@@ -26,6 +26,7 @@ import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer
 import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.SmsDestinationURIDealer;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.EventRouteRepository;
 import com.konkerlabs.platform.registry.business.repositories.RestDestinationRepository;
@@ -41,6 +42,8 @@ public class EventRouteServiceImpl implements EventRouteService {
 
     @Autowired
     private TenantRepository tenantRepository;
+    @Autowired
+    private ApplicationRepository applicationRepository;
     @Autowired
     private EventRouteRepository eventRouteRepository;
     @Autowired
@@ -66,8 +69,19 @@ public class EventRouteServiceImpl implements EventRouteService {
             return ServiceResponseBuilder.<EventRoute>error()
                     .withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();
 
+        if (!Optional.ofNullable(application).isPresent())
+            return ServiceResponseBuilder.<EventRoute>error()
+                    .withMessage(CommonValidations.APPLICATION_NULL.getCode()).build();
+
+        Application existingApplication = applicationRepository.findByTenantAndName(tenant.getId(), application.getName());
+
+        if (!Optional.ofNullable(existingApplication).isPresent())
+            return ServiceResponseBuilder.<EventRoute>error()
+                    .withMessage(CommonValidations.APPLICATION_NULL.getCode()).build();
+
         route.setId(null);
         route.setTenant(existingTenant);
+        route.setApplication(existingApplication);
         route.setGuid(UUID.randomUUID().toString());
 
         Optional<Map<String,Object[]>> validations = route.applyValidations();
@@ -109,6 +123,16 @@ public class EventRouteServiceImpl implements EventRouteService {
         if (!Optional.ofNullable(existingTenant).isPresent())
             return ServiceResponseBuilder.<EventRoute>error()
                     .withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();
+
+        if (!Optional.ofNullable(application).isPresent())
+            return ServiceResponseBuilder.<EventRoute>error()
+                    .withMessage(CommonValidations.APPLICATION_NULL.getCode()).build();
+
+        Application existingApplication = applicationRepository.findByTenantAndName(tenant.getId(), application.getName());
+
+        if (!Optional.ofNullable(existingApplication).isPresent())
+            return ServiceResponseBuilder.<EventRoute>error()
+                    .withMessage(CommonValidations.APPLICATION_NULL.getCode()).build();
 
         if (!Optional.ofNullable(guid).filter(s -> !s.isEmpty()).isPresent()) {
             return ServiceResponseBuilder.<EventRoute>error()
@@ -210,8 +234,18 @@ public class EventRouteServiceImpl implements EventRouteService {
             return ServiceResponseBuilder.<List<EventRoute>>error()
                     .withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();
 
+        if (!Optional.ofNullable(application).isPresent())
+            return ServiceResponseBuilder.<List<EventRoute>>error()
+                    .withMessage(CommonValidations.APPLICATION_NULL.getCode()).build();
+
+        Application existingApplication = applicationRepository.findByTenantAndName(tenant.getId(), application.getName());
+
+        if (!Optional.ofNullable(existingApplication).isPresent())
+            return ServiceResponseBuilder.<List<EventRoute>>error()
+                    .withMessage(CommonValidations.APPLICATION_NULL.getCode()).build();
+
         return ServiceResponseBuilder.<List<EventRoute>>ok()
-            .withResult(eventRouteRepository.findAll(existingTenant.getId(), application.getName()))
+            .withResult(eventRouteRepository.findAll(existingTenant.getId(), existingApplication.getName()))
             .build();
     }
 
@@ -226,6 +260,16 @@ public class EventRouteServiceImpl implements EventRouteService {
         if (!Optional.ofNullable(existingTenant).isPresent())
             return ServiceResponseBuilder.<EventRoute>error()
                     .withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();
+
+        if (!Optional.ofNullable(application).isPresent())
+            return ServiceResponseBuilder.<EventRoute>error()
+                    .withMessage(CommonValidations.APPLICATION_NULL.getCode()).build();
+
+        Application existingApplication = applicationRepository.findByTenantAndName(tenant.getId(), application.getName());
+
+        if (!Optional.ofNullable(existingApplication).isPresent())
+            return ServiceResponseBuilder.<EventRoute>error()
+                    .withMessage(CommonValidations.APPLICATION_NULL.getCode()).build();
 
         if (!Optional.ofNullable(guid).isPresent())
             return ServiceResponseBuilder.<EventRoute>error()
@@ -273,6 +317,16 @@ public class EventRouteServiceImpl implements EventRouteService {
             return ServiceResponseBuilder.<EventRoute>error()
                     .withMessage(Validations.GUID_NULL.getCode())
                     .build();
+
+        if (!Optional.ofNullable(application).isPresent())
+            return ServiceResponseBuilder.<EventRoute>error()
+                    .withMessage(CommonValidations.APPLICATION_NULL.getCode()).build();
+
+        Application existingApplication = applicationRepository.findByTenantAndName(tenant.getId(), application.getName());
+
+        if (!Optional.ofNullable(existingApplication).isPresent())
+            return ServiceResponseBuilder.<EventRoute>error()
+                    .withMessage(CommonValidations.APPLICATION_NULL.getCode()).build();
 
         EventRoute route = eventRouteRepository.findByGuid(existingTenant.getId(), application.getName(), guid);
 
