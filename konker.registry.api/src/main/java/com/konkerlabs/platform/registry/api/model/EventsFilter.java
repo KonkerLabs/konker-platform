@@ -29,13 +29,18 @@ public class EventsFilter {
     private Instant startingTimestamp;
     private Instant endTimestamp;
 
-    public EventsFilter(String query) throws BadRequestResponseException {
+    public void parse(String query) throws BadRequestResponseException {
+
+        this.deviceGuid = null;
+        this.channel = null;
+        this.startingTimestamp = null;
+        this.endTimestamp = null;
 
         if (!StringUtils.hasText(query)) {
             return;
         }
 
-        String filters[] = query.split(";");
+        String filters[] = query.split(" ");
 
         for (String filter : filters) {
             parseToken(filter);
@@ -45,7 +50,7 @@ public class EventsFilter {
 
     private void parseToken(String filter) throws BadRequestResponseException {
 
-        String tokens[] = filter.split("==", 2);
+        String tokens[] = filter.split(":", 2);
 
         if (tokens.length != 2) {
             throw new BadRequestResponseException("Invalid filter: " + filter);
@@ -67,14 +72,11 @@ public class EventsFilter {
 
     }
 
-    private static String removeInvalidChars(String text) {
+    private String removeInvalidChars(String text) {
         return text.replaceAll("[<>\\\"']", "").trim();
     }
 
-    private static Instant parseIntant(String text) throws BadRequestResponseException {
-
-        // 2017-04-02 07:15Z to 2017-04-02T07:15Z
-        text = text.replaceFirst(" ", "T");
+    private Instant parseIntant(String text) throws BadRequestResponseException {
 
         // 2007-12-03T10:15:30+01:00
         Instant instant = parseISOOffsetDateTime(text);
@@ -103,7 +105,7 @@ public class EventsFilter {
         throw new BadRequestResponseException("Not ISO Date: " + text);
     }
 
-    private static Instant parseISOOffsetDateTime(String text) {
+    private Instant parseISOOffsetDateTime(String text) {
 
         try {
             return OffsetDateTime.parse(text).toInstant();
@@ -113,7 +115,7 @@ public class EventsFilter {
 
     }
 
-    private static Instant parseISODateTime(String text) {
+    private Instant parseISODateTime(String text) {
 
         try {
 
@@ -129,14 +131,12 @@ public class EventsFilter {
 
     }
 
-    private static Instant parseISOOffsetDate(String text) {
+    private Instant parseISOOffsetDate(String text) {
 
         try {
 
-            DateTimeFormatter fmt = new DateTimeFormatterBuilder()
-                                        .append(DateTimeFormatter.ISO_OFFSET_DATE)
-                                        .parseDefaulting(ChronoField.HOUR_OF_DAY, 0)
-                                        .toFormatter();
+            DateTimeFormatter fmt = new DateTimeFormatterBuilder().append(DateTimeFormatter.ISO_OFFSET_DATE)
+                    .parseDefaulting(ChronoField.HOUR_OF_DAY, 0).toFormatter();
             return OffsetDateTime.parse(text, fmt).toInstant();
 
         } catch (DateTimeParseException e) {
@@ -145,7 +145,7 @@ public class EventsFilter {
 
     }
 
-    private static Instant parseISODate(String text) {
+    private Instant parseISODate(String text) {
 
         try {
 
@@ -156,7 +156,6 @@ public class EventsFilter {
             return dt.toInstant();
 
         } catch (DateTimeParseException e) {
-            e.printStackTrace();
             return null;
         }
 

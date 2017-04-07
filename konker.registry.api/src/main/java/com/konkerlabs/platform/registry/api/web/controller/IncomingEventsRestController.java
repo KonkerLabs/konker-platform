@@ -51,13 +51,17 @@ public class IncomingEventsRestController implements InitializingBean {
         "* `channel`\n\n" +
         "* `timestamp`: ISO 8601 format\n\n" +
         "\n\n" +
+        "### Query String Syntax\n\n" +
+        "* filter: `[seach term]:[search value]`\n\n" +
+        "* concat filters with space: `[filter1] [filter2] [filter3]`\n\n" +
+        "\n\n" +
         "### Query Examples\n\n" +
-        "* `q=device==818599ad-0000-0000-0000-000000000000`\n\n" +
-        "* `q=channel==temperature;device==818599ad-0000-0000-0000-000000000000`\n\n" +
-        "* `q=channel==temperature`\n\n" +
-        "* `timestamp==2017-04-05T14:50:00+01:00`\n\n" +
-        "* `timestamp==2017-04-05T14:55:00-01:00`\n\n" +
-        "* `timestamp==2017-04-05T13:54:30.891Z;timestamp==2017-04-05T13:56:30.891Z`\n\n";
+        "* device:818599ad-0000-0000-0000-000000000000\n\n" +
+        "* channel:temperature device:818599ad-0000-0000-0000-000000000000\n\n" +
+        "* channel:temperature\n\n" +
+        "* timestamp:&gt;2017-04-05T14:50:00+01:00\n\n" +
+        "* timestamp:&lt;2017-04-05T14:55:00-01:00\n\n" +
+        "* timestamp:&gt;2017-04-05T13:54:30.891Z timestamp:&lt;2017-04-05T13:56:30.891Z\n\n";
 
     @GetMapping(path = "/{application}/")
     @PreAuthorize("hasAuthority('VIEW_DEVICE_LOG')")
@@ -74,7 +78,7 @@ public class IncomingEventsRestController implements InitializingBean {
             @RequestParam(required = false, defaultValue = "", name = "q") String query,
             @ApiParam(value = "The sort order", allowableValues = "newest,oldest")
             @RequestParam(required = false, defaultValue = "newest") String sort,
-            @ApiParam(value = "The number of results returned")
+            @ApiParam(value = "The number of results returned", allowableValues = "range[1, 10000]")
             @RequestParam(required = false, defaultValue = "100") Integer limit
         ) throws BadServiceResponseException, BadRequestResponseException {
 
@@ -85,7 +89,12 @@ public class IncomingEventsRestController implements InitializingBean {
             ascending = true;
         }
 
-        EventsFilter filter = new EventsFilter(query);
+        if (limit > 10000) {
+            throw new BadRequestResponseException("Invalid limit. Max: 10000");
+        }
+
+        EventsFilter filter = new EventsFilter();
+        filter.parse(query);
         String deviceGuid = filter.getDeviceGuid();
         String channel = filter.getChannel();
         Instant startingTimestamp = filter.getStartingTimestamp();
