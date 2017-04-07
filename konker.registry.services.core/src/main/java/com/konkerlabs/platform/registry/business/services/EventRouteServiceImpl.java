@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 
@@ -71,13 +72,13 @@ public class EventRouteServiceImpl implements EventRouteService {
 
         if (!Optional.ofNullable(application).isPresent())
             return ServiceResponseBuilder.<EventRoute>error()
-                    .withMessage(CommonValidations.APPLICATION_NULL.getCode()).build();
+                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()).build();
 
         Application existingApplication = applicationRepository.findByTenantAndName(tenant.getId(), application.getName());
 
         if (!Optional.ofNullable(existingApplication).isPresent())
             return ServiceResponseBuilder.<EventRoute>error()
-                    .withMessage(CommonValidations.APPLICATION_NULL.getCode()).build();
+                    .withMessage(ApplicationService.Validations.APPLICATION_NOT_FOUND.getCode()).build();
 
         route.setId(null);
         route.setTenant(existingTenant);
@@ -126,13 +127,13 @@ public class EventRouteServiceImpl implements EventRouteService {
 
         if (!Optional.ofNullable(application).isPresent())
             return ServiceResponseBuilder.<EventRoute>error()
-                    .withMessage(CommonValidations.APPLICATION_NULL.getCode()).build();
+                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()).build();
 
         Application existingApplication = applicationRepository.findByTenantAndName(tenant.getId(), application.getName());
 
         if (!Optional.ofNullable(existingApplication).isPresent())
             return ServiceResponseBuilder.<EventRoute>error()
-                    .withMessage(CommonValidations.APPLICATION_NULL.getCode()).build();
+                    .withMessage(ApplicationService.Validations.APPLICATION_NOT_FOUND.getCode()).build();
 
         if (!Optional.ofNullable(guid).filter(s -> !s.isEmpty()).isPresent()) {
             return ServiceResponseBuilder.<EventRoute>error()
@@ -237,13 +238,13 @@ public class EventRouteServiceImpl implements EventRouteService {
 
         if (!Optional.ofNullable(application).isPresent())
             return ServiceResponseBuilder.<List<EventRoute>>error()
-                    .withMessage(CommonValidations.APPLICATION_NULL.getCode()).build();
+                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()).build();
 
         Application existingApplication = applicationRepository.findByTenantAndName(tenant.getId(), application.getName());
 
         if (!Optional.ofNullable(existingApplication).isPresent())
             return ServiceResponseBuilder.<List<EventRoute>>error()
-                    .withMessage(CommonValidations.APPLICATION_NULL.getCode()).build();
+                    .withMessage(ApplicationService.Validations.APPLICATION_NOT_FOUND.getCode()).build();
 
         return ServiceResponseBuilder.<List<EventRoute>>ok()
             .withResult(eventRouteRepository.findAll(existingTenant.getId(), existingApplication.getName()))
@@ -264,13 +265,13 @@ public class EventRouteServiceImpl implements EventRouteService {
 
         if (!Optional.ofNullable(application).isPresent())
             return ServiceResponseBuilder.<EventRoute>error()
-                    .withMessage(CommonValidations.APPLICATION_NULL.getCode()).build();
+                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()).build();
 
         Application existingApplication = applicationRepository.findByTenantAndName(tenant.getId(), application.getName());
 
         if (!Optional.ofNullable(existingApplication).isPresent())
             return ServiceResponseBuilder.<EventRoute>error()
-                    .withMessage(CommonValidations.APPLICATION_NULL.getCode()).build();
+                    .withMessage(ApplicationService.Validations.APPLICATION_NOT_FOUND.getCode()).build();
 
         if (!Optional.ofNullable(guid).isPresent())
             return ServiceResponseBuilder.<EventRoute>error()
@@ -321,13 +322,13 @@ public class EventRouteServiceImpl implements EventRouteService {
 
         if (!Optional.ofNullable(application).isPresent())
             return ServiceResponseBuilder.<EventRoute>error()
-                    .withMessage(CommonValidations.APPLICATION_NULL.getCode()).build();
+                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()).build();
 
         Application existingApplication = applicationRepository.findByTenantAndName(tenant.getId(), application.getName());
 
         if (!Optional.ofNullable(existingApplication).isPresent())
             return ServiceResponseBuilder.<EventRoute>error()
-                    .withMessage(CommonValidations.APPLICATION_NULL.getCode()).build();
+                    .withMessage(ApplicationService.Validations.APPLICATION_NOT_FOUND.getCode()).build();
 
         EventRoute route = eventRouteRepository.findByGuid(existingTenant.getId(), application.getName(), guid);
 

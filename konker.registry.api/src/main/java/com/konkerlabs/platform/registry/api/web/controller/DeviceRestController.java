@@ -45,7 +45,7 @@ public class DeviceRestController implements InitializingBean {
 
     @Autowired
     private DeviceRegisterService deviceRegisterService;
-    
+
     @Autowired
     private ApplicationService applicationService;
 
@@ -190,6 +190,10 @@ public class DeviceRestController implements InitializingBean {
         }
 
         for (com.konkerlabs.platform.registry.business.model.Device.Validations value : Device.Validations.values()) {
+            validationsCode.add(value.getCode());
+        }
+
+        for (com.konkerlabs.platform.registry.business.services.api.ApplicationService.Validations value : ApplicationService.Validations.values()) {
             validationsCode.add(value.getCode());
         }
 

@@ -48,7 +48,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
     @Autowired
     private TenantRepository tenantRepository;
-    
+
     @Autowired
     private ApplicationRepository applicationRepository;
 
@@ -76,7 +76,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .withMessage(CommonValidations.TENANT_NULL.getCode())
                     .build();
         }
-        
+
         if (!Optional.ofNullable(application).isPresent()) {
         	Device noDevice = Device.builder()
         			.guid("NULL")
@@ -105,7 +105,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode())
                     .build();
         }
-        
+
         if (!applicationRepository.exists(application.getName())) {
         	LOGGER.debug("device cannot exists",
                     Device.builder().guid("NULL").tenant(tenant).build().toURI(),
@@ -160,6 +160,32 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
     @Override
     public ServiceResponse<List<Device>> findAll(Tenant tenant, Application application) {
+
+        if (!Optional.ofNullable(tenant).isPresent()) {
+            Device noDevice = Device.builder().guid("NULL").tenant(
+                    Tenant.builder().domainName("unknow_domain").build()).build();
+            LOGGER.debug(CommonValidations.TENANT_NULL.getCode(),
+                    noDevice.toURI(),
+                    noDevice.getTenant().getLogLevel());
+            return ServiceResponseBuilder.<List<Device>>error()
+                    .withMessage(CommonValidations.TENANT_NULL.getCode())
+                    .build();
+        }
+
+        if (!Optional.ofNullable(application).isPresent()) {
+            Device noDevice = Device.builder()
+                    .guid("NULL")
+                    .tenant(tenant)
+                    .application(Application.builder().name("unknowapp").tenant(tenant).build())
+                    .build();
+            LOGGER.debug(ApplicationService.Validations.APPLICATION_NULL.getCode(),
+                    noDevice.toURI(),
+                    noDevice.getTenant().getLogLevel());
+            return ServiceResponseBuilder.<List<Device>>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode())
+                    .build();
+        }
+
         List<Device> all = deviceRepository.findAllByTenantIdAndApplicationName(tenant.getId(), application.getName());
         return ServiceResponseBuilder.<List<Device>>ok().withResult(all).build();
     }
@@ -235,7 +261,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
             return ServiceResponseBuilder.<Device>error()
                     .withMessage(CommonValidations.TENANT_NULL.getCode())
                     .build();
-        
+
         if (!Optional.ofNullable(application).isPresent()) {
         	return ServiceResponseBuilder.<Device>error()
         			.withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode())
@@ -293,7 +319,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
             return ServiceResponseBuilder.<Device>error()
                     .withMessage(CommonValidations.TENANT_NULL.getCode())
                     .build();
-        
+
         if (!Optional.ofNullable(application).isPresent())
             return ServiceResponseBuilder.<Device>error()
                     .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode())
@@ -355,7 +381,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 		if (!Optional.ofNullable(tenant).isPresent())
 			return ServiceResponseBuilder.<Device> error().withMessage(CommonValidations.TENANT_NULL.getCode())
 					.build();
-		
+
 		if (!Optional.ofNullable(application).isPresent())
 			return ServiceResponseBuilder.<Device> error()
 					.withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode())
@@ -370,7 +396,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 		if (!Optional.ofNullable(tenant).isPresent())
 			return ServiceResponseBuilder.<Device> error()
 					.withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();
-		
+
 		if (!applicationRepository.exists(application.getName())) {
             return ServiceResponseBuilder.<Device>error()
                     .withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode())
@@ -450,7 +476,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .withMessage(CommonValidations.TENANT_NULL.getCode())
                     .build();
         }
-        
+
         if (!Optional.ofNullable(application).isPresent()) {
             return ServiceResponseBuilder.<DeviceDataURLs>error()
                     .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode())

@@ -17,10 +17,12 @@ import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
 import com.konkerlabs.platform.registry.business.repositories.EventRouteRepository;
 import com.konkerlabs.platform.registry.business.repositories.RestDestinationRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.AbstractURLBlacklistValidation;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
@@ -33,6 +35,8 @@ public class RestDestinationServiceImpl extends AbstractURLBlacklistValidation i
 
 	@Autowired
 	private TenantRepository tenantRepository;
+    @Autowired
+    private ApplicationRepository applicationRepository;
 	@Autowired
 	private RestDestinationRepository restRepository;
     @Autowired
@@ -52,7 +56,17 @@ public class RestDestinationServiceImpl extends AbstractURLBlacklistValidation i
 			return ServiceResponseBuilder.<List<RestDestination>> error()
 					.withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();
 
-		List<RestDestination> restList = restRepository.findAllByTenant(existingTenant.getId(), application.getName());
+        if (!Optional.ofNullable(application).isPresent())
+            return ServiceResponseBuilder.<List<RestDestination>>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()).build();
+
+        Application existingApplication = applicationRepository.findByTenantAndName(tenant.getId(), application.getName());
+
+        if (!Optional.ofNullable(existingApplication).isPresent())
+            return ServiceResponseBuilder.<List<RestDestination>>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_NOT_FOUND.getCode()).build();
+
+		List<RestDestination> restList = restRepository.findAllByTenant(existingTenant.getId(), existingApplication.getName());
 
 		return ServiceResponseBuilder.<List<RestDestination>> ok().withResult(restList).build();
 	}
@@ -72,6 +86,16 @@ public class RestDestinationServiceImpl extends AbstractURLBlacklistValidation i
 		if (!Optional.ofNullable(existingTenant).isPresent())
 			return ServiceResponseBuilder.<RestDestination> error()
 					.withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();
+
+        if (!Optional.ofNullable(application).isPresent())
+            return ServiceResponseBuilder.<RestDestination>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()).build();
+
+        Application existingApplication = applicationRepository.findByTenantAndName(tenant.getId(), application.getName());
+
+        if (!Optional.ofNullable(existingApplication).isPresent())
+            return ServiceResponseBuilder.<RestDestination>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_NOT_FOUND.getCode()).build();
 
 		RestDestination restDestination = restRepository.getByTenantAndGUID(existingTenant.getId(), application.getName(), guid);
 
@@ -107,6 +131,16 @@ public class RestDestinationServiceImpl extends AbstractURLBlacklistValidation i
 				.isPresent())
 			return ServiceResponseBuilder.<RestDestination> error().withMessage(Validations.NAME_IN_USE.getCode())
 					.build();
+
+        if (!Optional.ofNullable(application).isPresent())
+            return ServiceResponseBuilder.<RestDestination>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()).build();
+
+        Application existingApplication = applicationRepository.findByTenantAndName(tenant.getId(), application.getName());
+
+        if (!Optional.ofNullable(existingApplication).isPresent())
+            return ServiceResponseBuilder.<RestDestination>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_NOT_FOUND.getCode()).build();
 
 		destination.setId(null);
 		destination.setTenant(existingTenant);
@@ -151,6 +185,16 @@ public class RestDestinationServiceImpl extends AbstractURLBlacklistValidation i
 		if (!Optional.ofNullable(existingTenant).isPresent())
 			return ServiceResponseBuilder.<RestDestination> error()
 					.withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();
+
+        if (!Optional.ofNullable(application).isPresent())
+            return ServiceResponseBuilder.<RestDestination>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()).build();
+
+        Application existingApplication = applicationRepository.findByTenantAndName(tenant.getId(), application.getName());
+
+        if (!Optional.ofNullable(existingApplication).isPresent())
+            return ServiceResponseBuilder.<RestDestination>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_NOT_FOUND.getCode()).build();
 
 		RestDestination existingDestination = restRepository.getByTenantAndGUID(existingTenant.getId(), application.getName(), guid);
 
@@ -211,6 +255,16 @@ public class RestDestinationServiceImpl extends AbstractURLBlacklistValidation i
 		if (!Optional.ofNullable(existingTenant).isPresent())
 			return ServiceResponseBuilder.<RestDestination> error()
 					.withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();
+
+        if (!Optional.ofNullable(application).isPresent())
+            return ServiceResponseBuilder.<RestDestination>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()).build();
+
+        Application existingApplication = applicationRepository.findByTenantAndName(tenant.getId(), application.getName());
+
+        if (!Optional.ofNullable(existingApplication).isPresent())
+            return ServiceResponseBuilder.<RestDestination>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_NOT_FOUND.getCode()).build();
 
 		RestDestination existingDestination = restRepository.getByTenantAndGUID(existingTenant.getId(), application.getName(), guid);
 
