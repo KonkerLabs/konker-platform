@@ -28,9 +28,9 @@ import io.swagger.annotations.ApiParam;
 
 @RestController
 @Scope("request")
-@RequestMapping(value = "/incomingEvents")
+@RequestMapping(value = "/outgoingEvents")
 @Api(tags = "events")
-public class IncomingEventsRestController {
+public class OutgoingEventsRestController {
 
     @Autowired
     private DeviceEventService deviceEventService;
@@ -38,30 +38,12 @@ public class IncomingEventsRestController {
     @Autowired
     private User user;
 
-    public static final String SEACH_NOTES =
-        "### Query Search Terms\n\n" +
-        "* `device`\n\n" +
-        "* `channel`\n\n" +
-        "* `timestamp`: ISO 8601 format\n\n" +
-        "\n\n" +
-        "### Query String Syntax\n\n" +
-        "* filter: `[seach term]:[search value]`\n\n" +
-        "* concat filters with space: `[filter1] [filter2] [filter3]`\n\n" +
-        "\n\n" +
-        "### Query Examples\n\n" +
-        "* device:818599ad-0000-0000-0000-000000000000\n\n" +
-        "* channel:temperature device:818599ad-0000-0000-0000-000000000000\n\n" +
-        "* channel:temperature\n\n" +
-        "* timestamp:&gt;2017-04-05T14:50:00+01:00\n\n" +
-        "* timestamp:&lt;2017-04-05T14:55:00-01:00\n\n" +
-        "* timestamp:&gt;2017-04-05T13:54:30.891Z timestamp:&lt;2017-04-05T13:56:30.891Z\n\n";
-
     @GetMapping(path = "/{application}/")
     @PreAuthorize("hasAuthority('VIEW_DEVICE_LOG')")
     @ApiOperation(
-            value = "Search incoming events",
+            value = "Search outgoing events",
             response = EventVO.class,
-            notes = SEACH_NOTES,
+            notes = IncomingEventsRestController.SEACH_NOTES,
             produces = "application/json"
             )
     public List<EventVO> list(
@@ -93,7 +75,7 @@ public class IncomingEventsRestController {
         Instant startingTimestamp = filter.getStartingTimestamp();
         Instant endTimestamp = filter.getEndTimestamp();
 
-        ServiceResponse<List<Event>> restDestinationResponse = deviceEventService.findIncomingBy(tenant, deviceGuid, channel, startingTimestamp, endTimestamp, ascending, limit);
+        ServiceResponse<List<Event>> restDestinationResponse = deviceEventService.findOutgoingBy(tenant, deviceGuid, channel, startingTimestamp, endTimestamp, ascending, limit);
 
         if (!restDestinationResponse.isOk()) {
             throw new BadServiceResponseException(user, restDestinationResponse, null);

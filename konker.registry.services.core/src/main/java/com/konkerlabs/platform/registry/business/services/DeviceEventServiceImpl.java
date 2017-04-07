@@ -7,7 +7,6 @@ import java.util.Optional;
 import com.konkerlabs.platform.registry.business.repositories.events.api.EventRepository;
 import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
@@ -18,7 +17,6 @@ import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 
@@ -63,7 +61,7 @@ public class DeviceEventServiceImpl implements DeviceEventService {
                                                        Integer limit) {
         if (!Optional.ofNullable(tenant).isPresent())
             return ServiceResponseBuilder.<List<Event>>error()
-                    .withMessage(CommonValidations.TENANT_NULL.getCode(), null)
+                    .withMessage(CommonValidations.TENANT_NULL.getCode())
                     .build();
 
 //        if (!Optional.ofNullable(channel).filter(s -> !s.isEmpty()).isPresent())
@@ -74,7 +72,7 @@ public class DeviceEventServiceImpl implements DeviceEventService {
         if (!Optional.ofNullable(startTimestamp).isPresent() &&
                 !Optional.ofNullable(limit).isPresent())
             return ServiceResponseBuilder.<List<Event>>error()
-                    .withMessage(Validations.LIMIT_NULL.getCode(), null)
+                    .withMessage(Validations.LIMIT_NULL.getCode())
                     .build();
 
         try {
@@ -103,12 +101,7 @@ public class DeviceEventServiceImpl implements DeviceEventService {
                                                        Integer limit) {
         if (!Optional.ofNullable(tenant).isPresent())
             return ServiceResponseBuilder.<List<Event>>error()
-                    .withMessage(CommonValidations.TENANT_NULL.getCode(), null)
-                    .build();
-
-        if (!Optional.ofNullable(deviceGuid).filter(s -> !s.isEmpty()).isPresent())
-            return ServiceResponseBuilder.<List<Event>>error()
-                    .withMessage(DeviceRegisterService.Validations.DEVICE_GUID_NULL.getCode(), null)
+                    .withMessage(CommonValidations.TENANT_NULL.getCode())
                     .build();
 
 //        if (!Optional.ofNullable(channel).filter(s -> !s.isEmpty()).isPresent())
@@ -119,7 +112,7 @@ public class DeviceEventServiceImpl implements DeviceEventService {
         if (!Optional.ofNullable(startingTimestamp).isPresent() &&
                 !Optional.ofNullable(limit).isPresent())
             return ServiceResponseBuilder.<List<Event>>error()
-                    .withMessage(Validations.LIMIT_NULL.getCode(), null)
+                    .withMessage(Validations.LIMIT_NULL.getCode())
                     .build();
 
         try {
