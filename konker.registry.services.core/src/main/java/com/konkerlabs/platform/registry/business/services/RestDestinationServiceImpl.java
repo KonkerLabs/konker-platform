@@ -13,6 +13,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
@@ -36,11 +37,11 @@ public class RestDestinationServiceImpl extends AbstractURLBlacklistValidation i
 	private RestDestinationRepository restRepository;
     @Autowired
     private EventRouteRepository eventRouteRepository;
-    
+
     private List<String> methods = Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH");
 
 	@Override
-	public ServiceResponse<List<RestDestination>> findAll(Tenant tenant) {
+	public ServiceResponse<List<RestDestination>> findAll(final Tenant tenant, final Application application) {
 		if (!Optional.ofNullable(tenant).isPresent())
 			return ServiceResponseBuilder.<List<RestDestination>> error()
 					.withMessage(CommonValidations.TENANT_NULL.getCode()).build();
@@ -51,13 +52,13 @@ public class RestDestinationServiceImpl extends AbstractURLBlacklistValidation i
 			return ServiceResponseBuilder.<List<RestDestination>> error()
 					.withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();
 
-		List<RestDestination> RestList = restRepository.findAllByTenant(existingTenant.getId());
+		List<RestDestination> restList = restRepository.findAllByTenant(existingTenant.getId(), application.getName());
 
-		return ServiceResponseBuilder.<List<RestDestination>> ok().withResult(RestList).build();
+		return ServiceResponseBuilder.<List<RestDestination>> ok().withResult(restList).build();
 	}
 
 	@Override
-	public ServiceResponse<RestDestination> getByGUID(Tenant tenant, String guid) {
+	public ServiceResponse<RestDestination> getByGUID(final Tenant tenant, final Application application, String guid) {
 		if (!Optional.ofNullable(tenant).isPresent())
 			return ServiceResponseBuilder.<RestDestination> error().withMessage(CommonValidations.TENANT_NULL.getCode())
 					.build();
@@ -72,7 +73,7 @@ public class RestDestinationServiceImpl extends AbstractURLBlacklistValidation i
 			return ServiceResponseBuilder.<RestDestination> error()
 					.withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();
 
-		RestDestination restDestination = restRepository.getByTenantAndGUID(existingTenant.getId(), guid);
+		RestDestination restDestination = restRepository.getByTenantAndGUID(existingTenant.getId(), application.getName(), guid);
 
 		if (!Optional.ofNullable(restDestination).isPresent())
 			return ServiceResponseBuilder.<RestDestination> error()
@@ -82,7 +83,7 @@ public class RestDestinationServiceImpl extends AbstractURLBlacklistValidation i
 	}
 
 	@Override
-	public ServiceResponse<RestDestination> register(final Tenant tenant, RestDestination destination) {
+	public ServiceResponse<RestDestination> register(final Tenant tenant, final Application application, RestDestination destination) {
 		if (!Optional.ofNullable(tenant).isPresent())
 			return ServiceResponseBuilder.<RestDestination> error().withMessage(CommonValidations.TENANT_NULL.getCode())
 					.build();
@@ -90,7 +91,7 @@ public class RestDestinationServiceImpl extends AbstractURLBlacklistValidation i
 		if (!Optional.ofNullable(destination).isPresent())
 			return ServiceResponseBuilder.<RestDestination> error().withMessage(CommonValidations.RECORD_NULL.getCode())
 					.build();
-		
+
 		if (!methods.contains(destination.getMethod())) {
 			return ServiceResponseBuilder.<RestDestination> error().withMessage(Validations.METHOD_INVALID.getCode())
 					.build();
@@ -102,13 +103,14 @@ public class RestDestinationServiceImpl extends AbstractURLBlacklistValidation i
 			return ServiceResponseBuilder.<RestDestination> error()
 					.withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();
 
-		if (Optional.ofNullable(restRepository.getByTenantAndName(existingTenant.getId(), destination.getName()))
+		if (Optional.ofNullable(restRepository.getByTenantAndName(existingTenant.getId(), application.getName(), destination.getName()))
 				.isPresent())
 			return ServiceResponseBuilder.<RestDestination> error().withMessage(Validations.NAME_IN_USE.getCode())
 					.build();
 
 		destination.setId(null);
 		destination.setTenant(existingTenant);
+		destination.setApplication(application);
 		destination.setGuid(UUID.randomUUID().toString());
 
 		Optional<Map<String, Object[]>> validations = destination.applyValidations();
@@ -131,7 +133,7 @@ public class RestDestinationServiceImpl extends AbstractURLBlacklistValidation i
 	}
 
 	@Override
-	public ServiceResponse<RestDestination> update(Tenant tenant, String guid, RestDestination destination) {
+	public ServiceResponse<RestDestination> update(final Tenant tenant, final Application application, String guid, RestDestination destination) {
 		if (!Optional.ofNullable(tenant).isPresent())
 			return ServiceResponseBuilder.<RestDestination> error().withMessage(CommonValidations.TENANT_NULL.getCode())
 					.build();
@@ -150,7 +152,7 @@ public class RestDestinationServiceImpl extends AbstractURLBlacklistValidation i
 			return ServiceResponseBuilder.<RestDestination> error()
 					.withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();
 
-		RestDestination existingDestination = restRepository.getByTenantAndGUID(existingTenant.getId(), guid);
+		RestDestination existingDestination = restRepository.getByTenantAndGUID(existingTenant.getId(), application.getName(), guid);
 
 		if (!Optional.ofNullable(existingDestination).isPresent())
 			return ServiceResponseBuilder.<RestDestination> error()
@@ -165,7 +167,7 @@ public class RestDestinationServiceImpl extends AbstractURLBlacklistValidation i
 		// throw new BusinessException("REST Destination Name already exists");
 		// }
 
-		if (Optional.ofNullable(restRepository.getByTenantAndName(existingTenant.getId(), destination.getName()))
+		if (Optional.ofNullable(restRepository.getByTenantAndName(existingTenant.getId(), application.getName(), destination.getName()))
 				.filter(restDestination -> !restDestination.getGuid().equals(guid)).isPresent())
 			return ServiceResponseBuilder.<RestDestination> error().withMessage(Validations.NAME_IN_USE.getCode())
 					.build();
@@ -173,6 +175,7 @@ public class RestDestinationServiceImpl extends AbstractURLBlacklistValidation i
 		destination.setId(existingDestination.getId());
 		destination.setGuid(existingDestination.getGuid());
 		destination.setTenant(existingTenant);
+		destination.setApplication(application);
 
 		Optional<Map<String, Object[]>> validations = destination.applyValidations();
 
@@ -194,7 +197,7 @@ public class RestDestinationServiceImpl extends AbstractURLBlacklistValidation i
 	}
 
 	@Override
-	public ServiceResponse<RestDestination> remove(Tenant tenant, String guid) {
+	public ServiceResponse<RestDestination> remove(final Tenant tenant, final Application application, String guid) {
 		if (!Optional.ofNullable(tenant).isPresent())
 			return ServiceResponseBuilder.<RestDestination> error().withMessage(CommonValidations.TENANT_NULL.getCode())
 					.build();
@@ -209,7 +212,7 @@ public class RestDestinationServiceImpl extends AbstractURLBlacklistValidation i
 			return ServiceResponseBuilder.<RestDestination> error()
 					.withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();
 
-		RestDestination existingDestination = restRepository.getByTenantAndGUID(existingTenant.getId(), guid);
+		RestDestination existingDestination = restRepository.getByTenantAndGUID(existingTenant.getId(), application.getName(), guid);
 
 		if (!Optional.ofNullable(existingDestination).isPresent())
 			return ServiceResponseBuilder.<RestDestination> error()

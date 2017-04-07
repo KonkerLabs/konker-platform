@@ -40,6 +40,8 @@ public class RestDestination implements URIDealer, Validatable {
     private String id;
     @DBRef
     private Tenant tenant;
+    @DBRef
+    private Application application;
     private String guid;
     private String name;
     private String method;
@@ -50,7 +52,7 @@ public class RestDestination implements URIDealer, Validatable {
     private boolean active;
 
     public static final String URI_SCHEME = "rest";
-    
+
     @Override
     public String getUriScheme() {
         return URI_SCHEME;
@@ -98,15 +100,15 @@ public class RestDestination implements URIDealer, Validatable {
 
         return Optional.of(validations).filter(stringMap -> !stringMap.isEmpty());
     }
-    
+
     @Data
     @NoArgsConstructor
     public static class RestDestinationHeader {
-    	
+
     	private String key;
-    	
+
     	private String value;
-    	
+
     }
-    
+
 }

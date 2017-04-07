@@ -57,7 +57,7 @@ public class ControlPanelController {
 			transformationsCount = transformationResponse.getResult().size();
 		}
 
-		ServiceResponse<List<RestDestination>> destinationsResponse = restDestinationService.findAll(tenant);
+		ServiceResponse<List<RestDestination>> destinationsResponse = restDestinationService.findAll(tenant, application);
 		if (destinationsResponse.isOk()) {
 			restDestinationsCount = destinationsResponse.getResult().size();
 		}

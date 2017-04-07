@@ -277,7 +277,7 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
         when(deviceRegisterService.getByDeviceGuid(tenant, application, device1.getGuid()))
             .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device1).build());
 
-        when(restDestinationService.getByGUID(tenant, rest1.getGuid()))
+        when(restDestinationService.getByGUID(tenant, application, rest1.getGuid()))
             .thenReturn(ServiceResponseBuilder.<RestDestination> ok().withResult(rest1).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.post(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH))

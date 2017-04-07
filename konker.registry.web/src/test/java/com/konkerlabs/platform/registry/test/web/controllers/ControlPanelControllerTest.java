@@ -95,7 +95,7 @@ public class ControlPanelControllerTest extends WebLayerTestContext {
 				.thenReturn(ServiceResponseBuilder.<List<EventRoute>>ok().withResult(routes).build());
 		when(transformationService.getAll(tenant, application))
 				.thenReturn(ServiceResponseBuilder.<List<Transformation>>ok().withResult(transformations).build());
-		when(restDestinationService.findAll(tenant))
+		when(restDestinationService.findAll(tenant, application))
 				.thenReturn(ServiceResponseBuilder.<List<RestDestination>>ok().withResult(destinations).build());
 
 		getMockMvc().perform(get("/"))

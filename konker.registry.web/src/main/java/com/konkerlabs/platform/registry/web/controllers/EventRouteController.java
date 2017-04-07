@@ -61,12 +61,12 @@ public class EventRouteController implements ApplicationContextAware {
 
     @ModelAttribute("allDevices")
     public List<Device> allDevices() {
-        return deviceRegisterService.findAll(tenant, null).getResult();
+        return deviceRegisterService.findAll(tenant, application).getResult();
     }
 
     @ModelAttribute("allRestDestinations")
     public List<RestDestination> allRestDestinations() {
-        return restDestinationService.findAll(tenant).getResult();
+        return restDestinationService.findAll(tenant, application).getResult();
     }
 
     @ModelAttribute("allSmsDestinations")
@@ -76,7 +76,7 @@ public class EventRouteController implements ApplicationContextAware {
 
     @ModelAttribute("allTransformations")
     public List<Transformation> allTransformations() {
-        return transformationService.getAll(tenant, null).getResult();
+        return transformationService.getAll(tenant, application).getResult();
     }
 
     @RequestMapping

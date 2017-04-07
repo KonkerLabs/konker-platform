@@ -97,7 +97,7 @@ public class EventRouteServiceImpl implements EventRouteService {
             return ServiceResponseBuilder.<EventRoute>error()
                     .withMessage(Validations.NAME_IN_USE.getCode()).build();
 
-        fillRouteActorsDisplayName(tenant.getId(), route);
+        fillRouteActorsDisplayName(tenant.getId(), application.getName(), route);
 
         EventRoute saved = eventRouteRepository.save(route);
 
@@ -175,7 +175,7 @@ public class EventRouteServiceImpl implements EventRouteService {
                     .withMessage(Validations.NAME_IN_USE.getCode())
                     .build();
 
-        fillRouteActorsDisplayName(tenant.getId(), current);
+        fillRouteActorsDisplayName(tenant.getId(), application.getName(), current);
 
         EventRoute saved = eventRouteRepository.save(current);
 
@@ -184,7 +184,7 @@ public class EventRouteServiceImpl implements EventRouteService {
         return ServiceResponseBuilder.<EventRoute>ok().withResult(saved).build();
     }
 
-	private void fillRouteActorsDisplayName(String tenantId, EventRoute route) {
+	private void fillRouteActorsDisplayName(String tenantId, String applicationName, EventRoute route) {
 		// setting incoming display name (incoming is always a device)
 		Device incomingDevice = deviceRepository.findByTenantAndGuid(tenantId,
 				route.getIncoming().getUri().getPath().replace("/", ""));
@@ -212,6 +212,7 @@ public class EventRouteServiceImpl implements EventRouteService {
 		case RESTDestinationURIDealer.REST_DESTINATION_URI_SCHEME:
 
 			RestDestination outgoingRest = restRepository.getByTenantAndGUID(tenantId,
+			        applicationName,
 					route.getOutgoing().getUri().getPath().replace("/", ""));
 			if (Optional.ofNullable(outgoingRest).isPresent())
 				route.getOutgoing().setDisplayName(outgoingRest.getName());

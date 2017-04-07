@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -33,8 +34,10 @@ import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
 import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
 import com.konkerlabs.platform.registry.api.web.controller.RestDestinationController;
 import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 
@@ -53,11 +56,19 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
     private RestDestinationService restDestinationService;
 
     @Autowired
+    private ApplicationService applicationService;
+
+    @Autowired
     private Tenant tenant;
+
+    @Autowired
+    private Application application;
 
     private RestDestination restDestination1;
 
     private RestDestination restDestination2;
+
+    private String BASEPATH = "restDestinations";
 
     @Before
     public void setUp() {
@@ -71,7 +82,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
         		.servicePassword("xpto123")
         		.active(true)
         		.build();
-        	
+
         restDestination2 = RestDestination.builder()
     			.guid(UUID.randomUUID().toString())
     			.name("Rest Dest 2")
@@ -82,6 +93,10 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
     			.servicePassword("xpto321")
     			.active(false)
     			.build();
+
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+            .thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
+
     }
 
     @After
@@ -95,7 +110,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
         restDestinations.add(restDestination1);
         restDestinations.add(restDestination2);
 
-        when(restDestinationService.findAll(tenant))
+        when(restDestinationService.findAll(tenant, application))
         	.thenReturn(
         			ServiceResponseBuilder
         				.<List<RestDestination>>ok()
@@ -104,7 +119,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
 
         getMockMvc()
         .perform(MockMvcRequestBuilders
-        		.get("/restDestinations/")
+        		.get(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH))
         		.contentType("application/json")
         		.accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
@@ -133,11 +148,11 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldReturnInternalErrorWhenListRestDestinations() throws Exception {
-        when(restDestinationService.findAll(tenant))
+        when(restDestinationService.findAll(tenant, application))
                 .thenReturn(ServiceResponseBuilder.<List<RestDestination>>error().build());
 
         getMockMvc()
-        .perform(MockMvcRequestBuilders.get("/restDestinations/")
+        .perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH))
         		.accept(MediaType.APPLICATION_JSON)
         		.contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().is5xxServerError())
@@ -151,7 +166,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldReadRestDestinationByGuid() throws Exception {
-        when(restDestinationService.getByGUID(tenant, restDestination1.getGuid()))
+        when(restDestinationService.getByGUID(tenant, application, restDestination1.getGuid()))
         	.thenReturn(
         			ServiceResponseBuilder
         				.<RestDestination>ok()
@@ -160,7 +175,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
 
         getMockMvc()
         .perform(MockMvcRequestBuilders
-        		.get("/restDestinations/" + restDestination1.getGuid())
+        		.get(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH) + restDestination1.getGuid())
         		.contentType("application/json")
         		.accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
@@ -181,7 +196,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldReturnNotFoundWhenReadByGuid() throws Exception {
-        when(restDestinationService.getByGUID(tenant, restDestination1.getGuid()))
+        when(restDestinationService.getByGUID(tenant, application, restDestination1.getGuid()))
         	.thenReturn(
         			ServiceResponseBuilder
         				.<RestDestination>error()
@@ -190,7 +205,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
 
         getMockMvc()
         .perform(MockMvcRequestBuilders
-        		.get("/restDestinations/" + restDestination1.getGuid())
+        		.get(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH) + restDestination1.getGuid())
         		.accept(MediaType.APPLICATION_JSON)
         		.contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().is4xxClientError())
@@ -206,11 +221,11 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
     public void shouldCreateRestDestination() throws Exception {
         when(
         	restDestinationService
-        		.register(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(RestDestination.class)))
+        		.register(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(Application.class), org.mockito.Matchers.any(RestDestination.class)))
         .thenReturn(ServiceResponseBuilder.<RestDestination>ok().withResult(restDestination1).build());
 
         getMockMvc()
-        .perform(MockMvcRequestBuilders.post("/restDestinations/")
+        .perform(MockMvcRequestBuilders.post(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH))
         		.content(getJson(new RestDestinationVO().apply(restDestination1)))
         		.contentType("application/json")
         		.accept(MediaType.APPLICATION_JSON))
@@ -234,14 +249,14 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
     public void shouldTryCreateRestDestinationWithBadRequest() throws Exception {
         when(
         	restDestinationService
-        		.register(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(RestDestination.class)))
+        		.register(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(Application.class), org.mockito.Matchers.any(RestDestination.class)))
         .thenReturn(ServiceResponseBuilder
         				.<RestDestination>error()
         				.withMessage(RestDestinationService.Validations.DESTINATION_NOT_FOUND.getCode())
         				.build());
 
         getMockMvc()
-        .perform(MockMvcRequestBuilders.post("/restDestinations/")
+        .perform(MockMvcRequestBuilders.post(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH))
         		.content(getJson(new RestDestinationVO().apply(restDestination1)))
         		.contentType(MediaType.APPLICATION_JSON)
         		.accept(MediaType.APPLICATION_JSON))
@@ -259,16 +274,16 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
     public void shouldUpdateRestDestination() throws Exception {
         when(
         	restDestinationService
-        		.getByGUID(tenant, restDestination1.getGuid()))
+        		.getByGUID(tenant, application, restDestination1.getGuid()))
         .thenReturn(ServiceResponseBuilder.<RestDestination>ok().withResult(restDestination1).build());
 
         when(
         	restDestinationService
-        		.update(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.anyString(), org.mockito.Matchers.any(RestDestination.class)))
+        		.update(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(Application.class), org.mockito.Matchers.anyString(), org.mockito.Matchers.any(RestDestination.class)))
         .thenReturn(ServiceResponseBuilder.<RestDestination>ok().withResult(restDestination1).build());
 
         getMockMvc()
-        .perform(MockMvcRequestBuilders.put("/restDestinations/" + restDestination1.getGuid())
+        .perform(MockMvcRequestBuilders.put(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH) + restDestination1.getGuid())
         		.content(getJson(new RestDestinationVO().apply(restDestination1)))
         		.contentType(MediaType.APPLICATION_JSON)
         		.accept(MediaType.APPLICATION_JSON))
@@ -284,16 +299,16 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
     public void shouldReturnInternalErrorWhenUpdateRestDestination() throws Exception {
     	when(
     		restDestinationService
-    			.getByGUID(tenant, restDestination1.getGuid()))
+    			.getByGUID(tenant, application, restDestination1.getGuid()))
     	.thenReturn(ServiceResponseBuilder.<RestDestination>ok().withResult(restDestination1).build());
 
     	when(
     		restDestinationService
-    			.update(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.anyString(), org.mockito.Matchers.any(RestDestination.class)))
+    			.update(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(Application.class), org.mockito.Matchers.anyString(), org.mockito.Matchers.any(RestDestination.class)))
     	.thenReturn(ServiceResponseBuilder.<RestDestination>error().build());
 
     	getMockMvc()
-    	.perform(MockMvcRequestBuilders.put("/restDestinations/" + restDestination1.getGuid())
+    	.perform(MockMvcRequestBuilders.put(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH) + restDestination1.getGuid())
     			.content(getJson(new RestDestinationVO().apply(restDestination1)))
     			.contentType(MediaType.APPLICATION_JSON)
     			.accept(MediaType.APPLICATION_JSON))
@@ -308,11 +323,11 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldDeleteRestDestination() throws Exception {
-        when(restDestinationService.remove(tenant, restDestination1.getGuid()))
+        when(restDestinationService.remove(tenant, application, restDestination1.getGuid()))
                 .thenReturn(ServiceResponseBuilder.<RestDestination>ok().build());
 
         getMockMvc()
-        .perform(MockMvcRequestBuilders.delete("/restDestinations/" + restDestination1.getGuid())
+        .perform(MockMvcRequestBuilders.delete(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH) + restDestination1.getGuid())
         		.contentType("application/json")
         		.accept(MediaType.APPLICATION_JSON))
         .andExpect(status().is2xxSuccessful())
@@ -325,14 +340,14 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldReturnInternalErrorWhenDeleteRestDestination() throws Exception {
-    	when(restDestinationService.remove(tenant, restDestination1.getGuid()))
+    	when(restDestinationService.remove(tenant, application, restDestination1.getGuid()))
     	.thenReturn(ServiceResponseBuilder
     					.<RestDestination>error()
     					.withMessage(RestDestinationService.Messages.REST_DESTINATION_REMOVED_UNSUCCESSFULLY.getCode())
     					.build());
 
         getMockMvc()
-        .perform(MockMvcRequestBuilders.delete("/restDestinations/" + restDestination1.getGuid())
+        .perform(MockMvcRequestBuilders.delete(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH) + restDestination1.getGuid())
         		.contentType("application/json")
         		.accept(MediaType.APPLICATION_JSON))
         .andExpect(status().is5xxServerError())
@@ -346,14 +361,14 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldTryDeleteNonexistentRestDestination() throws Exception {
-    	when(restDestinationService.remove(tenant, restDestination1.getGuid()))
+    	when(restDestinationService.remove(tenant, application, restDestination1.getGuid()))
     	.thenReturn(
     			ServiceResponseBuilder
     				.<RestDestination>error()
     				.withMessage(RestDestinationService.Validations.DESTINATION_NOT_FOUND.getCode())
     				.build());
 
-    	getMockMvc().perform(MockMvcRequestBuilders.delete("/restDestinations/" + restDestination1.getGuid())
+    	getMockMvc().perform(MockMvcRequestBuilders.delete(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH) + restDestination1.getGuid())
     			.contentType("application/json")
     			.accept(MediaType.APPLICATION_JSON))
     	.andExpect(status().is4xxClientError())

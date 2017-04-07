@@ -78,7 +78,7 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
 
     @Autowired
     private TenantRepository tenantRepository;
-    
+
     @Autowired
     private ApplicationRepository applicationRepository;
 
@@ -156,7 +156,7 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Event cannot be null");
 
-        subject.send(null,destinationUri,data,device.getTenant());
+        subject.send(null,destinationUri,data,device.getTenant(),device.getApplication());
     }
 
     @Test
@@ -164,7 +164,7 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Destination URI cannot be null or empty");
 
-        subject.send(event,null,data,device.getTenant());
+        subject.send(event,null,data,device.getTenant(),device.getApplication());
     }
 
     @Test
@@ -172,7 +172,7 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Destination URI cannot be null or empty");
 
-        subject.send(event,new URI(null,null,null,null,null),data,device.getTenant());
+        subject.send(event,new URI(null,null,null,null,null),data,device.getTenant(),device.getApplication());
     }
 
     @Test
@@ -180,7 +180,7 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Data cannot be null");
 
-        subject.send(event,destinationUri,null,device.getTenant());
+        subject.send(event,destinationUri,null,device.getTenant(),device.getApplication());
     }
 
     @Test
@@ -190,7 +190,7 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("A valid MQTT channel is required");
 
-        subject.send(event,destinationUri,data,device.getTenant());
+        subject.send(event,destinationUri,data,device.getTenant(),device.getApplication());
     }
 
     @Test
@@ -200,7 +200,7 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("A valid MQTT channel is required");
 
-        subject.send(event,destinationUri,data,device.getTenant());
+        subject.send(event,destinationUri,data,device.getTenant(),device.getApplication());
     }
 
     @Test
@@ -208,7 +208,7 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Tenant cannot be null");
 
-        subject.send(event,destinationUri,data,null);
+        subject.send(event,destinationUri,data,null,null);
     }
 
     @Test
@@ -238,7 +238,7 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
             MessageFormat.format("Device is unknown : {0}", destinationUri.getPath())
         );
 
-        subject.send(event,destinationUri,data,device.getTenant());
+        subject.send(event,destinationUri,data,device.getTenant(),device.getApplication());
     }
 
     @Test
@@ -250,7 +250,7 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
             .filter(device -> !device.isActive())
             .orElseGet(() -> deviceRegisterService.switchEnabledDisabled(tenant, application, THE_DEVICE_GUID).getResult());
 
-        subject.send(event,destinationUri,data,device.getTenant());
+        subject.send(event,destinationUri,data,device.getTenant(),device.getApplication());
 
         verify(mqttMessageGateway,never()).send(anyString(),anyString());
         verify(deviceLogEventService,never()).logIncomingEvent(Mockito.any() , Mockito.any());
@@ -277,11 +277,12 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
                     data.get(DEVICE_MQTT_CHANNEL));
 
         assertThat(event.getIncoming().getChannel(), equalTo(INPUT_CHANNEL));
-        subject.send(event,destinationUri,data,device.getTenant());
+        subject.send(event,destinationUri,data,device.getTenant(),device.getApplication());
 
         InOrder inOrder = inOrder(mqttMessageGateway,deviceLogEventService);
 
         inOrder.verify(mqttMessageGateway).send(event.getPayload(),expectedMqttTopic);
         inOrder.verify(deviceLogEventService).logOutgoingEvent(eq(device), eq(event));
     }
+
 }

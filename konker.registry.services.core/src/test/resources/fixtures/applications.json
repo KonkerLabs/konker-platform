@@ -14,6 +14,19 @@
       "qualifier": "konker"
     },
     {
+      "_id" : "empty",
+      "_class" : "com.konkerlabs.platform.registry.model.Application",
+      "tenant" : {
+        "$id" : "8aa1c111-41a9-40be-a2a4-f52ca71e5600",
+        "$ref" : "tenants"
+      },
+      "friendlyName" : "empty",
+      "description" : "empty",
+      "registrationDate" : 1453320973747,
+      "active" : true,
+      "qualifier": "konker"
+    },
+    {
       "_id" : "konker",
       "_class" : "com.konkerlabs.platform.registry.model.Application",
       "tenant" : {

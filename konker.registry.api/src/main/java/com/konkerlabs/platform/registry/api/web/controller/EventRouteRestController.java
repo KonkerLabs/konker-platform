@@ -163,7 +163,7 @@ public class EventRouteRestController implements InitializingBean {
                 throw new BadServiceResponseException(user, deviceResponse, validationsCode);
             }
         } else if (RouteActorType.REST.name().equalsIgnoreCase(routeForm.getType())) {
-            ServiceResponse<RestDestination> restResponse = restDestinationService.getByGUID(tenant, routeForm.getGuid());
+            ServiceResponse<RestDestination> restResponse = restDestinationService.getByGUID(tenant, application, routeForm.getGuid());
             if (restResponse.isOk()) {
                 routeActor.setDisplayName(restResponse.getResult().getName());
                 routeActor.setUri(restResponse.getResult().toURI());
