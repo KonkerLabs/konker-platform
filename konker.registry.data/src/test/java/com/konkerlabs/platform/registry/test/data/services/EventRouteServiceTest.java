@@ -83,7 +83,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
         tenant = tenantRepository.findByDomainName("konker");
         application = applicationRepository.findByTenantAndName(tenant.getId(), "konker");
         emptyTenant = tenantRepository.findByDomainName("empty");
-        emptyApplication = applicationRepository.findByTenantAndName(emptyTenant.getId(), "smartffkonker");
+        emptyApplication = applicationRepository.findByTenantAndName(emptyTenant.getId(), "empty");
 
         transformation = Transformation.builder().id(TRANSFORMATION_ID_IN_USE).build();
 
