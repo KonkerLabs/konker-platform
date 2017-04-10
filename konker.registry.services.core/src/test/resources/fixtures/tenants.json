@@ -13,7 +13,7 @@
       "domainName" : "inm"
     },
     {
-      "_id" : "45fa0c41-623c-4f64-a3e5-0256ff3a63af",
+      "_id" : "8aa1c111-41a9-40be-a2a4-f52ca71e5600",
       "_class" : "com.konkerlabs.platform.registry.model.Tenant",
       "name" : "EmptyTenant",
       "domainName" : "empty"

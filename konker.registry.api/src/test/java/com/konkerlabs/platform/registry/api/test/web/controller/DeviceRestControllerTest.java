@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,8 +32,10 @@ import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
 import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
 import com.konkerlabs.platform.registry.api.web.controller.DeviceRestController;
 import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 
@@ -51,16 +54,24 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     private DeviceRegisterService deviceRegisterService;
 
     @Autowired
+    private ApplicationService applicationService;
+
+    @Autowired
     private Tenant tenant;
+
+    @Autowired
+    private Application application;
 
     private Device device1;
 
     private Device device2;
 
+    private String BASEPATH = "devices";
+
     @Before
     public void setUp() {
-        device1 = Device.builder().deviceId("id1").name("name1").guid("guid1").active(true).build();
-        device2 = Device.builder().deviceId("id2").name("name2").guid("guid2").active(false).build();
+        device1 = Device.builder().deviceId("id1").name("name1").guid("guid1").application(application).active(true).build();
+        device2 = Device.builder().deviceId("id2").name("name2").guid("guid2").application(application).active(false).build();
     }
 
     @After
@@ -75,10 +86,13 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
         devices.add(device1);
         devices.add(device2);
 
-        when(deviceRegisterService.findAll(tenant))
+        when(deviceRegisterService.findAll(tenant, application))
                 .thenReturn(ServiceResponseBuilder.<List<Device>>ok().withResult(devices).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.get("/devices/")
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+        		.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
+
+        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH))
                                                    .contentType("application/json")
                                                    .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
@@ -102,10 +116,13 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryListDevicesWithInternalError() throws Exception {
 
-        when(deviceRegisterService.findAll(tenant))
+        when(deviceRegisterService.findAll(tenant, application))
                 .thenReturn(ServiceResponseBuilder.<List<Device>>error().build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.get("/devices/")
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
+
+        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH))
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is5xxServerError())
@@ -121,10 +138,13 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldReadDevice() throws Exception {
 
-        when(deviceRegisterService.getByDeviceGuid(tenant, device1.getGuid()))
+        when(deviceRegisterService.getByDeviceGuid(tenant, application, device1.getGuid()))
                 .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device1).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.get("/devices/" + device1.getGuid())
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
+
+        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH, device1.getGuid()))
                     .contentType("application/json")
                     .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
@@ -144,10 +164,13 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryReadDeviceWithBadRequest() throws Exception {
 
-        when(deviceRegisterService.getByDeviceGuid(tenant, device1.getGuid()))
+        when(deviceRegisterService.getByDeviceGuid(tenant, application, device1.getGuid()))
                 .thenReturn(ServiceResponseBuilder.<Device>error().withMessage(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode()).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.get("/devices/" + device1.getGuid())
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
+
+        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH, device1.getGuid()))
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError())
@@ -163,10 +186,13 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldCreateDevice() throws Exception {
 
-        when(deviceRegisterService.register(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(Device.class)))
+        when(deviceRegisterService.register(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(Application.class), org.mockito.Matchers.any(Device.class)))
                 .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device1).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.post("/devices/")
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
+
+        getMockMvc().perform(MockMvcRequestBuilders.post(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH))
                                                    .content(getJson(new DeviceVO().apply(device1)))
                                                    .contentType("application/json")
                                                    .accept(MediaType.APPLICATION_JSON))
@@ -186,10 +212,13 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryCreateDeviceWithBadRequest() throws Exception {
 
-        when(deviceRegisterService.register(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(Device.class)))
+        when(deviceRegisterService.register(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(Application.class), org.mockito.Matchers.any(Device.class)))
                 .thenReturn(ServiceResponseBuilder.<Device>error().withMessage(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode()).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.post("/devices/")
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
+
+        getMockMvc().perform(MockMvcRequestBuilders.post(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH))
                 .content(getJson(new DeviceVO().apply(device1)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
@@ -207,13 +236,16 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldUpdateDevice() throws Exception {
 
-        when(deviceRegisterService.getByDeviceGuid(tenant, device1.getGuid()))
+        when(deviceRegisterService.getByDeviceGuid(tenant, application, device1.getGuid()))
                 .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device1).build());
 
-        when(deviceRegisterService.update(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.anyString(), org.mockito.Matchers.any(Device.class)))
+        when(deviceRegisterService.update(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(Application.class), org.mockito.Matchers.anyString(), org.mockito.Matchers.any(Device.class)))
                 .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device1).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.put("/devices/" + device1.getGuid())
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
+
+        getMockMvc().perform(MockMvcRequestBuilders.put(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH, device1.getGuid()))
                 .content(getJson(new DeviceVO().apply(device1)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
@@ -228,13 +260,16 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryUpdateDeviceWithInternalError() throws Exception {
 
-        when(deviceRegisterService.getByDeviceGuid(tenant, device1.getGuid()))
+        when(deviceRegisterService.getByDeviceGuid(tenant, application, device1.getGuid()))
                 .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device1).build());
 
-        when(deviceRegisterService.update(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.anyString(), org.mockito.Matchers.any(Device.class)))
+        when(deviceRegisterService.update(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(Application.class), org.mockito.Matchers.anyString(), org.mockito.Matchers.any(Device.class)))
                 .thenReturn(ServiceResponseBuilder.<Device>error().build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.put("/devices/" + device1.getGuid())
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
+
+        getMockMvc().perform(MockMvcRequestBuilders.put(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH, device1.getGuid()))
                 .content(getJson(new DeviceVO().apply(device1)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
@@ -251,10 +286,13 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldDeleteDevice() throws Exception {
 
-        when(deviceRegisterService.remove(tenant, device1.getGuid()))
+        when(deviceRegisterService.remove(tenant, application, device1.getGuid()))
                 .thenReturn(ServiceResponseBuilder.<Device>ok().build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.delete("/devices/" + device1.getGuid())
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
+
+        getMockMvc().perform(MockMvcRequestBuilders.delete(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH, device1.getGuid()))
                                                    .contentType("application/json")
                                                    .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is2xxSuccessful())
@@ -270,10 +308,13 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryDeleteDeviceWithInternalError() throws Exception {
 
-        when(deviceRegisterService.remove(tenant, device1.getGuid()))
+        when(deviceRegisterService.remove(tenant, application, device1.getGuid()))
                 .thenReturn(ServiceResponseBuilder.<Device>error().withMessage(DeviceRegisterService.Messages.DEVICE_REMOVED_UNSUCCESSFULLY.getCode()).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.delete("/devices/" + device1.getGuid())
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
+
+        getMockMvc().perform(MockMvcRequestBuilders.delete(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH, device1.getGuid()))
                                                    .contentType("application/json")
                                                    .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is5xxServerError())
@@ -289,10 +330,13 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryDeleteNonexistentEventRoute() throws Exception {
 
-        when(deviceRegisterService.remove(tenant, device1.getGuid()))
+        when(deviceRegisterService.remove(tenant, application, device1.getGuid()))
                 .thenReturn(ServiceResponseBuilder.<Device>error().withMessage(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode()).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.delete("/devices/" + device1.getGuid())
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
+
+        getMockMvc().perform(MockMvcRequestBuilders.delete(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH, device1.getGuid()))
                                            .contentType("application/json")
                                            .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is4xxClientError())

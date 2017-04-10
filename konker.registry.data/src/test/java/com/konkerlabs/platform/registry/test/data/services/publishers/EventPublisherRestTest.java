@@ -29,11 +29,13 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
+import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.data.services.publishers.api.EventPublisher;
@@ -50,7 +52,7 @@ import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
         BusinessTestConfiguration.class,
         RedisTestConfiguration.class
 })
-@UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/rest-destinations.json"})
+@UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/rest-destinations.json"})
 public class EventPublisherRestTest extends BusinessLayerTestSupport {
 
     private static final String REGISTERED_AND_ACTIVE_DESTINATION_GUID = "dda64780-eb81-11e5-958b-a73dab8b32ee";
@@ -61,6 +63,8 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
 
     @Autowired
     private TenantRepository tenantRepository;
+    @Autowired
+    private ApplicationRepository applicationRepository;
     @Autowired
     private RestDestinationService destinationService;
     @Autowired
@@ -73,6 +77,7 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
     private HttpGateway httpGateway;
 
     private Tenant tenant;
+    private Application application;
 
     private String invalidEventPayload = "{\n" +
             "    \"field\" : \"value\"\n" +
@@ -97,7 +102,8 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
         MockitoAnnotations.initMocks(this);
 
         tenant = tenantRepository.findByDomainName("konker");
-        destination = destinationService.getByGUID(tenant, REGISTERED_AND_ACTIVE_DESTINATION_GUID).getResult();
+        application = applicationRepository.findByTenantAndName(tenant.getId(), "konker");
+        destination = destinationService.getByGUID(tenant, application, REGISTERED_AND_ACTIVE_DESTINATION_GUID).getResult();
 
         destinationUri = new URIDealer() {
             @Override
@@ -132,7 +138,7 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Event cannot be null");
 
-        subject.send(null, destinationUri, null, tenant);
+        subject.send(null, destinationUri, null, tenant, application);
     }
 
     @Test
@@ -140,7 +146,7 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Destination URI cannot be null or empty");
 
-        subject.send(event, null, null, tenant);
+        subject.send(event, null, null, tenant, application);
     }
 
     @Test
@@ -148,7 +154,7 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Destination URI cannot be null or empty");
 
-        subject.send(event, new URI(null, null, null, null, null), null, tenant);
+        subject.send(event, new URI(null, null, null, null, null), null, tenant, application);
     }
 
     @Test
@@ -156,7 +162,7 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Tenant cannot be null");
 
-        subject.send(event, destinationUri, null, null);
+        subject.send(event, destinationUri, null, null, null);
     }
 
     @Test
@@ -183,7 +189,7 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
                 MessageFormat.format("REST Destination is unknown : {0}", destinationUri)
         );
 
-        subject.send(event, destinationUri, null, tenant);
+        subject.send(event, destinationUri, null, tenant, application);
     }
 
     @Test
@@ -205,7 +211,7 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
             }
         }.toURI();
 
-        subject.send(event, destinationUri, null, tenant);
+        subject.send(event, destinationUri, null, tenant, application);
 
         verify(httpGateway, never()).request(any(), any(), any(), any(), any(), any(), any());
         verify(eventRepository, never()).saveIncoming(tenant, event);
@@ -215,7 +221,7 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
     public void shouldNotSendAnyEventThroughGatewayIfPayloadParsingFails() throws Exception {
         event.setPayload(invalidEventPayload);
 
-        subject.send(event, destinationUri, null, tenant);
+        subject.send(event, destinationUri, null, tenant, application);
 
         verify(httpGateway, never()).request(any(), any(), any(), any(), any(), any(), any());
         verify(eventRepository, never()).saveIncoming(tenant, event);
@@ -223,7 +229,7 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldSendAnEventThroughGatewayIfDestinationIsEnabled() throws Exception {
-        subject.send(event, destinationUri, null, tenant);
+        subject.send(event, destinationUri, null, tenant, application);
 
         InOrder inOrder = Mockito.inOrder(eventRepository, httpGateway);
 

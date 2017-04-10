@@ -12,6 +12,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
@@ -50,7 +51,7 @@ public class EventPublisherDevice implements EventPublisher {
     }
 
     @Override
-    public void send(Event outgoingEvent, URI destinationUri, Map<String, String> data, Tenant tenant) {
+    public void send(Event outgoingEvent, URI destinationUri, Map<String, String> data, Tenant tenant, Application application) {
         Optional.ofNullable(outgoingEvent)
                 .orElseThrow(() -> new IllegalArgumentException("Event cannot be null"));
         Optional.ofNullable(destinationUri)

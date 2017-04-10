@@ -16,4 +16,8 @@ public interface DeviceRepository extends MongoRepository<Device,String> {
     Device findByTenantAndGuid(String tenantId, String deviceGuid);
     @Query("{ 'apiKey' : ?0 }")
     Device findByApiKey(String apiKey);
+    @Query("{ 'tenant.id' : ?0, 'application.name' : ?1 }")
+	List<Device> findAllByTenantIdAndApplicationName(String tenantId, String applicationName);
+    @Query("{ 'tenant.id' : ?0, 'application.name' : ?1, 'guid' : ?2 }")
+	Device findByTenantAndApplicationAndGuid(String tenantId, String applicationName, String guid);
 }

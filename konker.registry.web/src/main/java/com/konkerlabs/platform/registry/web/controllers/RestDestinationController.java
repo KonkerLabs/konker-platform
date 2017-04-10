@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.web.controllers;
 
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
@@ -50,13 +51,15 @@ public class RestDestinationController implements ApplicationContextAware {
     private RestDestinationService restDestinationService;
     @Autowired
     private Tenant tenant;
+    @Autowired
+    private Application application;
     private ApplicationContext applicationContext;
 
     @RequestMapping
     @PreAuthorize("hasAuthority('LIST_REST_DESTINATIONS')")
     public ModelAndView index() {
         return new ModelAndView("destinations/rest/index")
-            .addObject("allDestinations", restDestinationService.findAll(tenant).getResult());
+            .addObject("allDestinations", restDestinationService.findAll(tenant, application).getResult());
     }
 
     @RequestMapping("new")
@@ -72,7 +75,7 @@ public class RestDestinationController implements ApplicationContextAware {
     public ModelAndView saveNew(@ModelAttribute("destinationForm") RestDestinationForm destinationForm,
                                 RedirectAttributes redirectAttributes, Locale locale) {
         return doSave(
-                () -> restDestinationService.register(tenant,destinationForm.toModel()),
+                () -> restDestinationService.register(tenant, application, destinationForm.toModel()),
                 destinationForm, locale,
                 redirectAttributes, "");
     }
@@ -82,7 +85,7 @@ public class RestDestinationController implements ApplicationContextAware {
     public ModelAndView show(@PathVariable("guid") String guid) {
         return new ModelAndView("destinations/rest/show")
             .addObject("destination",new RestDestinationForm()
-                    .fillFrom(restDestinationService.getByGUID(tenant,guid).getResult()));
+                    .fillFrom(restDestinationService.getByGUID(tenant, application, guid).getResult()));
     }
 
     @RequestMapping("/{guid}/edit")
@@ -90,7 +93,7 @@ public class RestDestinationController implements ApplicationContextAware {
     public ModelAndView edit(@PathVariable("guid") String guid) {
         return new ModelAndView("destinations/rest/form")
                 .addObject("destination",new RestDestinationForm()
-                        .fillFrom(restDestinationService.getByGUID(tenant,guid).getResult()))
+                        .fillFrom(restDestinationService.getByGUID(tenant, application, guid).getResult()))
                 .addObject("action",format("/destinations/rest/{0}",guid))
                 .addObject("method", "put");
     }
@@ -101,7 +104,7 @@ public class RestDestinationController implements ApplicationContextAware {
                                 @ModelAttribute("destinationForm") RestDestinationForm destinationForm,
                                 RedirectAttributes redirectAttributes, Locale locale) {
         return doSave(
-                () -> restDestinationService.update(tenant,guid,destinationForm.toModel()),
+                () -> restDestinationService.update(tenant, application, guid, destinationForm.toModel()),
                 destinationForm, locale,
                 redirectAttributes, "put");
     }
@@ -137,7 +140,7 @@ public class RestDestinationController implements ApplicationContextAware {
     						   @ModelAttribute("destinationForm") RestDestinationForm destinationForm,
                                RedirectAttributes redirectAttributes, Locale locale) {
 
-        ServiceResponse<RestDestination> serviceResponse = restDestinationService.remove(tenant, guid);
+        ServiceResponse<RestDestination> serviceResponse = restDestinationService.remove(tenant, application, guid);
         if (serviceResponse.isOk()) {
             redirectAttributes.addFlashAttribute("message",
                     applicationContext.getMessage(Messages.REST_DESTINATION_REMOVED_SUCCESSFULLY.getCode(), null, locale)

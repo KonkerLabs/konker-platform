@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry.data.services.publishers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.SmsDestination;
@@ -49,7 +50,7 @@ public class EventPublisherSms implements EventPublisher {
     }
 
     @Override
-    public void send(Event outgoingEvent, URI destinationUri, Map<String, String> data, Tenant tenant) {
+    public void send(Event outgoingEvent, URI destinationUri, Map<String, String> data, Tenant tenant, Application application) {
         Optional.ofNullable(outgoingEvent)
                 .orElseThrow(() -> new IllegalArgumentException("Event cannot be null"));
         Optional.ofNullable(destinationUri)

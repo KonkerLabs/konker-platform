@@ -1,14 +1,14 @@
 package com.konkerlabs.platform.registry.api.test.web.controller;
 
-import static org.hamcrest.Matchers.*;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.konkerlabs.platform.registry.api.config.WebMvcConfig;
+import com.konkerlabs.platform.registry.api.model.EventRouteVO;
+import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
+import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
+import com.konkerlabs.platform.registry.api.web.controller.EventRouteRestController;
+import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
+import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
+import com.konkerlabs.platform.registry.business.services.api.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,23 +23,16 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import com.konkerlabs.platform.registry.api.config.WebMvcConfig;
-import com.konkerlabs.platform.registry.api.model.EventRouteVO;
-import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
-import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
-import com.konkerlabs.platform.registry.api.web.controller.EventRouteRestController;
-import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.EventRoute;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.Transformation;
-import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
-import com.konkerlabs.platform.registry.business.model.RestDestination;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
-import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
-import com.konkerlabs.platform.registry.business.services.api.TransformationService;;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = EventRouteRestController.class)
 @AutoConfigureMockMvc(secure = false)
@@ -61,10 +54,16 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
     private RestDestinationService restDestinationService;
 
     @Autowired
+    private ApplicationService applicationService;
+
+    @Autowired
     private TransformationService transformationService;
 
     @Autowired
     private Tenant tenant;
+
+    @Autowired
+    private Application application;
 
     private Transformation transformation1;
 
@@ -79,6 +78,8 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
     private Device device2;
 
     private RestDestination rest1;
+
+    private String BASEPATH = "routes";
 
     @Before
     public void setUp() {
@@ -138,10 +139,10 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
         routes.add(route1);
         routes.add(route2);
 
-        when(eventRouteService.getAll(tenant))
+        when(eventRouteService.getAll(tenant, application))
             .thenReturn(ServiceResponseBuilder.<List<EventRoute>> ok().withResult(routes).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.get("/routes/")
+        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH))
                     .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))
@@ -166,10 +167,13 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryListEventRoutesWithInternalError() throws Exception {
 
-        when(eventRouteService.getAll(tenant))
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+            .thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
+
+        when(eventRouteService.getAll(tenant, application))
             .thenReturn(ServiceResponseBuilder.<List<EventRoute>> error().build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.get("/routes/")
+        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH))
                     .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is5xxServerError())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))
@@ -183,10 +187,10 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldReadEventRoute() throws Exception {
 
-        when(eventRouteService.getByGUID(tenant, route1.getGuid()))
+        when(eventRouteService.getByGUID(tenant, application, route1.getGuid()))
             .thenReturn(ServiceResponseBuilder.<EventRoute> ok().withResult(route1).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.get("/routes/" + route1.getGuid())
+        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH) + route1.getGuid())
                     .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))
@@ -205,10 +209,13 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryReadEventRouteWithBadRequest() throws Exception {
 
-        when(eventRouteService.getByGUID(tenant, route1.getGuid()))
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+            .thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
+
+        when(eventRouteService.getByGUID(tenant, application, route1.getGuid()))
             .thenReturn(ServiceResponseBuilder.<EventRoute> error().withMessage(EventRouteService.Validations.NAME_IN_USE.getCode()).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.get("/routes/" + route1.getGuid())
+        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH) + route1.getGuid())
                     .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is4xxClientError())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))
@@ -223,19 +230,22 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldCreateEventRoute() throws Exception {
 
-        when(eventRouteService.save(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(EventRoute.class)))
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+            .thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
+
+        when(eventRouteService.save(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(Application.class), org.mockito.Matchers.any(EventRoute.class)))
             .thenReturn(ServiceResponseBuilder.<EventRoute> ok().withResult(route1).build());
 
-        when(deviceRegisterService.getByDeviceGuid(tenant, device1.getGuid()))
+        when(deviceRegisterService.getByDeviceGuid(tenant, application, device1.getGuid()))
             .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device1).build());
 
-        when(deviceRegisterService.getByDeviceGuid(tenant, device2.getGuid()))
+        when(deviceRegisterService.getByDeviceGuid(tenant, application, device2.getGuid()))
             .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device2).build());
 
-        when(transformationService.get(tenant, transformation1.getGuid()))
+        when(transformationService.get(tenant, application, transformation1.getGuid()))
             .thenReturn(ServiceResponseBuilder.<Transformation> ok().withResult(transformation1).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.post("/routes/")
+        getMockMvc().perform(MockMvcRequestBuilders.post(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH))
                                                    .content(getJson(new EventRouteVO().apply(route1)))
                                                    .contentType("application/json")
                                                    .accept(MediaType.APPLICATION_JSON))
@@ -258,16 +268,19 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldCreateEventRouteToRestDestination() throws Exception {
 
-        when(eventRouteService.save(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(EventRoute.class)))
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+            .thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
+
+        when(eventRouteService.save(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(Application.class), org.mockito.Matchers.any(EventRoute.class)))
             .thenReturn(ServiceResponseBuilder.<EventRoute> ok().withResult(route3).build());
 
-        when(deviceRegisterService.getByDeviceGuid(tenant, device1.getGuid()))
+        when(deviceRegisterService.getByDeviceGuid(tenant, application, device1.getGuid()))
             .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device1).build());
 
-        when(restDestinationService.getByGUID(tenant, rest1.getGuid()))
+        when(restDestinationService.getByGUID(tenant, application, rest1.getGuid()))
             .thenReturn(ServiceResponseBuilder.<RestDestination> ok().withResult(rest1).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.post("/routes/")
+        getMockMvc().perform(MockMvcRequestBuilders.post(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH))
                                                    .content(getJson(new EventRouteVO().apply(route3)))
                                                    .contentType("application/json")
                                                    .accept(MediaType.APPLICATION_JSON))
@@ -290,19 +303,22 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryCreateEventRouteWithBadRequest() throws Exception {
 
-        when(eventRouteService.save(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(EventRoute.class)))
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+            .thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
+
+        when(eventRouteService.save(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(Application.class), org.mockito.Matchers.any(EventRoute.class)))
             .thenReturn(ServiceResponseBuilder.<EventRoute> error().withMessage(EventRouteService.Validations.NAME_IN_USE.getCode()).build());
 
-        when(deviceRegisterService.getByDeviceGuid(tenant, device1.getGuid()))
+        when(deviceRegisterService.getByDeviceGuid(tenant, application, device1.getGuid()))
             .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device1).build());
 
-        when(deviceRegisterService.getByDeviceGuid(tenant, device2.getGuid()))
+        when(deviceRegisterService.getByDeviceGuid(tenant, application, device2.getGuid()))
             .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device2).build());
 
-        when(transformationService.get(tenant, transformation1.getGuid()))
+        when(transformationService.get(tenant, application, transformation1.getGuid()))
             .thenReturn(ServiceResponseBuilder.<Transformation> ok().withResult(transformation1).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.post("/routes/")
+        getMockMvc().perform(MockMvcRequestBuilders.post(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH))
                                                .content(getJson(new EventRouteVO().apply(route1)))
                                                .contentType("application/json")
                                                .accept(MediaType.APPLICATION_JSON))
@@ -319,19 +335,19 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryCreateEventRouteWithInvalidOutgoing() throws Exception {
 
-        when(eventRouteService.save(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(EventRoute.class)))
+        when(eventRouteService.save(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(Application.class), org.mockito.Matchers.any(EventRoute.class)))
             .thenReturn(ServiceResponseBuilder.<EventRoute> ok().withResult(route1).build());
 
-        when(deviceRegisterService.getByDeviceGuid(tenant, device1.getGuid()))
+        when(deviceRegisterService.getByDeviceGuid(tenant, application, device1.getGuid()))
             .thenReturn(ServiceResponseBuilder.<Device> error().withMessage(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode()).withResult(device1).build());
 
-        when(deviceRegisterService.getByDeviceGuid(tenant, device2.getGuid()))
+        when(deviceRegisterService.getByDeviceGuid(tenant, application, device2.getGuid()))
             .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device2).build());
 
-        when(transformationService.get(tenant, transformation1.getGuid()))
+        when(transformationService.get(tenant, application, transformation1.getGuid()))
             .thenReturn(ServiceResponseBuilder.<Transformation> ok().withResult(transformation1).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.post("/routes/")
+        getMockMvc().perform(MockMvcRequestBuilders.post(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH))
                                                    .content(getJson(new EventRouteVO().apply(route3)))
                                                    .contentType("application/json")
                                                    .accept(MediaType.APPLICATION_JSON))
@@ -347,16 +363,19 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryCreateEventRouteWithInvalidTransformation() throws Exception {
 
-        when(deviceRegisterService.getByDeviceGuid(tenant, device1.getGuid()))
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+            .thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
+
+        when(deviceRegisterService.getByDeviceGuid(tenant, application, device1.getGuid()))
             .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device1).build());
 
-        when(deviceRegisterService.getByDeviceGuid(tenant, device2.getGuid()))
+        when(deviceRegisterService.getByDeviceGuid(tenant, application, device2.getGuid()))
             .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device2).build());
 
-        when(transformationService.get(tenant, transformation1.getGuid()))
+        when(transformationService.get(tenant, application, transformation1.getGuid()))
             .thenReturn(ServiceResponseBuilder.<Transformation> error().withMessage(TransformationService.Validations.TRANSFORMATION_NOT_FOUND.getCode()).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.post("/routes/")
+        getMockMvc().perform(MockMvcRequestBuilders.post(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH))
                                                .content(getJson(new EventRouteVO().apply(route1)))
                                                .contentType("application/json")
                                                .accept(MediaType.APPLICATION_JSON))
@@ -373,22 +392,22 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldUpdateEventRoute() throws Exception {
 
-        when(eventRouteService.getByGUID(tenant, route1.getGuid()))
+        when(eventRouteService.getByGUID(tenant, application, route1.getGuid()))
             .thenReturn(ServiceResponseBuilder.<EventRoute> ok().withResult(route1).build());
 
-        when(eventRouteService.update(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.anyString(), org.mockito.Matchers.any(EventRoute.class)))
+        when(eventRouteService.update(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(Application.class), org.mockito.Matchers.anyString(), org.mockito.Matchers.any(EventRoute.class)))
             .thenReturn(ServiceResponseBuilder.<EventRoute> ok().withResult(route1).build());
 
-        when(deviceRegisterService.getByDeviceGuid(tenant, device1.getGuid()))
+        when(deviceRegisterService.getByDeviceGuid(tenant, application, device1.getGuid()))
             .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device1).build());
 
-        when(deviceRegisterService.getByDeviceGuid(tenant, device2.getGuid()))
+        when(deviceRegisterService.getByDeviceGuid(tenant, application, device2.getGuid()))
             .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device2).build());
 
-        when(transformationService.get(tenant, transformation1.getGuid()))
+        when(transformationService.get(tenant, application, transformation1.getGuid()))
             .thenReturn(ServiceResponseBuilder.<Transformation> ok().withResult(transformation1).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.put("/routes/" + route1.getGuid())
+        getMockMvc().perform(MockMvcRequestBuilders.put(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH) + route1.getGuid())
                                                    .content(getJson(new EventRouteVO().apply(route1)))
                                                    .contentType("application/json")
                                                    .accept(MediaType.APPLICATION_JSON))
@@ -404,19 +423,22 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldUpdateEventRouteWithoutTransformation() throws Exception {
 
-        when(eventRouteService.getByGUID(tenant, route2.getGuid()))
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+            .thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
+
+        when(eventRouteService.getByGUID(tenant, application, route2.getGuid()))
             .thenReturn(ServiceResponseBuilder.<EventRoute> ok().withResult(route2).build());
 
-        when(eventRouteService.update(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.anyString(), org.mockito.Matchers.any(EventRoute.class)))
+        when(eventRouteService.update(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(Application.class), org.mockito.Matchers.anyString(), org.mockito.Matchers.any(EventRoute.class)))
             .thenReturn(ServiceResponseBuilder.<EventRoute> ok().withResult(route2).build());
 
-        when(deviceRegisterService.getByDeviceGuid(tenant, device1.getGuid()))
+        when(deviceRegisterService.getByDeviceGuid(tenant, application, device1.getGuid()))
             .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device1).build());
 
-        when(deviceRegisterService.getByDeviceGuid(tenant, device2.getGuid()))
+        when(deviceRegisterService.getByDeviceGuid(tenant, application, device2.getGuid()))
             .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device2).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.put("/routes/" + route2.getGuid())
+        getMockMvc().perform(MockMvcRequestBuilders.put(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH) + route2.getGuid())
                                                    .content(getJson(new EventRouteVO().apply(route2)))
                                                    .contentType("application/json")
                                                    .accept(MediaType.APPLICATION_JSON))
@@ -432,25 +454,28 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryUpdateEventRouteWithoutOutgoing() throws Exception {
 
-        when(eventRouteService.getByGUID(tenant, route1.getGuid()))
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+            .thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
+
+        when(eventRouteService.getByGUID(tenant, application, route1.getGuid()))
             .thenReturn(ServiceResponseBuilder.<EventRoute> ok().withResult(route1).build());
 
-        when(eventRouteService.update(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.anyString(), org.mockito.Matchers.any(EventRoute.class)))
+        when(eventRouteService.update(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(Application.class), org.mockito.Matchers.anyString(), org.mockito.Matchers.any(EventRoute.class)))
             .thenReturn(ServiceResponseBuilder.<EventRoute> error().withMessage(EventRoute.Validations.OUTGOING_ACTOR_CHANNEL_NULL.getCode()).build());
 
-        when(deviceRegisterService.getByDeviceGuid(tenant, device1.getGuid()))
+        when(deviceRegisterService.getByDeviceGuid(tenant, application, device1.getGuid()))
             .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device1).build());
 
-        when(deviceRegisterService.getByDeviceGuid(tenant, device2.getGuid()))
+        when(deviceRegisterService.getByDeviceGuid(tenant, application, device2.getGuid()))
             .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device2).build());
 
-        when(transformationService.get(tenant, transformation1.getGuid()))
+        when(transformationService.get(tenant, application, transformation1.getGuid()))
             .thenReturn(ServiceResponseBuilder.<Transformation> ok().withResult(transformation1).build());
 
         EventRouteVO eventRouteWithoutOutgoingOutgoing = new EventRouteVO().apply(route1);
         eventRouteWithoutOutgoingOutgoing.getOutgoing().setType(null);
 
-        getMockMvc().perform(MockMvcRequestBuilders.put("/routes/" + route1.getGuid())
+        getMockMvc().perform(MockMvcRequestBuilders.put(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH) + route1.getGuid())
                                                    .content(getJson(eventRouteWithoutOutgoingOutgoing))
                                                    .contentType("application/json")
                                                    .accept(MediaType.APPLICATION_JSON))
@@ -467,22 +492,25 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryUpdateEventRouteWithInternalError() throws Exception {
 
-        when(eventRouteService.getByGUID(tenant, route1.getGuid()))
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+            .thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
+
+        when(eventRouteService.getByGUID(tenant, application, route1.getGuid()))
             .thenReturn(ServiceResponseBuilder.<EventRoute> ok().withResult(route1).build());
 
-        when(eventRouteService.update(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.anyString(), org.mockito.Matchers.any(EventRoute.class)))
+        when(eventRouteService.update(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(Application.class), org.mockito.Matchers.anyString(), org.mockito.Matchers.any(EventRoute.class)))
             .thenReturn(ServiceResponseBuilder.<EventRoute> error().build());
 
-        when(deviceRegisterService.getByDeviceGuid(tenant, device1.getGuid()))
+        when(deviceRegisterService.getByDeviceGuid(tenant, application, device1.getGuid()))
             .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device1).build());
 
-        when(deviceRegisterService.getByDeviceGuid(tenant, device2.getGuid()))
+        when(deviceRegisterService.getByDeviceGuid(tenant, application, device2.getGuid()))
             .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device2).build());
 
-        when(transformationService.get(tenant, transformation1.getGuid()))
+        when(transformationService.get(tenant, application, transformation1.getGuid()))
             .thenReturn(ServiceResponseBuilder.<Transformation> ok().withResult(transformation1).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.put("/routes/" + route1.getGuid())
+        getMockMvc().perform(MockMvcRequestBuilders.put(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH) + route1.getGuid())
                                                    .content(getJson(new EventRouteVO().apply(route1)))
                                                    .contentType("application/json")
                                                    .accept(MediaType.APPLICATION_JSON))
@@ -498,10 +526,10 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldDeleteEventRoute() throws Exception {
 
-        when(eventRouteService.remove(tenant, route1.getGuid()))
+        when(eventRouteService.remove(tenant, application, route1.getGuid()))
             .thenReturn(ServiceResponseBuilder.<EventRoute> ok().build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.delete("/routes/" + route1.getGuid())
+        getMockMvc().perform(MockMvcRequestBuilders.delete(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH) + route1.getGuid())
                                                    .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is2xxSuccessful())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))
@@ -515,10 +543,10 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryDeleteEventRouteWithInternalError() throws Exception {
 
-        when(eventRouteService.remove(tenant, route1.getGuid()))
+        when(eventRouteService.remove(tenant, application, route1.getGuid()))
             .thenReturn(ServiceResponseBuilder.<EventRoute> error().build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.delete("/routes/" + route1.getGuid())
+        getMockMvc().perform(MockMvcRequestBuilders.delete(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH) + route1.getGuid())
                                                    .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is5xxServerError())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))
@@ -532,10 +560,13 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryDeleteNonexistentEventRoute() throws Exception {
 
-        when(eventRouteService.remove(tenant, route1.getGuid()))
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+            .thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
+
+        when(eventRouteService.remove(tenant, application, route1.getGuid()))
             .thenReturn(ServiceResponseBuilder.<EventRoute> error().withMessage(EventRouteService.Validations.EVENT_ROUTE_NOT_FOUND.getCode()).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.delete("/routes/" + route1.getGuid())
+        getMockMvc().perform(MockMvcRequestBuilders.delete(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH) + route1.getGuid())
                                                    .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is4xxClientError())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))

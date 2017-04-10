@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.test.web.controllers;
 
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
@@ -53,8 +54,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         WebMvcConfig.class,
         WebTestConfiguration.class,
         SecurityTestConfiguration.class,
-        RestDestinationControllerTest.RestDestinationTestContextConfig.class, 
-        WebConfig.class, 
+        RestDestinationControllerTest.RestDestinationTestContextConfig.class,
+        WebConfig.class,
         HotjarConfig.class,
         CdnConfig.class
 })
@@ -64,6 +65,8 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
     private RestDestinationService restDestinationService;
     @Autowired
     private Tenant tenant;
+    @Autowired
+    private Application application;
     @Autowired
     private ApplicationContext applicationContext;
 
@@ -124,7 +127,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
     @WithMockUser(authorities = {"LIST_REST_DESTINATIONS"})
     public void shouldListAllRegisteredDestinations() throws Exception {
         when(
-                restDestinationService.findAll(tenant)
+                restDestinationService.findAll(tenant, application)
         ).thenReturn(
                 ServiceResponseBuilder.<List<RestDestination>>ok()
                         .withResult(registeredDestinations).build()
@@ -150,7 +153,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
         response = ServiceResponseBuilder.<RestDestination>error()
                 .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
 
-        when(restDestinationService.register(eq(tenant), eq(destination))).thenReturn(response);
+        when(restDestinationService.register(eq(tenant), eq(application), eq(destination))).thenReturn(response);
 
         getMockMvc().perform(post("/destinations/rest/save").params(destinationData))
                 .andExpect(model().attribute("errors",
@@ -163,7 +166,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
                 .andExpect(model().attribute("method", ""))
                 .andExpect(view().name("destinations/rest/form"));
 
-        verify(restDestinationService).register(eq(tenant), eq(destination));
+        verify(restDestinationService).register(eq(tenant), eq(application), eq(destination));
     }
 
     @Test
@@ -173,7 +176,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
                 .withResult(savedDestination)
                 .build();
 
-        when(restDestinationService.register(eq(tenant), eq(destination))).thenReturn(response);
+        when(restDestinationService.register(eq(tenant), eq(application), eq(destination))).thenReturn(response);
 
         getMockMvc().perform(post("/destinations/rest/save").params(destinationData))
                 .andExpect(flash().attribute("message",
@@ -181,7 +184,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
                 ))
                 .andExpect(redirectedUrl(format("/destinations/rest/{0}", savedDestination.getGuid())));
 
-        verify(restDestinationService).register(eq(tenant), eq(destination));
+        verify(restDestinationService).register(eq(tenant), eq(application), eq(destination));
     }
 
     @Test
@@ -191,13 +194,13 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
                 .withResult(savedDestination)
                 .build();
 
-        when(restDestinationService.getByGUID(eq(tenant), eq(savedDestination.getGuid()))).thenReturn(response);
+        when(restDestinationService.getByGUID(eq(tenant), eq(application), eq(savedDestination.getGuid()))).thenReturn(response);
 
         getMockMvc().perform(get(format("/destinations/rest/{0}", savedDestination.getGuid())))
                 .andExpect(model().attribute("destination", equalTo(new RestDestinationForm().fillFrom(savedDestination))))
                 .andExpect(view().name("destinations/rest/show"));
 
-        verify(restDestinationService).getByGUID(eq(tenant), eq(savedDestination.getGuid()));
+        verify(restDestinationService).getByGUID(eq(tenant), eq(application), eq(savedDestination.getGuid()));
     }
 
     @Test
@@ -207,7 +210,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
                 .withResult(savedDestination)
                 .build();
 
-        when(restDestinationService.getByGUID(eq(tenant), eq(savedDestination.getGuid()))).thenReturn(response);
+        when(restDestinationService.getByGUID(eq(tenant), eq(application), eq(savedDestination.getGuid()))).thenReturn(response);
 
         getMockMvc().perform(get(format("/destinations/rest/{0}/edit", savedDestination.getGuid())))
                 .andExpect(model().attribute("destination", equalTo(new RestDestinationForm().fillFrom(savedDestination))))
@@ -215,7 +218,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
                 .andExpect(model().attribute("method", "put"))
                 .andExpect(view().name("destinations/rest/form"));
 
-        verify(restDestinationService).getByGUID(eq(tenant), eq(savedDestination.getGuid()));
+        verify(restDestinationService).getByGUID(eq(tenant), eq(application), eq(savedDestination.getGuid()));
     }
 
     @Test
@@ -224,7 +227,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
         response = ServiceResponseBuilder.<RestDestination>error()
                 .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
 
-        when(restDestinationService.update(eq(tenant), eq(savedDestination.getGuid()), eq(destination)))
+        when(restDestinationService.update(eq(tenant), eq(application), eq(savedDestination.getGuid()), eq(destination)))
                 .thenReturn(response);
 
         getMockMvc().perform(put(format("/destinations/rest/{0}", savedDestination.getGuid())).params(destinationData))
@@ -238,7 +241,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
                 .andExpect(model().attribute("method", "put"))
                 .andExpect(view().name("destinations/rest/form"));
 
-        verify(restDestinationService).update(eq(tenant), eq(savedDestination.getGuid()), eq(destination));
+        verify(restDestinationService).update(eq(tenant), eq(application), eq(savedDestination.getGuid()), eq(destination));
     }
 
     @Test
@@ -248,7 +251,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
                 .withResult(savedDestination)
                 .build();
 
-        when(restDestinationService.update(eq(tenant), eq(savedDestination.getGuid()), eq(destination))).thenReturn(response);
+        when(restDestinationService.update(eq(tenant), eq(application), eq(savedDestination.getGuid()), eq(destination))).thenReturn(response);
 
         getMockMvc().perform(put(format("/destinations/rest/{0}", savedDestination.getGuid())).params(destinationData))
                 .andExpect(flash().attribute("message",
@@ -256,9 +259,9 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
                 ))
                 .andExpect(redirectedUrl(format("/destinations/rest/{0}", savedDestination.getGuid())));
 
-        verify(restDestinationService).update(eq(tenant), eq(savedDestination.getGuid()), eq(destination));
+        verify(restDestinationService).update(eq(tenant), eq(application), eq(savedDestination.getGuid()), eq(destination));
     }
-    
+
     @Test
     @WithMockUser(authorities = {"REMOVE_REST_DESTINATION"})
     public void shouldRemoveRestDestination() throws Exception {
@@ -266,7 +269,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
                 .withResult(savedDestination)
                 .build();
 
-        when(restDestinationService.remove(eq(tenant), eq(savedDestination.getGuid()))).thenReturn(response);
+        when(restDestinationService.remove(eq(tenant), eq(application), eq(savedDestination.getGuid()))).thenReturn(response);
 
         getMockMvc().perform(delete(format("/destinations/rest/{0}", savedDestination.getGuid())))
                 .andExpect(redirectedUrl("/destinations/rest"))
@@ -274,7 +277,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
                 		RestDestinationController.Messages.REST_DESTINATION_REMOVED_SUCCESSFULLY.getCode(), null, Locale.ENGLISH)));
 
     }
-    
+
     @Test
     @WithMockUser(authorities = {"REMOVE_REST_DESTINATION"})
     public void shouldNotRemoveRestDestination() throws Exception {
@@ -282,7 +285,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
         		.withMessage(CommonValidations.TENANT_NULL.getCode())
                 .build();
 
-        when(restDestinationService.remove(eq(tenant), eq(savedDestination.getGuid()))).thenReturn(response);
+        when(restDestinationService.remove(eq(tenant), eq(application), eq(savedDestination.getGuid()))).thenReturn(response);
 
         getMockMvc().perform(delete(format("/destinations/rest/{0}", savedDestination.getGuid())))
                 .andExpect(redirectedUrl("/destinations/rest"))

@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.business.services.api;
 
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 
@@ -8,8 +9,8 @@ import java.util.List;
 public interface RestDestinationService {
 
 	enum Validations {
-		GUID_NULL("service.rest_destination.guid.not_null"), 
-		DESTINATION_NOT_FOUND("service.rest_destination.not_found"), 
+		GUID_NULL("service.rest_destination.guid.not_null"),
+		DESTINATION_NOT_FOUND("service.rest_destination.not_found"),
 		NAME_IN_USE("service.rest_destination.name.in_use"),
 		REST_DESTINATION_IN_USE_ROUTE("service.rest_destination.in_use_route"),
 		METHOD_INVALID("service.rest_destination.method.invalid");
@@ -24,9 +25,9 @@ public interface RestDestinationService {
 			this.code = code;
 		}
 	}
-	
+
     enum Messages {
-    	REST_DESTINATION_REMOVED_SUCCESSFULLY("service.rest_destination.removed_succesfully"), 
+    	REST_DESTINATION_REMOVED_SUCCESSFULLY("service.rest_destination.removed_succesfully"),
     	REST_DESTINATION_REMOVED_UNSUCCESSFULLY("service.rest_destination.removed_unsuccesfully");
 
         public String getCode() {
@@ -40,18 +41,10 @@ public interface RestDestinationService {
         }
     }
 
-
-	ServiceResponse<List<RestDestination>> findAll(Tenant tenant);
-
-	ServiceResponse<RestDestination> register(Tenant tenant, RestDestination destination);
-
-	ServiceResponse<RestDestination> update(Tenant tenant, String guid, RestDestination destination);
-
-	ServiceResponse<RestDestination> getByGUID(Tenant tenant, String guid);
-	// TODO: will we need this? URI encapsulation for destinations should have
-	// taken care of this by now
-	// ServiceResponse<RestDestination> getByUri(Tenant tenant, URI restUri);
-
-	ServiceResponse<RestDestination> remove(Tenant tenant, String guid);
+	ServiceResponse<List<RestDestination>> findAll(Tenant tenant, Application application);
+	ServiceResponse<RestDestination> register(Tenant tenant, Application application, RestDestination destination);
+	ServiceResponse<RestDestination> update(Tenant tenant, Application application, String guid, RestDestination destination);
+	ServiceResponse<RestDestination> getByGUID(Tenant tenant, Application application, String guid);
+	ServiceResponse<RestDestination> remove(Tenant tenant, Application application, String guid);
 
 }

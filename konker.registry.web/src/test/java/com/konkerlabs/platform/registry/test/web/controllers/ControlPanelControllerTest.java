@@ -1,15 +1,7 @@
 package com.konkerlabs.platform.registry.test.web.controllers;
 
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.EventRoute;
-import com.konkerlabs.platform.registry.business.model.RestDestination;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.Transformation;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
-import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
-import com.konkerlabs.platform.registry.business.services.api.TransformationService;
+import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.services.api.*;
 import com.konkerlabs.platform.registry.config.CdnConfig;
 import com.konkerlabs.platform.registry.config.HotjarConfig;
 import com.konkerlabs.platform.registry.config.WebConfig;
@@ -17,7 +9,6 @@ import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
 import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
-
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,13 +19,13 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
@@ -42,7 +33,7 @@ import java.util.List;
         WebMvcConfig.class,
         WebTestConfiguration.class,
         SecurityTestConfiguration.class,
-        DeviceVisualizationControllerTest.DeviceTestContextConfig.class, 
+        DeviceVisualizationControllerTest.DeviceTestContextConfig.class,
         EventRouteControllerTest.EventRouteTestContextConfig.class,
         WebConfig.class,
         CdnConfig.class,
@@ -52,6 +43,9 @@ public class ControlPanelControllerTest extends WebLayerTestContext {
 
 	@Autowired
 	private Tenant tenant;
+
+    @Autowired
+    private Application application;
 
 	@Autowired
 	private DeviceRegisterService deviceRegisterService;
@@ -95,13 +89,13 @@ public class ControlPanelControllerTest extends WebLayerTestContext {
 		destinations.add(RestDestination.builder().build());
 		destinations.add(RestDestination.builder().build());
 
-		when(deviceRegisterService.findAll(tenant))
+		when(deviceRegisterService.findAll(tenant, application))
 				.thenReturn(ServiceResponseBuilder.<List<Device>>ok().withResult(devices).build());
-		when(eventRouteService.getAll(tenant))
+		when(eventRouteService.getAll(tenant, application))
 				.thenReturn(ServiceResponseBuilder.<List<EventRoute>>ok().withResult(routes).build());
-		when(transformationService.getAll(tenant))
+		when(transformationService.getAll(tenant, application))
 				.thenReturn(ServiceResponseBuilder.<List<Transformation>>ok().withResult(transformations).build());
-		when(restDestinationService.findAll(tenant))
+		when(restDestinationService.findAll(tenant, application))
 				.thenReturn(ServiceResponseBuilder.<List<RestDestination>>ok().withResult(destinations).build());
 
 		getMockMvc().perform(get("/"))

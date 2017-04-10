@@ -1,55 +1,35 @@
 package com.konkerlabs.platform.registry.api.web.controller;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
+import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
+import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
+import com.konkerlabs.platform.registry.api.model.*;
+import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
+import com.konkerlabs.platform.registry.business.services.api.*;
+import com.konkerlabs.platform.registry.business.services.api.EventRouteService.Validations;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
-import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
-import com.konkerlabs.platform.registry.api.model.EventRouteInputVO;
-import com.konkerlabs.platform.registry.api.model.EventRouteVO;
-import com.konkerlabs.platform.registry.api.model.RestResponse;
-import com.konkerlabs.platform.registry.api.model.RouteActorType;
-import com.konkerlabs.platform.registry.api.model.RouteActorVO;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.EventRoute;
-import com.konkerlabs.platform.registry.business.model.RestDestination;
-import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.Transformation;
-import com.konkerlabs.platform.registry.business.model.User;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
-import com.konkerlabs.platform.registry.business.services.api.EventRouteService.Validations;
-import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.TransformationService;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @RestController
 @Scope("request")
-@RequestMapping(value = "/routes")
+@RequestMapping(value = "/{application}/routes")
 @Api(tags = "routes")
 public class EventRouteRestController implements InitializingBean {
+
+    @Autowired
+    private ApplicationService applicationService;
 
     @Autowired
     private EventRouteService eventRouteService;
@@ -73,11 +53,12 @@ public class EventRouteRestController implements InitializingBean {
     @ApiOperation(
             value = "List all routes by organization",
             response = EventRouteVO.class)
-    public List<EventRouteVO> list() throws BadServiceResponseException {
+    public List<EventRouteVO> list(@PathVariable("application") String applicationId) throws BadServiceResponseException {
 
         Tenant tenant = user.getTenant();
+        Application application = applicationService.getByApplicationName(tenant, applicationId).getResult();
 
-        ServiceResponse<List<EventRoute>> routeResponse = eventRouteService.getAll(tenant);
+        ServiceResponse<List<EventRoute>> routeResponse = eventRouteService.getAll(tenant, application);
 
         if (!routeResponse.isOk()) {
             throw new BadServiceResponseException(user, routeResponse, validationsCode);
@@ -93,11 +74,13 @@ public class EventRouteRestController implements InitializingBean {
             value = "Get a route by guid",
             response = RestResponse.class
     )
-    public EventRouteVO read(@PathVariable("routeGuid") String routeGuid) throws BadServiceResponseException, NotFoundResponseException {
+    public EventRouteVO read(@PathVariable("application") String applicationId,
+                             @PathVariable("routeGuid") String routeGuid) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
+        Application application = applicationService.getByApplicationName(tenant, applicationId).getResult();
 
-        ServiceResponse<EventRoute> routeResponse = eventRouteService.getByGUID(tenant, routeGuid);
+        ServiceResponse<EventRoute> routeResponse = eventRouteService.getByGUID(tenant, application, routeGuid);
 
         if (!routeResponse.isOk()) {
             throw new NotFoundResponseException(user, routeResponse);
@@ -111,14 +94,16 @@ public class EventRouteRestController implements InitializingBean {
     @PreAuthorize("hasAuthority('CREATE_DEVICE_ROUTE')")
     @ApiOperation(value = "Create a route")
     public EventRouteVO create(
+            @PathVariable("application") String applicationId,
             @ApiParam(name = "body", required = true)
             @RequestBody EventRouteInputVO routeForm) throws BadServiceResponseException {
 
         Tenant tenant = user.getTenant();
+        Application application = applicationService.getByApplicationName(tenant, applicationId).getResult();
 
-        RouteActor incoming = getRouteActor(tenant, routeForm.getIncoming());
-        RouteActor outgoing = getRouteActor(tenant, routeForm.getOutgoing());
-        Transformation transformation = getTransformation(tenant, routeForm);
+        RouteActor incoming = getRouteActor(tenant, application, routeForm.getIncoming());
+        RouteActor outgoing = getRouteActor(tenant, application, routeForm.getOutgoing());
+        Transformation transformation = getTransformation(tenant, application, routeForm);
 
         EventRoute route = EventRoute.builder()
                 .name(routeForm.getName())
@@ -130,7 +115,7 @@ public class EventRouteRestController implements InitializingBean {
                 .active(true)
                 .build();
 
-        ServiceResponse<EventRoute> routeResponse = eventRouteService.save(tenant, route);
+        ServiceResponse<EventRoute> routeResponse = eventRouteService.save(tenant, application, route);
 
         if (!routeResponse.isOk()) {
             throw new BadServiceResponseException(user, routeResponse, validationsCode);
@@ -140,12 +125,12 @@ public class EventRouteRestController implements InitializingBean {
 
     }
 
-    private Transformation getTransformation(Tenant tenant, EventRouteInputVO routeForm) throws BadServiceResponseException {
+    private Transformation getTransformation(Tenant tenant, Application application, EventRouteInputVO routeForm) throws BadServiceResponseException {
 
         String guid = routeForm.getTransformationGuid();
 
         if (StringUtils.isNoneBlank(guid)) {
-            ServiceResponse<Transformation> transformationResponse = transformationService.get(tenant, guid);
+            ServiceResponse<Transformation> transformationResponse = transformationService.get(tenant, application, guid);
             if (transformationResponse.isOk()) {
                 Transformation transformation = transformationResponse.getResult();
                 return transformation;
@@ -159,7 +144,7 @@ public class EventRouteRestController implements InitializingBean {
     }
 
     @SuppressWarnings("serial")
-    private RouteActor getRouteActor(Tenant tenant, RouteActorVO routeForm) throws BadServiceResponseException {
+    private RouteActor getRouteActor(Tenant tenant, Application application, RouteActorVO routeForm) throws BadServiceResponseException {
 
         RouteActor routeActor = RouteActor.builder().build();
 
@@ -168,7 +153,7 @@ public class EventRouteRestController implements InitializingBean {
         }
 
         if (RouteActorType.DEVICE.name().equalsIgnoreCase(routeForm.getType())) {
-            ServiceResponse<Device> deviceResponse = deviceRegisterService.getByDeviceGuid(tenant, routeForm.getGuid());
+            ServiceResponse<Device> deviceResponse = deviceRegisterService.getByDeviceGuid(tenant, application, routeForm.getGuid());
             if (deviceResponse.isOk()) {
                 routeActor.setDisplayName(deviceResponse.getResult().getName());
                 routeActor.setUri(deviceResponse.getResult().toURI());
@@ -178,7 +163,7 @@ public class EventRouteRestController implements InitializingBean {
                 throw new BadServiceResponseException(user, deviceResponse, validationsCode);
             }
         } else if (RouteActorType.REST.name().equalsIgnoreCase(routeForm.getType())) {
-            ServiceResponse<RestDestination> restResponse = restDestinationService.getByGUID(tenant, routeForm.getGuid());
+            ServiceResponse<RestDestination> restResponse = restDestinationService.getByGUID(tenant, application, routeForm.getGuid());
             if (restResponse.isOk()) {
                 routeActor.setDisplayName(restResponse.getResult().getName());
                 routeActor.setUri(restResponse.getResult().toURI());
@@ -198,14 +183,16 @@ public class EventRouteRestController implements InitializingBean {
     @PreAuthorize("hasAuthority('EDIT_DEVICE_ROUTE')")
     @ApiOperation(value = "Update a route")
     public void update(
+            @PathVariable("application") String applicationId,
             @PathVariable("routeGuid") String routeGuid,
             @ApiParam(name = "body", required = true)
             @RequestBody EventRouteInputVO routeForm) throws BadServiceResponseException {
 
         Tenant tenant = user.getTenant();
+        Application application = applicationService.getByApplicationName(tenant, applicationId).getResult();
 
         EventRoute routeFromDB = null;
-        ServiceResponse<EventRoute> routeResponse = eventRouteService.getByGUID(tenant, routeGuid);
+        ServiceResponse<EventRoute> routeResponse = eventRouteService.getByGUID(tenant, application, routeGuid);
 
         if (!routeResponse.isOk()) {
             throw new BadServiceResponseException(user, routeResponse, validationsCode);
@@ -213,9 +200,9 @@ public class EventRouteRestController implements InitializingBean {
             routeFromDB = routeResponse.getResult();
         }
 
-        RouteActor incoming = getRouteActor(tenant, routeForm.getIncoming());
-        RouteActor outgoing = getRouteActor(tenant, routeForm.getOutgoing());
-        Transformation transformation = getTransformation(tenant, routeForm);
+        RouteActor incoming = getRouteActor(tenant, application, routeForm.getIncoming());
+        RouteActor outgoing = getRouteActor(tenant, application, routeForm.getOutgoing());
+        Transformation transformation = getTransformation(tenant, application, routeForm);
 
         // update fields
         routeFromDB.setName(routeForm.getName());
@@ -226,7 +213,7 @@ public class EventRouteRestController implements InitializingBean {
         routeFromDB.setFilteringExpression(routeForm.getFilteringExpression());
         routeFromDB.setActive(routeForm.isActive());
 
-        ServiceResponse<EventRoute> updateResponse = eventRouteService.update(tenant, routeGuid, routeFromDB);
+        ServiceResponse<EventRoute> updateResponse = eventRouteService.update(tenant, application, routeGuid, routeFromDB);
 
         if (!updateResponse.isOk()) {
             throw new BadServiceResponseException(user, updateResponse, validationsCode);
@@ -237,11 +224,14 @@ public class EventRouteRestController implements InitializingBean {
     @DeleteMapping(path = "/{routeGuid}")
     @PreAuthorize("hasAuthority('REMOVE_DEVICE_ROUTE')")
     @ApiOperation(value = "Delete a route")
-    public void delete(@PathVariable("routeGuid") String routeGuid) throws BadServiceResponseException, NotFoundResponseException {
+    public void delete(
+            @PathVariable("application") String applicationId,
+            @PathVariable("routeGuid") String routeGuid) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
+        Application application = applicationService.getByApplicationName(tenant, applicationId).getResult();
 
-        ServiceResponse<EventRoute> routeResponse = eventRouteService.remove(tenant, routeGuid);
+        ServiceResponse<EventRoute> routeResponse = eventRouteService.remove(tenant, application, routeGuid);
 
         if (!routeResponse.isOk()) {
             if (routeResponse.getResponseMessages().containsKey(Validations.EVENT_ROUTE_NOT_FOUND.getCode())) {
