@@ -19,7 +19,7 @@ public class BadServiceResponseException extends Exception {
 
     public BadServiceResponseException(User user, ServiceResponse<?> serviceResponse, Set<String> validationsCode) {
 
-        if (serviceResponse != null &&
+        if (serviceResponse != null && validationsCode != null &&
                 serviceResponse.getResponseMessages() != null) {
             for (String key : serviceResponse.getResponseMessages().keySet()) {
                 if (validationsCode.contains(key)) {

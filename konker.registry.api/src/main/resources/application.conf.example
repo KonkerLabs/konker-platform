@@ -1,9 +1,0 @@
-eventstorage {
-    bean=mongoEvents
-}
-cassandra {
-    clustername=local
-    keyspace=registrykeyspace
-    hostname=localhost
-    port=9042
-}
