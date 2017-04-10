@@ -16,9 +16,11 @@ import com.konkerlabs.platform.registry.api.exceptions.BadRequestResponseExcepti
 import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
 import com.konkerlabs.platform.registry.api.model.EventVO;
 import com.konkerlabs.platform.registry.api.model.EventsFilter;
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 
@@ -34,6 +36,9 @@ public class OutgoingEventsRestController {
 
     @Autowired
     private DeviceEventService deviceEventService;
+    
+    @Autowired
+    private ApplicationService applicationService;
 
     @Autowired
     private User user;
@@ -48,7 +53,7 @@ public class OutgoingEventsRestController {
             )
     public List<EventVO> list(
             @ApiParam(value = "Application ID", required = true)
-            @PathVariable(value = "application") String application,
+            @PathVariable(value = "application") String applicationId,
             @ApiParam(value = "Query string", example = "deviceGuid:818599ad-3502-4e70-a852-fc7af8e0a9f4")
             @RequestParam(required = false, defaultValue = "", name = "q") String query,
             @ApiParam(value = "The sort order", allowableValues = "newest,oldest")
@@ -58,6 +63,7 @@ public class OutgoingEventsRestController {
         ) throws BadServiceResponseException, BadRequestResponseException {
 
         Tenant tenant = user.getTenant();
+        Application application = applicationService.getByApplicationName(tenant, applicationId).getResult();
 
         boolean ascending = false;
         if (sort.equalsIgnoreCase("oldest")) {
@@ -75,7 +81,7 @@ public class OutgoingEventsRestController {
         Instant startingTimestamp = filter.getStartingTimestamp();
         Instant endTimestamp = filter.getEndTimestamp();
 
-        ServiceResponse<List<Event>> restDestinationResponse = deviceEventService.findOutgoingBy(tenant, deviceGuid, channel, startingTimestamp, endTimestamp, ascending, limit);
+        ServiceResponse<List<Event>> restDestinationResponse = deviceEventService.findOutgoingBy(tenant, application, deviceGuid, channel, startingTimestamp, endTimestamp, ascending, limit);
 
         if (!restDestinationResponse.isOk()) {
             throw new BadServiceResponseException(user, restDestinationResponse, null);
