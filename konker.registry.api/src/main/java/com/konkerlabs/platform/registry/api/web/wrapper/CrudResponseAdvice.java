@@ -94,9 +94,19 @@ public class CrudResponseAdvice implements ResponseBodyAdvice<Object> {
     @ExceptionHandler(BadRequestResponseException.class)
     public ResponseEntity<?> exception(BadRequestResponseException e) {
 
-        return RestResponseBuilder.error()
-                .withHttpStatus(HttpStatus.BAD_REQUEST)
-                .withMessages(getI18NMessages(e.getResponseMessages(), e.getLocale())).build();
+        if (e.getMessage() != null) {
+
+            return RestResponseBuilder.error()
+                    .withHttpStatus(HttpStatus.BAD_REQUEST)
+                    .withMessage(e.getMessage()).build();
+
+        } else {
+
+            return RestResponseBuilder.error()
+                    .withHttpStatus(HttpStatus.BAD_REQUEST)
+                    .withMessages(getI18NMessages(e.getResponseMessages(), e.getLocale())).build();
+
+        }
 
     }
 

@@ -28,11 +28,8 @@ import static com.google.common.collect.Lists.newArrayList;
 public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
 
     public static final String securitySchemaOAuth2 = "oauth2schema";
-    public static final String authorizationScopeTrust = "trust";
     public static final String authorizationScopeRead = "read";
-    public static final String authorizationScopeWrite = "write";
-    public static final String authorizationScopeGlobalDesc = "Access Iot Resources";
-
+    public static final String authorizationScopeGlobalDesc = "Access IoT Resources";
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
@@ -54,8 +51,9 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
                 .tags(new Tag("devices", "Operations to list and edit devices"),
                         new Tag("device credentials", "Operations to manage device credentials (username, password and URLs)"),
                         new Tag("routes", "Operations to list and edit routes"),
+                        new Tag("events", "Operations to list incoming and outgoing device events"),
                         new Tag("rest transformations", "Operations to manage Rest Transformations"))
-                .enableUrlTemplating(true);
+                .enableUrlTemplating(false);
 
     }
 
@@ -85,9 +83,7 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
         return new OAuth(
                 securitySchemaOAuth2,
                 newArrayList(
-                        new AuthorizationScope(authorizationScopeTrust, authorizationScopeGlobalDesc),
-                        new AuthorizationScope(authorizationScopeRead, authorizationScopeGlobalDesc),
-                        new AuthorizationScope(authorizationScopeWrite, authorizationScopeGlobalDesc)
+                         new AuthorizationScope(authorizationScopeRead, authorizationScopeGlobalDesc)
                 ),
                 newArrayList(cliGrantType));
     }
@@ -100,10 +96,8 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
     }
 
     private List<SecurityReference> defaultAuth() {
-        AuthorizationScope[] authorizationScopes = new AuthorizationScope[3];
-        authorizationScopes[0] = new AuthorizationScope(authorizationScopeTrust, authorizationScopeGlobalDesc);
-        authorizationScopes[1] = new AuthorizationScope(authorizationScopeRead, authorizationScopeGlobalDesc);
-        authorizationScopes[2] = new AuthorizationScope(authorizationScopeWrite, authorizationScopeGlobalDesc);
+        AuthorizationScope[] authorizationScopes = new AuthorizationScope[1];
+        authorizationScopes[0] = new AuthorizationScope(authorizationScopeRead, authorizationScopeGlobalDesc);
         return newArrayList(
                 new SecurityReference(securitySchemaOAuth2, authorizationScopes));
     }
