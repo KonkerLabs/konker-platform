@@ -37,6 +37,7 @@ public interface DeviceEventService {
      * @return Found events
      */
     ServiceResponse<List<Event>> findIncomingBy(Tenant tenant,
+    											String applicationName,
                                                 String deviceGuid,
                                                 String channel,
                                                 Instant startingTimestamp,
