@@ -41,7 +41,7 @@ public class RestTransformationVO
         r.setId(t.getId());
         r.setGuid(t.getGuid());
         r.setName(t.getName());
-        r.setApplicationId(t.getApplication().getName());
+        r.setApplicationId(Optional.ofNullable(t.getApplication()).isPresent() ? t.getApplication().getName() : null);
         r.setDescription(t.getDescription());
         r.setSteps(new RestTransformationStepVO().apply(t.getSteps()));
         return r;
