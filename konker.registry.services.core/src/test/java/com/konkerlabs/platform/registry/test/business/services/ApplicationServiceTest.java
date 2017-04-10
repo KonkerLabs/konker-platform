@@ -249,6 +249,41 @@ public class ApplicationServiceTest extends BusinessLayerTestSupport {
     }
     
     @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json"})
+    public void shouldReturnErrorIfRemovingAppHasDevice() throws Exception {
+    	ServiceResponse<Application> serviceResponse = applicationService.remove(application.getTenant(), application.getName());
+    	
+    	assertThat(serviceResponse, hasErrorMessage(Validations.APPLICATION_HAS_DEVICE.getCode()));
+    }
+    
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/event-routes.json"})
+    public void shouldReturnErrorIfRemovingAppHasRoute() throws Exception {
+    	application.setName("konker");
+    	ServiceResponse<Application> serviceResponse = applicationService.remove(application.getTenant(), application.getName());
+    	
+    	assertThat(serviceResponse, hasErrorMessage(Validations.APPLICATION_HAS_ROUTE.getCode()));
+    }
+    
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json"})
+    public void shouldReturnErrorIfRemovingAppHasTransformation() throws Exception {
+    	application.setName("konker");
+    	ServiceResponse<Application> serviceResponse = applicationService.remove(application.getTenant(), application.getName());
+    	
+    	assertThat(serviceResponse, hasErrorMessage(Validations.APPLICATION_HAS_TRANSFORMATION.getCode()));
+    }
+    
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/rest-destinations.json"})
+    public void shouldReturnErrorIfRemovingAppHasRestDestination() throws Exception {
+    	application.setName("konker");
+    	ServiceResponse<Application> serviceResponse = applicationService.remove(application.getTenant(), application.getName());
+    	
+    	assertThat(serviceResponse, hasErrorMessage(Validations.APPLICATION_HAS_REST_DESTINATION.getCode()));
+    }
+    
+    @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
     public void shouldRemoveApp() throws Exception {
     	ServiceResponse<Application> serviceResponse = applicationService.remove(application.getTenant(), application.getName());

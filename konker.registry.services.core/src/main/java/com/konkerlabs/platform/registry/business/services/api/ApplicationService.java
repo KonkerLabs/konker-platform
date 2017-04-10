@@ -12,7 +12,11 @@ public interface ApplicationService {
 		APPLICATION_ALREADY_REGISTERED("service.application.already.registered"),
 		APPLICATION_DOES_NOT_EXIST("service.application.does.not.exist"),
 		APPLICATION_NAME_IS_NULL("service.application.name.null"),
-		APPLICATION_NOT_FOUND("service.application.not_found");
+		APPLICATION_NOT_FOUND("service.application.not_found"),
+		APPLICATION_HAS_DEVICE("service.application.has.device"),
+		APPLICATION_HAS_ROUTE("service.application.has.route"),
+		APPLICATION_HAS_TRANSFORMATION("service.application.has.transformation"),
+		APPLICATION_HAS_REST_DESTINATION("service.application.has.rest.destination");
 
 		public String getCode() {
 			return code;
