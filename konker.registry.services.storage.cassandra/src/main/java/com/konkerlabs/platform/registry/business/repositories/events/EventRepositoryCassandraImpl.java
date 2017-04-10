@@ -1,11 +1,11 @@
 package com.konkerlabs.platform.registry.business.repositories.events;
 
-
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
@@ -21,9 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cassandra.core.Ordering;
 import org.springframework.cassandra.core.PrimaryKeyType;
-import org.springframework.context.ApplicationContext;
 import org.springframework.data.cassandra.core.CassandraOperations;
-import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.mapping.Column;
 import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
 import org.springframework.data.cassandra.mapping.Table;
@@ -38,10 +36,6 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
 
     @Autowired
     private JsonParsingService jsonParsingService;
-    @Autowired
-    private ApplicationContext applicationContext;
-    @Autowired(required = false)
-    private CassandraTemplate cassandraTemplate;
     @Autowired(required = false)
     private CassandraOperations cassandraOperations;
     @Autowired
@@ -55,20 +49,9 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
     private static final Logger LOG = LoggerFactory.getLogger(EventRepositoryCassandraImpl.class);
 
     @Override
-    protected Event doSave(Tenant tenant, Event event, Type type) throws BusinessException {
-        Optional.ofNullable(tenant)
-                .filter(tenant1 -> Optional.ofNullable(tenant1.getDomainName()).filter(s -> !s.isEmpty()).isPresent())
-                .orElseThrow(() -> new BusinessException(CommonValidations.TENANT_NULL.getCode()));
+    protected Event doSave(Tenant tenant, Application application, Event event, Type type) throws BusinessException {
         Optional.ofNullable(tenantRepository.findByDomainName(tenant.getDomainName()))
                 .orElseThrow(() -> new BusinessException(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()));
-        Optional.ofNullable(event)
-                .orElseThrow(() -> new BusinessException(CommonValidations.RECORD_NULL.getCode()));
-        Optional.ofNullable(event.getIncoming())
-                .orElseThrow(() -> new BusinessException(Validations.EVENT_INCOMING_NULL.getCode()));
-        Optional.ofNullable(event.getIncoming().getDeviceGuid()).filter(s -> !s.isEmpty())
-                .orElseThrow(() -> new BusinessException(Validations.INCOMING_DEVICE_GUID_NULL.getCode()));
-        Optional.ofNullable(event.getIncoming().getChannel()).filter(s -> !s.isEmpty())
-                .orElseThrow(() -> new BusinessException(Validations.EVENT_INCOMING_CHANNEL_NULL.getCode()));
 
         Tenant existingTenant = tenantRepository.findByDomainName(tenant.getDomainName());
 
@@ -98,6 +81,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
                     CassandraIncommingEvent
                             .builder()
                             .tenantDomain(event.getIncoming().getTenantDomain())
+                            .applicationName(event.getIncoming().getApplicationName())
                             .deviceGuid(event.getIncoming().getDeviceGuid())
                             .deviceId(event.getIncoming().getDeviceId())
                             .channel(event.getIncoming().getChannel())
@@ -109,6 +93,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
             event.getOutgoing().setTenantDomain(tenant.getDomainName());
             Map<String, String> incommingMap = new HashMap(){{
                 put("tenantDomain", event.getIncoming().getTenantDomain());
+                put("applicationName", event.getIncoming().getApplicationName());
                 put("deviceGuid", event.getIncoming().getDeviceGuid());
                 put("deviceId", event.getIncoming().getDeviceGuid());
                 put("channel", event.getIncoming().getChannel());
@@ -117,6 +102,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
                     CassandraOutgoingEvent
                             .builder()
                             .tenantDomain(event.getOutgoing().getTenantDomain())
+                            .applicationName(event.getOutgoing().getApplicationName())
                             .deviceGuid(event.getOutgoing().getDeviceGuid())
                             .deviceId(event.getOutgoing().getDeviceId())
                             .channel(event.getOutgoing().getChannel())
@@ -131,6 +117,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
 
     @Override
     protected List<Event> doFindBy(Tenant tenant,
+                                   Application application,
                                    String deviceGuid,
                                    String channel,
                                    Instant startInstant,
@@ -140,19 +127,13 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
                                    Type type,
                                    boolean isDeleted) throws BusinessException {
 
-        Optional.ofNullable(tenant)
-                .filter(tenant1 -> Optional.ofNullable(tenant1.getDomainName()).filter(s -> !s.isEmpty()).isPresent())
-                .orElseThrow(() -> new IllegalArgumentException("Tenant cannot be null"));
-        Optional.ofNullable(deviceGuid).filter(s -> !s.isEmpty())
-                .orElseThrow(() -> new IllegalArgumentException("Device ID cannot be null or empty"));
-
-        if (!Optional.ofNullable(startInstant).isPresent() &&
-                !Optional.ofNullable(limit).isPresent())
-            throw new IllegalArgumentException("Limit cannot be null when start instant isn't provided");
-
         Select queryIncomming = QueryBuilder.select().from(INCOMMINGTABLE);
         queryIncomming.where(QueryBuilder.eq("tenant_domain", tenant.getDomainName()));
-        queryIncomming.where(QueryBuilder.eq("device_guid", deviceGuid));
+        queryIncomming.where(QueryBuilder.eq("application_name", application.getName()));
+
+        Optional.ofNullable(deviceGuid).ifPresent(value -> {
+            queryIncomming.where(QueryBuilder.eq("device_guid", deviceGuid));
+        });
         Optional.ofNullable(channel).ifPresent(value -> {
             queryIncomming.where(QueryBuilder.eq("channel", value));
         });
@@ -167,11 +148,14 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
 
         Select queryOutgoing = QueryBuilder.select().from(OUTGOINGTABLE);
         queryOutgoing.where(QueryBuilder.eq("tenant_domain", tenant.getDomainName()));
-        queryOutgoing.where(QueryBuilder.eq("device_guid", deviceGuid));
+        queryOutgoing.where(QueryBuilder.eq("application_name", application.getName()));
+
+        Optional.ofNullable(deviceGuid).ifPresent(value -> {
+            queryOutgoing.where(QueryBuilder.eq("device_guid", deviceGuid));
+        });
         Optional.ofNullable(channel).ifPresent(value -> {
             queryOutgoing.where(QueryBuilder.eq("channel", value));
         });
-
         Optional.ofNullable(startInstant).ifPresent(value -> {
             queryOutgoing.where(QueryBuilder.gte("timestamp", value));
         });
@@ -188,6 +172,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
                         Event.EventActor.builder()
                                 .deviceGuid(incoming.getDeviceGuid())
                                 .tenantDomain(incoming.getTenantDomain())
+                                .applicationName(incoming.getApplicationName())
                                 .channel(incoming.getChannel())
                                 .deviceId(incoming.getDeviceId())
                                 .build())
@@ -207,6 +192,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
                         Event.EventActor.builder()
                                 .deviceGuid(outgoing.getDeviceGuid())
                                 .tenantDomain(outgoing.getTenantDomain())
+                                .applicationName(outgoing.getApplicationName())
                                 .channel(outgoing.getChannel())
                                 .deviceId(outgoing.getDeviceId())
                                 .build())
@@ -217,6 +203,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
                                         return Event.EventActor.builder()
                                                 .deviceGuid(Optional.ofNullable(incomingMap.get("deviceGuid")).isPresent() ? incomingMap.get("deviceGuid").toString() : null)
                                                 .tenantDomain(Optional.ofNullable(incomingMap.get("tenantDomain")).isPresent() ? incomingMap.get("tenantDomain").toString() : null)
+                                                .applicationName(Optional.ofNullable(incomingMap.get("applicationName")).isPresent() ? incomingMap.get("applicationName").toString() : null)
                                                 .channel(Optional.ofNullable(incomingMap.get("channel")).isPresent() ? incomingMap.get("channel").toString() : null)
                                                 .deviceId(Optional.ofNullable(incomingMap.get("deviceId")).isPresent() ? incomingMap.get("deviceId").toString() : null)
                                                 .build();
@@ -235,16 +222,12 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
     }
 
     @Override
-    protected void doRemoveBy(Tenant tenant, String deviceGuid, Type type) throws Exception {
-        Optional.ofNullable(tenant)
-                .filter(tenant1 -> Optional.ofNullable(tenant1.getDomainName()).filter(s -> !s.isEmpty()).isPresent())
-                .orElseThrow(() -> new IllegalArgumentException("Tenant cannot be null"));
-        Optional.ofNullable(deviceGuid).filter(s -> !s.isEmpty())
-                .orElseThrow(() -> new IllegalArgumentException("Device ID cannot be null or empty"));
+    protected void doRemoveBy(Tenant tenant, Application application, String deviceGuid, Type type) throws Exception {
 
         Delete query = QueryBuilder.delete()
                 .from(type.equals(Type.INCOMING) ? INCOMMINGTABLE : OUTGOINGTABLE)
                 .where(QueryBuilder.eq("tenant_domain", tenant.getDomainName()))
+                .and(QueryBuilder.eq("application_name", application.getName()))
                 .and(QueryBuilder.eq("device_guid", deviceGuid))
                 .ifExists();
 
@@ -261,9 +244,11 @@ class CassandraIncommingEvent {
     private String deviceGuid;
     @PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, name = "tenant_domain", ordinal = 1)
     private String tenantDomain;
-    @PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, name = "channel", ordinal = 2)
+    @PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, name = "application_name", ordinal = 2)
+    private String applicationName;
+    @PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, name = "channel", ordinal = 3)
     private String channel;
-    @PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, name = "timestamp", ordering = Ordering.ASCENDING, ordinal = 3)
+    @PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, name = "timestamp", ordering = Ordering.ASCENDING, ordinal = 4)
     private Instant timestamp;
     @Column("device_id")
     private String deviceId;
@@ -281,9 +266,11 @@ class CassandraOutgoingEvent {
     private String deviceGuid;
     @PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, name = "tenant_domain", ordinal = 1)
     private String tenantDomain;
-    @PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, name = "channel", ordinal = 2)
+    @PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, name = "application_name", ordinal = 2)
+    private String applicationName;
+    @PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, name = "channel", ordinal = 3)
     private String channel;
-    @PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, ordering = Ordering.ASCENDING, ordinal = 3)
+    @PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, ordering = Ordering.ASCENDING, ordinal = 4)
     private Instant timestamp;
     @Column("device_id")
     private String deviceId;

@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.test.services;
 
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
@@ -80,6 +81,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
     private Event event;
     private Device device;
     private Tenant tenant;
+    private Application application;
     private Instant firstEventTimestamp;
     private Instant lastEventTimestamp;
 
@@ -103,7 +105,9 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
 
         ServiceResponse<List<Event>> serviceResponse = deviceEventService.findIncomingBy(
                 null,
-                device.getId(),channel,
+                null,
+                device.getId(),
+                channel,
                 firstEventTimestamp,
                 null,
                 false,
@@ -118,7 +122,9 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
 
         ServiceResponse<List<Event>> serviceResponse = deviceEventService.findIncomingBy(
                 tenant,
-                null,channel,
+                application,
+                null,
+                channel,
                 firstEventTimestamp,
                 null,
                 false,
@@ -133,7 +139,9 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
 
         ServiceResponse<List<Event>> serviceResponse = deviceEventService.findIncomingBy(
                 tenant,
-                device.getId(),channel,
+                application,
+                device.getId(),
+                channel,
                 null,
                 null,
                 false,
@@ -148,7 +156,9 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
     public void shouldFindAllRequestEvents() throws Exception {
         ServiceResponse<List<Event>> serviceResponse = deviceEventService.findIncomingBy(
                 tenant,
-                device.getGuid(),"command",
+                application,
+                device.getGuid(),
+                "command",
                 firstEventTimestamp,
                 null,
                 false,

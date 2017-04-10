@@ -263,7 +263,7 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
         subject.send(event,destinationUri,data,tenant, application);
 
         verify(smsMessageGateway,never()).send(anyString(),anyString());
-        verify(eventRepository,never()).saveIncoming(tenant,event);
+        verify(eventRepository,never()).saveIncoming(tenant, application, event);
     }
 
     @Test
@@ -273,7 +273,7 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
         subject.send(event,destinationUri,data,tenant, application);
 
         verify(smsMessageGateway,never()).send(anyString(),anyString());
-        verify(eventRepository,never()).saveIncoming(tenant,event);
+        verify(eventRepository,never()).saveIncoming(tenant, application, event);
     }
 
     @Test
@@ -307,8 +307,8 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
     public void shouldNotLogEventThroughGatewayIfItCouldNotBeForwarded() throws Exception {
         doThrow(IntegrationException.class).when(smsMessageGateway).send(anyString(),anyString());
 
-        subject.send(event,destinationUri,data,tenant, application);
+        subject.send(event,destinationUri,data,tenant,application);
 
-        Mockito.verify(eventRepository,never()).saveIncoming(any(Tenant.class),any(Event.class));
+        Mockito.verify(eventRepository,never()).saveIncoming(any(Tenant.class),any(Application.class),any(Event.class));
     }
 }

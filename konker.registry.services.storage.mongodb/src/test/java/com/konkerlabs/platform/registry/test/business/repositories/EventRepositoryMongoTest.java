@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry.test.business.repositories;
 
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
@@ -55,6 +56,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
     private MongoTemplate mongoTemplate;
 
     private Tenant tenant;
+    private Application application;
     private String incomingPayload;
     private Event incomingEvent;
     private Event outgoingEvent;
@@ -107,6 +109,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
             incoming.put("deviceGuid",incomingEvent.getIncoming().getDeviceGuid());
             incoming.put("deviceId", incomingEvent.getIncoming().getDeviceId());
             incoming.put("tenantDomain",incomingEvent.getIncoming().getTenantDomain());
+            incoming.put("applicationName",incomingEvent.getIncoming().getApplicationName());
             incoming.put("channel",incomingEvent.getIncoming().getChannel());
             return incoming;
         }).get());
@@ -118,7 +121,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         thrown.expect(BusinessException.class);
         thrown.expectMessage(CommonValidations.TENANT_NULL.getCode());
 
-        eventRepository.saveIncoming(null, incomingEvent);
+        eventRepository.saveIncoming(null, null, incomingEvent);
     }
 
     @Test
@@ -126,7 +129,9 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         thrown.expect(BusinessException.class);
         thrown.expectMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode());
 
-        eventRepository.saveIncoming(Tenant.builder().domainName("fake").build(), incomingEvent);
+        eventRepository.saveIncoming(Tenant.builder().domainName("fake").build(),
+                                     Application.builder().name("fake").build(),
+                                     incomingEvent);
     }
 
     @Test
@@ -134,7 +139,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         thrown.expect(BusinessException.class);
         thrown.expectMessage(CommonValidations.RECORD_NULL.getCode());
 
-        eventRepository.saveIncoming(tenant,null);
+        eventRepository.saveIncoming(tenant, application, null);
     }
 
     @Test
@@ -144,7 +149,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         thrown.expect(BusinessException.class);
         thrown.expectMessage(EventRepository.Validations.EVENT_INCOMING_NULL.getCode());
 
-        eventRepository.saveIncoming(tenant, incomingEvent);
+        eventRepository.saveIncoming(tenant, application, incomingEvent);
     }
 
     @Test
@@ -154,7 +159,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         thrown.expect(BusinessException.class);
         thrown.expectMessage(EventRepository.Validations.INCOMING_DEVICE_GUID_NULL.getCode());
 
-        eventRepository.saveIncoming(tenant, incomingEvent);
+        eventRepository.saveIncoming(tenant, application, incomingEvent);
     }
 
     @Test
@@ -164,7 +169,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         thrown.expect(BusinessException.class);
         thrown.expectMessage(EventRepository.Validations.INCOMING_DEVICE_GUID_NULL.getCode());
 
-        eventRepository.saveIncoming(tenant, incomingEvent);
+        eventRepository.saveIncoming(tenant, application, incomingEvent);
     }
 
     @Test
@@ -174,7 +179,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         thrown.expect(BusinessException.class);
         thrown.expectMessage(EventRepository.Validations.EVENT_INCOMING_CHANNEL_NULL.getCode());
 
-        eventRepository.saveIncoming(tenant, incomingEvent);
+        eventRepository.saveIncoming(tenant, application, incomingEvent);
     }
 
     @Test
@@ -184,7 +189,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         thrown.expect(BusinessException.class);
         thrown.expectMessage(EventRepository.Validations.EVENT_INCOMING_CHANNEL_NULL.getCode());
 
-        eventRepository.saveIncoming(tenant, incomingEvent);
+        eventRepository.saveIncoming(tenant, application, incomingEvent);
     }
 
     @Test
@@ -194,7 +199,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         thrown.expect(BusinessException.class);
         thrown.expectMessage(EventRepository.Validations.INCOMING_DEVICE_ID_DOES_NOT_EXIST.getCode());
 
-        eventRepository.saveIncoming(tenant, incomingEvent);
+        eventRepository.saveIncoming(tenant, application, incomingEvent);
     }
 
     @Test
@@ -204,12 +209,12 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         thrown.expect(BusinessException.class);
         thrown.expectMessage(EventRepository.Validations.EVENT_TIMESTAMP_NULL.getCode());
 
-        eventRepository.saveIncoming(tenant, incomingEvent);
+        eventRepository.saveIncoming(tenant, application, incomingEvent);
     }
 
     @Test
     public void shouldSaveTheIncomingEvent() throws Exception {
-        eventRepository.saveIncoming(tenant, incomingEvent);
+        eventRepository.saveIncoming(tenant, application, incomingEvent);
 
         DBObject saved = mongoTemplate.findOne(
                 Query.query(Criteria.where("incoming.deviceGuid").is(deviceGuid)
@@ -226,7 +231,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json"})
     public void shouldRetrieveLastTwoEventsByTenantAndDeviceWhenFindingIncomingBy() throws Exception {
-        List<Event> events = eventRepository.findIncomingBy(tenant, deviceGuid, "command",
+        List<Event> events = eventRepository.findIncomingBy(tenant, application, deviceGuid, "command",
                 firstEventTimestamp.plus(1,ChronoUnit.SECONDS),
                 null,false,2);
 
@@ -242,7 +247,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Tenant cannot be null");
 
-        eventRepository.findIncomingBy(null,deviceGuid,null,firstEventTimestamp,null,false,null);
+        eventRepository.findIncomingBy(null,null,deviceGuid,null,firstEventTimestamp,null,false,null);
     }
 
     @Test
@@ -250,7 +255,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Device ID cannot be null or empty");
 
-        eventRepository.findIncomingBy(tenant,null,null,firstEventTimestamp,null,false,null);
+        eventRepository.findIncomingBy(tenant,application,null,null,firstEventTimestamp,null,false,null);
     }
 
     @Test
@@ -259,13 +264,13 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         thrown.expectMessage("Limit cannot be null when start instant isn't provided");
 
 
-        eventRepository.findIncomingBy(tenant,deviceGuid,null,null,null,false,null);
+        eventRepository.findIncomingBy(tenant,application,deviceGuid,null,null,null,false,null);
     }
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json"})
     public void shouldRetrieveTheOnlyFirstEventByTenantAndDeviceWhenFindingIncomingBy() throws Exception {
-        List<Event> events = eventRepository.findIncomingBy(tenant,
+        List<Event> events = eventRepository.findIncomingBy(tenant, application,
                 deviceGuid,"command",
                 firstEventTimestamp,
                 secondEventTimestamp.minus(1, ChronoUnit.SECONDS),true,
@@ -280,7 +285,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json"})
     public void shouldLimitResultsAccordingToLimitParameterWhenFindingIncomingBy() throws Exception {
-        List<Event> events = eventRepository.findIncomingBy(tenant,
+        List<Event> events = eventRepository.findIncomingBy(tenant, application,
                 deviceGuid,"command",
                 firstEventTimestamp,
                 thirdEventTimestamp,false,

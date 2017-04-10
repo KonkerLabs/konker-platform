@@ -61,7 +61,7 @@ public class DeviceLogEventServiceImpl implements DeviceLogEventService {
 
                 if (schemaResponse.isOk()) {
                     return ServiceResponseBuilder.<Event>ok()
-                            .withResult(eventRepository.saveIncoming(device.getTenant(), event)).build();
+                            .withResult(eventRepository.saveIncoming(device.getTenant(), device.getApplication(),event)).build();
                 } else {
                     return ServiceResponseBuilder.<Event>error()
                         .withMessages(schemaResponse.getResponseMessages()).build();
@@ -77,11 +77,11 @@ public class DeviceLogEventServiceImpl implements DeviceLogEventService {
     public ServiceResponse<Event> logOutgoingEvent(Device device, Event event) {
         return doLog(device,event,() -> {
             try {
-                Event saved = eventRepository.saveOutgoing(device.getTenant(), event);
+                Event saved = eventRepository.saveOutgoing(device.getTenant(), device.getApplication(), event);
                 redisTemplate.convertAndSend(
                         device.getApiKey(),
                         device.getGuid());
-                
+
                 redisTemplate.convertAndSend(
                         device.getApiKey() + "." + event.getOutgoing().getChannel(),
                         device.getGuid());

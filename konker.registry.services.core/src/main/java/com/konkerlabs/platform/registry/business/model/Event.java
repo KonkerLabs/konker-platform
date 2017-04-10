@@ -37,6 +37,7 @@ public class Event {
     public static class EventActor implements URIDealer {
 
         private String tenantDomain;
+        private String applicationName;
         private String deviceGuid;
 
         @JsonView(EventJsonView.class)
