@@ -130,8 +130,8 @@ public class DeviceController implements ApplicationContextAware {
 
         ModelAndView mv = new ModelAndView("devices/events");
 
-        List<Event> incomingEvents = deviceEventService.findIncomingBy(tenant, device.getGuid(), null, null, null, false, 50).getResult();
-        List<Event> outgoingEvents = deviceEventService.findOutgoingBy(tenant, device.getGuid(), null, null, null, false, 50).getResult();
+        List<Event> incomingEvents = deviceEventService.findIncomingBy(tenant, application, device.getGuid(), null, null, null, false, 50).getResult();
+        List<Event> outgoingEvents = deviceEventService.findOutgoingBy(tenant, application, device.getGuid(), null, null, null, false, 50).getResult();
 
         boolean hasAnyEvent = !incomingEvents.isEmpty() || !outgoingEvents.isEmpty();
 
@@ -156,7 +156,7 @@ public class DeviceController implements ApplicationContextAware {
         Instant instantEnd = StringUtils.isNotEmpty(dateEnd) ? ZonedDateTime.of(LocalDateTime.parse(dateEnd, dtf), ZoneId.of(user.getZoneId().getId())).toInstant() : null;
 
         ModelAndView mv = new ModelAndView("devices/events-incoming", "recentIncomingEvents",
-                deviceEventService.findIncomingBy(tenant, deviceGuid, null, instantStart, instantEnd, false, 50).getResult());
+                deviceEventService.findIncomingBy(tenant, application, deviceGuid, null, instantStart, instantEnd, false, 50).getResult());
 
         return mv;
     }
@@ -172,7 +172,7 @@ public class DeviceController implements ApplicationContextAware {
         Instant instantEnd = StringUtils.isNotEmpty(dateEnd) ? ZonedDateTime.of(LocalDateTime.parse(dateEnd, dtf), ZoneId.of(user.getZoneId().getId())).toInstant() : null;
 
         ModelAndView mv = new ModelAndView("devices/events-outgoing", "recentOutgoingEvents",
-                deviceEventService.findOutgoingBy(tenant, deviceGuid, null, instantStart, instantEnd, false, 50).getResult());
+                deviceEventService.findOutgoingBy(tenant, application, deviceGuid, null, instantStart, instantEnd, false, 50).getResult());
 
         return mv;
     }
@@ -186,7 +186,7 @@ public class DeviceController implements ApplicationContextAware {
         List<String> listMetrics = null;
 
         // Try to find the last numeric metric
-        ServiceResponse<EventSchema> lastEvent = eventSchemaService.findLastIncomingBy(tenant, deviceGuid, JsonNodeType.NUMBER);
+        ServiceResponse<EventSchema> lastEvent = eventSchemaService.findLastIncomingBy(tenant, application, deviceGuid, JsonNodeType.NUMBER);
         if (lastEvent.isOk() && lastEvent.getResult() != null) {
             defaultChannel = lastEvent.getResult().getChannel();
             defaultMetric = lastEvent.getResult().getFields().iterator().next().getPath();
@@ -204,7 +204,7 @@ public class DeviceController implements ApplicationContextAware {
 
         if (defaultChannel != null) {
 
-            ServiceResponse<List<String>> metrics = eventSchemaService.findKnownIncomingMetricsBy(tenant, deviceGuid, defaultChannel, JsonNodeType.NUMBER);
+            ServiceResponse<List<String>> metrics = eventSchemaService.findKnownIncomingMetricsBy(tenant, application, deviceGuid, defaultChannel, JsonNodeType.NUMBER);
 
             listMetrics = metrics.isOk() ? metrics.getResult() : new ArrayList<>();
 
@@ -217,7 +217,7 @@ public class DeviceController implements ApplicationContextAware {
         // Check if there is any numeric metric
         boolean existsNumericMetric = false;
 
-        ServiceResponse<List<String>> allNumericMetrics = eventSchemaService.findKnownIncomingMetricsBy(tenant, deviceGuid, JsonNodeType.NUMBER);
+        ServiceResponse<List<String>> allNumericMetrics = eventSchemaService.findKnownIncomingMetricsBy(tenant, application, deviceGuid, JsonNodeType.NUMBER);
         if (allNumericMetrics.isOk() && !allNumericMetrics.getResult().isEmpty()) {
             existsNumericMetric = true;
         }

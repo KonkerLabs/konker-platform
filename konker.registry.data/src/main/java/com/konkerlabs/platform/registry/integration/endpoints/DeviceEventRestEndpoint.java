@@ -114,7 +114,7 @@ public class DeviceEventRestEndpoint {
     	}
 
 
-    	if(Optional.ofNullable(channel).isPresent() && 
+    	if(Optional.ofNullable(channel).isPresent() &&
     			(channel.length() > 32 || Pattern.compile("[^A-Za-z0-9_-]").matcher(channel).find())){
             deferredResult.setErrorResult(applicationContext.getMessage(Messages.INVALID_CHANNEL_PATTERN.getCode(), null, locale));
             httpResponse.setStatus(HttpStatus.BAD_REQUEST.value());
@@ -131,7 +131,7 @@ public class DeviceEventRestEndpoint {
     	boolean asc = offset.isPresent();
     	Integer limit = offset.isPresent() ? 50 : 1;
 
-    	ServiceResponse<List<Event>> response = deviceEventService.findOutgoingBy(device.getTenant(), device.getGuid(),
+    	ServiceResponse<List<Event>> response = deviceEventService.findOutgoingBy(device.getTenant(), device.getApplication(), device.getGuid(),
     			channel, startTimestamp, null, asc, limit);
 
     	if (!response.getResult().isEmpty() || !waitTime.isPresent() || (waitTime.isPresent() && waitTime.get().equals(new Long("0")))) {

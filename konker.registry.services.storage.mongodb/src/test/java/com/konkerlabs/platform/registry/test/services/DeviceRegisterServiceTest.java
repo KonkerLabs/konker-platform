@@ -102,7 +102,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         currentTenant = tenantRepository.findByName("Konker");
         emptyTenant = tenantRepository.findByName("EmptyTenant");
         currentApplication = applicationRepository.findByTenantAndName(currentTenant.getId(), "smartffkonker");
-        
+
         otherApplication = Application.builder()
 				.name("smartffkonkerother")
 				.friendlyName("Konker Smart Frig")
@@ -135,7 +135,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
         assertThat(serviceResponse, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
     }
-    
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
     public void shouldReturnResponseMessagesIfAppIsNull() throws Exception {
@@ -143,7 +143,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
         assertThat(serviceResponse, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
     }
-    
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
     public void shouldReturnResponseMessagesIfAppNotExists() throws Exception {
@@ -313,7 +313,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 //        assertThat(serviceResponse.getResponseMessages(),hasItem("Cannot update device with null ID"));
         assertThat(serviceResponse, hasErrorMessage(DeviceRegisterService.Validations.DEVICE_GUID_NULL.getCode()));
     }
-    
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
     public void shouldRaiseAnExceptionIfAppIsNullWhenUpdating() throws Exception {
@@ -502,7 +502,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     @UsingDataSet(locations = {
             "/fixtures/tenants.json",
             "/fixtures/devices.json",
-            "/fixtures/event-routes.json", 
+            "/fixtures/event-routes.json",
             "/fixtures/applications.json"})
     public void shouldReturnErrorMessageIfDeviceHaveEventRoutesOnDeletion() throws Exception {
         ServiceResponse<Device> serviceResponse = deviceRegisterService
@@ -531,9 +531,9 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
                 .findByTenantDomainNameAndDeviceGuid(currentTenant.getDomainName(), THE_DEVICE_GUID);
 
 
-        ServiceResponse<List<Event>> incomingEvents = deviceEventService.findIncomingBy(currentTenant, THE_DEVICE_GUID,
+        ServiceResponse<List<Event>> incomingEvents = deviceEventService.findIncomingBy(currentTenant, currentApplication, THE_DEVICE_GUID,
                 INCOMING_CHANNEL, null, null, false, 100);
-        ServiceResponse<List<Event>> outgoingEvents = deviceEventService.findOutgoingBy(currentTenant, THE_DEVICE_GUID,
+        ServiceResponse<List<Event>> outgoingEvents = deviceEventService.findOutgoingBy(currentTenant, currentApplication, THE_DEVICE_GUID,
                 OUTGOING_CHANNEL, null, null, false, 100);
 
         assertThat(incomingEvents.getResult().size(), equalTo(2));
@@ -542,9 +542,9 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         deviceRegisterService
                 .remove(currentTenant, currentApplication, device.getGuid());
 
-        incomingEvents = deviceEventService.findIncomingBy(currentTenant, THE_DEVICE_GUID,
+        incomingEvents = deviceEventService.findIncomingBy(currentTenant, currentApplication, THE_DEVICE_GUID,
                 INCOMING_CHANNEL, null, null, false, 100);
-        outgoingEvents = deviceEventService.findOutgoingBy(currentTenant, THE_DEVICE_GUID,
+        outgoingEvents = deviceEventService.findOutgoingBy(currentTenant, currentApplication, THE_DEVICE_GUID,
                 OUTGOING_CHANNEL, null, null, false, 100);
 
         assertThat(incomingEvents.getResult().size(), equalTo(0));
@@ -586,20 +586,20 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     public void shouldGenerateSecurityCredentials() {
     	Device device = deviceRegisterService
                 .findByTenantDomainNameAndDeviceGuid(currentTenant.getDomainName(), THE_DEVICE_GUID);
-    	
+
     	ServiceResponse<DeviceSecurityCredentials> credentials = deviceRegisterService.generateSecurityPassword(device.getTenant(), currentApplication, device.getGuid());
-    	
+
     	assertThat(credentials.getStatus(), equalTo(ServiceResponse.Status.OK));
     	assertThat(credentials.getResult().getDevice().getApiKey(), is(not(device.getApiKey())));
     	assertThat(credentials.getResult().getDevice().getSecurityHash(), is(not(device.getSecurityHash())));
     }
-    
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
     public void shouldReturnErrorWhenGenerateSecurityCredentials() {
     	ServiceResponse<DeviceSecurityCredentials> credentials = deviceRegisterService
     			.generateSecurityPassword(currentTenant, currentApplication, ANOTHER_DEVICE_GUID);
-    	
+
     	assertThat(credentials.getStatus(), equalTo(ServiceResponse.Status.ERROR));
     }
 

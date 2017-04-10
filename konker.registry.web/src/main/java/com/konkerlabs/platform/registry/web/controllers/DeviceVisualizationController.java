@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 public class DeviceVisualizationController implements ApplicationContextAware {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(DeviceVisualizationController.class);
-	
+
     public enum Messages {
     	DEVICE_IS_MANDATORY("visualization.device.mandatory"),
     	CHANNE_IS_MANDATORY("visualization.channel.mandatory"),
@@ -57,9 +57,10 @@ public class DeviceVisualizationController implements ApplicationContextAware {
             this.code = code;
         }
     }
-    
+
     private DeviceEventService deviceEventService;
     private Tenant tenant;
+    private Application application;
     private ApplicationContext applicationContext;
     private EventSchemaService eventSchemaService;
     private User user;
@@ -73,10 +74,12 @@ public class DeviceVisualizationController implements ApplicationContextAware {
 
     @Autowired
     public DeviceVisualizationController(DeviceEventService deviceEventService, Tenant tenant,
-    		EventSchemaService eventSchemaService, User user, 
+            Application application,
+    		EventSchemaService eventSchemaService, User user,
     		InstantToStringConverter instantToStringConverter, EnvironmentConfig environmentConfig) {
         this.deviceEventService = deviceEventService;
         this.tenant = tenant;
+        this.application = application;
         this.eventSchemaService = eventSchemaService;
         this.user = user;
         this.instantToStringConverter = instantToStringConverter;
@@ -92,9 +95,9 @@ public class DeviceVisualizationController implements ApplicationContextAware {
 				    		@RequestParam String deviceGuid,
 				    		@RequestParam String channel,
 				    		Locale locale) {
-    	
+
     	return doSearch(dateStart, dateEnd, online, deviceGuid, channel, locale, 100);
-    	
+
     }
 
 	@SuppressWarnings("rawtypes")
@@ -105,42 +108,42 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     		message.put("message", applicationContext.getMessage(Messages.DEVICE_IS_MANDATORY.getCode(),null,locale));
     		return Arrays.asList(message);
     	}
-    	
+
     	if (channel.isEmpty()) {
     		Map<String, String> message = new HashMap<>();
     		message.put("message", applicationContext.getMessage(Messages.CHANNE_IS_MANDATORY.getCode(),null,locale));
     		return Arrays.asList(message);
     	}
-    	
+
     	if (!online && StringUtils.isEmpty(dateStart)) {
     		Map<String, String> message = new HashMap<>();
     		message.put("message", applicationContext.getMessage(Messages.DATESTART_IS_MANDATORY.getCode(),null,locale));
     		return Arrays.asList(message);
     	}
-    	
+
     	if (!online && StringUtils.isEmpty(dateEnd)) {
     		Map<String, String> message = new HashMap<>();
     		message.put("message", applicationContext.getMessage(Messages.DATEEND_IS_MANDATORY.getCode(),null,locale));
     		return Arrays.asList(message);
     	}
-    	
+
     	if (online) {
-    		ServiceResponse<List<Event>> response = deviceEventService.findIncomingBy(tenant, deviceGuid, channel, null,
+    		ServiceResponse<List<Event>> response = deviceEventService.findIncomingBy(tenant, application, deviceGuid, channel, null,
         			null, false, limit);
-        	
+
     		List<EventDecorator> eventsResult = decorateEventResult(response);
     		return eventsResult;
     	}
-    	
+
     	LocalDateTime start = LocalDateTime.parse(dateStart, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss", user.getLanguage().getLocale()));
     	LocalDateTime end = LocalDateTime.parse(dateEnd, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss",  user.getLanguage().getLocale()));
     	ZonedDateTime zonedDateStart = ZonedDateTime.of(start, ZoneId.of(user.getZoneId().getId()));
     	ZonedDateTime zonedDateEnd = ZonedDateTime.of(end, ZoneId.of(user.getZoneId().getId()));
-    	
-    	ServiceResponse<List<Event>> response = deviceEventService.findIncomingBy(tenant,
+
+    	ServiceResponse<List<Event>> response = deviceEventService.findIncomingBy(tenant, application,
 				deviceGuid, channel, zonedDateStart.toInstant(),
     			zonedDateEnd.toInstant(), false, limit);
-    	
+
     	List<EventDecorator> eventsResult = decorateEventResult(response);
 		return eventsResult;
 	}
@@ -155,31 +158,31 @@ public class DeviceVisualizationController implements ApplicationContextAware {
 				.build()));
 		return eventsResult;
 	}
-    
+
     @RequestMapping("/loading/channel/")
     @PreAuthorize("hasAuthority('VIEW_DEVICE_CHART')")
     public ModelAndView loadChannels(@RequestParam String deviceGuid) {
     	ServiceResponse<List<String>> channels = eventSchemaService.findKnownIncomingChannelsBy(tenant, null, deviceGuid);
-    	
+
     	return new ModelAndView("devices/visualization/channels", "channels", channels.getResult());
     }
-    
+
     @RequestMapping("/loading/metrics/")
     @PreAuthorize("hasAuthority('VIEW_DEVICE_CHART')")
-    public ModelAndView loadMetrics(@RequestParam String deviceGuid, 
+    public ModelAndView loadMetrics(@RequestParam String deviceGuid,
     								@RequestParam String channel) {
-    	ServiceResponse<List<String>> metricsResponse = eventSchemaService.findKnownIncomingMetricsBy(tenant, deviceGuid, channel, JsonNodeType.NUMBER);
-    	
+    	ServiceResponse<List<String>> metricsResponse = eventSchemaService.findKnownIncomingMetricsBy(tenant, application, deviceGuid, channel, JsonNodeType.NUMBER);
+
     	if (metricsResponse.getResult() == null) {
     		return new ModelAndView("devices/visualization/metrics", "metrics", new ArrayList<>());
     	}
-    	
+
     	String defaultMetric = CollectionUtils.isEmpty(metricsResponse.getResult()) ? null : metricsResponse.getResult().get(0);
-    	
+
     	return new ModelAndView("devices/visualization/metrics", "metrics", metricsResponse.getResult())
     			.addObject("defaultMetric", defaultMetric);
     }
-    
+
     @RequestMapping(path = "/csv/download")
     @PreAuthorize("hasAuthority('EXPORT_DEVICE_CSV')")
     public void download(@RequestParam(required = false) String dateStart,
@@ -188,9 +191,9 @@ public class DeviceVisualizationController implements ApplicationContextAware {
 			    		 @RequestParam String deviceGuid,
 			    		 @RequestParam String channel,
     					 Locale locale, HttpServletResponse response) {
-    	
+
     	try  {
-			ServiceResponse<EventSchema> metrics = eventSchemaService.findIncomingBy(tenant, deviceGuid, channel);
+			ServiceResponse<EventSchema> metrics = eventSchemaService.findIncomingBy(tenant, application, deviceGuid, channel);
 
             List<String> additionalHeaders = new ArrayList<String>();
             if (metrics.isOk()) {
@@ -201,13 +204,13 @@ public class DeviceVisualizationController implements ApplicationContextAware {
 
             int limit = environmentConfig.getCsvDownloadRowsLimit();
             List events = doSearch(dateStart, dateEnd, online, deviceGuid, channel, locale, limit);
-    		
+
     		EventCsvDownload csvDownload = new EventCsvDownload();
 			csvDownload.download(events, response, additionalHeaders);
 		} catch (IOException | SecurityException | NoSuchMethodException e) {
-			LOGGER.error("Error to generate CSV", 
+			LOGGER.error("Error to generate CSV",
 						Device.builder().guid(deviceGuid).build().toURI(),
-						Device.builder().guid(deviceGuid).build().getLogLevel(), 
+						Device.builder().guid(deviceGuid).build().getLogLevel(),
 						e);
 		}
     }

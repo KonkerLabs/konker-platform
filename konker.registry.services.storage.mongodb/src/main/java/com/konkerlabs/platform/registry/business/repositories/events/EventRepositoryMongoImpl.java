@@ -1,17 +1,16 @@
 package com.konkerlabs.platform.registry.business.repositories.events;
 
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.events.api.BaseEventRepositoryImpl;
-import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -30,12 +29,6 @@ import java.util.stream.Collectors;
 @Repository("mongoEvents")
 public class EventRepositoryMongoImpl extends BaseEventRepositoryImpl {
 
-
-
-    @Autowired
-    private JsonParsingService jsonParsingService;
-    @Autowired
-    private ApplicationContext applicationContext;
     @Autowired
     private MongoTemplate mongoTemplate;
     @Autowired
@@ -43,25 +36,15 @@ public class EventRepositoryMongoImpl extends BaseEventRepositoryImpl {
     @Autowired
     private DeviceRepository deviceRepository;
 
-    protected Event doSave(Tenant tenant, Event event, Type type) throws BusinessException {
-        Optional.ofNullable(tenant)
-                .filter(tenant1 -> Optional.ofNullable(tenant1.getDomainName()).filter(s -> !s.isEmpty()).isPresent())
-                .orElseThrow(() -> new BusinessException(CommonValidations.TENANT_NULL.getCode()));
+    @Override
+    protected Event doSave(Tenant tenant, Application application, Event event, Type type) throws BusinessException {
         Optional.ofNullable(tenantRepository.findByDomainName(tenant.getDomainName()))
                 .orElseThrow(() -> new BusinessException(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()));
-        Optional.ofNullable(event)
-                .orElseThrow(() -> new BusinessException(CommonValidations.RECORD_NULL.getCode()));
-        Optional.ofNullable(event.getIncoming())
-                .orElseThrow(() -> new BusinessException(Validations.EVENT_INCOMING_NULL.getCode()));
-        Optional.ofNullable(event.getIncoming().getDeviceGuid()).filter(s -> !s.isEmpty())
-                .orElseThrow(() -> new BusinessException(Validations.INCOMING_DEVICE_GUID_NULL.getCode()));
-        Optional.ofNullable(event.getIncoming().getChannel()).filter(s -> !s.isEmpty())
-                .orElseThrow(() -> new BusinessException(Validations.EVENT_INCOMING_CHANNEL_NULL.getCode()));
 
         Tenant existingTenant = tenantRepository.findByDomainName(tenant.getDomainName());
 
         Optional.ofNullable(
-                deviceRepository.findByTenantAndGuid(existingTenant.getId(),event.getIncoming().getDeviceGuid())
+                deviceRepository.findByTenantAndGuid(existingTenant.getId(), event.getIncoming().getDeviceGuid())
         ).orElseThrow(() -> new BusinessException(Validations.INCOMING_DEVICE_ID_DOES_NOT_EXIST.getCode()));
 
         Optional.ofNullable(event.getTimestamp())
@@ -85,6 +68,7 @@ public class EventRepositoryMongoImpl extends BaseEventRepositoryImpl {
         DBObject incoming = new BasicDBObject();
         incoming.put("deviceGuid",event.getIncoming().getDeviceGuid());
         incoming.put("tenantDomain",event.getIncoming().getTenantDomain());
+        incoming.put("applicationName",event.getIncoming().getApplicationName());
         incoming.put("channel",event.getIncoming().getChannel());
         incoming.put("deviceId", event.getIncoming().getDeviceId());
 
@@ -99,6 +83,7 @@ public class EventRepositoryMongoImpl extends BaseEventRepositoryImpl {
             DBObject outgoing = new BasicDBObject();
             outgoing.put("deviceGuid",event.getOutgoing().getDeviceGuid());
             outgoing.put("tenantDomain",event.getOutgoing().getTenantDomain());
+            outgoing.put("applicationName",event.getOutgoing().getApplicationName());
             outgoing.put("channel",event.getOutgoing().getChannel());
             outgoing.put("deviceId", event.getOutgoing().getDeviceId());
 
@@ -111,6 +96,7 @@ public class EventRepositoryMongoImpl extends BaseEventRepositoryImpl {
     }
 
     protected List<Event> doFindBy(Tenant tenant,
+                                 Application application,
                                  String deviceGuid,
                                  String channel,
                                  Instant startInstant,
@@ -120,23 +106,9 @@ public class EventRepositoryMongoImpl extends BaseEventRepositoryImpl {
                                  Type type,
                                  boolean isDeleted) throws BusinessException {
 
-        Optional.ofNullable(tenant)
-                .filter(tenant1 -> Optional.ofNullable(tenant1.getDomainName()).filter(s -> !s.isEmpty()).isPresent())
-                .orElseThrow(() -> new IllegalArgumentException("Tenant cannot be null"));
-        Optional.ofNullable(deviceGuid).filter(s -> !s.isEmpty())
-                .orElseThrow(() -> new IllegalArgumentException("Device ID cannot be null or empty"));
-
-        if (!Optional.ofNullable(startInstant).isPresent() &&
-                !Optional.ofNullable(limit).isPresent())
-            throw new IllegalArgumentException("Limit cannot be null when start instant isn't provided");
-
         List<Criteria> criterias = new ArrayList<>();
 
-        criterias.add(
-            Criteria.where(MessageFormat.format("{0}.{1}", type.getActorFieldName(),"deviceGuid"))
-            .is(deviceGuid)
-        );
-
+        Optional.ofNullable(deviceGuid).ifPresent(instant -> criterias.add(Criteria.where(MessageFormat.format("{0}.{1}", type.getActorFieldName(),"deviceGuid")).is(deviceGuid)));
         Optional.ofNullable(startInstant).ifPresent(instant -> criterias.add(Criteria.where("ts").gt(instant.toEpochMilli())));
         Optional.ofNullable(endInstant).ifPresent(instant -> criterias.add(Criteria.where("ts").lte(instant.toEpochMilli())));
         Optional.ofNullable(isDeleted)
@@ -175,6 +147,7 @@ public class EventRepositoryMongoImpl extends BaseEventRepositoryImpl {
                                         return Event.EventActor.builder()
                                                 .deviceGuid(Optional.ofNullable(dbObject1.get("deviceGuid")).isPresent() ? dbObject1.get("deviceGuid").toString() : null)
                                                 .tenantDomain(Optional.ofNullable(dbObject1.get("tenantDomain")).isPresent() ? dbObject1.get("tenantDomain").toString() : null)
+                                                .applicationName(Optional.ofNullable(dbObject1.get("applicationName")).isPresent() ? dbObject1.get("applicationName").toString() : null)
                                                 .channel(Optional.ofNullable(dbObject1.get("channel")).isPresent() ? dbObject1.get("channel").toString() : null)
                                                 .deviceId(Optional.ofNullable(dbObject1.get("deviceId")).isPresent() ? dbObject1.get("deviceId").toString() : null)
                                                 .build();
@@ -188,6 +161,7 @@ public class EventRepositoryMongoImpl extends BaseEventRepositoryImpl {
                                 return Event.EventActor.builder()
                                         .deviceGuid(Optional.ofNullable(dbObject1.get("deviceGuid")).isPresent() ? dbObject1.get("deviceGuid").toString() : null)
                                         .tenantDomain(Optional.ofNullable(dbObject1.get("tenantDomain")).isPresent() ? dbObject1.get("tenantDomain").toString() : null)
+                                        .applicationName(Optional.ofNullable(dbObject1.get("applicationName")).isPresent() ? dbObject1.get("applicationName").toString() : null)
                                         .channel(Optional.ofNullable(dbObject1.get("channel")).isPresent() ? dbObject1.get("channel").toString() : null)
                                         .deviceId(Optional.ofNullable(dbObject1.get("deviceId")).isPresent() ? dbObject1.get("deviceId").toString() : null)
                                         .build();
@@ -205,16 +179,12 @@ public class EventRepositoryMongoImpl extends BaseEventRepositoryImpl {
     /**
      * Remove events from device in logical way
      * @param tenant
+     * @param application
      * @param deviceGuid
      * @param type
      * @throws Exception
      */
-    protected void doRemoveBy(Tenant tenant, String deviceGuid, Type type) throws Exception {
-        Optional.ofNullable(tenant)
-                .filter(tenant1 -> Optional.ofNullable(tenant1.getDomainName()).filter(s -> !s.isEmpty()).isPresent())
-                .orElseThrow(() -> new IllegalArgumentException("Tenant cannot be null"));
-        Optional.ofNullable(deviceGuid).filter(s -> !s.isEmpty())
-                .orElseThrow(() -> new IllegalArgumentException("Device ID cannot be null or empty"));
+    protected void doRemoveBy(Tenant tenant, Application application, String deviceGuid, Type type) throws Exception {
 
         List<Criteria> criterias = new ArrayList<>();
 

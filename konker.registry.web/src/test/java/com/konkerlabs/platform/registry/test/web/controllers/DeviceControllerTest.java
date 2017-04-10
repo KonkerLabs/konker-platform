@@ -78,7 +78,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
 	@Before
 	public void setUp() {
 		application = Application.builder().name(tenant.getDomainName()).build();
-		
+
 		registeredDevices = new ArrayList<>();
 		registeredDevices.add(Device.builder().build());
 
@@ -183,9 +183,9 @@ public class DeviceControllerTest extends WebLayerTestContext {
 		savedDevice.setRegistrationDate(Instant.now());
 		when(deviceRegisterService.getByDeviceGuid(tenant, application, savedDevice.getGuid()))
 				.thenReturn(ServiceResponseBuilder.<Device> ok().withResult(savedDevice).build());
-		when(deviceEventService.findIncomingBy(tenant, savedDevice.getGuid(), null, null, null, false, 50))
+		when(deviceEventService.findIncomingBy(tenant, application, savedDevice.getGuid(), null, null, null, false, 50))
 				.thenReturn(ServiceResponseBuilder.<List<Event>> ok().withResult(Collections.emptyList()).build());
-		when(deviceEventService.findOutgoingBy(tenant, savedDevice.getGuid(), null, null, null, false, 50))
+		when(deviceEventService.findOutgoingBy(tenant, application, savedDevice.getGuid(), null, null, null, false, 50))
 				.thenReturn(ServiceResponseBuilder.<List<Event>> ok().withResult(Collections.emptyList()).build());
 
 		// find last numeric metric mocks
@@ -194,11 +194,11 @@ public class DeviceControllerTest extends WebLayerTestContext {
 
 		when(eventSchemaService.findKnownIncomingChannelsBy(tenant, application, savedDevice.getGuid()))
 			.thenReturn(ServiceResponseBuilder.<List<String>> ok().withResult(channels).build());
-		when(eventSchemaService.findLastIncomingBy(tenant, savedDevice.getGuid(), JsonNodeType.NUMBER))
+		when(eventSchemaService.findLastIncomingBy(tenant, application, savedDevice.getGuid(), JsonNodeType.NUMBER))
 			.thenReturn(ServiceResponseBuilder.<EventSchema> ok().withResult(lastSchema).build());
-		when(eventSchemaService.findKnownIncomingMetricsBy(tenant, savedDevice.getGuid(), "square", JsonNodeType.NUMBER))
+		when(eventSchemaService.findKnownIncomingMetricsBy(tenant, application, savedDevice.getGuid(), "square", JsonNodeType.NUMBER))
 			.thenReturn(ServiceResponseBuilder.<List<String>> ok().withResult(Collections.emptyList()).build());
-		when(eventSchemaService.findKnownIncomingMetricsBy(tenant, savedDevice.getGuid(), JsonNodeType.NUMBER))
+		when(eventSchemaService.findKnownIncomingMetricsBy(tenant, application, savedDevice.getGuid(), JsonNodeType.NUMBER))
 			.thenReturn(ServiceResponseBuilder.<List<String>> ok().withResult(Collections.emptyList()).build());
 
 		getMockMvc().perform(get(MessageFormat.format("/devices/{0}/events", savedDevice.getGuid())))
@@ -211,7 +211,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
 				.andExpect(view().name("devices/events"));
 
 		verify(deviceRegisterService).getByDeviceGuid(tenant, application, savedDevice.getGuid());
-		verify(deviceEventService).findIncomingBy(tenant, savedDevice.getGuid(), null, null, null, false, 50);
+		verify(deviceEventService).findIncomingBy(tenant, application, savedDevice.getGuid(), null, null, null, false, 50);
 	}
 
 	@Test
@@ -290,7 +290,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
 	@WithMockUser(authorities={"VIEW_DEVICE_LOG"})
 	public void shouldListIncomingEvents() throws Exception {
 
-		when(deviceEventService.findIncomingBy(tenant, "deviceId", null, null, null, false, 50))
+		when(deviceEventService.findIncomingBy(tenant, application, "deviceId", null, null, null, false, 50))
 			.thenReturn(ServiceResponseBuilder.<List<Event>> ok().withResult(Collections.emptyList()).build());
 
 		getMockMvc().perform(get(MessageFormat.format("/devices/{0}/events/incoming", savedDevice.getId())))
@@ -303,7 +303,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
 	@WithMockUser(authorities={"VIEW_DEVICE_LOG"})
 	public void shouldListIncomingEventsWithFilter() throws Exception {
 
-		when(deviceEventService.findIncomingBy(Matchers.any(Tenant.class), Matchers.matches("deviceId"), Matchers.isNull(String.class), Matchers.any(Instant.class), Matchers.any(Instant.class), Matchers.anyBoolean(), Matchers.anyInt()))
+		when(deviceEventService.findIncomingBy(Matchers.any(Tenant.class), Matchers.any(Application.class), Matchers.matches("deviceId"), Matchers.isNull(String.class), Matchers.any(Instant.class), Matchers.any(Instant.class), Matchers.anyBoolean(), Matchers.anyInt()))
 			.thenReturn(ServiceResponseBuilder.<List<Event>> ok().withResult(Collections.emptyList()).build());
 
 		getMockMvc().perform(get(MessageFormat.format("/devices/{0}/events/incoming", savedDevice.getId()))
@@ -318,7 +318,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
 	@WithMockUser(authorities={"VIEW_DEVICE_LOG"})
 	public void shouldListOutgoingEvents() throws Exception {
 
-		when(deviceEventService.findOutgoingBy(tenant, "deviceId", null, null, null, false, 50))
+		when(deviceEventService.findOutgoingBy(tenant, application, "deviceId", null, null, null, false, 50))
 			.thenReturn(ServiceResponseBuilder.<List<Event>> ok().withResult(Collections.emptyList()).build());
 
 		getMockMvc().perform(get(MessageFormat.format("/devices/{0}/events/outgoing", savedDevice.getId())))
@@ -331,7 +331,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
 	@WithMockUser(authorities={"VIEW_DEVICE_LOG"})
 	public void shouldListOutgoingEventsWithFilter() throws Exception {
 
-		when(deviceEventService.findOutgoingBy(Matchers.any(Tenant.class), Matchers.matches("deviceId"), Matchers.isNull(String.class), Matchers.any(Instant.class), Matchers.any(Instant.class), Matchers.anyBoolean(), Matchers.anyInt()))
+		when(deviceEventService.findOutgoingBy(Matchers.any(Tenant.class), Matchers.any(Application.class), Matchers.matches("deviceId"), Matchers.isNull(String.class), Matchers.any(Instant.class), Matchers.any(Instant.class), Matchers.anyBoolean(), Matchers.anyInt()))
 			.thenReturn(ServiceResponseBuilder.<List<Event>> ok().withResult(Collections.emptyList()).build());
 
 		getMockMvc().perform(get(MessageFormat.format("/devices/{0}/events/outgoing", savedDevice.getId()))

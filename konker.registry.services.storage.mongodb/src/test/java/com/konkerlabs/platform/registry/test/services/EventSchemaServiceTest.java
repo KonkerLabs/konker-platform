@@ -2,6 +2,7 @@ package com.konkerlabs.platform.registry.test.services;
 
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.events.api.EventRepository;
@@ -41,6 +42,8 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
 
     @Autowired
     private TenantRepository tenantRepository;
+    @Autowired
+    private ApplicationRepository applicationRepository;
     @Autowired
     private DeviceRepository deviceRepository;
     @Autowired
@@ -160,13 +163,13 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
         assertThat(response,isResponseOk());
         assertThat(response.getResult(),equalTo(knownChannels));
     }
-    
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/eventSchemas.json"})
     public void shouldFindKnownIncomingMetrics() throws Exception {
         List<String> knownMetrics = Arrays.asList(new String[]{"temperature"});
 
-        ServiceResponse<List<String>> response = eventSchemaService.findKnownIncomingMetricsBy(tenant, deviceGuid, "data", JsonNodeType.NUMBER);
+        ServiceResponse<List<String>> response = eventSchemaService.findKnownIncomingMetricsBy(tenant, application, deviceGuid, "data", JsonNodeType.NUMBER);
 
         assertThat(response,isResponseOk());
         assertThat(response.getResult(), equalTo(knownMetrics));
@@ -177,6 +180,7 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
     public void shouldFindLastIncomingBy() throws Exception {
 
         Tenant tenant = tenantRepository.findByDomainName("konker");
+        Application application = applicationRepository.findByTenantAndName(tenant.getId(), "konker");
         String channel = "tDs8hinlkT";
         String deviceGuid = "dde1129e-4c6c-4ec4-89dc-425857b68009";
 
@@ -194,7 +198,7 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
                                 .build()).build();
 
         eventSchemaService.appendIncomingSchema(incomingEvent);
-        eventRepository.saveIncoming(tenant, incomingEvent);
+        eventRepository.saveIncoming(tenant, application, incomingEvent);
 
         // Numeric event
         Event incomingEventSnd = Event.builder()
@@ -208,10 +212,10 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
                                 .build()).build();
 
         eventSchemaService.appendIncomingSchema(incomingEventSnd);
-        eventRepository.saveIncoming(tenant, incomingEventSnd);
+        eventRepository.saveIncoming(tenant, application, incomingEventSnd);
 
 
-        ServiceResponse<EventSchema> response = eventSchemaService.findLastIncomingBy(tenant, deviceGuid, JsonNodeType.NUMBER);
+        ServiceResponse<EventSchema> response = eventSchemaService.findLastIncomingBy(tenant, application, deviceGuid, JsonNodeType.NUMBER);
 
         assertThat(response, isResponseOk());
         assertThat(response.getResult().getChannel(), equalTo(channel));
@@ -221,7 +225,7 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/eventSchemas.json"})
     public void shouldFindIncomingByGeviceGuidAndChannel() throws Exception {
-        ServiceResponse<EventSchema> response = eventSchemaService.findIncomingBy(tenant, deviceGuid, "command");
+        ServiceResponse<EventSchema> response = eventSchemaService.findIncomingBy(tenant, application, deviceGuid, "command");
 
         assertThat(response,isResponseOk());
         assertThat(response.getResult().getChannel(), equalTo("command"));
@@ -231,8 +235,9 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/eventSchemas.json"})
     public void shouldFindIncomingByGeviceGuidAndChannelWithInvalidTenant() throws Exception {
         Tenant otherTenant = tenantRepository.findByDomainName("inm");
-        
-        ServiceResponse<EventSchema> response = eventSchemaService.findIncomingBy(otherTenant, deviceGuid, "command");
+        Application otherApplication = applicationRepository.findByTenantAndName(otherTenant.getId(), "inm");
+
+        ServiceResponse<EventSchema> response = eventSchemaService.findIncomingBy(otherTenant, otherApplication, deviceGuid, "command");
 
         assertThat(response, ServiceResponseMatchers.hasErrorMessage("service.device.guid.does_not_exist"));
     }

@@ -3,6 +3,7 @@ package com.konkerlabs.platform.registry.business.services.api;
 import java.time.Instant;
 import java.util.List;
 
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 
@@ -30,6 +31,7 @@ public interface DeviceEventService {
      * Return all existing incoming device events by provided arguments
      *
      * @param tenant
+     * @param application
      * @param deviceGuid
      * @param startingTimestamp
      * @param endTimestamp
@@ -37,6 +39,7 @@ public interface DeviceEventService {
      * @return Found events
      */
     ServiceResponse<List<Event>> findIncomingBy(Tenant tenant,
+                                                Application application,
                                                 String deviceGuid,
                                                 String channel,
                                                 Instant startingTimestamp,
@@ -48,6 +51,7 @@ public interface DeviceEventService {
      * Return all existing incoming device events by provided arguments
      *
      * @param tenant
+     * @param application
      * @param deviceGuid
      * @param startingTimestamp
      * @param endTimestamp
@@ -55,6 +59,7 @@ public interface DeviceEventService {
      * @return Found events
      */
     ServiceResponse<List<Event>> findOutgoingBy(Tenant tenant,
+                                                Application application,
                                                 String deviceGuid,
                                                 String channel,
                                                 Instant startingTimestamp,

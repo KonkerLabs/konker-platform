@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry.business.repositories.events.api;
 
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 
@@ -35,11 +36,12 @@ public interface EventRepository {
 
     }
 
-    Event saveIncoming(Tenant tenant, Event event) throws BusinessException;
+    Event saveIncoming(Tenant tenant, Application application, Event event) throws BusinessException;
 
-    Event saveOutgoing(Tenant tenant, Event event) throws BusinessException;
+    Event saveOutgoing(Tenant tenant, Application application, Event event) throws BusinessException;
 
     List<Event> findIncomingBy(Tenant tenant,
+                               Application application,
                                String deviceGuid,
                                String channel,
                                Instant startInstant,
@@ -48,6 +50,7 @@ public interface EventRepository {
                                Integer limit) throws BusinessException;
 
     List<Event> findOutgoingBy(Tenant tenant,
+                               Application application,
                                String deviceGuid,
                                String channel,
                                Instant startInstant,
@@ -55,5 +58,6 @@ public interface EventRepository {
                                boolean ascending,
                                Integer limit) throws BusinessException;
 
-    void removeBy(Tenant tenant, String deviceGuid) throws BusinessException;
+    void removeBy(Tenant tenant, Application application, String deviceGuid) throws BusinessException;
+
 }

@@ -21,9 +21,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
@@ -46,7 +48,7 @@ import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
         PubServerConfig.class,
         EventStorageConfig.class
 })
-@UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json"})
+@UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json"})
 public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
 
     @Rule
@@ -54,6 +56,9 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
 
     @Autowired
     private TenantRepository tenantRepository;
+
+    @Autowired
+    private ApplicationRepository applicationRepository;
 
     @Autowired
     private DeviceLogEventService deviceEventService;
@@ -86,6 +91,7 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
     private Event event;
     private Device device;
     private Tenant tenant;
+    private Application application;
     private Instant firstEventTimestamp;
     private Instant lastEventTimestamp;
 
@@ -95,12 +101,16 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
         lastEventTimestamp = Instant.ofEpochMilli(1474562674450L);
 
         tenant = tenantRepository.findByDomainName("konker");
+        application = applicationRepository.findByTenantAndName(tenant.getId(), "konker");
         device = deviceRepository.findByTenantAndGuid(tenant.getId(), userDefinedDeviceGuid);
         event = Event.builder()
                 .incoming(
                         Event.EventActor.builder()
                                 .channel(channel)
-                                .deviceGuid(device.getGuid()).build()
+                                .deviceGuid(device.getGuid())
+                                .tenantDomain(tenant.getDomainName())
+                                .applicationName(application.getName())
+                                .build()
                 ).payload(payload).build();
     }
 
@@ -140,7 +150,7 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
     public void shouldLogFirstDeviceEvent() throws Exception {
         deviceEventService.logIncomingEvent(device, event);
 
-        Event last = eventRepository.findIncomingBy(tenant,device.getGuid(),channel,event.getTimestamp().minusSeconds(1l), null, false, 1).get(0);
+        Event last = eventRepository.findIncomingBy(tenant,application,device.getGuid(),channel,event.getTimestamp().minusSeconds(1l), null, false, 1).get(0);
 
         assertThat(last, notNullValue());
 
