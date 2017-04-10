@@ -27,7 +27,7 @@ def create_application(name, domainName, tenantId):
     db.applications.save({
         "_id": domainName,
         "friendlyName": name,
-        "qualifier": "konker",
+        "qualifier": "brsp01a",
         "registrationDate": calendar.timegm(time.gmtime()) * 1000,
         "tenant": bson.dbref.DBRef('tenants', tenantId)
     })

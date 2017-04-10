@@ -13,10 +13,18 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.EventRoute;
+import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.Transformation;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
+import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
+import com.konkerlabs.platform.registry.business.repositories.EventRouteRepository;
+import com.konkerlabs.platform.registry.business.repositories.RestDestinationRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
+import com.konkerlabs.platform.registry.business.repositories.TransformationRepository;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
@@ -32,6 +40,18 @@ public class ApplicationServiceImpl implements ApplicationService {
     
     @Autowired
     private TenantRepository tenantRepository;
+    
+    @Autowired
+    private DeviceRepository deviceRepository;
+    
+    @Autowired
+    private TransformationRepository transformationRepository;
+    
+    @Autowired
+    private RestDestinationRepository restDestinationRepository;
+    
+    @Autowired
+    private EventRouteRepository eventRouteRepository;
     
     private ServiceResponse<Application> basicValidate(Tenant tenant, Application application) {
 		if (!Optional.ofNullable(tenant).isPresent()) {
@@ -108,7 +128,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 		
 		application.setTenant(tenant);
 		application.setRegistrationDate(Instant.now());
-		application.setQualifier(tenant.getName());
+		application.setQualifier("brsp01a");
 		Application save = applicationRepository.save(application);
 		LOGGER.info("Application created. Name: {}", save.getName(), tenant.toURI(), tenant.getLogLevel());
 		
@@ -173,7 +193,31 @@ public class ApplicationServiceImpl implements ApplicationService {
                     .build();
 		}
 		
-		//TODO validar se tem algum device/rota/transformacao/rest atrelado a aplicacao
+		List<Device> devices = deviceRepository.findAllByTenantIdAndApplicationName(tenant.getId(), name);
+		List<EventRoute> routes = eventRouteRepository.findAll(tenant.getId(), name);
+		List<Transformation> transformations = transformationRepository.findAllByApplicationId(tenant.getId(), name);
+		List<RestDestination> destinations = restDestinationRepository.findAllByTenant(tenant.getId(), name);
+		
+		if (!devices.isEmpty()) {
+			return ServiceResponseBuilder.<Application>error()
+                    .withMessage(Validations.APPLICATION_HAS_DEVICE.getCode())
+                    .build();
+		}
+		if (!routes.isEmpty()) {
+			return ServiceResponseBuilder.<Application>error()
+                    .withMessage(Validations.APPLICATION_HAS_ROUTE.getCode())
+                    .build();
+		}
+		if (!transformations.isEmpty()) {
+			return ServiceResponseBuilder.<Application>error()
+                    .withMessage(Validations.APPLICATION_HAS_TRANSFORMATION.getCode())
+                    .build();
+		}
+		if (!destinations.isEmpty()) {
+			return ServiceResponseBuilder.<Application>error()
+                    .withMessage(Validations.APPLICATION_HAS_REST_DESTINATION.getCode())
+                    .build();
+		}
 		
 		applicationRepository.delete(application);
 		
