@@ -129,7 +129,8 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements Application
                 "classpath:/messages/routes",
                 "classpath:/messages/transformations",
                 "classpath:/messages/rest-destination",
-                "classpath:/messages/users");
+                "classpath:/messages/users",
+                "classpath:/messages/applications");
         messageSource.setDefaultEncoding("UTF-8");
         return messageSource;
     }

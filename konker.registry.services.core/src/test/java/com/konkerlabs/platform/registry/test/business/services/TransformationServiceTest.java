@@ -1,10 +1,8 @@
 package com.konkerlabs.platform.registry.test.business.services;
 
-import com.konkerlabs.platform.registry.business.model.RestTransformationStep;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.Transformation;
-import com.konkerlabs.platform.registry.business.model.TransformationStep;
+import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.TransformationRepository;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
@@ -45,15 +43,24 @@ public class TransformationServiceTest extends BusinessLayerTestSupport {
     private TenantRepository tenantRepository;
     @Autowired
     private TransformationRepository transformationRepository;
+    @Autowired
+    private ApplicationRepository applicationRepository;
 
     @Autowired
     private TransformationService subject;
     private Tenant tenant;
     private Transformation transformation;
+    private Application application;
 
     @Before
     public void setUp() throws Exception {
         tenant = tenantRepository.findByDomainName("konker");
+
+        application = Application.builder()
+                .name("konker")
+                .tenant(Tenant.builder().domainName("konker")
+                        .id("71fb0d48-674b-4f64-a3e5-0256ff3a63af")
+                        .build()).build();
 
         transformation = Transformation.builder()
                 .name("Test name")
@@ -69,17 +76,19 @@ public class TransformationServiceTest extends BusinessLayerTestSupport {
                                             put(RestTransformationStep.REST_ATTRIBUTE_HEADERS, new HashMap<String, String>());
                                         }})
                                 .build()
-                ).build();
+                )
+                .application(application)
+                .build();
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/transformations.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json"})
     public void shouldReturnAllRegisteredTransformations() throws Exception {
         tenantRepository.findAll().stream().forEach(tenant1 -> {
             List<Transformation> transformations = transformationRepository.findAllByTenantId(tenant1.getId());
 
             ServiceResponse<List<Transformation>> response;
-            response = subject.getAll(tenant1);
+            response = subject.getAll(tenant1, application);
 
             assertThat(response, isResponseOk());
             assertThat(response.getResult(), equalTo(transformations));
@@ -88,7 +97,7 @@ public class TransformationServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldReturnAValidationMessageIfTenantIsNull() throws Exception {
-        ServiceResponse<Transformation> serviceResponse = subject.register(null, transformation);
+        ServiceResponse<Transformation> serviceResponse = subject.register(null, application, transformation);
 
         assertThat(serviceResponse, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
     }
@@ -97,21 +106,21 @@ public class TransformationServiceTest extends BusinessLayerTestSupport {
     public void shouldReturnAValidationMessageIfTenantDoesNotExist() throws Exception {
         tenant = Tenant.builder().id("unknown_id").build();
 
-        ServiceResponse<Transformation> serviceResponse = subject.register(tenant, transformation);
+        ServiceResponse<Transformation> serviceResponse = subject.register(tenant, application, transformation);
 
         assertThat(serviceResponse, hasErrorMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()));
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
     public void shouldReturnAValidationMessageIfTransformationIsNull() throws Exception {
-        ServiceResponse<Transformation> serviceResponse = subject.register(tenant, null);
+        ServiceResponse<Transformation> serviceResponse = subject.register(tenant, application, null);
 
         assertThat(serviceResponse, hasErrorMessage(CommonValidations.RECORD_NULL.getCode()));
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
     public void shouldReturnAValidationMessageIfTransformationIsInvalid() throws Exception {
         Map<String, Object[]> validationErrors = new HashMap() {{
             put("Some error", null);
@@ -120,41 +129,41 @@ public class TransformationServiceTest extends BusinessLayerTestSupport {
         transformation = spy(transformation);
         when(transformation.applyValidations()).thenReturn(Optional.of(validationErrors));
 
-        ServiceResponse<Transformation> serviceResponse = subject.register(tenant, transformation);
+        ServiceResponse<Transformation> serviceResponse = subject.register(tenant, application, transformation);
 
         assertThat(serviceResponse, hasAllErrors(validationErrors));
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/transformations.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json"})
     public void shouldReturnAValidationMessageIfTransformationNameIsAlreadyInUse() throws Exception {
         transformation.setName(TRANFORMATION_NAME_IN_USE);
 
-        ServiceResponse<Transformation> serviceResponse = subject.register(tenant, transformation);
+        ServiceResponse<Transformation> serviceResponse = subject.register(tenant, application, transformation);
 
         assertThat(serviceResponse, hasErrorMessage(TransformationService.Validations.TRANSFORMATION_NAME_IN_USE.getCode()));
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
     public void shouldPersistWhenValid() throws Exception {
-        ServiceResponse<Transformation> serviceResponse = subject.register(tenant, transformation);
+        ServiceResponse<Transformation> serviceResponse = subject.register(tenant, application, transformation);
 
         assertThat(serviceResponse, isResponseOk());
         assertThat(serviceResponse.getResult(), equalTo(transformation));
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/transformations.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json"})
     public void shouldFindATransformationByItsGuid() throws Exception {
         Transformation found = transformationRepository.findByGuid(TRANSFORMATION_GUID_IN_USE);
 
-        ServiceResponse<Transformation> response = subject.get(tenant, TRANSFORMATION_GUID_IN_USE);
+        ServiceResponse<Transformation> response = subject.get(tenant, application, TRANSFORMATION_GUID_IN_USE);
 
         assertThat(response, isResponseOk());
         assertThat(response.getResult(), equalTo(found));
 
-        response = subject.get(tenant, ANOTHER_TENANTS_TRANSFORMATION_GUID);
+        response = subject.get(tenant, application, ANOTHER_TENANTS_TRANSFORMATION_GUID);
 
         assertThat(response,
                 hasErrorMessage(TransformationService.Validations.TRANSFORMATION_NOT_FOUND.getCode()));
@@ -163,7 +172,7 @@ public class TransformationServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldReturnValidationMessageIfTenantIsNullWhenUpdating() throws Exception {
-        ServiceResponse<Transformation> serviceResponse = subject.update(null, TRANSFORMATION_GUID_IN_USE, transformation);
+        ServiceResponse<Transformation> serviceResponse = subject.update(null, application, TRANSFORMATION_GUID_IN_USE, transformation);
 
         assertThat(serviceResponse, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
     }
@@ -172,49 +181,49 @@ public class TransformationServiceTest extends BusinessLayerTestSupport {
     public void shouldReturnAValidationMessageIfTenantDoesNotExistWhenUpdating() throws Exception {
         tenant = Tenant.builder().id("unknown_id").build();
 
-        ServiceResponse<Transformation> serviceResponse = subject.update(tenant, TRANSFORMATION_GUID_IN_USE, transformation);
+        ServiceResponse<Transformation> serviceResponse = subject.update(tenant, application, TRANSFORMATION_GUID_IN_USE, transformation);
 
         assertThat(serviceResponse, hasErrorMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()));
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
     public void shouldReturnAValidationMessageIfTransformationIsNullWhenUpdating() throws Exception {
-        ServiceResponse<Transformation> serviceResponse = subject.update(tenant, TRANSFORMATION_GUID_IN_USE, null);
+        ServiceResponse<Transformation> serviceResponse = subject.update(tenant, application, TRANSFORMATION_GUID_IN_USE, null);
 
         assertThat(serviceResponse, hasErrorMessage(CommonValidations.RECORD_NULL.getCode()));
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json" })
     public void shouldReturnAValidationMessageIfTranformationGuidDoesNotExistWithinTenant() throws Exception {
-        ServiceResponse<Transformation> serviceResponse = subject.update(tenant, ANOTHER_TENANTS_TRANSFORMATION_GUID, transformation);
+        ServiceResponse<Transformation> serviceResponse = subject.update(tenant, application, ANOTHER_TENANTS_TRANSFORMATION_GUID, transformation);
 
         assertThat(serviceResponse, hasErrorMessage(TransformationService.Validations.TRANSFORMATION_NOT_FOUND.getCode()));
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/transformations.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json"})
     public void shouldReturnAValidationMessageIfTransformationIsInvalidWhenUpdating() throws Exception {
         transformation.setName(null);
 
-        ServiceResponse<Transformation> serviceResponse = subject.update(tenant, TRANSFORMATION_GUID_IN_USE, transformation);
+        ServiceResponse<Transformation> serviceResponse = subject.update(tenant, application, TRANSFORMATION_GUID_IN_USE, transformation);
 
         assertThat(serviceResponse.getResponseMessages().isEmpty(), is(false));
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/transformations.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json"})
     public void shouldReturnAValidationMessageIfTransformationNameIsAlreadyInUseWhenUpdating() throws Exception {
         transformation.setName(ANOTHER_TRANSFORMATION_NAME_IN_USE);
 
-        ServiceResponse<Transformation> serviceResponse = subject.update(tenant, TRANSFORMATION_GUID_IN_USE, transformation);
+        ServiceResponse<Transformation> serviceResponse = subject.update(tenant, application, TRANSFORMATION_GUID_IN_USE, transformation);
 
         assertThat(serviceResponse, hasErrorMessage(TransformationService.Validations.TRANSFORMATION_NAME_IN_USE.getCode()));
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/transformations.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json"})
     public void shouldUpdateWhenValid() throws Exception {
         transformation.setName("Updated name");
         transformation.setSteps(Arrays.asList(new TransformationStep[]{
@@ -229,7 +238,7 @@ public class TransformationServiceTest extends BusinessLayerTestSupport {
                         }}).build()})
         );
 
-        ServiceResponse<Transformation> serviceResponse = subject.update(tenant, TRANSFORMATION_GUID_IN_USE, transformation);
+        ServiceResponse<Transformation> serviceResponse = subject.update(tenant, application, TRANSFORMATION_GUID_IN_USE, transformation);
 
         assertThat(serviceResponse, isResponseOk());
         assertThat(serviceResponse.getResult().getName(), equalTo(transformation.getName()));
@@ -237,27 +246,27 @@ public class TransformationServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/transformations.json", "/fixtures/event-routes.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json"})
     public void shouldReturnAValidationMessageIfTransformationBelongAnotherTenantWhenRemoving() throws Exception {
-        ServiceResponse<Transformation> serviceResponse = subject.remove(tenant, ANOTHER_TENANTS_TRANSFORMATION_GUID);
+        ServiceResponse<Transformation> serviceResponse = subject.remove(tenant, application, ANOTHER_TENANTS_TRANSFORMATION_GUID);
 
         assertThat(serviceResponse, hasErrorMessage(TransformationService.Validations.TRANSFORMATION_BELONG_ANOTHER_TENANT.getCode()));
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/transformations.json", "/fixtures/event-routes.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json"})
     public void shouldReturnAValidationMessageIfTransformationHasRoutesWhenRemoving() throws Exception {
-        ServiceResponse<Transformation> serviceResponse = subject.remove(tenant, TRANSFORMATION_GUID_IN_USE);
+        ServiceResponse<Transformation> serviceResponse = subject.remove(tenant, application, TRANSFORMATION_GUID_IN_USE);
 
         assertThat(serviceResponse, hasErrorMessage(TransformationService.Validations.TRANSFORMATION_HAS_ROUTE.getCode()));
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/transformations.json", "/fixtures/event-routes.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json"})
     public void shouldRemoveSuccessfully() throws Exception {
-        ServiceResponse<Transformation> serviceResponse = subject.remove(tenant, TRANSFORMATION_GUID_NO_ROUTES);
+        ServiceResponse<Transformation> serviceResponse = subject.remove(tenant, application, TRANSFORMATION_GUID_NO_ROUTES);
 
-        Transformation removedTransformation = subject.get(tenant, TRANSFORMATION_GUID_NO_ROUTES).getResult();
+        Transformation removedTransformation = subject.get(tenant, application, TRANSFORMATION_GUID_NO_ROUTES).getResult();
 
         assertThat(serviceResponse, isResponseOk());
         assertThat(removedTransformation, nullValue());

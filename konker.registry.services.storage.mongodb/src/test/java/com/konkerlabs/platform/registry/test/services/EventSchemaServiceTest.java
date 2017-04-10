@@ -1,10 +1,7 @@
 package com.konkerlabs.platform.registry.test.services;
 
 import com.fasterxml.jackson.databind.node.JsonNodeType;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.EventSchema;
-import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.events.api.EventRepository;
@@ -57,6 +54,8 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
     private Tenant tenant;
     private String firstChannel;
     private String secondChannel;
+    private Application application;
+
 
     private EventSchema firstEventSchema;
     private EventSchema secondEventSchema;
@@ -83,6 +82,10 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
     @Before
     public void setUp() throws Exception {
         tenant = tenantRepository.findByDomainName("konker");
+        application = Application.builder()
+                .tenant(tenant)
+                .name("smartffkonker").build();
+
         firstChannel = "command";
         secondChannel = "data";
 
@@ -147,11 +150,12 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/eventSchemas.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json", "/fixtures/eventSchemas.json"})
     public void shouldRetrieveAllDistinctChannelByDeviceGuid() throws Exception {
         List<String> knownChannels = Arrays.asList(new String[]{"command","data"});
 
-        ServiceResponse<List<String>> response = eventSchemaService.findKnownIncomingChannelsBy(tenant,deviceGuid);
+        ServiceResponse<List<String>> response = eventSchemaService
+                .findKnownIncomingChannelsBy(tenant, application, deviceGuid);
 
         assertThat(response,isResponseOk());
         assertThat(response.getResult(),equalTo(knownChannels));

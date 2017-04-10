@@ -2,6 +2,7 @@ package com.konkerlabs.platform.registry.api.model;
 
 
 import com.konkerlabs.platform.registry.api.model.core.SerializableVO;
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.RestTransformationStep;
 import com.konkerlabs.platform.registry.business.model.Transformation;
 import io.swagger.annotations.ApiModel;
@@ -27,6 +28,7 @@ public class RestTransformationVO
     private String name;
     private String guid;
     private String description;
+    private String applicationId;
 
     @Singular
     private List<RestTransformationStepVO> steps = new LinkedList<>();
@@ -39,6 +41,7 @@ public class RestTransformationVO
         r.setId(t.getId());
         r.setGuid(t.getGuid());
         r.setName(t.getName());
+        r.setApplicationId(Optional.ofNullable(t.getApplication()).isPresent() ? t.getApplication().getName() : null);
         r.setDescription(t.getDescription());
         r.setSteps(new RestTransformationStepVO().apply(t.getSteps()));
         return r;
@@ -48,6 +51,7 @@ public class RestTransformationVO
     public Transformation patchDB(Transformation t) {
         t.setDescription(this.getDescription());
         t.setName(this.getName());
+        t.setApplication(Application.builder().name(this.getApplicationId()).build());
         t.setSteps(this.getSteps().stream()
                 .map(i -> {
                             return new RestTransformationStep(new HashMap<String, Object>() {{

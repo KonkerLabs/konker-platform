@@ -8,6 +8,10 @@
         "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
         "$ref" : "tenants"
       },
+      "application" : {
+      	"$id" : "smartffkonker",
+      	"$ref" : "applications"
+      },
       "deviceId" : "SN1234567890",
       "apiKey" : "e4399b2ed998",
       "name" : "Test name",
@@ -22,6 +26,10 @@
       "tenant" : {
         "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
         "$ref" : "tenants"
+      },
+      "application" : {
+      	"$id" : "smartffkonker",
+      	"$ref" : "applications"
       },
       "deviceId" : "SN1234567891",
       "apiKey" : "e4399b2ed999",

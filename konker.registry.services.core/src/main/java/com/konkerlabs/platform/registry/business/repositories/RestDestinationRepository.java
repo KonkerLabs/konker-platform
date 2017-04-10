@@ -8,12 +8,13 @@ import java.util.List;
 
 public interface RestDestinationRepository extends MongoRepository<RestDestination, String>{
 
-    @Query("{ 'tenant.id' : ?0, 'guid' : ?1 }")
-    RestDestination getByTenantAndGUID(String tenantId, String id);
+    @Query("{ 'tenant.id' : ?0, 'application.name' : ?1, 'guid' : ?2 }")
+    RestDestination getByTenantAndGUID(String tenantId, String applicationName, String id);
 
-    @Query("{ 'tenant.id' : ?0, 'name' : ?1 }")
-    RestDestination getByTenantAndName(String tenantId, String name);
-    
-    @Query("{ 'tenant.id' : ?0 }")
-    List<RestDestination> findAllByTenant(String tenantId);
+    @Query("{ 'tenant.id' : ?0, 'application.name' : ?1, 'name' : ?2 }")
+    RestDestination getByTenantAndName(String tenantId, String applicationName, String name);
+
+    @Query("{ 'tenant.id' : ?0, 'application.name' : ?1 }")
+    List<RestDestination> findAllByTenant(String tenantId, String applicationName);
+
 }

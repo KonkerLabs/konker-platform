@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.test.data.services.publishers;
 
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.SmsDestination;
@@ -76,6 +77,8 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
 
     private Tenant tenant;
 
+    private Application application;
+
     private String invalidEventPayload = "{\n" +
             "    \"field\" : \"value\"\n" +
             "    \"count\" : 34,2,\n" +
@@ -144,7 +147,7 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Event cannot be null");
 
-        subject.send(null,destinationUri,null,tenant);
+        subject.send(null,destinationUri,null,tenant, application);
     }
 
     @Test
@@ -152,7 +155,7 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Destination URI cannot be null or empty");
 
-        subject.send(event,null,null,tenant);
+        subject.send(event,null,null,tenant, application);
     }
 
     @Test
@@ -160,7 +163,7 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Destination URI cannot be null or empty");
 
-        subject.send(event,new URI(null,null,null,null,null),null,tenant);
+        subject.send(event,new URI(null,null,null,null,null),null,tenant, application);
     }
 
     @Test
@@ -168,7 +171,7 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Data cannot be null");
 
-        subject.send(event,destinationUri,null,tenant);
+        subject.send(event,destinationUri,null,tenant, application);
     }
 
     @Test
@@ -178,7 +181,7 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("A SMS message strategy is required");
 
-        subject.send(event,destinationUri,data,tenant);
+        subject.send(event,destinationUri,data,tenant, application);
     }
 
     @Test
@@ -188,7 +191,7 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("A SMS message strategy is required");
 
-        subject.send(event,destinationUri,data,tenant);
+        subject.send(event,destinationUri,data,tenant, application);
     }
 
     @Test
@@ -200,7 +203,7 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("A message template is required on custom strategy");
 
-        subject.send(event,destinationUri,data,tenant);
+        subject.send(event,destinationUri,data,tenant, application);
     }
 
     @Test
@@ -208,7 +211,7 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Tenant cannot be null");
 
-        subject.send(event,destinationUri,data,null);
+        subject.send(event,destinationUri,data,null,null);
     }
 
     @Test
@@ -235,7 +238,7 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
                 MessageFormat.format("SMS Destination is unknown : {0}", destinationUri)
         );
 
-        subject.send(event,destinationUri,data,tenant);
+        subject.send(event,destinationUri,data,tenant, application);
     }
 
     @Test
@@ -257,7 +260,7 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
             }
         }.toURI();
 
-        subject.send(event,destinationUri,data,tenant);
+        subject.send(event,destinationUri,data,tenant, application);
 
         verify(smsMessageGateway,never()).send(anyString(),anyString());
         verify(eventRepository,never()).saveIncoming(tenant,event);
@@ -267,7 +270,7 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
     public void shouldNotSendAnyEventThroughGatewayIfPayloadParsingFails() throws Exception {
         event.setPayload(invalidEventPayload);
 
-        subject.send(event,destinationUri,data,tenant);
+        subject.send(event,destinationUri,data,tenant, application);
 
         verify(smsMessageGateway,never()).send(anyString(),anyString());
         verify(eventRepository,never()).saveIncoming(tenant,event);
@@ -277,7 +280,7 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
     public void onEnabledDestinationShouldSendInterpolatedTemplateThroughGatewayIfStrategyIsCustom() throws Exception {
         String expectedMessage = messageTemplate.replaceAll("\\@\\{.*}","21.45");
 
-        subject.send(event,destinationUri,data,tenant);
+        subject.send(event,destinationUri,data,tenant, application);
 
         InOrder inOrder = Mockito.inOrder(eventRepository,smsMessageGateway);
 
@@ -292,7 +295,7 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
         data.put(EventRoute.SMS_MESSAGE_STRATEGY_PARAMETER_NAME,
         		 EventRoute.SMS_MESSAGE_FORWARD_STRATEGY_PARAMETER_VALUE);
 
-        subject.send(event,destinationUri,data,tenant);
+        subject.send(event,destinationUri,data,tenant, application);
 
         InOrder inOrder = Mockito.inOrder(eventRepository,smsMessageGateway);
 
@@ -304,7 +307,7 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
     public void shouldNotLogEventThroughGatewayIfItCouldNotBeForwarded() throws Exception {
         doThrow(IntegrationException.class).when(smsMessageGateway).send(anyString(),anyString());
 
-        subject.send(event,destinationUri,data,tenant);
+        subject.send(event,destinationUri,data,tenant, application);
 
         Mockito.verify(eventRepository,never()).saveIncoming(any(Tenant.class),any(Event.class));
     }

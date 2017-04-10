@@ -22,10 +22,12 @@ import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException
 import com.konkerlabs.platform.registry.api.model.RestDestinationInputVO;
 import com.konkerlabs.platform.registry.api.model.RestDestinationVO;
 import com.konkerlabs.platform.registry.api.model.RestResponse;
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.RestDestination.Validations;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 
@@ -35,12 +37,15 @@ import io.swagger.annotations.ApiParam;
 
 @RestController
 @Scope("request")
-@RequestMapping(value = "/restDestinations")
-@Api(tags = "restDestinations")
+@RequestMapping(value = "/{application}/restDestinations")
+@Api(tags = "rest destinations")
 public class RestDestinationController implements InitializingBean {
 
     @Autowired
     private RestDestinationService restDestinationService;
+
+    @Autowired
+    private ApplicationService applicationService;
 
     @Autowired
     private User user;
@@ -52,11 +57,12 @@ public class RestDestinationController implements InitializingBean {
     @ApiOperation(
             value = "List all rest destinations by organization",
             response = RestDestinationVO.class)
-    public List<RestDestinationVO> list() throws BadServiceResponseException {
+    public List<RestDestinationVO> list(@PathVariable("application") String applicationId) throws BadServiceResponseException {
 
         Tenant tenant = user.getTenant();
+        Application application = applicationService.getByApplicationName(tenant, applicationId).getResult();
 
-        ServiceResponse<List<RestDestination>> restDestinationResponse = restDestinationService.findAll(tenant);
+        ServiceResponse<List<RestDestination>> restDestinationResponse = restDestinationService.findAll(tenant, application);
 
         if (!restDestinationResponse.isOk()) {
             throw new BadServiceResponseException(user, restDestinationResponse, validationsCode);
@@ -72,11 +78,14 @@ public class RestDestinationController implements InitializingBean {
             response = RestResponse.class
     )
     @PreAuthorize("hasAuthority('SHOW_REST_DESTINATION')")
-    public RestDestinationVO read(@PathVariable("restDestinationGuid") String restDestinationGuid) throws BadServiceResponseException, NotFoundResponseException {
+    public RestDestinationVO read(
+            @PathVariable("application") String applicationId,
+            @PathVariable("restDestinationGuid") String restDestinationGuid) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
+        Application application = applicationService.getByApplicationName(tenant, applicationId).getResult();
 
-        ServiceResponse<RestDestination> restDestinationResponse = restDestinationService.getByGUID(tenant, restDestinationGuid);
+        ServiceResponse<RestDestination> restDestinationResponse = restDestinationService.getByGUID(tenant, application, restDestinationGuid);
 
         if (!restDestinationResponse.isOk()) {
             throw new NotFoundResponseException(user, restDestinationResponse);
@@ -90,13 +99,15 @@ public class RestDestinationController implements InitializingBean {
     @ApiOperation(value = "Create a rest destination")
     @PreAuthorize("hasAuthority('CREATE_REST_DESTINATION')")
     public RestDestinationVO create(
+            @PathVariable("application") String applicationId,
             @ApiParam(
-            		name = "body", 
-            		value = "JSON filled with the fields described in Model and Example Value beside", 
+            		name = "body",
+            		value = "JSON filled with the fields described in Model and Example Value beside",
             		required = true)
             @RequestBody RestDestinationInputVO restDestinationForm) throws BadServiceResponseException {
 
         Tenant tenant = user.getTenant();
+        Application application = applicationService.getByApplicationName(tenant, applicationId).getResult();
 
         RestDestination restDestination = RestDestination.builder()
                 .name(restDestinationForm.getName())
@@ -108,7 +119,7 @@ public class RestDestinationController implements InitializingBean {
                 .active(true)
                 .build();
 
-        ServiceResponse<RestDestination> restDestinationResponse = restDestinationService.register(tenant, restDestination);
+        ServiceResponse<RestDestination> restDestinationResponse = restDestinationService.register(tenant, application, restDestination);
 
         if (!restDestinationResponse.isOk()) {
             throw new BadServiceResponseException(user, restDestinationResponse, validationsCode);
@@ -122,17 +133,19 @@ public class RestDestinationController implements InitializingBean {
     @ApiOperation(value = "Update a rest destination")
     @PreAuthorize("hasAuthority('EDIT_REST_DESTINATION')")
     public void update(
+            @PathVariable("application") String applicationId,
             @PathVariable("restDestinationGuid") String restDestinationGuid,
             @ApiParam(
-            		name = "body", 
+            		name = "body",
             		value = "JSON filled with the fields described in Model and Example Value beside",
             		required = true)
             @RequestBody RestDestinationInputVO restDestinationForm) throws BadServiceResponseException {
 
         Tenant tenant = user.getTenant();
+        Application application = applicationService.getByApplicationName(tenant, applicationId).getResult();
 
         RestDestination restDestinationFromDB = null;
-        ServiceResponse<RestDestination> restDestinationResponse = restDestinationService.getByGUID(tenant, restDestinationGuid);
+        ServiceResponse<RestDestination> restDestinationResponse = restDestinationService.getByGUID(tenant, application, restDestinationGuid);
 
         if (!restDestinationResponse.isOk()) {
             throw new BadServiceResponseException(user, restDestinationResponse, validationsCode);
@@ -149,7 +162,7 @@ public class RestDestinationController implements InitializingBean {
         restDestinationFromDB.setServicePassword(restDestinationForm.getServicePassword());
         restDestinationFromDB.setActive(restDestinationForm.isActive());
 
-        ServiceResponse<RestDestination> updateResponse = restDestinationService.update(tenant, restDestinationGuid, restDestinationFromDB);
+        ServiceResponse<RestDestination> updateResponse = restDestinationService.update(tenant, application, restDestinationGuid, restDestinationFromDB);
 
         if (!updateResponse.isOk()) {
             throw new BadServiceResponseException(user, restDestinationResponse, validationsCode);
@@ -161,11 +174,14 @@ public class RestDestinationController implements InitializingBean {
     @DeleteMapping(path = "/{restDestinationGuid}")
     @ApiOperation(value = "Delete a rest destination")
     @PreAuthorize("hasAuthority('REMOVE_REST_DESTINATION')")
-    public void delete(@PathVariable("restDestinationGuid") String restDestinationGuid) throws BadServiceResponseException, NotFoundResponseException {
+    public void delete(
+            @PathVariable("application") String applicationId,
+            @PathVariable("restDestinationGuid") String restDestinationGuid) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
+        Application application = applicationService.getByApplicationName(tenant, applicationId).getResult();
 
-        ServiceResponse<RestDestination> restDestinationResponse = restDestinationService.remove(tenant, restDestinationGuid);
+        ServiceResponse<RestDestination> restDestinationResponse = restDestinationService.remove(tenant, application, restDestinationGuid);
 
         if (!restDestinationResponse.isOk()) {
             if (restDestinationResponse.getResponseMessages().containsKey(RestDestinationService.Validations.DESTINATION_NOT_FOUND.getCode())) {

@@ -7,9 +7,11 @@ import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
 import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
 import com.konkerlabs.platform.registry.api.web.controller.TransformationsRestController;
 import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.RestTransformationStep;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.Transformation;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.TransformationService;
 import org.junit.After;
@@ -26,6 +28,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -49,16 +52,20 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
 
     @Autowired
     private TransformationService transformationService;
+    @Autowired
+    private ApplicationService applicationService;
 
     @Autowired
     private Tenant tenant;
+    private Application application;
+    private Application applicationOwnerIsSomeOther;
 
     private String method = "POST";
     private String url1 = "http://google.com/test";
     private String url2 = "http://google.com/test2";
     private String username = "root";
     private String password = "secret";
-    private String BASEPATH = "/restTransformations/";
+    private String BASEPATH = "restTransformations";
 
     private Transformation validTransformation1;
     private Transformation validTransformation2;
@@ -74,12 +81,21 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
 
     @Before
     public void setUp() {
+        application = Application.builder()
+                .name(tenant.getDomainName())
+                .build();
+
+        applicationOwnerIsSomeOther = Application.builder()
+                .name("inm")
+                .build();
+
         validTransformation1 =
                 Transformation.builder()
                         .id(ID1)
                         .guid(GUID1)
                         .name(NAME1)
                         .description(DESCRIPTION1)
+                        .application(application)
                         .step(
                                 RestTransformationStep.builder()
                                         .attributes(
@@ -99,6 +115,7 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
                         .guid(GUID2)
                         .name(NAME2)
                         .description(DESCRIPTION2)
+                        .application(application)
                         .step(
                                 RestTransformationStep.builder()
                                         .attributes(
@@ -112,6 +129,11 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
                                         .build())
                         .build();
 
+
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+                .thenReturn(ServiceResponseBuilder.<Application> ok()
+                        .withResult(application).build());
+
     }
 
     @After
@@ -122,7 +144,7 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldListTransformations() throws Exception {
 
-        when(transformationService.getAll(tenant))
+        when(transformationService.getAll(tenant, application))
                 .thenReturn(ServiceResponseBuilder.<List<Transformation>>ok()
                         .withResult(Arrays.asList(
                                 validTransformation1,
@@ -130,7 +152,7 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
                         )).build());
 
         getMockMvc().perform(MockMvcRequestBuilders
-                .get(BASEPATH)
+                .get(MessageFormat.format("/{0}/{1}/",  application.getName(), BASEPATH))
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -162,12 +184,12 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldReadTransformation() throws Exception {
-        when(transformationService.get(tenant, GUID1))
+        when(transformationService.get(tenant, application, GUID1))
                 .thenReturn(ServiceResponseBuilder.<Transformation>ok()
                         .withResult(validTransformation1).build());
 
         getMockMvc().perform(MockMvcRequestBuilders
-                .get(BASEPATH + "/" + GUID1)
+                .get(MessageFormat.format("/{0}/{1}/{2}/", application.getName(), BASEPATH, GUID1))
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -188,6 +210,19 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    public void shouldntReadTransformationWhenOwnerIsSomeOther() throws Exception {
+        when(transformationService.get(tenant, applicationOwnerIsSomeOther, GUID1))
+                .thenReturn(ServiceResponseBuilder.<Transformation>ok()
+                        .withResult(validTransformation1).build());
+
+        getMockMvc().perform(MockMvcRequestBuilders
+                .get(MessageFormat.format("/{0}/{1}/{2}/",BASEPATH, applicationOwnerIsSomeOther.getName(), GUID1))
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().is4xxClientError());
+    }
+
+    @Test
     public void shouldCreateTransformation() throws Exception {
         Transformation newTransformation = Transformation.builder()
                 .id(null)
@@ -195,6 +230,7 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
                 .name(NAME1 + "NEW")
                 .description(DESCRIPTION1 + "NEW")
                 .tenant(null)
+                .application(application)
                 .steps(validTransformation1.getSteps())
                 .build();
 
@@ -202,6 +238,7 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
                 .id(ID1)
                 .guid(GUID1)
                 .name(NAME1 + "NEW")
+                .application(application)
                 .description(DESCRIPTION1 + "NEW")
                 .tenant(null)
                 .steps(validTransformation1.getSteps())
@@ -209,11 +246,16 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
 
         RestTransformationVO vo = new RestTransformationVO().apply(newTransformation);
 
-        when(transformationService.register(tenant, newTransformation))
-                .thenReturn(ServiceResponseBuilder.<Transformation> ok().withResult(newTransformationResult).build());
+        when(transformationService.register(
+                tenant,
+                Application.builder()
+                        .name(tenant.getDomainName())
+                        .build(),
+                newTransformation)
+        ).thenReturn(ServiceResponseBuilder.<Transformation> ok().withResult(newTransformationResult).build());
 
         getMockMvc().perform(MockMvcRequestBuilders
-                .post(BASEPATH + "/")
+                .post(MessageFormat.format("/{0}/{1}/",  application.getName(), BASEPATH))
                 .content(getJson(vo))
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
@@ -242,20 +284,21 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
                 .name(NAME1 + "CHANGED")
                 .description(DESCRIPTION1 + "CHANGED")
                 .tenant(null)
+                .application(application)
                 .steps(validTransformation1.getSteps())
                 .build();
 
         RestTransformationVO vo = new RestTransformationVO().apply(changedValues);
 
-        when(transformationService.get(tenant, GUID1))
+        when(transformationService.get(tenant, application, GUID1))
                 .thenReturn(ServiceResponseBuilder.<Transformation>ok()
                         .withResult(validTransformation1).build());
 
-        when(transformationService.update(tenant, GUID1, changedValues))
+        when(transformationService.update(tenant, application, GUID1, changedValues))
                 .thenReturn(ServiceResponseBuilder.<Transformation> ok().withResult(changedValues).build());
 
         getMockMvc().perform(MockMvcRequestBuilders
-                .put(BASEPATH + "/" + GUID1)
+                .put(MessageFormat.format("/{0}/{1}/{2}/",  application.getName(), BASEPATH, GUID1))
                 .content(getJson(vo))
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
@@ -263,16 +306,55 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
                 .andExpect(content().contentType("application/json;charset=UTF-8"));
     }
 
+    public void shouldntUpdateTransformationWhenOwnerIsSomeOther() throws Exception {
+        Transformation changedValues = Transformation.builder()
+                .id(ID1)
+                .guid(GUID1)
+                .name(NAME1 + "CHANGED")
+                .description(DESCRIPTION1 + "CHANGED")
+                .tenant(null)
+                .application(applicationOwnerIsSomeOther)
+                .steps(validTransformation1.getSteps())
+                .build();
+
+        RestTransformationVO vo = new RestTransformationVO().apply(changedValues);
+
+        when(transformationService.get(tenant, applicationOwnerIsSomeOther, GUID1))
+                .thenReturn(ServiceResponseBuilder.<Transformation>ok()
+                        .withResult(validTransformation1).build());
+
+        when(transformationService.update(tenant, applicationOwnerIsSomeOther, GUID1, changedValues))
+                .thenReturn(ServiceResponseBuilder.<Transformation> ok().withResult(changedValues).build());
+
+        getMockMvc().perform(MockMvcRequestBuilders
+                .put(MessageFormat.format("{0}/{1}/{2}", application.getName(), BASEPATH, GUID1))
+                .content(getJson(vo))
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().is4xxClientError());
+    }
+
     @Test
     public void shouldDeleteDevice() throws Exception {
-        when(transformationService.remove(tenant, GUID1))
+        when(transformationService.remove(tenant, application, GUID1))
                 .thenReturn(ServiceResponseBuilder.<Transformation> ok().build());
 
         getMockMvc().perform(MockMvcRequestBuilders
-                .delete(BASEPATH + GUID1)
+                .delete(MessageFormat.format("/{0}/{1}/{2}/", application.getName(), BASEPATH, GUID1))
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
+    }
+
+    public void shouldntDeleteDeviceWhenOwnerIsOtherApplication() throws Exception {
+        when(transformationService.remove(tenant, applicationOwnerIsSomeOther, GUID1))
+                .thenReturn(ServiceResponseBuilder.<Transformation> ok().build());
+
+        getMockMvc().perform(MockMvcRequestBuilders
+                .delete(MessageFormat.format("/{0}/{1}/{2}/", application.getName(), BASEPATH, GUID1))
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().is4xxClientError());
     }
 
 }

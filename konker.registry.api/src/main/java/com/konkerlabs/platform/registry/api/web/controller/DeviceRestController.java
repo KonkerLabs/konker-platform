@@ -1,11 +1,8 @@
 package com.konkerlabs.platform.registry.api.web.controller;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import com.konkerlabs.platform.registry.api.model.RestResponse;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,12 +21,15 @@ import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseExcepti
 import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
 import com.konkerlabs.platform.registry.api.model.DeviceInputVO;
 import com.konkerlabs.platform.registry.api.model.DeviceVO;
+import com.konkerlabs.platform.registry.api.model.RestResponse;
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.Validations;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -38,13 +38,16 @@ import io.swagger.annotations.ApiParam;
 @RestController
 @Scope("request")
 @RequestMapping(
-        value = "/devices"
+        value = "/{application}/devices"
 )
 @Api(tags = "devices")
 public class DeviceRestController implements InitializingBean {
 
     @Autowired
     private DeviceRegisterService deviceRegisterService;
+
+    @Autowired
+    private ApplicationService applicationService;
 
     @Autowired
     private User user;
@@ -56,11 +59,12 @@ public class DeviceRestController implements InitializingBean {
     @ApiOperation(
             value = "List all devices by organization",
             response = DeviceVO.class)
-    public List<DeviceVO> list() throws BadServiceResponseException {
+    public List<DeviceVO> list(@PathVariable("application") String applicationId) throws BadServiceResponseException {
 
         Tenant tenant = user.getTenant();
+        Application application = applicationService.getByApplicationName(tenant, applicationId).getResult();
 
-        ServiceResponse<List<Device>> deviceResponse = deviceRegisterService.findAll(tenant);
+        ServiceResponse<List<Device>> deviceResponse = deviceRegisterService.findAll(tenant, application);
 
         if (!deviceResponse.isOk()) {
             throw new BadServiceResponseException(user, deviceResponse, validationsCode);
@@ -76,11 +80,14 @@ public class DeviceRestController implements InitializingBean {
             response = RestResponse.class
     )
     @PreAuthorize("hasAuthority('SHOW_DEVICE')")
-    public DeviceVO read(@PathVariable("deviceGuid") String deviceGuid) throws BadServiceResponseException, NotFoundResponseException {
+    public DeviceVO read(
+    		@PathVariable("application") String applicationId,
+    		@PathVariable("deviceGuid") String deviceGuid) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
+        Application application = applicationService.getByApplicationName(tenant, applicationId).getResult();
 
-        ServiceResponse<Device> deviceResponse = deviceRegisterService.getByDeviceGuid(tenant, deviceGuid);
+        ServiceResponse<Device> deviceResponse = deviceRegisterService.getByDeviceGuid(tenant, application, deviceGuid);
 
         if (!deviceResponse.isOk()) {
             throw new NotFoundResponseException(user, deviceResponse);
@@ -94,10 +101,12 @@ public class DeviceRestController implements InitializingBean {
     @ApiOperation(value = "Create a device")
     @PreAuthorize("hasAuthority('ADD_DEVICE')")
     public DeviceVO create(
+    		@PathVariable("application") String applicationId,
             @ApiParam(name = "body", required = true)
             @RequestBody DeviceInputVO deviceForm) throws BadServiceResponseException {
 
         Tenant tenant = user.getTenant();
+        Application application = applicationService.getByApplicationName(tenant, applicationId).getResult();
 
         Device device = Device.builder()
                 .name(deviceForm.getName())
@@ -106,7 +115,7 @@ public class DeviceRestController implements InitializingBean {
                 .active(true)
                 .build();
 
-        ServiceResponse<Device> deviceResponse = deviceRegisterService.register(tenant, device);
+        ServiceResponse<Device> deviceResponse = deviceRegisterService.register(tenant, application, device);
 
         if (!deviceResponse.isOk()) {
             throw new BadServiceResponseException(user, deviceResponse, validationsCode);
@@ -120,14 +129,16 @@ public class DeviceRestController implements InitializingBean {
     @ApiOperation(value = "Update a device")
     @PreAuthorize("hasAuthority('EDIT_DEVICE')")
     public void update(
+    		@PathVariable("application") String applicationId,
             @PathVariable("deviceGuid") String deviceGuid,
             @ApiParam(name = "body", required = true)
             @RequestBody DeviceInputVO deviceForm) throws BadServiceResponseException {
 
         Tenant tenant = user.getTenant();
+        Application application = applicationService.getByApplicationName(tenant, applicationId).getResult();
 
         Device deviceFromDB = null;
-        ServiceResponse<Device> deviceResponse = deviceRegisterService.getByDeviceGuid(tenant, deviceGuid);
+        ServiceResponse<Device> deviceResponse = deviceRegisterService.getByDeviceGuid(tenant, application, deviceGuid);
 
         if (!deviceResponse.isOk()) {
             throw new BadServiceResponseException(user, deviceResponse, validationsCode);
@@ -140,7 +151,7 @@ public class DeviceRestController implements InitializingBean {
         deviceFromDB.setDescription(deviceForm.getDescription());
         deviceFromDB.setActive(deviceForm.isActive());
 
-        ServiceResponse<Device> updateResponse = deviceRegisterService.update(tenant, deviceGuid, deviceFromDB);
+        ServiceResponse<Device> updateResponse = deviceRegisterService.update(tenant, application, deviceGuid, deviceFromDB);
 
         if (!updateResponse.isOk()) {
             throw new BadServiceResponseException(user, deviceResponse, validationsCode);
@@ -152,11 +163,14 @@ public class DeviceRestController implements InitializingBean {
     @DeleteMapping(path = "/{deviceGuid}")
     @ApiOperation(value = "Delete a device")
     @PreAuthorize("hasAuthority('REMOVE_DEVICE')")
-    public void delete(@PathVariable("deviceGuid") String deviceGuid) throws BadServiceResponseException, NotFoundResponseException {
+    public void delete(
+    		@PathVariable("application") String applicationId,
+    		@PathVariable("deviceGuid") String deviceGuid) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
+        Application application = applicationService.getByApplicationName(tenant, applicationId).getResult();
 
-        ServiceResponse<Device> deviceResponse = deviceRegisterService.remove(tenant, deviceGuid);
+        ServiceResponse<Device> deviceResponse = deviceRegisterService.remove(tenant, application, deviceGuid);
 
         if (!deviceResponse.isOk()) {
             if (deviceResponse.getResponseMessages().containsKey(Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode())) {
@@ -176,6 +190,10 @@ public class DeviceRestController implements InitializingBean {
         }
 
         for (com.konkerlabs.platform.registry.business.model.Device.Validations value : Device.Validations.values()) {
+            validationsCode.add(value.getCode());
+        }
+
+        for (com.konkerlabs.platform.registry.business.services.api.ApplicationService.Validations value : ApplicationService.Validations.values()) {
             validationsCode.add(value.getCode());
         }
 

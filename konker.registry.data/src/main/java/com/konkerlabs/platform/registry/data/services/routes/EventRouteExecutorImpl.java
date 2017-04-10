@@ -113,7 +113,8 @@ public class EventRouteExecutorImpl implements EventRouteExecutor {
                 .getBean(eventRoute.getOutgoing().getUri().getScheme());
         eventPublisher.send(event, eventRoute.getOutgoing().getUri(),
                 eventRoute.getOutgoing().getData(),
-                eventRoute.getTenant());
+                eventRoute.getTenant(),
+                eventRoute.getApplication());
     }
 
     private void logEventFilterMismatch(Event event, EventRoute eventRoute) {
