@@ -53,6 +53,7 @@ public class DeviceEventServiceImpl implements DeviceEventService {
 
     @Override
     public ServiceResponse<List<Event>> findIncomingBy(Tenant tenant,
+													   String applicationName,
                                                        String deviceGuid,
                                                        String channel,
                                                        Instant startTimestamp,

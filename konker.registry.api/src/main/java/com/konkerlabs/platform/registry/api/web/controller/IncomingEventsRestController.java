@@ -28,7 +28,7 @@ import io.swagger.annotations.ApiParam;
 
 @RestController
 @Scope("request")
-@RequestMapping(value = "/incomingEvents")
+@RequestMapping(value = "/{application}/incomingEvents")
 @Api(tags = "events")
 public class IncomingEventsRestController {
 
@@ -56,7 +56,7 @@ public class IncomingEventsRestController {
         "* timestamp:&lt;2017-04-05T14:55:00-01:00\n\n" +
         "* timestamp:&gt;2017-04-05T13:54:30.891Z timestamp:&lt;2017-04-05T13:56:30.891Z\n\n";
 
-    @GetMapping(path = "/{application}/")
+    @GetMapping
     @PreAuthorize("hasAuthority('VIEW_DEVICE_LOG')")
     @ApiOperation(
             value = "Search incoming events",

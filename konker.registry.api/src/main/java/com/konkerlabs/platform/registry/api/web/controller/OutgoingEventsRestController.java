@@ -28,7 +28,7 @@ import io.swagger.annotations.ApiParam;
 
 @RestController
 @Scope("request")
-@RequestMapping(value = "/outgoingEvents")
+@RequestMapping(value = "/{application}/outgoingEvents")
 @Api(tags = "events")
 public class OutgoingEventsRestController {
 
@@ -38,7 +38,7 @@ public class OutgoingEventsRestController {
     @Autowired
     private User user;
 
-    @GetMapping(path = "/{application}/")
+    @GetMapping
     @PreAuthorize("hasAuthority('VIEW_DEVICE_LOG')")
     @ApiOperation(
             value = "Search outgoing events",
