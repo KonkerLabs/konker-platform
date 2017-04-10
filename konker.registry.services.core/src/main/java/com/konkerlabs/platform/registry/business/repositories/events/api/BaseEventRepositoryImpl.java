@@ -125,8 +125,6 @@ public abstract class BaseEventRepositoryImpl implements EventRepository {
         Optional.ofNullable(tenant)
                 .filter(tenant1 -> Optional.ofNullable(tenant1.getDomainName()).filter(s -> !s.isEmpty()).isPresent())
                 .orElseThrow(() -> new IllegalArgumentException("Tenant cannot be null"));
-        Optional.ofNullable(deviceGuid).filter(s -> !s.isEmpty())
-                .orElseThrow(() -> new IllegalArgumentException("Device ID cannot be null or empty"));
 
         if (!Optional.ofNullable(startInstant).isPresent() &&
                 !Optional.ofNullable(limit).isPresent())

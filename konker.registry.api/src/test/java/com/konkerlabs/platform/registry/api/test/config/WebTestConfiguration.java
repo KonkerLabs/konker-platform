@@ -10,6 +10,7 @@ import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
 import com.konkerlabs.platform.registry.business.model.enumerations.Language;
 import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
+import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
@@ -60,6 +61,11 @@ public class WebTestConfiguration {
     @Bean
     public RestDestinationService restDestinationService() {
     	return Mockito.mock(RestDestinationService.class);
+    }
+
+    @Bean
+    public DeviceEventService deviceEventService() {
+        return Mockito.mock(DeviceEventService.class);
     }
 
     @Bean
