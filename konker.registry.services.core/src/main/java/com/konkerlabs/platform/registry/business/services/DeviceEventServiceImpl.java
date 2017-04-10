@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
@@ -53,6 +54,7 @@ public class DeviceEventServiceImpl implements DeviceEventService {
 
     @Override
     public ServiceResponse<List<Event>> findIncomingBy(Tenant tenant,
+                                                       Application application,
                                                        String deviceGuid,
                                                        String channel,
                                                        Instant startTimestamp,
@@ -78,6 +80,7 @@ public class DeviceEventServiceImpl implements DeviceEventService {
         try {
             return ServiceResponseBuilder.<List<Event>>ok()
                     .withResult(eventRepository.findIncomingBy(tenant,
+                            application,
                             deviceGuid,
                             channel,
                             startTimestamp,
@@ -93,6 +96,7 @@ public class DeviceEventServiceImpl implements DeviceEventService {
 
     @Override
     public ServiceResponse<List<Event>> findOutgoingBy(Tenant tenant,
+                                                       Application application,
                                                        String deviceGuid,
                                                        String channel,
                                                        Instant startingTimestamp,
@@ -118,6 +122,7 @@ public class DeviceEventServiceImpl implements DeviceEventService {
         try {
             return ServiceResponseBuilder.<List<Event>>ok()
                     .withResult(eventRepository.findOutgoingBy(tenant,
+                            application,
                             deviceGuid,
                             channel,
                             startingTimestamp,

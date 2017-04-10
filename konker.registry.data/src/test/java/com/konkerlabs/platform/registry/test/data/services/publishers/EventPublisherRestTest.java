@@ -214,7 +214,7 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
         subject.send(event, destinationUri, null, tenant, application);
 
         verify(httpGateway, never()).request(any(), any(), any(), any(), any(), any(), any());
-        verify(eventRepository, never()).saveIncoming(tenant, event);
+        verify(eventRepository, never()).saveIncoming(tenant, application, event);
     }
 
     @Test
@@ -224,7 +224,7 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
         subject.send(event, destinationUri, null, tenant, application);
 
         verify(httpGateway, never()).request(any(), any(), any(), any(), any(), any(), any());
-        verify(eventRepository, never()).saveIncoming(tenant, event);
+        verify(eventRepository, never()).saveIncoming(tenant, application, event);
     }
 
     @Test

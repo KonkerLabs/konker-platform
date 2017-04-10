@@ -358,7 +358,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         if(Optional.ofNullable(response).isPresent()) return response;
 
         try {
-            eventRepository.removeBy(tenant, device.getGuid());
+            eventRepository.removeBy(tenant, application, device.getGuid());
             deviceRepository.delete(device);
         } catch (BusinessException e){
             return ServiceResponseBuilder.<Device>error()
