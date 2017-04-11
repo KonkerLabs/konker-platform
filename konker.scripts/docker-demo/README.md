@@ -27,6 +27,7 @@ Access your localhost/registry
 
 * PUB\_HTTP\_HOSTNAME: will overwrite pubServer.httpHostname (application.conf)
 * PUB\_MQTT\_HOSTNAME: will overwrite pubServer.mqttHostname (application.conf)
+* USAGE_STATS=disabled: to disable usage statistics gathering
 
 To set this variables in the Docker Container:
 
