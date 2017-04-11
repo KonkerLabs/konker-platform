@@ -1,8 +1,11 @@
 package com.konkerlabs.platform.registry.api.web.controller;
 
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -32,7 +35,7 @@ import io.swagger.annotations.ApiParam;
 @Scope("request")
 @RequestMapping(value = "/{application}/outgoingEvents")
 @Api(tags = "events")
-public class OutgoingEventsRestController {
+public class OutgoingEventsRestController implements InitializingBean  {
 
     @Autowired
     private DeviceEventService deviceEventService;
@@ -42,6 +45,8 @@ public class OutgoingEventsRestController {
 
     @Autowired
     private User user;
+    
+    private Set<String> validationsCode = new HashSet<>();
 
     @GetMapping
     @PreAuthorize("hasAuthority('VIEW_DEVICE_LOG')")
@@ -84,11 +89,22 @@ public class OutgoingEventsRestController {
         ServiceResponse<List<Event>> restDestinationResponse = deviceEventService.findOutgoingBy(tenant, application, deviceGuid, channel, startingTimestamp, endTimestamp, ascending, limit);
 
         if (!restDestinationResponse.isOk()) {
-            throw new BadServiceResponseException(user, restDestinationResponse, null);
+            throw new BadServiceResponseException(user, restDestinationResponse, validationsCode);
         } else {
             return new EventVO().apply(restDestinationResponse.getResult());
         }
-
+        
+    }
+    
+    @Override
+    public void afterPropertiesSet() throws Exception {
+    	for (DeviceEventService.Validations value : DeviceEventService.Validations.values()) {
+    		validationsCode.add(value.getCode());
+    	}
+    	
+    	for (ApplicationService.Validations value : ApplicationService.Validations.values()) {
+    		validationsCode.add(value.getCode());
+    	}
     }
 
 }

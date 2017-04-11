@@ -32,10 +32,12 @@ import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
 import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
 import com.konkerlabs.platform.registry.api.web.controller.OutgoingEventsRestController;
 import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Event.EventActor;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 
@@ -52,11 +54,14 @@ public class OutgoingEventsRestControllerTest extends WebLayerTestContext {
 
     @Autowired
     private DeviceEventService deviceEventService;
+    
+    @Autowired
+    private ApplicationService applicationService;
 
     @Autowired
     private Tenant tenant;
 
-    private String application;
+    private Application application;
 
     private String dateIso = "2017-04-07T15:10:02.827Z";
 
@@ -69,7 +74,13 @@ public class OutgoingEventsRestControllerTest extends WebLayerTestContext {
 
         Instant instant = OffsetDateTime.parse(dateIso).toInstant();
 
-        application = "YOicfcBMre";
+        application = Application.builder()
+        		.name("YOicfcBMre")
+        		.friendlyName("Smart Frig")
+        		.description("Description of smartff")
+        		.qualifier(tenant.getName())
+        		.registrationDate(Instant.now())
+        		.build();
 
         Device device = Device.builder().deviceId("id1").name("name1").guid("guid1").active(true).build();
         EventActor eventActor = EventActor.builder().deviceGuid(device.getGuid()).deviceId(device.getId()).channel("temp").build();;
@@ -91,10 +102,13 @@ public class OutgoingEventsRestControllerTest extends WebLayerTestContext {
         outgoingEvents.add(event1);
         outgoingEvents.add(event2);
 
-        when(deviceEventService.findOutgoingBy(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.isNull(String.class), org.mockito.Matchers.isNull(String.class), org.mockito.Matchers.isNull(Instant.class), org.mockito.Matchers.isNull(Instant.class), org.mockito.Matchers.eq(false), org.mockito.Matchers.eq(100)))
+        when(deviceEventService.findOutgoingBy(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(Application.class), org.mockito.Matchers.isNull(String.class), org.mockito.Matchers.isNull(String.class), org.mockito.Matchers.isNull(Instant.class), org.mockito.Matchers.isNull(Instant.class), org.mockito.Matchers.eq(false), org.mockito.Matchers.eq(100)))
                 .thenReturn(ServiceResponseBuilder.<List<Event>>ok().withResult(outgoingEvents).build());
+        
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.get("/outgoingEvents/" + application + "/")
+        getMockMvc().perform(MockMvcRequestBuilders.get("/" + application.getName() + "/outgoingEvents")
                                                    .contentType("application/json")
                                                    .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
@@ -118,10 +132,13 @@ public class OutgoingEventsRestControllerTest extends WebLayerTestContext {
         outgoingEvents.add(event1);
         outgoingEvents.add(event2);
 
-        when(deviceEventService.findOutgoingBy(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.eq("0000"), org.mockito.Matchers.eq("temp"), org.mockito.Matchers.isNull(Instant.class), org.mockito.Matchers.isNull(Instant.class), org.mockito.Matchers.eq(false), org.mockito.Matchers.eq(100)))
+        when(deviceEventService.findOutgoingBy(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(Application.class), org.mockito.Matchers.eq("0000"), org.mockito.Matchers.eq("temp"), org.mockito.Matchers.isNull(Instant.class), org.mockito.Matchers.isNull(Instant.class), org.mockito.Matchers.eq(false), org.mockito.Matchers.eq(100)))
                 .thenReturn(ServiceResponseBuilder.<List<Event>>ok().withResult(outgoingEvents).build());
+        
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.get("/outgoingEvents/" + application + "/")
+        getMockMvc().perform(MockMvcRequestBuilders.get("/" + application.getName() + "/outgoingEvents")
                                                    .contentType("application/json")
                                                    .param("q", "channel:temp device:0000")
                                                    .accept(MediaType.APPLICATION_JSON))
@@ -146,10 +163,13 @@ public class OutgoingEventsRestControllerTest extends WebLayerTestContext {
         outgoingEvents.add(event1);
         outgoingEvents.add(event2);
 
-        when(deviceEventService.findOutgoingBy(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.isNull(String.class), org.mockito.Matchers.isNull(String.class), org.mockito.Matchers.isNull(Instant.class), org.mockito.Matchers.isNull(Instant.class), org.mockito.Matchers.eq(true), org.mockito.Matchers.eq(100)))
+        when(deviceEventService.findOutgoingBy(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(Application.class), org.mockito.Matchers.isNull(String.class), org.mockito.Matchers.isNull(String.class), org.mockito.Matchers.isNull(Instant.class), org.mockito.Matchers.isNull(Instant.class), org.mockito.Matchers.eq(true), org.mockito.Matchers.eq(100)))
                 .thenReturn(ServiceResponseBuilder.<List<Event>>ok().withResult(outgoingEvents).build());
+        
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.get("/outgoingEvents/" + application + "/")
+        getMockMvc().perform(MockMvcRequestBuilders.get("/" + application.getName() + "/outgoingEvents")
                                                    .param("sort", "oldest")
                                                    .contentType("application/json")
                                                    .accept(MediaType.APPLICATION_JSON))
@@ -174,10 +194,13 @@ public class OutgoingEventsRestControllerTest extends WebLayerTestContext {
         outgoingEvents.add(event1);
         outgoingEvents.add(event2);
 
-        when(deviceEventService.findOutgoingBy(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.isNull(String.class), org.mockito.Matchers.isNull(String.class), org.mockito.Matchers.isNull(Instant.class), org.mockito.Matchers.isNull(Instant.class), org.mockito.Matchers.eq(false), org.mockito.Matchers.eq(500)))
+        when(deviceEventService.findOutgoingBy(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(Application.class), org.mockito.Matchers.isNull(String.class), org.mockito.Matchers.isNull(String.class), org.mockito.Matchers.isNull(Instant.class), org.mockito.Matchers.isNull(Instant.class), org.mockito.Matchers.eq(false), org.mockito.Matchers.eq(500)))
                 .thenReturn(ServiceResponseBuilder.<List<Event>>ok().withResult(outgoingEvents).build());
+        
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.get("/outgoingEvents/" + application + "/")
+        getMockMvc().perform(MockMvcRequestBuilders.get("/" + application.getName() + "/outgoingEvents")
                                                    .param("limit", "500")
                                                    .contentType("application/json")
                                                    .accept(MediaType.APPLICATION_JSON))
@@ -197,8 +220,10 @@ public class OutgoingEventsRestControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldListEventsWithInvalidLimit() throws Exception {
+    	 when(applicationService.getByApplicationName(tenant, application.getName()))
+ 				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.get("/outgoingEvents/" + application + "/")
+        getMockMvc().perform(MockMvcRequestBuilders.get("/" + application.getName() + "/outgoingEvents")
                                                    .param("limit", "90000")
                                                    .contentType("application/json")
                                                    .accept(MediaType.APPLICATION_JSON))
@@ -215,8 +240,10 @@ public class OutgoingEventsRestControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldListEventsInvalidQuery() throws Exception {
+    	 when(applicationService.getByApplicationName(tenant, application.getName()))
+ 				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.get("/outgoingEvents/" + application + "/")
+        getMockMvc().perform(MockMvcRequestBuilders.get("/" + application.getName() + "/outgoingEvents")
                                                    .param("q", "qqq=qqq")
                                                    .contentType("application/json")
                                                    .accept(MediaType.APPLICATION_JSON))
