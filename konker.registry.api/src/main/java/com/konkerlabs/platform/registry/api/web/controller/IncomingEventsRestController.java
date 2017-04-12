@@ -1,8 +1,11 @@
 package com.konkerlabs.platform.registry.api.web.controller;
 
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,9 +19,11 @@ import com.konkerlabs.platform.registry.api.exceptions.BadRequestResponseExcepti
 import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
 import com.konkerlabs.platform.registry.api.model.EventVO;
 import com.konkerlabs.platform.registry.api.model.EventsFilter;
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 
@@ -28,15 +33,20 @@ import io.swagger.annotations.ApiParam;
 
 @RestController
 @Scope("request")
-@RequestMapping(value = "/incomingEvents")
+@RequestMapping(value = "/{application}/incomingEvents")
 @Api(tags = "events")
-public class IncomingEventsRestController {
+public class IncomingEventsRestController implements InitializingBean {
 
     @Autowired
     private DeviceEventService deviceEventService;
+    
+    @Autowired
+    private ApplicationService applicationService;
 
     @Autowired
     private User user;
+    
+    private Set<String> validationsCode = new HashSet<>();
 
     public static final String SEACH_NOTES =
         "### Query Search Terms\n\n" +
@@ -56,7 +66,7 @@ public class IncomingEventsRestController {
         "* timestamp:&lt;2017-04-05T14:55:00-01:00\n\n" +
         "* timestamp:&gt;2017-04-05T13:54:30.891Z timestamp:&lt;2017-04-05T13:56:30.891Z\n\n";
 
-    @GetMapping(path = "/{application}/")
+    @GetMapping
     @PreAuthorize("hasAuthority('VIEW_DEVICE_LOG')")
     @ApiOperation(
             value = "Search incoming events",
@@ -66,7 +76,7 @@ public class IncomingEventsRestController {
             )
     public List<EventVO> list(
             @ApiParam(value = "Application ID", required = true)
-            @PathVariable(value = "application") String application,
+            @PathVariable(value = "application") String applicationId,
             @ApiParam(value = "Query string", example = "deviceGuid:818599ad-3502-4e70-a852-fc7af8e0a9f4")
             @RequestParam(required = false, defaultValue = "", name = "q") String query,
             @ApiParam(value = "The sort order", allowableValues = "newest,oldest")
@@ -76,6 +86,7 @@ public class IncomingEventsRestController {
         ) throws BadServiceResponseException, BadRequestResponseException {
 
         Tenant tenant = user.getTenant();
+        Application application = applicationService.getByApplicationName(tenant, applicationId).getResult();
 
         boolean ascending = false;
         if (sort.equalsIgnoreCase("oldest")) {
@@ -93,14 +104,25 @@ public class IncomingEventsRestController {
         Instant startingTimestamp = filter.getStartingTimestamp();
         Instant endTimestamp = filter.getEndTimestamp();
 
-        ServiceResponse<List<Event>> restDestinationResponse = deviceEventService.findIncomingBy(tenant, deviceGuid, channel, startingTimestamp, endTimestamp, ascending, limit);
+        ServiceResponse<List<Event>> restDestinationResponse = deviceEventService.findIncomingBy(tenant, application, deviceGuid, channel, startingTimestamp, endTimestamp, ascending, limit);
 
         if (!restDestinationResponse.isOk()) {
-            throw new BadServiceResponseException(user, restDestinationResponse, null);
+            throw new BadServiceResponseException(user, restDestinationResponse, validationsCode);
         } else {
             return new EventVO().apply(restDestinationResponse.getResult());
         }
 
+    }
+    
+    @Override
+    public void afterPropertiesSet() throws Exception {
+    	for (DeviceEventService.Validations value : DeviceEventService.Validations.values()) {
+    		validationsCode.add(value.getCode());
+    	}
+    	
+    	for (ApplicationService.Validations value : ApplicationService.Validations.values()) {
+    		validationsCode.add(value.getCode());
+    	}
     }
 
 }

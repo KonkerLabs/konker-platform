@@ -5,6 +5,7 @@ import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.events.api.EventRepository;
@@ -55,6 +56,9 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
 
     @Autowired
     private DeviceRepository deviceRepository;
+    
+    @Autowired
+    private ApplicationRepository applicationRepository;
 
     @Autowired
     @Qualifier("mongoEvents")
@@ -92,6 +96,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
 
         tenant = tenantRepository.findByDomainName("konker");
         device = deviceRepository.findByTenantAndGuid(tenant.getId(), userDefinedDeviceGuid);
+        application = applicationRepository.findByTenantAndName(tenant.getId(), "smartffkonker");
         event = Event.builder()
                 .incoming(
                         Event.EventActor.builder()
@@ -116,25 +121,9 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
 
         assertThat(serviceResponse, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
     }
-
+   
     @Test
-    public void shouldReturnAnErrorMessageIfDeviceIdIsNullWhenFindingBy() throws Exception {
-
-        ServiceResponse<List<Event>> serviceResponse = deviceEventService.findIncomingBy(
-                tenant,
-                application,
-                null,
-                channel,
-                firstEventTimestamp,
-                null,
-                false,
-                null
-        );
-
-        assertThat(serviceResponse, hasErrorMessage(DeviceRegisterService.Validations.DEVICE_GUID_NULL.getCode()));
-    }
-
-    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json","/fixtures/applications.json"})
     public void shouldReturnAnErrorMessageIfStartInstantIsNullAndLimitIsNullWhenFindingBy() throws Exception {
 
         ServiceResponse<List<Event>> serviceResponse = deviceEventService.findIncomingBy(
@@ -152,7 +141,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json","/fixtures/applications.json"})
     public void shouldFindAllRequestEvents() throws Exception {
         ServiceResponse<List<Event>> serviceResponse = deviceEventService.findIncomingBy(
                 tenant,
