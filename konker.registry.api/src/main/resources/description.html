@@ -1,0 +1,28 @@
+----
+
+## Authentication
+
+### Overview
+
+Konker Platform API uses the OAuth protocol to allow users securely access data.
+
+Before making REST API calls, you must get a acess token using [OAuth 2.0](http://oauth.net/).
+
+Use can see the API endpoints documentation and consume them using this Swagger page.
+
+### Get OAuth 2 Access Token
+
+* Grant Type: Implicit Grant (or User Agent) Flow
+* Access Token URL: http://<HOSTNAME>/v1/oauth/token
+* Client ID: your e-mail
+* Client Secret: your password
+
+### Swagger Authorization
+
+To use Swagger endpoints:
+
+* <a href='/v1/oauth/token?grant_type=client_credentials' target='_blank'>Login</a>
+* Use your email and password
+* Click the 'Authorize' button in upper right conner
+
+----
