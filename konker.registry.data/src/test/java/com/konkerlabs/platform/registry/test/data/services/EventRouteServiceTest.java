@@ -51,7 +51,7 @@ import static org.mockito.Mockito.when;
 public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     private static final String TRANSFORMATION_ID_IN_USE = "2747ec73-6910-43a1-8ddc-5a4a134ebab3";
-    private static final String DEVICE_URI_FOR_DISPLAY_NAME = "device://konker/7d51c242-81db-11e6-a8c2-0746f010e945";
+    private static final String DEVICE_URI_FOR_DISPLAY_NAME = "device://konker/f067bfd0-3365-49e9-b7f5-fc5673f869a4";
     private static final String SMS_URI_FOR_DISPLAY_NAME = "sms://konker/140307f9-7d50-4f37-ac67-80313776bef4";
     private static final String REST_URI_FOR_DISPLAY_NAME = "rest://konker/dda64780-eb81-11e5-958b-a73dab8b32ee";
 
@@ -70,7 +70,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     private EventRoute route;
 
-    private String routeId = "71fb0d48-674b-4f64-a3e5-0256ff3a63af";
+    private String routeId = "01231829-4435-4eb0-abd6-7a7bae7812bd";
     private String existingGuid = "bd923670-d888-472a-b6d9-b20af31253da";
     private Tenant tenant;
     private Application application;
@@ -126,7 +126,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
                                     @Override
                                     public String getGuid() {
-                                        return "1af9be20-441e-419b-84a9-cb84efd4f49d";
+                                        return "dab14680-c079-4c84-a5ce-82659868f370";
                                     }
                                 }.toURI()
                         ).data(new HashMap<String, String>() {{
@@ -190,7 +190,39 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json", "/fixtures/devices.json"})
+    public void shouldReturnCrossApplicationMessage() throws Exception {
+
+        route.setOutgoing(
+                        RouteActor.builder().uri(
+                                new URIDealer() {
+                                    @Override
+                                    public String getUriScheme() {
+                                        return Device.URI_SCHEME;
+                                    }
+
+                                    @Override
+                                    public String getContext() {
+                                        return tenant.getDomainName();
+                                    }
+
+                                    @Override
+                                    public String getGuid() {
+                                        return "8363c556-84ea-11e6-92a2-4b01fea7e243";
+                                    }
+                                }.toURI()
+                        ).data(new HashMap<String, String>() {{
+                            put(DEVICE_MQTT_CHANNEL, "in");
+                        }}).build()
+                );
+
+        ServiceResponse<EventRoute> response = subject.save(tenant, application, route);
+
+        assertThat(response, hasErrorMessage(EventRouteService.Validations.CROSS_APPLICATION.getCode()));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json", "/fixtures/devices.json"})
     public void shouldPersistIfRouteIsValid() throws Exception {
 
         ServiceResponse<EventRoute> response = subject.save(tenant, application, route);
@@ -296,7 +328,37 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/event-routes.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json", "/fixtures/devices.json"})
+    public void shouldReturnCrossApplicationMessageWhenUpdating() throws Exception {
+        route.setOutgoing(
+                RouteActor.builder().uri(
+                        new URIDealer() {
+                            @Override
+                            public String getUriScheme() {
+                                return Device.URI_SCHEME;
+                            }
+
+                            @Override
+                            public String getContext() {
+                                return tenant.getDomainName();
+                            }
+
+                            @Override
+                            public String getGuid() {
+                                return "8363c556-84ea-11e6-92a2-4b01fea7e243";
+                            }
+                        }.toURI()
+                ).data(new HashMap<String, String>() {{
+                    put(DEVICE_MQTT_CHANNEL, "in");
+                }}).build()
+        );
+
+        ServiceResponse<EventRoute> response = subject.update(tenant, application, existingGuid, route);
+        assertThat(response, hasErrorMessage(EventRouteService.Validations.CROSS_APPLICATION.getCode()));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/event-routes.json", "/fixtures/devices.json"})
     public void shouldUpdateIfRouteIsValid() throws Exception {
         ServiceResponse<EventRoute> response = subject.update(tenant, application, existingGuid, route);
 
@@ -314,7 +376,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
         assertThat(allRoutes, notNullValue());
         assertThat(allRoutes, hasSize(9));
         assertThat(allRoutes.get(0).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63aa"));
-        assertThat(allRoutes.get(1).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63af"));
+        assertThat(allRoutes.get(1).getId(), equalTo("01231829-4435-4eb0-abd6-7a7bae7812bd"));
         assertThat(allRoutes.get(2).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ab"));
         assertThat(allRoutes.get(3).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ac"));
         assertThat(allRoutes.get(4).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ad"));
@@ -340,7 +402,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json", "/fixtures/devices.json"})
     public void shouldSaveEditedRouteState() throws Exception {
         EventRoute route = subject.getByGUID(tenant, application, existingGuid).getResult();
 
@@ -359,7 +421,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json",
             "/fixtures/devices.json", "/fixtures/event-routes.json"})
     public void shouldSaveEditedRouteAndFillDisplayNameForIncoming() throws Exception {
-        String expectedDisplayName = "SN1234567890";
+        String expectedDisplayName = "SN4434567844";
         EventRoute route = subject.getByGUID(tenant, application, existingGuid).getResult();
 
         route.getIncoming().setUri(URI.create(DEVICE_URI_FOR_DISPLAY_NAME));
@@ -375,7 +437,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/devices.json",
             "/fixtures/event-routes.json"})
     public void shouldUpdateRouteAndFillDisplayNameForIncoming() throws Exception {
-        String expectedDisplayName = "SN1234567890";
+        String expectedDisplayName = "SN4434567844";
         String newRouteName = "Changing Name To Persist";
         EventRoute route = subject.getByGUID(tenant, application, existingGuid).getResult();
 
@@ -394,7 +456,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/devices.json",
             "/fixtures/event-routes.json"})
     public void shouldSaveEditedRouteAndFillDisplayNameForOutgoingDevice() throws Exception {
-        String expectedDisplayName = "SN1234567890";
+        String expectedDisplayName = "SN4434567844";
         EventRoute route = subject.getByGUID(tenant, application, existingGuid).getResult();
 
         route.getOutgoing().setUri(URI.create(DEVICE_URI_FOR_DISPLAY_NAME));
@@ -411,7 +473,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/devices.json",
             "/fixtures/event-routes.json"})
     public void shouldUpdateRouteAndFillDisplayNameForOutgoingDevice() throws Exception {
-        String expectedDisplayName = "SN1234567890";
+        String expectedDisplayName = "SN4434567844";
         String newRouteName = "Changing Name To Persist";
         EventRoute route = subject.getByGUID(tenant, application, existingGuid).getResult();
 
@@ -520,12 +582,11 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
         List<EventRoute> routes = ServiceResponse.getResult();
 
         assertThat(routes, notNullValue());
-        assertThat(routes, hasSize(5));
-        assertThat(routes.get(0).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63af"));
-        assertThat(routes.get(1).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ab"));
-        assertThat(routes.get(2).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ac"));
-        assertThat(routes.get(3).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ae"));
-        assertThat(routes.get(4).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ba"));
+        assertThat(routes, hasSize(4));
+        assertThat(routes.get(0).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ab"));
+        assertThat(routes.get(1).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ac"));
+        assertThat(routes.get(2).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ae"));
+        assertThat(routes.get(3).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ba"));
     }
 
     /* ---------------------- remove ------------------------- */

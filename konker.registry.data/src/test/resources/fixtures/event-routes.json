@@ -34,7 +34,7 @@
       "active" : true
     },
     {
-      "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+      "_id" : "01231829-4435-4eb0-abd6-7a7bae7812bd",
       "_class" : "com.konkerlabs.platform.registry.model.EventRoute",
       "tenant" : {
         "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
@@ -48,13 +48,13 @@
       "guid" : "bd923670-d888-472a-b6d9-b20af31253da",
       "description" : "Route description",
       "incoming": {
-        "uri" : "device://konker/1af9be20-441e-419b-84a9-cb84efd4f49d",
+        "uri" : "device://konker/f067bfd0-3365-49e9-b7f5-fc5673f869a4",
         "data" : {
           "channel" : "data"
         }
       },
       "outgoing": {
-        "uri" : "device://konker/7d51c242-81db-11e6-a8c2-0746f010e945",
+        "uri" : "device://konker/dab14680-c079-4c84-a5ce-82659868f370",
         "data" : {
           "channel" : "in"
         }
