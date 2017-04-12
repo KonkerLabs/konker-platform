@@ -17,12 +17,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.konkerlabs.platform.registry.api.exceptions.BadRequestResponseException;
 import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
+import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
 import com.konkerlabs.platform.registry.api.model.EventVO;
 import com.konkerlabs.platform.registry.api.model.EventsFilter;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
@@ -35,17 +35,11 @@ import io.swagger.annotations.ApiParam;
 @Scope("request")
 @RequestMapping(value = "/{application}/incomingEvents")
 @Api(tags = "events")
-public class IncomingEventsRestController implements InitializingBean {
+public class IncomingEventsRestController extends AbstractRestController implements InitializingBean {
 
     @Autowired
     private DeviceEventService deviceEventService;
-    
-    @Autowired
-    private ApplicationService applicationService;
 
-    @Autowired
-    private User user;
-    
     private Set<String> validationsCode = new HashSet<>();
 
     public static final String SEACH_NOTES =
@@ -83,10 +77,10 @@ public class IncomingEventsRestController implements InitializingBean {
             @RequestParam(required = false, defaultValue = "newest") String sort,
             @ApiParam(value = "The number of results returned", allowableValues = "range[1, 10000]")
             @RequestParam(required = false, defaultValue = "100") Integer limit
-        ) throws BadServiceResponseException, BadRequestResponseException {
+        ) throws BadServiceResponseException, BadRequestResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
-        Application application = applicationService.getByApplicationName(tenant, applicationId).getResult();
+        Application application = getApplication(applicationId);
 
         boolean ascending = false;
         if (sort.equalsIgnoreCase("oldest")) {
@@ -113,13 +107,13 @@ public class IncomingEventsRestController implements InitializingBean {
         }
 
     }
-    
+
     @Override
     public void afterPropertiesSet() throws Exception {
     	for (DeviceEventService.Validations value : DeviceEventService.Validations.values()) {
     		validationsCode.add(value.getCode());
     	}
-    	
+
     	for (ApplicationService.Validations value : ApplicationService.Validations.values()) {
     		validationsCode.add(value.getCode());
     	}

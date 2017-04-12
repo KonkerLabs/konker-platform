@@ -44,6 +44,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 })
 public class EventRouteRestControllerTest extends WebLayerTestContext {
 
+    private static final String NONEXIST_APPLICATION_NANE = "AppLost";
+
     @Autowired
     private EventRouteService eventRouteService;
 
@@ -203,6 +205,25 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.result.filteringExpression").doesNotExist())
                     .andExpect(jsonPath("$.result.transformationGuid", is("t_guid1")))
                     .andExpect(jsonPath("$.result.active", is(true)));
+
+    }
+
+    @Test
+    public void shouldReadWithWrongApplication() throws Exception {
+
+        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NANE))
+                .thenReturn(ServiceResponseBuilder.<Application>error().withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode()).build());
+
+        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}", NONEXIST_APPLICATION_NANE, BASEPATH, route1.getGuid()))
+                    .contentType("application/json")
+                    .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().is4xxClientError())
+                    .andExpect(content().contentType("application/json;charset=UTF-8"))
+                    .andExpect(jsonPath("$.code", is(HttpStatus.NOT_FOUND.value())))
+                    .andExpect(jsonPath("$.status", is("error")))
+                    .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
+                    .andExpect(jsonPath("$.messages[0]", is("Application does not exist")))
+                    .andExpect(jsonPath("$.result").doesNotExist());
 
     }
 
@@ -536,6 +557,25 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.code", is(HttpStatus.NO_CONTENT.value())))
                     .andExpect(jsonPath("$.status", is("success")))
                     .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                    .andExpect(jsonPath("$.result").doesNotExist());
+
+    }
+
+    @Test
+    public void shouldTryDeleteWithWrongApplication() throws Exception {
+
+        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NANE))
+                .thenReturn(ServiceResponseBuilder.<Application>error().withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode()).build());
+
+        getMockMvc().perform(MockMvcRequestBuilders.delete(MessageFormat.format("/{0}/{1}/{2}", NONEXIST_APPLICATION_NANE, BASEPATH, route1.getGuid()))
+                    .contentType("application/json")
+                    .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().is4xxClientError())
+                    .andExpect(content().contentType("application/json;charset=UTF-8"))
+                    .andExpect(jsonPath("$.code", is(HttpStatus.NOT_FOUND.value())))
+                    .andExpect(jsonPath("$.status", is("error")))
+                    .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
+                    .andExpect(jsonPath("$.messages[0]", is("Application does not exist")))
                     .andExpect(jsonPath("$.result").doesNotExist());
 
     }

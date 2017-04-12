@@ -25,8 +25,6 @@ import com.konkerlabs.platform.registry.api.model.RestResponse;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.User;
-import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.Validations;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
@@ -41,16 +39,10 @@ import io.swagger.annotations.ApiParam;
         value = "/{application}/devices"
 )
 @Api(tags = "devices")
-public class DeviceRestController implements InitializingBean {
+public class DeviceRestController extends AbstractRestController implements InitializingBean {
 
     @Autowired
     private DeviceRegisterService deviceRegisterService;
-
-    @Autowired
-    private ApplicationService applicationService;
-
-    @Autowired
-    private User user;
 
     private Set<String> validationsCode = new HashSet<>();
 
@@ -59,10 +51,10 @@ public class DeviceRestController implements InitializingBean {
     @ApiOperation(
             value = "List all devices by organization",
             response = DeviceVO.class)
-    public List<DeviceVO> list(@PathVariable("application") String applicationId) throws BadServiceResponseException {
+    public List<DeviceVO> list(@PathVariable("application") String applicationId) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
-        Application application = applicationService.getByApplicationName(tenant, applicationId).getResult();
+        Application application = getApplication(applicationId);
 
         ServiceResponse<List<Device>> deviceResponse = deviceRegisterService.findAll(tenant, application);
 
@@ -85,7 +77,7 @@ public class DeviceRestController implements InitializingBean {
     		@PathVariable("deviceGuid") String deviceGuid) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
-        Application application = applicationService.getByApplicationName(tenant, applicationId).getResult();
+        Application application = getApplication(applicationId);
 
         ServiceResponse<Device> deviceResponse = deviceRegisterService.getByDeviceGuid(tenant, application, deviceGuid);
 
@@ -103,10 +95,10 @@ public class DeviceRestController implements InitializingBean {
     public DeviceVO create(
     		@PathVariable("application") String applicationId,
             @ApiParam(name = "body", required = true)
-            @RequestBody DeviceInputVO deviceForm) throws BadServiceResponseException {
+            @RequestBody DeviceInputVO deviceForm) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
-        Application application = applicationService.getByApplicationName(tenant, applicationId).getResult();
+        Application application = getApplication(applicationId);
 
         Device device = Device.builder()
                 .name(deviceForm.getName())
@@ -132,10 +124,10 @@ public class DeviceRestController implements InitializingBean {
     		@PathVariable("application") String applicationId,
             @PathVariable("deviceGuid") String deviceGuid,
             @ApiParam(name = "body", required = true)
-            @RequestBody DeviceInputVO deviceForm) throws BadServiceResponseException {
+            @RequestBody DeviceInputVO deviceForm) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
-        Application application = applicationService.getByApplicationName(tenant, applicationId).getResult();
+        Application application = getApplication(applicationId);
 
         Device deviceFromDB = null;
         ServiceResponse<Device> deviceResponse = deviceRegisterService.getByDeviceGuid(tenant, application, deviceGuid);
@@ -168,7 +160,7 @@ public class DeviceRestController implements InitializingBean {
     		@PathVariable("deviceGuid") String deviceGuid) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
-        Application application = applicationService.getByApplicationName(tenant, applicationId).getResult();
+        Application application = getApplication(applicationId);
 
         ServiceResponse<Device> deviceResponse = deviceRegisterService.remove(tenant, application, deviceGuid);
 
@@ -190,10 +182,6 @@ public class DeviceRestController implements InitializingBean {
         }
 
         for (com.konkerlabs.platform.registry.business.model.Device.Validations value : Device.Validations.values()) {
-            validationsCode.add(value.getCode());
-        }
-
-        for (com.konkerlabs.platform.registry.business.services.api.ApplicationService.Validations value : ApplicationService.Validations.values()) {
             validationsCode.add(value.getCode());
         }
 

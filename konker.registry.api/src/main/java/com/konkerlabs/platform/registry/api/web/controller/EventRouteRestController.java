@@ -26,10 +26,7 @@ import java.util.Set;
 @Scope("request")
 @RequestMapping(value = "/{application}/routes")
 @Api(tags = "routes")
-public class EventRouteRestController implements InitializingBean {
-
-    @Autowired
-    private ApplicationService applicationService;
+public class EventRouteRestController extends AbstractRestController implements InitializingBean {
 
     @Autowired
     private EventRouteService eventRouteService;
@@ -43,9 +40,6 @@ public class EventRouteRestController implements InitializingBean {
     @Autowired
     private RestDestinationService restDestinationService;
 
-    @Autowired
-    private User user;
-
     private Set<String> validationsCode = new HashSet<>();
 
     @GetMapping(path = "/")
@@ -53,10 +47,10 @@ public class EventRouteRestController implements InitializingBean {
     @ApiOperation(
             value = "List all routes by organization",
             response = EventRouteVO.class)
-    public List<EventRouteVO> list(@PathVariable("application") String applicationId) throws BadServiceResponseException {
+    public List<EventRouteVO> list(@PathVariable("application") String applicationId) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
-        Application application = applicationService.getByApplicationName(tenant, applicationId).getResult();
+        Application application = getApplication(applicationId);
 
         ServiceResponse<List<EventRoute>> routeResponse = eventRouteService.getAll(tenant, application);
 
@@ -78,7 +72,7 @@ public class EventRouteRestController implements InitializingBean {
                              @PathVariable("routeGuid") String routeGuid) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
-        Application application = applicationService.getByApplicationName(tenant, applicationId).getResult();
+        Application application = getApplication(applicationId);
 
         ServiceResponse<EventRoute> routeResponse = eventRouteService.getByGUID(tenant, application, routeGuid);
 
@@ -96,10 +90,10 @@ public class EventRouteRestController implements InitializingBean {
     public EventRouteVO create(
             @PathVariable("application") String applicationId,
             @ApiParam(name = "body", required = true)
-            @RequestBody EventRouteInputVO routeForm) throws BadServiceResponseException {
+            @RequestBody EventRouteInputVO routeForm) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
-        Application application = applicationService.getByApplicationName(tenant, applicationId).getResult();
+        Application application = getApplication(applicationId);
 
         RouteActor incoming = getRouteActor(tenant, application, routeForm.getIncoming());
         RouteActor outgoing = getRouteActor(tenant, application, routeForm.getOutgoing());
@@ -186,10 +180,10 @@ public class EventRouteRestController implements InitializingBean {
             @PathVariable("application") String applicationId,
             @PathVariable("routeGuid") String routeGuid,
             @ApiParam(name = "body", required = true)
-            @RequestBody EventRouteInputVO routeForm) throws BadServiceResponseException {
+            @RequestBody EventRouteInputVO routeForm) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
-        Application application = applicationService.getByApplicationName(tenant, applicationId).getResult();
+        Application application = getApplication(applicationId);
 
         EventRoute routeFromDB = null;
         ServiceResponse<EventRoute> routeResponse = eventRouteService.getByGUID(tenant, application, routeGuid);
@@ -229,7 +223,7 @@ public class EventRouteRestController implements InitializingBean {
             @PathVariable("routeGuid") String routeGuid) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
-        Application application = applicationService.getByApplicationName(tenant, applicationId).getResult();
+        Application application = getApplication(applicationId);
 
         ServiceResponse<EventRoute> routeResponse = eventRouteService.remove(tenant, application, routeGuid);
 

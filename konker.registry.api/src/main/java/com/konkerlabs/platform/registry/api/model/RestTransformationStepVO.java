@@ -6,6 +6,7 @@ import com.konkerlabs.platform.registry.business.model.RestTransformationStep;
 import com.konkerlabs.platform.registry.business.model.TransformationStep;
 import com.konkerlabs.platform.registry.business.model.enumerations.IntegrationType;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -24,10 +25,15 @@ public class RestTransformationStepVO
         implements
         SerializableVO<TransformationStep, RestTransformationStepVO> {
 
+    @ApiModelProperty(example = "REST", allowableValues = "REST", position = 0)
     private IntegrationType type = IntegrationType.REST;
+    @ApiModelProperty(example = "GET", allowableValues = "GET,POST", position = 1)
     private String method;
+    @ApiModelProperty(example = "http://server/endpoint", position = 2)
     private String url;
+    @ApiModelProperty(example = "myuser", position = 3)
     private String username;
+    @ApiModelProperty(example = "mypass", position = 4)
     private String password;
     private Map<String, String> headers = new LinkedHashMap<>();
 
