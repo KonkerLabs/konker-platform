@@ -11,6 +11,7 @@ import com.konkerlabs.platform.registry.business.model.validation.CommonValidati
 import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
 import com.konkerlabs.platform.registry.business.repositories.EventRouteRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.test.data.base.BusinessLayerTestSupport;
@@ -147,6 +148,20 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
         ServiceResponse<EventRoute> response = subject.save(null, application, route);
 
         assertThat(response, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json"})
+    public void shouldReturnErrorMessageIfApplicationIsNullWhenSave() {
+        ServiceResponse<EventRoute> response = subject.save(tenant, null, route);
+        assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json"})
+    public void shouldReturnErrorMessageIfApplicationIsInvalidWhenSave() {
+        ServiceResponse<EventRoute> response = subject.save(tenant, emptyApplication, route);
+        assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_NOT_FOUND.getCode()));
     }
 
     @Test
