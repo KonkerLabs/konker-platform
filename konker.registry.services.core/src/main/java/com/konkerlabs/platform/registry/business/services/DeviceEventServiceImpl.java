@@ -14,9 +14,11 @@ import org.springframework.stereotype.Service;
 
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
@@ -65,7 +67,12 @@ public class DeviceEventServiceImpl implements DeviceEventService {
             return ServiceResponseBuilder.<List<Event>>error()
                     .withMessage(CommonValidations.TENANT_NULL.getCode())
                     .build();
-
+        
+        if (!Optional.ofNullable(application).isPresent())
+        	return ServiceResponseBuilder.<List<Event>>error()
+        			.withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode())
+        			.build();
+        
 //        if (!Optional.ofNullable(channel).filter(s -> !s.isEmpty()).isPresent())
 //            return ServiceResponseBuilder.<List<Event>>error()
 //                    .withMessage(Validations.CHANNEL_NULL.getCode(), null)
@@ -107,6 +114,11 @@ public class DeviceEventServiceImpl implements DeviceEventService {
             return ServiceResponseBuilder.<List<Event>>error()
                     .withMessage(CommonValidations.TENANT_NULL.getCode())
                     .build();
+
+        if (!Optional.ofNullable(application).isPresent()) 
+        	return ServiceResponseBuilder.<List<Event>>error()
+        			.withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode())
+        			.build();
 
 //        if (!Optional.ofNullable(channel).filter(s -> !s.isEmpty()).isPresent())
 //            return ServiceResponseBuilder.<List<Event>>error()

@@ -251,14 +251,6 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfDeviceIdWhenFindingIncomingBy() throws Exception {
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("Device ID cannot be null or empty");
-
-        eventRepository.findIncomingBy(tenant,application,null,null,firstEventTimestamp,null,false,null);
-    }
-
-    @Test
     public void shouldRaiseAnExceptionIfStartingOffsetAndLimitAreNullWhenFindingIncomingBy() throws Exception {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Limit cannot be null when start instant isn't provided");

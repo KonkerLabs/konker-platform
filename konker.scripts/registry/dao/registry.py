@@ -270,7 +270,8 @@ def save_incoming_events(incomingEvents, host):
                     "deviceGuid" : incoming.device_guid,
                     "tenantDomain" : incoming.tenant_domain,
                     "channel" : incoming.channel,
-                    "deviceId" : incoming.device_id
+                    "deviceId" : incoming.device_id,
+                    "applicationName" : incoming.application_name
                 },
                 "payload" : incoming.payload,
                 "deleted" : incoming.deleted
@@ -282,7 +283,8 @@ def save_incoming_events(incomingEvents, host):
                     "deviceGuid" : incoming.device_guid,
                     "tenantDomain" : incoming.tenant_domain,
                     "channel" : incoming.channel,
-                    "deviceId" : incoming.device_id
+                    "deviceId" : incoming.device_id,
+                    "applicationName" : incoming.application_name
                 },
                 "payload" : incoming.payload
             })
@@ -307,7 +309,9 @@ def save_outgoing_events(outgoingEvents, host):
                     "deviceGuid" : outgoing.device_guid,
                     "tenantDomain" : outgoing.tenant_domain,
                     "channel" : outgoing.channel,
-                    "deviceId" : outgoing.device_id
+                    "deviceId" : outgoing.device_id,
+                    "applicationName" : outgoing.application_name
+                    
                 },
                 "payload" : outgoing.payload,
                 "deleted" : outgoing.deleted
@@ -320,7 +324,8 @@ def save_outgoing_events(outgoingEvents, host):
                     "deviceGuid" : outgoing.device_guid,
                     "tenantDomain" : outgoing.tenant_domain,
                     "channel" : outgoing.channel,
-                    "deviceId" : outgoing.device_id
+                    "deviceId" : outgoing.device_id,
+                    "applicationName" : outgoing.application_name
                 },
                 "payload" : outgoing.payload
             })
