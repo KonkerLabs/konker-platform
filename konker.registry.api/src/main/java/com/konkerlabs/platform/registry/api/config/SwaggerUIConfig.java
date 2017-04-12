@@ -83,7 +83,6 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
         return new OAuth(
                 securitySchemaOAuth2,
                 newArrayList(
-                         new AuthorizationScope(authorizationScopeRead, authorizationScopeGlobalDesc)
                 ),
                 newArrayList(cliGrantType));
     }
