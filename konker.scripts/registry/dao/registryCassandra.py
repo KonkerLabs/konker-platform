@@ -127,11 +127,31 @@ def create_incoming_events_table(host):
                 device_id text,
                 payload text,
                 deleted boolean,
-                PRIMARY KEY (device_guid, tenant_domain, application_name, channel, timestamp)
-            ) WITH CLUSTERING ORDER BY ( tenant_domain ASC, application_name ASC, channel ASC, timestamp DESC )
+                PRIMARY KEY ((tenant_domain, application_name), timestamp )
+            ) WITH CLUSTERING ORDER BY ( timestamp ASC )
             """
         )
         
+        db.execute(
+            """
+            CREATE INDEX IF NOT EXISTS in_timestamp
+            ON registrykeyspace.incoming_events(timestamp)
+            """
+        )
+        
+        db.execute(
+            """
+            CREATE INDEX IF NOT EXISTS in_device_guid
+            ON registrykeyspace.incoming_events(device_guid)
+            """
+        )
+        
+        db.execute(
+            """
+            CREATE INDEX IF NOT EXISTS in_channel
+            ON registrykeyspace.incoming_events(channel)
+            """
+        )
     except Exception as e:
         print(e)
         sys.exit(1)
@@ -152,8 +172,29 @@ def create_outgoing_events_table(host):
                 payload text,
                 deleted boolean,
                 incoming text,
-                PRIMARY KEY (device_guid, tenant_domain, application_name, channel, timestamp)
-            ) WITH CLUSTERING ORDER BY ( tenant_domain ASC, application_name ASC, channel ASC, timestamp DESC )
+                PRIMARY KEY ((tenant_domain, application_name), timestamp )
+            ) WITH CLUSTERING ORDER BY ( timestamp ASC )
+            """
+        )
+        
+        db.execute(
+            """
+            CREATE INDEX IF NOT EXISTS out_timestamp
+            ON registrykeyspace.outgoing_events(timestamp)
+            """
+        )
+        
+        db.execute(
+            """
+            CREATE INDEX IF NOT EXISTS out_device_guid
+            ON registrykeyspace.outgoing_events(device_guid)
+            """
+        )
+        
+        db.execute(
+            """
+            CREATE INDEX IF NOT EXISTS out_channel
+            ON registrykeyspace.outgoing_events(channel)
             """
         )
         

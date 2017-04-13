@@ -23,8 +23,10 @@ import org.springframework.cassandra.core.Ordering;
 import org.springframework.cassandra.core.PrimaryKeyType;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.mapping.Column;
+import org.springframework.data.cassandra.mapping.Indexed;
 import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
 import org.springframework.data.cassandra.mapping.Table;
+import org.springframework.data.keyvalue.annotation.KeySpace;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
@@ -85,7 +87,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
                             .deviceGuid(event.getIncoming().getDeviceGuid())
                             .deviceId(event.getIncoming().getDeviceId())
                             .channel(event.getIncoming().getChannel())
-                            .timestamp(event.getTimestamp())
+                            .timestamp(event.getTimestamp().toEpochMilli())
                             .payload(event.getPayload())
                             .deleted(false)
                             .build());
@@ -106,7 +108,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
                             .deviceGuid(event.getOutgoing().getDeviceGuid())
                             .deviceId(event.getOutgoing().getDeviceId())
                             .channel(event.getOutgoing().getChannel())
-                            .timestamp(event.getTimestamp())
+                            .timestamp(event.getTimestamp().toEpochMilli())
                             .payload(event.getPayload())
                             .incomming(JSON.serialize(incommingMap))
                             .deleted(false)
@@ -139,10 +141,10 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
         });
 
         Optional.ofNullable(startInstant).ifPresent(value -> {
-            queryIncomming.where(QueryBuilder.gte("timestamp", value));
+            queryIncomming.where(QueryBuilder.gte("timestamp", value.toEpochMilli()));
         });
         Optional.ofNullable(endInstant).ifPresent(value -> {
-            queryIncomming.where(QueryBuilder.lte("timestamp", value));
+            queryIncomming.where(QueryBuilder.lte("timestamp", value.toEpochMilli()));
         });
 
 
@@ -157,11 +159,16 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
             queryOutgoing.where(QueryBuilder.eq("channel", value));
         });
         Optional.ofNullable(startInstant).ifPresent(value -> {
-            queryOutgoing.where(QueryBuilder.gte("timestamp", value));
+            queryOutgoing.where(QueryBuilder.gte("timestamp", value.toEpochMilli()));
         });
         Optional.ofNullable(endInstant).ifPresent(value -> {
-            queryOutgoing.where(QueryBuilder.lte("timestamp", value));
+            queryOutgoing.where(QueryBuilder.lte("timestamp", value.toEpochMilli()));
         });
+       
+        if (deviceGuid != null && channel != null) {
+        	queryIncomming.allowFiltering();
+        	queryOutgoing.allowFiltering();
+        }
 
         List<Event> events = new ArrayList<>();
         if (type.equals(Type.INCOMING)) {
@@ -178,7 +185,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
                                 .build())
                         .outgoing(null)
                         .payload(incoming.getPayload())
-                        .timestamp(incoming.getTimestamp())
+                        .timestamp(Instant.ofEpochMilli(incoming.getTimestamp()))
                         .build();
             }).collect(Collectors.toList()));
 
@@ -213,7 +220,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
                                     return null;
                                 }).orElse(null))
                         .payload(outgoing.getPayload())
-                        .timestamp(outgoing.getTimestamp())
+                        .timestamp(Instant.ofEpochMilli(outgoing.getTimestamp()))
                         .build();
             }).collect(Collectors.toList()));
         }
@@ -238,18 +245,22 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
 
 @Data
 @Builder
+@KeySpace("registrykeyspace")
 @Table(value = EventRepositoryCassandraImpl.INCOMMINGTABLE)
 class CassandraIncommingEvent {
-    @PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, name = "device_guid", ordinal = 0)
-    private String deviceGuid;
-    @PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, name = "tenant_domain", ordinal = 1)
+    @PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, name = "tenant_domain", ordinal = 0)
     private String tenantDomain;
-    @PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, name = "application_name", ordinal = 2)
+    @PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, name = "application_name", ordinal = 1)
     private String applicationName;
-    @PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, name = "channel", ordinal = 3)
+    @PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, name = "timestamp", ordering = Ordering.ASCENDING, ordinal = 2)
+    @Indexed("in_timestamp")
+    private Long timestamp;
+    @Column("device_guid")
+    @Indexed("in_device_guid")
+    private String deviceGuid;
+    @Column("channel")
+    @Indexed("in_channel")
     private String channel;
-    @PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, name = "timestamp", ordering = Ordering.ASCENDING, ordinal = 4)
-    private Instant timestamp;
     @Column("device_id")
     private String deviceId;
     @Column("deleted")
@@ -260,18 +271,22 @@ class CassandraIncommingEvent {
 
 @Data
 @Builder
+@KeySpace("registrykeyspace")
 @Table(value = EventRepositoryCassandraImpl.OUTGOINGTABLE)
 class CassandraOutgoingEvent {
-    @PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, name = "device_guid", ordinal = 0)
-    private String deviceGuid;
-    @PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, name = "tenant_domain", ordinal = 1)
+	@PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, name = "tenant_domain", ordinal = 0)
     private String tenantDomain;
-    @PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, name = "application_name", ordinal = 2)
+    @PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, name = "application_name", ordinal = 1)
     private String applicationName;
-    @PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, name = "channel", ordinal = 3)
+    @PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, name = "timestamp", ordering = Ordering.ASCENDING, ordinal = 2)
+    @Indexed("out_timestamp")
+    private Long timestamp;
+    @Column("device_guid")
+    @Indexed("out_device_guid")
+    private String deviceGuid;
+    @Column("channel")
+    @Indexed("out_channel")
     private String channel;
-    @PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, ordering = Ordering.ASCENDING, ordinal = 4)
-    private Instant timestamp;
     @Column("device_id")
     private String deviceId;
     @Column("deleted")

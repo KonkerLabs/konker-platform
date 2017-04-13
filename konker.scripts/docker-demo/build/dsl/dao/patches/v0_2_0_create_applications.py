@@ -6,7 +6,7 @@ import calendar
 import time
 import bson.dbref
 
-client = MongoClient("mongodb://konkerAdmin:#gokonker@localhost:27017/registry")
+client = MongoClient("mongodb://localhost:27017")
 db = client.registry
 
 def create_applications():

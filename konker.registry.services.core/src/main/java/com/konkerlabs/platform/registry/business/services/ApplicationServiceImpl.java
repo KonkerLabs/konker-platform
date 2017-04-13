@@ -34,32 +34,32 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBui
 public class ApplicationServiceImpl implements ApplicationService {
 
     private Logger LOGGER = LoggerFactory.getLogger(ApplicationServiceImpl.class);
-    
+
     @Autowired
     private ApplicationRepository applicationRepository;
-    
+
     @Autowired
     private TenantRepository tenantRepository;
-    
+
     @Autowired
     private DeviceRepository deviceRepository;
-    
+
     @Autowired
     private TransformationRepository transformationRepository;
-    
+
     @Autowired
     private RestDestinationRepository restDestinationRepository;
-    
+
     @Autowired
     private EventRouteRepository eventRouteRepository;
-    
+
     private ServiceResponse<Application> basicValidate(Tenant tenant, Application application) {
 		if (!Optional.ofNullable(tenant).isPresent()) {
 			Application app = Application.builder()
 					.name("NULL")
 					.tenant(Tenant.builder().domainName("unknow_domain").build())
 					.build();
-			
+
 			if(LOGGER.isDebugEnabled()){
 				LOGGER.debug(CommonValidations.TENANT_NULL.getCode(),
 						app.toURI(),
@@ -70,7 +70,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 					.withMessage(CommonValidations.TENANT_NULL.getCode())
 					.build();
 		}
-		
+
 		if (!tenantRepository.exists(tenant.getId())) {
 			LOGGER.debug("device cannot exists",
 					Application.builder().name("NULL").tenant(tenant).build().toURI(),
@@ -79,7 +79,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 					.withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode())
 					.build();
 		}
-		
+
 		if (!Optional.ofNullable(application).isPresent()) {
 			Application app = Application.builder()
 					.name("NULL")
@@ -90,33 +90,33 @@ public class ApplicationServiceImpl implements ApplicationService {
 						app.toURI(),
 						app.getTenant().getLogLevel());
 			}
-			
+
 			return ServiceResponseBuilder.<Application>error()
 					.withMessage(Validations.APPLICATION_NULL.getCode())
 					.build();
 		}
-		
+
 		return null;
 	}
 
 	@Override
 	public ServiceResponse<Application> register(Tenant tenant, Application application) {
 		ServiceResponse<Application> response = basicValidate(tenant, application);
-		
+
 		if (Optional.ofNullable(response).isPresent())
 			return response;
-		
+
 		Optional<Map<String,Object[]>> validations = application.applyValidations();
-		
+
 		if (validations.isPresent()) {
-			LOGGER.debug("error saving application", 
+			LOGGER.debug("error saving application",
 					Application.builder().name("NULL").tenant(tenant).build().toURI(),
 					tenant.getLogLevel());
 			return ServiceResponseBuilder.<Application>error()
 					.withMessages(validations.get())
 					.build();
 		}
-		
+
 		if (applicationRepository.findOne(application.getName()) != null) {
 			LOGGER.debug("error saving application",
 					Application.builder().name("NULL").tenant(tenant).build().toURI(),
@@ -125,35 +125,35 @@ public class ApplicationServiceImpl implements ApplicationService {
                     .withMessage(Validations.APPLICATION_ALREADY_REGISTERED.getCode())
                     .build();
 		}
-		
+
 		application.setTenant(tenant);
 		application.setRegistrationDate(Instant.now());
-		application.setQualifier("brsp01a");
+		application.setQualifier(Application.DEFAULT_QUALIFIER);
 		Application save = applicationRepository.save(application);
 		LOGGER.info("Application created. Name: {}", save.getName(), tenant.toURI(), tenant.getLogLevel());
-		
+
 		return ServiceResponseBuilder.<Application>ok().withResult(save).build();
 	}
 
 	@Override
 	public ServiceResponse<Application> update(Tenant tenant, String name, Application updatingApplication) {
 		ServiceResponse<Application> response = basicValidate(tenant, updatingApplication);
-		
+
 		if (Optional.ofNullable(response).isPresent())
 			return response;
-		
+
 		if (!Optional.ofNullable(name).isPresent())
             return ServiceResponseBuilder.<Application>error()
                     .withMessage(Validations.APPLICATION_NAME_IS_NULL.getCode())
                     .build();
-		
+
 		Application appFromDB = getByApplicationName(tenant, name).getResult();
 		if (!Optional.ofNullable(appFromDB).isPresent()) {
 			return ServiceResponseBuilder.<Application>error()
                     .withMessage(Validations.APPLICATION_DOES_NOT_EXIST.getCode())
                     .build();
 		}
-		
+
 		appFromDB.setFriendlyName(updatingApplication.getFriendlyName());
 		appFromDB.setDescription(updatingApplication.getDescription());
 
@@ -163,11 +163,11 @@ public class ApplicationServiceImpl implements ApplicationService {
 					.withMessages(validations.get())
 					.build();
 		}
-		
+
 		Application updated = applicationRepository.save(appFromDB);
-		
+
 		LOGGER.info("Application updated. Name: {}", appFromDB.getName(), tenant.toURI(), tenant.getLogLevel());
-		
+
 		return ServiceResponseBuilder.<Application>ok().withResult(updated).build();
 	}
 
@@ -178,26 +178,26 @@ public class ApplicationServiceImpl implements ApplicationService {
 					.withMessage(CommonValidations.TENANT_NULL.getCode())
 					.build();
 		}
-		
+
 		if (!Optional.ofNullable(name).isPresent()) {
 			return ServiceResponseBuilder.<Application>error()
                     .withMessage(Validations.APPLICATION_NAME_IS_NULL.getCode())
                     .build();
 		}
-		
+
 		Application application = applicationRepository.findByTenantAndName(tenant.getId(), name);
-		
+
 		if (!Optional.ofNullable(application).isPresent()) {
 			return ServiceResponseBuilder.<Application>error()
                     .withMessage(Validations.APPLICATION_DOES_NOT_EXIST.getCode())
                     .build();
 		}
-		
+
 		List<Device> devices = deviceRepository.findAllByTenantIdAndApplicationName(tenant.getId(), name);
 		List<EventRoute> routes = eventRouteRepository.findAll(tenant.getId(), name);
 		List<Transformation> transformations = transformationRepository.findAllByApplicationId(tenant.getId(), name);
 		List<RestDestination> destinations = restDestinationRepository.findAllByTenant(tenant.getId(), name);
-		
+
 		if (!devices.isEmpty()) {
 			return ServiceResponseBuilder.<Application>error()
                     .withMessage(Validations.APPLICATION_HAS_DEVICE.getCode())
@@ -218,9 +218,9 @@ public class ApplicationServiceImpl implements ApplicationService {
                     .withMessage(Validations.APPLICATION_HAS_REST_DESTINATION.getCode())
                     .build();
 		}
-		
+
 		applicationRepository.delete(application);
-		
+
 		return ServiceResponseBuilder.<Application>ok()
 				.withMessage(Messages.APPLICATION_REMOVED_SUCCESSFULLY.getCode())
 				.withResult(application)
@@ -245,19 +245,19 @@ public class ApplicationServiceImpl implements ApplicationService {
 					.withMessage(Validations.APPLICATION_NAME_IS_NULL.getCode())
 					.build();
 		}
-		
+
 		Tenant tenantFromDB = tenantRepository.findByName(tenant.getName());
-		
+
 		if (!Optional.ofNullable(tenantFromDB).isPresent())
 			return ServiceResponseBuilder.<Application> error()
 					.withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();
-		
+
 		Application application = applicationRepository.findByTenantAndName(tenantFromDB.getId(), name);
 		if (!Optional.ofNullable(application).isPresent()) {
 			return ServiceResponseBuilder.<Application> error()
 					.withMessage(Validations.APPLICATION_DOES_NOT_EXIST.getCode()).build();
 		}
-		
+
 		return ServiceResponseBuilder.<Application>ok().withResult(application).build();
 	}
 

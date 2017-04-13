@@ -11,7 +11,6 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 import com.google.common.collect.Ordering;
-import com.konkerlabs.platform.registry.api.KonkerRegistryApiApplication;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
@@ -25,8 +24,6 @@ import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
