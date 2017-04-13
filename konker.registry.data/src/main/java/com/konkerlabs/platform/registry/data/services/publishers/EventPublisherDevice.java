@@ -64,6 +64,8 @@ public class EventPublisherDevice implements EventPublisher {
                 .orElseThrow(() -> new IllegalStateException("A valid MQTT channel is required"));
         Optional.ofNullable(tenant)
                 .orElseThrow(() -> new IllegalArgumentException("Tenant cannot be null"));
+        Optional.ofNullable(application)
+                .orElseThrow(() -> new IllegalArgumentException("Application cannot be null"));
 
         Device outgoingDevice = deviceRegisterService.findByTenantDomainNameAndDeviceGuid(
                 destinationUri.getAuthority(),
@@ -81,6 +83,7 @@ public class EventPublisherDevice implements EventPublisher {
                             .deviceGuid(outgoingDevice.getGuid())
                             .channel(data.get(DEVICE_MQTT_CHANNEL))
                             .tenantDomain(outgoingDevice.getTenant().getDomainName())
+                            .applicationName(outgoingDevice.getApplication().getName())
                             .deviceId(outgoingDevice.getDeviceId())
                             .build()
             );
