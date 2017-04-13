@@ -86,11 +86,11 @@ if os.environ.get('USAGE_STATS') is not None:
     usageStatsParam = os.environ.get('USAGE_STATS')
 
 if usageStatsParam.lower() == 'disabled' or usageStatsParam.lower() == 'false':
-    sys.stdout.write("usage statistics is disabled...\n")
+    sys.stdout.write("usage statistics disabled...\n")
     sys.stdout.flush()
     exit(0);
 
-sys.stdout.write("usage statistics is enabled...\n")
+sys.stdout.write("usage statistics enabled...\n")
 sys.stdout.flush()
 
 try:
