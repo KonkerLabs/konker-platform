@@ -50,6 +50,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 })
 public class TransformationRestControllerTest extends WebLayerTestContext {
 
+    private static final String NONEXIST_APPLICATION_NANE = "AppLost";
+
     @Autowired
     private TransformationService transformationService;
     @Autowired
@@ -210,6 +212,25 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    public void shouldReadWithWrongApplication() throws Exception {
+
+        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NANE))
+                .thenReturn(ServiceResponseBuilder.<Application>error().withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode()).build());
+
+        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}", NONEXIST_APPLICATION_NANE, BASEPATH, GUID1))
+                    .contentType("application/json")
+                    .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().is4xxClientError())
+                    .andExpect(content().contentType("application/json;charset=UTF-8"))
+                    .andExpect(jsonPath("$.code", is(HttpStatus.NOT_FOUND.value())))
+                    .andExpect(jsonPath("$.status", is("error")))
+                    .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
+                    .andExpect(jsonPath("$.messages[0]", is("Application does not exist")))
+                    .andExpect(jsonPath("$.result").doesNotExist());
+
+    }
+
+    @Test
     public void shouldntReadTransformationWhenOwnerIsSomeOther() throws Exception {
         when(transformationService.get(tenant, applicationOwnerIsSomeOther, GUID1))
                 .thenReturn(ServiceResponseBuilder.<Transformation>ok()
@@ -230,7 +251,6 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
                 .name(NAME1 + "NEW")
                 .description(DESCRIPTION1 + "NEW")
                 .tenant(null)
-                .application(application)
                 .steps(validTransformation1.getSteps())
                 .build();
 
@@ -238,7 +258,6 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
                 .id(ID1)
                 .guid(GUID1)
                 .name(NAME1 + "NEW")
-                .application(application)
                 .description(DESCRIPTION1 + "NEW")
                 .tenant(null)
                 .steps(validTransformation1.getSteps())
@@ -355,6 +374,25 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    public void shouldTryDeleteWithWrongApplication() throws Exception {
+
+        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NANE))
+                .thenReturn(ServiceResponseBuilder.<Application>error().withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode()).build());
+
+        getMockMvc().perform(MockMvcRequestBuilders.delete(MessageFormat.format("/{0}/{1}/{2}", NONEXIST_APPLICATION_NANE, BASEPATH, GUID1))
+                    .contentType("application/json")
+                    .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().is4xxClientError())
+                    .andExpect(content().contentType("application/json;charset=UTF-8"))
+                    .andExpect(jsonPath("$.code", is(HttpStatus.NOT_FOUND.value())))
+                    .andExpect(jsonPath("$.status", is("error")))
+                    .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
+                    .andExpect(jsonPath("$.messages[0]", is("Application does not exist")))
+                    .andExpect(jsonPath("$.result").doesNotExist());
+
     }
 
 }

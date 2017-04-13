@@ -21,32 +21,28 @@ import lombok.NoArgsConstructor;
 @ApiModel(value = "Device Security Credentials", discriminator = "com.konkerlabs.platform.registry.api.model")
 public class DeviceSecurityCredentialsVO {
 
-    @ApiModelProperty(position = 0, value = "the device username (api key)")
-    private String username;
-    @ApiModelProperty(position = 1, value = "the device password")
-    private String password;
-    @ApiModelProperty(position = 2, value = "Publish Events REST URL")
+    @ApiModelProperty(position = 0, value = "the device username (api key)", example = "L12UXrlnPd")
+    protected String username;
+    @ApiModelProperty(position = 2, value = "Publish Events REST URL", example = "http://server/pub/2q7kibmutjdj/<Channel>")
     private String httpURLPub;
-    @ApiModelProperty(position = 3, value = "Subscribe Events REST URL")
+    @ApiModelProperty(position = 3, value = "Subscribe Events REST URL", example = "http://server/sub/2q7kibmutjdj/<Channel>")
     private String httpURLSub;
-    @ApiModelProperty(position = 4, value = "Publish Events REST Secure URL")
+    @ApiModelProperty(position = 4, value = "Publish Events REST Secure URL", example = "https://server/pub/2q7kibmutjdj/<Channel>")
     private String httpsURLPub;
-    @ApiModelProperty(position = 5, value = "Subscribe Events REST Secure URL")
+    @ApiModelProperty(position = 5, value = "Subscribe Events REST Secure URL", example = "https://server/sub/2q7kibmutjdj/<Channel>")
     private String httpsURLSub;
-    @ApiModelProperty(position = 6, value = "Events MQTT URL")
+    @ApiModelProperty(position = 6, value = "Events MQTT URL", example = "mqtt://dev-server")
     private String mqttURL;
-    @ApiModelProperty(position = 7, value = "Events MQTT Secure URL")
+    @ApiModelProperty(position = 7, value = "Events MQTT Secure URL", example = "mqtts://dev-server")
     private String mqttsURL;
-    @ApiModelProperty(position = 8, value = "MQTT Publish Topic")
+    @ApiModelProperty(position = 8, value = "MQTT Publish Topic", example = "pub/2q7kibmutjdj/<Channel>")
     private String mqttPubTopic;
-    @ApiModelProperty(position = 9, value = "MQTT Subscribe Topic")
+    @ApiModelProperty(position = 9, value = "MQTT Subscribe Topic", example = "sub/2q7kibmutjdj/<Channel>")
     private String mqttSubTopic;
 
     public DeviceSecurityCredentialsVO(DeviceSecurityCredentials credentials, DeviceRegisterService.DeviceDataURLs deviceDataURLs) {
 
         this.username = credentials.getDevice().getApiKey();
-        this.password = credentials.getPassword();
-
         setDeviceDataURLs(deviceDataURLs);
 
     }

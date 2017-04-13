@@ -18,9 +18,9 @@ import lombok.NoArgsConstructor;
 public class RestDestinationVO extends RestDestinationInputVO
 		implements SerializableVO<RestDestination, RestDestinationVO>{
 
-	@ApiModelProperty(value = "Kind of unique key generate when the rest destination is created", position = 0)
+	@ApiModelProperty(value = "Kind of unique key generate when the rest destination is created", position = 0, example = "818599ad-3502-4e70-a852-fc7af8e0a9f3")
 	private String guid;
-	
+
 	public RestDestinationVO(RestDestination restDestination) {
 		this.guid = restDestination.getGuid();
 		this.name = restDestination.getName();

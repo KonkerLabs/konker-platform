@@ -1,11 +1,10 @@
 package com.konkerlabs.platform.registry.api.model;
 
-
 import com.konkerlabs.platform.registry.api.model.core.SerializableVO;
-import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.RestTransformationStep;
 import com.konkerlabs.platform.registry.business.model.Transformation;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -24,15 +23,17 @@ import java.util.stream.Collectors;
 public class RestTransformationVO
         implements SerializableVO<Transformation, RestTransformationVO> {
 
+    @ApiModelProperty(position = 0)
     private String id;
-    private String name;
+    @ApiModelProperty(value = "guid", example = "818599ad-3502-4e70-a852-fc7af8e0a9f3", position = 0)
     private String guid;
+    @ApiModelProperty(value = "name", example = "convertValue", position = 1)
+    private String name;
+    @ApiModelProperty(value = "description", example = "this transformation does that", position = 2)
     private String description;
-    private String applicationId;
 
     @Singular
     private List<RestTransformationStepVO> steps = new LinkedList<>();
-
 
     @Transient
     @Override
@@ -41,7 +42,6 @@ public class RestTransformationVO
         r.setId(t.getId());
         r.setGuid(t.getGuid());
         r.setName(t.getName());
-        r.setApplicationId(Optional.ofNullable(t.getApplication()).isPresent() ? t.getApplication().getName() : null);
         r.setDescription(t.getDescription());
         r.setSteps(new RestTransformationStepVO().apply(t.getSteps()));
         return r;
@@ -51,7 +51,6 @@ public class RestTransformationVO
     public Transformation patchDB(Transformation t) {
         t.setDescription(this.getDescription());
         t.setName(this.getName());
-        t.setApplication(Application.builder().name(this.getApplicationId()).build());
         t.setSteps(this.getSteps().stream()
                 .map(i -> {
                             return new RestTransformationStep(new HashMap<String, Object>() {{
@@ -65,4 +64,5 @@ public class RestTransformationVO
                 ).collect(Collectors.toList()));
         return t;
     }
+
 }

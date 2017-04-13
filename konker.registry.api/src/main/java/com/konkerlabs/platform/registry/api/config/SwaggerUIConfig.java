@@ -2,12 +2,15 @@ package com.konkerlabs.platform.registry.api.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 import com.google.common.collect.Ordering;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
@@ -18,7 +21,13 @@ import springfox.documentation.spi.service.contexts.SecurityContext;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.google.common.collect.Lists.newArrayList;
 
@@ -83,7 +92,6 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
         return new OAuth(
                 securitySchemaOAuth2,
                 newArrayList(
-                         new AuthorizationScope(authorizationScopeRead, authorizationScopeGlobalDesc)
                 ),
                 newArrayList(cliGrantType));
     }
@@ -104,10 +112,8 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
 
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
-                .title("Konker Platform Api")
-                .description(
-                        "Before access endpoints please " +
-                                "<a href='/v1/oauth/token?grant_type=client_credentials' target='_blank'>login</a>")
+                .title("Konker Platform API")
+                .description(getDescription())
                 .termsOfServiceUrl("https://demo.konkerlabs.net/registry/resources/konker/pdf/termos_de_uso_20161014a-9d089e3f67c4b4ab9c83c0a0313158ef.pdf")
                 .contact(new Contact("Konker", "developers.konkerlabs.com", "support@konkerlabs.com"))
                 .license("Apache 2.0")
@@ -116,5 +122,37 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
                 .build();
     }
 
+    private String getDescription() {
+
+        Map<String, Object> defaultMap = new HashMap<>();
+        defaultMap.put("swagger.hostname", "localhost:8080");
+        Config defaultConf = ConfigFactory.parseMap(defaultMap);
+
+        Config config = ConfigFactory.load().withFallback(defaultConf);
+        String hostname = config.getString("swagger.hostname");
+
+        try {
+            File file = new ClassPathResource("description.html").getFile();
+            BufferedReader reader = new BufferedReader(new FileReader(file));
+            String         line = null;
+            StringBuilder  stringBuilder = new StringBuilder();
+            String         ls = System.getProperty("line.separator");
+
+            try {
+                while((line = reader.readLine()) != null) {
+                    stringBuilder.append(line);
+                    stringBuilder.append(ls);
+                }
+
+                return stringBuilder.toString().replace("<HOSTNAME>", hostname);
+            } finally {
+                reader.close();
+            }
+
+        } catch (IOException e) {
+            return "";
+        }
+
+    }
 
 }

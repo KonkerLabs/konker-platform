@@ -21,9 +21,10 @@ public class ApplicationVO extends ApplicationInputVO
 	@ApiModelProperty(
 			value = "Unique and global name without whitespace and special characters",
 			required = true,
-			position = 0)
+			position = 0,
+			example = "konker")
 	protected String name;
-	
+
 	public ApplicationVO(Application application) {
 		this.name = application.getName();
 		this.friendlyName = application.getFriendlyName();

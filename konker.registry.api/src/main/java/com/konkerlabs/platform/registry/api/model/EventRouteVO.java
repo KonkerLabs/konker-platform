@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
 public class EventRouteVO extends EventRouteInputVO
 implements SerializableVO<EventRoute, EventRouteVO> {
 
-    @ApiModelProperty(value = "the route guid", position = 0)
+    @ApiModelProperty(value = "the route guid", position = 0, example = "818599ad-3502-4e70-a852-fc7af8e0a9f3")
     private String guid;
 
     @Override

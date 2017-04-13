@@ -52,9 +52,11 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBui
 })
 public class OutgoingEventsRestControllerTest extends WebLayerTestContext {
 
+    private static final String NONEXIST_APPLICATION_NANE = "AppLost";
+
     @Autowired
     private DeviceEventService deviceEventService;
-    
+
     @Autowired
     private ApplicationService applicationService;
 
@@ -96,6 +98,26 @@ public class OutgoingEventsRestControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    public void shouldTryToListWithWrongApplication() throws Exception {
+
+        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NANE))
+            .thenReturn(ServiceResponseBuilder.<Application>error().withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode()).build());
+
+        getMockMvc().perform(MockMvcRequestBuilders.get("/" + NONEXIST_APPLICATION_NANE + "/outgoingEvents")
+                                                   .contentType("application/json")
+                                                   .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().is4xxClientError())
+                    .andExpect(content().contentType("application/json;charset=UTF-8"))
+                    .andExpect(jsonPath("$.code", is(HttpStatus.NOT_FOUND.value())))
+                    .andExpect(jsonPath("$.status", is("error")))
+                    .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
+                    .andExpect(jsonPath("$.messages[0]", is("Application does not exist")))
+                    .andExpect(jsonPath("$.result").doesNotExist())
+                    ;
+
+    }
+
+    @Test
     public void shouldListEventsNoParam() throws Exception {
 
         List<Event> outgoingEvents = new ArrayList<>();
@@ -104,7 +126,7 @@ public class OutgoingEventsRestControllerTest extends WebLayerTestContext {
 
         when(deviceEventService.findOutgoingBy(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(Application.class), org.mockito.Matchers.isNull(String.class), org.mockito.Matchers.isNull(String.class), org.mockito.Matchers.isNull(Instant.class), org.mockito.Matchers.isNull(Instant.class), org.mockito.Matchers.eq(false), org.mockito.Matchers.eq(100)))
                 .thenReturn(ServiceResponseBuilder.<List<Event>>ok().withResult(outgoingEvents).build());
-        
+
         when(applicationService.getByApplicationName(tenant, application.getName()))
 				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
 
@@ -134,7 +156,7 @@ public class OutgoingEventsRestControllerTest extends WebLayerTestContext {
 
         when(deviceEventService.findOutgoingBy(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(Application.class), org.mockito.Matchers.eq("0000"), org.mockito.Matchers.eq("temp"), org.mockito.Matchers.isNull(Instant.class), org.mockito.Matchers.isNull(Instant.class), org.mockito.Matchers.eq(false), org.mockito.Matchers.eq(100)))
                 .thenReturn(ServiceResponseBuilder.<List<Event>>ok().withResult(outgoingEvents).build());
-        
+
         when(applicationService.getByApplicationName(tenant, application.getName()))
 				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
 
@@ -165,7 +187,7 @@ public class OutgoingEventsRestControllerTest extends WebLayerTestContext {
 
         when(deviceEventService.findOutgoingBy(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(Application.class), org.mockito.Matchers.isNull(String.class), org.mockito.Matchers.isNull(String.class), org.mockito.Matchers.isNull(Instant.class), org.mockito.Matchers.isNull(Instant.class), org.mockito.Matchers.eq(true), org.mockito.Matchers.eq(100)))
                 .thenReturn(ServiceResponseBuilder.<List<Event>>ok().withResult(outgoingEvents).build());
-        
+
         when(applicationService.getByApplicationName(tenant, application.getName()))
 				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
 
@@ -196,7 +218,7 @@ public class OutgoingEventsRestControllerTest extends WebLayerTestContext {
 
         when(deviceEventService.findOutgoingBy(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(Application.class), org.mockito.Matchers.isNull(String.class), org.mockito.Matchers.isNull(String.class), org.mockito.Matchers.isNull(Instant.class), org.mockito.Matchers.isNull(Instant.class), org.mockito.Matchers.eq(false), org.mockito.Matchers.eq(500)))
                 .thenReturn(ServiceResponseBuilder.<List<Event>>ok().withResult(outgoingEvents).build());
-        
+
         when(applicationService.getByApplicationName(tenant, application.getName()))
 				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
 

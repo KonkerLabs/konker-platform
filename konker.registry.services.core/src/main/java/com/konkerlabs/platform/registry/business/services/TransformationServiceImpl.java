@@ -2,10 +2,12 @@ package com.konkerlabs.platform.registry.business.services;
 
 import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
 import com.konkerlabs.platform.registry.business.repositories.EventRouteRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.TransformationRepository;
 import com.konkerlabs.platform.registry.business.services.api.AbstractURLBlacklistValidation;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.TransformationService;
@@ -29,13 +31,23 @@ public class TransformationServiceImpl
     @Autowired
     private TenantRepository tenantRepository;
     @Autowired
+    private ApplicationRepository applicationRepository;
+    @Autowired
     private TransformationRepository transformationRepository;
     @Autowired
     private EventRouteRepository eventRouteRepository;
 
-
     @Override
     public ServiceResponse<List<Transformation>> getAll(Tenant tenant, Application application) {
+
+        if (!Optional.ofNullable(tenant).isPresent())
+            return ServiceResponseBuilder.<List<Transformation>>error()
+                    .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
+
+        if (!Optional.ofNullable(application).isPresent())
+            return ServiceResponseBuilder.<List<Transformation>>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()).build();
+
         return ServiceResponseBuilder.<List<Transformation>>ok()
                 .withResult(transformationRepository.findAllByTenantId(tenant.getId())).build();
     }
@@ -54,6 +66,16 @@ public class TransformationServiceImpl
         if (!tenantRepository.exists(tenant.getId()))
             return ServiceResponseBuilder.<Transformation>error()
                     .withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();
+
+        if (!Optional.ofNullable(application).isPresent())
+            return ServiceResponseBuilder.<Transformation>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()).build();
+
+        Application existingApplication = applicationRepository.findByTenantAndName(tenant.getId(), application.getName());
+
+        if (!Optional.ofNullable(existingApplication).isPresent())
+            return ServiceResponseBuilder.<Transformation>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_NOT_FOUND.getCode()).build();
 
         transformation.setTenant(tenant);
         transformation.setGuid(UUID.randomUUID().toString());
@@ -100,6 +122,15 @@ public class TransformationServiceImpl
 
     @Override
     public ServiceResponse<Transformation> get(Tenant tenant, Application application, String guid) {
+
+        if (!Optional.ofNullable(tenant).isPresent())
+            return ServiceResponseBuilder.<Transformation>error()
+                    .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
+
+        if (!Optional.ofNullable(application).isPresent())
+            return ServiceResponseBuilder.<Transformation>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()).build();
+
         Transformation transformation =
                 transformationRepository.findByTenantIdApplicationIdAndTransformationGuid(
                         tenant.getId(), guid, application.getName());
@@ -128,6 +159,16 @@ public class TransformationServiceImpl
         if (!tenantRepository.exists(tenant.getId()))
             return ServiceResponseBuilder.<Transformation>error()
                     .withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();
+
+        if (!Optional.ofNullable(application).isPresent())
+            return ServiceResponseBuilder.<Transformation>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()).build();
+
+        Application existingApplication = applicationRepository.findByTenantAndName(tenant.getId(), application.getName());
+
+        if (!Optional.ofNullable(existingApplication).isPresent())
+            return ServiceResponseBuilder.<Transformation>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_NOT_FOUND.getCode()).build();
 
         Transformation fromDb = get(tenant, application, guid).getResult();
 
@@ -166,6 +207,24 @@ public class TransformationServiceImpl
 
     @Override
     public ServiceResponse<Transformation> remove(Tenant tenant, Application application, String transformationGuid) {
+
+        if (!Optional.ofNullable(tenant).isPresent())
+            return ServiceResponseBuilder.<Transformation>error().withMessage(CommonValidations.TENANT_NULL.getCode())
+                    .build();
+
+        if (!tenantRepository.exists(tenant.getId()))
+            return ServiceResponseBuilder.<Transformation>error()
+                    .withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();
+
+        if (!Optional.ofNullable(application).isPresent())
+            return ServiceResponseBuilder.<Transformation>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()).build();
+
+        Application existingApplication = applicationRepository.findByTenantAndName(tenant.getId(), application.getName());
+
+        if (!Optional.ofNullable(existingApplication).isPresent())
+            return ServiceResponseBuilder.<Transformation>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_NOT_FOUND.getCode()).build();
 
         Transformation transformation = transformationRepository.findByGuid(transformationGuid);
         List<EventRoute> eventRoutes = Collections.emptyList();

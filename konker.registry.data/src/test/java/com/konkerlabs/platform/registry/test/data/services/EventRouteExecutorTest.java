@@ -128,10 +128,9 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
     public void shouldSendEventsForAMatchingRoute() throws ExecutionException, InterruptedException {
         Future<List<Event>> eventFuture = subject.execute(event, uri);
         assertThat(eventFuture.get(), notNullValue());
-        assertThat(eventFuture.get(), hasSize(3));
+        assertThat(eventFuture.get(), hasSize(2));
         assertThat(eventFuture.get().get(0).getPayload(), equalTo(transformationResponse));
         assertThat(eventFuture.get().get(1).getPayload(), equalTo(transformationResponse));
-        assertThat(eventFuture.get().get(2).getPayload(), equalTo(transformationResponse));
     }
 
     @Test

@@ -9,6 +9,7 @@ import com.konkerlabs.platform.registry.business.model.validation.CommonValidati
 import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
 import com.konkerlabs.platform.registry.business.repositories.EventRouteRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
@@ -125,6 +126,18 @@ public class RestDestinationServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
+    public void shouldReturnErrorMessageIfApplicationIsNullWhenFindAll() {
+        ServiceResponse<List<RestDestination>> response = subject.findAll(tenant, null);
+        assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
+    }
+
+    @Test
+    public void shouldReturnErrorMessageIfApplicationIsInvalidWhenFindAll() {
+        ServiceResponse<List<RestDestination>> response = subject.findAll(tenant, otherApplication);
+        assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_NOT_FOUND.getCode()));
+    }
+
+    @Test
     public void shouldReturnDestinationsWhenFindAll() {
         ServiceResponse<List<RestDestination>> response = subject.findAll(tenant, application);
         assertThat(response, isResponseOk());
@@ -179,6 +192,19 @@ public class RestDestinationServiceTest extends BusinessLayerTestSupport {
         ServiceResponse<RestDestination> response = subject.getByGUID(null, null, THE_DESTINATION_ID);
         assertThat(response, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
     }
+
+    @Test
+    public void shouldReturnErrorMessageIfApplicationIsNullWhenGetByID() {
+        ServiceResponse<RestDestination> response = subject.getByGUID(tenant, null, THE_DESTINATION_ID);
+        assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
+    }
+
+    @Test
+    public void shouldReturnErrorMessageIfApplicationIsInvalidWhenGetByID() {
+        ServiceResponse<RestDestination> response = subject.getByGUID(tenant, otherApplication, THE_DESTINATION_ID);
+        assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_NOT_FOUND.getCode()));
+    }
+
 
     @Test
     public void shouldReturnErrorIfIDIsNullWhenGetByID() {

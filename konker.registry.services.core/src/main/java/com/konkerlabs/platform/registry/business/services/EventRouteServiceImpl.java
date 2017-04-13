@@ -1,12 +1,14 @@
 package com.konkerlabs.platform.registry.business.services;
 
 import java.net.URI;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 
@@ -94,9 +96,18 @@ public class EventRouteServiceImpl implements EventRouteService {
 
         if (Optional.ofNullable(eventRouteRepository.findByRouteName(tenant.getId(),
                                                                      application.getName(),
-                                                                     route.getName())).isPresent())
+                                                                     route.getName())).isPresent()) {
             return ServiceResponseBuilder.<EventRoute>error()
                     .withMessage(Validations.NAME_IN_USE.getCode()).build();
+        }
+
+        Map<String,Object[]> outgoingvalidations = applyOutgoingValidations(application, route);
+
+        if (!outgoingvalidations.isEmpty()) {
+            return ServiceResponseBuilder.<EventRoute>error()
+                                         .withMessages(outgoingvalidations)
+                                         .build();
+        }
 
         fillRouteActorsDisplayName(tenant.getId(), application.getName(), route);
 
@@ -107,9 +118,7 @@ public class EventRouteServiceImpl implements EventRouteService {
         return ServiceResponseBuilder.<EventRoute>ok().withResult(saved).build();
     }
 
-
-
-	@Override
+    @Override
     public ServiceResponse<EventRoute> update(Tenant tenant, Application application, String guid, EventRoute eventRoute) {
         if (!Optional.ofNullable(tenant).isPresent())
             return ServiceResponseBuilder.<EventRoute>error()
@@ -162,19 +171,29 @@ public class EventRouteServiceImpl implements EventRouteService {
 
         Optional<Map<String,Object[]>> validations = current.applyValidations();
 
-        if (validations.isPresent())
+        if (validations.isPresent()) {
             return ServiceResponseBuilder.<EventRoute>error()
                     .withMessages(validations.get())
                     .build();
+        }
 
         if (Optional.ofNullable(eventRouteRepository.findByRouteName(tenant.getId(),
                                                                      application.getName(),
                                                                      current.getName()))
                 .filter(eventRoute1 -> !eventRoute1.getGuid().equals(current.getGuid()))
-                .isPresent())
+                .isPresent()) {
             return ServiceResponseBuilder.<EventRoute>error()
                     .withMessage(Validations.NAME_IN_USE.getCode())
                     .build();
+        }
+
+        Map<String,Object[]> outgoingvalidations = applyOutgoingValidations(application, current);
+
+        if (!outgoingvalidations.isEmpty()) {
+            return ServiceResponseBuilder.<EventRoute>error()
+                                         .withMessages(outgoingvalidations)
+                                         .build();
+        }
 
         fillRouteActorsDisplayName(tenant.getId(), application.getName(), current);
 
@@ -223,6 +242,31 @@ public class EventRouteServiceImpl implements EventRouteService {
 		}
 
 	}
+
+    private Map<String,Object[]> applyOutgoingValidations(Application application, EventRoute route) {
+
+        Map<String,Object[]> validations = new HashMap<>();
+
+        String tenantId = route.getTenant().getId();
+
+        switch (route.getOutgoing().getUri().getScheme()) {
+        case DeviceURIDealer.DEVICE_URI_SCHEME:
+            Device outgoingDevice = deviceRepository.findByTenantAndGuid(tenantId,
+                    route.getOutgoing().getUri().getPath().replace("/", ""));
+
+            if (!Optional.ofNullable(outgoingDevice).isPresent()) {
+                validations.put(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode(), null);
+                return validations;
+            }
+            if (!application.equals(outgoingDevice.getApplication())) {
+                validations.put(Validations.CROSS_APPLICATION.getCode(), null);
+                return validations;
+            }
+        }
+
+        return validations;
+
+    }
 
     @Override
     public ServiceResponse<List<EventRoute>> getAll(Tenant tenant, Application application) {

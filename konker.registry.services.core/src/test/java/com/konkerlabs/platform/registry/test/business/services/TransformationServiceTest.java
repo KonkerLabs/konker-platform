@@ -5,6 +5,7 @@ import com.konkerlabs.platform.registry.business.model.validation.CommonValidati
 import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.TransformationRepository;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.TransformationService;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
@@ -103,6 +104,26 @@ public class TransformationServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json"})
+    public void shouldReturnErrorMessageIfApplicationIsNullWhenRegister() {
+        ServiceResponse<Transformation> response = subject.register(tenant, null, transformation);
+        assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json"})
+    public void shouldReturnErrorMessageIfApplicationIsInvalidWhenRegister() {
+        Application otherApplication = Application.builder()
+            .name("other")
+            .tenant(Tenant.builder().domainName("other")
+                    .id("79ed3fcc-f087-4ba3-a811-b9f27fa1a976")
+                    .build()).build();
+
+        ServiceResponse<Transformation> response = subject.register(tenant, otherApplication, transformation);
+        assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_NOT_FOUND.getCode()));
+    }
+
+    @Test
     public void shouldReturnAValidationMessageIfTenantDoesNotExist() throws Exception {
         tenant = Tenant.builder().id("unknown_id").build();
 
@@ -175,6 +196,26 @@ public class TransformationServiceTest extends BusinessLayerTestSupport {
         ServiceResponse<Transformation> serviceResponse = subject.update(null, application, TRANSFORMATION_GUID_IN_USE, transformation);
 
         assertThat(serviceResponse, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json"})
+    public void shouldReturnErrorMessageIfApplicationIsNullWhenUpdate() {
+        ServiceResponse<Transformation> response = subject.update(tenant, null, TRANSFORMATION_GUID_IN_USE, transformation);
+        assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json"})
+    public void shouldReturnErrorMessageIfApplicationIsInvalidWhenUpdate() {
+        Application otherApplication = Application.builder()
+            .name("other")
+            .tenant(Tenant.builder().domainName("other")
+                    .id("79ed3fcc-f087-4ba3-a811-b9f27fa1a976")
+                    .build()).build();
+
+        ServiceResponse<Transformation> response = subject.update(tenant, otherApplication, TRANSFORMATION_GUID_IN_USE, transformation);
+        assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_NOT_FOUND.getCode()));
     }
 
     @Test
