@@ -121,6 +121,7 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {
             "/fixtures/tenants.json",
+            "/fixtures/applications.json",
             "/fixtures/devices.json",
             "/fixtures/transformations.json",
             "/fixtures/sms-destinations.json",

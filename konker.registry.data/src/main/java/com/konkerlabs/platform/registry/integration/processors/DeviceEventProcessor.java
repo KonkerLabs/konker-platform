@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.data.services.api.DeviceLogEventService;
@@ -46,13 +45,13 @@ public class DeviceEventProcessor {
 
     private EventRouteExecutor eventRouteExecutor;
     private DeviceRegisterService deviceRegisterService;
-    private DeviceLogEventService deviceEventService;
+    private DeviceLogEventService deviceLogEventService;
 
     @Autowired
-    public DeviceEventProcessor(DeviceLogEventService deviceEventService,
+    public DeviceEventProcessor(DeviceLogEventService deviceLogEventService,
                                 EventRouteExecutor eventRouteExecutor,
                                 DeviceRegisterService deviceRegisterService) {
-        this.deviceEventService = deviceEventService;
+        this.deviceLogEventService = deviceLogEventService;
         this.eventRouteExecutor = eventRouteExecutor;
         this.deviceRegisterService = deviceRegisterService;
     }
@@ -76,13 +75,15 @@ public class DeviceEventProcessor {
                                 .deviceId(device.getDeviceId())
                                 .tenantDomain(Optional.ofNullable(device.getTenant()).isPresent()
                                         ? device.getTenant().getDomainName() : null)
+                                .applicationName(Optional.ofNullable(device.getApplication()).isPresent()
+                                        ? device.getApplication().getName(): null)
                                 .build()
                 )
                 .payload(payload)
                 .build();
         if (device.isActive()) {
 
-            ServiceResponse<Event> logResponse = deviceEventService.logIncomingEvent(device, event);
+            ServiceResponse<Event> logResponse = deviceLogEventService.logIncomingEvent(device, event);
             if (logResponse.isOk()) {
                 eventRouteExecutor.execute(event, device.toURI());
             } else {

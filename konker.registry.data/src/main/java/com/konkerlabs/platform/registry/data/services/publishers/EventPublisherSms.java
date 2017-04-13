@@ -70,6 +70,8 @@ public class EventPublisherSms implements EventPublisher {
                 });
         Optional.ofNullable(tenant)
                 .orElseThrow(() -> new IllegalArgumentException("Tenant cannot be null"));
+        Optional.ofNullable(application)
+                .orElseThrow(() -> new IllegalArgumentException("Application cannot be null"));
 
         ServiceResponse<SmsDestination> destination = smsDestinationService.getByGUID(
                 tenant,
