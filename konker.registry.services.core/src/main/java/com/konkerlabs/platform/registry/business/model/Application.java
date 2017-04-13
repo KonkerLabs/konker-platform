@@ -35,6 +35,7 @@ public class Application implements URIDealer {
 	private Tenant tenant;
 
 	public static final String URI_SCHEME = "application";
+    public static final String DEFAULT_QUALIFIER = "brsp01a";
 
 	@Override
 	public String getUriScheme() {

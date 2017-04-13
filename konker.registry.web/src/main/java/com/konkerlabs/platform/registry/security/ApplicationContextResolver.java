@@ -16,7 +16,10 @@ public class ApplicationContextResolver implements SmartFactoryBean<Application>
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Tenant tenant =  User.class.cast(userDetails).getTenant();
         // Return tenant default application
-        return Application.builder().name(tenant.getDomainName()).build();
+        return Application.builder()
+                          .name(tenant.getDomainName())
+                          .qualifier(Application.DEFAULT_QUALIFIER)
+                          .build();
     }
 
     @Override

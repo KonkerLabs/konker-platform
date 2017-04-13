@@ -1,5 +1,7 @@
 package com.konkerlabs.platform.registry.api.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
@@ -9,6 +11,7 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 import com.google.common.collect.Ordering;
+import com.konkerlabs.platform.registry.api.KonkerRegistryApiApplication;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
@@ -25,6 +28,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +40,8 @@ import static com.google.common.collect.Lists.newArrayList;
 @Configuration
 @EnableSwagger2
 public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
+
+    private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
     public static final String securitySchemaOAuth2 = "oauth2schema";
     public static final String authorizationScopeRead = "read";
@@ -132,8 +139,8 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
         String hostname = config.getString("swagger.hostname");
 
         try {
-            File file = new ClassPathResource("description.html").getFile();
-            BufferedReader reader = new BufferedReader(new FileReader(file));
+            InputStream is = new ClassPathResource("description.html").getInputStream();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
             String         line = null;
             StringBuilder  stringBuilder = new StringBuilder();
             String         ls = System.getProperty("line.separator");
@@ -150,6 +157,7 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
             }
 
         } catch (IOException e) {
+            LOGGER.error("Error getting description.html content...", e);
             return "";
         }
 
