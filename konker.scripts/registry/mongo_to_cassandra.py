@@ -1,7 +1,7 @@
 #! /usr/bin/env python2
 import argparse
 import sys
-import datetime
+from datetime import datetime
 
 from dao.registry import find_incomingEvents_by_timestamp, find_outgoingEvents_by_timestamp
 from dao.registryCassandra import save_incoming_events, save_outgoing_events, create_incoming_events_table, create_outgoing_events_table
@@ -18,16 +18,20 @@ def main():
     parser.add_argument("-c", "--ipcassandra", default="localhost", help="IP of cassandra")
     args = parser.parse_args()
     
+    start = datetime.now()
+    
     incomingEvents = find_incomingEvents_by_timestamp(args.timestamp, args.tenant, args.ipmongo)
     outgoingEvents = find_outgoingEvents_by_timestamp(args.timestamp, args.tenant, args.ipmongo)
-    
+     
     create_incoming_events_table(args.ipcassandra);
     create_outgoing_events_table(args.ipcassandra);
-    
+     
     save_incoming_events(incomingEvents, args.ipcassandra)
     save_outgoing_events(outgoingEvents, args.ipcassandra)
     
-    print "Migration finished. "
+    end = datetime.now()
+    diff = end - start
+    print "Migration finished. " + str(diff)
 
 if __name__ == '__main__':
     main()
