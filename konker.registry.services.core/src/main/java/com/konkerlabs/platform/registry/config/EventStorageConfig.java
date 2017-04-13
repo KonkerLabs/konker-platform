@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.config;
 
+import com.konkerlabs.platform.registry.type.EventStorageConfigType;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import lombok.Data;
@@ -19,20 +20,5 @@ public class EventStorageConfig {
         Config defaultConf = ConfigFactory.parseMap(defaultMap);
         Config config = ConfigFactory.load().withFallback(defaultConf);
         setEventRepositoryBean(config.getString("eventstorage.bean"));
-    }
-
-    public enum EventStorageConfigType {
-        MONGODB("mongoEvents"),
-        CASSANDRA("cassandraEvents");
-
-        private String bean;
-
-        EventStorageConfigType(String bean) {
-            this.bean = bean;
-        }
-
-        public String bean(){
-            return this.bean;
-        }
     }
 }

@@ -14,11 +14,13 @@ mqtt {
 }
 
 mongo {
+  seeds = "localhost"
   hostname = "localhost"
   port = 27017
 }
 
 mongoAudit {
+  seeds = "localhost"
   hostname = "localhost"
   port = 27017
 }
