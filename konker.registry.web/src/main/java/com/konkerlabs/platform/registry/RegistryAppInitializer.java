@@ -26,8 +26,7 @@ public class RegistryAppInitializer
 				UtilitiesConfig.class, SpringMailConfig.class,
 				SmsConfig.class, WebConfig.class, CdnConfig.class,
 				RecaptchaConfig.class, EmailConfig.class, HotjarConfig.class,
-	            //EnvironmentConfig.class, EventStorageConfig.class, CassandraConfig.class};
-				EnvironmentConfig.class, EventStorageConfig.class};
+	            EnvironmentConfig.class, EventStorageConfig.class, CassandraConfig.class};
 	}
 
 	@Override
