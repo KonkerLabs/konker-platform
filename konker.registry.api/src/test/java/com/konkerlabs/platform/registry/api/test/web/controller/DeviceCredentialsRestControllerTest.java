@@ -5,9 +5,11 @@ import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
 import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
 import com.konkerlabs.platform.registry.api.web.controller.DeviceCredentialRestController;
 import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.DeviceDataURLs;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
@@ -30,6 +32,8 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.text.MessageFormat;
+
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = DeviceCredentialRestController.class)
 @AutoConfigureMockMvc(secure = false)
@@ -45,16 +49,28 @@ public class DeviceCredentialsRestControllerTest extends WebLayerTestContext {
     private DeviceRegisterService deviceRegisterService;
 
     @Autowired
+    private ApplicationService applicationService;
+
+    @Autowired
     private Tenant tenant;
+
+    @Autowired
+    private Application application;
 
     @Autowired
     private User user;
 
     private Device device1;
 
+    private String BASEPATH = "deviceCredentials";
+
     @Before
     public void setUp() {
         device1 = Device.builder().deviceId("id1").name("name1").guid("guid1").apiKey("apiKey1").active(true).build();
+
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+            .thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
+
     }
 
     @After
@@ -77,13 +93,13 @@ public class DeviceCredentialsRestControllerTest extends WebLayerTestContext {
                 .mqttsURL("mqttsURL")
                 .build();
 
-        when(deviceRegisterService.getByDeviceGuid(tenant, null, device1.getGuid()))
+        when(deviceRegisterService.getByDeviceGuid(tenant, application, device1.getGuid()))
                 .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device1).build());
 
-        when(deviceRegisterService.getDeviceDataURLs(tenant, null, device1, user.getLanguage().getLocale()))
+        when(deviceRegisterService.getDeviceDataURLs(tenant, application, device1, user.getLanguage().getLocale()))
                 .thenReturn(ServiceResponseBuilder.<DeviceDataURLs>ok().withResult(deviceDataURLs).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.get("/deviceCredentials/" + device1.getGuid())
+        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH, device1.getGuid()))
                     .contentType("application/json")
                     .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
@@ -108,10 +124,10 @@ public class DeviceCredentialsRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryReadDeviceWithBadRequest() throws Exception {
 
-        when(deviceRegisterService.getByDeviceGuid(tenant, null, device1.getGuid()))
+        when(deviceRegisterService.getByDeviceGuid(tenant, application, device1.getGuid()))
                 .thenReturn(ServiceResponseBuilder.<Device>error().withMessage(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode()).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.get("/deviceCredentials/" + device1.getGuid())
+        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH, device1.getGuid()))
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError())
@@ -140,13 +156,13 @@ public class DeviceCredentialsRestControllerTest extends WebLayerTestContext {
                 .mqttsURL("mqttsURL")
                 .build();
 
-        when(deviceRegisterService.generateSecurityPassword(tenant, null, device1.getGuid()))
+        when(deviceRegisterService.generateSecurityPassword(tenant, application, device1.getGuid()))
                  .thenReturn(ServiceResponseBuilder.<DeviceRegisterService.DeviceSecurityCredentials>ok().withResult(credentials).build());
 
-        when(deviceRegisterService.getDeviceDataURLs(tenant, null, device1, user.getLanguage().getLocale()))
+        when(deviceRegisterService.getDeviceDataURLs(tenant, application, device1, user.getLanguage().getLocale()))
                 .thenReturn(ServiceResponseBuilder.<DeviceDataURLs>ok().withResult(deviceDataURLs).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.post("/deviceCredentials/" + device1.getGuid())
+        getMockMvc().perform(MockMvcRequestBuilders.post(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH, device1.getGuid()))
                                                    .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is2xxSuccessful())
                     .andExpect(content().contentType("application/json;charset=UTF-8"))
@@ -172,10 +188,10 @@ public class DeviceCredentialsRestControllerTest extends WebLayerTestContext {
 
         DeviceRegisterService.DeviceSecurityCredentials credentials = new DeviceRegisterService.DeviceSecurityCredentials(device1, "7I5ccJHCIE");
 
-        when(deviceRegisterService.generateSecurityPassword(tenant, null, device1.getGuid()))
+        when(deviceRegisterService.generateSecurityPassword(tenant, application, device1.getGuid()))
                  .thenReturn(ServiceResponseBuilder.<DeviceRegisterService.DeviceSecurityCredentials>error().withResult(credentials).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.post("/deviceCredentials/" + device1.getGuid())
+        getMockMvc().perform(MockMvcRequestBuilders.post(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH, device1.getGuid()))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().is5xxServerError())
                 .andExpect(content().contentType("application/json;charset=UTF-8"))

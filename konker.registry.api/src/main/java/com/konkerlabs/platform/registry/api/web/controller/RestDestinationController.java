@@ -26,8 +26,6 @@ import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.RestDestination.Validations;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.User;
-import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 
@@ -39,16 +37,10 @@ import io.swagger.annotations.ApiParam;
 @Scope("request")
 @RequestMapping(value = "/{application}/restDestinations")
 @Api(tags = "rest destinations")
-public class RestDestinationController implements InitializingBean {
+public class RestDestinationController extends AbstractRestController implements InitializingBean {
 
     @Autowired
     private RestDestinationService restDestinationService;
-
-    @Autowired
-    private ApplicationService applicationService;
-
-    @Autowired
-    private User user;
 
     private Set<String> validationsCode = new HashSet<>();
 
@@ -57,10 +49,10 @@ public class RestDestinationController implements InitializingBean {
     @ApiOperation(
             value = "List all rest destinations by organization",
             response = RestDestinationVO.class)
-    public List<RestDestinationVO> list(@PathVariable("application") String applicationId) throws BadServiceResponseException {
+    public List<RestDestinationVO> list(@PathVariable("application") String applicationId) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
-        Application application = applicationService.getByApplicationName(tenant, applicationId).getResult();
+        Application application = getApplication(applicationId);
 
         ServiceResponse<List<RestDestination>> restDestinationResponse = restDestinationService.findAll(tenant, application);
 
@@ -83,7 +75,7 @@ public class RestDestinationController implements InitializingBean {
             @PathVariable("restDestinationGuid") String restDestinationGuid) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
-        Application application = applicationService.getByApplicationName(tenant, applicationId).getResult();
+        Application application = getApplication(applicationId);
 
         ServiceResponse<RestDestination> restDestinationResponse = restDestinationService.getByGUID(tenant, application, restDestinationGuid);
 
@@ -104,10 +96,10 @@ public class RestDestinationController implements InitializingBean {
             		name = "body",
             		value = "JSON filled with the fields described in Model and Example Value beside",
             		required = true)
-            @RequestBody RestDestinationInputVO restDestinationForm) throws BadServiceResponseException {
+            @RequestBody RestDestinationInputVO restDestinationForm) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
-        Application application = applicationService.getByApplicationName(tenant, applicationId).getResult();
+        Application application = getApplication(applicationId);
 
         RestDestination restDestination = RestDestination.builder()
                 .name(restDestinationForm.getName())
@@ -139,10 +131,10 @@ public class RestDestinationController implements InitializingBean {
             		name = "body",
             		value = "JSON filled with the fields described in Model and Example Value beside",
             		required = true)
-            @RequestBody RestDestinationInputVO restDestinationForm) throws BadServiceResponseException {
+            @RequestBody RestDestinationInputVO restDestinationForm) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
-        Application application = applicationService.getByApplicationName(tenant, applicationId).getResult();
+        Application application = getApplication(applicationId);
 
         RestDestination restDestinationFromDB = null;
         ServiceResponse<RestDestination> restDestinationResponse = restDestinationService.getByGUID(tenant, application, restDestinationGuid);
@@ -179,7 +171,7 @@ public class RestDestinationController implements InitializingBean {
             @PathVariable("restDestinationGuid") String restDestinationGuid) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
-        Application application = applicationService.getByApplicationName(tenant, applicationId).getResult();
+        Application application = getApplication(applicationId);
 
         ServiceResponse<RestDestination> restDestinationResponse = restDestinationService.remove(tenant, application, restDestinationGuid);
 

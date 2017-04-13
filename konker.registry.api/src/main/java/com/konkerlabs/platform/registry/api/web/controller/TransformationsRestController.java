@@ -5,11 +5,7 @@ import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseExcepti
 import com.konkerlabs.platform.registry.api.exceptions.NotAuthorizedResponseException;
 import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
 import com.konkerlabs.platform.registry.api.model.RestTransformationVO;
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.Transformation;
-import com.konkerlabs.platform.registry.business.model.User;
-import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.TransformationService;
 import io.swagger.annotations.Api;
@@ -23,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 @RestController
@@ -32,15 +27,11 @@ import java.util.Set;
         value = "/{application}/restTransformations"
 )
 @Api(tags = "rest transformations")
-public class TransformationsRestController implements InitializingBean {
-
+public class TransformationsRestController extends AbstractRestController implements InitializingBean {
 
     @Autowired
     private TransformationService transformationService;
-    @Autowired
-    private ApplicationService applicationService;
-    @Autowired
-    private User user;
+
     private Set<String> validationsCode = new HashSet<>();
 
     @GetMapping(path = "/")
@@ -52,7 +43,7 @@ public class TransformationsRestController implements InitializingBean {
         ServiceResponse<List<Transformation>> response =
                 transformationService.getAll(
                         user.getTenant(),
-                        getApplication(user.getTenant(), applicationId));
+                        getApplication(applicationId));
 
         if (!response.isOk()) {
             if (response.getResponseMessages().containsKey(TransformationService.Validations.TRANSFORMATION_NOT_FOUND)) {
@@ -78,7 +69,7 @@ public class TransformationsRestController implements InitializingBean {
 
         ServiceResponse<Transformation> response =
                 transformationService.get(
-                        user.getTenant(), getApplication(user.getTenant(), applicationId),
+                        user.getTenant(), getApplication(applicationId),
                         guid);
 
         if (!response.isOk() || response.getResult() == null) {
@@ -117,7 +108,7 @@ public class TransformationsRestController implements InitializingBean {
         ServiceResponse<Transformation> fromDB =
                 transformationService.get(
                         user.getTenant(),
-                        getApplication(user.getTenant(), applicationId),
+                        getApplication(applicationId),
                         guid);
 
         if (!fromDB.isOk() || fromDB.getResult() == null) {
@@ -128,7 +119,7 @@ public class TransformationsRestController implements InitializingBean {
         ServiceResponse<Transformation> response =
                 transformationService.update(
                         user.getTenant(),
-                        getApplication(user.getTenant(), applicationId),
+                        getApplication(applicationId),
                         guid,
                         toDB);
 
@@ -156,7 +147,7 @@ public class TransformationsRestController implements InitializingBean {
         ServiceResponse<Transformation> response =
                 transformationService.register(
                         user.getTenant(),
-                        getApplication(user.getTenant(), applicationId),
+                        getApplication(applicationId),
                         toDB);
 
         if (!response.isOk()) {
@@ -181,7 +172,7 @@ public class TransformationsRestController implements InitializingBean {
         }
         ServiceResponse<Transformation> response = transformationService.remove(
                 user.getTenant(),
-                getApplication(user.getTenant(), applicationId),
+                getApplication(applicationId),
                 guid);
         if (!response.isOk()) {
             if (response.getResponseMessages()
@@ -209,16 +200,4 @@ public class TransformationsRestController implements InitializingBean {
 
     }
 
-    public Application getApplication(Tenant tenant, String applicationId)
-            throws NotFoundResponseException {
-        ServiceResponse<Application> applicationResponse = applicationService.getByApplicationName(
-                user.getTenant(), applicationId);
-
-        if (!applicationResponse.isOk()
-                || !Optional.ofNullable(applicationResponse.getResult()).isPresent()) {
-            throw new NotFoundResponseException(user, applicationResponse);
-        }
-
-        return applicationResponse.getResult();
-    }
 }

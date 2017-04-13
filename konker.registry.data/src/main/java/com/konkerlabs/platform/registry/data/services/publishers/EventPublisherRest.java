@@ -60,6 +60,8 @@ public class EventPublisherRest implements EventPublisher {
                 .orElseThrow(() -> new IllegalArgumentException("Destination URI cannot be null or empty"));
         Optional.ofNullable(tenant)
                 .orElseThrow(() -> new IllegalArgumentException("Tenant cannot be null"));
+        Optional.ofNullable(application)
+                .orElseThrow(() -> new IllegalArgumentException("Application cannot be null"));
 
         ServiceResponse<RestDestination> destination = restDestinationService.getByGUID(
                 tenant,

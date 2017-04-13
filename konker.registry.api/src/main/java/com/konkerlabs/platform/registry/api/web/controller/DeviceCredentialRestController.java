@@ -2,11 +2,11 @@ package com.konkerlabs.platform.registry.api.web.controller;
 
 import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
 import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
+import com.konkerlabs.platform.registry.api.model.DeviceSecurityCredentialsPwdVO;
 import com.konkerlabs.platform.registry.api.model.DeviceSecurityCredentialsVO;
-import com.konkerlabs.platform.registry.api.model.RestResponse;
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.DeviceDataURLs;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
@@ -25,32 +25,30 @@ import java.util.Set;
 @RestController
 @Scope("request")
 @RequestMapping(
-        value = "/deviceCredentials"
+        value = "/{application}/deviceCredentials"
 )
 @Api(tags = "device credentials")
-public class DeviceCredentialRestController implements InitializingBean {
+public class DeviceCredentialRestController extends AbstractRestController implements InitializingBean {
 
     @Autowired
     private DeviceRegisterService deviceRegisterService;
-
-    @Autowired
-    private User user;
 
     private Set<String> validationsCode = new HashSet<>();
 
     @GetMapping(path = "/{deviceGuid}")
     @ApiOperation(
-            value = "Get device username and connections URLs",
-            response = RestResponse.class
+            value = "Get device username and connections URLs"
     )
     @PreAuthorize("hasAuthority('SHOW_DEVICE')")
     public DeviceSecurityCredentialsVO read(
+            @PathVariable("application") String applicationId,
             @ApiParam(required = true)
             @PathVariable("deviceGuid") String deviceGuid) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
+        Application application = getApplication(applicationId);
 
-        ServiceResponse<Device> deviceResponse = deviceRegisterService.getByDeviceGuid(tenant, null, deviceGuid);
+        ServiceResponse<Device> deviceResponse = deviceRegisterService.getByDeviceGuid(tenant, application, deviceGuid);
 
         if (!deviceResponse.isOk()) {
             throw new NotFoundResponseException(user, deviceResponse);
@@ -59,7 +57,7 @@ public class DeviceCredentialRestController implements InitializingBean {
             Device device = deviceResponse.getResult();
 
             ServiceResponse<DeviceDataURLs> deviceURLResponse = deviceRegisterService
-                    .getDeviceDataURLs(tenant, null, device, user.getLanguage().getLocale());
+                    .getDeviceDataURLs(tenant, application, device, user.getLanguage().getLocale());
 
             return DeviceSecurityCredentialsVO.builder()
                     .username(deviceResponse.getResult().getApiKey())
@@ -70,16 +68,20 @@ public class DeviceCredentialRestController implements InitializingBean {
     }
 
     @PostMapping(path = "/{deviceGuid}")
-    @ApiOperation(value = "Create a new device username and password. It will not be possible to recover the generated password again, so store it safely.")
+    @ApiOperation(
+            value = "Create a new device username and password. It will not be possible to recover the generated password again, so store it safely."
+    )
     @PreAuthorize("hasAuthority('CREATE_DEVICE_KEYS')")
-    public DeviceSecurityCredentialsVO create(
+    public DeviceSecurityCredentialsPwdVO create(
+            @PathVariable("application") String applicationId,
             @ApiParam(required = true)
-            @PathVariable("deviceGuid") String deviceGuid) throws BadServiceResponseException {
+            @PathVariable("deviceGuid") String deviceGuid) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
+        Application application = getApplication(applicationId);
 
         ServiceResponse<DeviceRegisterService.DeviceSecurityCredentials> deviceResponse = deviceRegisterService
-                .generateSecurityPassword(tenant, null, deviceGuid);
+                .generateSecurityPassword(tenant, application, deviceGuid);
 
         if (!deviceResponse.isOk()) {
             throw new BadServiceResponseException(user, deviceResponse, validationsCode);
@@ -88,9 +90,9 @@ public class DeviceCredentialRestController implements InitializingBean {
             Device device = deviceResponse.getResult().getDevice();
 
             ServiceResponse<DeviceDataURLs> deviceURLResponse = deviceRegisterService
-                    .getDeviceDataURLs(tenant, null, device, user.getLanguage().getLocale());
+                    .getDeviceDataURLs(tenant, application, device, user.getLanguage().getLocale());
 
-            return new DeviceSecurityCredentialsVO(deviceResponse.getResult(), deviceURLResponse.getResult());
+            return new DeviceSecurityCredentialsPwdVO(deviceResponse.getResult(), deviceURLResponse.getResult());
         }
 
     }

@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -57,14 +56,14 @@ public class UserRestControllerTest extends WebLayerTestContext {
     @Autowired
     private RoleService roleService;
 
-    
+
     @Autowired
     private Tenant tenant;
 
     private User user1;
 
     private User user2;
-    
+
     private Role role;
 
     @Before
@@ -76,7 +75,7 @@ public class UserRestControllerTest extends WebLayerTestContext {
         			.phone("99998888")
         			.notificationViaEmail(true)
         			.build();
-        
+
         user2 = User.builder()
 	        		.email("fakeuser2@domain.com")
 	    			.name("Fake User Dois")
@@ -84,7 +83,7 @@ public class UserRestControllerTest extends WebLayerTestContext {
 	    			.phone("99997777")
 	    			.notificationViaEmail(false)
 	    			.build();
-        
+
         role = Role.builder()
         			.id("1")
         			.name("ROLE_IOT_USER")
@@ -147,7 +146,7 @@ public class UserRestControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldReadUser() throws Exception {
-    	
+
         when(userService.findByTenantAndEmail(tenant, user1.getEmail()))
                 .thenReturn(ServiceResponseBuilder.<User>ok().withResult(user1).build());
 
@@ -191,11 +190,11 @@ public class UserRestControllerTest extends WebLayerTestContext {
     public void shouldCreateUser() throws Exception {
 
     	when(userService.save(
-    			org.mockito.Matchers.any(User.class), 
-    			org.mockito.Matchers.anyString(), 
+    			org.mockito.Matchers.any(User.class),
+    			org.mockito.Matchers.anyString(),
     			org.mockito.Matchers.anyString()))
     	.thenReturn(ServiceResponseBuilder.<User>ok().withResult(user1).build());
-    	
+
     	when(roleService.findByName(org.mockito.Matchers.anyString()))
     		.thenReturn(ServiceResponseBuilder.<Role>ok().withResult(role).build());
 
@@ -221,7 +220,7 @@ public class UserRestControllerTest extends WebLayerTestContext {
     public void shouldTryCreateUserWithBadRequest() throws Exception {
 
     	when(userService.save(
-    			org.mockito.Matchers.any(User.class), 
+    			org.mockito.Matchers.any(User.class),
     			org.mockito.Matchers.anyString(),
     			org.mockito.Matchers.anyString()))
     	.thenReturn(ServiceResponseBuilder.<User>error().withMessage(UserService.Validations.NO_EXIST_USER.getCode()).build());
@@ -248,8 +247,8 @@ public class UserRestControllerTest extends WebLayerTestContext {
                 .thenReturn(ServiceResponseBuilder.<User>ok().withResult(user1).build());
 
         when(userService.save(
-        		org.mockito.Matchers.any(User.class), 
-        		org.mockito.Matchers.anyString(), 
+        		org.mockito.Matchers.any(User.class),
+        		org.mockito.Matchers.anyString(),
         		org.mockito.Matchers.anyString()))
         .thenReturn(ServiceResponseBuilder.<User>ok().withResult(user1).build());
 
@@ -272,8 +271,8 @@ public class UserRestControllerTest extends WebLayerTestContext {
                 .thenReturn(ServiceResponseBuilder.<User>ok().withResult(user1).build());
 
         when(userService.save(
-        		org.mockito.Matchers.any(User.class), 
-        		org.mockito.Matchers.anyString(), 
+        		org.mockito.Matchers.any(User.class),
+        		org.mockito.Matchers.anyString(),
         		org.mockito.Matchers.anyString()))
         .thenReturn(ServiceResponseBuilder.<User>error().build());
 

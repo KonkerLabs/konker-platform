@@ -14,7 +14,8 @@ public interface EventRouteService {
         NAME_IN_USE("service.event_route.name.in_use"),
         GUID_NULL("service.event_route.guid.not_null"),
         EVENT_ROUTE_NOT_FOUND("service.event_route.not_found"),
-        EVENT_ROUTE_URI_NULL("service.event_route.uri.not_null");
+        EVENT_ROUTE_URI_NULL("service.event_route.uri.not_null"),
+        CROSS_APPLICATION("service.event_route.cross_application"),;
 
         private String code;
 

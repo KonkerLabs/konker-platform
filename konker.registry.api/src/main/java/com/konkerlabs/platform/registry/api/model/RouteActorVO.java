@@ -16,11 +16,11 @@ import lombok.NoArgsConstructor;
 public class RouteActorVO
         implements SerializableVO<RouteActor, RouteActorVO> {
 
-    @ApiModelProperty(position = 0, value = "type", allowableValues = "DEVICE,REST")
+    @ApiModelProperty(position = 0, value = "type", allowableValues = "DEVICE,REST", example = "DEVICE")
     private String type;
-    @ApiModelProperty(position = 1, value = "actor (device or rest destination) guid")
+    @ApiModelProperty(position = 1, value = "actor (device or rest destination) guid", example = "818599ad-3502-4e70-a852-fc7af8e0a9f3")
     private String guid;
-    @ApiModelProperty(position = 2, value = "actor channel")
+    @ApiModelProperty(position = 2, value = "actor channel", example = "out")
     private String channel;
 
     @Override

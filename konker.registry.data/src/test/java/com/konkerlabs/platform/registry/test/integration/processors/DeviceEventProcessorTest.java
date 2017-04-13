@@ -1,8 +1,10 @@
 package com.konkerlabs.platform.registry.test.integration.processors;
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -29,6 +31,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
@@ -37,6 +40,7 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterServ
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.data.config.RedisConfig;
+import com.konkerlabs.platform.registry.data.services.api.DeviceLogEventService;
 import com.konkerlabs.platform.registry.data.services.routes.api.EventRouteExecutor;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
 import com.konkerlabs.platform.registry.test.data.base.BusinessTestConfiguration;
@@ -73,6 +77,8 @@ public class DeviceEventProcessorTest {
     @Autowired
     private DeviceEventService deviceEventService;
     @Autowired
+    private DeviceLogEventService deviceLogEventService;
+    @Autowired
     private EventRouteExecutor eventRouteExecutor;
     @Autowired
     private DeviceRegisterService deviceRegisterService;
@@ -92,6 +98,7 @@ public class DeviceEventProcessorTest {
                                 .deviceGuid("device_guid")
                                 .deviceId("device_id")
                                 .tenantDomain("tenantDomain")
+                                .applicationName("applicationName")
                                 .build()
 
                 )
@@ -104,7 +111,13 @@ public class DeviceEventProcessorTest {
                                 .domainName("tenantDomain")
                                 .name("tenantName")
                                 .build()
-                )
+                        )
+                .application(
+                        Application.builder()
+                                .name("applicationName")
+                                .friendlyName("applicationName")
+                                .build()
+                        )
                 .apiKey(sourceApiKey)
                 .id("id")
                 .guid("device_guid")
@@ -143,7 +156,7 @@ public class DeviceEventProcessorTest {
 
     @After
     public void tearDown() throws Exception {
-        reset(deviceEventService, eventRouteExecutor, deviceRegisterService);
+        reset(deviceEventService, eventRouteExecutor, deviceRegisterService, deviceLogEventService);
     }
 
     @Test
@@ -180,6 +193,20 @@ public class DeviceEventProcessorTest {
         verify(eventRouteExecutor, never()).execute(any(Event.class), any(URI.class));
     }
 
+    @Test
+    public void shouldFireRouteExecution() throws Exception {
+        when(deviceRegisterService.findByApiKey(sourceApiKey)).thenReturn(device);
+
+        when(deviceLogEventService.logIncomingEvent(eq(device), eq(event))).thenReturn(
+                ServiceResponseBuilder.<Event>ok().withResult(event).build()
+        );
+
+        subject.process(sourceApiKey, incomingChannel, originalPayload);
+
+        verify(eventRouteExecutor, times(1)).execute(any(Event.class), any(URI.class));
+        verify(deviceLogEventService, times(1)).logIncomingEvent(any(Device.class), any(Event.class));
+    }
+
     @Configuration
     static class BusinessLayerConfiguration {
         @Bean
@@ -197,6 +224,10 @@ public class DeviceEventProcessorTest {
             return mock(DeviceRegisterService.class);
         }
 
+        @Bean
+        public DeviceLogEventService deviceLogEventService() {
+            return mock(DeviceLogEventService.class);
+        }
     }
 
     static class ResultCaptor<T> implements Answer {

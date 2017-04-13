@@ -2,6 +2,44 @@
   "devices": [
     {
       "_class" : "com.konkerlabs.platform.registry.model.Device",
+      "_id" : "ea55ee4a-50fc-4b63-8954-0dcaa915e63f",
+      "guid" : "f067bfd0-3365-49e9-b7f5-fc5673f869a4",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
+      },
+      "application" : {
+        "$id" : "konker",
+        "$ref" : "applications"
+      },
+      "deviceId" : "SN4434567844",
+      "apiKey" : "abkckWzQvT",
+      "name" : "Test name",
+      "description" : "Description",
+      "registrationDate" : 1453320973747,
+      "active" : true
+    },
+    {
+      "_class" : "com.konkerlabs.platform.registry.model.Device",
+      "_id" : "367915fd-b3ad-453e-88d1-43c8f4f0f118",
+      "guid" : "dab14680-c079-4c84-a5ce-82659868f370",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
+      },
+      "application" : {
+        "$id" : "konker",
+        "$ref" : "applications"
+      },
+      "deviceId" : "SN4434567855",
+      "apiKey" : "oZaPhY4b3E",
+      "name" : "Test name",
+      "description" : "Description",
+      "registrationDate" : 1453320973747,
+      "active" : true
+    },
+    {
+      "_class" : "com.konkerlabs.platform.registry.model.Device",
       "_id" : "67014de6-81db-11e6-a5bc-3f99b38315c6",
       "guid" : "7d51c242-81db-11e6-a8c2-0746f010e945",
       "tenant" : {

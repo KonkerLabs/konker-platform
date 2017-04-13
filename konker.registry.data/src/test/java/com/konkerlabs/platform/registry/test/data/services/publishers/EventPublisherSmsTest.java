@@ -6,6 +6,7 @@ import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.SmsDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
+import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.events.api.EventRepository;
 import com.konkerlabs.platform.registry.business.services.api.SmsDestinationService;
@@ -50,7 +51,7 @@ import static org.mockito.Mockito.*;
         BusinessTestConfiguration.class,
         RedisTestConfiguration.class
 })
-@UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/sms-destinations.json"})
+@UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/sms-destinations.json"})
 public class EventPublisherSmsTest extends BusinessLayerTestSupport {
 
     private static final String REGISTERED_AND_ACTIVE_DESTINATION_GUID = "140307f9-7d50-4f37-ac67-80313776bef4";
@@ -63,6 +64,8 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
 
     @Autowired
     private TenantRepository tenantRepository;
+    @Autowired
+    private ApplicationRepository applicationRepository;
     @Autowired
     private SmsDestinationService destinationService;
     @Autowired
@@ -106,6 +109,7 @@ public class EventPublisherSmsTest extends BusinessLayerTestSupport {
 
         EventPublisherSms.class.cast(subject);
         tenant = tenantRepository.findByDomainName("konker");
+        application = applicationRepository.findByTenantAndName(tenant.getId(), "konker");
 
         data = new HashMap<String,String>();
         data.put(EventRoute.SMS_MESSAGE_STRATEGY_PARAMETER_NAME,
