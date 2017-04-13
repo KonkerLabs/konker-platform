@@ -30,58 +30,47 @@ import org.springframework.util.StringUtils;
 @Data
 public class MongoConfig extends AbstractMongoConfiguration {
 
-    private String hostname;
-    private List<ServerAddress> seeds = new ArrayList<>();
+    private List<ServerAddress> hostname = new ArrayList<>();
     private Integer port;
     private String username;
     private String password;
     private static Logger LOG = LoggerFactory.getLogger(MongoConfig.class);
 
     public MongoConfig() {
-    	Map<String, Object> defaultMap = new HashMap<>();
-    	defaultMap.put("mongo.hostname", "localhost");
-        defaultMap.put("mongo.seeds", "localhost");
-    	defaultMap.put("mongo.port", 27017);
-    	defaultMap.put("mongo.username", "");
+        Map<String, Object> defaultMap = new HashMap<>();
+        defaultMap.put("mongo.hostname", "localhost");
+        defaultMap.put("mongo.port", 27017);
+        defaultMap.put("mongo.username", "");
         defaultMap.put("mongo.password", "");
-    	Config defaultConf = ConfigFactory.parseMap(defaultMap);
+        Config defaultConf = ConfigFactory.parseMap(defaultMap);
 
-    	Config config = ConfigFactory.load().withFallback(defaultConf);
-    	setHostname(config.getString("mongo.hostname"));
-    	setPort(config.getInt("mongo.port"));
-    	setUsername(Optional.ofNullable(config.getString("mongo.username")).isPresent()
+        Config config = ConfigFactory.load().withFallback(defaultConf);
+        setPort(config.getInt("mongo.port"));
+        setUsername(Optional.ofNullable(config.getString("mongo.username")).isPresent()
                 ? config.getString("mongo.username") : null);
-    	setPassword(Optional.ofNullable(config.getString("mongo.password")).isPresent()
+        setPassword(Optional.ofNullable(config.getString("mongo.password")).isPresent()
                 ? config.getString("mongo.password") : null);
 
-    	List<String> seedList = Optional.ofNullable(config.getString("mongo.seeds")).isPresent() ?
-                Arrays.asList(config.getString("mongo.seeds")) : null;
+        List<String> seedList = Optional.ofNullable(config.getString("mongo.hostname")).isPresent() ?
+                Arrays.asList(config.getString("mongo.hostname")) : null;
 
-    	if(seedList != null && seedList.size() > 0){
-    	    for(String seed : seedList){
-                try {
-                    seeds.add(new ServerAddress(seed, port));
-                } catch (Exception e) {
-                    LOG.error("Error constructing mongo factory", e);
-                }
-            }
-        } else {
+        for (String seed : seedList) {
             try {
-                seeds.add(new ServerAddress(getHostname(), getPort()));
-            } catch (UnknownHostException e) {
+                hostname.add(new ServerAddress(seed, port));
+            } catch (Exception e) {
                 LOG.error("Error constructing mongo factory", e);
             }
         }
 
     }
 
-	public static final List<Converter<?,?>> converters = Arrays.asList(
-        new Converter[] {
-            new InstantReadConverter(),
-            new InstantWriteConverter(),
-            new URIReadConverter(),
-            new URIWriteConverter()
-        }
+    public static final List<Converter<?, ?>> converters = Arrays.asList(
+            new Converter[]{
+                    new InstantReadConverter(),
+                    new InstantWriteConverter(),
+                    new URIReadConverter(),
+                    new URIWriteConverter()
+            }
     );
 
     @Override
@@ -91,15 +80,15 @@ public class MongoConfig extends AbstractMongoConfiguration {
 
     @Override
     public Mongo mongo() throws Exception {
-        if(!StringUtils.isEmpty(getUsername()) && !StringUtils.isEmpty(getPassword())){
+        if (!StringUtils.isEmpty(getUsername()) && !StringUtils.isEmpty(getPassword())) {
             try {
                 MongoCredential credential = MongoCredential.createCredential(getUsername(), getDatabaseName(), getPassword().toCharArray());
-                return new MongoClient(seeds, Collections.singletonList(credential));
-            } catch (Exception e){
-                return new MongoClient(seeds);
+                return new MongoClient(hostname, Collections.singletonList(credential));
+            } catch (Exception e) {
+                return new MongoClient(hostname);
             }
         } else {
-            return new MongoClient(seeds);
+            return new MongoClient(hostname);
         }
 
     }

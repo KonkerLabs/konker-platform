@@ -32,8 +32,7 @@ import org.springframework.util.StringUtils;
 @Data
 public class MongoAuditConfig extends AbstractMongoConfiguration {
 
-	private String hostname;
-	private List<ServerAddress> seeds = new ArrayList<>();
+	private List<ServerAddress> hostname = new ArrayList<>();
 	private Integer port;
 	private String username;
 	private String password;
@@ -49,30 +48,22 @@ public class MongoAuditConfig extends AbstractMongoConfiguration {
     	Config defaultConf = ConfigFactory.parseMap(defaultMap);
 
     	Config config = ConfigFactory.load().withFallback(defaultConf);
-    	setHostname(config.getString("mongoAudit.hostname"));
     	setPort(config.getInt("mongoAudit.port"));
     	setUsername(config.getString("mongoAudit.username"));
     	setPassword(config.getString("mongoAudit.password"));
 
-		List<String> seedList = Optional.ofNullable(config.getString("mongo.seeds")).isPresent() ?
-				Arrays.asList(config.getString("mongo.seeds")) : null;
+		List<String> seedList = Optional.ofNullable(config.getString("mongoAudit.hostname")).isPresent() ?
+				Arrays.asList(config.getString("mongoAudit.hostname")) : null;
 
-		if(seedList != null && seedList.size() > 0){
-			for(String seed : seedList){
-				try {
-					seeds.add(new ServerAddress(seed, port));
-				} catch (Exception e) {
-					LOG.error("Error constructing mongo factory", e);
-				}
-			}
-		} else {
+		for (String seed : seedList) {
 			try {
-				seeds.add(new ServerAddress(getHostname(), getPort()));
-			} catch (UnknownHostException e) {
+				hostname.add(new ServerAddress(seed, port));
+			} catch (Exception e) {
 				LOG.error("Error constructing mongo factory", e);
 			}
 		}
-    }
+
+	}
 
     public static final List<Converter<?,?>> converters = Arrays.asList(
         new Converter[] {
@@ -92,19 +83,21 @@ public class MongoAuditConfig extends AbstractMongoConfiguration {
 		return new MongoTemplate(this.mongo(), this.getDatabaseName());
 	}
 
+
 	@Override
-    public Mongo mongo() throws Exception {
-		if(!StringUtils.isEmpty(getUsername()) && !StringUtils.isEmpty(getPassword())){
+	public Mongo mongo() throws Exception {
+		if (!StringUtils.isEmpty(getUsername()) && !StringUtils.isEmpty(getPassword())) {
 			try {
 				MongoCredential credential = MongoCredential.createCredential(getUsername(), getDatabaseName(), getPassword().toCharArray());
-				return new MongoClient(seeds, Collections.singletonList(credential));
-			} catch (Exception e){
-				return new MongoClient(seeds);
+				return new MongoClient(hostname, Collections.singletonList(credential));
+			} catch (Exception e) {
+				return new MongoClient(hostname);
 			}
 		} else {
-			return new MongoClient(seeds);
+			return new MongoClient(hostname);
 		}
-    }
+
+	}
 
     @Override
     public CustomConversions customConversions() {
