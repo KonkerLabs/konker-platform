@@ -9,6 +9,7 @@ import java.util.Set;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -60,6 +61,7 @@ public class UserRestController implements InitializingBean {
     private Set<String> validationsCode = new HashSet<>();
 
     @GetMapping(path = "/")
+    @PreAuthorize("hasAuthority('LIST_USER')")
     @ApiOperation(
             value = "List all users by organization",
             response = UserVO.class)
@@ -78,6 +80,7 @@ public class UserRestController implements InitializingBean {
     }
 
     @GetMapping(path = "/{email:.+}")
+    @PreAuthorize("hasAuthority('SHOW_USER')")
     @ApiOperation(
             value = "Get a user by email",
             response = RestResponse.class
@@ -97,6 +100,7 @@ public class UserRestController implements InitializingBean {
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('ADD_USER')")
     @ApiOperation(value = "Create a user")
     public UserVO create(
             @ApiParam(name = "body", value = "JSON filled with the fields described in Model and Example Value beside", required = true)
@@ -134,6 +138,7 @@ public class UserRestController implements InitializingBean {
     }
 
     @PutMapping(path = "/{email:.+}")
+    @PreAuthorize("hasAuthority('EDIT_USER')")
     @ApiOperation(value = "Update a user")
     public void update(
             @PathVariable("email") String email,
