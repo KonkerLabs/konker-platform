@@ -53,7 +53,7 @@ public class MongoAuditConfig extends AbstractMongoConfiguration {
     	setPassword(config.getString("mongoAudit.password"));
 
 		List<String> seedList = Optional.ofNullable(config.getString("mongoAudit.hostname")).isPresent() ?
-				Arrays.asList(config.getString("mongoAudit.hostname")) : null;
+				Arrays.asList(config.getString("mongoAudit.hostname").split(",")) : null;
 
 		for (String seed : seedList) {
 			try {

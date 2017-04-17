@@ -52,7 +52,7 @@ public class MongoConfig extends AbstractMongoConfiguration {
                 ? config.getString("mongo.password") : null);
 
         List<String> seedList = Optional.ofNullable(config.getString("mongo.hostname")).isPresent() ?
-                Arrays.asList(config.getString("mongo.hostname")) : null;
+                Arrays.asList(config.getString("mongo.hostname").split(",")) : null;
 
         for (String seed : seedList) {
             try {
