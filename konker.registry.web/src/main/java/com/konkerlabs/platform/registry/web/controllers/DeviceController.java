@@ -53,6 +53,99 @@ public class DeviceController implements ApplicationContextAware {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DeviceController.class);
 
+    public static class ChannelVO {
+        private String name;
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((name == null) ? 0 : name.hashCode());
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            ChannelVO other = (ChannelVO) obj;
+            if (name == null) {
+                if (other.name != null)
+                    return false;
+            } else if (!name.equals(other.name))
+                return false;
+            return true;
+        }
+
+        private boolean isDefaultChannel = false;
+
+        public ChannelVO(String channelName) {
+            this.name = channelName;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setDefault() {
+            this.isDefaultChannel = true;
+        }
+
+        public boolean isDefault() {
+            return isDefaultChannel;
+        }
+    }
+
+    public static class MetricVO {
+        private String name;
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((name == null) ? 0 : name.hashCode());
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            MetricVO other = (MetricVO) obj;
+            if (name == null) {
+                if (other.name != null)
+                    return false;
+            } else if (!name.equals(other.name))
+                return false;
+            return true;
+        }
+
+        private boolean isDefaultMetric = false;
+
+        public MetricVO(String channelName) {
+            this.name = channelName;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setDefault() {
+            this.isDefaultMetric = true;
+        }
+
+        public boolean isDefault() {
+            return isDefaultMetric;
+        }
+    }
+
+
     private ApplicationContext applicationContext;
 
     @Override
@@ -193,12 +286,9 @@ public class DeviceController implements ApplicationContextAware {
         }
 
         // Load lists
-        ServiceResponse<List<String>> channels = eventSchemaService.findKnownIncomingChannelsBy(
-        		tenant,
-        		application,
-        		deviceGuid);
+        ServiceResponse<List<String>> channelsServiceResponse = eventSchemaService.findKnownIncomingChannelsBy(tenant, application, deviceGuid);
 
-        if (defaultChannel != null && !channels.getResult().contains(defaultChannel)) {
+        if (defaultChannel != null && !channelsServiceResponse.getResult().contains(defaultChannel)) {
             defaultChannel = null; // invalid channel
         }
 
@@ -222,13 +312,31 @@ public class DeviceController implements ApplicationContextAware {
             existsNumericMetric = true;
         }
 
+        // prepare a list of VOs to be displayed
+
+        List<ChannelVO> channels = new ArrayList<ChannelVO>();
+        for (String channelName : channelsServiceResponse.getResult()) {
+            ChannelVO channelVO = new ChannelVO(channelName);
+            if (channelVO.getName().equals(defaultChannel)) {
+                channelVO.setDefault();
+            }
+            channels.add(channelVO);
+        }
+
+        List<MetricVO> metrics = new ArrayList<MetricVO>();
+        for (String metricName : listMetrics) {
+            MetricVO metricVO = new MetricVO(metricName);
+            if (metricVO.getName().equals(defaultMetric)) {
+                metricVO.setDefault();
+            }
+            metrics.add(metricVO);
+        }
+
         // Add objects
         mv.addObject("device", device)
-                .addObject("channels", channels.getResult())
-                .addObject("defaultChannel", defaultChannel)
-                .addObject("metrics", listMetrics)
-                .addObject("defaultMetric", defaultMetric)
-                .addObject("existsNumericMetric", existsNumericMetric);
+          .addObject("channels", channels)
+          .addObject("metrics", metrics)
+          .addObject("existsNumericMetric", existsNumericMetric);
 
     }
 
