@@ -1,11 +1,10 @@
 package com.konkerlabs.platform.registry.config;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.net.UnknownHostException;
+import java.util.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -26,16 +25,18 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
 import lombok.Data;
+import org.springframework.util.StringUtils;
 
 @Configuration
 @EnableMongoRepositories(basePackages = "com.konkerlabs.platform.registry.audit.repositories", mongoTemplateRef = "mongoAuditTemplate")
 @Data
 public class MongoAuditConfig extends AbstractMongoConfiguration {
 
-	private String hostname;
-    private Integer port;
-    private String username;
-    private String password;
+	private List<ServerAddress> hostname = new ArrayList<>();
+	private Integer port;
+	private String username;
+	private String password;
+	private static Logger LOG = LoggerFactory.getLogger(MongoConfig.class);
     
     public MongoAuditConfig() {
     	Map<String, Object> defaultMap = new HashMap<>();
@@ -43,14 +44,26 @@ public class MongoAuditConfig extends AbstractMongoConfiguration {
     	defaultMap.put("mongoAudit.port", 27017);
     	defaultMap.put("mongoAudit.username", "admin");
     	defaultMap.put("mongoAudit.password", "admin");
+		defaultMap.put("mongo.seeds", "localhost");
     	Config defaultConf = ConfigFactory.parseMap(defaultMap);
 
     	Config config = ConfigFactory.load().withFallback(defaultConf);
-    	setHostname(config.getString("mongoAudit.hostname"));
     	setPort(config.getInt("mongoAudit.port"));
     	setUsername(config.getString("mongoAudit.username"));
     	setPassword(config.getString("mongoAudit.password"));
-    }
+
+		List<String> seedList = Optional.ofNullable(config.getString("mongoAudit.hostname")).isPresent() ?
+				Arrays.asList(config.getString("mongoAudit.hostname").split(",")) : null;
+
+		for (String seed : seedList) {
+			try {
+				hostname.add(new ServerAddress(seed, port));
+			} catch (Exception e) {
+				LOG.error("Error constructing mongo factory", e);
+			}
+		}
+
+	}
 
     public static final List<Converter<?,?>> converters = Arrays.asList(
         new Converter[] {
@@ -70,13 +83,21 @@ public class MongoAuditConfig extends AbstractMongoConfiguration {
 		return new MongoTemplate(this.mongo(), this.getDatabaseName());
 	}
 
+
 	@Override
-    public Mongo mongo() throws Exception {
-		MongoCredential credential = MongoCredential.createCredential(getUsername(), getDatabaseName(), getPassword().toCharArray());
-    	ServerAddress address = new ServerAddress(getHostname(), getPort());
-    	
-        return new MongoClient(address, Collections.singletonList(credential));
-    }
+	public Mongo mongo() throws Exception {
+		if (!StringUtils.isEmpty(getUsername()) && !StringUtils.isEmpty(getPassword())) {
+			try {
+				MongoCredential credential = MongoCredential.createCredential(getUsername(), getDatabaseName(), getPassword().toCharArray());
+				return new MongoClient(hostname, Collections.singletonList(credential));
+			} catch (Exception e) {
+				return new MongoClient(hostname);
+			}
+		} else {
+			return new MongoClient(hostname);
+		}
+
+	}
 
     @Override
     public CustomConversions customConversions() {

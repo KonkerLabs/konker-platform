@@ -11,6 +11,7 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import com.konkerlabs.platform.registry.data.services.api.DeviceLogEventService;
+import com.konkerlabs.platform.registry.type.EventStorageConfigType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.ApplicationContext;
@@ -48,7 +49,7 @@ public class DeviceLogEventServiceImpl implements DeviceLogEventService {
         } catch (Exception e){
             eventRepository =
                     (EventRepository) applicationContext.getBean(
-                            EventStorageConfig.EventStorageConfigType.MONGODB.bean()
+                            EventStorageConfigType.MONGODB.bean()
                     );
         }
     }

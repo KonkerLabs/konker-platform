@@ -1,7 +1,10 @@
 package com.konkerlabs.platform.registry.config;
 
+import java.net.UnknownHostException;
 import java.util.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
@@ -27,36 +30,47 @@ import org.springframework.util.StringUtils;
 @Data
 public class MongoConfig extends AbstractMongoConfiguration {
 
-    private String hostname;
+    private List<ServerAddress> hostname = new ArrayList<>();
     private Integer port;
     private String username;
     private String password;
+    private static Logger LOG = LoggerFactory.getLogger(MongoConfig.class);
 
     public MongoConfig() {
-    	Map<String, Object> defaultMap = new HashMap<>();
-    	defaultMap.put("mongo.hostname", "localhost");
-    	defaultMap.put("mongo.port", 27017);
-    	defaultMap.put("mongo.username", "");
+        Map<String, Object> defaultMap = new HashMap<>();
+        defaultMap.put("mongo.hostname", "localhost");
+        defaultMap.put("mongo.port", 27017);
+        defaultMap.put("mongo.username", "");
         defaultMap.put("mongo.password", "");
-    	Config defaultConf = ConfigFactory.parseMap(defaultMap);
+        Config defaultConf = ConfigFactory.parseMap(defaultMap);
 
-    	Config config = ConfigFactory.load().withFallback(defaultConf);
-    	setHostname(config.getString("mongo.hostname"));
-    	setPort(config.getInt("mongo.port"));
-    	setUsername(Optional.ofNullable(config.getString("mongo.username")).isPresent()
+        Config config = ConfigFactory.load().withFallback(defaultConf);
+        setPort(config.getInt("mongo.port"));
+        setUsername(Optional.ofNullable(config.getString("mongo.username")).isPresent()
                 ? config.getString("mongo.username") : null);
-    	setPassword(Optional.ofNullable(config.getString("mongo.password")).isPresent()
+        setPassword(Optional.ofNullable(config.getString("mongo.password")).isPresent()
                 ? config.getString("mongo.password") : null);
+
+        List<String> seedList = Optional.ofNullable(config.getString("mongo.hostname")).isPresent() ?
+                Arrays.asList(config.getString("mongo.hostname").split(",")) : null;
+
+        for (String seed : seedList) {
+            try {
+                hostname.add(new ServerAddress(seed, port));
+            } catch (Exception e) {
+                LOG.error("Error constructing mongo factory", e);
+            }
+        }
 
     }
 
-	public static final List<Converter<?,?>> converters = Arrays.asList(
-        new Converter[] {
-            new InstantReadConverter(),
-            new InstantWriteConverter(),
-            new URIReadConverter(),
-            new URIWriteConverter()
-        }
+    public static final List<Converter<?, ?>> converters = Arrays.asList(
+            new Converter[]{
+                    new InstantReadConverter(),
+                    new InstantWriteConverter(),
+                    new URIReadConverter(),
+                    new URIWriteConverter()
+            }
     );
 
     @Override
@@ -66,16 +80,15 @@ public class MongoConfig extends AbstractMongoConfiguration {
 
     @Override
     public Mongo mongo() throws Exception {
-        ServerAddress address = new ServerAddress(getHostname(), getPort());
-        if(!StringUtils.isEmpty(getUsername()) && !StringUtils.isEmpty(getPassword())){
+        if (!StringUtils.isEmpty(getUsername()) && !StringUtils.isEmpty(getPassword())) {
             try {
                 MongoCredential credential = MongoCredential.createCredential(getUsername(), getDatabaseName(), getPassword().toCharArray());
-                return new MongoClient(address, Collections.singletonList(credential));
-            } catch (Exception e){
-                return new MongoClient(address);
+                return new MongoClient(hostname, Collections.singletonList(credential));
+            } catch (Exception e) {
+                return new MongoClient(hostname);
             }
         } else {
-            return new MongoClient(address);
+            return new MongoClient(hostname);
         }
 
     }
