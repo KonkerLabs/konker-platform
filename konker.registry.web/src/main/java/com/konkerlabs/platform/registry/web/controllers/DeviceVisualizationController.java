@@ -7,6 +7,7 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceEventService
 import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.config.EnvironmentConfig;
+import com.konkerlabs.platform.registry.web.controllers.DeviceController.MetricVO;
 import com.konkerlabs.platform.registry.web.converters.InstantToStringConverter;
 import com.konkerlabs.platform.registry.web.csv.EventCsvDownload;
 import org.apache.commons.lang3.StringUtils;
@@ -171,16 +172,24 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     @PreAuthorize("hasAuthority('VIEW_DEVICE_CHART')")
     public ModelAndView loadMetrics(@RequestParam String deviceGuid,
     								@RequestParam String channel) {
-    	ServiceResponse<List<String>> metricsResponse = eventSchemaService.findKnownIncomingMetricsBy(tenant, application, deviceGuid, channel, JsonNodeType.NUMBER);
+        ServiceResponse<List<String>> metricsResponse = eventSchemaService.findKnownIncomingMetricsBy(tenant, application, deviceGuid, channel, JsonNodeType.NUMBER);
 
-    	if (metricsResponse.getResult() == null) {
-    		return new ModelAndView("devices/visualization/metrics", "metrics", new ArrayList<>());
-    	}
+        if (metricsResponse.getResult() == null) {
+            return new ModelAndView("devices/visualization/metrics", "metrics", new ArrayList<>());
+        }
 
-    	String defaultMetric = CollectionUtils.isEmpty(metricsResponse.getResult()) ? null : metricsResponse.getResult().get(0);
+        String defaultMetric = CollectionUtils.isEmpty(metricsResponse.getResult()) ? null : metricsResponse.getResult().get(0);
 
-    	return new ModelAndView("devices/visualization/metrics", "metrics", metricsResponse.getResult())
-    			.addObject("defaultMetric", defaultMetric);
+        List<MetricVO> metrics = new ArrayList<MetricVO>();
+        for (String metricName : metricsResponse.getResult()) {
+            MetricVO metricVO = new MetricVO(metricName);
+            if (metricVO.getName().equals(defaultMetric)) {
+                metricVO.setDefault();
+            }
+            metrics.add(metricVO);
+        }
+
+        return new ModelAndView("devices/visualization/metrics", "metrics", metrics);
     }
 
     @RequestMapping(path = "/csv/download")

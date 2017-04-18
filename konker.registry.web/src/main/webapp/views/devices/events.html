@@ -96,15 +96,14 @@
                             for="channel"></label>
                         <div id="div-channel" class="col-sm-4">
                             <div data-th-fragment="channels" id="channels">
-                                <select class="form-control col-sm-12" id="channel" name="channel" data-th-value="${defaultChannel}">
+                                <select class="form-control col-sm-12" id="channel" name="channel">
                                     <option data-th-value="${''}"
                                         data-th-text="#{visualization.index.select.empty}"></option>
                                     <option
                                         data-th-each="channel : ${channels}"
-                                        data-th-if="${channel != null}"
-                                        data-th-selected="${channel eq defaultChannel}"
-                                        data-th-value="${channel}"
-                                        data-th-text="${channel}"></option>
+                                        data-th-selected="${channel.isDefault()}"
+                                        data-th-value="${channel.name}"
+                                        data-th-text="${channel.name}"></option>
                                 </select>
                             </div>
                         </div>
