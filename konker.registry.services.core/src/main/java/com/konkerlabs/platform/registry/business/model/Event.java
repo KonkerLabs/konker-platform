@@ -3,12 +3,10 @@ package com.konkerlabs.platform.registry.business.model;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.registry.integration.serializers.EventJsonView;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 
 import java.time.Instant;
 import java.time.ZoneId;
@@ -28,7 +26,6 @@ public class Event {
 
     @JsonView(EventJsonView.class)
     private String payload;
-
 
     @Data
     @Builder

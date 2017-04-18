@@ -47,7 +47,7 @@ public class OutgoingEventsRestController extends AbstractRestController impleme
     @ApiOperation(
             value = "Search outgoing events",
             response = EventVO.class,
-            notes = IncomingEventsRestController.SEACH_NOTES,
+            notes = IncomingEventsRestController.SEARCH_NOTES,
             produces = "application/json"
             )
     public List<EventVO> list(

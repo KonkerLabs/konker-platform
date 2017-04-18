@@ -1,18 +1,19 @@
 package com.konkerlabs.platform.registry.api.test.web.controller;
 
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
+import com.konkerlabs.platform.registry.api.config.WebMvcConfig;
+import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
+import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
+import com.konkerlabs.platform.registry.api.web.controller.IncomingEventsRestController;
+import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
+import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.Event.EventActor;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.mongodb.util.JSON;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,19 +28,14 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import com.konkerlabs.platform.registry.api.config.WebMvcConfig;
-import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
-import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
-import com.konkerlabs.platform.registry.api.web.controller.IncomingEventsRestController;
-import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.Event.EventActor;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = IncomingEventsRestController.class)
@@ -62,14 +58,12 @@ public class IncomingEventsRestControllerTest extends WebLayerTestContext {
 
     @Autowired
     private Tenant tenant;
-
     private Application application;
-
     private String dateIso = "2017-04-07T15:10:02.827Z";
-
     private Event event1;
-
     private Event event2;
+    private String PAYLOAD1 = "{\"id\":\"payload1\"}";
+    private String PAYLOAD2 = "{\"id\":\"payload2\"}";
 
     @Before
     public void setUp() {
@@ -87,8 +81,8 @@ public class IncomingEventsRestControllerTest extends WebLayerTestContext {
         Device device = Device.builder().deviceId("id1").name("name1").guid("guid1").active(true).build();
         EventActor eventActor = EventActor.builder().deviceGuid(device.getGuid()).deviceId(device.getId()).channel("temp").build();;
 
-        event1 = Event.builder().timestamp(instant).incoming(eventActor).payload("payload1").build();
-        event2 = Event.builder().timestamp(instant).incoming(eventActor).payload("payload2").build();
+        event1 = Event.builder().timestamp(instant).incoming(eventActor).payload(PAYLOAD1).build();
+        event2 = Event.builder().timestamp(instant).incoming(eventActor).payload(PAYLOAD2).build();
 
     }
 
@@ -140,9 +134,9 @@ public class IncomingEventsRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
                     .andExpect(jsonPath("$.result", hasSize(2)))
                     .andExpect(jsonPath("$.result[0].timestamp", is(dateIso)))
-                    .andExpect(jsonPath("$.result[0].payload", is("payload1")))
+                    .andExpect(jsonPath("$.result[0].payload", is(JSON.parse(PAYLOAD1))))
                     .andExpect(jsonPath("$.result[1].timestamp", is(dateIso)))
-                    .andExpect(jsonPath("$.result[1].payload", is("payload2")))
+                    .andExpect(jsonPath("$.result[1].payload", is(JSON.parse(PAYLOAD2))))
                     ;
 
     }
@@ -171,9 +165,9 @@ public class IncomingEventsRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
                     .andExpect(jsonPath("$.result", hasSize(2)))
                     .andExpect(jsonPath("$.result[0].timestamp", is(dateIso)))
-                    .andExpect(jsonPath("$.result[0].payload", is("payload1")))
+                    .andExpect(jsonPath("$.result[0].payload", is(JSON.parse(PAYLOAD1))))
                     .andExpect(jsonPath("$.result[1].timestamp", is(dateIso)))
-                    .andExpect(jsonPath("$.result[1].payload", is("payload2")))
+                    .andExpect(jsonPath("$.result[1].payload", is(JSON.parse(PAYLOAD2))))
                     ;
 
     }
@@ -202,9 +196,9 @@ public class IncomingEventsRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
                     .andExpect(jsonPath("$.result", hasSize(2)))
                     .andExpect(jsonPath("$.result[0].timestamp", is(dateIso)))
-                    .andExpect(jsonPath("$.result[0].payload", is("payload1")))
+                    .andExpect(jsonPath("$.result[0].payload", is(JSON.parse(PAYLOAD1))))
                     .andExpect(jsonPath("$.result[1].timestamp", is(dateIso)))
-                    .andExpect(jsonPath("$.result[1].payload", is("payload2")))
+                    .andExpect(jsonPath("$.result[1].payload", is(JSON.parse(PAYLOAD2))))
                     ;
 
     }
@@ -233,9 +227,9 @@ public class IncomingEventsRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
                     .andExpect(jsonPath("$.result", hasSize(2)))
                     .andExpect(jsonPath("$.result[0].timestamp", is(dateIso)))
-                    .andExpect(jsonPath("$.result[0].payload", is("payload1")))
+                    .andExpect(jsonPath("$.result[0].payload", is(JSON.parse(PAYLOAD1))))
                     .andExpect(jsonPath("$.result[1].timestamp", is(dateIso)))
-                    .andExpect(jsonPath("$.result[1].payload", is("payload2")))
+                    .andExpect(jsonPath("$.result[1].payload", is(JSON.parse(PAYLOAD2))))
                     ;
 
     }
