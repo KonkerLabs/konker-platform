@@ -37,7 +37,7 @@ public class TransformationsRestController extends AbstractRestController implem
     @GetMapping(path = "/")
     @PreAuthorize("hasAuthority('LIST_TRANSFORMATION')")
     @ApiOperation(
-            value = "List all transformations by organization")
+            value = "List all transformations by application")
     public List<RestTransformationVO> list(@PathVariable("application") String applicationId) throws BadServiceResponseException, NotFoundResponseException {
 
         ServiceResponse<List<Transformation>> response =

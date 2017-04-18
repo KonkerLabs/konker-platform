@@ -49,7 +49,7 @@ public class DeviceRestController extends AbstractRestController implements Init
     @GetMapping(path = "/")
     @PreAuthorize("hasAuthority('LIST_DEVICES')")
     @ApiOperation(
-            value = "List all devices by organization",
+            value = "List all devices by application",
             response = DeviceVO.class)
     public List<DeviceVO> list(@PathVariable("application") String applicationId) throws BadServiceResponseException, NotFoundResponseException {
 
