@@ -49,7 +49,7 @@ public class TransformationServiceImpl
                     .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()).build();
 
         return ServiceResponseBuilder.<List<Transformation>>ok()
-                .withResult(transformationRepository.findAllByTenantId(tenant.getId())).build();
+                .withResult(transformationRepository.findAllByApplicationId(tenant.getId(), application.getName())).build();
     }
 
     @Override
@@ -102,7 +102,7 @@ public class TransformationServiceImpl
 
         LOGGER.info("Transformation created. Name: {}", saved.getName(), tenant.toURI(), tenant.getLogLevel());
 
-        return ServiceResponseBuilder.<Transformation>ok().withResult(saved).<Transformation>build();
+        return ServiceResponseBuilder.<Transformation>ok().withResult(saved).build();
     }
 
     private Optional<Map<String, Object[]>> verifyIfUrlMatchesBlacklist(List<TransformationStep> uriList) {
