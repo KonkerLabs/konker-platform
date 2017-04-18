@@ -18,7 +18,6 @@ import com.konkerlabs.platform.registry.business.services.api.EventSchemaService
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
-import com.mongodb.BasicDBObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,9 +37,19 @@ import java.util.stream.Collectors;
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
 public class EventSchemaServiceImpl implements EventSchemaService {
 
-    private enum Type {
-        INCOMING,
-        OUTGOING;
+    private enum SchemaType {
+        INCOMING("incomingEventSchema"),
+        OUTGOING("outgoingEventSchema");
+
+        private String collectionName;
+
+        public String getCollectionName() {
+            return collectionName;
+        }
+
+        SchemaType(String collectionName) {
+            this.collectionName = collectionName;
+        }
     }
 
     @Autowired
@@ -72,7 +81,7 @@ public class EventSchemaServiceImpl implements EventSchemaService {
     @Override
     public ServiceResponse<EventSchema> appendIncomingSchema(Event event) {
 
-        Optional<Validations> invalid = validateForSchemaAppending(event, Type.INCOMING);
+        Optional<Validations> invalid = validateForSchemaAppending(event, SchemaType.INCOMING);
 
         if (invalid.isPresent())
             return ServiceResponseBuilder.<EventSchema>error()
@@ -87,7 +96,7 @@ public class EventSchemaServiceImpl implements EventSchemaService {
                     .withMessage(Validations.EVENT_INVALID_PAYLOAD.getCode()).build();
         }
 
-        mongoTemplate.save(toBeSaved, EventSchemaService.INCOMING_COLLECTION_NAME);
+        mongoTemplate.save(toBeSaved, SchemaType.INCOMING.getCollectionName());
 
         return ServiceResponseBuilder.<EventSchema>ok().withResult(toBeSaved).build();
     }
@@ -119,7 +128,7 @@ public class EventSchemaServiceImpl implements EventSchemaService {
         return eventSchema;
     }
 
-    private Optional<Validations> validateForSchemaAppending(Event event, Type type) {
+    private Optional<Validations> validateForSchemaAppending(Event event, SchemaType type) {
         if (!Optional.ofNullable(event).isPresent())
             return Optional.of(Validations.EVENT_NULL);
 
@@ -166,7 +175,7 @@ public class EventSchemaServiceImpl implements EventSchemaService {
 
         List<EventSchema> existing = mongoTemplate.find(
                 Query.query(Criteria.where("deviceGuid").is(deviceGuid)),
-                EventSchema.class,EventSchemaService.INCOMING_COLLECTION_NAME
+                EventSchema.class, SchemaType.INCOMING.getCollectionName()
         );
 
         return ServiceResponseBuilder.<List<EventSchema>>ok()
@@ -192,7 +201,7 @@ public class EventSchemaServiceImpl implements EventSchemaService {
         EventSchema existing = mongoTemplate.findOne(
                 Query.query(Criteria.where("deviceGuid")
                         .is(deviceGuid).andOperator(Criteria.where("channel").is(channel))),
-                EventSchema.class,EventSchemaService.INCOMING_COLLECTION_NAME
+                EventSchema.class, SchemaType.INCOMING.getCollectionName()
         );
 
         return ServiceResponseBuilder.<EventSchema>ok()
@@ -209,11 +218,13 @@ public class EventSchemaServiceImpl implements EventSchemaService {
         ServiceResponse<Device> deviceServiceResponse = deviceRegisterService.getByDeviceGuid(tenant, application, deviceGuid);
 
         if (deviceServiceResponse.isOk()) {
+            List<String> channelList = mongoTemplate.find(Query.query(Criteria.where("deviceGuid").is(deviceGuid)),
+                                                          EventSchema.class,
+                                                          SchemaType.INCOMING.getCollectionName())
+                    .stream().map(EventSchema::getChannel).distinct().sorted().collect(Collectors.toList());
+
             return ServiceResponseBuilder.<List<String>>ok()
-                .withResult(
-                    mongoTemplate.getCollection(INCOMING_COLLECTION_NAME)
-                            .distinct("channel",new BasicDBObject("deviceGuid",deviceGuid))
-                ).build();
+                .withResult(channelList).build();
         } else {
             return ServiceResponseBuilder.<List<String>>error()
                     .withMessages(deviceServiceResponse.getResponseMessages()).build();

@@ -33,9 +33,6 @@ public interface EventSchemaService {
         }
     }
 
-    String INCOMING_COLLECTION_NAME = "incomingEventSchema";
-    String OUTGOING_COLLECTION_NAME = "outgoingEventSchema";
-
     ServiceResponse<EventSchema> appendIncomingSchema(Event event);
     ServiceResponse<EventSchema> appendOutgoingSchema(Event event);
     ServiceResponse<EventSchema> findIncomingBy(Tenant tenant, Application application, String deviceGuid, String channel);
