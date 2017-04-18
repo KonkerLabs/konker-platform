@@ -1,20 +1,5 @@
 package com.konkerlabs.platform.registry.api.web.controller;
 
-import java.time.Instant;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.konkerlabs.platform.registry.api.exceptions.BadRequestResponseException;
 import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
 import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
@@ -26,10 +11,19 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.Instant;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @RestController
 @Scope("request")
@@ -42,7 +36,7 @@ public class IncomingEventsRestController extends AbstractRestController impleme
 
     private Set<String> validationsCode = new HashSet<>();
 
-    public static final String SEACH_NOTES =
+    public static final String SEARCH_NOTES =
         "### Query Search Terms\n\n" +
         "* `device`\n\n" +
         "* `channel`\n\n" +
@@ -65,7 +59,7 @@ public class IncomingEventsRestController extends AbstractRestController impleme
     @ApiOperation(
             value = "Search incoming events",
             response = EventVO.class,
-            notes = SEACH_NOTES,
+            notes = SEARCH_NOTES,
             produces = "application/json"
             )
     public List<EventVO> list(

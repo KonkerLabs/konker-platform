@@ -71,10 +71,6 @@ public class DeviceEventServiceImpl implements DeviceEventService {
         			.withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode())
         			.build();
         
-//        if (!Optional.ofNullable(channel).filter(s -> !s.isEmpty()).isPresent())
-//            return ServiceResponseBuilder.<List<Event>>error()
-//                    .withMessage(Validations.CHANNEL_NULL.getCode(), null)
-//                    .build();
 
         if (!Optional.ofNullable(startTimestamp).isPresent() &&
                 !Optional.ofNullable(limit).isPresent())

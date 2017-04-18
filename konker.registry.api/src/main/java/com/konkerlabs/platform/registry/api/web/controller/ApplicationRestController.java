@@ -48,7 +48,7 @@ public class ApplicationRestController implements InitializingBean {
     private Set<String> validationsCode = new HashSet<>();
 
     @GetMapping(path = "/")
-    @PreAuthorize("hasAuthority('LIST_REST_DESTINATIONS')")
+    @PreAuthorize("hasAuthority('LIST_APPLICATION')")
     @ApiOperation(
             value = "List all applications by organization",
             response = ApplicationVO.class)
@@ -71,7 +71,7 @@ public class ApplicationRestController implements InitializingBean {
             value = "Get a application by name",
             response = RestResponse.class
     )
-    @PreAuthorize("hasAuthority('SHOW_REST_DESTINATION')")
+    @PreAuthorize("hasAuthority('SHOW_APPLICATION')")
     public ApplicationVO read(@PathVariable("applicationName") String applicationName) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
@@ -88,7 +88,7 @@ public class ApplicationRestController implements InitializingBean {
 
     @PostMapping
     @ApiOperation(value = "Create a application")
-    @PreAuthorize("hasAuthority('CREATE_REST_DESTINATION')")
+    @PreAuthorize("hasAuthority('ADD_APPLICATION')")
     public ApplicationVO create(
             @ApiParam(
             		name = "body", 
@@ -116,7 +116,7 @@ public class ApplicationRestController implements InitializingBean {
 
     @PutMapping(path = "/{applicationName}")
     @ApiOperation(value = "Update a application")
-    @PreAuthorize("hasAuthority('EDIT_REST_DESTINATION')")
+    @PreAuthorize("hasAuthority('EDIT_APPLICATION')")
     public void update(
             @PathVariable("applicationName") String applicationName,
             @ApiParam(
@@ -151,7 +151,7 @@ public class ApplicationRestController implements InitializingBean {
 
     @DeleteMapping(path = "/{applicationName}")
     @ApiOperation(value = "Delete a application")
-    @PreAuthorize("hasAuthority('REMOVE_REST_DESTINATION')")
+    @PreAuthorize("hasAuthority('REMOVE_APPLICATION')")
     public void delete(@PathVariable("applicationName") String applicationName) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
