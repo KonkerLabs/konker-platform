@@ -1,13 +1,10 @@
 package com.konkerlabs.platform.registry.api.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.konkerlabs.platform.registry.api.model.core.SerializableVO;
 import com.konkerlabs.platform.registry.business.model.Event;
-
+import com.mongodb.util.JSON;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -33,7 +30,7 @@ public class EventVO implements SerializableVO<Event, EventVO> {
     private EventActorVO outgoing;
 
     @ApiModelProperty(value = "payload", position = 3, example = "{\"temperature\": 18, \"unit\": \"celsius\"}")
-    private String payload;
+    private Object payload;
 
     @Override
     public EventVO apply(Event t) {
@@ -42,7 +39,7 @@ public class EventVO implements SerializableVO<Event, EventVO> {
         vo.setTimestamp(t.getTimestamp().toString());
         vo.setIncoming(new EventActorVO().apply(t.getIncoming()));
         vo.setOutgoing(new EventActorVO().apply(t.getOutgoing()));
-        vo.setPayload(t.getPayload());
+        vo.setPayload(JSON.parse(t.getPayload()));
 
         return vo;
     }
