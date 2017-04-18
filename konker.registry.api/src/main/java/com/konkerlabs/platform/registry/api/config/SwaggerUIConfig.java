@@ -48,6 +48,7 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("swagger-ui.html").addResourceLocations("classpath:/META-INF/resources/");
         registry.addResourceHandler("/webjars/**").addResourceLocations("classpath:/META-INF/resources/webjars/");
+        registry.addResourceHandler("/static/**").addResourceLocations("classpath:/static/");
     }
 
     @Bean
@@ -64,8 +65,11 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
                 .tags(new Tag("devices", "Operations to list and edit devices"),
                         new Tag("device credentials", "Operations to manage device credentials (username, password and URLs)"),
                         new Tag("routes", "Operations to list and edit routes"),
-                        new Tag("events", "Operations to list incoming and outgoing device events"),
-                        new Tag("rest transformations", "Operations to manage Rest Transformations"))
+                        new Tag("users", "Operations to list and edit organization users"),
+                        new Tag("events", "Operations to query incoming and outgoing device events"),
+                        new Tag("applications", "Operations to list organization applications"),
+                        new Tag("rest destinations", "Operations to list organization REST destinations"),
+                        new Tag("rest transformations", "Operations to manage REST transformations"))
                 .enableUrlTemplating(false);
 
     }
@@ -119,7 +123,7 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
                 .title("Konker Platform API")
                 .description(getDescription())
                 .termsOfServiceUrl("https://demo.konkerlabs.net/registry/resources/konker/pdf/termos_de_uso_20161014a-9d089e3f67c4b4ab9c83c0a0313158ef.pdf")
-                .contact(new Contact("Konker", "developers.konkerlabs.com", "support@konkerlabs.com"))
+                .contact(new Contact(null, null, "support@konkerlabs.com"))
                 .license("Apache 2.0")
                 .licenseUrl("http://www.apache.org/licenses/LICENSE-2.0")
                 .version("v1")
@@ -136,7 +140,7 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
         String hostname = config.getString("swagger.hostname");
 
         try {
-            InputStream is = new ClassPathResource("description.html").getInputStream();
+            InputStream is = new ClassPathResource("description.md").getInputStream();
             BufferedReader reader = new BufferedReader(new InputStreamReader(is));
             String         line = null;
             StringBuilder  stringBuilder = new StringBuilder();

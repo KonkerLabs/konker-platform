@@ -63,7 +63,7 @@ public class UserRestController implements InitializingBean {
     @GetMapping(path = "/")
     @PreAuthorize("hasAuthority('LIST_USER')")
     @ApiOperation(
-            value = "List all users by organization",
+            value = "List all users by application",
             response = UserVO.class)
     public List<UserVO> list() throws BadServiceResponseException {
 

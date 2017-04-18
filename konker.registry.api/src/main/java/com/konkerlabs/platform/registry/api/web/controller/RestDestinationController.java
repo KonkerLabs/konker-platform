@@ -47,7 +47,7 @@ public class RestDestinationController extends AbstractRestController implements
     @GetMapping(path = "/")
     @PreAuthorize("hasAuthority('LIST_REST_DESTINATIONS')")
     @ApiOperation(
-            value = "List all rest destinations by organization",
+            value = "List all rest destinations by application",
             response = RestDestinationVO.class)
     public List<RestDestinationVO> list(@PathVariable("application") String applicationId) throws BadServiceResponseException, NotFoundResponseException {
 

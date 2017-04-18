@@ -45,7 +45,7 @@ public class EventRouteRestController extends AbstractRestController implements 
     @GetMapping(path = "/")
     @PreAuthorize("hasAuthority('LIST_ROUTES')")
     @ApiOperation(
-            value = "List all routes by organization",
+            value = "List all routes by application",
             response = EventRouteVO.class)
     public List<EventRouteVO> list(@PathVariable("application") String applicationId) throws BadServiceResponseException, NotFoundResponseException {
 
