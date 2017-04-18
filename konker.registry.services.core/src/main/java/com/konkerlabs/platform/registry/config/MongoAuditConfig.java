@@ -42,9 +42,8 @@ public class MongoAuditConfig extends AbstractMongoConfiguration {
     	Map<String, Object> defaultMap = new HashMap<>();
     	defaultMap.put("mongoAudit.hostname", "localhost");
     	defaultMap.put("mongoAudit.port", 27017);
-    	defaultMap.put("mongoAudit.username", "admin");
-    	defaultMap.put("mongoAudit.password", "admin");
-		defaultMap.put("mongo.seeds", "localhost");
+    	defaultMap.put("mongoAudit.username", "");
+    	defaultMap.put("mongoAudit.password", "");
     	Config defaultConf = ConfigFactory.parseMap(defaultMap);
 
     	Config config = ConfigFactory.load().withFallback(defaultConf);
