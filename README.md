@@ -1,5 +1,7 @@
 # konker-platform
 
+[![][license img]][license]
+
 Konker Platform is an Open Source Platform for the Internet of Things (IoT). It is developed by Konker and the community.
 
 The Platform alows easy connection and management of devices using HTTP or MQTT protocols.
