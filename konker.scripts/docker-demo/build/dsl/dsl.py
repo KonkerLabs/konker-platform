@@ -2,15 +2,13 @@
 import argparse
 import sys
 
-from dao.registry import create_user, update_user, upgrade_version, generate_credentials
+from dao.registry import create_user, update_user, generate_credentials
 
 usage = '''konker <command> [<args>]
 
 The commands available are:
     user     User Management
-    database Database Management
     '''
-
 
 class KonkerDsl(object):
     def __init__(self):
@@ -40,17 +38,6 @@ class KonkerDsl(object):
         sub_parser_update.add_argument('user', help='Specify the account username', type=str)
         sub_parser_update.add_argument('password', help='Specify the new account password', type=str)
         sub_parser_update.set_defaults(func=update_user)
-        args = parser.parse_args(sys.argv[2:])
-        args.func(args)
-
-    @staticmethod
-    def database():
-        parser = argparse.ArgumentParser(description='Database management')
-        sub_parser = parser.add_subparsers(title='subcommands', description='valid subcommands', help='Additional help')
-
-        sub_parser_upgrade = sub_parser.add_parser('upgrade', description='upgrade command', help='Database upgrade')
-        sub_parser_upgrade.add_argument('--version', help='Database version', type=str)
-        sub_parser_upgrade.set_defaults(func=upgrade_version)
         args = parser.parse_args(sys.argv[2:])
         args.func(args)
 
