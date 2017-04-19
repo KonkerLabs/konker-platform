@@ -66,6 +66,14 @@ def create_tenant(args, name):
     if tenant is None:
         try:
             inserted_id = db.tenants.insert_one({"name": name, "domainName": org}).inserted_id
+            db.applications.insert_one({
+                "_id" : org,
+                "friendlyName" : org,
+                "description" : "",
+                "qualifier" : "brsp01a",
+                "registrationDate" : int(datetime.datetime.now().strftime("%s")) * 1000,
+                "tenant" : DBRef("tenants", inserted_id)
+            })
             return inserted_id
         except Exception as e:
             print(e)
