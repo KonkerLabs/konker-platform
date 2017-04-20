@@ -14,9 +14,9 @@ import json
 
 DATABASE = "database.db"
 
-account_sid = "AC786215a11d359da4d322508ad9d77281"
-auth_token = "845c385c42a4aa4808d02f19ef516246"
-fromNumber = "+15132808127"
+account_sid = "AC9986917d2da5630bba0087386112e05d"
+auth_token = "f455d0a47c526dcbf8c390a826ecc9f1"
+fromNumber = "+12017785227"
 clientSMS = Client(account_sid, auth_token) 
 
 app = Flask(__name__)
