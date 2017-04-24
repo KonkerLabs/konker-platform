@@ -40,11 +40,11 @@ fi
 
 echo ""
 echo ""
-echo "################################ Konker Open Platform ############################################"
-echo "##                                 Version: 0.2.3                                               ##"
-echo "##                            Release date: 2017-02-15                                          ##"
-echo "##          Licence: Apache V2 (http://www.apache.org/licenses/LICENSE-2.0)                     ##"
-echo "##                         Need Support?: support@konkerlabs.com                                ##"
+echo "##################################### Konker Open Platform #######################################"
+echo "##                                       Version: 0.3.0                                         ##"
+echo "##                                  Release date: 2017-04-19                                    ##"
+echo "##              Licence: Apache V2 (http://www.apache.org/licenses/LICENSE-2.0)                 ##"
+echo "##                           Need Support?: support@konkerlabs.com                              ##"
 echo "##################################################################################################"
 echo ""
 echo ""
@@ -72,10 +72,11 @@ mongod -f /etc/default/mongod.conf &
 
 /etc/mongo/sleepstart.sh
 
-echo "populating konker database..."
 #Set database version
-konker database upgrade
+/usr/bin/update_database.py
+
 #Set default user
+echo "populating konker database..."
 populate_users
 
 echo "starting konker mqtt service..."

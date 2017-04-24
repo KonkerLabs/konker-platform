@@ -9,9 +9,6 @@ from pymongo import MongoClient
 from userskonker.migrate_user_pwd import get_hashed_password
 from userskonker.migrate_user_roles import update_user_roles, update_to_version_0_1
 
-db_version = "0.1"
-
-
 def db_connect(host='localhost', port=27017):
     try:
         client = MongoClient("mongodb://%s:%d" % (host, port))
@@ -69,6 +66,14 @@ def create_tenant(args, name):
     if tenant is None:
         try:
             inserted_id = db.tenants.insert_one({"name": name, "domainName": org}).inserted_id
+            db.applications.insert_one({
+                "_id" : org,
+                "friendlyName" : org,
+                "description" : "",
+                "qualifier" : "brsp01a",
+                "registrationDate" : int(datetime.datetime.now().strftime("%s")) * 1000,
+                "tenant" : DBRef("tenants", inserted_id)
+            })
             return inserted_id
         except Exception as e:
             print(e)
@@ -130,53 +135,6 @@ def update_user(args):
     else:
         print("Konker username not found")
         sys.exit(1)
-
-
-def create_versioning_collection():
-    db = db_connect()
-    if "konkerVersion" not in db.collection_names():
-        db.create_collection("konkerVersion")
-        db.konkerVersion.insert(
-            {
-                "version": db_version
-            }
-        )
-        print("Database version: " + db_version)
-
-    if db_version == "0.1":
-        update_to_version_0_1()
-
-
-def upgrade_version(args):
-    create_versioning_collection()
-
-    db = db_connect()
-    version = db.konkerVersion.find_one()
-
-    if not args.version:
-        v = db_version
-    else:
-        v = args.version
-
-    if float(version['version']) < float(v):
-        try:
-            db.konkerVersion.update_one(
-                {
-                    '_id': version['_id']
-                },
-                {
-                    '$set':
-                        {
-                            'version': args.version
-                        }
-                }, upsert=False)
-            print("Database version upgraded to " + args.version)
-        except Exception as e:
-            print(e)
-            sys.exit(1)
-    else:
-        print("Database already upgraded")
-        sys.exit(0)
 
 
 def create_users_collection():

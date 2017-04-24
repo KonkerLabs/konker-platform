@@ -118,7 +118,10 @@ COPY build/dsl/dsl.py /usr/bin/
 COPY build/dsl/userskonker/ /usr/bin/userskonker/
 COPY build/dsl/dao/ /usr/bin/dao/
 COPY build/dsl/setup.py /usr/bin/
+COPY build/dsl/update_database.py /usr/bin/
+
 RUN chmod 777 /usr/bin/setup.py
+RUN chmod 777 /usr/bin/update_database.py
 RUN python /usr/bin/setup.py install
 RUN rm /usr/bin/setup.py
 RUN ln -s /usr/bin/dsl.py /usr/bin/konker
