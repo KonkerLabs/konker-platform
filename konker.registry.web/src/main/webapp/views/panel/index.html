@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html data-layout-decorate="~{layouts/default}">
+<head>
+    <style>
+        .card-col {
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div data-layout-fragment="content">
+
+      <h1 class="page-title"><span data-th-text="#{nav.panel.hello}"></span>, <span data-th-text="${@user.firstName}"></span>!</h1>
+      <p data-th-text="#{nav.panel.to_do_ask}">O que deseja fazer?</p>
+      <div class="row">
+          <div class="col-md-12 row-card">
+
+              <div class="col-md-4 col-sm-6 col-xs-11 card-col">
+                <div class="card card-1">
+                  <img data-th-attr="src=@{/resources/konker/images/icons-home/icon-device.svg}" />
+                  <p  data-th-text="#{nav.panel.you_have}"></p>
+                  <h1 data-th-text="${devicesCount}">#</h1>
+                  <h2 data-th-text="#{nav.menu.devices}">dispositivos</h2>
+                  <form data-th-action="@{/devices}" method="get">
+                    <button class="btn-inline-card btn-sm" data-th-text="#{nav.panel.see_devices}">Ver dispositivos</button>
+                  </form>
+                </div>
+              </div>
+              <div class="col-md-4 col-sm-6 col-xs-11 card-col">
+                <div class="card card-2">
+                  <img data-th-attr="src=@{/resources/konker/images/icons-home/icon-route.svg}" />
+                  <p  data-th-text="#{nav.panel.you_have}"></p>
+                  <h1 data-th-text="${routesCount}">#</h1>
+                  <h2 data-th-text="#{nav.menu.routes}">rotas</h2>
+                  <form data-th-action="@{/routes}" method="get">
+                    <button class="btn-inline-card btn-sm" data-th-text="#{nav.panel.see_routes}">Ver rotas</button>
+                  </form>
+                </div>
+              </div>
+              <div class="col-md-4 col-sm-6 col-xs-11 card-col">
+                <div class="card card-3">
+                  <img data-th-attr="src=@{/resources/konker/images/icons-home/icon-transform.svg}" />
+                  <p  data-th-text="#{nav.panel.you_have}"></p>
+                  <h1 data-th-text="${transformationsCount}">#</h1>
+                  <h2 data-th-text="#{nav.menu.transformations}">transformações</h2>
+                  <form data-th-action="@{/transformation}" method="get">
+                    <button class="btn-inline-card btn-sm" data-th-text="#{nav.panel.see_transformations}">Ver transformações</button>
+                  </form>
+                </div>
+              </div>
+
+          </div>
+      </div>
+      <div class="row">
+          <div class="col-md-12 row-card">
+              <div class="col-md-4 col-sm-6 col-xs-11 card-col">
+                <div class="card card-others">
+                  <img data-th-attr="src=@{/resources/konker/images/icons-home/icon-rest.svg}" />
+                  <p  data-th-text="#{nav.panel.you_have}"></p>
+                  <h1 data-th-text="${restDestinationsCount}">#</h1>
+                  <h2 data-th-text="#{nav.menu.rest_destinations}">destinos REST</h2>
+                  <form data-th-action="@{/destinations/rest}" method="get">
+                    <button class="btn-inline-card btn-sm" data-th-text="#{nav.panel.see_rest_destinations}">Ver destinos REST</button>
+                  </form>
+                </div>
+              </div>
+              <div class="col-md-4 col-sm-6 card-col">
+                <div class="card card-general">
+                  <img data-th-attr="src=@{/resources/konker/images/icons-home/icon-help.svg}" />
+
+                  <h2 data-th-text="#{nav.panel.need_help}">precisa de ajuda com a plataforma?</h2>
+                  <a href="https://konker.atlassian.net/wiki/display/DEV/Guia+de+Uso+da+Plataforma+Konker" target="_blank" style="text-decoration:none">
+                      <button type="button" class="btn-inline-card btn-sm" data-th-text="#{nav.panel.access_our_doc}">
+                            Acesse nossa documentação
+                      </button>
+                  </a>
+                </div>
+              </div>
+              <div class="col-md-4 col-sm-6 card-col">
+                <div class="card card-general">
+                  <img data-th-attr="src=@{/resources/konker/images/icons-home/icon-msg.svg}" />
+
+                  <h2 data-th-text="#{nav.panel.need_support}">precisa de suporte da nossa equipe?</h2>
+                  <a href="http://www.konkerlabs.com/#contact" target="_blank" style="text-decoration:none">
+                      <button type="button" class="btn-inline-card btn-sm" data-th-text="#{nav.panel.contact_us}">
+                            Fale com a gente
+                      </button>
+                  </a>
+                </div>
+              </div>
+          </div>
+      </div>
+
+    </div>
+</body>
+</html>

@@ -80,7 +80,7 @@ COPY build/mail /var/lib/jetty/webapps/resources/mail/
 COPY build/mail /var/lib/jetty/resources/mail/
 
 #nginx
-ENV NGINX_VERSION nginx-1.7.11
+ENV NGINX_VERSION nginx-1.10.3
 
 RUN apk --update add openssl-dev pcre-dev zlib-dev wget build-base && \
     mkdir -p /tmp/src && \
@@ -118,4 +118,4 @@ COPY build/conf.d /etc/nginx/conf.d
 #start
 EXPOSE 8080 80 443
 ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["java","-jar","/usr/local/jetty/start.jar"]
+CMD ["java","-jar","/usr/local/jetty/start.jar","-Dorg.eclipse.jetty.server.Request.maxFormContentSize=99900000"]

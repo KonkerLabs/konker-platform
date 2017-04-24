@@ -1,0 +1,71 @@
+{
+  "userNotifications" : [
+    {
+      "_class" : "com.konkerlabs.platform.registry.model.UserNotification",
+      "_id" : "54f6d7cc-c783-11e6-a898-47c89fd2b181",
+      "uuid": "5bc88bb8-c783-11e6-ba41-67cba8a1ccf9",
+      "destination": "admin@konkerlabs.com",
+      "date": 1482328450375,
+      "subject": "Pagamento Pendente",
+      "body": "## Você possui um pagamento pendente",
+      "contentType": "text/markdown",
+      "contentLanguage": "pt_BR",
+      "unread": false,
+      "lastReadDate": 1482328466873,
+      "correlationUuid": "a165cbf4-c783-11e6-a65e-a7ac6caa4d36" 
+    },
+      {
+      "_class" : "com.konkerlabs.platform.registry.model.UserNotification",
+      "_id" : "a47baa04-c77c-11e6-9a7f-63c373e410d9",
+      "uuid": "3619171e-c776-11e6-b1b3-0390d185f031",
+      "destination": "admin@konkerlabs.com",
+      "date": 1482327799832,
+      "subject": "Scheduled Maintenance",
+      "body": "Next friday we will have an scheduled maintenance from 22:00 GMT to 23:00 GMT",
+      "contentType": "text/plain",
+      "contentLanguage": "en",
+      "unread": true,
+      "correlationUuid": "dd44f6c8-c77d-11e6-a63b-5be74af3d499" 
+    },
+      {
+      "_class" : "com.konkerlabs.platform.registry.model.UserNotification",
+      "_id" : "b1453bd6-c783-11e6-be33-2b4af9e094ae",
+      "uuid": "ba5f1372-c783-11e6-a93f-733a6e9632e2",
+      "destination": "admin@konkerlabs.com",
+      "date": 1482328450375,
+      "subject": "Change your Password",
+      "body": "Please, change your password as soon as possible",
+      "contentType": "text/plain",
+      "contentLanguage": "en",
+      "unread": true,
+      "correlationUuid": "07512bde-c784-11e6-ab91-c7f1d29cb912" 
+    },
+       {
+      "_class" : "com.konkerlabs.platform.registry.model.UserNotification",
+      "_id" : "a0ad2954-c7a2-11e6-b825-ab500a4b885d",
+      "uuid": "a831b4f6-c7a2-11e6-a6d5-d7a573cd3ae5",
+      "destination": "foo@konkerlabs.com",
+      "date": 1482328450375,
+      "subject": "A notification for other user",
+      "body": "This is a notification for other user",
+      "contentType": "text/plain",
+      "contentLanguage": "en",
+      "unread": true,
+      "correlationUuid": "bc626984-c7a2-11e6-aa22-7b79377a8266" 
+    },
+       {
+      "_class" : "com.konkerlabs.platform.registry.model.UserNotification",
+      "_id" : "e5928fb4-c7a2-11e6-a03a-437699cf8c79",
+      "uuid": "ee6192b6-c7a2-11e6-822a-37f5c577b39d",
+      "destination": "foo@konkerlabs.com",
+      "date": 1482328450375,
+      "subject": "Another notification for other user",
+      "body": "This is a notification for other user",
+      "contentType": "text/plain",
+      "contentLanguage": "en",
+      "unread": true,
+      "correlationUuid": "f9799d74-c7a2-11e6-9ab4-9bc2a363a6f9" 
+    }
+    
+  ]
+}

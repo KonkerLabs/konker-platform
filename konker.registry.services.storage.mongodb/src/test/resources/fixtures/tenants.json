@@ -1,0 +1,22 @@
+{
+  "tenants" : [
+    {
+      "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+      "_class" : "com.konkerlabs.platform.registry.model.Tenant",
+      "name" : "Konker",
+      "domainName" : "konker"
+    },
+    {
+      "_id" : "33d7cc77-91f2-4d22-ba31-e44c87963347",
+      "_class" : "com.konkerlabs.platform.registry.model.Tenant",
+      "name" : "InMetrics",
+      "domainName" : "inm"
+    },
+    {
+      "_id" : "45fa0c41-623c-4f64-a3e5-0256ff3a63af",
+      "_class" : "com.konkerlabs.platform.registry.model.Tenant",
+      "name" : "EmptyTenant",
+      "domainName" : "empty"
+    }
+  ]
+}

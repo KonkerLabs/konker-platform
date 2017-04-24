@@ -1,0 +1,56 @@
+{
+  "applications" : [
+    {
+      "_id" : "smartffkonker",
+      "_class" : "com.konkerlabs.platform.registry.model.Application",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
+      },
+      "friendlyName" : "Konker Smart Frig",
+      "description" : "Konker Smart Frig - take pic, tells temperatue",
+      "registrationDate" : 1453320973747,
+      "active" : true,
+      "qualifier": "konker"
+    },
+    {
+      "_id" : "empty",
+      "_class" : "com.konkerlabs.platform.registry.model.Application",
+      "tenant" : {
+        "$id" : "8aa1c111-41a9-40be-a2a4-f52ca71e5600",
+        "$ref" : "tenants"
+      },
+      "friendlyName" : "empty",
+      "description" : "empty",
+      "registrationDate" : 1453320973747,
+      "active" : true,
+      "qualifier": "konker"
+    },
+    {
+      "_id" : "konker",
+      "_class" : "com.konkerlabs.platform.registry.model.Application",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
+      },
+      "friendlyName" : "Konker Smart Frig",
+      "description" : "Konker Smart Frig - take pic, tells temperatue",
+      "registrationDate" : 1453320973747,
+      "active" : true,
+      "qualifier": "konker"
+    },
+    {
+      "_id" : "inm",
+      "_class" : "com.konkerlabs.platform.registry.model.Application",
+      "tenant" : {
+        "$id" : "33d7cc77-91f2-4d22-ba31-e44c87963347",
+        "$ref" : "tenants"
+      },
+      "friendlyName" : "Inmetrics",
+      "description" : "Inmetrics",
+      "registrationDate" : 1453320973747,
+      "active" : true,
+      "qualifier": "konker"
+    }
+  ]
+}

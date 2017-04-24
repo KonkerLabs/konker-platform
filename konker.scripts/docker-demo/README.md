@@ -20,17 +20,18 @@ docker run -p 80:80 -p 443:443 -p 1883:1883 -p 8883:8883 --name konker-webapp-de
 ```
 
 #Usage
-Access your localhost:8080/registry
+Access your localhost/registry
 
 
-#Environment Variables
+##Environment Variables
 
 * PUB\_HTTP\_HOSTNAME: will overwrite pubServer.httpHostname (application.conf)
 * PUB\_MQTT\_HOSTNAME: will overwrite pubServer.mqttHostname (application.conf)
+* USAGE_STATS=disabled: to disable usage statistics gathering
 
 To set this variables in the Docker Container:
 
-` docker run -p 80:80 -p 443:443 -p 1883:1883 -p 8883:8883 -e PUB_HTTP_HOSTNAME="<your ip or dns>" -e PUB_MQTT_HOSTNAME="<your ip or dns>" --name konker-webapp-demo -itd sonecabr/konker-webapp-demo:latest `
+` docker run -p 80:80 -p 443:443 -p 1883:1883 -p 8883:8883 -e PUB_HTTP_HOSTNAME="<your ip or hostname>" -e PUB_MQTT_HOSTNAME="<your ip or hostname>" --name konker-webapp-demo -itd sonecabr/konker-webapp-demo:latest `
 
 
 Contributors

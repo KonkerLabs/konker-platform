@@ -2,6 +2,8 @@
 import sys
 import string
 import random
+import json
+import datetime
 
 from bson import DBRef
 from pymongo import MongoClient
@@ -69,6 +71,14 @@ def create_tenant(args, name):
     if tenant is None:
         try:
             inserted_id = db.tenants.insert_one({"name": name, "domainName": org}).inserted_id
+            db.applications.insert_one({
+                "_id" : org,
+                "friendlyName" : org,
+                "description" : "",
+                "qualifier" : "brsp01a",
+                "registrationDate" : int(datetime.datetime.now().strftime("%s")) * 1000,
+                "tenant" : DBRef("tenants", inserted_id)
+            })
             return inserted_id
         except Exception as e:
             print(e)
@@ -210,3 +220,119 @@ def generate_credentials(args):
     print("password:{}".format(pwd))
     print("hash:{}".format(hashed_pwd))
     return True
+
+def find_incomingEvents_by_timestamp(timestamp, tenant, host):
+    db = db_connect(host=host)
+    try:
+        if tenant is None:
+            incomingEvents = db.incomingEvents.find({"$and": [ 
+                {"ts": {"$gte": timestamp}}
+            ]})
+        else :
+            incomingEvents = db.incomingEvents.find({"$and": [ 
+                {"ts": {"$gte": timestamp}},
+                {"incoming.tenantDomain": {"$eq": tenant}}
+            ]})
+            
+    except Exception as e:
+        print(e)
+        sys.exit(1)
+    return incomingEvents
+
+def find_outgoingEvents_by_timestamp(timestamp, tenant, host):
+    db = db_connect(host=host)
+    try:
+        if tenant is None:
+            outgoingEvents = db.outgoingEvents.find({"$and": [ 
+                {"ts": {"$gte": timestamp}}
+            ]})
+        else :
+            outgoingEvents = db.outgoingEvents.find({"$and": [ 
+                {"ts": {"$gte": timestamp}},
+                {"outgoing.tenantDomain": {"$eq": tenant}}
+            ]})
+            
+    except Exception as e:
+        print(e)
+        sys.exit(1)
+    return outgoingEvents
+
+def save_incoming_events(incomingEvents, host):
+    db = db_connect(host=host)
+    
+    allEvents = []
+    
+    for incoming in incomingEvents:
+        if incoming.deleted:
+            allEvents.append({
+                "ts" : incoming.timestamp,
+                "incoming" : {
+                    "deviceGuid" : incoming.device_guid,
+                    "tenantDomain" : incoming.tenant_domain,
+                    "channel" : incoming.channel,
+                    "deviceId" : incoming.device_id,
+                    "applicationName" : incoming.application_name
+                },
+                "payload" : incoming.payload,
+                "deleted" : incoming.deleted
+            })
+        else:
+            allEvents.append({
+                "ts" : incoming.timestamp,
+                "incoming" : {
+                    "deviceGuid" : incoming.device_guid,
+                    "tenantDomain" : incoming.tenant_domain,
+                    "channel" : incoming.channel,
+                    "deviceId" : incoming.device_id,
+                    "applicationName" : incoming.application_name
+                },
+                "payload" : incoming.payload
+            })
+    try:
+        db.incomingEvents.insert_many(allEvents)
+        
+    except Exception as e:
+        print(e)
+        sys.exit(1)
+        
+def save_outgoing_events(outgoingEvents, host):
+    db = db_connect(host=host)
+    
+    allEvents = []
+    
+    for outgoing in outgoingEvents:
+        if outgoing.deleted:
+            allEvents.append({
+                "ts" : outgoing.timestamp,
+                "incoming" : json.loads(outgoing.incoming),
+                "outgoing" : {
+                    "deviceGuid" : outgoing.device_guid,
+                    "tenantDomain" : outgoing.tenant_domain,
+                    "channel" : outgoing.channel,
+                    "deviceId" : outgoing.device_id,
+                    "applicationName" : outgoing.application_name
+                    
+                },
+                "payload" : outgoing.payload,
+                "deleted" : outgoing.deleted
+            })
+        else:
+            allEvents.append({
+                "ts" : outgoing.timestamp,
+                "incoming" : json.loads(outgoing.incoming),
+                "outgoing" : {
+                    "deviceGuid" : outgoing.device_guid,
+                    "tenantDomain" : outgoing.tenant_domain,
+                    "channel" : outgoing.channel,
+                    "deviceId" : outgoing.device_id,
+                    "applicationName" : outgoing.application_name
+                },
+                "payload" : outgoing.payload
+            })
+    
+    try:
+        db.outgoingEvents.insert_many(allEvents)
+        
+    except Exception as e:
+        print(e)
+        sys.exit(1)
