@@ -1,0 +1,48 @@
+CREATE TABLE registrykeyspace.outgoing_events (
+    tenant_domain text,
+    application_name text,
+    day int,
+    timestamp bigint,
+    channel text,
+    deleted boolean,
+    device_guid text,
+    device_id text,
+    incoming_channel text,
+    incoming_device_guid text,
+    incoming_device_id text,
+    payload text,
+    PRIMARY KEY ((tenant_domain, application_name, day), timestamp)
+) WITH CLUSTERING ORDER BY (timestamp DESC);
+
+CREATE TABLE registrykeyspace.outgoing_events_device_guid (
+    tenant_domain text,
+    application_name text,
+    day int,
+    timestamp bigint,
+    channel text,
+    deleted boolean,
+    device_guid text,
+    device_id text,
+    incoming_channel text,
+    incoming_device_guid text,
+    incoming_device_id text,
+    payload text,
+    PRIMARY KEY ((tenant_domain, application_name, device_guid, day), timestamp)
+) WITH CLUSTERING ORDER BY (timestamp DESC);
+
+CREATE TABLE registrykeyspace.outgoing_events_channel (
+    tenant_domain text,
+    application_name text,
+    day int,
+    timestamp bigint,
+    channel text,
+    deleted boolean,
+    device_guid text,
+    device_id text,
+    incoming_channel text,
+    incoming_device_guid text,
+    incoming_device_id text,
+    payload text,
+    PRIMARY KEY ((tenant_domain, application_name, channel, day), timestamp)
+) WITH CLUSTERING ORDER BY (timestamp DESC);
+
