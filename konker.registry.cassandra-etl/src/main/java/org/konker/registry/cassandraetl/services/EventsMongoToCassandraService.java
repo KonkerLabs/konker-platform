@@ -7,7 +7,6 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
@@ -16,8 +15,8 @@ import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
+import com.konkerlabs.platform.registry.business.repositories.events.EventRepositoryCassandraImpl;
 import com.konkerlabs.platform.registry.business.repositories.events.EventRepositoryMongoImpl;
-import com.konkerlabs.platform.registry.business.repositories.events.api.EventRepository;
 
 @Service
 public class EventsMongoToCassandraService {
@@ -32,6 +31,9 @@ public class EventsMongoToCassandraService {
 
     @Autowired
     private EventRepositoryMongoImpl mongoEventsRepository;
+
+    @Autowired
+    private EventRepositoryCassandraImpl cassandraEventsRepository;
 
     public void migrate(String tenantDomainFilter, Instant startInstant) throws BusinessException {
 
@@ -58,16 +60,21 @@ public class EventsMongoToCassandraService {
 
         List<Application> applications = applicationRepository.findAllByTenant(tenant.getId());
         for (Application application : applications) {
-            process(tenant, application, null);
+            process(tenant, application, startInstant);
         }
 
     }
 
     private void process(Tenant tenant, Application application, Instant startInstant) throws BusinessException {
 
-        List<Event> incomingEvents = mongoEventsRepository.findIncomingBy(tenant, application, null, null, startInstant, null, true, null);
+        List<Event> incomingEvents = mongoEventsRepository.findIncomingBy(tenant, application, null, null, startInstant, null, true, 50);
 
-        LOGGER.info("Tenant {}", tenant.getName());
+        for (Event event : incomingEvents) {
+            cassandraEventsRepository.saveIncoming(tenant, application, event);
+        }
+
+        LOGGER.info("Tenant {} Application {}", tenant.getName(), application.getName());
+        LOGGER.info("\tIncoming events: {}", incomingEvents.size());
 
     }
 

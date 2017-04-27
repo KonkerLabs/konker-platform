@@ -36,6 +36,11 @@
             <artifactId>konker.registry.services.storage.mongodb</artifactId>
             <version>0.0.1</version>
         </dependency>
+        <dependency>
+            <groupId>com.konkerlabs</groupId>
+            <artifactId>konker.registry.services.storage.cassandra</artifactId>
+            <version>0.0.1</version>
+        </dependency>
         <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>

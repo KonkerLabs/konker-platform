@@ -1,0 +1,193 @@
+package com.konkerlabs.platform.registry.business.repositories.events;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.Session;
+import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
+import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.Event.EventActor;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.repositories.events.api.BaseEventRepositoryImpl;
+
+@Repository("cassandraEvents")
+public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
+
+    private static final String INCOMING_EVENTS = "incoming_events";
+    private static final String INCOMING_EVENTS_CHANNEL = "incoming_events_channel";
+    private static final String INCOMING_EVENTS_DEVICE_GUID = "incoming_events_device_guid";
+    private static final String INCOMING_EVENTS_DEVICE_GUID_CHANNEL = "incoming_events_device_guid_channel";
+
+    @Autowired
+    private Session session;
+
+    private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
+
+    @Override
+    protected Event doSave(Tenant tenant, Application application, Event event, Type type) throws BusinessException {
+
+        saveEvent(tenant, application, event, INCOMING_EVENTS);
+        saveEvent(tenant, application, event, INCOMING_EVENTS_DEVICE_GUID);
+        saveEvent(tenant, application, event, INCOMING_EVENTS_DEVICE_GUID_CHANNEL);
+        saveEvent(tenant, application, event, INCOMING_EVENTS_CHANNEL);
+
+        return event;
+
+    }
+
+    private void saveEvent(Tenant tenant, Application application, Event event, String table) {
+        StringBuilder query = new StringBuilder();
+        query.append("INSERT INTO registrykeyspace.");
+        query.append(table);
+        query.append(" (");
+        query.append("tenant_domain, ");
+        query.append("application_name, ");
+        query.append("timestamp, ");
+        query.append("channel, ");
+        query.append("deleted, ");
+        query.append("device_guid, ");
+        query.append("device_id, ");
+        query.append("payload");
+        query.append(") VALUES (");
+        query.append("?, ");
+        query.append("?, ");
+        query.append("?, ");
+        query.append("?, ");
+        query.append("?, ");
+        query.append("?, ");
+        query.append("?, ");
+        query.append("?");
+        query.append(")");
+
+        session.execute(
+                query.toString(),
+                tenant.getDomainName(),
+                application.getName(),
+                event.getTimestamp().getNano(),
+                event.getIncoming().getChannel(),
+                false,
+                event.getIncoming().getDeviceGuid(),
+                event.getIncoming().getDeviceId(),
+                event.getPayload());
+    }
+
+    @Override
+    protected List<Event> doFindBy(Tenant tenant,
+                                   Application application,
+                                   String deviceGuid,
+                                   String channel,
+                                   Instant startInstant,
+                                   Instant endInstant,
+                                   boolean ascending,
+                                   Integer limit,
+                                   Type type,
+                                   boolean isDeleted) throws BusinessException {
+
+        StringBuilder query = new StringBuilder();
+
+        String table = null;
+
+        List<Object> filters = new ArrayList<>();
+
+        if (deviceGuid != null && channel != null) {
+            table = INCOMING_EVENTS_DEVICE_GUID_CHANNEL;
+        } else if (deviceGuid != null && channel == null) {
+            table = INCOMING_EVENTS_DEVICE_GUID;
+        } else if (deviceGuid == null && channel != null) {
+            table = INCOMING_EVENTS_CHANNEL;
+        } else if (deviceGuid == null && channel == null) {
+            table = INCOMING_EVENTS;
+        }
+
+        query.append("SELECT * FROM registrykeyspace.");
+        query.append(table);
+        query.append(" WHERE ");
+
+        query.append(" tenant_domain = ?");
+        filters.add(tenant.getDomainName());
+
+        query.append(" AND application_name = ?");
+        filters.add(application.getName());
+
+        if (deviceGuid != null) {
+            query.append(" AND device_guid = ?");
+            filters.add(application.getName());
+        }
+
+        if (channel != null) {
+            query.append(" AND channel = ?");
+            filters.add(channel);
+        }
+
+        if (startInstant != null) {
+            query.append(" AND timestamp >= ?");
+            filters.add(startInstant.toEpochMilli() * 1000);
+        }
+
+        if (endInstant != null) {
+            query.append(" AND timestamp <= ?");
+            filters.add(endInstant.toEpochMilli() * 1000);
+        }
+
+        if (ascending) {
+            query.append(" ORDER BY timestamp ASC");
+        } else {
+            query.append(" ORDER BY timestamp DESC");
+        }
+
+        if (limit != null) {
+            query.append(" LIMIT ");
+            query.append(limit);
+        }
+
+        System.out.println(query.toString());
+        System.out.println(filters.size());
+
+        final ResultSet rs = session.execute(query.toString(), filters.toArray(new Object[filters.size()]));
+
+        List<Event> events = new LinkedList<>();
+
+        while (!rs.isExhausted()) {
+            final Row row = rs.one();
+
+            EventActor incomingActor = EventActor.builder()
+                                                 .tenantDomain(row.getString("tenant_domain"))
+                                                 .applicationName(row.getString("application_name"))
+                                                 .deviceGuid(row.getString("device_guid"))
+                                                 .deviceId(row.getString("device_id"))
+                                                 .channel(row.getString("channel"))
+                                                 .build();
+
+            Event event = Event.builder()
+                               .timestamp(Instant.ofEpochMilli(row.getLong("timestamp")))
+                               .incoming(incomingActor)
+                               .payload(row.getString("payload"))
+                               .build();
+
+            events.add(event);
+        }
+
+        return events;
+
+    }
+
+    @Override
+    protected void doRemoveBy(Tenant tenant, Application application, String deviceGuid, Type type) throws Exception {
+        throw new IllegalStateException("Method not implemented.");
+    }
+
+    public void setSession(Session session) {
+        this.session = session;
+    }
+
+}

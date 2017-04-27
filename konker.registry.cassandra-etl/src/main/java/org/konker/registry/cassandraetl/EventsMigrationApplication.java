@@ -29,18 +29,20 @@ public class EventsMigrationApplication implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
 
-        Instant startInstant = null;
+        Instant startInstant = Instant.ofEpochSecond(1262304000L);
         String tenantDomainFilter = ".*";
 
         for (int i = 0; i < args.length; i++) {
             if (args[i].equals("--timestamp") || args[i].equals("--t")) {
                 startInstant = Instant.ofEpochSecond(Long.parseLong(args[i + 1]));
-                LOGGER.info("Start filter: " + startInstant);
+
             }
             if (args[i].equals("--tenant") || args[i].equals("--o")) {
                 tenantDomainFilter = args[i + 1];
             }
         }
+
+        LOGGER.info("Filter events created after " + startInstant);
 
         eventsMongoToCassandraService.migrate(tenantDomainFilter, startInstant);
 
