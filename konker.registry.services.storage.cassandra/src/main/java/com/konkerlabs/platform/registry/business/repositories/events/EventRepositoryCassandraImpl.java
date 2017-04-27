@@ -40,6 +40,8 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
     @Override
     protected Event doSave(Tenant tenant, Application application, Event event, Type type) throws BusinessException {
 
+        event.setEpochTime(event.getTimestamp().toEpochMilli() * 1000000 + rnd.nextInt(1000000));
+
         saveEvent(tenant, application, event, INCOMING_EVENTS);
         saveEvent(tenant, application, event, INCOMING_EVENTS_DEVICE_GUID);
         saveEvent(tenant, application, event, INCOMING_EVENTS_DEVICE_GUID_CHANNEL);
@@ -58,12 +60,10 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
         query.append("application_name, ");
         query.append("timestamp, ");
         query.append("channel, ");
-        query.append("deleted, ");
         query.append("device_guid, ");
         query.append("device_id, ");
         query.append("payload");
         query.append(") VALUES (");
-        query.append("?, ");
         query.append("?, ");
         query.append("?, ");
         query.append("?, ");
@@ -77,9 +77,8 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
                 query.toString(),
                 tenant.getDomainName(),
                 application.getName(),
-                event.getTimestamp().toEpochMilli() * 1000000 + rnd.nextInt(1000000),
+                event.getEpochTime(),
                 event.getIncoming().getChannel(),
-                false,
                 event.getIncoming().getDeviceGuid(),
                 event.getIncoming().getDeviceId(),
                 event.getPayload());
@@ -145,9 +144,6 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
             filters.add(endInstant.toEpochMilli() * 1000000);
         }
 
-        query.append(" AND deleted = ?");
-        filters.add(false);
-
         if (ascending) {
             query.append(" ORDER BY timestamp ASC");
         } else {
@@ -158,9 +154,6 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
             query.append(" LIMIT ");
             query.append(limit);
         }
-
-        System.out.println(query.toString());
-        System.out.println(filters.size());
 
         final ResultSet rs = session.execute(query.toString(), filters.toArray(new Object[filters.size()]));
 
@@ -178,6 +171,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
                                                  .build();
 
             Event event = Event.builder()
+                               .epochTime(row.getLong("timestamp"))
                                .timestamp(Instant.ofEpochMilli(row.getLong("timestamp") / 1000000))
                                .incoming(incomingActor)
                                .payload(row.getString("payload"))
@@ -192,7 +186,125 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
 
     @Override
     protected void doRemoveBy(Tenant tenant, Application application, String deviceGuid, Type type) throws Exception {
-        throw new IllegalStateException("Method not implemented.");
+
+        List<Event> keys = doFindBy(tenant, application, deviceGuid, null, null, null, false, null, type, false);
+
+        for (Event key: keys) {
+            removeByKey(key);
+        }
+
+    }
+
+    private void removeByKey(Event key) {
+
+        String tenantDomain = key.getIncoming().getTenantDomain();
+        String applicationName = key.getIncoming().getApplicationName();
+        String deviceGuid = key.getIncoming().getDeviceGuid();
+        String channel = key.getIncoming().getChannel();
+        Long epochTs = key.getEpochTime();
+
+        System.out.println("epochTs: " + epochTs);
+
+        // INCOMING_EVENTS
+
+        StringBuilder query = new StringBuilder();
+        List<Object> filters = new ArrayList<>();
+
+        query.append("DELETE FROM ");
+        query.append("registrykeyspace");
+        query.append(".");
+        query.append(INCOMING_EVENTS);
+        query.append(" WHERE ");
+
+        query.append(" tenant_domain = ?");
+        filters.add(tenantDomain);
+
+        query.append(" AND application_name = ?");
+        filters.add(applicationName);
+
+        query.append(" AND timestamp = ?");
+        filters.add(epochTs);
+
+        session.execute(query.toString(), filters.toArray(new Object[filters.size()]));
+
+        // INCOMING_EVENTS_CHANNEL
+
+        query = new StringBuilder();
+        filters = new ArrayList<>();
+
+        query.append("DELETE FROM ");
+        query.append("registrykeyspace");
+        query.append(".");
+        query.append(INCOMING_EVENTS_CHANNEL);
+        query.append(" WHERE ");
+
+        query.append(" tenant_domain = ?");
+        filters.add(tenantDomain);
+
+        query.append(" AND application_name = ?");
+        filters.add(applicationName);
+
+        query.append(" AND channel = ?");
+        filters.add(channel);
+
+        query.append(" AND timestamp = ?");
+        filters.add(epochTs);
+
+        session.execute(query.toString(), filters.toArray(new Object[filters.size()]));
+
+        // INCOMING_EVENTS_DEVICE_GUID
+
+        query = new StringBuilder();
+        filters = new ArrayList<>();
+
+        query.append("DELETE FROM ");
+        query.append("registrykeyspace");
+        query.append(".");
+        query.append(INCOMING_EVENTS_DEVICE_GUID);
+        query.append(" WHERE ");
+
+        query.append(" tenant_domain = ?");
+        filters.add(tenantDomain);
+
+        query.append(" AND application_name = ?");
+        filters.add(applicationName);
+
+        query.append(" AND device_guid = ?");
+        filters.add(deviceGuid);
+
+        query.append(" AND timestamp = ?");
+        filters.add(epochTs);
+
+        session.execute(query.toString(), filters.toArray(new Object[filters.size()]));
+
+        // INCOMING_EVENTS_DEVICE_GUID_CHANNEL
+
+        query = new StringBuilder();
+        filters = new ArrayList<>();
+
+        query.append("DELETE FROM ");
+        query.append("registrykeyspace");
+        query.append(".");
+        query.append(INCOMING_EVENTS_DEVICE_GUID_CHANNEL);
+        query.append(" WHERE ");
+
+        query.append(" tenant_domain = ?");
+        filters.add(tenantDomain);
+
+        query.append(" AND application_name = ?");
+        filters.add(applicationName);
+
+        query.append(" AND device_guid = ?");
+        filters.add(deviceGuid);
+
+        query.append(" AND channel = ?");
+        filters.add(channel);
+
+        query.append(" AND timestamp = ?");
+        filters.add(epochTs);
+
+        session.execute(query.toString(), filters.toArray(new Object[filters.size()]));
+
     }
 
     public void setSession(Session session) {
@@ -207,3 +319,5 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
     }
 
 }
+
+

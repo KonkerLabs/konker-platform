@@ -3,11 +3,10 @@ CREATE TABLE incoming_events (
     application_name text,
     timestamp bigint,
     channel text,
-    deleted boolean,
     device_guid text,
     device_id text,
     payload text,
-    PRIMARY KEY ((tenant_domain, application_name, deleted), timestamp)
+    PRIMARY KEY ((tenant_domain, application_name), timestamp)
 ) WITH CLUSTERING ORDER BY (timestamp DESC);
 
 CREATE TABLE incoming_events_device_guid (
@@ -15,11 +14,10 @@ CREATE TABLE incoming_events_device_guid (
     application_name text,
     timestamp bigint,
     channel text,
-    deleted boolean,
     device_guid text,
     device_id text,
     payload text,
-    PRIMARY KEY ((tenant_domain, application_name, device_guid, deleted), timestamp)
+    PRIMARY KEY ((tenant_domain, application_name, device_guid), timestamp)
 ) WITH CLUSTERING ORDER BY (timestamp DESC);
 
 CREATE TABLE incoming_events_device_guid_channel (
@@ -27,11 +25,10 @@ CREATE TABLE incoming_events_device_guid_channel (
     application_name text,
     timestamp bigint,
     channel text,
-    deleted boolean,
     device_guid text,
     device_id text,
     payload text,
-    PRIMARY KEY ((tenant_domain, application_name, device_guid, channel, deleted), timestamp)
+    PRIMARY KEY ((tenant_domain, application_name, device_guid, channel), timestamp)
 ) WITH CLUSTERING ORDER BY (timestamp DESC);
 
 CREATE TABLE incoming_events_channel (
@@ -39,9 +36,8 @@ CREATE TABLE incoming_events_channel (
     application_name text,
     timestamp bigint,
     channel text,
-    deleted boolean,
     device_guid text,
     device_id text,
     payload text,
-    PRIMARY KEY ((tenant_domain, application_name, channel, deleted), timestamp)
+    PRIMARY KEY ((tenant_domain, application_name, channel), timestamp)
 ) WITH CLUSTERING ORDER BY (timestamp DESC);
