@@ -1,18 +1,11 @@
 package com.konkerlabs.platform.registry.data.services.publishers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.RestDestination;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.data.services.publishers.api.EventPublisher;
-import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
-import com.konkerlabs.platform.registry.integration.exceptions.IntegrationException;
-import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
-import com.konkerlabs.platform.utilities.expressions.ExpressionEvaluationService;
-import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.text.MessageFormat;
+import java.util.Map;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,11 +15,21 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriUtils;
 
-import java.net.URI;
-import java.text.MessageFormat;
-import java.util.Map;
-import java.util.Optional;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.RestDestination;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
+import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.data.services.publishers.api.EventPublisher;
+import com.konkerlabs.platform.registry.integration.exceptions.IntegrationException;
+import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
+import com.konkerlabs.platform.utilities.expressions.ExpressionEvaluationService;
+import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 
 @Service(RESTDestinationURIDealer.REST_DESTINATION_URI_SCHEME)
 @Scope(BeanDefinition.SCOPE_SINGLETON)
@@ -88,13 +91,13 @@ public class EventPublisherRest implements EventPublisher {
                                 Optional.ofNullable(restDestination.getMethod()).isPresent() ?
                                         restDestination.getMethod() : "POST"),
                         getHeaders(restDestination),
-                        URI.create(serviceURI), MediaType.APPLICATION_JSON,
+                        URI.create(UriUtils.encodeQuery(serviceURI, "UTF-8")), MediaType.APPLICATION_JSON,
                         () -> outgoingEvent.getPayload(),
                         restDestination.getServiceUsername(),
                         restDestination.getServicePassword()
                 );
 //                eventRepository.saveIncoming(tenant,outgoingEvent);
-            } catch (JsonProcessingException | IntegrationException e) {
+            } catch (IllegalArgumentException | JsonProcessingException | IntegrationException | UnsupportedEncodingException e) {
                 LOGGER.error("Failed to forward event to its destination",
                         tenant.toURI(),
                         tenant.getLogLevel(),
