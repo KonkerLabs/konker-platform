@@ -25,7 +25,7 @@ public class CassandraEtlConfig {
     private int seedPort;
 
     @Bean
-    public Session session() {
+    public Cluster cluster() {
 
         Map<String, Object> defaultMap = new HashMap<>();
         defaultMap.put("cassandra.keyspace", "registrykeyspace");
@@ -51,7 +51,15 @@ public class CassandraEtlConfig {
                                  .withPort(getSeedPort())
                                  .build();
 
-        final Metadata metadata = cluster.getMetadata();
+        return cluster;
+
+    }
+
+    @Bean
+    public Session session() {
+
+        final Cluster cluster = cluster();
+        final Metadata metadata = cluster().getMetadata();
 
         LOGGER.info("Connected to cluster: {}\n", metadata.getClusterName());
 

@@ -4,12 +4,13 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
@@ -21,7 +22,7 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.repositories.events.api.BaseEventRepositoryImpl;
 
 @Repository("cassandraEvents")
-public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
+public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implements DisposableBean {
 
     private static final String INCOMING_EVENTS = "incoming_events";
     private static final String INCOMING_EVENTS_CHANNEL = "incoming_events_channel";
@@ -29,9 +30,12 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
     private static final String INCOMING_EVENTS_DEVICE_GUID_CHANNEL = "incoming_events_device_guid_channel";
 
     @Autowired
+    private Cluster cluster;
+
+    @Autowired
     private Session session;
 
-    private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
+    private Random rnd = new Random(System.nanoTime());
 
     @Override
     protected Event doSave(Tenant tenant, Application application, Event event, Type type) throws BusinessException {
@@ -47,7 +51,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
 
     private void saveEvent(Tenant tenant, Application application, Event event, String table) {
         StringBuilder query = new StringBuilder();
-        query.append("INSERT INTO registrykeyspace.");
+        query.append("INSERT INTO ");
         query.append(table);
         query.append(" (");
         query.append("tenant_domain, ");
@@ -73,7 +77,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
                 query.toString(),
                 tenant.getDomainName(),
                 application.getName(),
-                event.getTimestamp().getNano(),
+                event.getTimestamp().toEpochMilli() * 1000000 + rnd.nextInt(1000000),
                 event.getIncoming().getChannel(),
                 false,
                 event.getIncoming().getDeviceGuid(),
@@ -109,7 +113,9 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
             table = INCOMING_EVENTS;
         }
 
-        query.append("SELECT * FROM registrykeyspace.");
+        query.append("SELECT * FROM ");
+        query.append("registrykeyspace");
+        query.append(".");
         query.append(table);
         query.append(" WHERE ");
 
@@ -121,7 +127,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
 
         if (deviceGuid != null) {
             query.append(" AND device_guid = ?");
-            filters.add(application.getName());
+            filters.add(deviceGuid);
         }
 
         if (channel != null) {
@@ -131,13 +137,16 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
 
         if (startInstant != null) {
             query.append(" AND timestamp >= ?");
-            filters.add(startInstant.toEpochMilli() * 1000);
+            filters.add(startInstant.toEpochMilli() * 1000000);
         }
 
         if (endInstant != null) {
             query.append(" AND timestamp <= ?");
-            filters.add(endInstant.toEpochMilli() * 1000);
+            filters.add(endInstant.toEpochMilli() * 1000000);
         }
+
+        query.append(" AND deleted = ?");
+        filters.add(false);
 
         if (ascending) {
             query.append(" ORDER BY timestamp ASC");
@@ -169,7 +178,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
                                                  .build();
 
             Event event = Event.builder()
-                               .timestamp(Instant.ofEpochMilli(row.getLong("timestamp")))
+                               .timestamp(Instant.ofEpochMilli(row.getLong("timestamp") / 1000000))
                                .incoming(incomingActor)
                                .payload(row.getString("payload"))
                                .build();
@@ -188,6 +197,13 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
 
     public void setSession(Session session) {
         this.session = session;
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        if (cluster != null) {
+            cluster.close();
+        }
     }
 
 }

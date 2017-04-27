@@ -7,19 +7,7 @@ CREATE TABLE incoming_events (
     device_guid text,
     device_id text,
     payload text,
-    PRIMARY KEY ((tenant_domain, application_name), timestamp)
-) WITH CLUSTERING ORDER BY (timestamp DESC);
-
-CREATE TABLE incoming_events2 (
-    tenant_domain text,
-    application_name text,
-    timestamp bigint,
-    channel text,
-    deleted boolean,
-    device_guid text,
-    device_id text,
-    payload text,
-    PRIMARY KEY ((tenant_domain, application_name), channel, timestamp)
+    PRIMARY KEY ((tenant_domain, application_name, deleted), timestamp)
 ) WITH CLUSTERING ORDER BY (timestamp DESC);
 
 CREATE TABLE incoming_events_device_guid (
@@ -31,19 +19,7 @@ CREATE TABLE incoming_events_device_guid (
     device_guid text,
     device_id text,
     payload text,
-    PRIMARY KEY ((tenant_domain, application_name, device_guid), timestamp)
-) WITH CLUSTERING ORDER BY (timestamp DESC);
-
-CREATE TABLE incoming_events_device_guid2 (
-    tenant_domain text,
-    application_name text,
-    timestamp bigint,
-    channel text,
-    deleted boolean,
-    device_guid text,
-    device_id text,
-    payload text,
-    PRIMARY KEY ((tenant_domain, application_name, device_guid), channel, timestamp)
+    PRIMARY KEY ((tenant_domain, application_name, device_guid, deleted), timestamp)
 ) WITH CLUSTERING ORDER BY (timestamp DESC);
 
 CREATE TABLE incoming_events_device_guid_channel (
@@ -55,7 +31,7 @@ CREATE TABLE incoming_events_device_guid_channel (
     device_guid text,
     device_id text,
     payload text,
-    PRIMARY KEY ((tenant_domain, application_name, device_guid, channel), timestamp)
+    PRIMARY KEY ((tenant_domain, application_name, device_guid, channel, deleted), timestamp)
 ) WITH CLUSTERING ORDER BY (timestamp DESC);
 
 CREATE TABLE incoming_events_channel (
@@ -67,5 +43,5 @@ CREATE TABLE incoming_events_channel (
     device_guid text,
     device_id text,
     payload text,
-    PRIMARY KEY ((tenant_domain, application_name, channel), timestamp)
+    PRIMARY KEY ((tenant_domain, application_name, channel, deleted), timestamp)
 ) WITH CLUSTERING ORDER BY (timestamp DESC);
