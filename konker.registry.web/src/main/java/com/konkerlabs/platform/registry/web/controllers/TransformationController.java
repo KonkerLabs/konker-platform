@@ -65,8 +65,7 @@ public class TransformationController implements ApplicationContextAware {
         return new ModelAndView("transformations/index")
                 .addObject("transformations", transformationService.getAll(
                         tenant,
-                        Application.builder()
-                                .name(tenant.getDomainName()).build()
+                        application
                 ).getResult());
     }
 

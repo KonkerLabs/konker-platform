@@ -86,7 +86,7 @@ public class TransformationServiceTest extends BusinessLayerTestSupport {
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json"})
     public void shouldReturnAllRegisteredTransformations() throws Exception {
         tenantRepository.findAll().stream().forEach(tenant1 -> {
-            List<Transformation> transformations = transformationRepository.findAllByTenantId(tenant1.getId());
+            List<Transformation> transformations = transformationRepository.findAllByApplicationId(tenant1.getId(), application.getName());
 
             ServiceResponse<List<Transformation>> response;
             response = subject.getAll(tenant1, application);

@@ -21,7 +21,7 @@ You can see the API endpoints documentation and interact with them on this page.
 
 To use Swagger endpoints:
 
-* <a href='/v1/oauth/token?grant_type=client_credentials' target='_blank'>Login</a> using your email and password
+* Login using your email and password: <a href='/v1/oauth/token?grant_type=client_credentials' target='_blank'>here</a>
 * Click the 'Authorize' button in upper right conner
 
 ----
@@ -55,7 +55,7 @@ The Platform will receive the device's messages. The 'events' operations list th
 
 ### More Informations
 
-* [Developer Reference](http://developers.konkerlabs.com)
+* [Developer Portal](http://developers.konkerlabs.com)
 * [Operation Guide (in Portuguese)](https://konker.atlassian.net/wiki/display/DEV/Guia+de+Uso+da+Plataforma+Konker)
 
 ----
