@@ -103,9 +103,6 @@ public class RegistryAppInitializer
 
         // verifying configs for features activation
         Set<String> profiles = new HashSet<String>();
-        if (isSmsFeaturesEnabled()) {
-            profiles.add("sms");
-        }
         if (isEmailFeaturesEnabled()) {
             profiles.add("email");
         }
@@ -117,11 +114,6 @@ public class RegistryAppInitializer
         }
 
         servletContext.setInitParameter("spring.profiles.active", StringUtils.arrayToCommaDelimitedString(profiles.toArray()));
-    }
-
-    private boolean isSmsFeaturesEnabled() {
-        SmsConfig config = new SmsConfig();
-        return config.isEnabled();
     }
 
     private boolean isEmailFeaturesEnabled() {

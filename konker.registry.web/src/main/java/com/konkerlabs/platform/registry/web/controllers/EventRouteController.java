@@ -50,8 +50,6 @@ public class EventRouteController implements ApplicationContextAware {
     @Autowired
     private RestDestinationService restDestinationService;
     @Autowired
-    private SmsDestinationService smsDestinationService;
-    @Autowired
     private TransformationService transformationService;
     @Autowired
     private Tenant tenant;
@@ -67,11 +65,6 @@ public class EventRouteController implements ApplicationContextAware {
     @ModelAttribute("allRestDestinations")
     public List<RestDestination> allRestDestinations() {
         return restDestinationService.findAll(tenant, application).getResult();
-    }
-
-    @ModelAttribute("allSmsDestinations")
-    public List<SmsDestination> allSmsDestinations() {
-        return smsDestinationService.findAll(tenant).getResult();
     }
 
     @ModelAttribute("allTransformations")
@@ -138,7 +131,6 @@ public class EventRouteController implements ApplicationContextAware {
         EventRouteForm route = new EventRouteForm();
         switch (outgoingScheme) {
             case "device": return new ModelAndView("routes/device-outgoing", "route", route);
-            case "sms" : return new ModelAndView("routes/sms-outgoing", "route", route);
             case "rest" : return new ModelAndView("routes/rest-outgoing", "route", route);
             //FIXME: Check for a way to render an empty HTTP body without an empty html file
             default: return new ModelAndView("common/empty");
