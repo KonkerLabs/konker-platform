@@ -81,7 +81,14 @@ public class EventsCassandraToMongoService {
             mongoEventsRepository.saveIncoming(tenant, application, event);
         }
 
+        List<Event> outgoingEvents = cassandraEventsRepository.findOutgoingBy(tenant, application, deviceGuid, channel, startInstant, endInstant, ascending, limit);
+
+        for (Event event : outgoingEvents) {
+            mongoEventsRepository.saveOutgoing(tenant, application, event);
+        }
+
         LOGGER.info("\tIncoming events: {}", incomingEvents.size());
+        LOGGER.info("\tOutgoing events: {}", outgoingEvents.size());
 
     }
 
