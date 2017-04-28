@@ -19,7 +19,7 @@ import com.konkerlabs.platform.registry.business.repositories.events.EventReposi
 import com.konkerlabs.platform.registry.business.repositories.events.EventRepositoryMongoImpl;
 
 @Service
-public class EventsMongoToCassandraService {
+public class EventsCassandraToMongoService {
 
     private Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
@@ -67,12 +67,18 @@ public class EventsMongoToCassandraService {
 
     private void process(Tenant tenant, Application application, Instant startInstant) throws BusinessException {
 
+        String deviceGuid = null;
+        String channel = null;
+        Instant endInstant = null;
+        boolean ascending = false;
+        Integer limit = null;
+
         LOGGER.info("Tenant {} Application {}", tenant.getName(), application.getName());
 
-        List<Event> incomingEvents = mongoEventsRepository.findIncomingBy(tenant, application, null, null, startInstant, null, true, 50);
+        List<Event> incomingEvents = cassandraEventsRepository.findIncomingBy(tenant, application, deviceGuid, channel, startInstant, endInstant, ascending, limit);
 
         for (Event event : incomingEvents) {
-            cassandraEventsRepository.saveIncoming(tenant, application, event);
+            mongoEventsRepository.saveIncoming(tenant, application, event);
         }
 
         LOGGER.info("\tIncoming events: {}", incomingEvents.size());
