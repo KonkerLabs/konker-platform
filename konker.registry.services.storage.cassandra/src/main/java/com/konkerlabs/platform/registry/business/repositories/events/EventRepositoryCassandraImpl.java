@@ -32,6 +32,12 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
     private static final String INCOMING_EVENTS_DEVICE_GUID_CHANNEL = "incoming_events_device_guid_channel";
     private static final String INCOMING_EVENTS_DELETED = "incoming_events_deleted";
 
+    private static final String OUTGOING_EVENTS = "outgoing_events";
+    private static final String OUTGOING_EVENTS_CHANNEL = "outgoing_events_channel";
+    private static final String OUTGOING_EVENTS_DEVICE_GUID = "outgoing_events_device_guid";
+    private static final String OUTGOING_EVENTS_DEVICE_GUID_CHANNEL = "outgoing_events_device_guid_channel";
+    private static final String OUTGOING_EVENTS_DELETED = "outgoing_events_deleted";
+
     @Autowired
     private Cluster cluster;
 
@@ -45,48 +51,107 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
 
         event.setEpochTime(event.getTimestamp().toEpochMilli() * 1000000 + rnd.nextInt(1000000));
 
-        saveEvent(tenant, application, event, INCOMING_EVENTS);
-        saveEvent(tenant, application, event, INCOMING_EVENTS_DEVICE_GUID);
-        saveEvent(tenant, application, event, INCOMING_EVENTS_DEVICE_GUID_CHANNEL);
-        saveEvent(tenant, application, event, INCOMING_EVENTS_CHANNEL);
+        if (type == Type.INCOMING) {
+            saveEvent(tenant, application, event, type, INCOMING_EVENTS);
+            saveEvent(tenant, application, event, type, INCOMING_EVENTS_DEVICE_GUID);
+            saveEvent(tenant, application, event, type, INCOMING_EVENTS_DEVICE_GUID_CHANNEL);
+            saveEvent(tenant, application, event, type, INCOMING_EVENTS_CHANNEL);
+        } else if (type == Type.OUTGOING) {
+            saveEvent(tenant, application, event, type, OUTGOING_EVENTS);
+            saveEvent(tenant, application, event, type, OUTGOING_EVENTS_DEVICE_GUID);
+            saveEvent(tenant, application, event, type, OUTGOING_EVENTS_DEVICE_GUID_CHANNEL);
+            saveEvent(tenant, application, event, type, OUTGOING_EVENTS_CHANNEL);
+        }
 
         return event;
 
     }
 
-    private void saveEvent(Tenant tenant, Application application, Event event, String table) {
-        StringBuilder query = new StringBuilder();
-        query.append("INSERT INTO ");
-        query.append(REGISTRYKEYSPACE);
-        query.append(".");
-        query.append(table);
-        query.append(" (");
-        query.append("tenant_domain, ");
-        query.append("application_name, ");
-        query.append("timestamp, ");
-        query.append("channel, ");
-        query.append("device_guid, ");
-        query.append("device_id, ");
-        query.append("payload");
-        query.append(") VALUES (");
-        query.append("?, ");
-        query.append("?, ");
-        query.append("?, ");
-        query.append("?, ");
-        query.append("?, ");
-        query.append("?, ");
-        query.append("?");
-        query.append(")");
+    private void saveEvent(Tenant tenant, Application application, Event event, Type type, String table) {
 
-        session.execute(
-                query.toString(),
-                tenant.getDomainName(),
-                application.getName(),
-                event.getEpochTime(),
-                event.getIncoming().getChannel(),
-                event.getIncoming().getDeviceGuid(),
-                event.getIncoming().getDeviceId(),
-                event.getPayload());
+        if (type == Type.INCOMING) {
+
+            StringBuilder query = new StringBuilder();
+            query.append("INSERT INTO ");
+            query.append(REGISTRYKEYSPACE);
+            query.append(".");
+            query.append(table);
+            query.append(" (");
+            query.append("tenant_domain, ");
+            query.append("application_name, ");
+            query.append("timestamp, ");
+            query.append("channel, ");
+            query.append("device_guid, ");
+            query.append("device_id, ");
+            query.append("payload");
+            query.append(") VALUES (");
+            query.append("?, ");
+            query.append("?, ");
+            query.append("?, ");
+            query.append("?, ");
+            query.append("?, ");
+            query.append("?, ");
+            query.append("?");
+            query.append(")");
+
+            session.execute(
+                    query.toString(),
+                    tenant.getDomainName(),
+                    application.getName(),
+                    event.getEpochTime(),
+                    event.getIncoming().getChannel(),
+                    event.getIncoming().getDeviceGuid(),
+                    event.getIncoming().getDeviceId(),
+                    event.getPayload());
+
+        } else if (type == Type.OUTGOING) {
+
+            StringBuilder query = new StringBuilder();
+            query.append("INSERT INTO ");
+            query.append(REGISTRYKEYSPACE);
+            query.append(".");
+            query.append(table);
+            query.append(" (");
+            query.append("tenant_domain, ");
+            query.append("application_name, ");
+            query.append("timestamp, ");
+            query.append("channel, ");
+            query.append("device_guid, ");
+
+            query.append("incoming_channel, ");
+            query.append("incoming_device_guid, ");
+            query.append("incoming_device_id, ");
+
+            query.append("device_id, ");
+            query.append("payload");
+            query.append(") VALUES (");
+            query.append("?, ");
+            query.append("?, ");
+            query.append("?, ");
+            query.append("?, ");
+            query.append("?, ");
+            query.append("?, ");
+            query.append("?, ");
+            query.append("?, ");
+            query.append("?, ");
+            query.append("?");
+            query.append(")");
+
+            session.execute(
+                    query.toString(),
+                    tenant.getDomainName(),
+                    application.getName(),
+                    event.getEpochTime(),
+                    event.getOutgoing().getChannel(),
+                    event.getOutgoing().getDeviceGuid(),
+                    event.getOutgoing().getDeviceId(),
+                    event.getIncoming().getChannel(),
+                    event.getIncoming().getDeviceGuid(),
+                    event.getIncoming().getDeviceId(),
+                    event.getPayload());
+
+        }
+
     }
 
     @Override
@@ -107,14 +172,26 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
 
         List<Object> filters = new ArrayList<>();
 
-        if (deviceGuid != null && channel != null) {
-            table = INCOMING_EVENTS_DEVICE_GUID_CHANNEL;
-        } else if (deviceGuid != null && channel == null) {
-            table = INCOMING_EVENTS_DEVICE_GUID;
-        } else if (deviceGuid == null && channel != null) {
-            table = INCOMING_EVENTS_CHANNEL;
-        } else if (deviceGuid == null && channel == null) {
-            table = INCOMING_EVENTS;
+        if (type == Type.INCOMING) {
+            if (deviceGuid != null && channel != null) {
+                table = INCOMING_EVENTS_DEVICE_GUID_CHANNEL;
+            } else if (deviceGuid != null && channel == null) {
+                table = INCOMING_EVENTS_DEVICE_GUID;
+            } else if (deviceGuid == null && channel != null) {
+                table = INCOMING_EVENTS_CHANNEL;
+            } else if (deviceGuid == null && channel == null) {
+                table = INCOMING_EVENTS;
+            }
+        } else if (type == Type.OUTGOING) {
+            if (deviceGuid != null && channel != null) {
+                table = OUTGOING_EVENTS_DEVICE_GUID_CHANNEL;
+            } else if (deviceGuid != null && channel == null) {
+                table = OUTGOING_EVENTS_DEVICE_GUID;
+            } else if (deviceGuid == null && channel != null) {
+                table = OUTGOING_EVENTS_CHANNEL;
+            } else if (deviceGuid == null && channel == null) {
+                table = OUTGOING_EVENTS;
+            }
         }
 
         query.append("SELECT * FROM ");
@@ -167,18 +244,44 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
         while (!rs.isExhausted()) {
             final Row row = rs.one();
 
-            EventActor incomingActor = EventActor.builder()
-                                                 .tenantDomain(row.getString("tenant_domain"))
-                                                 .applicationName(row.getString("application_name"))
-                                                 .deviceGuid(row.getString("device_guid"))
-                                                 .deviceId(row.getString("device_id"))
-                                                 .channel(row.getString("channel"))
-                                                 .build();
+            EventActor outgoingActor = null;
+            EventActor incomingActor = null;
+
+            if (type == Type.INCOMING) {
+
+                incomingActor = EventActor.builder()
+                                          .tenantDomain(row.getString("tenant_domain"))
+                                          .applicationName(row.getString("application_name"))
+                                          .deviceGuid(row.getString("device_guid"))
+                                          .deviceId(row.getString("device_id"))
+                                          .channel(row.getString("channel"))
+                                          .build();
+
+            } else if (type == Type.OUTGOING) {
+
+                outgoingActor = EventActor.builder()
+                        .tenantDomain(row.getString("tenant_domain"))
+                        .applicationName(row.getString("application_name"))
+                        .deviceGuid(row.getString("device_guid"))
+                        .deviceId(row.getString("device_id"))
+                        .channel(row.getString("channel"))
+                        .build();
+
+                incomingActor = EventActor.builder()
+                        .tenantDomain(row.getString("tenant_domain"))
+                        .applicationName(row.getString("application_name"))
+                        .deviceGuid(row.getString("incoming_device_guid"))
+                        .deviceId(row.getString("incoming_device_id"))
+                        .channel(row.getString("incoming_channel"))
+                        .build();
+
+            }
 
             Event event = Event.builder()
                                .epochTime(row.getLong("timestamp"))
                                .timestamp(Instant.ofEpochMilli(row.getLong("timestamp") / 1000000))
                                .incoming(incomingActor)
+                               .outgoing(outgoingActor)
                                .payload(row.getString("payload"))
                                .build();
 
@@ -195,8 +298,13 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
         List<Event> keys = doFindBy(tenant, application, deviceGuid, null, null, null, false, null, type, false);
 
         for (Event key: keys) {
-            removeByKey(key);
-            saveEvent(tenant, application, key, INCOMING_EVENTS_DELETED);
+            if (type == Type.INCOMING) {
+                removeByKey(key, type);
+                saveEvent(tenant, application, key, type, INCOMING_EVENTS_DELETED);
+            } else if (type == Type.OUTGOING) {
+                removeByKey(key, type);
+                saveEvent(tenant, application, key, type, OUTGOING_EVENTS_DELETED);
+            }
         }
 
         String tenantDomain = tenant.getDomainName();
@@ -210,7 +318,11 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
         query.append("DELETE FROM ");
         query.append(REGISTRYKEYSPACE);
         query.append(".");
-        query.append(INCOMING_EVENTS_DEVICE_GUID);
+        if (type == Type.INCOMING) {
+            query.append(INCOMING_EVENTS_DEVICE_GUID);
+        } else if (type == Type.OUTGOING) {
+            query.append(OUTGOING_EVENTS_DEVICE_GUID);
+        }
         query.append(" WHERE ");
 
         query.append(" tenant_domain = ?");
@@ -226,7 +338,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
 
     }
 
-    private void removeByKey(Event key) {
+    private void removeByKey(Event key, Type type) {
 
         String tenantDomain = key.getIncoming().getTenantDomain();
         String applicationName = key.getIncoming().getApplicationName();
@@ -242,7 +354,11 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
         query.append("DELETE FROM ");
         query.append(REGISTRYKEYSPACE);
         query.append(".");
-        query.append(INCOMING_EVENTS);
+        if (type == Type.INCOMING) {
+            query.append(INCOMING_EVENTS);
+        } else if (type == Type.OUTGOING) {
+            query.append(OUTGOING_EVENTS);
+        }
         query.append(" WHERE ");
 
         query.append(" tenant_domain = ?");
@@ -264,7 +380,11 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
         query.append("DELETE FROM ");
         query.append(REGISTRYKEYSPACE);
         query.append(".");
-        query.append(INCOMING_EVENTS_CHANNEL);
+        if (type == Type.INCOMING) {
+            query.append(INCOMING_EVENTS_CHANNEL);
+        } else if (type == Type.OUTGOING) {
+            query.append(OUTGOING_EVENTS_CHANNEL);
+        }
         query.append(" WHERE ");
 
         query.append(" tenant_domain = ?");
@@ -289,7 +409,11 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
         query.append("DELETE FROM ");
         query.append(REGISTRYKEYSPACE);
         query.append(".");
-        query.append(INCOMING_EVENTS_DEVICE_GUID_CHANNEL);
+        if (type == Type.INCOMING) {
+            query.append(INCOMING_EVENTS_DEVICE_GUID_CHANNEL);
+        } else if (type == Type.OUTGOING) {
+            query.append(OUTGOING_EVENTS_DEVICE_GUID_CHANNEL);
+        }
         query.append(" WHERE ");
 
         query.append(" tenant_domain = ?");
