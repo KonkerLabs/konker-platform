@@ -2,8 +2,9 @@
 import sys
 
 from pymongo import MongoClient
-from dao.patches.v0_2_0_create_applications import create_applications
 
+from userskonker.migrate_user_roles import update_to_version_0_1
+from dao.patches.v0_2_0_create_applications import create_applications
 
 def db_connect(host='localhost', port=27017):
     try:
@@ -20,7 +21,7 @@ def get_database_version():
         db.create_collection("konkerVersion")
         db.konkerVersion.insert(
             {
-                "version": "0.1"
+                "version": "0.0"
             }
         )
 
@@ -28,7 +29,7 @@ def get_database_version():
     if document is None:
         db.konkerVersion.insert(
             {
-                "version": "0.1"
+                "version": "0.0"
             }
         )
 
@@ -40,13 +41,15 @@ def get_database_version():
 def update_version(version):
     db = db_connect()
 
-    document = db.konkerVersion.find_one({"version": { "$exists": True }})
-    if document is None:
-        db.konkerVersion.update(
-            {
-                "version": str(version)
-            }
-        )
+    db.konkerVersion.update({
+      "version": { "$exists": True }
+    },{
+      '$set': {
+        'version': str(version)
+      }
+    }, upsert=False, multi=False)
+
+    print "Database updated to version " + str(version)
 
 
 def upgrade_version():
@@ -54,7 +57,9 @@ def upgrade_version():
     version = get_database_version()
 
     if float(version) < 0.1:
+        update_to_version_0_1()
         update_version(0.1)
+
     if float(version) < 0.2:
         create_applications()
         update_version(0.2)
