@@ -24,10 +24,13 @@ import com.konkerlabs.platform.registry.business.repositories.events.api.BaseEve
 @Repository("cassandraEvents")
 public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implements DisposableBean {
 
+    private static final String REGISTRYKEYSPACE = "registrykeyspace";
+
     private static final String INCOMING_EVENTS = "incoming_events";
     private static final String INCOMING_EVENTS_CHANNEL = "incoming_events_channel";
     private static final String INCOMING_EVENTS_DEVICE_GUID = "incoming_events_device_guid";
     private static final String INCOMING_EVENTS_DEVICE_GUID_CHANNEL = "incoming_events_device_guid_channel";
+    private static final String INCOMING_EVENTS_DELETED = "incoming_events_deleted";
 
     @Autowired
     private Cluster cluster;
@@ -54,6 +57,8 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
     private void saveEvent(Tenant tenant, Application application, Event event, String table) {
         StringBuilder query = new StringBuilder();
         query.append("INSERT INTO ");
+        query.append(REGISTRYKEYSPACE);
+        query.append(".");
         query.append(table);
         query.append(" (");
         query.append("tenant_domain, ");
@@ -113,7 +118,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
         }
 
         query.append("SELECT * FROM ");
-        query.append("registrykeyspace");
+        query.append(REGISTRYKEYSPACE);
         query.append(".");
         query.append(table);
         query.append(" WHERE ");
@@ -191,7 +196,33 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
 
         for (Event key: keys) {
             removeByKey(key);
+            saveEvent(tenant, application, key, INCOMING_EVENTS_DELETED);
         }
+
+        String tenantDomain = tenant.getDomainName();
+        String applicationName = application.getName();
+
+        // INCOMING_EVENTS_DEVICE_GUID
+
+        StringBuilder query = new StringBuilder();
+        List<Object> filters = new ArrayList<>();
+
+        query.append("DELETE FROM ");
+        query.append(REGISTRYKEYSPACE);
+        query.append(".");
+        query.append(INCOMING_EVENTS_DEVICE_GUID);
+        query.append(" WHERE ");
+
+        query.append(" tenant_domain = ?");
+        filters.add(tenantDomain);
+
+        query.append(" AND application_name = ?");
+        filters.add(applicationName);
+
+        query.append(" AND device_guid = ?");
+        filters.add(deviceGuid);
+
+        session.execute(query.toString(), filters.toArray(new Object[filters.size()]));
 
     }
 
@@ -203,15 +234,13 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
         String channel = key.getIncoming().getChannel();
         Long epochTs = key.getEpochTime();
 
-        System.out.println("epochTs: " + epochTs);
-
         // INCOMING_EVENTS
 
         StringBuilder query = new StringBuilder();
         List<Object> filters = new ArrayList<>();
 
         query.append("DELETE FROM ");
-        query.append("registrykeyspace");
+        query.append(REGISTRYKEYSPACE);
         query.append(".");
         query.append(INCOMING_EVENTS);
         query.append(" WHERE ");
@@ -225,7 +254,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
         query.append(" AND timestamp = ?");
         filters.add(epochTs);
 
-        session.execute(query.toString(), filters.toArray(new Object[filters.size()]));
+        session.executeAsync(query.toString(), filters.toArray(new Object[filters.size()]));
 
         // INCOMING_EVENTS_CHANNEL
 
@@ -233,7 +262,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
         filters = new ArrayList<>();
 
         query.append("DELETE FROM ");
-        query.append("registrykeyspace");
+        query.append(REGISTRYKEYSPACE);
         query.append(".");
         query.append(INCOMING_EVENTS_CHANNEL);
         query.append(" WHERE ");
@@ -250,32 +279,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
         query.append(" AND timestamp = ?");
         filters.add(epochTs);
 
-        session.execute(query.toString(), filters.toArray(new Object[filters.size()]));
-
-        // INCOMING_EVENTS_DEVICE_GUID
-
-        query = new StringBuilder();
-        filters = new ArrayList<>();
-
-        query.append("DELETE FROM ");
-        query.append("registrykeyspace");
-        query.append(".");
-        query.append(INCOMING_EVENTS_DEVICE_GUID);
-        query.append(" WHERE ");
-
-        query.append(" tenant_domain = ?");
-        filters.add(tenantDomain);
-
-        query.append(" AND application_name = ?");
-        filters.add(applicationName);
-
-        query.append(" AND device_guid = ?");
-        filters.add(deviceGuid);
-
-        query.append(" AND timestamp = ?");
-        filters.add(epochTs);
-
-        session.execute(query.toString(), filters.toArray(new Object[filters.size()]));
+        session.executeAsync(query.toString(), filters.toArray(new Object[filters.size()]));
 
         // INCOMING_EVENTS_DEVICE_GUID_CHANNEL
 
@@ -283,7 +287,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
         filters = new ArrayList<>();
 
         query.append("DELETE FROM ");
-        query.append("registrykeyspace");
+        query.append(REGISTRYKEYSPACE);
         query.append(".");
         query.append(INCOMING_EVENTS_DEVICE_GUID_CHANNEL);
         query.append(" WHERE ");
@@ -303,7 +307,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
         query.append(" AND timestamp = ?");
         filters.add(epochTs);
 
-        session.execute(query.toString(), filters.toArray(new Object[filters.size()]));
+        session.executeAsync(query.toString(), filters.toArray(new Object[filters.size()]));
 
     }
 

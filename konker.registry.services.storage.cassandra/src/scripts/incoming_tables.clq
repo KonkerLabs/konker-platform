@@ -9,6 +9,17 @@ CREATE TABLE incoming_events (
     PRIMARY KEY ((tenant_domain, application_name), timestamp)
 ) WITH CLUSTERING ORDER BY (timestamp DESC);
 
+CREATE TABLE incoming_events_deleted (
+    tenant_domain text,
+    application_name text,
+    timestamp bigint,
+    channel text,
+    device_guid text,
+    device_id text,
+    payload text,
+    PRIMARY KEY ((tenant_domain, application_name), timestamp)
+) WITH CLUSTERING ORDER BY (timestamp DESC);
+
 CREATE TABLE incoming_events_device_guid (
     tenant_domain text,
     application_name text,
