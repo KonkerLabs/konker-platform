@@ -2,12 +2,13 @@
 import sys
 import string
 import random
+import datetime
 
 from bson import DBRef
 from pymongo import MongoClient
 
 from userskonker.migrate_user_pwd import get_hashed_password
-from userskonker.migrate_user_roles import update_user_roles, update_to_version_0_1
+from userskonker.migrate_user_roles import update_user_roles
 
 def db_connect(host='localhost', port=27017):
     try:
