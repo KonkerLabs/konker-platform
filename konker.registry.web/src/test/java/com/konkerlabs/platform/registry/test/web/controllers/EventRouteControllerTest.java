@@ -72,6 +72,8 @@ public class EventRouteControllerTest extends WebLayerTestContext {
     @Autowired
     private SmsDestinationService smsDestinationService;
     @Autowired
+    private ApplicationService applicationService;
+    @Autowired
     private ApplicationContext applicationContext;
 
     @Autowired
@@ -243,7 +245,7 @@ public class EventRouteControllerTest extends WebLayerTestContext {
 
         newRoute = routeBuilder.build();
 
-        savedRoute = routeBuilder.guid(routeGuid).build();
+        savedRoute = routeBuilder.guid(routeGuid).application(application).build();
 
         registeredRoutes = new ArrayList<EventRoute>(asList(new EventRoute[]{newRoute}));
     }
@@ -260,6 +262,9 @@ public class EventRouteControllerTest extends WebLayerTestContext {
             ServiceResponseBuilder.<List<EventRoute>>ok()
                 .withResult(registeredRoutes).build()
         );
+        
+        when(applicationService.findAll(tenant))
+			.thenReturn(ServiceResponseBuilder.<List<Application>> ok().withResult(Collections.singletonList(application)).build());
 
         getMockMvc().perform(get("/routes"))
         	.andDo(print())
@@ -273,7 +278,7 @@ public class EventRouteControllerTest extends WebLayerTestContext {
         getMockMvc().perform(get("/routes/new"))
                 .andExpect(view().name("routes/form"))
                 .andExpect(model().attribute("route", new EventRouteForm()))
-                .andExpect(model().attribute("action", "/routes/save"));
+                .andExpect(model().attribute("action", format("/routes/{0}/save", application.getName())));
     }
 
     @Test
@@ -310,8 +315,10 @@ public class EventRouteControllerTest extends WebLayerTestContext {
                 withMessage(CommonValidations.TENANT_NULL.getCode()).build();
 
         when(eventRouteService.save(eq(tenant), eq(application), eq(newRoute))).thenReturn(response);
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+			.thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
 
-        getMockMvc().perform(post("/routes/save").params(routeData))
+        getMockMvc().perform(post("/routes/{0}/save", application.getName()).params(routeData))
                 .andExpect(model().attribute("errors", equalTo(
                     Arrays.asList(new String[] {
                             applicationContext.getMessage(CommonValidations.TENANT_NULL.getCode(),null,Locale.ENGLISH)
@@ -331,12 +338,14 @@ public class EventRouteControllerTest extends WebLayerTestContext {
                 .build());
 
         when(eventRouteService.save(eq(tenant), eq(application), eq(newRoute))).thenReturn(response);
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+    		.thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
 
-        getMockMvc().perform(post("/routes/save").params(routeData))
+        getMockMvc().perform(post("/routes/{0}/save", application.getName()).params(routeData))
                 .andExpect(flash().attribute("message",
                     applicationContext.getMessage(EventRouteController.Messages.ROUTE_REGISTERED_SUCCESSFULLY.getCode(),null, Locale.ENGLISH)
                 ))
-                .andExpect(redirectedUrl(MessageFormat.format("/routes/{0}", savedRoute.getGuid())));
+                .andExpect(redirectedUrl(MessageFormat.format("/routes/{0}/{1}", application.getName(), savedRoute.getGuid())));
 
         verify(eventRouteService).save(eq(tenant), eq(application), eq(newRoute));
     }
@@ -348,10 +357,12 @@ public class EventRouteControllerTest extends WebLayerTestContext {
 
         when(eventRouteService.getByGUID(tenant, application, routeGuid)).thenReturn(
                 ServiceResponseBuilder.<EventRoute>ok().withResult(newRoute).build());
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+        	.thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
 
-        getMockMvc().perform(get(format("/routes/{0}/edit", routeGuid)))
+        getMockMvc().perform(get(format("/routes/{0}/{1}/edit", application.getName(), routeGuid)))
                 .andExpect(model().attribute("route", equalTo(routeForm)))
-                .andExpect(model().attribute("action", format("/routes/{0}", routeGuid)))
+                .andExpect(model().attribute("action", format("/routes/{0}/{1}", application.getName(), routeGuid)))
                 .andExpect(model().attribute("method", "put"))
                 .andExpect(view().name("routes/form"));
     }
@@ -363,8 +374,10 @@ public class EventRouteControllerTest extends WebLayerTestContext {
                 .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
 
         when(eventRouteService.update(eq(tenant), eq(application), eq(routeGuid), eq(newRoute))).thenReturn(response);
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+			.thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
 
-        getMockMvc().perform(put("/routes/{0}", routeGuid).params(routeData))
+        getMockMvc().perform(put("/routes/{0}/{1}", application.getName(), routeGuid).params(routeData))
                 .andExpect(model().attribute("errors", equalTo(
                     Arrays.asList(new String[] {
                         applicationContext.getMessage(CommonValidations.TENANT_NULL.getCode(),null,Locale.ENGLISH)
@@ -380,15 +393,17 @@ public class EventRouteControllerTest extends WebLayerTestContext {
     @WithMockUser(authorities={"EDIT_DEVICE_ROUTE"})
     public void shouldRedirectToShowAfterSuccessfulRouteEdit() throws Exception {
         response = spy(ServiceResponseBuilder.<EventRoute>ok()
-                .withResult(newRoute).build());
+                .withResult(savedRoute).build());
 
         when(eventRouteService.update(eq(tenant), eq(application), eq(routeGuid), eq(newRoute))).thenReturn(response);
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+			.thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
 
-        getMockMvc().perform(put("/routes/{0}", routeGuid).params(routeData))
+        getMockMvc().perform(put("/routes/{0}/{1}", application.getName(), routeGuid).params(routeData))
                 .andExpect(flash().attribute("message",
                         applicationContext.getMessage(EventRouteController.Messages.ROUTE_REGISTERED_SUCCESSFULLY.getCode(),null, Locale.ENGLISH)
                 ))
-                .andExpect(redirectedUrl(MessageFormat.format("/routes/{0}", newRoute.getGuid())));
+                .andExpect(redirectedUrl(MessageFormat.format("/routes/{0}/{1}", application.getName(), savedRoute.getGuid())));
 
         verify(eventRouteService).update(eq(tenant), eq(application), eq(routeGuid), eq(newRoute));
     }
@@ -402,9 +417,11 @@ public class EventRouteControllerTest extends WebLayerTestContext {
         newRoute.setId(routeGuid);
         when(eventRouteService.getByGUID(tenant, application, newRoute.getId())).thenReturn(
                 ServiceResponseBuilder.<EventRoute>ok().withResult(newRoute).build());
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+			.thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
 
         getMockMvc().perform(
-                get("/routes/{0}", newRoute.getId())
+                get("/routes/{0}/{1}", application.getName(), newRoute.getId())
         ).andExpect(model().attribute("route", equalTo(routeForm)))
                 .andExpect(view().name("routes/show"));
 
@@ -425,8 +442,10 @@ public class EventRouteControllerTest extends WebLayerTestContext {
 
         when(eventRouteService.remove(tenant, application, newRoute.getGuid())).thenReturn(responseDelete);
         when(eventRouteService.getAll(eq(tenant), eq(application))).thenReturn(responseGetAll);
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+			.thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
 
-        getMockMvc().perform(delete("/routes/{0}", newRoute.getGuid()))
+        getMockMvc().perform(delete("/routes/{0}/{1}", application.getName(), newRoute.getGuid()))
                 .andExpect(flash().attribute("message",
                     applicationContext.getMessage(ROUTE_REMOVED_SUCCESSFULLY.getCode(),null,Locale.ENGLISH)
                 ))
@@ -445,10 +464,13 @@ public class EventRouteControllerTest extends WebLayerTestContext {
         spy(responseDelete);
 
         when(eventRouteService.remove(tenant, application, newRoute.getGuid())).thenReturn(responseDelete);
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+			.thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
+        
         List<String> messages = Collections.singletonList(
         		applicationContext.getMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode(),null,Locale.ENGLISH));
 
-        getMockMvc().perform(delete("/routes/{0}", newRoute.getGuid()))
+        getMockMvc().perform(delete("/routes/{0}/{1}", application.getName(), newRoute.getGuid()))
                 .andExpect(flash().attribute("errors", messages))
                 .andExpect(redirectedUrl("/routes"));
 
@@ -480,6 +502,11 @@ public class EventRouteControllerTest extends WebLayerTestContext {
         @Bean
         public TransformationService transformationService() {
             return mock(TransformationService.class);
+        }
+        
+        @Bean
+        public ApplicationService applicationService() {
+            return mock(ApplicationService.class);
         }
     }
 }

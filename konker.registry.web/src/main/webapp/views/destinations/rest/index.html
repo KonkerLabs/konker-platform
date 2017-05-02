@@ -54,7 +54,7 @@
                     <!--  <a data-th-href="@{/destinations/rest/{id}(id=${destination.guid})}" class="btn btn-default" data-th-text="#{nav.show}">
                         Show
                     </a> -->
-                    <a data-th-href="@{/destinations/rest/{id}/edit(id=${destination.guid})}" class="btn btn-default">
+                    <a data-th-href="@{/destinations/rest/{applicationName}/{id}/edit(id=${destination.guid}, applicationName=${destination.application.name})}" class="btn btn-default">
                         <img data-th-attr="src=@{/resources/konker/images/icons-bt/edit-icon-bt-01.svg}" class="bt-icon" />
                        	<span data-th-text="#{nav.edit}"></span>
                     </a>

@@ -46,19 +46,19 @@
                     <img data-konker-enabled-img="${device.active}"></img>
                 </td>
                 <td class="text-center">
-                    <a data-th-href="@{/devices/{guid}/edit(guid=${device.guid})}"
+                    <a data-th-href="@{/devices/{applicationName}/{guid}/edit(guid=${device.guid}, applicationName=${device.application.name})}"
                        class="btn btn-default">
                         <img data-th-attr="src=@{/resources/konker/images/icons-bt/edit-icon-bt-01.svg}"
                              class="icon-menu" />
                         <span data-th-text="#{nav.edit}"></span>
                     </a>
-                    <a data-th-href="@{/devices/{guid}/password(guid=${device.guid})}"
+                    <a data-th-href="@{/devices/{applicationName}/{guid}/password(guid=${device.guid}, applicationName=${device.application.name})}"
                        class="btn btn-default">
                         <img data-th-attr="src=@{/resources/konker/images/icons-bt/conect-icon-bt-01.svg}"
                              class="icon-menu" />
                         <span data-th-text="#{devices.index.access}"></span>
                     </a>
-                    <a data-th-href="@{/devices/{guid}/events(guid=${device.guid})}"
+                    <a data-th-href="@{/devices/{applicationName}/{guid}/events(guid=${device.guid}, applicationName=${device.application.name})}"
                        class="btn btn-default">
                         <img data-th-attr="src=@{/resources/konker/images/icons-bt/messages-icon-bt-01.svg}"
                              class="icon-menu" />

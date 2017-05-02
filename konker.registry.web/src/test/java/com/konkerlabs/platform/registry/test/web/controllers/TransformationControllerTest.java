@@ -5,6 +5,7 @@ import com.konkerlabs.platform.registry.business.model.RestTransformationStep;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.Transformation;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.TransformationService;
@@ -55,6 +56,8 @@ public class TransformationControllerTest extends WebLayerTestContext {
     private ApplicationContext applicationContext;
     @Autowired
     private TransformationService transformationService;
+    @Autowired
+    private ApplicationService applicationService;
     @Autowired
     private Tenant tenant;
 
@@ -127,6 +130,9 @@ public class TransformationControllerTest extends WebLayerTestContext {
     public void shouldReturnAllRegisteredTransformations() throws Exception {
         when(transformationService.getAll(tenant, application))
                 .thenReturn(ServiceResponseBuilder.<List<Transformation>> ok().withResult(transformations).build());
+        
+        when(applicationService.findAll(tenant))
+        	.thenReturn(ServiceResponseBuilder.<List<Application>> ok().withResult(Collections.singletonList(application)).build());
 
         getMockMvc().perform(get("/transformation")).andExpect(model().attribute("transformations", transformations))
                 .andExpect(view().name("transformations/index"));
@@ -138,7 +144,7 @@ public class TransformationControllerTest extends WebLayerTestContext {
         getMockMvc().perform(get("/transformation/new"))
                 .andExpect(model().attribute("transformation", new TransformationForm()))
                 .andExpect(view().name("transformations/form"))
-                .andExpect(model().attribute("action", "/transformation/save"));
+                .andExpect(model().attribute("action", MessageFormat.format("/transformation/{0}/save", application.getName())));
     }
 
     @Test
@@ -146,8 +152,11 @@ public class TransformationControllerTest extends WebLayerTestContext {
     public void shouldBindAnErrorMessageOnSaveTransformationError() throws Exception {
         when(transformationService.register(eq(tenant), eq(application), any(Transformation.class))).thenReturn(ServiceResponseBuilder
                 .<Transformation> error().withMessage(CommonValidations.RECORD_NULL.getCode()).build());
+        
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+    		.thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
 
-        getMockMvc().perform(post("/transformation/save").params(transformationData))
+        getMockMvc().perform(post("/transformation/{0}/save", application.getName()).params(transformationData))
                 .andExpect(model().attribute("transformation", transformationForm))
                 .andExpect(model().attribute("errors",
                         Arrays.asList(new String[] { applicationContext
@@ -163,13 +172,15 @@ public class TransformationControllerTest extends WebLayerTestContext {
         serviceResponse = spy(ServiceResponseBuilder.<Transformation> ok().withResult(transformation).build());
 
         when(transformationService.register(eq(tenant), eq(application), any(Transformation.class))).thenReturn(serviceResponse);
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+    		.thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
 
-        getMockMvc().perform(post("/transformation/save").params(transformationData))
+        getMockMvc().perform(post("/transformation/{0}/save", application.getName()).params(transformationData))
                 .andExpect(flash().attribute("message",
                         applicationContext.getMessage(
                                 TransformationController.Messages.TRANSFORMATION_REGISTERED_SUCCESSFULLY.getCode(),
                                 null, Locale.ENGLISH)))
-                .andExpect(redirectedUrl(MessageFormat.format("/transformation/{0}", transformation.getId())));
+                .andExpect(redirectedUrl(MessageFormat.format("/transformation/{0}/{1}", application.getName(), transformation.getId())));
 
 
     }
@@ -179,8 +190,10 @@ public class TransformationControllerTest extends WebLayerTestContext {
     public void shouldBindAnErrorMessageOnEditTransformationError() throws Exception {
         when(transformationService.update(eq(tenant), eq(application), eq("123"), any(Transformation.class))).thenReturn(ServiceResponseBuilder
                 .<Transformation> error().withMessage(CommonValidations.RECORD_NULL.getCode()).build());
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+    		.thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
 
-        getMockMvc().perform(put(MessageFormat.format("/transformation/{0}", "123")).params(transformationData))
+        getMockMvc().perform(put(MessageFormat.format("/transformation/{0}/{1}", application.getName(), "123")).params(transformationData))
                 .andExpect(model().attribute("transformation", transformationForm))
                 .andExpect(model().attribute("errors",
                         Arrays.asList(new String[] { applicationContext
@@ -197,13 +210,15 @@ public class TransformationControllerTest extends WebLayerTestContext {
                 ServiceResponseBuilder.<Transformation> ok().withResult(transformation).<Transformation> build());
 
         when(transformationService.update(eq(tenant),eq(application), eq("123"), any(Transformation.class))).thenReturn(serviceResponse);
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+    		.thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
 
-        getMockMvc().perform(put(MessageFormat.format("/transformation/{0}", "123")).params(transformationData))
+        getMockMvc().perform(put(MessageFormat.format("/transformation/{0}/{1}", application.getName(), "123")).params(transformationData))
                 .andExpect(flash().attribute("message",
                         applicationContext.getMessage(
                                 TransformationController.Messages.TRANSFORMATION_REGISTERED_SUCCESSFULLY.getCode(),
                                 null, Locale.ENGLISH)))
-                .andExpect(redirectedUrl(MessageFormat.format("/transformation/{0}", transformation.getId())));
+                .andExpect(redirectedUrl(MessageFormat.format("/transformation/{0}/{1}", application.getName(), transformation.getId())));
 
 
     }
@@ -216,8 +231,10 @@ public class TransformationControllerTest extends WebLayerTestContext {
                 ServiceResponseBuilder.<Transformation> ok().withResult(transformation).<Transformation> build());
 
         when(transformationService.get(tenant, application, transformation.getId())).thenReturn(serviceResponse);
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+    		.thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
 
-        getMockMvc().perform(get(MessageFormat.format("/transformation/{0}", transformation.getId())))
+        getMockMvc().perform(get(MessageFormat.format("/transformation/{0}/{1}", application.getName(), transformation.getId())))
                 .andExpect(view().name("transformations/show"))
                 .andExpect(model().attribute("transformation", new TransformationForm().fillFrom(transformation)));
     }
@@ -230,12 +247,14 @@ public class TransformationControllerTest extends WebLayerTestContext {
                 ServiceResponseBuilder.<Transformation> ok().withResult(transformation).<Transformation> build());
 
         when(transformationService.get(tenant, application, transformation.getId())).thenReturn(serviceResponse);
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+        	.thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
 
-        getMockMvc().perform(get(MessageFormat.format("/transformation/{0}/edit", transformation.getId())))
+        getMockMvc().perform(get(MessageFormat.format("/transformation/{0}/{1}/edit", application.getName(), transformation.getId())))
                 .andExpect(view().name("transformations/form"))
                 .andExpect(model().attribute("transformation", new TransformationForm().fillFrom(transformation)))
                 .andExpect(model().attribute("method", "put")).andExpect(model().attribute("action",
-                        MessageFormat.format("/transformation/{0}", transformation.getId())));
+                        MessageFormat.format("/transformation/{0}/{1}", application.getName(), transformation.getId())));
     }
 
     @Configuration
@@ -243,6 +262,10 @@ public class TransformationControllerTest extends WebLayerTestContext {
         @Bean
         public TransformationService transformationService() {
             return Mockito.mock(TransformationService.class);
+        }
+        @Bean
+        public ApplicationService applicationService() {
+            return Mockito.mock(ApplicationService.class);
         }
     }
     
@@ -255,8 +278,10 @@ public class TransformationControllerTest extends WebLayerTestContext {
     	
     	when(transformationService.remove(tenant, application, transformation.getId())).thenReturn(serviceResponse);
     	when(transformationService.getAll(tenant, application)).thenReturn(listServiceResponse);
+    	when(applicationService.getByApplicationName(tenant, application.getName()))
+    		.thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
     	
-    	getMockMvc().perform(delete("/transformation/{0}", transformation.getId()))
+    	getMockMvc().perform(delete("/transformation/{0}/{1}", application.getName(), transformation.getId()))
     		.andExpect(flash().attribute("message", 
     				applicationContext.getMessage(TransformationController.Messages.TRANSFORMATION_REMOVED_SUCCESSFULLY.getCode(), null, Locale.ENGLISH)))
     		.andExpect(redirectedUrl("/transformation"));
