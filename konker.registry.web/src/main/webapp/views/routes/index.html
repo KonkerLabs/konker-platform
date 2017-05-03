@@ -49,7 +49,7 @@
                        class="btn btn-default">
                     </a>
                      -->
-                    <a data-th-href="@{/routes/{id}/edit(id=${route.guid})}"
+                    <a data-th-href="@{/routes/{applicationName}/{id}/edit(id=${route.guid}, applicationName=${route.application.name})}"
                        class="btn btn-default">
                        <img data-th-src="@{/resources/konker/images/icons-bt/edit-icon-bt-01.svg}" class="bt-icon">
                        <span data-th-text="#{nav.edit}"></span>

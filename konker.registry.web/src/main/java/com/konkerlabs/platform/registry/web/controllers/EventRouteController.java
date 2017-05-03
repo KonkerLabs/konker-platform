@@ -18,6 +18,7 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Supplier;
@@ -52,6 +53,8 @@ public class EventRouteController implements ApplicationContextAware {
     @Autowired
     private TransformationService transformationService;
     @Autowired
+    private ApplicationService applicationService;
+    @Autowired
     private Tenant tenant;
     @Autowired
     private Application application;
@@ -59,23 +62,43 @@ public class EventRouteController implements ApplicationContextAware {
 
     @ModelAttribute("allDevices")
     public List<Device> allDevices() {
-        return deviceRegisterService.findAll(tenant, application).getResult();
+    	List<Application> applications = applicationService.findAll(tenant).getResult();
+    	List<Device> devices = new ArrayList<>();
+
+    	applications.forEach(app -> devices.addAll(deviceRegisterService.findAll(tenant, app).getResult()));
+
+        return devices;
     }
 
     @ModelAttribute("allRestDestinations")
     public List<RestDestination> allRestDestinations() {
-        return restDestinationService.findAll(tenant, application).getResult();
+    	List<Application> applications = applicationService.findAll(tenant).getResult();
+    	List<RestDestination> restDestinations = new ArrayList<>();
+
+    	applications.forEach(app -> restDestinations.addAll(restDestinationService.findAll(tenant, app).getResult()));
+
+        return restDestinations;
     }
 
     @ModelAttribute("allTransformations")
     public List<Transformation> allTransformations() {
-        return transformationService.getAll(tenant, application).getResult();
+    	List<Application> applications = applicationService.findAll(tenant).getResult();
+    	List<Transformation> transformations = new ArrayList<>();
+
+    	applications.forEach(app -> transformations.addAll(transformationService.getAll(tenant, app).getResult()));
+
+        return transformations;
     }
 
     @RequestMapping
     @PreAuthorize("hasAuthority('LIST_ROUTES')")
     public ModelAndView index() {
-        return new ModelAndView("routes/index","routes", eventRouteService.getAll(tenant, application).getResult());
+    	List<Application> applications = applicationService.findAll(tenant).getResult();
+    	List<EventRoute> routes = new ArrayList<>();
+
+    	applications.forEach(app -> routes.addAll(eventRouteService.getAll(tenant, app).getResult()));
+
+        return new ModelAndView("routes/index","routes", routes);
     }
 
     @RequestMapping("new")
@@ -83,13 +106,16 @@ public class EventRouteController implements ApplicationContextAware {
     public ModelAndView newRoute() {
         return new ModelAndView("routes/form")
             .addObject("route",new EventRouteForm())
-            .addObject("action","/routes/save");
+            .addObject("action",MessageFormat.format("/routes/{0}/save", application.getName()));
     }
 
-    @RequestMapping(value = "save", method = RequestMethod.POST)
+    @RequestMapping(path = "/{applicationName}/save", method = RequestMethod.POST)
     @PreAuthorize("hasAuthority('CREATE_DEVICE_ROUTE')")
-    public ModelAndView save(@ModelAttribute("eventRouteForm") EventRouteForm eventRouteForm,
+    public ModelAndView save(@PathVariable("applicationName") String applicationName,
+    						 @ModelAttribute("eventRouteForm") EventRouteForm eventRouteForm,
                              RedirectAttributes redirectAttributes, Locale locale) {
+
+    	application = applicationService.getByApplicationName(tenant, applicationName).getResult();
 
         return doSave(() -> {
             eventRouteForm.setAdditionalSupplier(() -> tenant.getDomainName());
@@ -98,26 +124,31 @@ public class EventRouteController implements ApplicationContextAware {
 
     }
 
-    @RequestMapping(value = "/{routeGUID}", method = RequestMethod.GET)
+    @RequestMapping(path = "/{applicationName}/{routeGUID}", method = RequestMethod.GET)
     @PreAuthorize("hasAuthority('SHOW_DEVICE_ROUTE')")
-    public ModelAndView show(@PathVariable("routeGUID") String routeGUID) {
+    public ModelAndView show(@PathVariable("applicationName") String applicationName, @PathVariable("routeGUID") String routeGUID) {
+    	application = applicationService.getByApplicationName(tenant, applicationName).getResult();
         return new ModelAndView("routes/show","route",new EventRouteForm().fillFrom(eventRouteService.getByGUID(tenant, application, routeGUID).getResult()));
     }
 
-    @RequestMapping("/{routeId}/edit")
+    @RequestMapping("/{applicationName}/{routeId}/edit")
     @PreAuthorize("hasAuthority('EDIT_DEVICE_ROUTE')")
-    public ModelAndView edit(@PathVariable String routeId) {
+    public ModelAndView edit(@PathVariable("applicationName") String applicationName, @PathVariable String routeId) {
+    	application = applicationService.getByApplicationName(tenant, applicationName).getResult();
+
         return new ModelAndView("routes/form")
             .addObject("route",new EventRouteForm().fillFrom(eventRouteService.getByGUID(tenant, application, routeId).getResult()))
-            .addObject("action", MessageFormat.format("/routes/{0}",routeId))
+            .addObject("action", MessageFormat.format("/routes/{0}/{1}", applicationName, routeId))
             .addObject("method", "put");
     }
 
-    @RequestMapping(path = "/{routeGUID}", method = RequestMethod.PUT)
+    @RequestMapping(path = "/{applicationName}/{routeGUID}", method = RequestMethod.PUT)
     @PreAuthorize("hasAuthority('EDIT_DEVICE_ROUTE')")
-    public ModelAndView saveEdit(@PathVariable String routeGUID,
+    public ModelAndView saveEdit(@PathVariable("applicationName") String applicationName,
+    							 @PathVariable String routeGUID,
                                  @ModelAttribute("eventRouteForm") EventRouteForm eventRouteForm,
                                  RedirectAttributes redirectAttributes, Locale locale) {
+    	application = applicationService.getByApplicationName(tenant, applicationName).getResult();
 
         return doSave(() -> {
             eventRouteForm.setAdditionalSupplier(() -> tenant.getDomainName());
@@ -155,16 +186,19 @@ public class EventRouteController implements ApplicationContextAware {
                 redirectAttributes.addFlashAttribute("message",
                     applicationContext.getMessage(Messages.ROUTE_REGISTERED_SUCCESSFULLY.getCode(),null,locale)
                 );
-                return new ModelAndView(MessageFormat.format("redirect:/routes/{0}",
+                return new ModelAndView(MessageFormat.format("redirect:/routes/{0}/{1}",
+                		response.getResult().getApplication().getName(),
                         response.getResult().getGuid()));
             }
         }
     }
 
-    @RequestMapping(path = "/{routeGUID}", method = RequestMethod.DELETE)
+    @RequestMapping(path = "/{applicationName}/{routeGUID}", method = RequestMethod.DELETE)
     @PreAuthorize("hasAuthority('REMOVE_DEVICE_ROUTE')")
-    public ModelAndView remove(@PathVariable("routeGUID") String routeGUID,
+    public ModelAndView remove(@PathVariable("applicationName") String applicationName,
+    						   @PathVariable("routeGUID") String routeGUID,
                                RedirectAttributes redirectAttributes, Locale locale) {
+    	application = applicationService.getByApplicationName(tenant, applicationName).getResult();
         ServiceResponse<EventRoute> serviceResponse = eventRouteService.remove(tenant, application, routeGUID);
 
         if (serviceResponse.isOk()) {

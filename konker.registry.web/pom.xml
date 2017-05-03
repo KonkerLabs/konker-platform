@@ -13,28 +13,6 @@
     <artifactId>konker.registry.web</artifactId>
     <packaging>war</packaging>
 
-    <profiles>
-        <profile>
-            <id>mongodb</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-        </profile>
-        <profile>
-            <id>cassandra</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>com.konkerlabs</groupId>
-                    <artifactId>konker.registry.services.storage.cassandra</artifactId>
-                    <version>0.0.1</version>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>
-
     <build>
         <finalName>registry</finalName>
         <plugins>
@@ -212,6 +190,11 @@
         <dependency>
             <groupId>com.konkerlabs</groupId>
             <artifactId>konker.registry.services.storage.mongodb</artifactId>
+            <version>0.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.konkerlabs</groupId>
+            <artifactId>konker.registry.services.storage.cassandra</artifactId>
             <version>0.0.1</version>
         </dependency>
     </dependencies>

@@ -16,6 +16,8 @@ import java.time.ZonedDateTime;
 @Builder
 public class Event {
 
+    private Long epochTime;
+
     private Instant timestamp;
 
     @JsonView(EventJsonView.class)

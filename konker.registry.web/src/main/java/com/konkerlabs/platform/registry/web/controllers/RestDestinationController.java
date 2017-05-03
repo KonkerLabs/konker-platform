@@ -1,11 +1,14 @@
 package com.konkerlabs.platform.registry.web.controllers;
 
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.RestDestination;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
-import com.konkerlabs.platform.registry.web.forms.RestDestinationForm;
+import static java.text.MessageFormat.format;
+
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -20,12 +23,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
-import static java.text.MessageFormat.format;
+import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.RestDestination;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
+import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.web.forms.RestDestinationForm;
 
 @Controller
 @Scope("request")
@@ -50,6 +54,8 @@ public class RestDestinationController implements ApplicationContextAware {
     @Autowired
     private RestDestinationService restDestinationService;
     @Autowired
+    private ApplicationService applicationService;
+    @Autowired
     private Tenant tenant;
     @Autowired
     private Application application;
@@ -58,8 +64,13 @@ public class RestDestinationController implements ApplicationContextAware {
     @RequestMapping
     @PreAuthorize("hasAuthority('LIST_REST_DESTINATIONS')")
     public ModelAndView index() {
+    	List<Application> applications = applicationService.findAll(tenant).getResult();
+    	List<RestDestination> restDestinations = new ArrayList<>();
+    	
+    	applications.forEach(app -> restDestinations.addAll(restDestinationService.findAll(tenant, app).getResult()));
+    	
         return new ModelAndView("destinations/rest/index")
-            .addObject("allDestinations", restDestinationService.findAll(tenant, application).getResult());
+            .addObject("allDestinations", restDestinations);
     }
 
     @RequestMapping("new")
@@ -67,42 +78,52 @@ public class RestDestinationController implements ApplicationContextAware {
     public ModelAndView newDestination() {
         return new ModelAndView("destinations/rest/form")
                 .addObject("destination", new RestDestinationForm())
-                .addObject("action", "/destinations/rest/save");
+                .addObject("action", MessageFormat.format("/destinations/rest/{0}/save", application.getName()));
     }
 
-    @RequestMapping(value = "save", method = RequestMethod.POST)
+    @RequestMapping(path = "/{applicationName}/save", method = RequestMethod.POST)
     @PreAuthorize("hasAuthority('CREATE_REST_DESTINATION')")
-    public ModelAndView saveNew(@ModelAttribute("destinationForm") RestDestinationForm destinationForm,
-                                RedirectAttributes redirectAttributes, Locale locale) {
+    public ModelAndView saveNew(@PathVariable("applicationName") String applicationName,
+    							@ModelAttribute("destinationForm") RestDestinationForm destinationForm,
+    							RedirectAttributes redirectAttributes, Locale locale) {
+    	
+    	application = applicationService.getByApplicationName(tenant, applicationName).getResult();
+    	
         return doSave(
                 () -> restDestinationService.register(tenant, application, destinationForm.toModel()),
                 destinationForm, locale,
                 redirectAttributes, "");
     }
 
-    @RequestMapping(value = "/{guid}", method = RequestMethod.GET)
+    @RequestMapping(value = "/{applicationName}/{guid}", method = RequestMethod.GET)
     @PreAuthorize("hasAuthority('SHOW_REST_DESTINATION')")
-    public ModelAndView show(@PathVariable("guid") String guid) {
+    public ModelAndView show(@PathVariable("applicationName") String applicationName,
+    							@PathVariable("guid") String guid) {
+    	application = applicationService.getByApplicationName(tenant, applicationName).getResult();
         return new ModelAndView("destinations/rest/show")
             .addObject("destination",new RestDestinationForm()
                     .fillFrom(restDestinationService.getByGUID(tenant, application, guid).getResult()));
     }
 
-    @RequestMapping("/{guid}/edit")
+    @RequestMapping("/{applicationName}/{guid}/edit")
     @PreAuthorize("hasAuthority('EDIT_REST_DESTINATION')")
-    public ModelAndView edit(@PathVariable("guid") String guid) {
+    public ModelAndView edit(@PathVariable("applicationName") String applicationName,
+    							@PathVariable("guid") String guid) {
+    	application = applicationService.getByApplicationName(tenant, applicationName).getResult();
         return new ModelAndView("destinations/rest/form")
                 .addObject("destination",new RestDestinationForm()
                         .fillFrom(restDestinationService.getByGUID(tenant, application, guid).getResult()))
-                .addObject("action",format("/destinations/rest/{0}",guid))
+                .addObject("action",format("/destinations/rest/{0}/{1}", applicationName, guid))
                 .addObject("method", "put");
     }
 
-    @RequestMapping(value = "/{guid}", method = RequestMethod.PUT)
+    @RequestMapping(value = "/{applicationName}/{guid}", method = RequestMethod.PUT)
     @PreAuthorize("hasAuthority('EDIT_REST_DESTINATION')")
-    public ModelAndView saveEdit(@PathVariable String guid,
+    public ModelAndView saveEdit(@PathVariable("applicationName") String applicationName,
+    							@PathVariable String guid,
                                 @ModelAttribute("destinationForm") RestDestinationForm destinationForm,
                                 RedirectAttributes redirectAttributes, Locale locale) {
+    	application = applicationService.getByApplicationName(tenant, applicationName).getResult();
         return doSave(
                 () -> restDestinationService.update(tenant, application, guid, destinationForm.toModel()),
                 destinationForm, locale,
@@ -128,18 +149,23 @@ public class RestDestinationController implements ApplicationContextAware {
                     applicationContext.getMessage(RestDestinationController.Messages.ENRICHMENT_REGISTERED_SUCCESSFULLY.getCode(),null,locale)
                 );
                 return new ModelAndView(
-                        format("redirect:/destinations/rest/{0}", serviceResponse.getResult().getGuid())
+                        format("redirect:/destinations/rest/{0}/{1}", 
+                        		serviceResponse.getResult().getApplication().getName(),
+                        		serviceResponse.getResult().getGuid())
                 );
             }
         }
     }
 
-    @RequestMapping(path = "/{guid}", method = RequestMethod.DELETE)
+    @RequestMapping(path = "/{applicationName}/{guid}", method = RequestMethod.DELETE)
     @PreAuthorize("hasAuthority('REMOVE_REST_DESTINATION')")
-    public ModelAndView remove(@PathVariable String guid,
+    public ModelAndView remove(@PathVariable("applicationName") String applicationName,
+    						   @PathVariable String guid,
     						   @ModelAttribute("destinationForm") RestDestinationForm destinationForm,
                                RedirectAttributes redirectAttributes, Locale locale) {
-
+    	
+    	application = applicationService.getByApplicationName(tenant, applicationName).getResult();
+    	
         ServiceResponse<RestDestination> serviceResponse = restDestinationService.remove(tenant, application, guid);
         if (serviceResponse.isOk()) {
             redirectAttributes.addFlashAttribute("message",

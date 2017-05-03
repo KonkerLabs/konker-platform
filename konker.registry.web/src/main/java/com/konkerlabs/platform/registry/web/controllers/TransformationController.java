@@ -1,11 +1,12 @@
 package com.konkerlabs.platform.registry.web.controllers;
 
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.Transformation;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.TransformationService;
-import com.konkerlabs.platform.registry.web.forms.TransformationForm;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -21,12 +22,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.stream.Collectors;
+import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.Transformation;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.TransformationService;
+import com.konkerlabs.platform.registry.web.forms.TransformationForm;
 
 @Controller
 @RequestMapping("transformation")
@@ -52,6 +54,9 @@ public class TransformationController implements ApplicationContextAware {
 
     @Autowired
     private TransformationService transformationService;
+    
+    @Autowired
+    private ApplicationService applicationService;
 
     @Autowired
     private Tenant tenant;
@@ -62,11 +67,13 @@ public class TransformationController implements ApplicationContextAware {
     @RequestMapping
     @PreAuthorize("hasAuthority('LIST_TRANSFORMATION')")
     public ModelAndView index() {
+    	List<Application> applications = applicationService.findAll(tenant).getResult();
+    	List<Transformation> transformations = new ArrayList<>();
+    	
+    	applications.forEach(app -> transformations.addAll(transformationService.getAll(tenant, app).getResult()));
+    	
         return new ModelAndView("transformations/index")
-                .addObject("transformations", transformationService.getAll(
-                        tenant,
-                        application
-                ).getResult());
+                .addObject("transformations", transformations);
     }
 
     @RequestMapping("new")
@@ -74,18 +81,21 @@ public class TransformationController implements ApplicationContextAware {
     public ModelAndView newTransformation() {
         return new ModelAndView("transformations/form")
                 .addObject("transformation", new TransformationForm())
-                .addObject("action", "/transformation/save");
+                .addObject("action", MessageFormat.format("/transformation/{0}/save", application.getName()));
     }
 
-    @RequestMapping(value = "save", method = RequestMethod.POST)
+    @RequestMapping(path = "/{applicationName}/save", method = RequestMethod.POST)
     @PreAuthorize("hasAuthority('CREATE_TRANSFORMATION')")
-    public ModelAndView save(@ModelAttribute("transformation") TransformationForm transformationForm,
+    public ModelAndView save(@PathVariable("applicationName") String applicationName,
+    						 @ModelAttribute("transformation") TransformationForm transformationForm,
                              BindingResult bindingResult, RedirectAttributes redirectAttributes, Locale locale) {
+    	
+    	application = applicationService.getByApplicationName(tenant, applicationName).getResult();
 
         ServiceResponse<Transformation> serviceResponse =
                 transformationService.register(
                         tenant,
-                        transformationForm.toModel().getApplication(),
+                        application,
                         transformationForm.toModel());
 
         switch (serviceResponse.getStatus()) {
@@ -104,13 +114,18 @@ public class TransformationController implements ApplicationContextAware {
                 redirectAttributes.addFlashAttribute("message",
                         applicationContext.getMessage(Messages.TRANSFORMATION_REGISTERED_SUCCESSFULLY.getCode(), null, locale)
                 );
-                return new ModelAndView(MessageFormat.format("redirect:/transformation/{0}", serviceResponse.getResult().getGuid()));
+                return new ModelAndView(MessageFormat.format("redirect:/transformation/{0}/{1}", 
+                				serviceResponse.getResult().getApplication().getName(), 
+                				serviceResponse.getResult().getGuid()));
         }
     }
 
-    @RequestMapping(value = "/{transformationGuid}", method = RequestMethod.GET)
+    @RequestMapping(path = "/{applicationName}/{transformationGuid}", method = RequestMethod.GET)
     @PreAuthorize("hasAuthority('SHOW_TRANSFORMATION')")
-    public ModelAndView show(@PathVariable("transformationGuid") String transformationGuid) {
+    public ModelAndView show(@PathVariable("applicationName") String applicationName, 
+    						 @PathVariable("transformationGuid") String transformationGuid) {
+    	application = applicationService.getByApplicationName(tenant, applicationName).getResult();
+    	
         return new ModelAndView("transformations/show", "transformation",
                 new TransformationForm()
                         .fillFrom(
@@ -120,9 +135,12 @@ public class TransformationController implements ApplicationContextAware {
                                         transformationGuid).getResult()));
     }
 
-    @RequestMapping("/{transformationGuid}/edit")
+    @RequestMapping("/{applicationName}/{transformationGuid}/edit")
     @PreAuthorize("hasAuthority('EDIT_TRANSFORMATION')")
-    public ModelAndView edit(@PathVariable("transformationGuid") String transformationGuid) {
+    public ModelAndView edit(@PathVariable("applicationName") String applicationName,
+    						 @PathVariable("transformationGuid") String transformationGuid) {
+    	application = applicationService.getByApplicationName(tenant, applicationName).getResult();
+    	
         return new ModelAndView("transformations/form")
                 .addObject("transformation",
                         new TransformationForm()
@@ -131,15 +149,18 @@ public class TransformationController implements ApplicationContextAware {
                                                 tenant,
                                                 application,
                                                 transformationGuid).getResult()))
-                .addObject("action", MessageFormat.format("/transformation/{0}", transformationGuid))
+                .addObject("action", MessageFormat.format("/transformation/{0}/{1}", applicationName, transformationGuid))
                 .addObject("method", "put");
     }
 
-    @RequestMapping(path = "/{transformationGuid}", method = RequestMethod.PUT)
+    @RequestMapping(path = "/{applicationName}/{transformationGuid}", method = RequestMethod.PUT)
     @PreAuthorize("hasAuthority('EDIT_TRANSFORMATION')")
-    public ModelAndView saveEdit(@PathVariable String transformationGuid,
+    public ModelAndView saveEdit(@PathVariable("applicationName") String applicationName,
+    							 @PathVariable String transformationGuid,
                                  @ModelAttribute("transformation") TransformationForm transformationForm, Locale locale,
                                  RedirectAttributes redirectAttributes) {
+    	
+    	application = applicationService.getByApplicationName(tenant, applicationName).getResult();
 
         ServiceResponse<Transformation> response =
                 transformationService.update(
@@ -164,16 +185,21 @@ public class TransformationController implements ApplicationContextAware {
                 redirectAttributes.addFlashAttribute("message",
                         applicationContext.getMessage(Messages.TRANSFORMATION_REGISTERED_SUCCESSFULLY.getCode(), null, locale)
                 );
-                return new ModelAndView(MessageFormat.format("redirect:/transformation/{0}",
+                return new ModelAndView(MessageFormat.format("redirect:/transformation/{0}/{1}",
+                		response.getResult().getApplication().getName(),
                         response.getResult().getGuid()));
             }
         }
     }
 
-    @RequestMapping(path = "/{transformationGuid}", method = RequestMethod.DELETE)
+    @RequestMapping(path = "/{applicationName}/{transformationGuid}", method = RequestMethod.DELETE)
     @PreAuthorize("hasAuthority('REMOVE_TRANSFORMATION')")
-    public ModelAndView remove(@PathVariable("transformationGuid") String transformationGuid, @ModelAttribute("transformation") TransformationForm transformationForm,
-                               RedirectAttributes redirectAttributes, Locale locale) {
+    public ModelAndView remove(@PathVariable("applicationName") String applicationName,
+    							@PathVariable("transformationGuid") String transformationGuid, 
+    							@ModelAttribute("transformation") TransformationForm transformationForm,
+    							RedirectAttributes redirectAttributes, Locale locale) {
+    	application = applicationService.getByApplicationName(tenant, applicationName).getResult();
+    	
         ModelAndView modelAndView;
         ServiceResponse<Transformation> serviceResponse =
                 transformationService.remove(

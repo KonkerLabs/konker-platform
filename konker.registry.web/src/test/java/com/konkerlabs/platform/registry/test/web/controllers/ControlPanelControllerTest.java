@@ -20,6 +20,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.Mockito.when;
@@ -59,12 +60,16 @@ public class ControlPanelControllerTest extends WebLayerTestContext {
 	@Autowired
 	private RestDestinationService restDestinationService;
 
+	@Autowired
+	private ApplicationService applicationService;
+	
 	@After
 	public void tearDown() {
 		Mockito.reset(deviceRegisterService);
 		Mockito.reset(eventRouteService);
 		Mockito.reset(transformationService);
 		Mockito.reset(restDestinationService);
+		Mockito.reset(applicationService);
 	}
 
 	@Test
@@ -97,6 +102,8 @@ public class ControlPanelControllerTest extends WebLayerTestContext {
 				.thenReturn(ServiceResponseBuilder.<List<Transformation>>ok().withResult(transformations).build());
 		when(restDestinationService.findAll(tenant, application))
 				.thenReturn(ServiceResponseBuilder.<List<RestDestination>>ok().withResult(destinations).build());
+		when(applicationService.findAll(tenant))
+				.thenReturn(ServiceResponseBuilder.<List<Application>> ok().withResult(Collections.singletonList(application)).build());
 
 		getMockMvc().perform(get("/"))
 			.andExpect(view().name("panel/index"))

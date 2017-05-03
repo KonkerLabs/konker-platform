@@ -78,6 +78,7 @@ public class TransformationServiceImpl
                     .withMessage(ApplicationService.Validations.APPLICATION_NOT_FOUND.getCode()).build();
 
         transformation.setTenant(tenant);
+        transformation.setApplication(existingApplication);
         transformation.setGuid(UUID.randomUUID().toString());
 
         Optional<Map<String, Object[]>> validations = transformation.applyValidations();

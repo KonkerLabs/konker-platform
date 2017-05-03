@@ -1,120 +1,157 @@
 package com.konkerlabs.platform.registry.business.repositories.events;
 
-import com.datastax.driver.core.querybuilder.Delete;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Random;
+
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.Session;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.Event.EventActor;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
-import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.events.api.BaseEventRepositoryImpl;
-import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
-import com.mongodb.util.JSON;
-import lombok.Builder;
-import lombok.Data;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cassandra.core.Ordering;
-import org.springframework.cassandra.core.PrimaryKeyType;
-import org.springframework.data.cassandra.core.CassandraOperations;
-import org.springframework.data.cassandra.mapping.Column;
-import org.springframework.data.cassandra.mapping.Indexed;
-import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
-import org.springframework.data.cassandra.mapping.Table;
-import org.springframework.data.keyvalue.annotation.KeySpace;
-import org.springframework.stereotype.Repository;
-
-import java.time.Instant;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Repository("cassandraEvents")
-public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
+public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implements DisposableBean {
+
+    private static final String REGISTRYKEYSPACE = "registrykeyspace";
+
+    private static final String INCOMING_EVENTS = "incoming_events";
+    private static final String INCOMING_EVENTS_CHANNEL = "incoming_events_channel";
+    private static final String INCOMING_EVENTS_DEVICE_GUID = "incoming_events_device_guid";
+    private static final String INCOMING_EVENTS_DEVICE_GUID_CHANNEL = "incoming_events_device_guid_channel";
+    private static final String INCOMING_EVENTS_DELETED = "incoming_events_deleted";
+
+    private static final String OUTGOING_EVENTS = "outgoing_events";
+    private static final String OUTGOING_EVENTS_CHANNEL = "outgoing_events_channel";
+    private static final String OUTGOING_EVENTS_DEVICE_GUID = "outgoing_events_device_guid";
+    private static final String OUTGOING_EVENTS_DEVICE_GUID_CHANNEL = "outgoing_events_device_guid_channel";
+    private static final String OUTGOING_EVENTS_DELETED = "outgoing_events_deleted";
 
     @Autowired
-    private JsonParsingService jsonParsingService;
-    @Autowired(required = false)
-    private CassandraOperations cassandraOperations;
-    @Autowired
-    private TenantRepository tenantRepository;
+    private Cluster cluster;
 
     @Autowired
-    private DeviceRepository deviceRepository;
+    private Session session;
 
-    public static final String INCOMMINGTABLE = "incoming_events";
-    public static final String OUTGOINGTABLE = "outgoing_events";
-    private static final Logger LOG = LoggerFactory.getLogger(EventRepositoryCassandraImpl.class);
+    private Random rnd = new Random(System.nanoTime());
 
     @Override
     protected Event doSave(Tenant tenant, Application application, Event event, Type type) throws BusinessException {
-        Optional.ofNullable(tenantRepository.findByDomainName(tenant.getDomainName()))
-                .orElseThrow(() -> new BusinessException(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()));
 
-        Tenant existingTenant = tenantRepository.findByDomainName(tenant.getDomainName());
+        event.setEpochTime(event.getTimestamp().toEpochMilli() * 1000000 + rnd.nextInt(1000000));
 
-        Optional.ofNullable(
-                deviceRepository.findByTenantAndGuid(existingTenant.getId(), event.getIncoming().getDeviceGuid())
-        ).orElseThrow(() -> new BusinessException(Validations.INCOMING_DEVICE_ID_DOES_NOT_EXIST.getCode()));
-
-        Optional.ofNullable(event.getTimestamp())
-                .orElseThrow(() -> new BusinessException(Validations.EVENT_TIMESTAMP_NULL.getCode()));
-
-        if (type.equals(Type.OUTGOING)) {
-            Optional.ofNullable(event.getOutgoing())
-                    .orElseThrow(() -> new BusinessException(Validations.EVENT_OUTGOING_NULL.getCode()));
-            Optional.ofNullable(event.getOutgoing().getDeviceGuid()).filter(s -> !s.isEmpty())
-                    .orElseThrow(() -> new BusinessException(Validations.OUTGOING_DEVICE_GUID_NULL.getCode()));
-            Optional.ofNullable(event.getOutgoing().getChannel()).filter(s -> !s.isEmpty())
-                    .orElseThrow(() -> new BusinessException(Validations.EVENT_OUTGOING_CHANNEL_NULL.getCode()));
-
-            Optional.ofNullable(
-                    deviceRepository.findByTenantAndGuid(existingTenant.getId(), event.getOutgoing().getDeviceGuid())
-            ).orElseThrow(() -> new BusinessException(Validations.OUTGOING_DEVICE_ID_DOES_NOT_EXIST.getCode()));
+        if (type == Type.INCOMING) {
+            saveEvent(tenant, application, event, type, INCOMING_EVENTS);
+            saveEvent(tenant, application, event, type, INCOMING_EVENTS_DEVICE_GUID);
+            saveEvent(tenant, application, event, type, INCOMING_EVENTS_DEVICE_GUID_CHANNEL);
+            saveEvent(tenant, application, event, type, INCOMING_EVENTS_CHANNEL);
+        } else if (type == Type.OUTGOING) {
+            saveEvent(tenant, application, event, type, OUTGOING_EVENTS);
+            saveEvent(tenant, application, event, type, OUTGOING_EVENTS_DEVICE_GUID);
+            saveEvent(tenant, application, event, type, OUTGOING_EVENTS_DEVICE_GUID_CHANNEL);
+            saveEvent(tenant, application, event, type, OUTGOING_EVENTS_CHANNEL);
         }
 
-        if (type.equals(Type.INCOMING)) {
-            event.getIncoming().setTenantDomain(tenant.getDomainName());
-            cassandraOperations.insert(
-                    CassandraIncommingEvent
-                            .builder()
-                            .tenantDomain(event.getIncoming().getTenantDomain())
-                            .applicationName(event.getIncoming().getApplicationName())
-                            .deviceGuid(event.getIncoming().getDeviceGuid())
-                            .deviceId(event.getIncoming().getDeviceId())
-                            .channel(event.getIncoming().getChannel())
-                            .timestamp(event.getTimestamp().toEpochMilli())
-                            .payload(event.getPayload())
-                            .deleted(false)
-                            .build());
-        } else {
-            event.getOutgoing().setTenantDomain(tenant.getDomainName());
-            Map<String, String> incommingMap = new HashMap(){{
-                put("tenantDomain", event.getIncoming().getTenantDomain());
-                put("applicationName", event.getIncoming().getApplicationName());
-                put("deviceGuid", event.getIncoming().getDeviceGuid());
-                put("deviceId", event.getIncoming().getDeviceGuid());
-                put("channel", event.getIncoming().getChannel());
-            }};
-            cassandraOperations.insert(
-                    CassandraOutgoingEvent
-                            .builder()
-                            .tenantDomain(event.getOutgoing().getTenantDomain())
-                            .applicationName(event.getOutgoing().getApplicationName())
-                            .deviceGuid(event.getOutgoing().getDeviceGuid())
-                            .deviceId(event.getOutgoing().getDeviceId())
-                            .channel(event.getOutgoing().getChannel())
-                            .timestamp(event.getTimestamp().toEpochMilli())
-                            .payload(event.getPayload())
-                            .incomming(JSON.serialize(incommingMap))
-                            .deleted(false)
-                            .build());
-        }
         return event;
+
+    }
+
+    private void saveEvent(Tenant tenant, Application application, Event event, Type type, String table) {
+
+        if (type == Type.INCOMING) {
+
+            StringBuilder query = new StringBuilder();
+            query.append("INSERT INTO ");
+            query.append(REGISTRYKEYSPACE);
+            query.append(".");
+            query.append(table);
+            query.append(" (");
+            query.append("tenant_domain, ");
+            query.append("application_name, ");
+            query.append("timestamp, ");
+            query.append("channel, ");
+            query.append("device_guid, ");
+            query.append("device_id, ");
+            query.append("payload");
+            query.append(") VALUES (");
+            query.append("?, ");
+            query.append("?, ");
+            query.append("?, ");
+            query.append("?, ");
+            query.append("?, ");
+            query.append("?, ");
+            query.append("?");
+            query.append(")");
+
+            session.execute(
+                    query.toString(),
+                    tenant.getDomainName(),
+                    application.getName(),
+                    event.getEpochTime(),
+                    event.getIncoming().getChannel(),
+                    event.getIncoming().getDeviceGuid(),
+                    event.getIncoming().getDeviceId(),
+                    event.getPayload());
+
+        } else if (type == Type.OUTGOING) {
+
+            StringBuilder query = new StringBuilder();
+            query.append("INSERT INTO ");
+            query.append(REGISTRYKEYSPACE);
+            query.append(".");
+            query.append(table);
+            query.append(" (");
+            query.append("tenant_domain, ");
+            query.append("application_name, ");
+            query.append("timestamp, ");
+            query.append("channel, ");
+            query.append("device_guid, ");
+
+            query.append("incoming_channel, ");
+            query.append("incoming_device_guid, ");
+            query.append("incoming_device_id, ");
+
+            query.append("device_id, ");
+            query.append("payload");
+            query.append(") VALUES (");
+            query.append("?, ");
+            query.append("?, ");
+            query.append("?, ");
+            query.append("?, ");
+            query.append("?, ");
+            query.append("?, ");
+            query.append("?, ");
+            query.append("?, ");
+            query.append("?, ");
+            query.append("?");
+            query.append(")");
+
+            session.execute(
+                    query.toString(),
+                    tenant.getDomainName(),
+                    application.getName(),
+                    event.getEpochTime(),
+                    event.getOutgoing().getChannel(),
+                    event.getOutgoing().getDeviceGuid(),
+                    event.getOutgoing().getDeviceId(),
+                    event.getIncoming().getChannel(),
+                    event.getIncoming().getDeviceGuid(),
+                    event.getIncoming().getDeviceId(),
+                    event.getPayload());
+
+        }
+
     }
 
     @Override
@@ -129,170 +166,286 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl {
                                    Type type,
                                    boolean isDeleted) throws BusinessException {
 
-        Select queryIncomming = QueryBuilder.select().from(INCOMMINGTABLE);
-        queryIncomming.where(QueryBuilder.eq("tenant_domain", tenant.getDomainName()));
-        queryIncomming.where(QueryBuilder.eq("application_name", application.getName()));
+        StringBuilder query = new StringBuilder();
 
-        Optional.ofNullable(deviceGuid).ifPresent(value -> {
-            queryIncomming.where(QueryBuilder.eq("device_guid", deviceGuid));
-        });
-        Optional.ofNullable(channel).ifPresent(value -> {
-            queryIncomming.where(QueryBuilder.eq("channel", value));
-        });
+        String table = null;
 
-        Optional.ofNullable(startInstant).ifPresent(value -> {
-            queryIncomming.where(QueryBuilder.gte("timestamp", value.toEpochMilli()));
-        });
-        Optional.ofNullable(endInstant).ifPresent(value -> {
-            queryIncomming.where(QueryBuilder.lte("timestamp", value.toEpochMilli()));
-        });
+        List<Object> filters = new ArrayList<>();
 
-
-        Select queryOutgoing = QueryBuilder.select().from(OUTGOINGTABLE);
-        queryOutgoing.where(QueryBuilder.eq("tenant_domain", tenant.getDomainName()));
-        queryOutgoing.where(QueryBuilder.eq("application_name", application.getName()));
-
-        Optional.ofNullable(deviceGuid).ifPresent(value -> {
-            queryOutgoing.where(QueryBuilder.eq("device_guid", deviceGuid));
-        });
-        Optional.ofNullable(channel).ifPresent(value -> {
-            queryOutgoing.where(QueryBuilder.eq("channel", value));
-        });
-        Optional.ofNullable(startInstant).ifPresent(value -> {
-            queryOutgoing.where(QueryBuilder.gte("timestamp", value.toEpochMilli()));
-        });
-        Optional.ofNullable(endInstant).ifPresent(value -> {
-            queryOutgoing.where(QueryBuilder.lte("timestamp", value.toEpochMilli()));
-        });
-       
-        if (deviceGuid != null && channel != null) {
-        	queryIncomming.allowFiltering();
-        	queryOutgoing.allowFiltering();
+        if (type == Type.INCOMING) {
+            if (deviceGuid != null && channel != null) {
+                table = INCOMING_EVENTS_DEVICE_GUID_CHANNEL;
+            } else if (deviceGuid != null && channel == null) {
+                table = INCOMING_EVENTS_DEVICE_GUID;
+            } else if (deviceGuid == null && channel != null) {
+                table = INCOMING_EVENTS_CHANNEL;
+            } else if (deviceGuid == null && channel == null) {
+                table = INCOMING_EVENTS;
+            }
+        } else if (type == Type.OUTGOING) {
+            if (deviceGuid != null && channel != null) {
+                table = OUTGOING_EVENTS_DEVICE_GUID_CHANNEL;
+            } else if (deviceGuid != null && channel == null) {
+                table = OUTGOING_EVENTS_DEVICE_GUID;
+            } else if (deviceGuid == null && channel != null) {
+                table = OUTGOING_EVENTS_CHANNEL;
+            } else if (deviceGuid == null && channel == null) {
+                table = OUTGOING_EVENTS;
+            }
         }
 
-        List<Event> events = new ArrayList<>();
-        if (type.equals(Type.INCOMING)) {
-            List<CassandraIncommingEvent> incommingEvents =
-                    cassandraOperations.select(queryIncomming, CassandraIncommingEvent.class);
-            events.addAll(incommingEvents.stream().map(incoming -> {
-                return Event.builder().incoming(
-                        Event.EventActor.builder()
-                                .deviceGuid(incoming.getDeviceGuid())
-                                .tenantDomain(incoming.getTenantDomain())
-                                .applicationName(incoming.getApplicationName())
-                                .channel(incoming.getChannel())
-                                .deviceId(incoming.getDeviceId())
-                                .build())
-                        .outgoing(null)
-                        .payload(incoming.getPayload())
-                        .timestamp(Instant.ofEpochMilli(incoming.getTimestamp()))
-                        .build();
-            }).collect(Collectors.toList()));
+        query.append("SELECT * FROM ");
+        query.append(REGISTRYKEYSPACE);
+        query.append(".");
+        query.append(table);
+        query.append(" WHERE ");
 
+        query.append(" tenant_domain = ?");
+        filters.add(tenant.getDomainName());
+
+        query.append(" AND application_name = ?");
+        filters.add(application.getName());
+
+        if (deviceGuid != null) {
+            query.append(" AND device_guid = ?");
+            filters.add(deviceGuid);
         }
-        if (type.equals(Type.OUTGOING)) {
-            List<CassandraOutgoingEvent> outgoingEvents =
-                    cassandraOperations.select(queryOutgoing, CassandraOutgoingEvent.class);
 
-            events.addAll(outgoingEvents.stream().map(outgoing -> {
-                return Event.builder().outgoing(
-                        Event.EventActor.builder()
-                                .deviceGuid(outgoing.getDeviceGuid())
-                                .tenantDomain(outgoing.getTenantDomain())
-                                .applicationName(outgoing.getApplicationName())
-                                .channel(outgoing.getChannel())
-                                .deviceId(outgoing.getDeviceId())
-                                .build())
-                        .incoming(Optional.ofNullable(outgoing.getIncomming())
-                                .map(incoming -> {
-                                    try {
-                                        Map<String, Object> incomingMap = jsonParsingService.toMap(outgoing.getIncomming());
-                                        return Event.EventActor.builder()
-                                                .deviceGuid(Optional.ofNullable(incomingMap.get("deviceGuid")).isPresent() ? incomingMap.get("deviceGuid").toString() : null)
-                                                .tenantDomain(Optional.ofNullable(incomingMap.get("tenantDomain")).isPresent() ? incomingMap.get("tenantDomain").toString() : null)
-                                                .applicationName(Optional.ofNullable(incomingMap.get("applicationName")).isPresent() ? incomingMap.get("applicationName").toString() : null)
-                                                .channel(Optional.ofNullable(incomingMap.get("channel")).isPresent() ? incomingMap.get("channel").toString() : null)
-                                                .deviceId(Optional.ofNullable(incomingMap.get("deviceId")).isPresent() ? incomingMap.get("deviceId").toString() : null)
-                                                .build();
-                                    } catch (JsonProcessingException e) {
-                                        LOG.error("Error transforming incoming message : " + outgoing.getIncomming(), e);
-                                    }
-                                    return null;
-                                }).orElse(null))
-                        .payload(outgoing.getPayload())
-                        .timestamp(Instant.ofEpochMilli(outgoing.getTimestamp()))
+        if (channel != null) {
+            query.append(" AND channel = ?");
+            filters.add(channel);
+        }
+
+        if (startInstant != null) {
+            query.append(" AND timestamp >= ?");
+            filters.add(startInstant.toEpochMilli() * 1000000);
+        }
+
+        if (endInstant != null) {
+            query.append(" AND timestamp <= ?");
+            filters.add(endInstant.toEpochMilli() * 1000000);
+        }
+
+        if (ascending) {
+            query.append(" ORDER BY timestamp ASC");
+        } else {
+            query.append(" ORDER BY timestamp DESC");
+        }
+
+        if (limit != null) {
+            query.append(" LIMIT ");
+            query.append(limit);
+        }
+
+        final ResultSet rs = session.execute(query.toString(), filters.toArray(new Object[filters.size()]));
+
+        List<Event> events = new LinkedList<>();
+
+        while (!rs.isExhausted()) {
+            final Row row = rs.one();
+
+            EventActor outgoingActor = null;
+            EventActor incomingActor = null;
+
+            if (type == Type.INCOMING) {
+
+                incomingActor = EventActor.builder()
+                                          .tenantDomain(row.getString("tenant_domain"))
+                                          .applicationName(row.getString("application_name"))
+                                          .deviceGuid(row.getString("device_guid"))
+                                          .deviceId(row.getString("device_id"))
+                                          .channel(row.getString("channel"))
+                                          .build();
+
+            } else if (type == Type.OUTGOING) {
+
+                outgoingActor = EventActor.builder()
+                        .tenantDomain(row.getString("tenant_domain"))
+                        .applicationName(row.getString("application_name"))
+                        .deviceGuid(row.getString("device_guid"))
+                        .deviceId(row.getString("device_id"))
+                        .channel(row.getString("channel"))
                         .build();
-            }).collect(Collectors.toList()));
+
+                incomingActor = EventActor.builder()
+                        .tenantDomain(row.getString("tenant_domain"))
+                        .applicationName(row.getString("application_name"))
+                        .deviceGuid(row.getString("incoming_device_guid"))
+                        .deviceId(row.getString("incoming_device_id"))
+                        .channel(row.getString("incoming_channel"))
+                        .build();
+
+            }
+
+            Event event = Event.builder()
+                               .epochTime(row.getLong("timestamp"))
+                               .timestamp(Instant.ofEpochMilli(row.getLong("timestamp") / 1000000))
+                               .incoming(incomingActor)
+                               .outgoing(outgoingActor)
+                               .payload(row.getString("payload"))
+                               .build();
+
+            events.add(event);
         }
 
         return events;
+
     }
 
     @Override
     protected void doRemoveBy(Tenant tenant, Application application, String deviceGuid, Type type) throws Exception {
 
-        Delete query = QueryBuilder.delete()
-                .from(type.equals(Type.INCOMING) ? INCOMMINGTABLE : OUTGOINGTABLE)
-                .where(QueryBuilder.eq("tenant_domain", tenant.getDomainName()))
-                .and(QueryBuilder.eq("application_name", application.getName()))
-                .and(QueryBuilder.eq("device_guid", deviceGuid))
-                .ifExists();
+        List<Event> keys = doFindBy(tenant, application, deviceGuid, null, null, null, false, null, type, false);
 
-        cassandraOperations.delete(query);
+        for (Event key: keys) {
+            if (type == Type.INCOMING) {
+                removeByKey(key, type);
+                saveEvent(tenant, application, key, type, INCOMING_EVENTS_DELETED);
+            } else if (type == Type.OUTGOING) {
+                removeByKey(key, type);
+                saveEvent(tenant, application, key, type, OUTGOING_EVENTS_DELETED);
+            }
+        }
+
+        String tenantDomain = tenant.getDomainName();
+        String applicationName = application.getName();
+
+        // INCOMING_EVENTS_DEVICE_GUID
+
+        StringBuilder query = new StringBuilder();
+        List<Object> filters = new ArrayList<>();
+
+        query.append("DELETE FROM ");
+        query.append(REGISTRYKEYSPACE);
+        query.append(".");
+        if (type == Type.INCOMING) {
+            query.append(INCOMING_EVENTS_DEVICE_GUID);
+        } else if (type == Type.OUTGOING) {
+            query.append(OUTGOING_EVENTS_DEVICE_GUID);
+        }
+        query.append(" WHERE ");
+
+        query.append(" tenant_domain = ?");
+        filters.add(tenantDomain);
+
+        query.append(" AND application_name = ?");
+        filters.add(applicationName);
+
+        query.append(" AND device_guid = ?");
+        filters.add(deviceGuid);
+
+        session.execute(query.toString(), filters.toArray(new Object[filters.size()]));
+
+    }
+
+    private void removeByKey(Event key, Type type) {
+
+        String tenantDomain = key.getIncoming().getTenantDomain();
+        String applicationName = key.getIncoming().getApplicationName();
+        String deviceGuid = key.getIncoming().getDeviceGuid();
+        String channel = key.getIncoming().getChannel();
+        Long epochTs = key.getEpochTime();
+
+        // INCOMING_EVENTS
+
+        StringBuilder query = new StringBuilder();
+        List<Object> filters = new ArrayList<>();
+
+        query.append("DELETE FROM ");
+        query.append(REGISTRYKEYSPACE);
+        query.append(".");
+        if (type == Type.INCOMING) {
+            query.append(INCOMING_EVENTS);
+        } else if (type == Type.OUTGOING) {
+            query.append(OUTGOING_EVENTS);
+        }
+        query.append(" WHERE ");
+
+        query.append(" tenant_domain = ?");
+        filters.add(tenantDomain);
+
+        query.append(" AND application_name = ?");
+        filters.add(applicationName);
+
+        query.append(" AND timestamp = ?");
+        filters.add(epochTs);
+
+        session.executeAsync(query.toString(), filters.toArray(new Object[filters.size()]));
+
+        // INCOMING_EVENTS_CHANNEL
+
+        query = new StringBuilder();
+        filters = new ArrayList<>();
+
+        query.append("DELETE FROM ");
+        query.append(REGISTRYKEYSPACE);
+        query.append(".");
+        if (type == Type.INCOMING) {
+            query.append(INCOMING_EVENTS_CHANNEL);
+        } else if (type == Type.OUTGOING) {
+            query.append(OUTGOING_EVENTS_CHANNEL);
+        }
+        query.append(" WHERE ");
+
+        query.append(" tenant_domain = ?");
+        filters.add(tenantDomain);
+
+        query.append(" AND application_name = ?");
+        filters.add(applicationName);
+
+        query.append(" AND channel = ?");
+        filters.add(channel);
+
+        query.append(" AND timestamp = ?");
+        filters.add(epochTs);
+
+        session.executeAsync(query.toString(), filters.toArray(new Object[filters.size()]));
+
+        // INCOMING_EVENTS_DEVICE_GUID_CHANNEL
+
+        query = new StringBuilder();
+        filters = new ArrayList<>();
+
+        query.append("DELETE FROM ");
+        query.append(REGISTRYKEYSPACE);
+        query.append(".");
+        if (type == Type.INCOMING) {
+            query.append(INCOMING_EVENTS_DEVICE_GUID_CHANNEL);
+        } else if (type == Type.OUTGOING) {
+            query.append(OUTGOING_EVENTS_DEVICE_GUID_CHANNEL);
+        }
+        query.append(" WHERE ");
+
+        query.append(" tenant_domain = ?");
+        filters.add(tenantDomain);
+
+        query.append(" AND application_name = ?");
+        filters.add(applicationName);
+
+        query.append(" AND device_guid = ?");
+        filters.add(deviceGuid);
+
+        query.append(" AND channel = ?");
+        filters.add(channel);
+
+        query.append(" AND timestamp = ?");
+        filters.add(epochTs);
+
+        session.executeAsync(query.toString(), filters.toArray(new Object[filters.size()]));
+
+    }
+
+    public void setSession(Session session) {
+        this.session = session;
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        if (cluster != null) {
+            cluster.close();
+        }
     }
 
 }
 
-@Data
-@Builder
-@KeySpace("registrykeyspace")
-@Table(value = EventRepositoryCassandraImpl.INCOMMINGTABLE)
-class CassandraIncommingEvent {
-    @PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, name = "tenant_domain", ordinal = 0)
-    private String tenantDomain;
-    @PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, name = "application_name", ordinal = 1)
-    private String applicationName;
-    @PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, name = "timestamp", ordering = Ordering.ASCENDING, ordinal = 2)
-    @Indexed("in_timestamp")
-    private Long timestamp;
-    @Column("device_guid")
-    @Indexed("in_device_guid")
-    private String deviceGuid;
-    @Column("channel")
-    @Indexed("in_channel")
-    private String channel;
-    @Column("device_id")
-    private String deviceId;
-    @Column("deleted")
-    private Boolean deleted;
-    @Column("payload")
-    private String payload;
-}
 
-@Data
-@Builder
-@KeySpace("registrykeyspace")
-@Table(value = EventRepositoryCassandraImpl.OUTGOINGTABLE)
-class CassandraOutgoingEvent {
-	@PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, name = "tenant_domain", ordinal = 0)
-    private String tenantDomain;
-    @PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, name = "application_name", ordinal = 1)
-    private String applicationName;
-    @PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, name = "timestamp", ordering = Ordering.ASCENDING, ordinal = 2)
-    @Indexed("out_timestamp")
-    private Long timestamp;
-    @Column("device_guid")
-    @Indexed("out_device_guid")
-    private String deviceGuid;
-    @Column("channel")
-    @Indexed("out_channel")
-    private String channel;
-    @Column("device_id")
-    private String deviceId;
-    @Column("deleted")
-    private Boolean deleted;
-    @Column("payload")
-    private String payload;
-    @Column("incoming")
-    private String incomming;
-}
