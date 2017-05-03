@@ -67,6 +67,8 @@ public class DeviceControllerTest extends WebLayerTestContext {
 	@Autowired
 	EventSchemaService eventSchemaService;
 	@Autowired
+	ApplicationService applicationService;
+	@Autowired
 	private Tenant tenant;
 
 	private List<Device> registeredDevices;
@@ -82,7 +84,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
 		application = Application.builder().name(tenant.getDomainName()).build();
 
 		registeredDevices = new ArrayList<>();
-		registeredDevices.add(Device.builder().build());
+		registeredDevices.add(Device.builder().application(application).build());
 
 		deviceData = new LinkedMultiValueMap<>();
 		deviceData.add("name", "Device name");
@@ -97,7 +99,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
 		device = builder.build();
 		device.setActive(true);
 
-		savedDevice = builder.id("deviceId").active(true).build();
+		savedDevice = builder.id("deviceId").application(application).active(true).build();
 
 		deviceForm = new DeviceRegistrationForm();
 		deviceForm.setDeviceId(device.getDeviceId());
@@ -119,6 +121,8 @@ public class DeviceControllerTest extends WebLayerTestContext {
 	public void shouldListAllRegisteredDevices() throws Exception {
 		when(deviceRegisterService.findAll(tenant, application))
 				.thenReturn(ServiceResponseBuilder.<List<Device>> ok().withResult(registeredDevices).build());
+		when(applicationService.findAll(tenant))
+				.thenReturn(ServiceResponseBuilder.<List<Application>> ok().withResult(Collections.singletonList(application)).build());
 
 		getMockMvc().perform(get("/devices")).andExpect(model().attribute("devices", equalTo(registeredDevices)))
 				.andExpect(view().name("devices/index"));
@@ -129,7 +133,8 @@ public class DeviceControllerTest extends WebLayerTestContext {
 	public void shouldShowRegistrationForm() throws Exception {
 		getMockMvc().perform(get("/devices/new")).andExpect(view().name("devices/form"))
 				.andExpect(model().attribute("device", any(DeviceRegistrationForm.class)))
-				.andExpect(model().attribute("action", "/devices/save"));
+				.andExpect(model().attribute("action", MessageFormat.format("/devices/{0}/save", application.getName())));
+		
 	}
 
 	@Test
@@ -139,8 +144,10 @@ public class DeviceControllerTest extends WebLayerTestContext {
 				.build();
 
 		when(deviceRegisterService.register(eq(tenant), eq(application), eq(device))).thenReturn(response);
+		when(applicationService.getByApplicationName(tenant, application.getName()))
+			.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
 
-		getMockMvc().perform(post("/devices/save").params(deviceData))
+		getMockMvc().perform(post(MessageFormat.format("/devices/{0}/save", application.getName())).params(deviceData))
 				.andExpect(model().attribute("errors", equalTo(new ArrayList() {
 					{
 						add(applicationContext.getMessage(CommonValidations.RECORD_NULL.getCode(), null,
@@ -158,11 +165,13 @@ public class DeviceControllerTest extends WebLayerTestContext {
 		response = ServiceResponseBuilder.<Device> ok().withResult(savedDevice).build();
 
 		when(deviceRegisterService.register(eq(tenant), eq(application), eq(device))).thenReturn(response);
+		when(applicationService.getByApplicationName(tenant, application.getName()))
+			.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
 
-		getMockMvc().perform(post("/devices/save").params(deviceData))
+		getMockMvc().perform(post(MessageFormat.format("/devices/{0}/save", application.getName())).params(deviceData))
 				.andExpect(flash().attribute("message", applicationContext.getMessage(
 				        DeviceRegisterService.Messages.DEVICE_REGISTERED_SUCCESSFULLY.getCode(), null, Locale.ENGLISH)))
-				.andExpect(redirectedUrl(MessageFormat.format("/devices/{0}", savedDevice.getGuid())));
+				.andExpect(redirectedUrl(MessageFormat.format("/devices/{0}/{1}", application.getName(), savedDevice.getGuid())));
 
 		verify(deviceRegisterService).register(eq(tenant), eq(application), eq(device));
 	}
@@ -173,8 +182,10 @@ public class DeviceControllerTest extends WebLayerTestContext {
 		savedDevice.setRegistrationDate(Instant.now());
 		when(deviceRegisterService.getByDeviceGuid(tenant, application, savedDevice.getGuid()))
 				.thenReturn(ServiceResponseBuilder.<Device> ok().withResult(savedDevice).build());
+		when(applicationService.getByApplicationName(tenant, application.getName()))
+				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
 
-		getMockMvc().perform(get(MessageFormat.format("/devices/{0}", savedDevice.getGuid())))
+		getMockMvc().perform(get(MessageFormat.format("/devices/{0}/{1}", application.getName(), savedDevice.getGuid())))
 				.andExpect(model().attribute("device", savedDevice)).andExpect(view().name("devices/show"));
 
 		verify(deviceRegisterService).getByDeviceGuid(tenant, application, savedDevice.getGuid());
@@ -204,8 +215,10 @@ public class DeviceControllerTest extends WebLayerTestContext {
 			.thenReturn(ServiceResponseBuilder.<List<String>> ok().withResult(Collections.emptyList()).build());
 		when(eventSchemaService.findKnownIncomingMetricsBy(tenant, application, savedDevice.getGuid(), JsonNodeType.NUMBER))
 			.thenReturn(ServiceResponseBuilder.<List<String>> ok().withResult(Collections.emptyList()).build());
+		when(applicationService.getByApplicationName(tenant, application.getName()))
+			.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
 
-		getMockMvc().perform(get(MessageFormat.format("/devices/{0}/events", savedDevice.getGuid())))
+		getMockMvc().perform(get(MessageFormat.format("/devices/{0}/{1}/events", application.getName(), savedDevice.getGuid())))
                 .andExpect(model().attribute("channels", channelVOs))
 				.andExpect(model().attribute("metrics", Collections.emptyList()))
 				.andExpect(model().attribute("device", savedDevice))
@@ -244,8 +257,10 @@ public class DeviceControllerTest extends WebLayerTestContext {
             .thenReturn(ServiceResponseBuilder.<List<String>> ok().withResult(metrics).build());
         when(eventSchemaService.findKnownIncomingMetricsBy(tenant, application, savedDevice.getGuid(), JsonNodeType.NUMBER))
             .thenReturn(ServiceResponseBuilder.<List<String>> ok().withResult(metrics).build());
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+			.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
 
-        getMockMvc().perform(get(MessageFormat.format("/devices/{0}/events", savedDevice.getGuid())))
+        getMockMvc().perform(get(MessageFormat.format("/devices/{0}/{1}/events", application.getName(), savedDevice.getGuid())))
                 .andExpect(model().attribute("channels", channelVOs))
                 .andExpect(model().attribute("metrics", metricVOs))
                 .andExpect(model().attribute("device", savedDevice))
@@ -262,11 +277,13 @@ public class DeviceControllerTest extends WebLayerTestContext {
 	public void shouldShowEditForm() throws Exception {
 		when(deviceRegisterService.getByDeviceGuid(tenant, application, savedDevice.getGuid()))
 				.thenReturn(ServiceResponseBuilder.<Device> ok().withResult(savedDevice).build());
+		when(applicationService.getByApplicationName(tenant, application.getName()))
+				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
 
-		getMockMvc().perform(get(MessageFormat.format("/devices/{0}/edit", savedDevice.getGuid())))
+		getMockMvc().perform(get(MessageFormat.format("/devices/{0}/{1}/edit", application.getName(), savedDevice.getGuid())))
 				.andExpect(model().attribute("device", equalTo(deviceForm)))
 				.andExpect(model().attribute("isEditing", true))
-				.andExpect(model().attribute("action", MessageFormat.format("/devices/{0}", savedDevice.getGuid())))
+				.andExpect(model().attribute("action", MessageFormat.format("/devices/{0}/{1}", application.getName(), savedDevice.getGuid())))
 				.andExpect(model().attribute("method", "put")).andExpect(view().name("devices/form"));
 	}
 
@@ -278,8 +295,10 @@ public class DeviceControllerTest extends WebLayerTestContext {
 
 		when(deviceRegisterService.update(Matchers.anyObject(), Matchers.anyObject(), Matchers.anyString(), Matchers.anyObject()))
 				.thenReturn(response);
+		when(applicationService.getByApplicationName(tenant, application.getName()))
+			.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
 
-		getMockMvc().perform(put(MessageFormat.format("/devices/{0}", DEVICE_GUID)).params(deviceData))
+		getMockMvc().perform(put(MessageFormat.format("/devices/{0}/{1}", application.getName(), DEVICE_GUID)).params(deviceData))
 				.andExpect(model().attribute("errors", equalTo(new ArrayList() {
 					{
 						add(applicationContext.getMessage(CommonValidations.RECORD_NULL.getCode(), null,
@@ -297,11 +316,13 @@ public class DeviceControllerTest extends WebLayerTestContext {
 		response = ServiceResponseBuilder.<Device> ok().withResult(savedDevice).build();
 
 		when(deviceRegisterService.update(eq(tenant), eq(application), eq(savedDevice.getId()), eq(device))).thenReturn(response);
+		when(applicationService.getByApplicationName(tenant, application.getName()))
+			.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
 
-		getMockMvc().perform(put(MessageFormat.format("/devices/{0}", savedDevice.getId())).params(deviceData))
+		getMockMvc().perform(put(MessageFormat.format("/devices/{0}/{1}", application.getName(), savedDevice.getId())).params(deviceData))
 				.andExpect(flash().attribute("message", applicationContext.getMessage(
 				        DeviceRegisterService.Messages.DEVICE_REGISTERED_SUCCESSFULLY.getCode(), null, Locale.ENGLISH)))
-				.andExpect(redirectedUrl(MessageFormat.format("/devices/{0}", savedDevice.getGuid())));
+				.andExpect(redirectedUrl(MessageFormat.format("/devices/{0}/{1}", application.getName(), savedDevice.getGuid())));
 
 		verify(deviceRegisterService).update(eq(tenant), eq(application), eq(savedDevice.getId()), eq(device));
 	}
@@ -320,8 +341,10 @@ public class DeviceControllerTest extends WebLayerTestContext {
 
 		when(deviceRegisterService.remove(tenant, application, device.getId())).thenReturn(responseRemoval);
 		when(deviceRegisterService.findAll(tenant, application)).thenReturn(responseListAll);
+		when(applicationService.getByApplicationName(tenant, application.getName()))
+			.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
 
-		getMockMvc().perform(delete("/devices/{0}", device.getId()))
+		getMockMvc().perform(delete("/devices/{0}/{1}", application.getName(), device.getId()))
 				.andExpect(flash().attribute("message", applicationContext.getMessage(
 				        DeviceRegisterService.Messages.DEVICE_REMOVED_SUCCESSFULLY.getCode(), null, Locale.ENGLISH)))
 				.andExpect(redirectedUrl("/devices"));
@@ -335,8 +358,10 @@ public class DeviceControllerTest extends WebLayerTestContext {
 
 		when(deviceEventService.findIncomingBy(tenant, application, "deviceId", null, null, null, false, 50))
 			.thenReturn(ServiceResponseBuilder.<List<Event>> ok().withResult(Collections.emptyList()).build());
+		when(applicationService.getByApplicationName(tenant, application.getName()))
+			.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
 
-		getMockMvc().perform(get(MessageFormat.format("/devices/{0}/events/incoming", savedDevice.getId())))
+		getMockMvc().perform(get(MessageFormat.format("/devices/{0}/{1}/events/incoming", application.getName(), savedDevice.getId())))
 				.andExpect(model().attribute("recentIncomingEvents", org.hamcrest.Matchers.notNullValue()))
 				.andExpect(view().name("devices/events-incoming"));
 
@@ -348,8 +373,11 @@ public class DeviceControllerTest extends WebLayerTestContext {
 
 		when(deviceEventService.findIncomingBy(Matchers.any(Tenant.class), Matchers.any(Application.class), Matchers.matches("deviceId"), Matchers.isNull(String.class), Matchers.any(Instant.class), Matchers.any(Instant.class), Matchers.anyBoolean(), Matchers.anyInt()))
 			.thenReturn(ServiceResponseBuilder.<List<Event>> ok().withResult(Collections.emptyList()).build());
+		
+		when(applicationService.getByApplicationName(Matchers.any(Tenant.class), Matchers.anyString()))
+			.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
 
-		getMockMvc().perform(get(MessageFormat.format("/devices/{0}/events/incoming", savedDevice.getId()))
+		getMockMvc().perform(get(MessageFormat.format("/devices/{0}/{1}/events/incoming", application.getName(), savedDevice.getId()))
 						.param("dateStart", "30/10/2016 16:35:57")
 						.param("dateEnd",   "31/10/2016 11:00:00"))
 				.andExpect(model().attribute("recentIncomingEvents", org.hamcrest.Matchers.notNullValue()))
@@ -363,8 +391,10 @@ public class DeviceControllerTest extends WebLayerTestContext {
 
 		when(deviceEventService.findOutgoingBy(tenant, application, "deviceId", null, null, null, false, 50))
 			.thenReturn(ServiceResponseBuilder.<List<Event>> ok().withResult(Collections.emptyList()).build());
+		when(applicationService.getByApplicationName(tenant, application.getName()))
+			.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
 
-		getMockMvc().perform(get(MessageFormat.format("/devices/{0}/events/outgoing", savedDevice.getId())))
+		getMockMvc().perform(get(MessageFormat.format("/devices/{0}/{1}/events/outgoing", application.getName(), savedDevice.getId())))
 				.andExpect(model().attribute("recentOutgoingEvents", org.hamcrest.Matchers.notNullValue()))
 				.andExpect(view().name("devices/events-outgoing"));
 
@@ -376,8 +406,10 @@ public class DeviceControllerTest extends WebLayerTestContext {
 
 		when(deviceEventService.findOutgoingBy(Matchers.any(Tenant.class), Matchers.any(Application.class), Matchers.matches("deviceId"), Matchers.isNull(String.class), Matchers.any(Instant.class), Matchers.any(Instant.class), Matchers.anyBoolean(), Matchers.anyInt()))
 			.thenReturn(ServiceResponseBuilder.<List<Event>> ok().withResult(Collections.emptyList()).build());
+		when(applicationService.getByApplicationName(Matchers.any(Tenant.class), Matchers.anyString()))
+			.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
 
-		getMockMvc().perform(get(MessageFormat.format("/devices/{0}/events/outgoing", savedDevice.getId()))
+		getMockMvc().perform(get(MessageFormat.format("/devices/{0}/{1}/events/outgoing", application.getName(), savedDevice.getId()))
 						.param("dateStart", "30/10/2016 16:35:57")
 						.param("dateEnd",   "31/10/2016 11:00:00"))
 				.andExpect(model().attribute("recentOutgoingEvents", org.hamcrest.Matchers.notNullValue()))
@@ -405,6 +437,11 @@ public class DeviceControllerTest extends WebLayerTestContext {
 		@Bean
 		public EventSchemaService eventSchemaService() {
 			return Mockito.mock(EventSchemaService.class);
+		}
+		
+		@Bean
+		public ApplicationService applicationService() {
+			return Mockito.mock(ApplicationService.class);
 		}
 	}
 

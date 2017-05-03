@@ -1,19 +1,38 @@
 package com.konkerlabs.platform.registry.test.web.controllers;
 
-import com.konkerlabs.platform.registry.business.model.*;
-import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
-import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
-import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.registry.business.services.api.*;
-import com.konkerlabs.platform.registry.config.CdnConfig;
-import com.konkerlabs.platform.registry.config.HotjarConfig;
-import com.konkerlabs.platform.registry.config.WebConfig;
-import com.konkerlabs.platform.registry.config.WebMvcConfig;
-import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
-import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
-import com.konkerlabs.platform.registry.web.controllers.EventRouteController;
-import com.konkerlabs.platform.registry.web.forms.EventRouteForm;
+import static com.konkerlabs.platform.registry.business.model.Device.builder;
+import static com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer.DEVICE_URI_SCHEME;
+import static com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer.REST_DESTINATION_URI_SCHEME;
+import static com.konkerlabs.platform.registry.business.model.behaviors.SmsDestinationURIDealer.SMS_URI_SCHEME;
+import static com.konkerlabs.platform.registry.web.controllers.EventRouteController.Messages.ROUTE_REMOVED_SUCCESSFULLY;
+import static java.text.MessageFormat.format;
+import static java.util.Arrays.asList;
+import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+
+import java.net.URI;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.function.Supplier;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,24 +48,33 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import java.net.URI;
-import java.text.MessageFormat;
-import java.util.*;
-import java.util.function.Supplier;
-
-import static com.konkerlabs.platform.registry.business.model.Device.builder;
-import static com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer.DEVICE_URI_SCHEME;
-import static com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer.REST_DESTINATION_URI_SCHEME;
-import static com.konkerlabs.platform.registry.business.model.behaviors.SmsDestinationURIDealer.SMS_URI_SCHEME;
-import static com.konkerlabs.platform.registry.web.controllers.EventRouteController.Messages.ROUTE_REMOVED_SUCCESSFULLY;
-import static java.text.MessageFormat.format;
-import static java.util.Arrays.asList;
-import static org.hamcrest.Matchers.equalTo;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.EventRoute;
+import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
+import com.konkerlabs.platform.registry.business.model.RestDestination;
+import com.konkerlabs.platform.registry.business.model.SmsDestination;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.Transformation;
+import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
+import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.business.services.api.SmsDestinationService;
+import com.konkerlabs.platform.registry.business.services.api.TransformationService;
+import com.konkerlabs.platform.registry.config.CdnConfig;
+import com.konkerlabs.platform.registry.config.HotjarConfig;
+import com.konkerlabs.platform.registry.config.WebConfig;
+import com.konkerlabs.platform.registry.config.WebMvcConfig;
+import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
+import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
+import com.konkerlabs.platform.registry.web.controllers.EventRouteController;
+import com.konkerlabs.platform.registry.web.forms.EventRouteForm;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
@@ -71,6 +99,8 @@ public class EventRouteControllerTest extends WebLayerTestContext {
     private RestDestinationService restDestinationService;
     @Autowired
     private SmsDestinationService smsDestinationService;
+    @Autowired
+    private ApplicationService applicationService;
     @Autowired
     private ApplicationContext applicationContext;
 
@@ -243,9 +273,9 @@ public class EventRouteControllerTest extends WebLayerTestContext {
 
         newRoute = routeBuilder.build();
 
-        savedRoute = routeBuilder.guid(routeGuid).build();
+        savedRoute = routeBuilder.guid(routeGuid).application(application).build();
 
-        registeredRoutes = new ArrayList<EventRoute>(asList(new EventRoute[]{newRoute}));
+        registeredRoutes = new ArrayList<EventRoute>(asList(new EventRoute[]{savedRoute}));
     }
 
     @After
@@ -260,6 +290,9 @@ public class EventRouteControllerTest extends WebLayerTestContext {
             ServiceResponseBuilder.<List<EventRoute>>ok()
                 .withResult(registeredRoutes).build()
         );
+        
+        when(applicationService.findAll(tenant))
+			.thenReturn(ServiceResponseBuilder.<List<Application>> ok().withResult(Collections.singletonList(application)).build());
 
         getMockMvc().perform(get("/routes"))
         	.andDo(print())
@@ -273,7 +306,7 @@ public class EventRouteControllerTest extends WebLayerTestContext {
         getMockMvc().perform(get("/routes/new"))
                 .andExpect(view().name("routes/form"))
                 .andExpect(model().attribute("route", new EventRouteForm()))
-                .andExpect(model().attribute("action", "/routes/save"));
+                .andExpect(model().attribute("action", format("/routes/{0}/save", application.getName())));
     }
 
     @Test
@@ -310,8 +343,10 @@ public class EventRouteControllerTest extends WebLayerTestContext {
                 withMessage(CommonValidations.TENANT_NULL.getCode()).build();
 
         when(eventRouteService.save(eq(tenant), eq(application), eq(newRoute))).thenReturn(response);
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+			.thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
 
-        getMockMvc().perform(post("/routes/save").params(routeData))
+        getMockMvc().perform(post("/routes/{0}/save", application.getName()).params(routeData))
                 .andExpect(model().attribute("errors", equalTo(
                     Arrays.asList(new String[] {
                             applicationContext.getMessage(CommonValidations.TENANT_NULL.getCode(),null,Locale.ENGLISH)
@@ -331,12 +366,14 @@ public class EventRouteControllerTest extends WebLayerTestContext {
                 .build());
 
         when(eventRouteService.save(eq(tenant), eq(application), eq(newRoute))).thenReturn(response);
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+    		.thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
 
-        getMockMvc().perform(post("/routes/save").params(routeData))
+        getMockMvc().perform(post("/routes/{0}/save", application.getName()).params(routeData))
                 .andExpect(flash().attribute("message",
                     applicationContext.getMessage(EventRouteController.Messages.ROUTE_REGISTERED_SUCCESSFULLY.getCode(),null, Locale.ENGLISH)
                 ))
-                .andExpect(redirectedUrl(MessageFormat.format("/routes/{0}", savedRoute.getGuid())));
+                .andExpect(redirectedUrl(MessageFormat.format("/routes/{0}/{1}", application.getName(), savedRoute.getGuid())));
 
         verify(eventRouteService).save(eq(tenant), eq(application), eq(newRoute));
     }
@@ -348,10 +385,14 @@ public class EventRouteControllerTest extends WebLayerTestContext {
 
         when(eventRouteService.getByGUID(tenant, application, routeGuid)).thenReturn(
                 ServiceResponseBuilder.<EventRoute>ok().withResult(newRoute).build());
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+        	.thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
+        when(applicationService.findAll(tenant))
+        	.thenReturn(ServiceResponseBuilder.<List<Application>> ok().withResult(Collections.singletonList(application)).build());
 
-        getMockMvc().perform(get(format("/routes/{0}/edit", routeGuid)))
+        getMockMvc().perform(get("/routes/{0}/{1}/edit", application.getName(), routeGuid))
                 .andExpect(model().attribute("route", equalTo(routeForm)))
-                .andExpect(model().attribute("action", format("/routes/{0}", routeGuid)))
+                .andExpect(model().attribute("action", format("/routes/{0}/{1}", application.getName(), routeGuid)))
                 .andExpect(model().attribute("method", "put"))
                 .andExpect(view().name("routes/form"));
     }
@@ -363,8 +404,10 @@ public class EventRouteControllerTest extends WebLayerTestContext {
                 .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
 
         when(eventRouteService.update(eq(tenant), eq(application), eq(routeGuid), eq(newRoute))).thenReturn(response);
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+			.thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
 
-        getMockMvc().perform(put("/routes/{0}", routeGuid).params(routeData))
+        getMockMvc().perform(put("/routes/{0}/{1}", application.getName(), routeGuid).params(routeData))
                 .andExpect(model().attribute("errors", equalTo(
                     Arrays.asList(new String[] {
                         applicationContext.getMessage(CommonValidations.TENANT_NULL.getCode(),null,Locale.ENGLISH)
@@ -380,15 +423,17 @@ public class EventRouteControllerTest extends WebLayerTestContext {
     @WithMockUser(authorities={"EDIT_DEVICE_ROUTE"})
     public void shouldRedirectToShowAfterSuccessfulRouteEdit() throws Exception {
         response = spy(ServiceResponseBuilder.<EventRoute>ok()
-                .withResult(newRoute).build());
+                .withResult(savedRoute).build());
 
         when(eventRouteService.update(eq(tenant), eq(application), eq(routeGuid), eq(newRoute))).thenReturn(response);
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+			.thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
 
-        getMockMvc().perform(put("/routes/{0}", routeGuid).params(routeData))
+        getMockMvc().perform(put("/routes/{0}/{1}", application.getName(), routeGuid).params(routeData))
                 .andExpect(flash().attribute("message",
                         applicationContext.getMessage(EventRouteController.Messages.ROUTE_REGISTERED_SUCCESSFULLY.getCode(),null, Locale.ENGLISH)
                 ))
-                .andExpect(redirectedUrl(MessageFormat.format("/routes/{0}", newRoute.getGuid())));
+                .andExpect(redirectedUrl(MessageFormat.format("/routes/{0}/{1}", application.getName(), savedRoute.getGuid())));
 
         verify(eventRouteService).update(eq(tenant), eq(application), eq(routeGuid), eq(newRoute));
     }
@@ -402,9 +447,11 @@ public class EventRouteControllerTest extends WebLayerTestContext {
         newRoute.setId(routeGuid);
         when(eventRouteService.getByGUID(tenant, application, newRoute.getId())).thenReturn(
                 ServiceResponseBuilder.<EventRoute>ok().withResult(newRoute).build());
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+			.thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
 
         getMockMvc().perform(
-                get("/routes/{0}", newRoute.getId())
+                get("/routes/{0}/{1}", application.getName(), newRoute.getId())
         ).andExpect(model().attribute("route", equalTo(routeForm)))
                 .andExpect(view().name("routes/show"));
 
@@ -425,8 +472,10 @@ public class EventRouteControllerTest extends WebLayerTestContext {
 
         when(eventRouteService.remove(tenant, application, newRoute.getGuid())).thenReturn(responseDelete);
         when(eventRouteService.getAll(eq(tenant), eq(application))).thenReturn(responseGetAll);
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+			.thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
 
-        getMockMvc().perform(delete("/routes/{0}", newRoute.getGuid()))
+        getMockMvc().perform(delete("/routes/{0}/{1}", application.getName(), newRoute.getGuid()))
                 .andExpect(flash().attribute("message",
                     applicationContext.getMessage(ROUTE_REMOVED_SUCCESSFULLY.getCode(),null,Locale.ENGLISH)
                 ))
@@ -445,10 +494,13 @@ public class EventRouteControllerTest extends WebLayerTestContext {
         spy(responseDelete);
 
         when(eventRouteService.remove(tenant, application, newRoute.getGuid())).thenReturn(responseDelete);
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+			.thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
+        
         List<String> messages = Collections.singletonList(
         		applicationContext.getMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode(),null,Locale.ENGLISH));
 
-        getMockMvc().perform(delete("/routes/{0}", newRoute.getGuid()))
+        getMockMvc().perform(delete("/routes/{0}/{1}", application.getName(), newRoute.getGuid()))
                 .andExpect(flash().attribute("errors", messages))
                 .andExpect(redirectedUrl("/routes"));
 
@@ -480,6 +532,11 @@ public class EventRouteControllerTest extends WebLayerTestContext {
         @Bean
         public TransformationService transformationService() {
             return mock(TransformationService.class);
+        }
+        
+        @Bean
+        public ApplicationService applicationService() {
+            return mock(ApplicationService.class);
         }
     }
 }

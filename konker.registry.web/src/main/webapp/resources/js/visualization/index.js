@@ -152,9 +152,10 @@ function applyEventBindingsToChannel() {
 
 function loadIncomingEvents() {
     var deviceGuid = $('#deviceGuid').val();
+    var applicationName = $('#applicationName').val();
 
     var scheme = $('#visualizationForm').serialize();
-    var url = '/devices/' + deviceGuid + '/events/incoming';
+    var url = '/devices/'+ applicationName + '/' + deviceGuid + '/events/incoming';
     var element = '#incoming';
 
     fetchEventsViewFragment(scheme, urlTo(url), element);
@@ -162,9 +163,10 @@ function loadIncomingEvents() {
 
 function loadOutgoingEvents() {
     var deviceGuid = $('#deviceGuid').val();
+    var applicationName = $('#applicationName').val();
 
     var scheme = $('#visualizationForm').serialize();
-    var url = '/devices/' + deviceGuid + '/events/outgoing';
+    var url = '/devices/'+ applicationName + '/' + deviceGuid + '/events/outgoing';
     var element = '#outgoing';
 
     fetchEventsViewFragment(scheme, urlTo(url), element);

@@ -37,7 +37,7 @@
                        class="btn btn-default">
                         Show
                     </a> -->
-                    <a data-th-href="@{/transformation/{guid}/edit(guid=${transformation.guid})}"
+                    <a data-th-href="@{/transformation/{applicationName}/{guid}/edit(guid=${transformation.guid}, applicationName=${transformation.application.name})}"
                        class="btn btn-default">
                        <img data-th-attr="src=@{/resources/konker/images/icons-bt/edit-icon-bt-01.svg}" class="bt-icon" />
                        <span data-th-text="#{nav.edit}"></span>
