@@ -13,7 +13,6 @@ import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
 import com.konkerlabs.platform.registry.business.model.Transformation;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
-import com.konkerlabs.platform.registry.business.model.behaviors.SmsDestinationURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.registry.web.forms.api.ModelBuilder;
 
@@ -35,7 +34,7 @@ public class EventRouteForm
     private String transformation;
     private boolean active;
     private Supplier<String> tenantDomainSupplier;
-    
+
     public EventRouteForm() {
 		setActive(Boolean.TRUE);
 	}
@@ -84,7 +83,7 @@ public class EventRouteForm
             MessageFormat.format(tpl, uriScheme, ctx, guid)
         );
     }
-    
+
     private URI toURI(String tpl, String ctx, String guid) {
         return URI.create(
             MessageFormat.format(tpl, getUriScheme(), ctx, guid)

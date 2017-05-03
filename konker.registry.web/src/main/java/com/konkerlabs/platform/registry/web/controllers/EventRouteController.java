@@ -51,8 +51,6 @@ public class EventRouteController implements ApplicationContextAware {
     @Autowired
     private RestDestinationService restDestinationService;
     @Autowired
-    private SmsDestinationService smsDestinationService;
-    @Autowired
     private TransformationService transformationService;
     @Autowired
     private ApplicationService applicationService;
@@ -66,9 +64,9 @@ public class EventRouteController implements ApplicationContextAware {
     public List<Device> allDevices() {
     	List<Application> applications = applicationService.findAll(tenant).getResult();
     	List<Device> devices = new ArrayList<>();
-    	
+
     	applications.forEach(app -> devices.addAll(deviceRegisterService.findAll(tenant, app).getResult()));
-    	
+
         return devices;
     }
 
@@ -76,24 +74,19 @@ public class EventRouteController implements ApplicationContextAware {
     public List<RestDestination> allRestDestinations() {
     	List<Application> applications = applicationService.findAll(tenant).getResult();
     	List<RestDestination> restDestinations = new ArrayList<>();
-    	
-    	applications.forEach(app -> restDestinations.addAll(restDestinationService.findAll(tenant, app).getResult()));
-    	
-        return restDestinations;
-    }
 
-    @ModelAttribute("allSmsDestinations")
-    public List<SmsDestination> allSmsDestinations() {
-        return smsDestinationService.findAll(tenant).getResult();
+    	applications.forEach(app -> restDestinations.addAll(restDestinationService.findAll(tenant, app).getResult()));
+
+        return restDestinations;
     }
 
     @ModelAttribute("allTransformations")
     public List<Transformation> allTransformations() {
     	List<Application> applications = applicationService.findAll(tenant).getResult();
     	List<Transformation> transformations = new ArrayList<>();
-    	
+
     	applications.forEach(app -> transformations.addAll(transformationService.getAll(tenant, app).getResult()));
-    	
+
         return transformations;
     }
 
@@ -102,9 +95,9 @@ public class EventRouteController implements ApplicationContextAware {
     public ModelAndView index() {
     	List<Application> applications = applicationService.findAll(tenant).getResult();
     	List<EventRoute> routes = new ArrayList<>();
-    	
+
     	applications.forEach(app -> routes.addAll(eventRouteService.getAll(tenant, app).getResult()));
-    	
+
         return new ModelAndView("routes/index","routes", routes);
     }
 
@@ -121,7 +114,7 @@ public class EventRouteController implements ApplicationContextAware {
     public ModelAndView save(@PathVariable("applicationName") String applicationName,
     						 @ModelAttribute("eventRouteForm") EventRouteForm eventRouteForm,
                              RedirectAttributes redirectAttributes, Locale locale) {
-    	
+
     	application = applicationService.getByApplicationName(tenant, applicationName).getResult();
 
         return doSave(() -> {
@@ -142,7 +135,7 @@ public class EventRouteController implements ApplicationContextAware {
     @PreAuthorize("hasAuthority('EDIT_DEVICE_ROUTE')")
     public ModelAndView edit(@PathVariable("applicationName") String applicationName, @PathVariable String routeId) {
     	application = applicationService.getByApplicationName(tenant, applicationName).getResult();
-    	
+
         return new ModelAndView("routes/form")
             .addObject("route",new EventRouteForm().fillFrom(eventRouteService.getByGUID(tenant, application, routeId).getResult()))
             .addObject("action", MessageFormat.format("/routes/{0}/{1}", applicationName, routeId))
@@ -169,7 +162,6 @@ public class EventRouteController implements ApplicationContextAware {
         EventRouteForm route = new EventRouteForm();
         switch (outgoingScheme) {
             case "device": return new ModelAndView("routes/device-outgoing", "route", route);
-            case "sms" : return new ModelAndView("routes/sms-outgoing", "route", route);
             case "rest" : return new ModelAndView("routes/rest-outgoing", "route", route);
             //FIXME: Check for a way to render an empty HTTP body without an empty html file
             default: return new ModelAndView("common/empty");
