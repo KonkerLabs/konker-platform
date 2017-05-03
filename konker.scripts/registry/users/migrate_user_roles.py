@@ -113,22 +113,6 @@ def ingest_privileges():
                     "name": "EDIT_REST_DESTINATION"
                 },
                 {
-                    "_id": ObjectId("5858266439f11e61b1fab1fb"),
-                    "name": "LIST_SMS_DESTINATIONS"
-                },
-                {
-                    "_id": ObjectId("5858266439f11e61b1fab1fc"),
-                    "name": "CREATE_SMS_DESTINATION"
-                },
-                {
-                    "_id": ObjectId("5858266439f11e61b1fab1fd"),
-                    "name": "REMOVE_SMS_DESTINATION"
-                },
-                {
-                    "_id": ObjectId("5858266439f11e61b1fab1fe"),
-                    "name": "SHOW_SMS_DESTINATION"
-                },
-                {
                     "_id": ObjectId("5858266439f11e61b1fab1ff"),
                     "name": "LIST_TRANSFORMATION"
                 },
@@ -199,10 +183,6 @@ def ingest_privileges():
                 {
                     "_id": ObjectId("585bcc7840bce8c571ba0237"),
                     "name": "SHOW_REST_DESTINATION"
-                },
-                {
-                    "_id": ObjectId("585bcc7840bce8c571ba0238"),
-                    "name": "EDIT_SMS_DESTINATION"
                 },
                 {
                     "_id": ObjectId("585bcc7840bce8c571ba0239"),

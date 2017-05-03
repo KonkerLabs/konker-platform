@@ -3,15 +3,12 @@ package com.konkerlabs.platform.registry.test.web.forms;
 import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
 import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
-import com.konkerlabs.platform.registry.business.model.behaviors.SmsDestinationURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.registry.web.forms.EventRouteForm;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-
-import java.util.HashMap;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -128,58 +125,6 @@ public class EventRouteFormTest {
                         .data(form.getOutgoing().getAuthorityData())
                         .build()
         );
-
-        assertThat(form.toModel(), equalTo(model));
-    }
-
-    @Test
-    public void shouldTranslateFromSMSRouteFormToModel() throws Exception {
-        form.setOutgoingScheme("sms");
-        form.getOutgoing().setAuthorityId("407902f6-5b85-4767-ad83-b8b3e847bd92");
-        form.getOutgoing().getAuthorityData().put("messageStrategy", "custom");
-        form.getOutgoing().getAuthorityData().put("messageTemplate", "A given message template");
-
-        model.setIncoming(RouteActor.builder()
-                .uri(new URIDealer() {
-                    @Override
-                    public String getUriScheme() {
-                        return Device.URI_SCHEME;
-                    }
-
-                    @Override
-                    public String getContext() {
-                        return tenant.getDomainName();
-                    }
-
-                    @Override
-                    public String getGuid() {
-                        return form.getIncoming().getAuthorityId();
-                    }
-                }.toURI())
-                .data(form.getIncoming().getAuthorityData())
-                .build());
-        model.setOutgoing(RouteActor.builder()
-                .uri(new URIDealer() {
-                    @Override
-                    public String getUriScheme() {
-                        return SmsDestinationURIDealer.SMS_URI_SCHEME;
-                    }
-
-                    @Override
-                    public String getContext() {
-                        return tenant.getDomainName();
-                    }
-
-                    @Override
-                    public String getGuid() {
-                        return form.getOutgoing().getAuthorityId();
-                    }
-                }.toURI())
-                .data(new HashMap<String, String>() {{
-                    put(EventRoute.SMS_MESSAGE_STRATEGY_PARAMETER_NAME, "custom");
-                    put(EventRoute.SMS_MESSAGE_TEMPLATE_PARAMETER_NAME, "A given message template");
-                }})
-                .build());
 
         assertThat(form.toModel(), equalTo(model));
     }
@@ -318,55 +263,6 @@ public class EventRouteFormTest {
                     @Override
                     public String getUriScheme() {
                         return Device.URI_SCHEME;
-                    }
-
-                    @Override
-                    public String getContext() {
-                        return tenant.getDomainName();
-                    }
-
-                    @Override
-                    public String getGuid() {
-                        return form.getOutgoing().getAuthorityId();
-                    }
-                }.toURI())
-                .data(form.getOutgoing().getAuthorityData())
-                .build());
-
-        assertThat(new EventRouteForm().fillFrom(model), equalTo(form));
-    }
-
-    @Test
-    public void shouldTranslateFromSMSRouteModelToForm() throws Exception {
-        form.setOutgoingScheme("sms");
-        form.getOutgoing().setAuthorityId("407902f6-5b85-4767-ad83-b8b3e847bd92");
-        form.getOutgoing().getAuthorityData().put("smsMessageStrategy", "custom");
-        form.getOutgoing().getAuthorityData().put("smsMessageTemplate", "A given message template");
-
-        model.setIncoming(RouteActor.builder()
-                .uri(new URIDealer() {
-                    @Override
-                    public String getUriScheme() {
-                        return Device.URI_SCHEME;
-                    }
-
-                    @Override
-                    public String getContext() {
-                        return tenant.getDomainName();
-                    }
-
-                    @Override
-                    public String getGuid() {
-                        return form.getIncoming().getAuthorityId();
-                    }
-                }.toURI())
-                .data(form.getIncoming().getAuthorityData())
-                .build());
-        model.setOutgoing(RouteActor.builder()
-                .uri(new URIDealer() {
-                    @Override
-                    public String getUriScheme() {
-                        return SmsDestination.URI_SCHEME;
                     }
 
                     @Override

@@ -17,7 +17,7 @@ function renderOutgoingFragment(scheme) {
 
 function fetchViewFragment(scheme, fetchUrl) {
     var loadSpinner;
-    
+
     $.ajax({
         context : this,
         type : "GET",
@@ -46,23 +46,7 @@ function displayFragment(data) {
 
 function applyEventBindings(scheme) {
     switch (scheme) {
-        case "sms" :
-            $('input[type=radio][data-sms]').change(function() {
-                applySmsFragmentControlState(this);
-            });
-            break;
         default : break;
-    }
-}
-
-function applySmsFragmentControlState(selected) {
-    switch (selected.value) {
-        case "forward" :
-            $('#smsMessageTemplate').prop('disabled', true);
-            break;
-        default :
-            $('#smsMessageTemplate').prop('disabled', false);
-            break;
     }
 }
 

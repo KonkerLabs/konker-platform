@@ -88,36 +88,6 @@
       "active" : true
     },
     {
-      "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63ac",
-      "_class" : "com.konkerlabs.platform.registry.model.EventRoute",
-      "tenant" : {
-        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
-        "$ref" : "tenants"
-      },
-      "name" : "Device event forwarding route 3",
-      "guid" : "f187ce83-e06a-49c9-863e-5052fd7a78ca",
-      "description" : "Route description",
-      "incoming": {
-        "uri" : "device://konker/1af9be20-441e-419b-84a9-cb84efd4f49d",
-        "data" : {
-          "channel" : "data"
-        }
-      },
-      "outgoing": {
-        "uri" : "sms://konker/140307f9-7d50-4f37-ac67-80313776bef4",
-        "data" : {
-          "messageStrategy" : "custom",
-          "messageTemplate" : "Current value is @{#value}"
-        }
-      },
-      "filteringExpression" : "#metric == 'temperature' && #value < 40",
-      "transformation" : {
-        "$id" : "2747ec73-6910-43a1-8ddc-5a4a134ebab3",
-        "$ref" : "transformations"
-      },
-      "active" : true
-    },
-    {
       "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63ad",
       "_class" : "com.konkerlabs.platform.registry.model.EventRoute",
       "tenant" : {
