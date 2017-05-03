@@ -65,13 +65,8 @@
             <div class="col-sm-4">
                 <label class="radio-inline">
                     <input type="radio" name="outgoingScheme"
-                           data-th-text="#{routes.show.outgoing.type.device}" 
+                           data-th-text="#{routes.show.outgoing.type.device}"
                            value="device" data-th-checked="${route.outgoingScheme == 'device'}"></input>
-                </label>
-                <label class="radio-inline">
-                    <input type="radio" name="outgoingScheme"
-                           data-th-text="#{routes.show.outgoing.type.sms}" data-th-if="${#lists.contains(@environment.getActiveProfiles(), 'sms')}"
-                           value="sms" data-th-checked="${route.outgoingScheme == 'sms'}"></input>
                 </label>
                 <label class="radio-inline">
                     <input type="radio" name="outgoingScheme"
@@ -82,9 +77,6 @@
         </div>
         <data-th-block data-th-include="routes/device-outgoing :: outgoing"
                        data-th-if="${route.outgoingScheme == 'device'}">
-        </data-th-block>
-        <data-th-block data-th-include="routes/sms-outgoing :: outgoing"
-                       data-th-if="${route.outgoingScheme == 'sms'}">
         </data-th-block>
         <data-th-block data-th-include="routes/rest-outgoing :: outgoing"
                        data-th-if="${route.outgoingScheme == 'rest'}">

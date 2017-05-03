@@ -3,7 +3,6 @@ package com.konkerlabs.platform.registry.test.web.controllers;
 import static com.konkerlabs.platform.registry.business.model.Device.builder;
 import static com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer.DEVICE_URI_SCHEME;
 import static com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer.REST_DESTINATION_URI_SCHEME;
-import static com.konkerlabs.platform.registry.business.model.behaviors.SmsDestinationURIDealer.SMS_URI_SCHEME;
 import static com.konkerlabs.platform.registry.web.controllers.EventRouteController.Messages.ROUTE_REMOVED_SUCCESSFULLY;
 import static java.text.MessageFormat.format;
 import static java.util.Arrays.asList;
@@ -53,7 +52,6 @@ import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
 import com.konkerlabs.platform.registry.business.model.RestDestination;
-import com.konkerlabs.platform.registry.business.model.SmsDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.Transformation;
 import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
@@ -64,7 +62,6 @@ import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
 import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
-import com.konkerlabs.platform.registry.business.services.api.SmsDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.TransformationService;
 import com.konkerlabs.platform.registry.config.CdnConfig;
 import com.konkerlabs.platform.registry.config.HotjarConfig;
@@ -97,8 +94,6 @@ public class EventRouteControllerTest extends WebLayerTestContext {
     private DeviceRegisterService deviceRegisterService;
     @Autowired
     private RestDestinationService restDestinationService;
-    @Autowired
-    private SmsDestinationService smsDestinationService;
     @Autowired
     private ApplicationService applicationService;
     @Autowired
@@ -138,11 +133,6 @@ public class EventRouteControllerTest extends WebLayerTestContext {
         when(restDestinationService.findAll(tenant, application)).thenReturn(
                 ServiceResponseBuilder.<List<RestDestination>>ok()
                         .withResult(restDestinations).build()
-        );
-        List<SmsDestination> smsDestinations = new ArrayList<>();
-        when(smsDestinationService.findAll(tenant)).thenReturn(
-                ServiceResponseBuilder.<List<SmsDestination>>ok()
-                        .withResult(smsDestinations).<List<SmsDestination>>build()
         );
 
         incomingDevice = builder().deviceId("0000000000000004").build();
@@ -191,23 +181,6 @@ public class EventRouteControllerTest extends WebLayerTestContext {
             }
         };
 
-        URIDealer smsURI = new URIDealer() {
-            @Override
-            public String getUriScheme() {
-                return SmsDestination.URI_SCHEME;
-            }
-
-            @Override
-            public String getContext() {
-                return tenant.getDomainName();
-            }
-
-            @Override
-            public String getGuid() {
-                return routeForm.getOutgoing().getAuthorityId();
-            }
-        };
-
         URIDealer restDestinationURI = new URIDealer() {
             @Override
             public String getUriScheme() {
@@ -231,8 +204,6 @@ public class EventRouteControllerTest extends WebLayerTestContext {
             switch (routeForm.getOutgoingScheme()) {
                 case DEVICE_URI_SCHEME:
                     return deviceURI.toURI();
-                case SMS_URI_SCHEME:
-                    return smsURI.toURI();
                 case REST_DESTINATION_URI_SCHEME:
                     return restDestinationURI.toURI();
                 default:
@@ -290,7 +261,7 @@ public class EventRouteControllerTest extends WebLayerTestContext {
             ServiceResponseBuilder.<List<EventRoute>>ok()
                 .withResult(registeredRoutes).build()
         );
-        
+
         when(applicationService.findAll(tenant))
 			.thenReturn(ServiceResponseBuilder.<List<Application>> ok().withResult(Collections.singletonList(application)).build());
 
@@ -313,13 +284,6 @@ public class EventRouteControllerTest extends WebLayerTestContext {
     public void shouldRenderDeviceOutgoingViewFragment() throws Exception {
         getMockMvc().perform(get("/routes/outgoing/{0}", "device"))
                 .andExpect(view().name("routes/device-outgoing"))
-                .andExpect(model().attribute("route", new EventRouteForm()));
-    }
-
-    @Test
-    public void shouldRenderSmsViewFragment() throws Exception {
-        getMockMvc().perform(get("/routes/outgoing/{0}", "sms"))
-                .andExpect(view().name("routes/sms-outgoing"))
                 .andExpect(model().attribute("route", new EventRouteForm()));
     }
 
@@ -496,7 +460,7 @@ public class EventRouteControllerTest extends WebLayerTestContext {
         when(eventRouteService.remove(tenant, application, newRoute.getGuid())).thenReturn(responseDelete);
         when(applicationService.getByApplicationName(tenant, application.getName()))
 			.thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
-        
+
         List<String> messages = Collections.singletonList(
         		applicationContext.getMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode(),null,Locale.ENGLISH));
 
@@ -525,18 +489,14 @@ public class EventRouteControllerTest extends WebLayerTestContext {
         }
 
         @Bean
-        public SmsDestinationService smsDestinationService() {
-            return mock(SmsDestinationService.class);
-        }
-
-        @Bean
         public TransformationService transformationService() {
             return mock(TransformationService.class);
         }
-        
+
         @Bean
         public ApplicationService applicationService() {
             return mock(ApplicationService.class);
         }
     }
+
 }

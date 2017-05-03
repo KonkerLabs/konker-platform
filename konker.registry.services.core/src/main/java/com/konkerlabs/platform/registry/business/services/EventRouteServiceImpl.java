@@ -23,17 +23,14 @@ import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.RestDestination;
-import com.konkerlabs.platform.registry.business.model.SmsDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
-import com.konkerlabs.platform.registry.business.model.behaviors.SmsDestinationURIDealer;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.EventRouteRepository;
 import com.konkerlabs.platform.registry.business.repositories.RestDestinationRepository;
-import com.konkerlabs.platform.registry.business.repositories.SmsDestinationRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 
@@ -53,8 +50,6 @@ public class EventRouteServiceImpl implements EventRouteService {
     private DeviceRepository deviceRepository;
     @Autowired
     private RestDestinationRepository restRepository;
-    @Autowired
-    private SmsDestinationRepository smsDestinationRepository;
 
     @Override
     public ServiceResponse<EventRoute> save(Tenant tenant, Application application, EventRoute route) {
@@ -219,14 +214,6 @@ public class EventRouteServiceImpl implements EventRouteService {
 					route.getOutgoing().getUri().getPath().replace("/", ""));
 			if (Optional.ofNullable(outgoingDevice).isPresent())
 				route.getOutgoing().setDisplayName(outgoingDevice.getDeviceId());
-
-			break;
-		case SmsDestinationURIDealer.SMS_URI_SCHEME:
-
-			SmsDestination outgoingSms = smsDestinationRepository.getByTenantAndGUID(tenantId,
-					route.getOutgoing().getUri().getPath().replace("/", ""));
-			if (Optional.ofNullable(outgoingSms).isPresent())
-				route.getOutgoing().setDisplayName(outgoingSms.getName());
 
 			break;
 		case RESTDestinationURIDealer.REST_DESTINATION_URI_SCHEME:
