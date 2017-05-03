@@ -105,7 +105,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
                 .build();
 
         registeredDestinations = new ArrayList<>();
-        registeredDestinations.add(destination);
+        registeredDestinations.add(savedDestination);
 
         destinationData = new LinkedMultiValueMap<>();
         destinationData.add("name", destination.getName());
