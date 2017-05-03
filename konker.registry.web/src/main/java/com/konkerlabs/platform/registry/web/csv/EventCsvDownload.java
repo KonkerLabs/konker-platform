@@ -1,22 +1,5 @@
 package com.konkerlabs.platform.registry.web.csv;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
-
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.lang3.ArrayUtils;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -24,6 +7,15 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.ValueNode;
 import com.konkerlabs.platform.registry.business.model.Event.EventActor;
 import com.konkerlabs.platform.registry.business.model.Event.EventDecorator;
+import org.apache.commons.lang3.ArrayUtils;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.*;
+import java.util.Map.Entry;
 
 public class EventCsvDownload {
 	
@@ -62,10 +54,11 @@ public class EventCsvDownload {
 			
 			writer.println(event.getTimestampFormated() +","+
 						event.getTimestamp() +","+
-						Optional.ofNullable(event.getIncoming()).orElse(EventActor.builder().tenantDomain("").build()).getTenantDomain() +","+
-						Optional.ofNullable(event.getIncoming()).orElse(EventActor.builder().deviceGuid("").build()).getDeviceGuid() +","+
-						Optional.ofNullable(event.getIncoming()).orElse(EventActor.builder().deviceId("").build()).getDeviceId() +","+
-						Optional.ofNullable(event.getIncoming()).orElse(EventActor.builder().channel("").build()).getChannel() +","+
+						Optional.ofNullable(event.getIncoming()).orElse(EventActor.builder().tenantDomain("").build()).getTenantDomain() + "," +
+						Optional.ofNullable(event.getIncoming()).orElse(EventActor.builder().applicationName("").build()).getApplicationName() + "," +
+					    Optional.ofNullable(event.getIncoming()).orElse(EventActor.builder().deviceGuid("").build()).getDeviceGuid() + "," +
+						Optional.ofNullable(event.getIncoming()).orElse(EventActor.builder().deviceId("").build()).getDeviceId() + "," +
+						Optional.ofNullable(event.getIncoming()).orElse(EventActor.builder().channel("").build()).getChannel() + "," +
 						bufferJson.toString());
 		}
 		
