@@ -1,5 +1,17 @@
 package com.konkerlabs.platform.registry.test.business.services;
 
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import com.konkerlabs.platform.registry.billing.repositories.TenantDailyUsageRepository;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
@@ -10,17 +22,12 @@ import com.konkerlabs.platform.registry.business.services.api.TenantService;
 import com.konkerlabs.platform.registry.business.services.api.TenantService.Validations;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.MongoBillingTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
-import org.junit.*;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = { MongoTestConfiguration.class, BusinessTestConfiguration.class })
+@ContextConfiguration(classes = { MongoTestConfiguration.class, BusinessTestConfiguration.class, MongoBillingTestConfiguration.class })
 @UsingDataSet(locations = { "/fixtures/tenants.json", "/fixtures/users.json", "/fixtures/passwordBlacklist.json" })
 public class TenantServiceTest extends BusinessLayerTestSupport {
 
@@ -35,12 +42,16 @@ public class TenantServiceTest extends BusinessLayerTestSupport {
 
 	@Autowired
 	private DeviceRepository deviceRepository;
-
+	
+	@Autowired
+	private TenantDailyUsageRepository tenantDailyUsageRepository;
+	
 	private Tenant tenant;
 
 	@Before
 	public void setUp() throws Exception {
 		tenant = tenantRepository.findByDomainName("konker");
+		tenantDailyUsageRepository.findAllByTenantDomain(tenant.getDomainName());
 	}
 
 	@After
