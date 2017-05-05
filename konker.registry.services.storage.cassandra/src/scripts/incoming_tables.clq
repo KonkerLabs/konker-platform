@@ -17,7 +17,7 @@ CREATE TABLE incoming_events_deleted (
     device_guid text,
     device_id text,
     payload text,
-    PRIMARY KEY ((tenant_domain, application_name), timestamp)
+    PRIMARY KEY ((tenant_domain, application_name, device_guid), timestamp)
 ) WITH CLUSTERING ORDER BY (timestamp DESC);
 
 CREATE TABLE incoming_events_device_guid (

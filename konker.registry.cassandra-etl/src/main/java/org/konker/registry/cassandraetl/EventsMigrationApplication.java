@@ -38,13 +38,16 @@ public class EventsMigrationApplication implements CommandLineRunner {
     public void run(String... args) throws Exception {
 
         Instant startInstant = Instant.ofEpochSecond(1262304000L);
+        Instant endInstant = null;
         String tenantDomainFilter = ".*";
         String direction = null;
 
         for (int i = 0; i < args.length; i++) {
-            if (args[i].equals("--timestamp") || args[i].equals("-t")) {
+            if (args[i].equals("--timestampStart") || args[i].equals("-ts")) {
                 startInstant = Instant.ofEpochSecond(Long.parseLong(args[i + 1]));
-
+            }
+            if (args[i].equals("--timestampEnd") || args[i].equals("-te")) {
+                endInstant = Instant.ofEpochSecond(Long.parseLong(args[i + 1]));
             }
             if (args[i].equals("--tenant") || args[i].equals("-o")) {
                 tenantDomainFilter = args[i + 1];
@@ -58,11 +61,14 @@ public class EventsMigrationApplication implements CommandLineRunner {
         }
 
         LOGGER.info("Filter events created after " + startInstant);
+        if (endInstant != null) {
+            LOGGER.info("Filter events created until " + endInstant);
+        }
 
         if (direction.equals(M2C)) {
-            eventsMongoToCassandraService.migrate(tenantDomainFilter, startInstant);
+            eventsMongoToCassandraService.migrate(tenantDomainFilter, startInstant, endInstant);
         } else if (direction.equals(C2M)) {
-            eventsCassandraToMongoService.migrate(tenantDomainFilter, startInstant);
+            eventsCassandraToMongoService.migrate(tenantDomainFilter, startInstant, endInstant);
         } else {
             LOGGER.info("Migration direction (m2c, c2m) not setted.");
         }

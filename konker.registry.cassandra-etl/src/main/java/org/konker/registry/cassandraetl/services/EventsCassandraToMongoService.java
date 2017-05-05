@@ -35,7 +35,7 @@ public class EventsCassandraToMongoService {
     @Autowired
     private EventRepositoryCassandraImpl cassandraEventsRepository;
 
-    public void migrate(String tenantDomainFilter, Instant startInstant) throws BusinessException {
+    public void migrate(String tenantDomainFilter, Instant startInstant, Instant endInstant) throws BusinessException {
 
         LOGGER.info("Starting...");
 
@@ -47,7 +47,7 @@ public class EventsCassandraToMongoService {
 
         for (Tenant tenant : tenants) {
             if (filterPattern.matcher(tenant.getDomainName()).matches()) {
-                process(tenant, startInstant);
+                process(tenant, startInstant, endInstant);
                 count++;
             }
         }
@@ -56,20 +56,19 @@ public class EventsCassandraToMongoService {
 
     }
 
-    private void process(Tenant tenant, Instant startInstant) throws BusinessException {
+    private void process(Tenant tenant, Instant startInstant, Instant endInstant) throws BusinessException {
 
         List<Application> applications = applicationRepository.findAllByTenant(tenant.getId());
         for (Application application : applications) {
-            process(tenant, application, startInstant);
+            process(tenant, application, startInstant, endInstant);
         }
 
     }
 
-    private void process(Tenant tenant, Application application, Instant startInstant) throws BusinessException {
+    private void process(Tenant tenant, Application application, Instant startInstant, Instant endInstant) throws BusinessException {
 
         String deviceGuid = null;
         String channel = null;
-        Instant endInstant = null;
         boolean ascending = false;
         Integer limit = null;
 
