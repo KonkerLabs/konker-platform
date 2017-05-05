@@ -60,8 +60,8 @@ function findAndLoadDataChart() {
                     $('#chart').removeClass('hide');
                     $('#onlineRow').removeClass('hide');
                     // Used to identify outliers
-                    var outliers = data_filter(result);
-                    graphService.update($('#metric option:selected').val(), outliers);
+                    var dataFilter = DataFilter(result);
+                    graphService.update($('#metric option:selected').val(), dataFilter.segments, dataFilter.outliers);
                     // graphService.update($('#metric option:selected').val(),result);
                 }
         	}
@@ -83,7 +83,7 @@ function beautifierJson() {
 
 function fetchMetricViewFragment(scheme, fetchUrl, element) {
     var loadSpinner;
-    
+
     $.ajax({
         context : this,
         type : "GET",
@@ -126,7 +126,7 @@ function fetchEventsViewFragment(scheme, fetchUrl, element) {
         complete : function() {
         }
     });
-    
+
 }
 
 
@@ -241,7 +241,7 @@ $(document).ready(function() {
         clearChartTableHideCsvButton();
         autoRefreshDataChart();
     });
-    
+
     // Remove dirty elements (KRMVP-392)
     setInterval(function() {
         if ($('.nvtooltip').length > 1) {
