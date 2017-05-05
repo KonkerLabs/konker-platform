@@ -65,9 +65,9 @@ public class EventsMigrationApplication implements CommandLineRunner {
             LOGGER.info("Filter events created until " + endInstant);
         }
 
-        if (direction.equals(M2C)) {
+        if (M2C.equals(direction)) {
             eventsMongoToCassandraService.migrate(tenantDomainFilter, startInstant, endInstant);
-        } else if (direction.equals(C2M)) {
+        } else if (C2M.equals(direction)) {
             eventsCassandraToMongoService.migrate(tenantDomainFilter, startInstant, endInstant);
         } else {
             LOGGER.info("Migration direction (m2c, c2m) not setted.");
