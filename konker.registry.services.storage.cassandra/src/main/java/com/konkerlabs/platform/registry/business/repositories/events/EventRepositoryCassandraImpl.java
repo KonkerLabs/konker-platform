@@ -94,7 +94,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
             query.append("?");
             query.append(")");
 
-            session.execute(
+            session.executeAsync(
                     query.toString(),
                     tenant.getDomainName(),
                     application.getName(),
@@ -137,7 +137,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
             query.append("?");
             query.append(")");
 
-            session.execute(
+            session.executeAsync(
                     query.toString(),
                     tenant.getDomainName(),
                     application.getName(),
