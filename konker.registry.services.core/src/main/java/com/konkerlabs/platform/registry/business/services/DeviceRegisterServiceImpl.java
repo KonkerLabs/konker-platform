@@ -20,15 +20,17 @@ import com.konkerlabs.platform.registry.business.services.api.ApplicationService
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
+import com.konkerlabs.platform.registry.type.EventStorageConfigType;
 import com.konkerlabs.platform.security.exceptions.SecurityException;
 import com.konkerlabs.platform.security.managers.PasswordManager;
 import org.apache.commons.codec.binary.Base64OutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.stereotype.Service;
@@ -39,6 +41,8 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.annotation.PostConstruct;
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
@@ -58,10 +62,29 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
     @Autowired
     private EventRouteRepository eventRouteRepository;
 
-    @Autowired @Qualifier("mongoEvents")
+    private PubServerConfig pubServerConfig = new PubServerConfig();
+
+    @Autowired
+    private ApplicationContext applicationContext;
+
+    @Autowired
+    private EventStorageConfig eventStorageConfig;
     private EventRepository eventRepository;
 
-    private PubServerConfig pubServerConfig = new PubServerConfig();
+    @PostConstruct
+    public void init() {
+        try {
+            eventRepository =
+                    (EventRepository) applicationContext.getBean(
+                            eventStorageConfig.getEventRepositoryBean()
+                    );
+        } catch (Exception e) {
+            eventRepository =
+                    (EventRepository) applicationContext.getBean(
+                            EventStorageConfigType.MONGODB.bean()
+                    );
+        }
+    }
 
     @Override
     public ServiceResponse<Device> register(Tenant tenant, Application application, Device device) {
@@ -334,25 +357,19 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .build();
         }
         //find dependencies
-        List<EventRoute> incomingEvents =
+        List<EventRoute> incomingEventsRoutes =
                 eventRouteRepository.findByIncomingUri(device.toURI());
 
-        List<EventRoute> outgoingEvents =
+        List<EventRoute> outgoingEventsRoutes =
                 eventRouteRepository.findByOutgoingUri(device.toURI());
 
         ServiceResponse<Device> response = null;
 
-        if(Optional.ofNullable(incomingEvents).isPresent() && incomingEvents.size() > 0 ||
-                Optional.ofNullable(outgoingEvents).isPresent() && outgoingEvents.size() > 0) {
-            if(response == null){
-                response = ServiceResponseBuilder.<Device>error()
-                        .withMessage(Validations.DEVICE_HAVE_EVENTROUTES.getCode())
-                        .build();
-            } else {
-                response.setStatus(ServiceResponse.Status.ERROR);
-                response.getResponseMessages().put(Validations.DEVICE_HAVE_EVENTROUTES.getCode(), null);
-            }
-
+        if((Optional.ofNullable(incomingEventsRoutes).isPresent() && incomingEventsRoutes.size() > 0) ||
+           (Optional.ofNullable(outgoingEventsRoutes).isPresent() && outgoingEventsRoutes.size() > 0)) {
+            response = ServiceResponseBuilder.<Device>error()
+                    .withMessage(Validations.DEVICE_HAVE_EVENTROUTES.getCode())
+                    .build();
         }
 
         if(Optional.ofNullable(response).isPresent()) return response;
