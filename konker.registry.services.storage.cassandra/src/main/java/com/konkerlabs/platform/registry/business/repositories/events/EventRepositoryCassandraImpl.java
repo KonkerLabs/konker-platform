@@ -105,7 +105,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
                                                event.getIncoming().getDeviceId(),
                                                event.getPayload());
 
-            session.execute(statement);
+            session.executeAsync(statement);
 
         } else if (type == Type.OUTGOING) {
 
@@ -152,7 +152,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
                                                event.getIncoming().getDeviceId(),
                                                event.getPayload());
 
-            session.execute(statement);
+            session.executeAsync(statement);
 
         }
 
