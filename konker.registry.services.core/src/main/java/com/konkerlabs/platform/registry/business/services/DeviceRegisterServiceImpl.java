@@ -105,6 +105,16 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode())
                     .build();
         }
+        
+        Long count = (long) deviceRepository.findAllByTenant(tenant.getId()).size();
+        if (Optional.ofNullable(tenant.getDevicesLimit()).isPresent() && count.compareTo(tenant.getDevicesLimit()) >= 0) {
+        	LOGGER.debug("Devices limit is exceeded.",
+                    Device.builder().guid("NULL").tenant(tenant).build().toURI(),
+                    device.getLogLevel());
+        	return ServiceResponseBuilder.<Device>error()
+                    .withMessage(Validations.DEVICE_TENANT_LIMIT.getCode())
+                    .build();
+        }
 
         if (!applicationRepository.exists(application.getName())) {
         	LOGGER.debug("device cannot exists",

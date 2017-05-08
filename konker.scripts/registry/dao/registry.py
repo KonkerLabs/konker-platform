@@ -70,7 +70,7 @@ def create_tenant(args, name):
     print("Info: Organization name = " + org)
     if tenant is None:
         try:
-            inserted_id = db.tenants.insert_one({"name": name, "domainName": org}).inserted_id
+            inserted_id = db.tenants.insert_one({"name": name, "domainName": org, "devicesLimit" : 5}).inserted_id
             db.applications.insert_one({
                 "_id" : org,
                 "friendlyName" : org,

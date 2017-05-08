@@ -35,6 +35,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -194,6 +195,17 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         ServiceResponse<Device> response = deviceRegisterService.register(currentTenant, currentApplication, device);
 
         assertThat(response, hasAllErrors(errorMessages));
+    }
+    
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
+    public void shouldReturnResponseMessageIfDeviceLimitExceeded() throws Exception {
+    	currentTenant.setDevicesLimit(2l);
+
+    	Map<String, Object[]> errorMessages = Collections.singletonMap(DeviceRegisterService.Validations.DEVICE_TENANT_LIMIT.getCode(), null);
+    	ServiceResponse<Device> response = deviceRegisterService.register(currentTenant, currentApplication, device);
+
+    	assertThat(response, hasAllErrors(errorMessages));
     }
 
     @Test
