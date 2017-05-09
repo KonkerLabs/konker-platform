@@ -6,7 +6,7 @@ import org.springframework.data.mongodb.repository.Query;
 
 import java.util.List;
 
-public interface DeviceRepository extends MongoRepository<Device,String> {
+public interface DeviceRepository extends MongoRepository<Device, String> {
 
     @Query("{ 'tenant.id' : ?0 }")
     List<Device> findAllByTenant(String tenantId);
@@ -18,6 +18,9 @@ public interface DeviceRepository extends MongoRepository<Device,String> {
     Device findByApiKey(String apiKey);
     @Query("{ 'tenant.id' : ?0, 'application.name' : ?1 }")
 	List<Device> findAllByTenantIdAndApplicationName(String tenantId, String applicationName);
+    @Query("{ 'tenant.id' : ?0, 'application.name' : ?1, 'location.name' : ?1 }")
+    List<Device> findAllByTenantIdAndApplicationNameAndLocationName(String tenantId, String applicationName, String locationName);
     @Query("{ 'tenant.id' : ?0, 'application.name' : ?1, 'guid' : ?2 }")
 	Device findByTenantAndApplicationAndGuid(String tenantId, String applicationName, String guid);
+
 }

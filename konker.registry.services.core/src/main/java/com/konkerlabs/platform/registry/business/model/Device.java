@@ -69,6 +69,8 @@ public class Device implements URIDealer, Validatable, UserDetails {
 	private String id;
 	@DBRef
 	private Tenant tenant;
+	@DBRef
+	private Application application;
 	private String deviceId;
     private String apiKey;
 	private String securityHash;
@@ -77,11 +79,10 @@ public class Device implements URIDealer, Validatable, UserDetails {
 	private String description;
 	private Instant registrationDate;
     private LogLevel logLevel;
-//	private List<Event> events;
+    @DBRef
+    private Location location;
 	private boolean active;
-	
-	@DBRef
-    private Application application;
+
 
 	public Optional<Map<String, Object[]>> applyValidations() {
 
@@ -107,7 +108,7 @@ public class Device implements URIDealer, Validatable, UserDetails {
 		setRegistrationDate(Instant.now());
 		regenerateApiKey();
 	}
-	
+
 	public void regenerateApiKey() {
 		setApiKey(new BigInteger(60, new Random()).toString(32));
 	}
