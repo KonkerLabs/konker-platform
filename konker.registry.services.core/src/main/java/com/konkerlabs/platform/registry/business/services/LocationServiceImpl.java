@@ -44,25 +44,12 @@ public class LocationServiceImpl implements LocationService {
     public ServiceResponse<Location> save(Tenant tenant, Application application, Location location) {
 
         if (!Optional.ofNullable(tenant).isPresent()) {
-            Location noLocation = Location.builder().id("NULL").tenant(
-			        Tenant.builder().domainName("unknow_domain").build()).build();
-			LOGGER.debug(CommonValidations.TENANT_NULL.getCode(),
-                    noLocation.toURI(),
-                    noLocation.getTenant().getLogLevel());
             return ServiceResponseBuilder.<Location>error()
                     .withMessage(CommonValidations.TENANT_NULL.getCode())
                     .build();
         }
 
         if (!Optional.ofNullable(application).isPresent()) {
-        	Location noLocation = Location.builder()
-        			.id("NULL")
-        			.tenant(tenant)
-        			.application(Application.builder().name("unknowapp").tenant(tenant).build())
-        			.build();
-        	LOGGER.debug(ApplicationService.Validations.APPLICATION_NULL.getCode(),
-        			noLocation.toURI(),
-        			noLocation.getTenant().getLogLevel());
         	return ServiceResponseBuilder.<Location>error()
         			.withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode())
         			.build();
@@ -103,25 +90,12 @@ public class LocationServiceImpl implements LocationService {
     public ServiceResponse<List<Location>> findAll(Tenant tenant, Application application) {
 
         if (!Optional.ofNullable(tenant).isPresent()) {
-            Location noLocation = Location.builder().id("NULL").tenant(
-                    Tenant.builder().domainName("unknow_domain").build()).build();
-            LOGGER.debug(CommonValidations.TENANT_NULL.getCode(),
-                    noLocation.toURI(),
-                    noLocation.getTenant().getLogLevel());
             return ServiceResponseBuilder.<List<Location>>error()
                     .withMessage(CommonValidations.TENANT_NULL.getCode())
                     .build();
         }
 
         if (!Optional.ofNullable(application).isPresent()) {
-            Location noLocation = Location.builder()
-                    .id("NULL")
-                    .tenant(tenant)
-                    .application(Application.builder().name("unknowapp").tenant(tenant).build())
-                    .build();
-            LOGGER.debug(ApplicationService.Validations.APPLICATION_NULL.getCode(),
-                    noLocation.toURI(),
-                    noLocation.getTenant().getLogLevel());
             return ServiceResponseBuilder.<List<Location>>error()
                     .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode())
                     .build();
@@ -164,6 +138,7 @@ public class LocationServiceImpl implements LocationService {
         // modify "modifiable" fields
         locationFromDB.setDescription(updatingLocation.getDescription());
         locationFromDB.setName(updatingLocation.getName());
+        locationFromDB.setDefaultLocation(updatingLocation.isDefaultLocation());
 
         Optional<Map<String, Object[]>> validations = locationFromDB.applyValidations();
 
@@ -185,20 +160,23 @@ public class LocationServiceImpl implements LocationService {
     @Override
     public ServiceResponse<Location> remove(Tenant tenant, Application application, String guid) {
 
-        if(!Optional.ofNullable(guid).isPresent())
-            return ServiceResponseBuilder.<Location>error()
-                    .withMessage(Validations.LOCATION_GUID_NULL.getCode())
-                    .build();
-
-        if (!Optional.ofNullable(tenant).isPresent())
+        if (!Optional.ofNullable(tenant).isPresent()) {
             return ServiceResponseBuilder.<Location>error()
                     .withMessage(CommonValidations.TENANT_NULL.getCode())
                     .build();
+        }
 
-        if (!Optional.ofNullable(application).isPresent())
+        if (!Optional.ofNullable(application).isPresent()) {
             return ServiceResponseBuilder.<Location>error()
                     .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode())
                     .build();
+        }
+
+        if(!Optional.ofNullable(guid).isPresent()) {
+            return ServiceResponseBuilder.<Location>error()
+                    .withMessage(Validations.LOCATION_GUID_NULL.getCode())
+                    .build();
+        }
 
         //find location
         Location location = locationRepository.findByTenantAndApplicationAndGuid(tenant.getId(), application.getName(), guid);
@@ -211,7 +189,7 @@ public class LocationServiceImpl implements LocationService {
 
         //find dependencies
         List<Device> devices =
-                deviceRepository.findAllByTenantIdAndApplicationNameAndLocationName(tenant.getId(), application.getName(), location.getName());
+                deviceRepository.findAllByTenantIdAndApplicationNameAndLocationName(tenant.getId(), application.getName(), location.getId());
 
         ServiceResponse<Location> response = null;
 
@@ -226,14 +204,23 @@ public class LocationServiceImpl implements LocationService {
         LOGGER.info("Location removed. Id: {}", location.getId(), tenant.toURI(), tenant.getLogLevel());
 
         return ServiceResponseBuilder.<Location>ok()
-                .withMessage(Messages.LOCATION_REMOVED_SUCCESSFULLY.getCode())
+                .withMessage(LocationService.Messages.LOCATION_REMOVED_SUCCESSFULLY.getCode())
                 .withResult(location)
                 .build();
     }
 
-
     @Override
     public ServiceResponse<Location> findTree(Tenant tenant, Application application) {
+
+        if (!Optional.ofNullable(tenant).isPresent())
+            return ServiceResponseBuilder.<Location>error()
+                    .withMessage(CommonValidations.TENANT_NULL.getCode())
+                    .build();
+
+        if (!Optional.ofNullable(application).isPresent())
+            return ServiceResponseBuilder.<Location>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode())
+                    .build();
 
         Location root = null;
 
@@ -256,7 +243,11 @@ public class LocationServiceImpl implements LocationService {
         }
 
         for (Location location: all) {
-            location.setChildrens(childrenListMap.get(location.getGuid()));
+            List<Location> childrens = childrenListMap.get(location.getGuid());
+            if (childrens == null) {
+                childrens = new ArrayList<>();
+            }
+            location.setChildrens(childrens);
         }
 
         if (root == null) {
@@ -286,6 +277,34 @@ public class LocationServiceImpl implements LocationService {
 
         //find location
         Location location = locationRepository.findByTenantAndApplicationAndName(tenant.getId(), application.getName(), locationName);
+
+        if (Optional.ofNullable(location).isPresent()) {
+            return ServiceResponseBuilder.<Location>ok()
+                    .withResult(location)
+                    .build();
+        } else {
+            return ServiceResponseBuilder.<Location>error()
+                    .withMessage(Messages.LOCATION_NOT_FOUND.getCode())
+                    .build();
+        }
+
+    }
+
+    @Override
+    public ServiceResponse<Location> findByGuid(Tenant tenant, Application application, String guid) {
+
+        if (!Optional.ofNullable(tenant).isPresent())
+            return ServiceResponseBuilder.<Location>error()
+                    .withMessage(CommonValidations.TENANT_NULL.getCode())
+                    .build();
+
+        if (!Optional.ofNullable(application).isPresent())
+            return ServiceResponseBuilder.<Location>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode())
+                    .build();
+
+        //find location
+        Location location = locationRepository.findByTenantAndApplicationAndGuid(tenant.getId(), application.getName(), guid);
 
         if (Optional.ofNullable(location).isPresent()) {
             return ServiceResponseBuilder.<Location>ok()
