@@ -17,12 +17,15 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterServ
 import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.config.EventStorageConfig;
+import com.konkerlabs.platform.registry.type.EventStorageConfigType;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -32,6 +35,8 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
@@ -59,10 +64,6 @@ public class EventSchemaServiceImpl implements EventSchemaService {
     private JsonParsingService jsonParsingService;
 
     @Autowired
-    @Qualifier("mongoEvents")
-    private EventRepository eventRepository;
-
-    @Autowired
     private MongoTemplate mongoTemplate;
 
     @Autowired
@@ -77,6 +78,27 @@ public class EventSchemaServiceImpl implements EventSchemaService {
     /*private KonkerLogger LOG = KonkerLoggerFactory.getLogger(EventSchemaServiceImpl.class);*/
     private Logger LOG = LoggerFactory.getLogger(EventSchemaServiceImpl.class);
 
+    @Autowired
+    private ApplicationContext applicationContext;
+
+    @Autowired
+    private EventStorageConfig eventStorageConfig;
+    private EventRepository eventRepository;
+
+    @PostConstruct
+    public void init() {
+        try {
+            eventRepository =
+                    (EventRepository) applicationContext.getBean(
+                            eventStorageConfig.getEventRepositoryBean()
+                    );
+        } catch (Exception e) {
+            eventRepository =
+                    (EventRepository) applicationContext.getBean(
+                            EventStorageConfigType.MONGODB.bean()
+                    );
+        }
+    }
 
     @Override
     public ServiceResponse<EventSchema> appendIncomingSchema(Event event) {

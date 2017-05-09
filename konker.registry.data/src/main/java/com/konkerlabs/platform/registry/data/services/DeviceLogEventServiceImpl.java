@@ -38,15 +38,14 @@ public class DeviceLogEventServiceImpl implements DeviceLogEventService {
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
 
-
     @PostConstruct
-    public void init(){
+    public void init() {
         try {
             eventRepository =
                     (EventRepository) applicationContext.getBean(
                             eventStorageConfig.getEventRepositoryBean()
                     );
-        } catch (Exception e){
+        } catch (Exception e) {
             eventRepository =
                     (EventRepository) applicationContext.getBean(
                             EventStorageConfigType.MONGODB.bean()

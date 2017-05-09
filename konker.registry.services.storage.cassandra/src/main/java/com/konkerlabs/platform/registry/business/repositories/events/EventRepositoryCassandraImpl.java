@@ -10,7 +10,9 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
@@ -94,15 +96,16 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
             query.append("?");
             query.append(")");
 
-            session.executeAsync(
-                    query.toString(),
-                    tenant.getDomainName(),
-                    application.getName(),
-                    event.getEpochTime(),
-                    event.getIncoming().getChannel(),
-                    event.getIncoming().getDeviceGuid(),
-                    event.getIncoming().getDeviceId(),
-                    event.getPayload());
+            PreparedStatement ps = session.prepare(query.toString());
+            BoundStatement statement = ps.bind(tenant.getDomainName(),
+                                               application.getName(),
+                                               event.getEpochTime(),
+                                               event.getIncoming().getChannel(),
+                                               event.getIncoming().getDeviceGuid(),
+                                               event.getIncoming().getDeviceId(),
+                                               event.getPayload());
+
+            session.executeAsync(statement);
 
         } else if (type == Type.OUTGOING) {
 
@@ -137,18 +140,19 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
             query.append("?");
             query.append(")");
 
-            session.executeAsync(
-                    query.toString(),
-                    tenant.getDomainName(),
-                    application.getName(),
-                    event.getEpochTime(),
-                    event.getOutgoing().getChannel(),
-                    event.getOutgoing().getDeviceGuid(),
-                    event.getOutgoing().getDeviceId(),
-                    event.getIncoming().getChannel(),
-                    event.getIncoming().getDeviceGuid(),
-                    event.getIncoming().getDeviceId(),
-                    event.getPayload());
+            PreparedStatement ps = session.prepare(query.toString());
+            BoundStatement statement = ps.bind(tenant.getDomainName(),
+                                               application.getName(),
+                                               event.getEpochTime(),
+                                               event.getOutgoing().getChannel(),
+                                               event.getOutgoing().getDeviceGuid(),
+                                               event.getOutgoing().getDeviceId(),
+                                               event.getIncoming().getChannel(),
+                                               event.getIncoming().getDeviceGuid(),
+                                               event.getIncoming().getDeviceId(),
+                                               event.getPayload());
+
+            session.executeAsync(statement);
 
         }
 
@@ -173,6 +177,8 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
         List<Object> filters = new ArrayList<>();
 
         if (type == Type.INCOMING) {
+            query.append("SELECT tenant_domain, application_name, timestamp, channel, device_guid, device_id, payload FROM ");
+
             if (deviceGuid != null && channel != null) {
                 table = INCOMING_EVENTS_DEVICE_GUID_CHANNEL;
             } else if (deviceGuid != null && channel == null) {
@@ -183,6 +189,8 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
                 table = INCOMING_EVENTS;
             }
         } else if (type == Type.OUTGOING) {
+            query.append("SELECT tenant_domain, application_name, timestamp, channel, device_guid, incoming_channel, incoming_device_guid, incoming_device_id, device_id, payload FROM ");
+
             if (deviceGuid != null && channel != null) {
                 table = OUTGOING_EVENTS_DEVICE_GUID_CHANNEL;
             } else if (deviceGuid != null && channel == null) {
@@ -194,7 +202,6 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
             }
         }
 
-        query.append("SELECT * FROM ");
         query.append(REGISTRYKEYSPACE);
         query.append(".");
         query.append(table);
@@ -237,7 +244,10 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
             query.append(limit);
         }
 
-        final ResultSet rs = session.execute(query.toString(), filters.toArray(new Object[filters.size()]));
+        PreparedStatement ps = session.prepare(query.toString());
+        BoundStatement statement = ps.bind(filters.toArray(new Object[filters.size()]));
+
+        final ResultSet rs = session.execute(statement);
 
         List<Event> events = new LinkedList<>();
 
