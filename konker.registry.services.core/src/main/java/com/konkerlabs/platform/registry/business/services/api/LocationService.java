@@ -14,7 +14,8 @@ public interface LocationService {
 		LOCATION_NAME_ALREADY_REGISTERED("service.location.name_already_registered"),
 		LOCATION_PARENT_NULL("service.location.parent_null"),
 		LOCATION_ID_DOES_NOT_EXIST("service.location.name_does_not_exist"),
-		LOCATION_HAVE_DEVICES("service.location.have_devices")
+		LOCATION_HAVE_DEVICES("service.location.have_devices"),
+		LOCATION_HAVE_CHILDRENS("service.location.have_childrens")
 		;
 
 		public String getCode() {
@@ -49,7 +50,6 @@ public interface LocationService {
 
     }
 
-    ServiceResponse<Location> findDefault(Tenant tenant, Application application);
     ServiceResponse<Location> findRoot(Tenant tenant, Application application);
     ServiceResponse<Location> findByName(Tenant tenant, Application application, String locationName);
     ServiceResponse<Location> findByGuid(Tenant tenant, Application application, String locationName);

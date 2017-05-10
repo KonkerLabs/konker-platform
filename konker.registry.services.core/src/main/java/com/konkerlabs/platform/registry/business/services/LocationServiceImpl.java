@@ -227,7 +227,7 @@ public class LocationServiceImpl implements LocationService {
                     .build();
         }
 
-        //find location
+        // find location
         Location location = locationRepository.findByTenantAndApplicationAndGuid(tenant.getId(), application.getName(), guid);
 
         if(!Optional.ofNullable(location).isPresent()){
@@ -236,7 +236,7 @@ public class LocationServiceImpl implements LocationService {
                     .build();
         }
 
-        //find dependencies
+        // find dependencies
         List<Device> devices =
                 deviceRepository.findAllByTenantIdAndApplicationNameAndLocationName(tenant.getId(), application.getName(), location.getId());
 
@@ -250,6 +250,16 @@ public class LocationServiceImpl implements LocationService {
 
         if(Optional.ofNullable(response).isPresent()) return response;
 
+        List<Location> childrens =
+                locationRepository.findChildrensByParentId(tenant.getId(), application.getName(), location.getId());
+
+        if(Optional.ofNullable(childrens).isPresent() && !childrens.isEmpty()) {
+            return ServiceResponseBuilder.<Location>error()
+                    .withMessage(Validations.LOCATION_HAVE_CHILDRENS.getCode())
+                    .build();
+        }
+
+        // remove
         LOGGER.info("Location removed. Id: {}", location.getId(), tenant.toURI(), tenant.getLogLevel());
 
         return ServiceResponseBuilder.<Location>ok()
@@ -324,7 +334,7 @@ public class LocationServiceImpl implements LocationService {
                     .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode())
                     .build();
 
-        //find location
+        // find location
         Location location = locationRepository.findByTenantAndApplicationAndName(tenant.getId(), application.getName(), locationName);
 
         if (Optional.ofNullable(location).isPresent()) {
@@ -352,7 +362,7 @@ public class LocationServiceImpl implements LocationService {
                     .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode())
                     .build();
 
-        //find location
+        // find location
         Location location = locationRepository.findByTenantAndApplicationAndGuid(tenant.getId(), application.getName(), guid);
 
         if (Optional.ofNullable(location).isPresent()) {
@@ -362,40 +372,6 @@ public class LocationServiceImpl implements LocationService {
         } else {
             return ServiceResponseBuilder.<Location>error()
                     .withMessage(Messages.LOCATION_NOT_FOUND.getCode())
-                    .build();
-        }
-
-    }
-
-    @Override
-    public ServiceResponse<Location> findDefault(Tenant tenant, Application application) {
-
-        if (!Optional.ofNullable(tenant).isPresent())
-            return ServiceResponseBuilder.<Location>error()
-                    .withMessage(CommonValidations.TENANT_NULL.getCode())
-                    .build();
-
-        if (!Optional.ofNullable(application).isPresent())
-            return ServiceResponseBuilder.<Location>error()
-                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode())
-                    .build();
-
-        List<Location> all = locationRepository.findAllByTenantIdAndApplicationName(tenant.getId(), application.getName());
-        for (Location location: all) {
-            if (location.isDefaultLocation()) {
-                return ServiceResponseBuilder.<Location>ok()
-                        .withResult(location)
-                        .build();
-            }
-        }
-
-        if (!all.isEmpty()) {
-            return ServiceResponseBuilder.<Location>error()
-                    .withMessage(Messages.LOCATION_DEFAULT_NOT_FOUND.getCode())
-                    .build();
-        } else {
-            return ServiceResponseBuilder.<Location>ok()
-                    .withResult(getRootDefaultLocation(tenant, application))
                     .build();
         }
 

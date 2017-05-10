@@ -21,10 +21,13 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Location;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
+import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
+import com.konkerlabs.platform.registry.business.repositories.LocationRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.LocationService;
@@ -46,7 +49,13 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
     private LocationService subject;
 
     @Autowired
+    private LocationRepository locationRepository;
+
+    @Autowired
     private TenantRepository tenantRepository;
+
+    @Autowired
+    private DeviceRepository deviceRepository;
 
     @Autowired
     private ApplicationRepository applicationRepository;
@@ -321,12 +330,34 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
     public void shouldRemoveWithNonExistingGuid() {
         ServiceResponse<Location> response = subject.remove(tenant, application, "591200ea9061e67cb2228f85");
         assertThat(response, hasErrorMessage(LocationService.Validations.LOCATION_GUID_DOES_NOT_EXIST.getCode()));
-
     }
 
     @Test
-    public void shouldRemoveNonExistingGuid() {
+    public void shouldTryToRemoveWithSubLocations() {
         ServiceResponse<Location> response = subject.remove(tenant, application, "d75758a6-235b-413b-85b3-d218404f8c11");
+        assertThat(response, hasErrorMessage(LocationService.Validations.LOCATION_HAVE_CHILDRENS.getCode()));
+    }
+
+    @Test
+    public void shouldTryToRemoveWithDevices() {
+        Location location = locationRepository.findByTenantAndApplicationAndGuid(tenant.getId(), application.getName(), "d75758a6-235b-413b-85b3-d218404f8c11");
+
+        Device device = Device.builder()
+                              .name("8r4ictigl5")
+                              .tenant(tenant)
+                              .application(application)
+                              .location(location)
+                              .build();
+
+        deviceRepository.save(device);
+
+        ServiceResponse<Location> response = subject.remove(tenant, application, "d75758a6-235b-413b-85b3-d218404f8c11");
+        assertThat(response, hasErrorMessage(LocationService.Validations.LOCATION_HAVE_DEVICES.getCode()));
+    }
+
+    @Test
+    public void shouldRemove() {
+        ServiceResponse<Location> response = subject.remove(tenant, application, "a14e671f-32d7-4ec0-8006-8d93eeed401c");
         assertThat(response.isOk(), is(true));
         assertThat(response.getResponseMessages(), hasEntry(LocationService.Messages.LOCATION_REMOVED_SUCCESSFULLY.getCode(), null));
     }
@@ -355,34 +386,6 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
     @Test
     public void shouldFindRootWithoutRoot() {
         ServiceResponse<Location> response = subject.findRoot(tenant, otherApplication);
-        assertThat(response.isOk(), is(true));
-        assertThat(response.getResult().getName(), is("root"));
-    }
-
-    // ============================== findDefault ==============================//
-
-    @Test
-    public void shouldFindDefaultWithNullTenant() {
-        ServiceResponse<Location> response = subject.findDefault(null, null);
-        assertThat(response, hasErrorMessage(TENANT_NULL.getCode()));
-    }
-
-    @Test
-    public void shouldFindDefaultWithNullApplication() {
-        ServiceResponse<Location> response = subject.findDefault(tenant, null);
-        assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
-    }
-
-    @Test
-    public void shouldFindDefault() {
-        ServiceResponse<Location> response = subject.findDefault(tenant, application);
-        assertThat(response.isOk(), is(true));
-        assertThat(response.getResult().getName(), is("sp"));
-    }
-
-    @Test
-    public void shouldFindDefaultWithoutRoot() {
-        ServiceResponse<Location> response = subject.findDefault(tenant, otherApplication);
         assertThat(response.isOk(), is(true));
         assertThat(response.getResult().getName(), is("root"));
     }
