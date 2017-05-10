@@ -21,10 +21,12 @@ import lombok.NoArgsConstructor;
 @Document(collection="devicesModel")
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode(of = {"name", "description", "defaultModel"})
+@EqualsAndHashCode(of = {"guid", "name", "description", "defaultModel"})
 public class DeviceModel implements URIDealer {
 
 	@Id
+	private String id;
+	private String guid;
 	private String name;
 	private String description;
 	private boolean defaultModel;
@@ -49,11 +51,11 @@ public class DeviceModel implements URIDealer {
 
 	@Override
 	public String getGuid() {
-		return name;
+		return guid;
 	}
 
 	public enum Validations {
-		NAME_NULL_EMPTY("model.application.name.not_null");
+		NAME_NULL_EMPTY("model.devicemodel.name.not_null");
 
 		public String getCode() {
 			return code;

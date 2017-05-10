@@ -82,6 +82,9 @@ public class Device implements URIDealer, Validatable, UserDetails {
 	
 	@DBRef
     private Application application;
+	
+	@DBRef
+    private DeviceModel deviceModel;
 
 	public Optional<Map<String, Object[]>> applyValidations() {
 

@@ -9,13 +9,13 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 public interface DeviceModelService {
 
 	enum Validations {
-		DEVICE_MODEL_NULL("service.application.null"),
-		DEVICE_MODEL_ALREADY_REGISTERED("service.application.already.registered"),
-		DEVICE_MODEL_DOES_NOT_EXIST("service.application.does.not.exist"),
-		DEVICE_MODEL_NAME_IS_NULL("service.application.name.null"),
-		DEVICE_MODEL_NOT_FOUND("service.application.not_found"),
-		DEVICE_MODEL_HAS_DEVICE("service.application.has.device"),
-		DEVICE_MODEL_HAS_ROUTE("service.application.has.route");
+		DEVICE_MODEL_NULL("service.devicemodel.null"),
+		DEVICE_MODEL_ALREADY_REGISTERED("service.devicemodel.already.registered"),
+		DEVICE_MODEL_DOES_NOT_EXIST("service.devicemodel.does.not.exist"),
+		DEVICE_MODEL_NAME_IS_NULL("service.devicemodel.name.null"),
+		DEVICE_MODEL_NOT_FOUND("service.devicemodel.not_found"),
+		DEVICE_MODEL_HAS_DEVICE("service.devicemodel.has.device"),
+		DEVICE_MODEL_HAS_ROUTE("service.devicemodel.has.route");
 
 		public String getCode() {
 			return code;
@@ -29,7 +29,7 @@ public interface DeviceModelService {
 	}
 	
 	public enum Messages {
-		DEVICE_MODEL_REMOVED_SUCCESSFULLY("controller.application.removed.succesfully");
+		DEVICE_MODEL_REMOVED_SUCCESSFULLY("controller.devicemodel.removed.succesfully");
 
 		public String getCode() {
 			return code;
@@ -99,7 +99,7 @@ public interface DeviceModelService {
 	 * @param name
 	 * @return
 	 */
-	ServiceResponse<DeviceModel> getByTenantApplicationName(Tenant tenant, Application application, String name);
+	ServiceResponse<DeviceModel> getByTenantIdApplicationNameAndName(Tenant tenant, Application application, String name);
 
 
 }

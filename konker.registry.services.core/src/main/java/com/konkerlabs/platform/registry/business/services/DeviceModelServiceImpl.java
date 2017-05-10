@@ -3,6 +3,7 @@ package com.konkerlabs.platform.registry.business.services;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,11 +13,13 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.DeviceModel;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
 import com.konkerlabs.platform.registry.business.repositories.DeviceModelRepository;
+import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
@@ -37,6 +40,9 @@ public class DeviceModelServiceImpl implements DeviceModelService {
     
     @Autowired
     private DeviceModelRepository deviceModelRepository;
+    
+    @Autowired
+    private DeviceRepository deviceRepository;
 
     
     private ServiceResponse<DeviceModel> basicValidate(Tenant tenant, Application application, DeviceModel deviceModel) {
@@ -100,7 +106,7 @@ public class DeviceModelServiceImpl implements DeviceModelService {
 		
 		if (!Optional.ofNullable(deviceModel).isPresent()) {
 			DeviceModel app = DeviceModel.builder()
-					.name("NULL")
+					.guid("NULL")
 					.tenant(tenant)
 					.build();
 			if(LOGGER.isDebugEnabled()){
@@ -128,7 +134,7 @@ public class DeviceModelServiceImpl implements DeviceModelService {
 
 		if (validations.isPresent()) {
 			LOGGER.debug("error saving device model",
-					DeviceModel.builder().name("NULL").tenant(tenant).build().toURI(),
+					DeviceModel.builder().guid("NULL").tenant(tenant).build().toURI(),
 					tenant.getLogLevel());
 			return ServiceResponseBuilder.<DeviceModel>error()
 					.withMessages(validations.get())
@@ -138,14 +144,26 @@ public class DeviceModelServiceImpl implements DeviceModelService {
 		if (deviceModelRepository
 				.findByTenantIdApplicationNameAndName(tenant.getId(), application.getName(), deviceModel.getName()) != null) {
 			LOGGER.debug("error saving device model",
-					DeviceModel.builder().name("NULL").tenant(tenant).build().toURI(),
+					DeviceModel.builder().guid("NULL").tenant(tenant).build().toURI(),
 					tenant.getLogLevel());
             return ServiceResponseBuilder.<DeviceModel>error()
                     .withMessage(Validations.DEVICE_MODEL_ALREADY_REGISTERED.getCode())
                     .build();
 		}
+		
+		if (deviceModel.isDefaultModel()) {
+			DeviceModel defaultModel = deviceModelRepository.findDefault(tenant.getId(), application.getName(), true);
+			defaultModel.setDefaultModel(false);
+			deviceModelRepository.save(defaultModel);
+		}
+
+		List<DeviceModel> allModels = deviceModelRepository.findAllByTenantIdAndApplicationName(tenant.getId(), application.getName());
+		if (allModels.isEmpty()) {
+			deviceModel.setDefaultModel(true);
+		}
 
 		deviceModel.setTenant(tenant);
+		deviceModel.setGuid(UUID.randomUUID().toString());
 		DeviceModel save = deviceModelRepository.save(deviceModel);
 		LOGGER.info("DeviceModel created. Name: {}", save.getName(), tenant.toURI(), tenant.getLogLevel());
 
@@ -164,7 +182,7 @@ public class DeviceModelServiceImpl implements DeviceModelService {
                     .withMessage(Validations.DEVICE_MODEL_NAME_IS_NULL.getCode())
                     .build();
 
-		DeviceModel devModelFromDB = getByTenantApplicationName(tenant, application, name).getResult();
+		DeviceModel devModelFromDB = getByTenantIdApplicationNameAndName(tenant, application, name).getResult();
 		if (!Optional.ofNullable(devModelFromDB).isPresent()) {
 			return ServiceResponseBuilder.<DeviceModel>error()
                     .withMessage(Validations.DEVICE_MODEL_DOES_NOT_EXIST.getCode())
@@ -215,6 +233,14 @@ public class DeviceModelServiceImpl implements DeviceModelService {
                     .withMessage(Validations.DEVICE_MODEL_DOES_NOT_EXIST.getCode())
                     .build();
 		}
+		
+		List<Device> devices = deviceRepository.findAllByTenantIdApplicationNameAndDeviceModel(tenant.getId(), application.getName(), deviceModel.getId());
+		
+		if (!devices.isEmpty()) {
+			return ServiceResponseBuilder.<DeviceModel>error()
+                    .withMessage(Validations.DEVICE_MODEL_HAS_DEVICE.getCode())
+                    .build();
+		}
 
 		deviceModelRepository.delete(deviceModel);
 
@@ -231,7 +257,7 @@ public class DeviceModelServiceImpl implements DeviceModelService {
 	}
 
 	@Override
-	public ServiceResponse<DeviceModel> getByTenantApplicationName(Tenant tenant, Application application, String name) {
+	public ServiceResponse<DeviceModel> getByTenantIdApplicationNameAndName(Tenant tenant, Application application, String name) {
 		if (!Optional.ofNullable(tenant).isPresent()) {
 			return ServiceResponseBuilder.<DeviceModel>error()
 					.withMessage(CommonValidations.TENANT_NULL.getCode())
