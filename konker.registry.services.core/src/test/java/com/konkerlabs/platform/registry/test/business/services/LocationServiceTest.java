@@ -489,7 +489,7 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
         ServiceResponse<Location> response = subject.findDefault(tenant, application);
         assertThat(response.isOk(), is(true));
         assertThat(response.getResult().getName(), is("sp"));
-        assertThat(response.getResult().getParent(), nullValue());
+        assertThat(response.getResult().getParent().getName(), is("br"));
     }
 
     // ============================== findByName ==============================//

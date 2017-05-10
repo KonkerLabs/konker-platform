@@ -34,9 +34,11 @@ import com.konkerlabs.platform.registry.api.web.controller.DeviceRestController;
 import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.Location;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.LocationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -56,6 +58,9 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     private DeviceRegisterService deviceRegisterService;
 
     @Autowired
+    private LocationService locationService;
+
+    @Autowired
     private ApplicationService applicationService;
 
     @Autowired
@@ -72,8 +77,14 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 
     @Before
     public void setUp() {
-        device1 = Device.builder().deviceId("id1").name("name1").guid("guid1").application(application).active(true).build();
-        device2 = Device.builder().deviceId("id2").name("name2").guid("guid2").application(application).active(false).build();
+        final Location locationBR = Location.builder().name("br").build();
+
+        device1 = Device.builder().deviceId("id1").name("name1").guid("guid1").location(locationBR).application(application).active(true).build();
+        device2 = Device.builder().deviceId("id2").name("name2").guid("guid2").location(locationBR).application(application).active(false).build();
+
+        when(locationService.findByName(tenant, application, "br", false))
+            .thenReturn(ServiceResponseBuilder.<Location>ok().withResult(locationBR).build());
+
     }
 
     @After
@@ -225,6 +236,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.result.id", is("id1")))
                     .andExpect(jsonPath("$.result.name", is("name1")))
                     .andExpect(jsonPath("$.result.guid", is("guid1")))
+                    .andExpect(jsonPath("$.result.locationName", is("br")))
                     .andExpect(jsonPath("$.result.active", is(true)));
 
     }
