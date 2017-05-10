@@ -131,7 +131,7 @@ public class DeviceRestController extends AbstractRestController implements Init
             return null;
         }
 
-        ServiceResponse<Location> locationResponse = locationService.findByName(tenant, application, deviceForm.getLocationName());
+        ServiceResponse<Location> locationResponse = locationService.findByName(tenant, application, deviceForm.getLocationName(), false);
         if (locationResponse.isOk()) {
             Location location = locationResponse.getResult();
             return location;

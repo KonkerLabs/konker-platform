@@ -4,12 +4,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import com.konkerlabs.platform.registry.business.model.Application.Validations;
 import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.utilities.validations.api.Validatable;
@@ -36,6 +38,7 @@ public class Location implements URIDealer, Validatable {
     }
 
     public enum Validations {
+        NAME_INVALID("model.location.name.invalid"),
         NAME_NULL_EMPTY("model.location.name.not_null");
 
         public String getCode() {
@@ -74,6 +77,7 @@ public class Location implements URIDealer, Validatable {
     private List<Location> childrens;
 
     public Optional<Map<String, Object[]>> applyValidations() {
+        Pattern regex = Pattern.compile("[a-zA-Z0-9\u00C0-\u00FF .\\-+_]{2,100}");
 
         Map<String, Object[]> validations = new HashMap<>();
 
@@ -82,6 +86,9 @@ public class Location implements URIDealer, Validatable {
         }
         if (getName() == null) {
             validations.put(Validations.NAME_NULL_EMPTY.code, null);
+        }
+        if (getName() != null && !regex.matcher(getName()).matches()) {
+            validations.put(Validations.NAME_INVALID.code,null);
         }
 
         return Optional.of(validations).filter(map -> !map.isEmpty());

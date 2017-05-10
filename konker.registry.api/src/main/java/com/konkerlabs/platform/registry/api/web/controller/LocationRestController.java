@@ -2,6 +2,7 @@ package com.konkerlabs.platform.registry.api.web.controller;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -20,10 +21,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
 import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
+import com.konkerlabs.platform.registry.api.model.DeviceVO;
 import com.konkerlabs.platform.registry.api.model.LocationInputVO;
 import com.konkerlabs.platform.registry.api.model.LocationVO;
 import com.konkerlabs.platform.registry.api.model.RestResponse;
 import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Location;
 import com.konkerlabs.platform.registry.business.model.Location.Validations;
 import com.konkerlabs.platform.registry.business.model.Tenant;
@@ -67,7 +70,7 @@ public class LocationRestController extends AbstractRestController implements In
 
     @GetMapping(path = "/{locationName}")
     @ApiOperation(
-            value = "Get a location by guid",
+            value = "Get a location by name",
             response = RestResponse.class
     )
     //@PreAuthorize("hasAuthority('SHOW_LOCATION')")
@@ -78,12 +81,35 @@ public class LocationRestController extends AbstractRestController implements In
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
 
-        ServiceResponse<Location> locationResponse = locationService.findByName(tenant, application, locationName);
+        ServiceResponse<Location> locationResponse = locationService.findByName(tenant, application, locationName, true);
 
         if (!locationResponse.isOk()) {
             throw new NotFoundResponseException(user, locationResponse);
         } else {
             return new LocationVO().apply(locationResponse.getResult());
+        }
+
+    }
+
+    @GetMapping(path = "/{locationName}/devices")
+    @ApiOperation(
+            value = "List the devices of a location and its sub-locations",
+            response = RestResponse.class
+    )
+    //@PreAuthorize("hasAuthority('SHOW_LOCATION')")
+    public List<DeviceVO> devices(
+            @PathVariable("application") String applicationId,
+            @PathVariable("locationName") String locationName) throws BadServiceResponseException, NotFoundResponseException {
+
+        Tenant tenant = user.getTenant();
+        Application application = getApplication(applicationId);
+
+        ServiceResponse<List<Device>> locationResponse = locationService.listDevicesByLocationName(tenant, application, locationName);
+
+        if (!locationResponse.isOk()) {
+            throw new BadServiceResponseException(user, locationResponse, validationsCode);
+        } else {
+            return new DeviceVO().apply(locationResponse.getResult());
         }
 
     }
@@ -139,7 +165,7 @@ public class LocationRestController extends AbstractRestController implements In
         Location parent = getParent(locationForm, tenant, application);
 
         Location locationFromDB = null;
-        ServiceResponse<Location> locationResponse = locationService.findByName(tenant, application, locationName);
+        ServiceResponse<Location> locationResponse = locationService.findByName(tenant, application, locationName, false);
 
         if (!locationResponse.isOk()) {
             throw new BadServiceResponseException(user, locationResponse, validationsCode);
@@ -171,7 +197,7 @@ public class LocationRestController extends AbstractRestController implements In
 
         Location parent = null;
 
-        ServiceResponse<Location> parentResponse = locationService.findByName(tenant, application, locationForm.getParentName());
+        ServiceResponse<Location> parentResponse = locationService.findByName(tenant, application, locationForm.getParentName(), false);
         if (!parentResponse.isOk()) {
             if (parentResponse.getResponseMessages().containsKey(LocationService.Messages.LOCATION_NOT_FOUND.getCode())) {
                 Map<String, Object[]> responseMessages = new HashMap<>();

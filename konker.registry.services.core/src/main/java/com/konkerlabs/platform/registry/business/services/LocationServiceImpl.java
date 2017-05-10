@@ -317,7 +317,7 @@ public class LocationServiceImpl implements LocationService {
     }
 
     @Override
-    public ServiceResponse<Location> findByName(Tenant tenant, Application application, String locationName) {
+    public ServiceResponse<Location> findByName(Tenant tenant, Application application, String locationName, boolean loadTree) {
 
         if (!Optional.ofNullable(tenant).isPresent())
             return ServiceResponseBuilder.<Location>error()
@@ -330,7 +330,14 @@ public class LocationServiceImpl implements LocationService {
                     .build();
 
         // find location
-        Location location = locationRepository.findByTenantAndApplicationAndName(tenant.getId(), application.getName(), locationName);
+        Location location = null;
+
+        if (!loadTree) {
+            location = locationRepository.findByTenantAndApplicationAndName(tenant.getId(), application.getName(), locationName);
+        } else {
+            Location root = this.findTree(tenant, application);
+            location = searchElementByName(root, locationName, 0);
+        }
 
         if (Optional.ofNullable(location).isPresent()) {
             return ServiceResponseBuilder.<Location>ok()
@@ -341,6 +348,28 @@ public class LocationServiceImpl implements LocationService {
                     .withMessage(Messages.LOCATION_NOT_FOUND.getCode())
                     .build();
         }
+
+    }
+
+    private Location searchElementByName(Location node, String locationName, int deep) {
+
+        if (deep > 50) {
+            LOGGER.warn("Too deep structure. Cyclic graph?");
+            return null;
+        }
+
+        if (node.getName().equals(locationName)) {
+            return node;
+        }
+
+        for (Location child : node.getChildrens()) {
+            Location element = searchElementByName(child, locationName, deep + 1);
+            if (element != null) {
+                return element;
+            }
+        }
+
+        return null;
 
     }
 
@@ -441,6 +470,53 @@ public class LocationServiceImpl implements LocationService {
 
         return root;
 
+    }
+
+    @Override
+    public ServiceResponse<List<Device>> listDevicesByLocationName(Tenant tenant, Application application,
+            String locationName) {
+
+        List<Device> devices = deviceRepository.findAllByTenantIdAndApplicationName(tenant.getId(), application.getName());
+        Location root = this.findTree(tenant, application);
+        Location location = searchElementByName(root, locationName, 0);
+
+        if (Optional.ofNullable(location).isPresent()) {
+            List<Device> locationDevices = new ArrayList<>();
+            locationDevices = searchLocationDevices(location, devices, 0);
+
+            return ServiceResponseBuilder.<List<Device>>ok()
+                    .withResult(locationDevices)
+                    .build();
+        } else {
+            return ServiceResponseBuilder.<List<Device>>error()
+                    .withMessage(Messages.LOCATION_NOT_FOUND.getCode())
+                    .build();
+        }
+
+    }
+
+    private List<Device> searchLocationDevices(Location location, List<Device> devices, int deep) {
+
+        List<Device> locationDevices = new ArrayList<>();
+
+        if (deep > 50) {
+            LOGGER.warn("Too deep structure. Cyclic graph?");
+            return locationDevices;
+        }
+
+        for (Device device: devices) {
+            if (device.getLocation() != null) {
+                if (device.getLocation().getName().equals(location.getName())) {
+                    locationDevices.add(device);
+                }
+            }
+        }
+
+        for (Location child: location.getChildrens()) {
+            locationDevices.addAll(searchLocationDevices(child, devices, deep + 1));
+        }
+
+        return locationDevices;
     }
 
 }

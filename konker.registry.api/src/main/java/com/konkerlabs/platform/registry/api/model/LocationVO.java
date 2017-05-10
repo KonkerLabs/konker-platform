@@ -1,9 +1,12 @@
 package com.konkerlabs.platform.registry.api.model;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.konkerlabs.platform.registry.api.model.core.SerializableVO;
 import com.konkerlabs.platform.registry.business.model.Location;
 
@@ -16,6 +19,7 @@ import lombok.NoArgsConstructor;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor
+@JsonInclude(Include.NON_EMPTY)
 @ApiModel(value = "Location", discriminator = "com.konkerlabs.platform.registry.api.model")
 public class LocationVO extends LocationInputVO implements SerializableVO<Location, LocationVO> {
 
@@ -27,13 +31,7 @@ public class LocationVO extends LocationInputVO implements SerializableVO<Locati
         this.parentName = getParentName(location.getParent());
         this.name = location.getName();
         this.description = location.getDescription();
-
-        if (location.getChildrens() != null && !location.getChildrens().isEmpty()) {
-            this.subLocations = new ArrayList<>();
-            for (Location subLocation : location.getChildrens()) {
-                this.subLocations.add(new LocationVO(subLocation));
-            }
-        }
+        this.subLocations = getSubLocations(location.getChildrens());
     }
 
     @Override
@@ -43,6 +41,7 @@ public class LocationVO extends LocationInputVO implements SerializableVO<Locati
         vo.setParentName(getParentName(model.getParent()));
         vo.setName(model.getName());
         vo.setDescription(model.getDescription());
+        vo.setSubLocations(getSubLocations(model.getChildrens()));
         return vo;
     }
 
@@ -63,6 +62,19 @@ public class LocationVO extends LocationInputVO implements SerializableVO<Locati
         } else {
             return parent.getName();
         }
+    }
+
+    private List<LocationVO> getSubLocations(List<Location> childrens) {
+        List<LocationVO> subLocations = null;
+
+        if (childrens != null && !childrens.isEmpty()) {
+            subLocations = new ArrayList<>();
+            for (Location subLocation : childrens) {
+                subLocations.add(new LocationVO(subLocation));
+            }
+        }
+
+        return subLocations;
     }
 
 }

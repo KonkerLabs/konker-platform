@@ -174,7 +174,7 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldUpdateWithNewDefault() {
-        Location parent = subject.findByName(tenant, application, "sp").getResult();
+        Location parent = subject.findByName(tenant, application, "sp", false).getResult();
         assertThat(parent.isDefaultLocation(), is(true));
 
         Location newLocation = Location.builder()
@@ -193,13 +193,13 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
         assertThat(response.getResult().getParent().getName(), is("sp"));
         assertThat(response.getResult().isDefaultLocation(), is(true));
 
-        parent = subject.findByName(tenant, application, "sp").getResult();
+        parent = subject.findByName(tenant, application, "sp", false).getResult();
         assertThat(parent.isDefaultLocation(), is(false));
     }
 
     @Test
     public void shouldUpdate() {
-        Location parent = subject.findByName(tenant, application, "sp").getResult();
+        Location parent = subject.findByName(tenant, application, "sp", false).getResult();
 
         Location newLocation = Location.builder()
                                        .parent(parent)
@@ -251,6 +251,45 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
+    public void shouldSaveWithInvalidName() {
+        Location newLocation = Location.builder()
+                                       .name("*oi")
+                                       .description("BBRR")
+                                       .defaultLocation(false)
+                                       .build();
+
+        ServiceResponse<Location> response = subject.save(tenant, application, newLocation);
+        assertThat(response, hasErrorMessage(Location.Validations.NAME_INVALID.getCode()));
+
+        newLocation = Location.builder()
+                .name("5")
+                .description("BBRR")
+                .defaultLocation(false)
+                .build();
+
+        response = subject.save(tenant, application, newLocation);
+        assertThat(response, hasErrorMessage(Location.Validations.NAME_INVALID.getCode()));
+
+        newLocation = Location.builder()
+                .name("Sssss5\\111")
+                .description("BBRR")
+                .defaultLocation(false)
+                .build();
+
+        response = subject.save(tenant, application, newLocation);
+        assertThat(response, hasErrorMessage(Location.Validations.NAME_INVALID.getCode()));
+
+        newLocation = Location.builder()
+                .name("São Paulo")
+                .description("BBRR")
+                .defaultLocation(false)
+                .build();
+
+        response = subject.save(tenant, application, newLocation);
+        assertThat(response, hasErrorMessage(LocationService.Validations.LOCATION_PARENT_NULL.getCode()));
+    }
+
+    @Test
     public void shouldSaveWithExistingName() {
         Location newLocation = Location.builder()
                                        .name("sp")
@@ -275,7 +314,7 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldSaveWithNewDefault() {
-        Location parent = subject.findByName(tenant, application, "sp").getResult();
+        Location parent = subject.findByName(tenant, application, "sp", false).getResult();
         assertThat(parent.isDefaultLocation(), is(true));
 
         Location newLocation = Location.builder()
@@ -295,13 +334,13 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
         assertThat(response.getResult().getParent().getName(), is("sp"));
         assertThat(response.getResult().isDefaultLocation(), is(true));
 
-        parent = subject.findByName(tenant, application, "sp").getResult();
+        parent = subject.findByName(tenant, application, "sp", false).getResult();
         assertThat(parent.isDefaultLocation(), is(false));
     }
 
     @Test
     public void shouldSave() {
-        Location parent = subject.findByName(tenant, application, "sp").getResult();
+        Location parent = subject.findByName(tenant, application, "sp", false).getResult();
 
         Location newLocation = Location.builder()
                                        .parent(parent)
@@ -426,36 +465,48 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldFindByNameWithNullTenant() {
-        ServiceResponse<Location> response = subject.findByName(null, null, null);
+        ServiceResponse<Location> response = subject.findByName(null, null, null, false);
         assertThat(response, hasErrorMessage(TENANT_NULL.getCode()));
     }
 
     @Test
     public void shouldFindByNameWithNullApplication() {
-        ServiceResponse<Location> response = subject.findByName(tenant, null, null);
+        ServiceResponse<Location> response = subject.findByName(tenant, null, null, false);
         assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
     }
 
     @Test
     public void shouldFindByNameWithNullName() {
-        ServiceResponse<Location> response = subject.findByName(tenant, application, null);
+        ServiceResponse<Location> response = subject.findByName(tenant, application, null, false);
         assertThat(response, hasErrorMessage(LocationService.Messages.LOCATION_NOT_FOUND.getCode()));
     }
 
     @Test
     public void shouldTryToFindByNameNonExistingName() {
-        ServiceResponse<Location> response = subject.findByName(tenant, application, "br2");
+        ServiceResponse<Location> response = subject.findByName(tenant, application, "br2", false);
         assertThat(response, hasErrorMessage(LocationService.Messages.LOCATION_NOT_FOUND.getCode()));
     }
 
     @Test
-    public void shouldFindByName() {
-        ServiceResponse<Location> response = subject.findByName(tenant, application, "rj");
+    public void shouldFindByNameWithTreeStructure() {
+        ServiceResponse<Location> response = subject.findByName(tenant, application, "rj", true);
         assertThat(response, isResponseOk());
 
         assertThat(response.getResult().getName(), is("rj"));
         assertThat(response.getResult().getDescription(), is("Rio Janeiro"));
         assertThat(response.getResult().isDefaultLocation(), is(false));
+        assertThat(response.getResult().getChildrens().size(), is(1));
+    }
+
+    @Test
+    public void shouldFindByName() {
+        ServiceResponse<Location> response = subject.findByName(tenant, application, "rj", false);
+        assertThat(response, isResponseOk());
+
+        assertThat(response.getResult().getName(), is("rj"));
+        assertThat(response.getResult().getDescription(), is("Rio Janeiro"));
+        assertThat(response.getResult().isDefaultLocation(), is(false));
+        assertThat(response.getResult().getChildrens(), nullValue());
     }
 
     // ============================== findByGuid ==============================//
