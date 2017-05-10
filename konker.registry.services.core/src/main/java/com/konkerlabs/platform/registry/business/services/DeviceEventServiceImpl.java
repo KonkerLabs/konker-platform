@@ -34,21 +34,19 @@ public class DeviceEventServiceImpl implements DeviceEventService {
 
     private EventRepository eventRepository;
 
-
     @PostConstruct
-    public void init(){
+    public void init() {
         try {
             eventRepository =
                     (EventRepository) applicationContext.getBean(
                             eventStorageConfig.getEventRepositoryBean()
                     );
-        } catch (Exception e){
+        } catch (Exception e) {
             eventRepository =
                     (EventRepository) applicationContext.getBean(
                             EventStorageConfigType.MONGODB.bean()
                     );
         }
-
     }
 
 
@@ -65,12 +63,12 @@ public class DeviceEventServiceImpl implements DeviceEventService {
             return ServiceResponseBuilder.<List<Event>>error()
                     .withMessage(CommonValidations.TENANT_NULL.getCode())
                     .build();
-        
+
         if (!Optional.ofNullable(application).isPresent())
         	return ServiceResponseBuilder.<List<Event>>error()
         			.withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode())
         			.build();
-        
+
 
         if (!Optional.ofNullable(startTimestamp).isPresent() &&
                 !Optional.ofNullable(limit).isPresent())
@@ -109,7 +107,7 @@ public class DeviceEventServiceImpl implements DeviceEventService {
                     .withMessage(CommonValidations.TENANT_NULL.getCode())
                     .build();
 
-        if (!Optional.ofNullable(application).isPresent()) 
+        if (!Optional.ofNullable(application).isPresent())
         	return ServiceResponseBuilder.<List<Event>>error()
         			.withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode())
         			.build();
