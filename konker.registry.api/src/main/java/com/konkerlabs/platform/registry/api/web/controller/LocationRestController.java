@@ -2,7 +2,6 @@ package com.konkerlabs.platform.registry.api.web.controller;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -51,17 +50,17 @@ public class LocationRestController extends AbstractRestController implements In
     @ApiOperation(
             value = "List all locations by application",
             response = LocationVO.class)
-    public List<LocationVO> list(@PathVariable("application") String applicationId) throws BadServiceResponseException, NotFoundResponseException {
+    public LocationVO list(@PathVariable("application") String applicationId) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
 
-        ServiceResponse<List<Location>> locationResponse = locationService.findAll(tenant, application);
+        ServiceResponse<Location> locationResponse = locationService.findRoot(tenant, application);
 
         if (!locationResponse.isOk()) {
             throw new BadServiceResponseException(user, locationResponse, validationsCode);
         } else {
-            return new LocationVO().apply(locationResponse.getResult());
+            return new LocationVO(locationResponse.getResult());
         }
 
     }
@@ -221,7 +220,6 @@ public class LocationRestController extends AbstractRestController implements In
         for (LocationService.Validations value : LocationService.Validations.values()) {
             validationsCode.add(value.getCode());
         }
-
     }
 
 }

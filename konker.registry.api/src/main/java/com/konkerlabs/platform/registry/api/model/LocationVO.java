@@ -1,5 +1,7 @@
 package com.konkerlabs.platform.registry.api.model;
 
+import java.util.ArrayList;
+
 import org.apache.commons.lang3.StringUtils;
 
 import com.konkerlabs.platform.registry.api.model.core.SerializableVO;
@@ -25,6 +27,13 @@ public class LocationVO extends LocationInputVO implements SerializableVO<Locati
         this.parentName = getParentName(location.getParent());
         this.name = location.getName();
         this.description = location.getDescription();
+
+        if (location.getChildrens() != null && !location.getChildrens().isEmpty()) {
+            this.subLocations = new ArrayList<>();
+            for (Location subLocation : location.getChildrens()) {
+                this.subLocations.add(new LocationVO(subLocation));
+            }
+        }
     }
 
     @Override

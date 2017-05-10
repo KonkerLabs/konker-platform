@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -24,9 +25,11 @@ import com.konkerlabs.platform.registry.api.model.DeviceVO;
 import com.konkerlabs.platform.registry.api.model.RestResponse;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.Location;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.Validations;
+import com.konkerlabs.platform.registry.business.services.api.LocationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 
 import io.swagger.annotations.Api;
@@ -43,6 +46,9 @@ public class DeviceRestController extends AbstractRestController implements Init
 
     @Autowired
     private DeviceRegisterService deviceRegisterService;
+
+    @Autowired
+    private LocationService locationService;
 
     private Set<String> validationsCode = new HashSet<>();
 
@@ -99,11 +105,13 @@ public class DeviceRestController extends AbstractRestController implements Init
 
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
+        Location location = getLocation(tenant, application, deviceForm);
 
         Device device = Device.builder()
                 .name(deviceForm.getName())
                 .deviceId(deviceForm.getId())
                 .description(deviceForm.getDescription())
+                .location(location)
                 .active(true)
                 .build();
 
@@ -113,6 +121,22 @@ public class DeviceRestController extends AbstractRestController implements Init
             throw new BadServiceResponseException(user, deviceResponse, validationsCode);
         } else {
             return new DeviceVO().apply(deviceResponse.getResult());
+        }
+
+    }
+
+    private Location getLocation(Tenant tenant, Application application, DeviceInputVO deviceForm) throws BadServiceResponseException {
+
+        if (deviceForm == null || StringUtils.isBlank(deviceForm.getLocationName())) {
+            return null;
+        }
+
+        ServiceResponse<Location> locationResponse = locationService.findByName(tenant, application, deviceForm.getLocationName());
+        if (locationResponse.isOk()) {
+            Location location = locationResponse.getResult();
+            return location;
+        } else {
+            throw new BadServiceResponseException(user, locationResponse, validationsCode);
         }
 
     }
@@ -128,6 +152,7 @@ public class DeviceRestController extends AbstractRestController implements Init
 
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
+        Location location = getLocation(tenant, application, deviceForm);
 
         Device deviceFromDB = null;
         ServiceResponse<Device> deviceResponse = deviceRegisterService.getByDeviceGuid(tenant, application, deviceGuid);
@@ -141,6 +166,7 @@ public class DeviceRestController extends AbstractRestController implements Init
         // update fields
         deviceFromDB.setName(deviceForm.getName());
         deviceFromDB.setDescription(deviceForm.getDescription());
+        deviceFromDB.setLocation(location);
         deviceFromDB.setActive(deviceForm.isActive());
 
         ServiceResponse<Device> updateResponse = deviceRegisterService.update(tenant, application, deviceGuid, deviceFromDB);

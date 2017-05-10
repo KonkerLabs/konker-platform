@@ -9,6 +9,7 @@ import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.EventRoute;
+import com.konkerlabs.platform.registry.business.model.Location;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
@@ -18,6 +19,7 @@ import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.events.api.EventRepository;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.LocationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
@@ -60,6 +62,9 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
     @Autowired @Qualifier("mongoEvents")
     private EventRepository eventRepository;
+
+    @Autowired
+    private LocationService locationService;
 
     private PubServerConfig pubServerConfig = new PubServerConfig();
 
@@ -105,7 +110,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode())
                     .build();
         }
-        
+
         Long count = (long) deviceRepository.findAllByTenant(tenant.getId()).size();
         if (Optional.ofNullable(tenant.getDevicesLimit()).isPresent() && count.compareTo(tenant.getDevicesLimit()) >= 0) {
         	LOGGER.debug("Devices limit is exceeded.",
@@ -123,6 +128,17 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
             return ServiceResponseBuilder.<Device>error()
                     .withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode())
                     .build();
+        }
+
+        if (device.getLocation() == null) {
+            ServiceResponse<Location> locationResponse = locationService.findDefault(tenant, application);
+            if (locationResponse.isOk()) {
+                device.setLocation(locationResponse.getResult());
+            } else {
+                LOGGER.error("error getting default application location",
+                        Device.builder().guid("NULL").tenant(tenant).build().toURI(),
+                        device.getLogLevel());
+            }
         }
 
         device.onRegistration();
@@ -295,9 +311,21 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .build();
         }
 
+        if (updatingDevice.getLocation() == null) {
+            ServiceResponse<Location> locationResponse = locationService.findDefault(tenant, application);
+            if (locationResponse.isOk()) {
+                updatingDevice.setLocation(locationResponse.getResult());
+            } else {
+                LOGGER.error("error getting default application location",
+                        Device.builder().guid("NULL").tenant(tenant).build().toURI(),
+                        updatingDevice.getLogLevel());
+            }
+        }
+
         // modify "modifiable" fields
         deviceFromDB.setDescription(updatingDevice.getDescription());
         deviceFromDB.setName(updatingDevice.getName());
+        deviceFromDB.setLocation(updatingDevice.getLocation());
         deviceFromDB.setActive(updatingDevice.isActive());
 
         Optional<Map<String, Object[]>> validations = deviceFromDB.applyValidations();

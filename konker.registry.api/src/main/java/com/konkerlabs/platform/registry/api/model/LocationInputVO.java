@@ -1,5 +1,7 @@
 package com.konkerlabs.platform.registry.api.model;
 
+import java.util.List;
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -38,5 +40,12 @@ public class LocationInputVO {
             required = true,
             position = 4)
     protected boolean defaultLocation;
+
+    @ApiModelProperty(
+            value = "List sub-locations",
+            example = "false",
+            required = true,
+            position = 5)
+    protected List<LocationVO> subLocations;
 
 }

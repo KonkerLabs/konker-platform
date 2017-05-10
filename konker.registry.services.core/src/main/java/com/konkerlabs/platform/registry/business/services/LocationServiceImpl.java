@@ -282,18 +282,7 @@ public class LocationServiceImpl implements LocationService {
                 .build();
     }
 
-    @Override
-    public ServiceResponse<Location> findTree(Tenant tenant, Application application) {
-
-        if (!Optional.ofNullable(tenant).isPresent())
-            return ServiceResponseBuilder.<Location>error()
-                    .withMessage(CommonValidations.TENANT_NULL.getCode())
-                    .build();
-
-        if (!Optional.ofNullable(application).isPresent())
-            return ServiceResponseBuilder.<Location>error()
-                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode())
-                    .build();
+    private Location findTree(Tenant tenant, Application application) {
 
         Location root = null;
 
@@ -323,15 +312,7 @@ public class LocationServiceImpl implements LocationService {
             location.setChildrens(childrens);
         }
 
-        if (root == null) {
-            return ServiceResponseBuilder.<Location>error()
-                    .withMessage(Messages.LOCATION_ROOT_NOT_FOUND.getCode())
-                    .build();
-        } else {
-            return ServiceResponseBuilder.<Location>ok()
-                    .withResult(root)
-                    .build();
-        }
+        return root;
 
     }
 
@@ -392,7 +373,7 @@ public class LocationServiceImpl implements LocationService {
     }
 
     @Override
-    public ServiceResponse<Location> findRoot(Tenant tenant, Application application) {
+    public ServiceResponse<Location> findDefault(Tenant tenant, Application application) {
 
         if (!Optional.ofNullable(tenant).isPresent())
             return ServiceResponseBuilder.<Location>error()
@@ -406,16 +387,37 @@ public class LocationServiceImpl implements LocationService {
 
         List<Location> all = locationRepository.findAllByTenantIdAndApplicationName(tenant.getId(), application.getName());
         for (Location location: all) {
-            if (location.getParent() == null) {
+            if (location.isDefaultLocation()) {
                 return ServiceResponseBuilder.<Location>ok()
                         .withResult(location)
                         .build();
             }
         }
 
-        if (!all.isEmpty()) {
+        return ServiceResponseBuilder.<Location>ok()
+                .withResult(findRoot(tenant, application).getResult())
+                .build();
+
+    }
+
+    @Override
+    public ServiceResponse<Location> findRoot(Tenant tenant, Application application) {
+
+        if (!Optional.ofNullable(tenant).isPresent())
             return ServiceResponseBuilder.<Location>error()
-                    .withMessage(Messages.LOCATION_ROOT_NOT_FOUND.getCode())
+                    .withMessage(CommonValidations.TENANT_NULL.getCode())
+                    .build();
+
+        if (!Optional.ofNullable(application).isPresent())
+            return ServiceResponseBuilder.<Location>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode())
+                    .build();
+
+        Location root = findTree(tenant, application);
+
+        if (root != null) {
+            return ServiceResponseBuilder.<Location>ok()
+                    .withResult(root)
                     .build();
         } else {
             return ServiceResponseBuilder.<Location>ok()

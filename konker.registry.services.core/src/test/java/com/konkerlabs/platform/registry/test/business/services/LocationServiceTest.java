@@ -399,6 +399,19 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
         assertThat(response.isOk(), is(true));
         assertThat(response.getResult().getName(), is("br"));
         assertThat(response.getResult().getParent(), nullValue());
+
+        Location br = response.getResult();
+        assertThat(br.getName(), is("br"));
+        assertThat(br.getChildrens().size(), is(2));
+        assertThat(br.getChildrens().get(0).getName(), is("sp"));
+        assertThat(br.getChildrens().get(1).getName(), is("rj"));
+
+        Location sp = br.getChildrens().get(0);
+        Location rj = br.getChildrens().get(1);
+
+        assertThat(sp.getChildrens().size(), is(0));
+        assertThat(rj.getChildrens().size(), is(1));
+        assertThat(rj.getChildrens().get(0).getName(), is("sala-101"));
     }
 
     @Test
@@ -478,40 +491,6 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
         assertThat(response.getResult().getName(), is("sala-101"));
         assertThat(response.getResult().getDescription(), is("Sala 101"));
         assertThat(response.getResult().isDefaultLocation(), is(false));
-    }
-
-    // ============================== findTree ==============================//
-
-    @Test
-    public void shouldFindTreeWithNullTenant() {
-        ServiceResponse<Location> response = subject.findTree(null, null);
-        assertThat(response, hasErrorMessage(TENANT_NULL.getCode()));
-    }
-
-    @Test
-    public void shouldFindTreeWithNullApplication() {
-        ServiceResponse<Location> response = subject.findTree(tenant, null);
-        assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
-    }
-
-    @Test
-    public void shouldTree() {
-        ServiceResponse<Location> response = subject.findTree(tenant, application);
-        assertThat(response, isResponseOk());
-
-        Location br = response.getResult();
-        assertThat(br.getName(), is("br"));
-        assertThat(br.getChildrens().size(), is(2));
-        assertThat(br.getChildrens().get(0).getName(), is("sp"));
-        assertThat(br.getChildrens().get(1).getName(), is("rj"));
-
-        Location sp = br.getChildrens().get(0);
-        Location rj = br.getChildrens().get(1);
-
-        assertThat(sp.getChildrens().size(), is(0));
-        assertThat(rj.getChildrens().size(), is(1));
-        assertThat(rj.getChildrens().get(0).getName(), is("sala-101"));
-
     }
 
 }

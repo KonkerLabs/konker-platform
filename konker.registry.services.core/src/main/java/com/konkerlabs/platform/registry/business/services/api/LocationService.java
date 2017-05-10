@@ -49,6 +49,7 @@ public interface LocationService {
     }
 
     ServiceResponse<Location> findRoot(Tenant tenant, Application application);
+    ServiceResponse<Location> findDefault(Tenant tenant, Application application);
     ServiceResponse<Location> findByName(Tenant tenant, Application application, String locationName);
     ServiceResponse<Location> findByGuid(Tenant tenant, Application application, String locationName);
 
@@ -56,6 +57,5 @@ public interface LocationService {
 	ServiceResponse<Location> update(Tenant tenant, Application application, String guid, Location location);
 	ServiceResponse<Location> remove(Tenant tenant, Application application, String guid);
 	ServiceResponse<List<Location>> findAll(Tenant tenant, Application application);
-    ServiceResponse<Location> findTree(Tenant tenant, Application application);
 
 }
