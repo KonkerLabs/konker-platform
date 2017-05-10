@@ -476,6 +476,16 @@ public class LocationServiceImpl implements LocationService {
     public ServiceResponse<List<Device>> listDevicesByLocationName(Tenant tenant, Application application,
             String locationName) {
 
+        if (!Optional.ofNullable(tenant).isPresent())
+            return ServiceResponseBuilder.<List<Device>>error()
+                    .withMessage(CommonValidations.TENANT_NULL.getCode())
+                    .build();
+
+        if (!Optional.ofNullable(application).isPresent())
+            return ServiceResponseBuilder.<List<Device>>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode())
+                    .build();
+
         List<Device> devices = deviceRepository.findAllByTenantIdAndApplicationName(tenant.getId(), application.getName());
         Location root = this.findTree(tenant, application);
         Location location = searchElementByName(root, locationName, 0);

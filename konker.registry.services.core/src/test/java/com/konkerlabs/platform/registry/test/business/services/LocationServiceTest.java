@@ -461,6 +461,37 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
         assertThat(response.getResult().getParent(), nullValue());
     }
 
+
+    // ============================== findDefault ==============================//
+
+    @Test
+    public void shouldFindDefaultWithNullTenant() {
+        ServiceResponse<Location> response = subject.findDefault(null, null);
+        assertThat(response, hasErrorMessage(TENANT_NULL.getCode()));
+    }
+
+    @Test
+    public void shouldFindDefaultWithNullApplication() {
+        ServiceResponse<Location> response = subject.findDefault(tenant, null);
+        assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
+    }
+
+    @Test
+    public void shouldFindDefaultWithoutRoot() {
+        ServiceResponse<Location> response = subject.findDefault(tenant, otherApplication);
+        assertThat(response.isOk(), is(true));
+        assertThat(response.getResult().getName(), is("root"));
+        assertThat(response.getResult().getParent(), nullValue());
+    }
+
+    @Test
+    public void shouldFindDefault() {
+        ServiceResponse<Location> response = subject.findDefault(tenant, application);
+        assertThat(response.isOk(), is(true));
+        assertThat(response.getResult().getName(), is("sp"));
+        assertThat(response.getResult().getParent(), nullValue());
+    }
+
     // ============================== findByName ==============================//
 
     @Test
@@ -542,6 +573,50 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
         assertThat(response.getResult().getName(), is("sala-101"));
         assertThat(response.getResult().getDescription(), is("Sala 101"));
         assertThat(response.getResult().isDefaultLocation(), is(false));
+    }
+
+    // ============================== listDevicesByLocationName ==============================//
+
+    @Test
+    public void shouldListDevicesByLocationNameWithNullTenant() {
+        ServiceResponse<List<Device>> response = subject.listDevicesByLocationName(null, null, null);
+        assertThat(response, hasErrorMessage(TENANT_NULL.getCode()));
+    }
+
+    @Test
+    public void shouldListDevicesByLocationNameWithNullApplication() {
+        ServiceResponse<List<Device>> response = subject.listDevicesByLocationName(tenant, null, null);
+        assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
+    }
+
+    @Test
+    public void shouldListDevicesByLocationNameWithNullLocationName() {
+        ServiceResponse<List<Device>> response = subject.listDevicesByLocationName(tenant, application, null);
+        assertThat(response, hasErrorMessage(LocationService.Messages.LOCATION_NOT_FOUND.getCode()));
+    }
+
+    @Test
+    public void shouldListDevices() {
+        Location sp = locationRepository.findByTenantAndApplicationAndName(tenant.getId(), application.getName(), "sp");
+        Location rj = locationRepository.findByTenantAndApplicationAndName(tenant.getId(), application.getName(), "rj");
+        Location sala = locationRepository.findByTenantAndApplicationAndName(tenant.getId(), application.getName(), "sala-101");
+
+        deviceRepository.save(Device.builder().name("sp-device").tenant(tenant).application(application).location(sp).build());
+        deviceRepository.save(Device.builder().name("rj-device").tenant(tenant).application(application).location(rj).build());
+        deviceRepository.save(Device.builder().name("sala-device").tenant(tenant).application(application).location(sala).build());
+
+        ServiceResponse<List<Device>> response = null;
+
+        response = subject.listDevicesByLocationName(tenant, application, "sp");
+        assertThat(response, isResponseOk());
+        assertThat(response.getResult().size(), is(1));
+        assertThat(response.getResult().get(0).getName(), is("sp-device"));
+
+        response = subject.listDevicesByLocationName(tenant, application, "rj");
+        assertThat(response, isResponseOk());
+        assertThat(response.getResult().size(), is(2));
+        assertThat(response.getResult().get(0).getName(), is("rj-device"));
+        assertThat(response.getResult().get(1).getName(), is("sala-device"));
     }
 
 }

@@ -113,18 +113,6 @@ public class Device implements URIDealer, Validatable, UserDetails {
 		setApiKey(new BigInteger(60, new Random()).toString(32));
 	}
 
-//	public Event getLastEvent() {
-//		return getMostRecentEvents().stream().findFirst().orElse(null);
-//	}
-
-	// FIXME Needs performance improvement. Sorting those items on the
-	// application server and returning all of them is not efficient.
-//	public List<Event> getMostRecentEvents() {
-//		return Optional.ofNullable(getEvents()).orElse(Collections.emptyList()).stream()
-//				.sorted((eventA, eventB) -> eventB.getTimestamp().compareTo(eventA.getTimestamp()))
-//				.collect(Collectors.toList());
-//	}
-
 	public LogLevel getLogLevel() {
 		return Optional.ofNullable(logLevel).orElse(LogLevel.WARNING);
 	}
