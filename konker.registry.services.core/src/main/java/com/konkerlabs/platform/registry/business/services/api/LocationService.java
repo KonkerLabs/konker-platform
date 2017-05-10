@@ -12,6 +12,7 @@ public interface LocationService {
 	    LOCATION_GUID_NULL("service.location.guid_null"),
 	    LOCATION_GUID_DOES_NOT_EXIST("service.location.guid_does_not_exist"),
 		LOCATION_NAME_ALREADY_REGISTERED("service.location.name_already_registered"),
+		LOCATION_PARENT_NULL("service.location.parent_null"),
 		LOCATION_ID_DOES_NOT_EXIST("service.location.name_does_not_exist"),
 		LOCATION_HAVE_DEVICES("service.location.have_devices")
 		;

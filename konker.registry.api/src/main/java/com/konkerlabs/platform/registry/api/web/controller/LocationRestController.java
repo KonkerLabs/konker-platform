@@ -7,6 +7,7 @@ import java.util.Set;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -100,9 +101,21 @@ public class LocationRestController extends AbstractRestController implements In
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
 
+        Location parent = null;
+        if (StringUtils.hasText(locationForm.getParentName())) {
+            ServiceResponse<Location> parentResponse = locationService.findByName(tenant, application, locationForm.getParentName());
+            if (!parentResponse.isOk()) {
+                throw new BadServiceResponseException(user, parentResponse, validationsCode);
+            } else {
+                parent = parentResponse.getResult();
+            }
+        }
+
         Location location = Location.builder()
+                .parent(parent)
                 .name(locationForm.getName())
                 .description(locationForm.getDescription())
+                .defaultLocation(locationForm.isDefaultLocation())
                 .build();
 
         ServiceResponse<Location> locationResponse = locationService.save(tenant, application, location);

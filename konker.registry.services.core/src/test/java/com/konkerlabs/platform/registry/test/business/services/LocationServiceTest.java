@@ -142,8 +142,48 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldUpdate() {
+    public void shouldTryToUpdateWithoutParent() {
         Location newLocation = Location.builder()
+                                       .name("BR2")
+                                       .description("BBRR")
+                                       .defaultLocation(false)
+                                       .build();
+
+        ServiceResponse<Location> response = subject.update(tenant, application, "d75758a6-235b-413b-85b3-d218404f8c11", newLocation);
+        assertThat(response, hasErrorMessage(LocationService.Validations.LOCATION_PARENT_NULL.getCode()));
+    }
+
+
+    @Test
+    public void shouldUpdateWithNewDefault() {
+        Location parent = subject.findByName(tenant, application, "sp").getResult();
+        assertThat(parent.isDefaultLocation(), is(true));
+
+        Location newLocation = Location.builder()
+                .parent(parent)
+                .name("BR2")
+                .description("BBRR")
+                .defaultLocation(true)
+                .build();
+
+        ServiceResponse<Location> response = subject.update(tenant, application, "d75758a6-235b-413b-85b3-d218404f8c11", newLocation);
+        assertThat(response, isResponseOk());
+
+        assertThat(response.getResult().getName(), is("BR2"));
+        assertThat(response.getResult().getDescription(), is("BBRR"));
+        assertThat(response.getResult().getParent().getName(), is("sp"));
+        assertThat(response.getResult().isDefaultLocation(), is(true));
+
+        parent = subject.findByName(tenant, application, "sp").getResult();
+        assertThat(parent.isDefaultLocation(), is(false));
+    }
+
+    @Test
+    public void shouldUpdate() {
+        Location parent = subject.findByName(tenant, application, "sp").getResult();
+
+        Location newLocation = Location.builder()
+                                       .parent(parent)
                                        .name("BR2")
                                        .description("BBRR")
                                        .defaultLocation(false)
@@ -154,6 +194,7 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
 
         assertThat(response.getResult().getName(), is("BR2"));
         assertThat(response.getResult().getDescription(), is("BBRR"));
+        assertThat(response.getResult().getParent().getName(), is("sp"));
         assertThat(response.getResult().isDefaultLocation(), is(false));
     }
 
@@ -190,8 +231,58 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldSave() {
+    public void shouldSaveWithExistingName() {
         Location newLocation = Location.builder()
+                                       .name("sp")
+                                       .defaultLocation(false)
+                                       .build();
+
+        ServiceResponse<Location> response = subject.save(tenant, application, newLocation);
+        assertThat(response, hasErrorMessage(LocationService.Validations.LOCATION_NAME_ALREADY_REGISTERED.getCode()));
+    }
+
+    @Test
+    public void shouldTryToSaveWithoutParent() {
+        Location newLocation = Location.builder()
+                                       .name("BR2")
+                                       .description("BBRR")
+                                       .defaultLocation(false)
+                                       .build();
+
+        ServiceResponse<Location> response = subject.save(tenant, application, newLocation);
+        assertThat(response, hasErrorMessage(LocationService.Validations.LOCATION_PARENT_NULL.getCode()));
+    }
+
+    @Test
+    public void shouldSaveWithNewDefault() {
+        Location parent = subject.findByName(tenant, application, "sp").getResult();
+        assertThat(parent.isDefaultLocation(), is(true));
+
+        Location newLocation = Location.builder()
+                                       .parent(parent)
+                                       .name("BR2")
+                                       .description("BBRR")
+                                       .defaultLocation(true)
+                                       .build();
+
+        ServiceResponse<Location> response = subject.save(tenant, application, newLocation);
+        assertThat(response, isResponseOk());
+
+        assertThat(response.getResult().getName(), is("BR2"));
+        assertThat(response.getResult().getDescription(), is("BBRR"));
+        assertThat(response.getResult().getParent().getName(), is("sp"));
+        assertThat(response.getResult().isDefaultLocation(), is(true));
+
+        parent = subject.findByName(tenant, application, "sp").getResult();
+        assertThat(parent.isDefaultLocation(), is(false));
+    }
+
+    @Test
+    public void shouldSave() {
+        Location parent = subject.findByName(tenant, application, "sp").getResult();
+
+        Location newLocation = Location.builder()
+                                       .parent(parent)
                                        .name("BR2")
                                        .description("BBRR")
                                        .defaultLocation(false)
@@ -202,6 +293,7 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
 
         assertThat(response.getResult().getName(), is("BR2"));
         assertThat(response.getResult().getDescription(), is("BBRR"));
+        assertThat(response.getResult().getParent().getName(), is("sp"));
         assertThat(response.getResult().isDefaultLocation(), is(false));
     }
 

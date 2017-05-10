@@ -12,6 +12,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import com.konkerlabs.platform.registry.business.model.Application;
@@ -39,6 +43,9 @@ public class LocationServiceImpl implements LocationService {
 
     @Autowired
     private DeviceRepository deviceRepository;
+
+    @Autowired
+    private MongoTemplate mongoTemplate;
 
     @Override
     public ServiceResponse<Location> save(Tenant tenant, Application application, Location location) {
@@ -77,6 +84,18 @@ public class LocationServiceImpl implements LocationService {
             return ServiceResponseBuilder.<Location>error()
                     .withMessage(Validations.LOCATION_NAME_ALREADY_REGISTERED.getCode())
                     .build();
+        }
+
+        if (location.getParent() == null) {
+            if (locationRepository.findRootLocationByTenantAndApplication(tenant.getId(), application.getName()) != null) {
+                return ServiceResponseBuilder.<Location>error()
+                        .withMessage(Validations.LOCATION_PARENT_NULL.getCode())
+                        .build();
+            }
+        }
+
+        if (location.isDefaultLocation()) {
+            setFalseDefaultToAllLocations(tenant, application);
         }
 
         LOGGER.info("Location created. Id: {}", location.getId(), tenant.toURI(), tenant.getLogLevel());
@@ -135,18 +154,34 @@ public class LocationServiceImpl implements LocationService {
                     .build();
         }
 
-        // modify "modifiable" fields
-        locationFromDB.setDescription(updatingLocation.getDescription());
-        locationFromDB.setName(updatingLocation.getName());
-        locationFromDB.setDefaultLocation(updatingLocation.isDefaultLocation());
+        updatingLocation.setTenant(tenant);
+        updatingLocation.setApplication(application);
 
-        Optional<Map<String, Object[]>> validations = locationFromDB.applyValidations();
+        Optional<Map<String, Object[]>> validations = updatingLocation.applyValidations();
 
         if (validations.isPresent()) {
             return ServiceResponseBuilder.<Location>error()
                     .withMessages(validations.get())
                     .build();
         }
+
+        if (updatingLocation.getParent() == null) {
+            if (locationRepository.findRootLocationByTenantAndApplication(tenant.getId(), application.getName()) != null) {
+                return ServiceResponseBuilder.<Location>error()
+                        .withMessage(Validations.LOCATION_PARENT_NULL.getCode())
+                        .build();
+            }
+        }
+
+        if (updatingLocation.isDefaultLocation()) {
+            setFalseDefaultToAllLocations(tenant, application);
+        }
+
+        // modify "modifiable" fields
+        locationFromDB.setDescription(updatingLocation.getDescription());
+        locationFromDB.setName(updatingLocation.getName());
+        locationFromDB.setDefaultLocation(updatingLocation.isDefaultLocation());
+        locationFromDB.setParent(updatingLocation.getParent());
 
         Location saved = locationRepository.save(locationFromDB);
 
@@ -155,6 +190,20 @@ public class LocationServiceImpl implements LocationService {
         return ServiceResponseBuilder.<Location>ok()
                 .withResult(saved)
                 .build();
+    }
+
+    private void setFalseDefaultToAllLocations(Tenant tenant, Application application) {
+
+        Query query = new Query();
+        query.addCriteria(Criteria
+                .where("tenant.id").is(tenant.getId())
+                .andOperator(Criteria.where("application.name").is(application.getName())));
+
+        Update update = new Update();
+        update.set("defaultLocation", false);
+
+        mongoTemplate.updateMulti(query, update, Location.class);
+
     }
 
     @Override

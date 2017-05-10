@@ -12,6 +12,9 @@ public interface LocationRepository extends MongoRepository<Location,String> {
     @Query("{ 'tenant.id' : ?0, 'application.name' : ?1 }")
 	List<Location> findAllByTenantIdAndApplicationName(String tenantId, String applicationName);
 
+    @Query("{ 'tenant.id' : ?0, 'application.name' : ?1, 'parent' : { '$exists' : false } }")
+    Location findRootLocationByTenantAndApplication(String tenantId, String applicationName);
+
     @Query("{ 'tenant.id' : ?0, 'application.name' : ?1, 'guid' : ?2 }")
     Location findByTenantAndApplicationAndGuid(String tenantId, String applicationName, String guid);
 
