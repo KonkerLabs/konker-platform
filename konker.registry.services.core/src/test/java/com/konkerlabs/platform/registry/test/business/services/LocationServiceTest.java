@@ -4,9 +4,7 @@ import static com.konkerlabs.platform.registry.business.model.validation.CommonV
 import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
 import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.isResponseOk;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.*;
 import static org.junit.rules.ExpectedException.none;
 
 import java.util.List;
@@ -151,6 +149,18 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
+    public void shouldTryToUpdateWithExistingName() {
+        Location newLocation = Location.builder()
+                                       .name("sp")
+                                       .description("BBRR")
+                                       .defaultLocation(false)
+                                       .build();
+
+        ServiceResponse<Location> response = subject.update(tenant, application, "8f07f5e4-b411-45d4-90b5-a5228f7e0361", newLocation);
+        assertThat(response, hasErrorMessage(LocationService.Validations.LOCATION_NAME_ALREADY_REGISTERED.getCode()));
+    }
+
+    @Test
     public void shouldTryToUpdateWithoutParent() {
         Location newLocation = Location.builder()
                                        .name("BR2")
@@ -158,10 +168,9 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
                                        .defaultLocation(false)
                                        .build();
 
-        ServiceResponse<Location> response = subject.update(tenant, application, "d75758a6-235b-413b-85b3-d218404f8c11", newLocation);
+        ServiceResponse<Location> response = subject.update(tenant, application, "8f07f5e4-b411-45d4-90b5-a5228f7e0361", newLocation);
         assertThat(response, hasErrorMessage(LocationService.Validations.LOCATION_PARENT_NULL.getCode()));
     }
-
 
     @Test
     public void shouldUpdateWithNewDefault() {
@@ -176,7 +185,8 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
                 .build();
 
         ServiceResponse<Location> response = subject.update(tenant, application, "d75758a6-235b-413b-85b3-d218404f8c11", newLocation);
-        assertThat(response, isResponseOk());
+        assertThat(response.isOk(), is(true));
+        assertThat(response.getResponseMessages(), hasEntry(LocationService.Messages.LOCATION_REGISTERED_SUCCESSFULLY.getCode(), null));
 
         assertThat(response.getResult().getName(), is("BR2"));
         assertThat(response.getResult().getDescription(), is("BBRR"));
@@ -199,7 +209,8 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
                                        .build();
 
         ServiceResponse<Location> response = subject.update(tenant, application, "d75758a6-235b-413b-85b3-d218404f8c11", newLocation);
-        assertThat(response, isResponseOk());
+        assertThat(response.isOk(), is(true));
+        assertThat(response.getResponseMessages(), hasEntry(LocationService.Messages.LOCATION_REGISTERED_SUCCESSFULLY.getCode(), null));
 
         assertThat(response.getResult().getName(), is("BR2"));
         assertThat(response.getResult().getDescription(), is("BBRR"));
@@ -275,8 +286,10 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
                                        .build();
 
         ServiceResponse<Location> response = subject.save(tenant, application, newLocation);
-        assertThat(response, isResponseOk());
+        assertThat(response.isOk(), is(true));
+        assertThat(response.getResponseMessages(), hasEntry(LocationService.Messages.LOCATION_REGISTERED_SUCCESSFULLY.getCode(), null));
 
+        assertThat(response.getResult().getGuid(), notNullValue());
         assertThat(response.getResult().getName(), is("BR2"));
         assertThat(response.getResult().getDescription(), is("BBRR"));
         assertThat(response.getResult().getParent().getName(), is("sp"));
@@ -298,8 +311,10 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
                                        .build();
 
         ServiceResponse<Location> response = subject.save(tenant, application, newLocation);
-        assertThat(response, isResponseOk());
+        assertThat(response.isOk(), is(true));
+        assertThat(response.getResponseMessages(), hasEntry(LocationService.Messages.LOCATION_REGISTERED_SUCCESSFULLY.getCode(), null));
 
+        assertThat(response.getResult().getGuid(), notNullValue());
         assertThat(response.getResult().getName(), is("BR2"));
         assertThat(response.getResult().getDescription(), is("BBRR"));
         assertThat(response.getResult().getParent().getName(), is("sp"));
@@ -360,6 +375,8 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
         ServiceResponse<Location> response = subject.remove(tenant, application, "a14e671f-32d7-4ec0-8006-8d93eeed401c");
         assertThat(response.isOk(), is(true));
         assertThat(response.getResponseMessages(), hasEntry(LocationService.Messages.LOCATION_REMOVED_SUCCESSFULLY.getCode(), null));
+
+        assertThat(locationRepository.findByTenantAndApplicationAndGuid(tenant.getId(), application.getName(), "a14e671f-32d7-4ec0-8006-8d93eeed401c"), nullValue());
     }
 
     // ============================== findRoot ==============================//
@@ -381,6 +398,7 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
         ServiceResponse<Location> response = subject.findRoot(tenant, application);
         assertThat(response.isOk(), is(true));
         assertThat(response.getResult().getName(), is("br"));
+        assertThat(response.getResult().getParent(), nullValue());
     }
 
     @Test
@@ -388,6 +406,7 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
         ServiceResponse<Location> response = subject.findRoot(tenant, otherApplication);
         assertThat(response.isOk(), is(true));
         assertThat(response.getResult().getName(), is("root"));
+        assertThat(response.getResult().getParent(), nullValue());
     }
 
     // ============================== findByName ==============================//
@@ -461,7 +480,7 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
         assertThat(response.getResult().isDefaultLocation(), is(false));
     }
 
-    // ============================== findByGuid ==============================//
+    // ============================== findTree ==============================//
 
     @Test
     public void shouldFindTreeWithNullTenant() {

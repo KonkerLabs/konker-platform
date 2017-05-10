@@ -102,7 +102,10 @@ public class LocationServiceImpl implements LocationService {
 
         Location saved = locationRepository.save(location);
 
-        return ServiceResponseBuilder.<Location>ok().withResult(saved).build();
+        return ServiceResponseBuilder.<Location>ok()
+                .withMessage(LocationService.Messages.LOCATION_REGISTERED_SUCCESSFULLY.getCode())
+                .withResult(saved)
+                .build();
     }
 
     @Override
@@ -165,8 +168,16 @@ public class LocationServiceImpl implements LocationService {
                     .build();
         }
 
+        final Location sameNameLocation = locationRepository.findByTenantAndApplicationAndName(tenant.getId(), application.getName(), updatingLocation.getName());
+        if (sameNameLocation != null && !sameNameLocation.getGuid().equals(guid)) {
+            return ServiceResponseBuilder.<Location>error()
+                    .withMessage(Validations.LOCATION_NAME_ALREADY_REGISTERED.getCode())
+                    .build();
+        }
+
         if (updatingLocation.getParent() == null) {
-            if (locationRepository.findRootLocationByTenantAndApplication(tenant.getId(), application.getName()) != null) {
+            final Location rootLocation = locationRepository.findRootLocationByTenantAndApplication(tenant.getId(), application.getName());
+            if (rootLocation != null && !rootLocation.getGuid().equals(guid)) {
                 return ServiceResponseBuilder.<Location>error()
                         .withMessage(Validations.LOCATION_PARENT_NULL.getCode())
                         .build();
@@ -188,6 +199,7 @@ public class LocationServiceImpl implements LocationService {
         LOGGER.info("Location updated. Id: {}", locationFromDB.getId(), tenant.toURI(), tenant.getLogLevel());
 
         return ServiceResponseBuilder.<Location>ok()
+                .withMessage(LocationService.Messages.LOCATION_REGISTERED_SUCCESSFULLY.getCode())
                 .withResult(saved)
                 .build();
     }
@@ -242,7 +254,7 @@ public class LocationServiceImpl implements LocationService {
 
         ServiceResponse<Location> response = null;
 
-        if(Optional.ofNullable(devices).isPresent() && !devices.isEmpty()) {
+        if(!devices.isEmpty()) {
             response = ServiceResponseBuilder.<Location>error()
                     .withMessage(Validations.LOCATION_HAVE_DEVICES.getCode())
                     .build();
@@ -253,13 +265,15 @@ public class LocationServiceImpl implements LocationService {
         List<Location> childrens =
                 locationRepository.findChildrensByParentId(tenant.getId(), application.getName(), location.getId());
 
-        if(Optional.ofNullable(childrens).isPresent() && !childrens.isEmpty()) {
+        if(!childrens.isEmpty()) {
             return ServiceResponseBuilder.<Location>error()
                     .withMessage(Validations.LOCATION_HAVE_CHILDRENS.getCode())
                     .build();
         }
 
         // remove
+        locationRepository.delete(location);
+
         LOGGER.info("Location removed. Id: {}", location.getId(), tenant.toURI(), tenant.getLogLevel());
 
         return ServiceResponseBuilder.<Location>ok()

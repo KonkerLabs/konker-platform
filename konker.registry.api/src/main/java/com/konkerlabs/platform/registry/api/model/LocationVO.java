@@ -1,5 +1,7 @@
 package com.konkerlabs.platform.registry.api.model;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.konkerlabs.platform.registry.api.model.core.SerializableVO;
 import com.konkerlabs.platform.registry.business.model.Location;
 
@@ -20,7 +22,7 @@ public class LocationVO extends LocationInputVO implements SerializableVO<Locati
 
     public LocationVO(Location location) {
         this.guid = location.getGuid();
-        this.parentName = location.getParent().getName();
+        this.parentName = getParentName(location.getParent());
         this.name = location.getName();
         this.description = location.getDescription();
     }
@@ -29,7 +31,7 @@ public class LocationVO extends LocationInputVO implements SerializableVO<Locati
     public LocationVO apply(Location model) {
         LocationVO vo = new LocationVO();
         vo.setGuid(model.getGuid());
-        vo.setParentName(model.getParent().getName());
+        vo.setParentName(getParentName(model.getParent()));
         vo.setName(model.getName());
         vo.setDescription(model.getDescription());
         return vo;
@@ -38,10 +40,20 @@ public class LocationVO extends LocationInputVO implements SerializableVO<Locati
     @Override
     public Location patchDB(Location model) {
         model.setGuid(this.getGuid());
-        model.setParent(Location.builder().name(this.getParentName()).build());
+        if (StringUtils.isNotBlank(this.getParentName())) {
+            model.setParent(Location.builder().name(this.getParentName()).build());
+        }
         model.setName(this.getName());
         model.setDescription(this.getDescription());
         return model;
+    }
+
+    private String getParentName(Location parent) {
+        if (parent == null) {
+            return null;
+        } else {
+            return parent.getName();
+        }
     }
 
 }

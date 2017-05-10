@@ -1,7 +1,9 @@
 package com.konkerlabs.platform.registry.api.web.controller;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.beans.factory.InitializingBean;
@@ -101,15 +103,7 @@ public class LocationRestController extends AbstractRestController implements In
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
 
-        Location parent = null;
-        if (StringUtils.hasText(locationForm.getParentName())) {
-            ServiceResponse<Location> parentResponse = locationService.findByName(tenant, application, locationForm.getParentName());
-            if (!parentResponse.isOk()) {
-                throw new BadServiceResponseException(user, parentResponse, validationsCode);
-            } else {
-                parent = parentResponse.getResult();
-            }
-        }
+        Location parent = getParent(locationForm, tenant, application);
 
         Location location = Location.builder()
                 .parent(parent)
@@ -143,6 +137,8 @@ public class LocationRestController extends AbstractRestController implements In
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
 
+        Location parent = getParent(locationForm, tenant, application);
+
         Location locationFromDB = null;
         ServiceResponse<Location> locationResponse = locationService.findByName(tenant, application, locationName);
 
@@ -153,15 +149,44 @@ public class LocationRestController extends AbstractRestController implements In
         }
 
         // update fields
+        locationFromDB.setParent(parent);
         locationFromDB.setName(locationForm.getName());
         locationFromDB.setDescription(locationForm.getDescription());
+        locationFromDB.setDefaultLocation(locationForm.isDefaultLocation());
+
 
         ServiceResponse<Location> updateResponse = locationService.update(tenant, application, locationFromDB.getGuid(), locationFromDB);
 
         if (!updateResponse.isOk()) {
             throw new BadServiceResponseException(user, locationResponse, validationsCode);
-
         }
+
+    }
+
+    private Location getParent(LocationInputVO locationForm, Tenant tenant, Application application)
+            throws BadServiceResponseException {
+
+        if (!StringUtils.hasText(locationForm.getParentName())) {
+            return null;
+        }
+
+        Location parent = null;
+
+        ServiceResponse<Location> parentResponse = locationService.findByName(tenant, application, locationForm.getParentName());
+        if (!parentResponse.isOk()) {
+            if (parentResponse.getResponseMessages().containsKey(LocationService.Messages.LOCATION_NOT_FOUND.getCode())) {
+                Map<String, Object[]> responseMessages = new HashMap<>();
+                responseMessages.put(LocationService.Validations.LOCATION_PARENT_NOT_FOUND.getCode(), null);
+
+                throw new BadServiceResponseException(user, responseMessages, validationsCode);
+            } else {
+                throw new BadServiceResponseException(user, parentResponse, validationsCode);
+            }
+        } else {
+            parent = parentResponse.getResult();
+        }
+
+        return parent;
 
     }
 

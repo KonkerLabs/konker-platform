@@ -13,7 +13,7 @@ public interface LocationService {
 	    LOCATION_GUID_DOES_NOT_EXIST("service.location.guid_does_not_exist"),
 		LOCATION_NAME_ALREADY_REGISTERED("service.location.name_already_registered"),
 		LOCATION_PARENT_NULL("service.location.parent_null"),
-		LOCATION_ID_DOES_NOT_EXIST("service.location.name_does_not_exist"),
+		LOCATION_PARENT_NOT_FOUND("service.location.parent_not_found"),
 		LOCATION_HAVE_DEVICES("service.location.have_devices"),
 		LOCATION_HAVE_CHILDRENS("service.location.have_childrens")
 		;
@@ -32,9 +32,7 @@ public interface LocationService {
     enum Messages {
         LOCATION_REGISTERED_SUCCESSFULLY("service.location.registered_success"),
         LOCATION_REMOVED_SUCCESSFULLY("service.location.removed_succesfully"),
-        LOCATION_REMOVED_UNSUCCESSFULLY("service.location.removed_unsuccesfully"),
         LOCATION_NOT_FOUND("service.location.not_found"),
-        LOCATION_DEFAULT_NOT_FOUND("service.location.default_not_found"),
         LOCATION_ROOT_NOT_FOUND("service.location.root_not_found")
         ;
 
