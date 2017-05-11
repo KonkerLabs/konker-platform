@@ -196,7 +196,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
         assertThat(response, hasAllErrors(errorMessages));
     }
-    
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
     public void shouldReturnResponseMessageIfDeviceLimitExceeded() throws Exception {
@@ -252,6 +252,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 		response = deviceRegisterService.register(currentTenant, currentApplication, rawDevice);
 
 		assertThat(response, isResponseOk());
+		assertThat(response.getResult().getLocation().getName(), is("root"));
 
 		saved = deviceRepository.findByTenantIdAndDeviceId(currentTenant.getId(), device.getDeviceId());
 

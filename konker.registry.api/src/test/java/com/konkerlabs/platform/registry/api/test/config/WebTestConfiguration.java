@@ -14,6 +14,7 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceEventService
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
+import com.konkerlabs.platform.registry.business.services.api.LocationService;
 import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.RoleService;
 import com.konkerlabs.platform.registry.business.services.api.TransformationService;
@@ -83,5 +84,9 @@ public class WebTestConfiguration {
     	return Mockito.mock(ApplicationService.class);
     }
 
+    @Bean
+    public LocationService locationService() {
+        return Mockito.mock(LocationService.class);
+    }
 
 }

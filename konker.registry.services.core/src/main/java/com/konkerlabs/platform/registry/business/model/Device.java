@@ -69,6 +69,8 @@ public class Device implements URIDealer, Validatable, UserDetails {
 	private String id;
 	@DBRef
 	private Tenant tenant;
+	@DBRef
+	private Application application;
 	private String deviceId;
     private String apiKey;
 	private String securityHash;
@@ -77,14 +79,11 @@ public class Device implements URIDealer, Validatable, UserDetails {
 	private String description;
 	private Instant registrationDate;
     private LogLevel logLevel;
-//	private List<Event> events;
-	private boolean active;
-	
-	@DBRef
-    private Application application;
-	
-	@DBRef
+    @DBRef
     private DeviceModel deviceModel;
+    @DBRef
+    private Location location;
+	private boolean active;
 
 	public Optional<Map<String, Object[]>> applyValidations() {
 
@@ -110,22 +109,10 @@ public class Device implements URIDealer, Validatable, UserDetails {
 		setRegistrationDate(Instant.now());
 		regenerateApiKey();
 	}
-	
+
 	public void regenerateApiKey() {
 		setApiKey(new BigInteger(60, new Random()).toString(32));
 	}
-
-//	public Event getLastEvent() {
-//		return getMostRecentEvents().stream().findFirst().orElse(null);
-//	}
-
-	// FIXME Needs performance improvement. Sorting those items on the
-	// application server and returning all of them is not efficient.
-//	public List<Event> getMostRecentEvents() {
-//		return Optional.ofNullable(getEvents()).orElse(Collections.emptyList()).stream()
-//				.sorted((eventA, eventB) -> eventB.getTimestamp().compareTo(eventA.getTimestamp()))
-//				.collect(Collectors.toList());
-//	}
 
 	public LogLevel getLogLevel() {
 		return Optional.ofNullable(logLevel).orElse(LogLevel.WARNING);

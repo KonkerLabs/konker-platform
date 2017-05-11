@@ -1,0 +1,80 @@
+{
+  "locations": [
+    {
+        "_id" : "591200ea9061e67cb2228f85",
+        "_class" : "com.konkerlabs.platform.registry.business.model.Location",
+        "name" : "br",
+        "description" : "Brazil",
+        "guid" : "d75758a6-235b-413b-85b3-d218404f8c11",
+        "defaultLocation" : false,
+        "tenant" : {
+          "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+          "$ref" : "tenants"
+        },
+        "application" : {
+          "$id" : "konker",
+          "$ref" : "applications"
+        }
+    },
+    {
+        "_id" : "vmes6ye0k5dqouz0m0fm",
+        "_class" : "com.konkerlabs.platform.registry.business.model.Location",
+        "name" : "sp",
+        "description" : "São Paulo",
+        "guid" : "55fe5b24-be8a-4d33-8cdf-fd08c14175b4",
+        "defaultLocation" : true,
+        "tenant" : {
+          "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+          "$ref" : "tenants"
+        },
+        "application" : {
+          "$id" : "konker",
+          "$ref" : "applications"
+        },
+        "parent" : {
+          "$id" : "591200ea9061e67cb2228f85",
+          "$ref" : "locations"
+        }
+    },
+    {
+        "_id" : "bz048xdft8s5ii28o5vh",
+        "_class" : "com.konkerlabs.platform.registry.business.model.Location",
+        "name" : "rj",
+        "description" : "Rio Janeiro",
+        "guid" : "8f07f5e4-b411-45d4-90b5-a5228f7e0361",
+        "defaultLocation" : false,
+        "tenant" : {
+          "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+          "$ref" : "tenants"
+        },
+        "application" : {
+          "$id" : "konker",
+          "$ref" : "applications"
+        },
+        "parent" : {
+          "$id" : "591200ea9061e67cb2228f85",
+          "$ref" : "locations"
+        }
+    },
+    {
+        "_id" : "j854dz2dayzm8dgna3kb",
+        "_class" : "com.konkerlabs.platform.registry.business.model.Location",
+        "name" : "sala-101",
+        "description" : "Sala 101",
+        "guid" : "a14e671f-32d7-4ec0-8006-8d93eeed401c",
+        "defaultLocation" : false,
+        "tenant" : {
+          "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+          "$ref" : "tenants"
+        },
+        "application" : {
+          "$id" : "konker",
+          "$ref" : "applications"
+        },
+        "parent" : {
+          "$id" : "bz048xdft8s5ii28o5vh",
+          "$ref" : "locations"
+        }
+    }
+  ]
+}
