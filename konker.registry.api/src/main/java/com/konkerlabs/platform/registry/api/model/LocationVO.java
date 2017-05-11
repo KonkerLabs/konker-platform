@@ -31,6 +31,7 @@ public class LocationVO extends LocationInputVO implements SerializableVO<Locati
         this.parentName = getParentName(location.getParent());
         this.name = location.getName();
         this.description = location.getDescription();
+        this.defaultLocation = location.isDefaultLocation();
         this.subLocations = getSubLocations(location.getChildrens());
     }
 
@@ -41,6 +42,7 @@ public class LocationVO extends LocationInputVO implements SerializableVO<Locati
         vo.setParentName(getParentName(model.getParent()));
         vo.setName(model.getName());
         vo.setDescription(model.getDescription());
+        vo.setDefaultLocation(model.isDefaultLocation());
         vo.setSubLocations(getSubLocations(model.getChildrens()));
         return vo;
     }
@@ -53,6 +55,7 @@ public class LocationVO extends LocationInputVO implements SerializableVO<Locati
         }
         model.setName(this.getName());
         model.setDescription(this.getDescription());
+        model.setDefaultLocation(this.isDefaultLocation());
         return model;
     }
 
