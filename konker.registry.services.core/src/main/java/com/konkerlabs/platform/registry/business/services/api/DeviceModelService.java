@@ -3,6 +3,7 @@ package com.konkerlabs.platform.registry.business.services.api;
 import java.util.List;
 
 import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.DeviceModel;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 
@@ -29,7 +30,8 @@ public interface DeviceModelService {
 	}
 	
 	public enum Messages {
-		DEVICE_MODEL_REMOVED_SUCCESSFULLY("controller.devicemodel.removed.succesfully");
+		DEVICE_MODEL_REMOVED_SUCCESSFULLY("controller.devicemodel.removed.succesfully"),
+		DEVICE_MODEL_REMOVED_UNSUCCESSFULLY("controller.devicemodel.removed.unsuccesfully");
 
 		public String getCode() {
 			return code;
@@ -99,7 +101,9 @@ public interface DeviceModelService {
 	 * @param name
 	 * @return
 	 */
-	ServiceResponse<DeviceModel> getByTenantIdApplicationNameAndName(Tenant tenant, Application application, String name);
+	ServiceResponse<DeviceModel> getByTenantApplicationAndName(Tenant tenant, Application application, String name);
+
+	ServiceResponse<List<Device>> listDevicesByDeviceModelName(Tenant tenant, Application application,	String deviceModelName);
 
 
 }
