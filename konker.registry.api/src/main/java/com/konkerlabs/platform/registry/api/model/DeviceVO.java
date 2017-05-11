@@ -32,6 +32,7 @@ public class DeviceVO extends DeviceInputVO
         vo.setGuid(t.getGuid());
         vo.setName(t.getName());
         vo.setDescription(t.getDescription());
+        vo.setLocationName(t.getLocation() != null ? t.getLocation().getName() : null);
         vo.setActive(t.isActive());
         vo.setId(t.getDeviceId());
         return vo;
