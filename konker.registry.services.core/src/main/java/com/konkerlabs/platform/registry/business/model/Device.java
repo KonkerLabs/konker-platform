@@ -80,9 +80,10 @@ public class Device implements URIDealer, Validatable, UserDetails {
 	private Instant registrationDate;
     private LogLevel logLevel;
     @DBRef
+    private DeviceModel deviceModel;
+    @DBRef
     private Location location;
 	private boolean active;
-
 
 	public Optional<Map<String, Object[]>> applyValidations() {
 
