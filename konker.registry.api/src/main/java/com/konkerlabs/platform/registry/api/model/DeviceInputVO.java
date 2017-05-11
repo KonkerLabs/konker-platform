@@ -19,7 +19,9 @@ public class DeviceInputVO {
     protected String name;
     @ApiModelProperty(value = "the device description", example = "energy storage device", position = 3)
     protected String description;
-    @ApiModelProperty(example = "true", position = 4)
+    @ApiModelProperty(value = "the location name of device", example = "br_sp", position = 4)
+    protected String locationName;
+    @ApiModelProperty(example = "true", position = 5)
     protected boolean active = true;
 
 }

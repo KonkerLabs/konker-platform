@@ -29,7 +29,8 @@ public class RestResponse<T> {
     private String status;
     @ApiModelProperty(value = "the error messages")
     private List<String> messages = new ArrayList<>();
-    @ApiModelProperty(value = "the entity", dataType = "DeviceVO")
+    @JsonInclude(Include.ALWAYS)
+    @ApiModelProperty(value = "the response")
     private T result;
 
     public void setStatus(Status status) {

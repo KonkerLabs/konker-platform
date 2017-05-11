@@ -18,6 +18,7 @@ public class WebMvcConfig  {
     public MessageSource getMessageSource() {
         ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
         messageSource.addBasenames("classpath:/messages/devices");
+        messageSource.addBasenames("classpath:/messages/locations");
         messageSource.addBasenames("classpath:/messages/routes");
         messageSource.addBasenames("classpath:/messages/transformations");
         messageSource.addBasenames("classpath:/messages/rest-destination");
