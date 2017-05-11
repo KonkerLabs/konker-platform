@@ -11,11 +11,47 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 
 public interface DeviceConfigSetupService {
 
-    ServiceResponse<List<DeviceConfig>> listAll(Tenant tenant, Application application);
+    enum Validations {
+        DEVICE_CONFIG_NOT_FOUND("service.device_config.not_found"),
+        DEVICE_INVALID_JSON("service.device_config.invalid_json")
+        ;
+
+        public String getCode() {
+            return code;
+        }
+
+        private String code;
+
+        Validations(String code) {
+            this.code = code;
+        }
+
+    }
+    enum Messages {
+        DEVICE_CONFIG_REGISTERED_SUCCESSFULLY("service.device_config.registered_success"),
+        DEVICE_CONFIG_REMOVED_SUCCESSFULLY("service.device_config.removed_succesfully")
+        ;
+
+        public String getCode() {
+            return code;
+        }
+
+        private String code;
+
+        Messages(String code) {
+            this.code = code;
+        }
+
+    }
+
+    ServiceResponse<List<DeviceConfig>> findAll(Tenant tenant, Application application);
 
     ServiceResponse<String> findByModelAndLocation(Tenant tenant, Application application, DeviceModel model, Location location);
 
-    ServiceResponse<DeviceConfig> saveOrUpdate(Tenant tenant, Application application, DeviceModel deviceModel,
+    ServiceResponse<DeviceConfig> save(Tenant tenant, Application application, DeviceModel deviceModel,
+            Location location, String json);
+
+    ServiceResponse<DeviceConfig> update(Tenant tenant, Application application, DeviceModel deviceModel,
             Location location, String json);
 
     ServiceResponse<DeviceConfigSetup> remove(Tenant tenant, Application application, DeviceModel deviceModel,

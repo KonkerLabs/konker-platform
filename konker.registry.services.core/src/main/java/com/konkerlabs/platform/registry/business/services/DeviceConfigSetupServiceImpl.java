@@ -2,11 +2,11 @@ package com.konkerlabs.platform.registry.business.services;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
@@ -22,20 +22,22 @@ import com.konkerlabs.platform.registry.business.model.validation.CommonValidati
 import com.konkerlabs.platform.registry.business.repositories.DeviceConfigSetupRepository;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceConfigSetupService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
+import com.konkerlabs.platform.registry.business.services.api.LocationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.mongodb.util.JSON;
+import com.mongodb.util.JSONParseException;
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
 public class DeviceConfigSetupServiceImpl implements DeviceConfigSetupService {
 
-    private Logger LOGGER = LoggerFactory.getLogger(this.getClass());
-
     @Autowired
     private DeviceConfigSetupRepository deviceConfigSetupRepository;
 
     @Override
-    public ServiceResponse<List<DeviceConfig>> listAll(Tenant tenant, Application application) {
+    public ServiceResponse<List<DeviceConfig>> findAll(Tenant tenant, Application application) {
 
         if (!Optional.ofNullable(tenant).isPresent()) {
             return ServiceResponseBuilder.<List<DeviceConfig>>error()
@@ -54,16 +56,16 @@ public class DeviceConfigSetupServiceImpl implements DeviceConfigSetupService {
     }
 
     @Override
-    public ServiceResponse<DeviceConfig> saveOrUpdate(Tenant tenant, Application application, DeviceModel deviceModel, Location location, String json) {
+    public ServiceResponse<DeviceConfig> save(Tenant tenant, Application application, DeviceModel deviceModel, Location location, String json) {
 
-        if (!Optional.ofNullable(tenant).isPresent()) {
-            return ServiceResponseBuilder.<DeviceConfig>error()
-                    .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
+        ServiceResponse<DeviceConfig> validationsResponse = validate(tenant, application, deviceModel, location);
+        if (validationsResponse != null && !validationsResponse.isOk()) {
+            return validationsResponse;
         }
 
-        if (!Optional.ofNullable(application).isPresent()) {
+        if (isInvalidJson(json)) {
             return ServiceResponseBuilder.<DeviceConfig>error()
-                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()).build();
+                    .withMessage(Validations.DEVICE_INVALID_JSON.getCode()).build();
         }
 
         DeviceConfigSetup deviceConfigSetupDB = getCurrentConfigSetup(tenant, application);
@@ -86,24 +88,68 @@ public class DeviceConfigSetupServiceImpl implements DeviceConfigSetupService {
         }
 
         DeviceConfigSetup deviceConfigSetupNew = getNewApplication(tenant, application, deviceConfigSetupDB.getVersion() + 1);
+        deviceConfigSetupNew.setConfigs(configs);
         deviceConfigSetupRepository.save(deviceConfigSetupNew);
 
-        return ServiceResponseBuilder.<DeviceConfig>ok()
-                .withResult(deviceConfig).build();
+        return ServiceResponseBuilder.<DeviceConfig>ok().withResult(deviceConfig).build();
+
+    }
+
+    private boolean isInvalidJson(String json) {
+
+        if (StringUtils.isBlank(json)) {
+            return true;
+        }
+
+        try {
+            JSON.parse(json);
+        } catch (JSONParseException e) {
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public ServiceResponse<DeviceConfig> update(Tenant tenant, Application application, DeviceModel deviceModel, Location location, String json) {
+
+        ServiceResponse<DeviceConfig> validationsResponse = validate(tenant, application, deviceModel, location);
+        if (validationsResponse != null && !validationsResponse.isOk()) {
+            return validationsResponse;
+        }
+
+        if (isInvalidJson(json)) {
+            return ServiceResponseBuilder.<DeviceConfig>error()
+                    .withMessage(Validations.DEVICE_INVALID_JSON.getCode()).build();
+        }
+
+        DeviceConfigSetup deviceConfigSetupDB = getCurrentConfigSetup(tenant, application);
+        List<DeviceConfig> configs = deviceConfigSetupDB.getConfigs();
+
+        DeviceConfig deviceConfig = findDeviceConfig(configs, deviceModel, location);
+
+        if (deviceConfig == null) {
+            return ServiceResponseBuilder.<DeviceConfig>error()
+                    .withMessage(Validations.DEVICE_CONFIG_NOT_FOUND.getCode())
+                    .withResult(deviceConfig).build();
+        } else {
+            deviceConfig.setJson(json);
+        }
+
+        DeviceConfigSetup deviceConfigSetupNew = getNewApplication(tenant, application, deviceConfigSetupDB.getVersion() + 1);
+        deviceConfigSetupNew.setConfigs(configs);
+        deviceConfigSetupRepository.save(deviceConfigSetupNew);
+
+        return ServiceResponseBuilder.<DeviceConfig>ok().withResult(deviceConfig).build();
 
     }
 
     @Override
     public ServiceResponse<DeviceConfigSetup> remove(Tenant tenant, Application application, DeviceModel deviceModel, Location location) {
 
-        if (!Optional.ofNullable(tenant).isPresent()) {
-            return ServiceResponseBuilder.<DeviceConfigSetup>error()
-                    .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
-        }
-
-        if (!Optional.ofNullable(application).isPresent()) {
-            return ServiceResponseBuilder.<DeviceConfigSetup>error()
-                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()).build();
+        ServiceResponse<DeviceConfigSetup> validationsResponse = validate(tenant, application, deviceModel, location);
+        if (validationsResponse != null && !validationsResponse.isOk()) {
+            return validationsResponse;
         }
 
         DeviceConfigSetup deviceConfigSetupDB = getCurrentConfigSetup(tenant, application);
@@ -115,35 +161,32 @@ public class DeviceConfigSetupServiceImpl implements DeviceConfigSetupService {
 
         deviceConfigSetupRepository.save(deviceConfigSetupNew);
 
-        return ServiceResponseBuilder.<DeviceConfigSetup>ok()
-                    .withResult(deviceConfigSetupNew).build();
+        return ServiceResponseBuilder.<DeviceConfigSetup>ok().withResult(deviceConfigSetupNew).build();
 
     }
 
     @Override
     public ServiceResponse<String> findByModelAndLocation(Tenant tenant, Application application,
-            DeviceModel model, Location location) {
+            DeviceModel deviceModel, Location location) {
 
-        if (!Optional.ofNullable(tenant).isPresent()) {
-            return ServiceResponseBuilder.<String>error()
-                    .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
-        }
-
-        if (!Optional.ofNullable(application).isPresent()) {
-            return ServiceResponseBuilder.<String>error()
-                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()).build();
+        ServiceResponse<String> validationsResponse = validate(tenant, application, deviceModel, location);
+        if (validationsResponse != null && !validationsResponse.isOk()) {
+            return validationsResponse;
         }
 
         DeviceConfigSetup deviceConfigSetupDB = getCurrentConfigSetup(tenant, application);
         List<DeviceConfig> configs = deviceConfigSetupDB.getConfigs();
 
-        DeviceConfig config = findDeviceConfig(configs, model, location);
+        DeviceConfig config = findDeviceConfig(configs, deviceModel, location);
 
         if (config != null) {
             return ServiceResponseBuilder.<String>ok().withResult(config.getJson()).build();
         } else {
-            return ServiceResponseBuilder.<String>ok().withResult(config.getJson()).build();
+            return ServiceResponseBuilder.<String>error()
+                    .withMessage(Validations.DEVICE_CONFIG_NOT_FOUND.getCode())
+                    .build();
         }
+
     }
 
     private DeviceConfig findDeviceConfig(List<DeviceConfig> configs, DeviceModel model, Location location) {
@@ -175,6 +218,8 @@ public class DeviceConfigSetupServiceImpl implements DeviceConfigSetupService {
             return configSetup;
         }
 
+        Collections.sort(configSetups);
+
         return configSetups.get(0);
 
     }
@@ -188,5 +233,30 @@ public class DeviceConfigSetupServiceImpl implements DeviceConfigSetupService {
                                 .date(Instant.now())
                                 .build();
     }
+
+    private <T> ServiceResponse<T> validate(Tenant tenant, Application application, DeviceModel deviceModel, Location location) {
+
+        if (!Optional.ofNullable(tenant).isPresent()) {
+            return ServiceResponseBuilder.<T>error()
+                    .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
+        }
+
+        if (!Optional.ofNullable(application).isPresent()) {
+            return ServiceResponseBuilder.<T>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()).build();
+        }
+
+        if (!Optional.ofNullable(deviceModel).isPresent() || !Optional.ofNullable(deviceModel.getGuid()).isPresent()) {
+            return ServiceResponseBuilder.<T>error()
+                    .withMessage(DeviceModelService.Validations.DEVICE_MODEL_NULL.getCode()).build();
+        }
+
+        if (!Optional.ofNullable(location).isPresent() || !Optional.ofNullable(location.getGuid()).isPresent()) {
+            return ServiceResponseBuilder.<T>error()
+                    .withMessage(LocationService.Validations.LOCATION_GUID_NULL.getCode()).build();
+        }
+
+        return null;
+    };
 
 }
