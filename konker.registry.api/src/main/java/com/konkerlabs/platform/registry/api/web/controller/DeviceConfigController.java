@@ -29,6 +29,8 @@ import com.konkerlabs.platform.registry.business.model.Location;
 import com.konkerlabs.platform.registry.business.model.RestDestination.Validations;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.DeviceConfigSetupService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
+import com.konkerlabs.platform.registry.business.services.api.LocationService;
 import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 
@@ -45,10 +47,16 @@ public class DeviceConfigController extends AbstractRestController implements In
     @Autowired
     private DeviceConfigSetupService deviceConfigSetupService;
 
+    @Autowired
+    private LocationService locationService;
+
+    @Autowired
+    private DeviceModelService deviceModelService;
+
     private Set<String> validationsCode = new HashSet<>();
 
     @GetMapping(path = "/")
-    @PreAuthorize("hasAuthority('LIST_DEVICE_CONFIGS')")
+    // @PreAuthorize("hasAuthority('LIST_DEVICE_CONFIGS')")
     @ApiOperation(
             value = "List all device configs by application",
             response = DeviceConfigVO.class)
@@ -72,7 +80,7 @@ public class DeviceConfigController extends AbstractRestController implements In
             value = "Get a device config by guid",
             response = RestResponse.class
     )
-    @PreAuthorize("hasAuthority('SHOW_DEVICE_CONFIG')")
+    // @PreAuthorize("hasAuthority('SHOW_DEVICE_CONFIG')")
     public Object read(
             @PathVariable("application") String applicationId,
             @PathVariable("deviceModelName") String deviceModelName,
@@ -81,8 +89,8 @@ public class DeviceConfigController extends AbstractRestController implements In
 
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
-        DeviceModel deviceModel = getDeviceModel(deviceModelName);
-        Location location = getLocation(locationName);
+        DeviceModel deviceModel = getDeviceModel(tenant, application, deviceModelName);
+        Location location = getLocation(tenant, application, locationName);
 
         ServiceResponse<String> restDestinationResponse = deviceConfigSetupService.findByModelAndLocation(tenant, application, deviceModel, location);
 
@@ -96,7 +104,7 @@ public class DeviceConfigController extends AbstractRestController implements In
 
     @PostMapping(path = "/{deviceModelName}/{locationName}")
     @ApiOperation(value = "Create a device config")
-    @PreAuthorize("hasAuthority('CREATE_DEVICE_CONFIG')")
+    // @PreAuthorize("hasAuthority('CREATE_DEVICE_CONFIG')")
     public DeviceConfigVO create(
             @PathVariable("application") String applicationId,
             @PathVariable("deviceModelName") String deviceModelName,
@@ -109,8 +117,8 @@ public class DeviceConfigController extends AbstractRestController implements In
 
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
-        DeviceModel deviceModel = getDeviceModel(deviceModelName);
-        Location location = getLocation(locationName);
+        DeviceModel deviceModel = getDeviceModel(tenant, application, deviceModelName);
+        Location location = getLocation(tenant, application, locationName);
 
         ServiceResponse<DeviceConfig> restDestinationResponse = deviceConfigSetupService.save(tenant, application, deviceModel, location, json);
 
@@ -124,7 +132,7 @@ public class DeviceConfigController extends AbstractRestController implements In
 
     @PutMapping(path = "/{deviceModelName}/{locationName}")
     @ApiOperation(value = "Update a device config")
-    @PreAuthorize("hasAuthority('EDIT_DEVICE_CONFIG')")
+    // @PreAuthorize("hasAuthority('EDIT_DEVICE_CONFIG')")
     public void update(
             @PathVariable("application") String applicationId,
             @PathVariable("deviceModelName") String deviceModelName,
@@ -137,8 +145,8 @@ public class DeviceConfigController extends AbstractRestController implements In
 
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
-        DeviceModel deviceModel = getDeviceModel(deviceModelName);
-        Location location = getLocation(locationName);
+        DeviceModel deviceModel = getDeviceModel(tenant, application, deviceModelName);
+        Location location = getLocation(tenant, application, locationName);
 
         ServiceResponse<DeviceConfig> updateResponse = deviceConfigSetupService.update(tenant, application, deviceModel, location, json);
 
@@ -150,7 +158,7 @@ public class DeviceConfigController extends AbstractRestController implements In
 
     @DeleteMapping(path = "/{deviceModelName}/{locationName}")
     @ApiOperation(value = "Delete a device config")
-    @PreAuthorize("hasAuthority('REMOVE_DEVICE_CONFIG')")
+    // @PreAuthorize("hasAuthority('REMOVE_DEVICE_CONFIG')")
     public void delete(
             @PathVariable("application") String applicationId,
             @PathVariable("deviceModelName") String deviceModelName,
@@ -158,8 +166,8 @@ public class DeviceConfigController extends AbstractRestController implements In
 
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
-        DeviceModel deviceModel = getDeviceModel(deviceModelName);
-        Location location = getLocation(locationName);
+        DeviceModel deviceModel = getDeviceModel(tenant, application, deviceModelName);
+        Location location = getLocation(tenant, application, locationName);
 
         ServiceResponse<DeviceConfigSetup> restDestinationResponse = deviceConfigSetupService.remove(tenant, application, deviceModel, location);
 
@@ -173,14 +181,46 @@ public class DeviceConfigController extends AbstractRestController implements In
 
     }
 
-    private Location getLocation(String locationName) {
-        // TODO Auto-generated method stub
-        return null;
+    private Location getLocation(Tenant tenant, Application application, String locationName) throws BadServiceResponseException, NotFoundResponseException {
+
+        ServiceResponse<Location> applicationResponse = locationService.findByName(tenant, application, locationName, false);
+        if (!applicationResponse.isOk()) {
+            if (applicationResponse.getResponseMessages().containsKey(LocationService.Messages.LOCATION_NOT_FOUND.getCode())) {
+                throw new NotFoundResponseException(user, applicationResponse);
+
+            } else {
+                Set<String> validationsCode = new HashSet<>();
+                for (LocationService.Validations value : LocationService.Validations.values()) {
+                    validationsCode.add(value.getCode());
+                }
+
+                throw new BadServiceResponseException(user, applicationResponse, validationsCode);
+            }
+        }
+
+        return applicationResponse.getResult();
+
     }
 
-    private DeviceModel getDeviceModel(String deviceModelName) {
-        // TODO Auto-generated method stub
-        return null;
+    private DeviceModel getDeviceModel(Tenant tenant, Application application, String deviceModelName) throws BadServiceResponseException, NotFoundResponseException {
+
+        ServiceResponse<DeviceModel> applicationResponse = deviceModelService.getByTenantIdApplicationNameAndName(tenant, application, deviceModelName);
+        if (!applicationResponse.isOk()) {
+            if (applicationResponse.getResponseMessages().containsKey(DeviceModelService.Validations.DEVICE_MODEL_NOT_FOUND.getCode())) {
+                throw new NotFoundResponseException(user, applicationResponse);
+
+            } else {
+                Set<String> validationsCode = new HashSet<>();
+                for (DeviceModelService.Validations value : DeviceModelService.Validations.values()) {
+                    validationsCode.add(value.getCode());
+                }
+
+                throw new BadServiceResponseException(user, applicationResponse, validationsCode);
+            }
+        }
+
+        return applicationResponse.getResult();
+
     }
 
     @Override

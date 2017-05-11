@@ -22,11 +22,15 @@ import lombok.NoArgsConstructor;
 		discriminator = "com.konkerlabs.platform.registry.api.model")
 public class DeviceConfigVO implements SerializableVO<DeviceConfig, DeviceConfigVO> {
 
+    @ApiModelProperty(value = "the device model guid", example = "39a35764-5134-4003-8f1e-400959631618", position = 0)
     private String deviceModelGuid;
+    @ApiModelProperty(value = "the device model name", example = "air conditioner", position = 1)
     private String deviceModel;
+    @ApiModelProperty(value = "the location guid", example = "39a35764-5134-4003-8f1e-400959631618", position = 2)
     private String locationGuid;
-    @ApiModelProperty(value = "the location name of device", example = "br_sp", position = 4)
+    @ApiModelProperty(value = "the location name", example = "kitchen", position = 3)
     private String locationName;
+    @ApiModelProperty(value = "json config", example = "{ 'code' : '670b6c9f2580' }", position = 4)
     private Object json;
 
     public DeviceConfigVO(DeviceConfig deviceConfig) {
