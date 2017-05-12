@@ -161,7 +161,10 @@ public class DeviceConfigSetupServiceImpl implements DeviceConfigSetupService {
 
         deviceConfigSetupRepository.save(deviceConfigSetupNew);
 
-        return ServiceResponseBuilder.<DeviceConfigSetup>ok().withResult(deviceConfigSetupNew).build();
+        return ServiceResponseBuilder.<DeviceConfigSetup>ok()
+                                     .withResult(deviceConfigSetupNew)
+                                     .withMessage(Messages.DEVICE_CONFIG_REMOVED_SUCCESSFULLY.getCode())
+                                     .build();
 
     }
 

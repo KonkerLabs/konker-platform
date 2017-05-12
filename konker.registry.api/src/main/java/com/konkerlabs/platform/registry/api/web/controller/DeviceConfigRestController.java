@@ -7,7 +7,6 @@ import java.util.Set;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,8 +30,8 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.DeviceConfigSetupService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
 import com.konkerlabs.platform.registry.business.services.api.LocationService;
-import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.mongodb.util.JSON;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -42,7 +41,7 @@ import io.swagger.annotations.ApiParam;
 @Scope("request")
 @RequestMapping(value = "/{application}/deviceConfigs")
 @Api(tags = "device configs")
-public class DeviceConfigController extends AbstractRestController implements InitializingBean {
+public class DeviceConfigRestController extends AbstractRestController implements InitializingBean {
 
     @Autowired
     private DeviceConfigSetupService deviceConfigSetupService;
@@ -84,8 +83,7 @@ public class DeviceConfigController extends AbstractRestController implements In
     public Object read(
             @PathVariable("application") String applicationId,
             @PathVariable("deviceModelName") String deviceModelName,
-            @PathVariable("locationName") String locationName,
-            @PathVariable("restDestinationGuid") String restDestinationGuid) throws BadServiceResponseException, NotFoundResponseException {
+            @PathVariable("locationName") String locationName) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
@@ -97,7 +95,7 @@ public class DeviceConfigController extends AbstractRestController implements In
         if (!restDestinationResponse.isOk()) {
             throw new NotFoundResponseException(user, restDestinationResponse);
         } else {
-            return restDestinationResponse.getResult();
+            return JSON.parse(restDestinationResponse.getResult());
         }
 
     }
@@ -172,7 +170,7 @@ public class DeviceConfigController extends AbstractRestController implements In
         ServiceResponse<DeviceConfigSetup> restDestinationResponse = deviceConfigSetupService.remove(tenant, application, deviceModel, location);
 
         if (!restDestinationResponse.isOk()) {
-            if (restDestinationResponse.getResponseMessages().containsKey(RestDestinationService.Validations.DESTINATION_NOT_FOUND.getCode())) {
+            if (restDestinationResponse.getResponseMessages().containsKey(DeviceConfigSetupService.Validations.DEVICE_CONFIG_NOT_FOUND.getCode())) {
                 throw new NotFoundResponseException(user, restDestinationResponse);
             } else {
                 throw new BadServiceResponseException(user, restDestinationResponse, validationsCode);
@@ -229,10 +227,9 @@ public class DeviceConfigController extends AbstractRestController implements In
             validationsCode.add(value.getCode());
         }
 
-        for (RestDestinationService.Validations value : RestDestinationService.Validations.values()) {
+        for (DeviceConfigSetupService.Validations value : DeviceConfigSetupService.Validations.values()) {
             validationsCode.add(value.getCode());
         }
-
     }
 
 }

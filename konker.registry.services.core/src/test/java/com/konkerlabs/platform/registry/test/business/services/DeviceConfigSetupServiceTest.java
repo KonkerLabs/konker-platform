@@ -4,6 +4,7 @@ import static com.konkerlabs.platform.registry.business.model.validation.CommonV
 import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
 import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.isResponseOk;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.rules.ExpectedException.none;
@@ -37,6 +38,7 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceConfigSetupS
 import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
 import com.konkerlabs.platform.registry.business.services.api.LocationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.DeviceConfigSetupService.Messages;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
@@ -300,7 +302,8 @@ public class DeviceConfigSetupServiceTest extends BusinessLayerTestSupport {
     @Test
     public void shouldRemove() {
         ServiceResponse<DeviceConfigSetup> response = subject.remove(tenant, application, deviceModel1, location1);
-        assertThat(response, isResponseOk());
+        assertThat(response.isOk(), is(true));
+        assertThat(response.getResponseMessages(), hasEntry(Messages.DEVICE_CONFIG_REMOVED_SUCCESSFULLY.getCode(), null));
 
         ServiceResponse<List<DeviceConfig>> responseConfigs = subject.findAll(tenant, application);
         assertThat(responseConfigs, isResponseOk());
