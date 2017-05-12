@@ -218,6 +218,29 @@ public class DeviceConfigSetupServiceTest extends BusinessLayerTestSupport {
       assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
     }
 
+    // ============================== findAllByModel ==============================//
+
+    @Test
+    public void shouldListFindAllByModel() {
+        ServiceResponse<List<DeviceConfig>> response = subject.findAllByDeviceModel(tenant, application, deviceModel1);
+        assertThat(response, isResponseOk());
+        assertThat(response.getResult(), notNullValue());
+        assertThat(response.getResult().size(), is(2));
+        assertThat(response.getResult().get(0).getJson(), is(json1));
+        assertThat(response.getResult().get(1).getJson(), is(json2));
+    }
+
+    // ============================== findAllByLocation ==============================//
+
+    @Test
+    public void shouldListFindAllByLocation() {
+        ServiceResponse<List<DeviceConfig>> response = subject.findAllByLocation(tenant, application, location1);
+        assertThat(response, isResponseOk());
+        assertThat(response.getResult(), notNullValue());
+        assertThat(response.getResult().size(), is(1));
+        assertThat(response.getResult().get(0).getJson(), is(json1));
+    }
+
     // ============================== save ==============================//
 
     @Test

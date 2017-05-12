@@ -45,6 +45,8 @@ public interface DeviceConfigSetupService {
     }
 
     ServiceResponse<List<DeviceConfig>> findAll(Tenant tenant, Application application);
+    ServiceResponse<List<DeviceConfig>> findAllByDeviceModel(Tenant tenant, Application application, DeviceModel model);
+    ServiceResponse<List<DeviceConfig>> findAllByLocation(Tenant tenant, Application application, Location location);
 
     ServiceResponse<String> findByModelAndLocation(Tenant tenant, Application application, DeviceModel model, Location location);
 

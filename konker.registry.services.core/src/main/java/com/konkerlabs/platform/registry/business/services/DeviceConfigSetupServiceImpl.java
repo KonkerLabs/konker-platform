@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -279,6 +280,61 @@ public class DeviceConfigSetupServiceImpl implements DeviceConfigSetupService {
         }
 
         return null;
+    }
+
+    @Override
+    public ServiceResponse<List<DeviceConfig>> findAllByDeviceModel(Tenant tenant, Application application, DeviceModel deviceModel) {
+
+        if (!Optional.ofNullable(tenant).isPresent()) {
+            return ServiceResponseBuilder.<List<DeviceConfig>>error()
+                    .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
+        }
+
+        if (!Optional.ofNullable(application).isPresent()) {
+            return ServiceResponseBuilder.<List<DeviceConfig>>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()).build();
+        }
+
+        if (!Optional.ofNullable(deviceModel).isPresent() || !Optional.ofNullable(deviceModel.getGuid()).isPresent()) {
+            return ServiceResponseBuilder.<List<DeviceConfig>>error()
+                    .withMessage(DeviceModelService.Validations.DEVICE_MODEL_NULL.getCode()).build();
+        }
+
+        return ServiceResponseBuilder.<List<DeviceConfig>>ok()
+                .withResult(getDeviveConfis(tenant, application)
+                                .stream()
+                                .filter(p -> p.getDeviceModelGuid().equals(deviceModel.getGuid()))
+                                .collect(Collectors.toList()))
+                .build();
+
+    }
+
+    @Override
+    public ServiceResponse<List<DeviceConfig>> findAllByLocation(Tenant tenant, Application application,
+            Location location) {
+
+        if (!Optional.ofNullable(tenant).isPresent()) {
+            return ServiceResponseBuilder.<List<DeviceConfig>>error()
+                    .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
+        }
+
+        if (!Optional.ofNullable(application).isPresent()) {
+            return ServiceResponseBuilder.<List<DeviceConfig>>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()).build();
+        }
+
+        if (!Optional.ofNullable(location).isPresent() || !Optional.ofNullable(location.getGuid()).isPresent()) {
+            return ServiceResponseBuilder.<List<DeviceConfig>>error()
+                    .withMessage(LocationService.Validations.LOCATION_GUID_NULL.getCode()).build();
+        }
+
+        return ServiceResponseBuilder.<List<DeviceConfig>>ok()
+                .withResult(getDeviveConfis(tenant, application)
+                                .stream()
+                                .filter(p -> p.getLocationGuid().equals(location.getGuid()))
+                                .collect(Collectors.toList()))
+                .build();
+
     };
 
 }
