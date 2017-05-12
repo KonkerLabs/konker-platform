@@ -457,7 +457,7 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
     public void shouldFindRootWithoutRoot() {
         ServiceResponse<Location> response = subject.findRoot(tenant, otherApplication);
         assertThat(response.isOk(), is(true));
-        assertThat(response.getResult().getName(), is("root"));
+        assertThat(response.getResult().getName(), is("default"));
         assertThat(response.getResult().getParent(), nullValue());
     }
 
@@ -480,7 +480,7 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
     public void shouldFindDefaultWithoutRoot() {
         ServiceResponse<Location> response = subject.findDefault(tenant, otherApplication);
         assertThat(response.isOk(), is(true));
-        assertThat(response.getResult().getName(), is("root"));
+        assertThat(response.getResult().getName(), is("default"));
         assertThat(response.getResult().getParent(), nullValue());
     }
 

@@ -76,7 +76,9 @@ public class DeviceConfigSetupServiceTest extends BusinessLayerTestSupport {
     private Application otherApplication;
 
     private DeviceModel deviceModel1;
+    private Location locationParent;
     private Location location1;
+    private Location location11;
     private Location location2;
     private Location location3;
 
@@ -101,19 +103,38 @@ public class DeviceConfigSetupServiceTest extends BusinessLayerTestSupport {
                                  .build();
         deviceModelRepository.save(deviceModel1);
 
+        locationParent = Location.builder()
+                .tenant(tenant)
+                .application(application)
+                .name("house")
+                .guid("26c4f3a1-9b86-447b-b5ec-711739de639b")
+                .build();
+        locationRepository.save(locationParent);
+
         location1 = Location.builder()
                             .tenant(tenant)
                             .application(application)
                             .name("room")
                             .guid("a82851c2-2319-4076-9046-c5882ce59e9d")
+                            .parent(locationParent)
                             .build();
         locationRepository.save(location1);
+
+        location11 = Location.builder()
+                             .tenant(tenant)
+                             .application(application)
+                             .name("room-table")
+                             .guid("0fc5760b-0618-4b55-a326-320309548316")
+                             .parent(location1)
+                             .build();
+        locationRepository.save(location11);
 
         location2 = Location.builder()
                             .tenant(tenant)
                             .application(application)
                             .name("kitchen")
                             .guid("8ca90ff1-5fe0-459f-aa9f-338581642584")
+                            .parent(locationParent)
                             .build();
         locationRepository.save(location2);
 
@@ -122,6 +143,7 @@ public class DeviceConfigSetupServiceTest extends BusinessLayerTestSupport {
                             .application(application)
                             .name("garage")
                             .guid("e179cc28-8241-48e8-8487-2234d2b5fc9a")
+                            .parent(locationParent)
                             .build();
         locationRepository.save(location3);
 
@@ -323,6 +345,13 @@ public class DeviceConfigSetupServiceTest extends BusinessLayerTestSupport {
     public void shouldTryFindByModelAndLocationNonExistingConfig() {
         ServiceResponse<String> response = subject.findByModelAndLocation(tenant, application, deviceModel1, location3);
         assertThat(response, hasErrorMessage(DeviceConfigSetupService.Validations.DEVICE_CONFIG_NOT_FOUND.getCode()));
+    }
+
+    @Test
+    public void shouldTryFindByModelAndLocationOnlyParentConfig() {
+        ServiceResponse<String> response = subject.findByModelAndLocation(tenant, application, deviceModel1, location11);
+        assertThat(response, isResponseOk());
+        assertThat(response.getResult(), is(json1));
     }
 
     @Test

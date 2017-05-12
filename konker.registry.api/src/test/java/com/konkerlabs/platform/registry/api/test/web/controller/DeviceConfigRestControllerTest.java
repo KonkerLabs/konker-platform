@@ -83,7 +83,7 @@ public class DeviceConfigRestControllerTest extends WebLayerTestContext {
 
     private String json;
 
-    private String BASEPATH = "deviceConfigs";
+    private String BASEPATH = "configs";
 
     @Before
     public void setUp() {

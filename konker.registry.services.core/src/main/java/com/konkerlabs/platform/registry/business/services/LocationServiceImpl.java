@@ -36,7 +36,7 @@ public class LocationServiceImpl implements LocationService {
 
     private Logger LOGGER = LoggerFactory.getLogger(LocationServiceImpl.class);
 
-    private static final String DEFAULT_ROOT_NAME = "root";
+    private static final String DEFAULT_ROOT_NAME = "default";
 
     @Autowired
     private LocationRepository locationRepository;

@@ -36,6 +36,9 @@ public class DeviceConfigSetupServiceImpl implements DeviceConfigSetupService {
     @Autowired
     private DeviceConfigSetupRepository deviceConfigSetupRepository;
 
+    @Autowired
+    private LocationService locationService;
+
     @Override
     public ServiceResponse<List<DeviceConfig>> findAll(Tenant tenant, Application application) {
 
@@ -180,7 +183,23 @@ public class DeviceConfigSetupServiceImpl implements DeviceConfigSetupService {
         DeviceConfigSetup deviceConfigSetupDB = getCurrentConfigSetup(tenant, application);
         List<DeviceConfig> configs = deviceConfigSetupDB.getConfigs();
 
-        DeviceConfig config = findDeviceConfig(configs, deviceModel, location);
+        ServiceResponse<Location> locationResponse = locationService.findByName(tenant, application, location.getName(), true);
+        if (!locationResponse.isOk()) {
+            return ServiceResponseBuilder.<String>error()
+                    .withMessages(locationResponse.getResponseMessages())
+                    .build();
+        }
+
+        Location locationNode = locationResponse.getResult();
+        DeviceConfig config = null;
+
+        // search for config in location and above locations
+        while (locationNode != null) {
+            if (config == null) {
+                config = findDeviceConfig(configs, deviceModel, locationNode);
+            }
+            locationNode = locationNode.getParent();
+        }
 
         if (config != null) {
             return ServiceResponseBuilder.<String>ok().withResult(config.getJson()).build();

@@ -39,7 +39,7 @@ import io.swagger.annotations.ApiParam;
 
 @RestController
 @Scope("request")
-@RequestMapping(value = "/{application}/deviceConfigs")
+@RequestMapping(value = "/{application}/configs")
 @Api(tags = "device configs")
 public class DeviceConfigRestController extends AbstractRestController implements InitializingBean {
 
