@@ -153,8 +153,11 @@ public class DeviceModelServiceImpl implements DeviceModelService {
 		
 		if (deviceModel.isDefaultModel()) {
 			DeviceModel defaultModel = deviceModelRepository.findDefault(tenant.getId(), application.getName(), true);
-			defaultModel.setDefaultModel(false);
-			deviceModelRepository.save(defaultModel);
+			
+			Optional.ofNullable(defaultModel).ifPresent(def -> {
+				def.setDefaultModel(false);
+				deviceModelRepository.save(def);
+			});
 		}
 
 		List<DeviceModel> allModels = deviceModelRepository.findAllByTenantIdAndApplicationName(tenant.getId(), application.getName());
@@ -342,6 +345,25 @@ public class DeviceModelServiceImpl implements DeviceModelService {
 		
         return ServiceResponseBuilder.<List<Device>>ok()
                 .withResult(devices)
+                .build();
+	}
+
+	@Override
+	public ServiceResponse<DeviceModel> findDefault(Tenant tenant, Application application, boolean defaultModel) {
+		if (!Optional.ofNullable(tenant).isPresent())
+            return ServiceResponseBuilder.<DeviceModel>error()
+                    .withMessage(CommonValidations.TENANT_NULL.getCode())
+                    .build();
+
+        if (!Optional.ofNullable(application).isPresent())
+            return ServiceResponseBuilder.<DeviceModel>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode())
+                    .build();
+
+        DeviceModel deviceModelDefault = deviceModelRepository.findDefault(tenant.getId(), application.getName(), defaultModel);
+        
+        return ServiceResponseBuilder.<DeviceModel>ok()
+                .withResult(deviceModelDefault)
                 .build();
 	}
 

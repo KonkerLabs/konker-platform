@@ -410,4 +410,29 @@ public class DeviceModelServiceTest extends BusinessLayerTestSupport {
     	assertThat(response.getResult(), hasSize(2));
     }
     
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/device-model.json"})
+    public void shouldReturnErrorGetDefaultModelByTenantNull() throws Exception {
+    	ServiceResponse<DeviceModel> response = deviceModelService.findDefault(null, application, true);
+    	
+    	assertThat(response, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
+    }
+    
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/device-model.json"})
+    public void shouldReturnErrorGetDefaultModelByAppNUll() throws Exception {
+    	ServiceResponse<DeviceModel> response = deviceModelService.findDefault(currentTenant, null, true);
+    	
+    	assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
+    }
+    
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/device-model.json"})
+    public void shouldGetDefaultModel() throws Exception {
+    	ServiceResponse<DeviceModel> response = deviceModelService.findDefault(currentTenant, application, true);
+    	
+    	assertThat(response, isResponseOk());
+    	assertThat(response.getResult(), equalTo(deviceModel));
+    }
+    
 }
