@@ -19,6 +19,7 @@ import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.events.api.EventRepository;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.LocationSearchService;
 import com.konkerlabs.platform.registry.business.services.api.LocationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
@@ -74,7 +75,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
     private EventRepository eventRepository;
 
     @Autowired
-    private LocationService locationService;
+    private LocationSearchService locationSearchService;
 
     @PostConstruct
     public void init() {
@@ -154,7 +155,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         }
 
         if (device.getLocation() == null) {
-            ServiceResponse<Location> locationResponse = locationService.findDefault(tenant, application);
+            ServiceResponse<Location> locationResponse = locationSearchService.findDefault(tenant, application);
             if (locationResponse.isOk()) {
                 device.setLocation(locationResponse.getResult());
             } else {
@@ -335,7 +336,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         }
 
         if (updatingDevice.getLocation() == null) {
-            ServiceResponse<Location> locationResponse = locationService.findDefault(tenant, application);
+            ServiceResponse<Location> locationResponse = locationSearchService.findDefault(tenant, application);
             if (locationResponse.isOk()) {
                 updatingDevice.setLocation(locationResponse.getResult());
             } else {

@@ -29,6 +29,7 @@ import com.konkerlabs.platform.registry.business.model.RestDestination.Validatio
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.DeviceConfigSetupService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
+import com.konkerlabs.platform.registry.business.services.api.LocationSearchService;
 import com.konkerlabs.platform.registry.business.services.api.LocationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.mongodb.util.JSON;
@@ -47,7 +48,7 @@ public class DeviceConfigRestController extends AbstractRestController implement
     private DeviceConfigSetupService deviceConfigSetupService;
 
     @Autowired
-    private LocationService locationService;
+    private LocationSearchService locationSearchService;
 
     @Autowired
     private DeviceModelService deviceModelService;
@@ -181,7 +182,7 @@ public class DeviceConfigRestController extends AbstractRestController implement
 
     private Location getLocation(Tenant tenant, Application application, String locationName) throws BadServiceResponseException, NotFoundResponseException {
 
-        ServiceResponse<Location> applicationResponse = locationService.findByName(tenant, application, locationName, false);
+        ServiceResponse<Location> applicationResponse = locationSearchService.findByName(tenant, application, locationName, false);
         if (!applicationResponse.isOk()) {
             if (applicationResponse.getResponseMessages().containsKey(LocationService.Messages.LOCATION_NOT_FOUND.getCode())) {
                 throw new NotFoundResponseException(user, applicationResponse);

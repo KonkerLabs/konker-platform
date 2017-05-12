@@ -24,6 +24,7 @@ import com.konkerlabs.platform.registry.business.repositories.DeviceConfigSetupR
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceConfigSetupService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
+import com.konkerlabs.platform.registry.business.services.api.LocationSearchService;
 import com.konkerlabs.platform.registry.business.services.api.LocationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
@@ -38,7 +39,7 @@ public class DeviceConfigSetupServiceImpl implements DeviceConfigSetupService {
     private DeviceConfigSetupRepository deviceConfigSetupRepository;
 
     @Autowired
-    private LocationService locationService;
+    private LocationSearchService locationSearchService;
 
     @Override
     public ServiceResponse<List<DeviceConfig>> findAll(Tenant tenant, Application application) {
@@ -184,7 +185,7 @@ public class DeviceConfigSetupServiceImpl implements DeviceConfigSetupService {
         DeviceConfigSetup deviceConfigSetupDB = getCurrentConfigSetup(tenant, application);
         List<DeviceConfig> configs = deviceConfigSetupDB.getConfigs();
 
-        ServiceResponse<Location> locationResponse = locationService.findByName(tenant, application, location.getName(), true);
+        ServiceResponse<Location> locationResponse = locationSearchService.findByName(tenant, application, location.getName(), true);
         if (!locationResponse.isOk()) {
             return ServiceResponseBuilder.<String>error()
                     .withMessages(locationResponse.getResponseMessages())

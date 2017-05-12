@@ -41,6 +41,7 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceConfigSetupService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
+import com.konkerlabs.platform.registry.business.services.api.LocationSearchService;
 import com.konkerlabs.platform.registry.business.services.api.LocationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 
@@ -73,7 +74,7 @@ public class DeviceConfigRestControllerTest extends WebLayerTestContext {
     private DeviceModelService deviceModelService;
 
     @Autowired
-    private LocationService locationService;
+    private LocationSearchService locationSearchService;
 
     private DeviceModel deviceModel;
 
@@ -118,7 +119,7 @@ public class DeviceConfigRestControllerTest extends WebLayerTestContext {
         when(deviceModelService.getByTenantIdApplicationNameAndName(tenant, application, deviceModel.getName()))
             .thenReturn(ServiceResponseBuilder.<DeviceModel> ok().withResult(deviceModel).build());
 
-        when(locationService.findByName(tenant, application, location.getName(), false))
+        when(locationSearchService.findByName(tenant, application, location.getName(), false))
             .thenReturn(ServiceResponseBuilder.<Location> ok().withResult(location).build());
 
     }
@@ -230,7 +231,7 @@ public class DeviceConfigRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldReadWithWrongLocation() throws Exception {
 
-        when(locationService.findByName(tenant, application, NONEXIST_APPLICATION_NANE, false))
+        when(locationSearchService.findByName(tenant, application, NONEXIST_APPLICATION_NANE, false))
             .thenReturn(ServiceResponseBuilder.<Location> error()
                     .withMessage(LocationService.Messages.LOCATION_NOT_FOUND.getCode())
                     .withResult(location)

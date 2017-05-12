@@ -3,7 +3,6 @@ package com.konkerlabs.platform.registry.business.services.api;
 import java.util.List;
 
 import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Location;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 
@@ -16,7 +15,8 @@ public interface LocationService {
 		LOCATION_PARENT_NULL("service.location.parent_null"),
 		LOCATION_PARENT_NOT_FOUND("service.location.parent_not_found"),
 		LOCATION_HAVE_DEVICES("service.location.have_devices"),
-		LOCATION_HAVE_CHILDRENS("service.location.have_childrens")
+		LOCATION_HAVE_CHILDRENS("service.location.have_device_configs"),
+		LOCATION_HAVE_DEVICE_CONFIGS("service.location.have_configs")
 		;
 
 		public String getCode() {
@@ -49,16 +49,8 @@ public interface LocationService {
 
     }
 
-    ServiceResponse<Location> findRoot(Tenant tenant, Application application);
-    ServiceResponse<Location> findDefault(Tenant tenant, Application application);
-    ServiceResponse<Location> findByName(Tenant tenant, Application application, String locationName, boolean loadTree);
-    ServiceResponse<Location> findByGuid(Tenant tenant, Application application, String locationName);
-
     ServiceResponse<Location> save(Tenant tenant, Application application, Location location);
 	ServiceResponse<Location> update(Tenant tenant, Application application, String guid, Location location);
 	ServiceResponse<Location> remove(Tenant tenant, Application application, String guid);
-	ServiceResponse<List<Location>> findAll(Tenant tenant, Application application);
-
-    ServiceResponse<List<Device>> listDevicesByLocationName(Tenant tenant, Application application, String locationName);
 
 }
