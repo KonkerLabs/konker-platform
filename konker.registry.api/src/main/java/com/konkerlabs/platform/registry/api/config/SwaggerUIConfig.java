@@ -11,6 +11,7 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 import com.google.common.collect.Ordering;
+import com.google.common.collect.Sets;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
@@ -58,6 +59,7 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
                 .apis(RequestHandlerSelectors.withClassAnnotation(RestController.class))
                 .paths(PathSelectors.any())
                 .build()
+                .protocols(Sets.newHashSet("https"))
                 .apiInfo(apiInfo())
                 .securitySchemes(newArrayList(securitySchema()))
                 .securityContexts(newArrayList(securityContext()))

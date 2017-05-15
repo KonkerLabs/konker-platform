@@ -38,7 +38,7 @@ import com.konkerlabs.platform.registry.business.model.Location;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.LocationService;
+import com.konkerlabs.platform.registry.business.services.api.LocationSearchService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -58,7 +58,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     private DeviceRegisterService deviceRegisterService;
 
     @Autowired
-    private LocationService locationService;
+    private LocationSearchService locationSearchService;
 
     @Autowired
     private ApplicationService applicationService;
@@ -82,7 +82,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
         device1 = Device.builder().deviceId("id1").name("name1").guid("guid1").location(locationBR).application(application).active(true).build();
         device2 = Device.builder().deviceId("id2").name("name2").guid("guid2").location(locationBR).application(application).active(false).build();
 
-        when(locationService.findByName(tenant, application, "br", false))
+        when(locationSearchService.findByName(tenant, application, "br", false))
             .thenReturn(ServiceResponseBuilder.<Location>ok().withResult(locationBR).build());
 
     }

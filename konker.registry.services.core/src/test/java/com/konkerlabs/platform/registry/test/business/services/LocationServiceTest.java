@@ -28,6 +28,7 @@ import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.LocationRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
+import com.konkerlabs.platform.registry.business.services.api.LocationSearchService;
 import com.konkerlabs.platform.registry.business.services.api.LocationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
@@ -44,7 +45,10 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
     public ExpectedException thrown = none();
 
     @Autowired
-    private LocationService subject;
+    private LocationService locationService;
+
+    @Autowired
+    private LocationSearchService locationSearchService;
 
     @Autowired
     private LocationRepository locationRepository;
@@ -75,7 +79,7 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldListFindAll() {
-        ServiceResponse<List<Location>> response = subject.findAll(tenant, application);
+        ServiceResponse<List<Location>> response = locationSearchService.findAll(tenant, application);
         assertThat(response, isResponseOk());
         assertThat(response.getResult(), notNullValue());
         assertThat(response.getResult().size(), is(4));
@@ -87,13 +91,13 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldListFindAllWithNullTenant() {
-        ServiceResponse<List<Location>> response = subject.findAll(null, null);
+        ServiceResponse<List<Location>> response = locationSearchService.findAll(null, null);
         assertThat(response, hasErrorMessage(TENANT_NULL.getCode()));
     }
 
     @Test
     public void shouldListFindAllWithNullApplication() {
-        ServiceResponse<List<Location>> response = subject.findAll(tenant, null);
+        ServiceResponse<List<Location>> response = locationSearchService.findAll(tenant, null);
         assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
     }
 
@@ -101,25 +105,25 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldUpdateWithNullTenant() {
-        ServiceResponse<Location> response = subject.update(null, null, null, null);
+        ServiceResponse<Location> response = locationService.update(null, null, null, null);
         assertThat(response, hasErrorMessage(TENANT_NULL.getCode()));
     }
 
     @Test
     public void shouldUpdateWithNullApplication() {
-        ServiceResponse<Location> response = subject.update(tenant, null, null, null);
+        ServiceResponse<Location> response = locationService.update(tenant, null, null, null);
         assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
     }
 
     @Test
     public void shouldUpdateWithNullGuid() {
-        ServiceResponse<Location> response = subject.update(tenant, application, null, null);
+        ServiceResponse<Location> response = locationService.update(tenant, application, null, null);
         assertThat(response, hasErrorMessage(LocationService.Validations.LOCATION_GUID_NULL.getCode()));
     }
 
     @Test
     public void shouldUpdateWithNullObject() {
-        ServiceResponse<Location> response = subject.update(tenant, application, "71fb0d48-674b-4f64-a3e5-0256ff3a63af", null);
+        ServiceResponse<Location> response = locationService.update(tenant, application, "71fb0d48-674b-4f64-a3e5-0256ff3a63af", null);
         assertThat(response, hasErrorMessage(CommonValidations.RECORD_NULL.getCode()));
     }
 
@@ -131,7 +135,7 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
                                        .defaultLocation(false)
                                        .build();
 
-        ServiceResponse<Location> response = subject.update(tenant, application, "71fb0d48-674b-4f64-a3e5-0256ff3a63af", newLocation);
+        ServiceResponse<Location> response = locationService.update(tenant, application, "71fb0d48-674b-4f64-a3e5-0256ff3a63af", newLocation);
         assertThat(response, hasErrorMessage(LocationService.Validations.LOCATION_GUID_DOES_NOT_EXIST.getCode()));
 
     }
@@ -144,7 +148,7 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
                                        .defaultLocation(false)
                                        .build();
 
-        ServiceResponse<Location> response = subject.update(tenant, application, "d75758a6-235b-413b-85b3-d218404f8c11", newLocation);
+        ServiceResponse<Location> response = locationService.update(tenant, application, "d75758a6-235b-413b-85b3-d218404f8c11", newLocation);
         assertThat(response, hasErrorMessage(Location.Validations.NAME_NULL_EMPTY.getCode()));
     }
 
@@ -156,7 +160,7 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
                                        .defaultLocation(false)
                                        .build();
 
-        ServiceResponse<Location> response = subject.update(tenant, application, "8f07f5e4-b411-45d4-90b5-a5228f7e0361", newLocation);
+        ServiceResponse<Location> response = locationService.update(tenant, application, "8f07f5e4-b411-45d4-90b5-a5228f7e0361", newLocation);
         assertThat(response, hasErrorMessage(LocationService.Validations.LOCATION_NAME_ALREADY_REGISTERED.getCode()));
     }
 
@@ -168,13 +172,13 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
                                        .defaultLocation(false)
                                        .build();
 
-        ServiceResponse<Location> response = subject.update(tenant, application, "8f07f5e4-b411-45d4-90b5-a5228f7e0361", newLocation);
+        ServiceResponse<Location> response = locationService.update(tenant, application, "8f07f5e4-b411-45d4-90b5-a5228f7e0361", newLocation);
         assertThat(response, hasErrorMessage(LocationService.Validations.LOCATION_PARENT_NULL.getCode()));
     }
 
     @Test
     public void shouldUpdateWithNewDefault() {
-        Location parent = subject.findByName(tenant, application, "sp", false).getResult();
+        Location parent = locationSearchService.findByName(tenant, application, "sp", false).getResult();
         assertThat(parent.isDefaultLocation(), is(true));
 
         Location newLocation = Location.builder()
@@ -184,7 +188,7 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
                 .defaultLocation(true)
                 .build();
 
-        ServiceResponse<Location> response = subject.update(tenant, application, "d75758a6-235b-413b-85b3-d218404f8c11", newLocation);
+        ServiceResponse<Location> response = locationService.update(tenant, application, "d75758a6-235b-413b-85b3-d218404f8c11", newLocation);
         assertThat(response.isOk(), is(true));
         assertThat(response.getResponseMessages(), hasEntry(LocationService.Messages.LOCATION_REGISTERED_SUCCESSFULLY.getCode(), null));
 
@@ -193,13 +197,13 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
         assertThat(response.getResult().getParent().getName(), is("sp"));
         assertThat(response.getResult().isDefaultLocation(), is(true));
 
-        parent = subject.findByName(tenant, application, "sp", false).getResult();
+        parent = locationSearchService.findByName(tenant, application, "sp", false).getResult();
         assertThat(parent.isDefaultLocation(), is(false));
     }
 
     @Test
     public void shouldUpdate() {
-        Location parent = subject.findByName(tenant, application, "sp", false).getResult();
+        Location parent = locationSearchService.findByName(tenant, application, "sp", false).getResult();
 
         Location newLocation = Location.builder()
                                        .parent(parent)
@@ -208,7 +212,7 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
                                        .defaultLocation(false)
                                        .build();
 
-        ServiceResponse<Location> response = subject.update(tenant, application, "d75758a6-235b-413b-85b3-d218404f8c11", newLocation);
+        ServiceResponse<Location> response = locationService.update(tenant, application, "d75758a6-235b-413b-85b3-d218404f8c11", newLocation);
         assertThat(response.isOk(), is(true));
         assertThat(response.getResponseMessages(), hasEntry(LocationService.Messages.LOCATION_REGISTERED_SUCCESSFULLY.getCode(), null));
 
@@ -222,19 +226,19 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldSaveWithNullTenant() {
-        ServiceResponse<Location> response = subject.save(null, null, null);
+        ServiceResponse<Location> response = locationService.save(null, null, null);
         assertThat(response, hasErrorMessage(TENANT_NULL.getCode()));
     }
 
     @Test
     public void shouldSaveWithNullApplication() {
-        ServiceResponse<Location> response = subject.save(tenant, null, null);
+        ServiceResponse<Location> response = locationService.save(tenant, null, null);
         assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
     }
 
     @Test
     public void shouldSaveWithNullObject() {
-        ServiceResponse<Location> response = subject.save(tenant, application, null);
+        ServiceResponse<Location> response = locationService.save(tenant, application, null);
         assertThat(response, hasErrorMessage(CommonValidations.RECORD_NULL.getCode()));
     }
 
@@ -246,7 +250,7 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
                                        .defaultLocation(false)
                                        .build();
 
-        ServiceResponse<Location> response = subject.save(tenant, application, newLocation);
+        ServiceResponse<Location> response = locationService.save(tenant, application, newLocation);
         assertThat(response, hasErrorMessage(Location.Validations.NAME_NULL_EMPTY.getCode()));
     }
 
@@ -258,7 +262,7 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
                                        .defaultLocation(false)
                                        .build();
 
-        ServiceResponse<Location> response = subject.save(tenant, application, newLocation);
+        ServiceResponse<Location> response = locationService.save(tenant, application, newLocation);
         assertThat(response, hasErrorMessage(Location.Validations.NAME_INVALID.getCode()));
 
         newLocation = Location.builder()
@@ -267,7 +271,7 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
                 .defaultLocation(false)
                 .build();
 
-        response = subject.save(tenant, application, newLocation);
+        response = locationService.save(tenant, application, newLocation);
         assertThat(response, hasErrorMessage(Location.Validations.NAME_INVALID.getCode()));
 
         newLocation = Location.builder()
@@ -276,7 +280,7 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
                 .defaultLocation(false)
                 .build();
 
-        response = subject.save(tenant, application, newLocation);
+        response = locationService.save(tenant, application, newLocation);
         assertThat(response, hasErrorMessage(Location.Validations.NAME_INVALID.getCode()));
 
         newLocation = Location.builder()
@@ -285,7 +289,7 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
                 .defaultLocation(false)
                 .build();
 
-        response = subject.save(tenant, application, newLocation);
+        response = locationService.save(tenant, application, newLocation);
         assertThat(response, hasErrorMessage(LocationService.Validations.LOCATION_PARENT_NULL.getCode()));
     }
 
@@ -296,7 +300,7 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
                                        .defaultLocation(false)
                                        .build();
 
-        ServiceResponse<Location> response = subject.save(tenant, application, newLocation);
+        ServiceResponse<Location> response = locationService.save(tenant, application, newLocation);
         assertThat(response, hasErrorMessage(LocationService.Validations.LOCATION_NAME_ALREADY_REGISTERED.getCode()));
     }
 
@@ -308,13 +312,13 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
                                        .defaultLocation(false)
                                        .build();
 
-        ServiceResponse<Location> response = subject.save(tenant, application, newLocation);
+        ServiceResponse<Location> response = locationService.save(tenant, application, newLocation);
         assertThat(response, hasErrorMessage(LocationService.Validations.LOCATION_PARENT_NULL.getCode()));
     }
 
     @Test
     public void shouldSaveWithNewDefault() {
-        Location parent = subject.findByName(tenant, application, "sp", false).getResult();
+        Location parent = locationSearchService.findByName(tenant, application, "sp", false).getResult();
         assertThat(parent.isDefaultLocation(), is(true));
 
         Location newLocation = Location.builder()
@@ -324,7 +328,7 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
                                        .defaultLocation(true)
                                        .build();
 
-        ServiceResponse<Location> response = subject.save(tenant, application, newLocation);
+        ServiceResponse<Location> response = locationService.save(tenant, application, newLocation);
         assertThat(response.isOk(), is(true));
         assertThat(response.getResponseMessages(), hasEntry(LocationService.Messages.LOCATION_REGISTERED_SUCCESSFULLY.getCode(), null));
 
@@ -334,13 +338,13 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
         assertThat(response.getResult().getParent().getName(), is("sp"));
         assertThat(response.getResult().isDefaultLocation(), is(true));
 
-        parent = subject.findByName(tenant, application, "sp", false).getResult();
+        parent = locationSearchService.findByName(tenant, application, "sp", false).getResult();
         assertThat(parent.isDefaultLocation(), is(false));
     }
 
     @Test
     public void shouldSave() {
-        Location parent = subject.findByName(tenant, application, "sp", false).getResult();
+        Location parent = locationSearchService.findByName(tenant, application, "sp", false).getResult();
 
         Location newLocation = Location.builder()
                                        .parent(parent)
@@ -349,7 +353,7 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
                                        .defaultLocation(false)
                                        .build();
 
-        ServiceResponse<Location> response = subject.save(tenant, application, newLocation);
+        ServiceResponse<Location> response = locationService.save(tenant, application, newLocation);
         assertThat(response.isOk(), is(true));
         assertThat(response.getResponseMessages(), hasEntry(LocationService.Messages.LOCATION_REGISTERED_SUCCESSFULLY.getCode(), null));
 
@@ -364,31 +368,31 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldRemoveWithNullTenant() {
-        ServiceResponse<Location> response = subject.remove(null, null, null);
+        ServiceResponse<Location> response = locationService.remove(null, null, null);
         assertThat(response, hasErrorMessage(TENANT_NULL.getCode()));
     }
 
     @Test
     public void shouldRemoveWithNullApplication() {
-        ServiceResponse<Location> response = subject.remove(tenant, null, null);
+        ServiceResponse<Location> response = locationService.remove(tenant, null, null);
         assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
     }
 
     @Test
     public void shouldRemoveWithNullGuid() {
-        ServiceResponse<Location> response = subject.remove(tenant, application, null);
+        ServiceResponse<Location> response = locationService.remove(tenant, application, null);
         assertThat(response, hasErrorMessage(LocationService.Validations.LOCATION_GUID_NULL.getCode()));
     }
 
     @Test
     public void shouldRemoveWithNonExistingGuid() {
-        ServiceResponse<Location> response = subject.remove(tenant, application, "591200ea9061e67cb2228f85");
+        ServiceResponse<Location> response = locationService.remove(tenant, application, "591200ea9061e67cb2228f85");
         assertThat(response, hasErrorMessage(LocationService.Validations.LOCATION_GUID_DOES_NOT_EXIST.getCode()));
     }
 
     @Test
     public void shouldTryToRemoveWithSubLocations() {
-        ServiceResponse<Location> response = subject.remove(tenant, application, "d75758a6-235b-413b-85b3-d218404f8c11");
+        ServiceResponse<Location> response = locationService.remove(tenant, application, "d75758a6-235b-413b-85b3-d218404f8c11");
         assertThat(response, hasErrorMessage(LocationService.Validations.LOCATION_HAVE_CHILDRENS.getCode()));
     }
 
@@ -405,13 +409,13 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
 
         deviceRepository.save(device);
 
-        ServiceResponse<Location> response = subject.remove(tenant, application, "d75758a6-235b-413b-85b3-d218404f8c11");
+        ServiceResponse<Location> response = locationService.remove(tenant, application, "d75758a6-235b-413b-85b3-d218404f8c11");
         assertThat(response, hasErrorMessage(LocationService.Validations.LOCATION_HAVE_DEVICES.getCode()));
     }
 
     @Test
     public void shouldRemove() {
-        ServiceResponse<Location> response = subject.remove(tenant, application, "a14e671f-32d7-4ec0-8006-8d93eeed401c");
+        ServiceResponse<Location> response = locationService.remove(tenant, application, "a14e671f-32d7-4ec0-8006-8d93eeed401c");
         assertThat(response.isOk(), is(true));
         assertThat(response.getResponseMessages(), hasEntry(LocationService.Messages.LOCATION_REMOVED_SUCCESSFULLY.getCode(), null));
 
@@ -422,19 +426,19 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldFindRootWithNullTenant() {
-        ServiceResponse<Location> response = subject.findRoot(null, null);
+        ServiceResponse<Location> response = locationSearchService.findRoot(null, null);
         assertThat(response, hasErrorMessage(TENANT_NULL.getCode()));
     }
 
     @Test
     public void shouldFindRootWithNullApplication() {
-        ServiceResponse<Location> response = subject.findRoot(tenant, null);
+        ServiceResponse<Location> response = locationSearchService.findRoot(tenant, null);
         assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
     }
 
     @Test
     public void shouldFindRoot() {
-        ServiceResponse<Location> response = subject.findRoot(tenant, application);
+        ServiceResponse<Location> response = locationSearchService.findRoot(tenant, application);
         assertThat(response.isOk(), is(true));
         assertThat(response.getResult().getName(), is("br"));
         assertThat(response.getResult().getParent(), nullValue());
@@ -455,9 +459,9 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldFindRootWithoutRoot() {
-        ServiceResponse<Location> response = subject.findRoot(tenant, otherApplication);
+        ServiceResponse<Location> response = locationSearchService.findRoot(tenant, otherApplication);
         assertThat(response.isOk(), is(true));
-        assertThat(response.getResult().getName(), is("root"));
+        assertThat(response.getResult().getName(), is("default"));
         assertThat(response.getResult().getParent(), nullValue());
     }
 
@@ -466,27 +470,27 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldFindDefaultWithNullTenant() {
-        ServiceResponse<Location> response = subject.findDefault(null, null);
+        ServiceResponse<Location> response = locationSearchService.findDefault(null, null);
         assertThat(response, hasErrorMessage(TENANT_NULL.getCode()));
     }
 
     @Test
     public void shouldFindDefaultWithNullApplication() {
-        ServiceResponse<Location> response = subject.findDefault(tenant, null);
+        ServiceResponse<Location> response = locationSearchService.findDefault(tenant, null);
         assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
     }
 
     @Test
     public void shouldFindDefaultWithoutRoot() {
-        ServiceResponse<Location> response = subject.findDefault(tenant, otherApplication);
+        ServiceResponse<Location> response = locationSearchService.findDefault(tenant, otherApplication);
         assertThat(response.isOk(), is(true));
-        assertThat(response.getResult().getName(), is("root"));
+        assertThat(response.getResult().getName(), is("default"));
         assertThat(response.getResult().getParent(), nullValue());
     }
 
     @Test
     public void shouldFindDefault() {
-        ServiceResponse<Location> response = subject.findDefault(tenant, application);
+        ServiceResponse<Location> response = locationSearchService.findDefault(tenant, application);
         assertThat(response.isOk(), is(true));
         assertThat(response.getResult().getName(), is("sp"));
         assertThat(response.getResult().getParent().getName(), is("br"));
@@ -496,31 +500,31 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldFindByNameWithNullTenant() {
-        ServiceResponse<Location> response = subject.findByName(null, null, null, false);
+        ServiceResponse<Location> response = locationSearchService.findByName(null, null, null, false);
         assertThat(response, hasErrorMessage(TENANT_NULL.getCode()));
     }
 
     @Test
     public void shouldFindByNameWithNullApplication() {
-        ServiceResponse<Location> response = subject.findByName(tenant, null, null, false);
+        ServiceResponse<Location> response = locationSearchService.findByName(tenant, null, null, false);
         assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
     }
 
     @Test
     public void shouldFindByNameWithNullName() {
-        ServiceResponse<Location> response = subject.findByName(tenant, application, null, false);
+        ServiceResponse<Location> response = locationSearchService.findByName(tenant, application, null, false);
         assertThat(response, hasErrorMessage(LocationService.Messages.LOCATION_NOT_FOUND.getCode()));
     }
 
     @Test
     public void shouldTryToFindByNameNonExistingName() {
-        ServiceResponse<Location> response = subject.findByName(tenant, application, "br2", false);
+        ServiceResponse<Location> response = locationSearchService.findByName(tenant, application, "br2", false);
         assertThat(response, hasErrorMessage(LocationService.Messages.LOCATION_NOT_FOUND.getCode()));
     }
 
     @Test
     public void shouldFindByNameWithTreeStructure() {
-        ServiceResponse<Location> response = subject.findByName(tenant, application, "rj", true);
+        ServiceResponse<Location> response = locationSearchService.findByName(tenant, application, "rj", true);
         assertThat(response, isResponseOk());
 
         assertThat(response.getResult().getName(), is("rj"));
@@ -531,7 +535,7 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldFindByName() {
-        ServiceResponse<Location> response = subject.findByName(tenant, application, "rj", false);
+        ServiceResponse<Location> response = locationSearchService.findByName(tenant, application, "rj", false);
         assertThat(response, isResponseOk());
 
         assertThat(response.getResult().getName(), is("rj"));
@@ -544,31 +548,31 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldFindByGuidWithNullTenant() {
-        ServiceResponse<Location> response = subject.findByGuid(null, null, null);
+        ServiceResponse<Location> response = locationSearchService.findByGuid(null, null, null);
         assertThat(response, hasErrorMessage(TENANT_NULL.getCode()));
     }
 
     @Test
     public void shouldFindByGuidWithNullApplication() {
-        ServiceResponse<Location> response = subject.findByGuid(tenant, null, null);
+        ServiceResponse<Location> response = locationSearchService.findByGuid(tenant, null, null);
         assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
     }
 
     @Test
     public void shouldFindByGuidWithNullName() {
-        ServiceResponse<Location> response = subject.findByGuid(tenant, application, null);
+        ServiceResponse<Location> response = locationSearchService.findByGuid(tenant, application, null);
         assertThat(response, hasErrorMessage(LocationService.Messages.LOCATION_NOT_FOUND.getCode()));
     }
 
     @Test
     public void shouldTryToFindByGuidNonExistingName() {
-        ServiceResponse<Location> response = subject.findByGuid(tenant, application, "br2");
+        ServiceResponse<Location> response = locationSearchService.findByGuid(tenant, application, "br2");
         assertThat(response, hasErrorMessage(LocationService.Messages.LOCATION_NOT_FOUND.getCode()));
     }
 
     @Test
     public void shouldFindByGuid() {
-        ServiceResponse<Location> response = subject.findByGuid(tenant, application, "a14e671f-32d7-4ec0-8006-8d93eeed401c");
+        ServiceResponse<Location> response = locationSearchService.findByGuid(tenant, application, "a14e671f-32d7-4ec0-8006-8d93eeed401c");
         assertThat(response, isResponseOk());
         assertThat(response.getResult().getName(), is("sala-101"));
         assertThat(response.getResult().getDescription(), is("Sala 101"));
@@ -579,19 +583,19 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldListDevicesByLocationNameWithNullTenant() {
-        ServiceResponse<List<Device>> response = subject.listDevicesByLocationName(null, null, null);
+        ServiceResponse<List<Device>> response = locationSearchService.listDevicesByLocationName(null, null, null);
         assertThat(response, hasErrorMessage(TENANT_NULL.getCode()));
     }
 
     @Test
     public void shouldListDevicesByLocationNameWithNullApplication() {
-        ServiceResponse<List<Device>> response = subject.listDevicesByLocationName(tenant, null, null);
+        ServiceResponse<List<Device>> response = locationSearchService.listDevicesByLocationName(tenant, null, null);
         assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
     }
 
     @Test
     public void shouldListDevicesByLocationNameWithNullLocationName() {
-        ServiceResponse<List<Device>> response = subject.listDevicesByLocationName(tenant, application, null);
+        ServiceResponse<List<Device>> response = locationSearchService.listDevicesByLocationName(tenant, application, null);
         assertThat(response, hasErrorMessage(LocationService.Messages.LOCATION_NOT_FOUND.getCode()));
     }
 
@@ -607,12 +611,12 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
 
         ServiceResponse<List<Device>> response = null;
 
-        response = subject.listDevicesByLocationName(tenant, application, "sp");
+        response = locationSearchService.listDevicesByLocationName(tenant, application, "sp");
         assertThat(response, isResponseOk());
         assertThat(response.getResult().size(), is(1));
         assertThat(response.getResult().get(0).getName(), is("sp-device"));
 
-        response = subject.listDevicesByLocationName(tenant, application, "rj");
+        response = locationSearchService.listDevicesByLocationName(tenant, application, "rj");
         assertThat(response, isResponseOk());
         assertThat(response.getResult().size(), is(2));
         assertThat(response.getResult().get(0).getName(), is("rj-device"));

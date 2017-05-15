@@ -252,7 +252,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 		response = deviceRegisterService.register(currentTenant, currentApplication, rawDevice);
 
 		assertThat(response, isResponseOk());
-		assertThat(response.getResult().getLocation().getName(), is("root"));
+		assertThat(response.getResult().getLocation().getName(), is("default"));
 
 		saved = deviceRepository.findByTenantIdAndDeviceId(currentTenant.getId(), device.getDeviceId());
 

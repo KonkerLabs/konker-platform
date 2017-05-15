@@ -31,7 +31,7 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.Validations;
-import com.konkerlabs.platform.registry.business.services.api.LocationService;
+import com.konkerlabs.platform.registry.business.services.api.LocationSearchService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 
 import io.swagger.annotations.Api;
@@ -48,6 +48,9 @@ public class DeviceRestController extends AbstractRestController implements Init
 
     @Autowired
     private DeviceRegisterService deviceRegisterService;
+
+    @Autowired
+    private LocationSearchService locationSearchService;
 
     @Autowired
     private LocationService locationService;
@@ -153,7 +156,7 @@ public class DeviceRestController extends AbstractRestController implements Init
             return null;
         }
 
-        ServiceResponse<Location> locationResponse = locationService.findByName(tenant, application, deviceForm.getLocationName(), false);
+        ServiceResponse<Location> locationResponse = locationSearchService.findByName(tenant, application, deviceForm.getLocationName(), false);
         if (locationResponse.isOk()) {
             Location location = locationResponse.getResult();
             return location;

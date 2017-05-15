@@ -37,6 +37,7 @@ import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Location;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
+import com.konkerlabs.platform.registry.business.services.api.LocationSearchService;
 import com.konkerlabs.platform.registry.business.services.api.LocationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 
@@ -55,6 +56,9 @@ public class LocationRestControllerTest extends WebLayerTestContext {
 
     @Autowired
     private LocationService locationService;
+
+    @Autowired
+    private LocationSearchService locationSearchService;
 
     @Autowired
     private ApplicationService applicationService;
@@ -83,13 +87,13 @@ public class LocationRestControllerTest extends WebLayerTestContext {
         location1.setParent(locationBR);
         location2.setParent(locationBR);
 
-        when(locationService.findByName(tenant, application, locationBR.getName(), false))
+        when(locationSearchService.findByName(tenant, application, locationBR.getName(), false))
             .thenReturn(ServiceResponseBuilder.<Location>ok().withResult(locationBR).build());
 
-        when(locationService.findByName(tenant, application, location1.getName(), false))
+        when(locationSearchService.findByName(tenant, application, location1.getName(), false))
             .thenReturn(ServiceResponseBuilder.<Location>ok().withResult(location1).build());
 
-        when(locationService.findByName(tenant, application, location1.getName(), true))
+        when(locationSearchService.findByName(tenant, application, location1.getName(), true))
             .thenReturn(ServiceResponseBuilder.<Location>ok().withResult(location1).build());
 
         when(applicationService.getByApplicationName(tenant, application.getName()))
@@ -108,7 +112,7 @@ public class LocationRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldListLocations() throws Exception {
 
-        when(locationService.findRoot(tenant, application))
+        when(locationSearchService.findRoot(tenant, application))
             .thenReturn(ServiceResponseBuilder.<Location>ok().withResult(location1).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH))
@@ -129,7 +133,7 @@ public class LocationRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryListLocationsWithInternalError() throws Exception {
 
-        when(locationService.findRoot(tenant, application))
+        when(locationSearchService.findRoot(tenant, application))
             .thenReturn(ServiceResponseBuilder.<Location> error().build());
 
         getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH))
@@ -183,7 +187,7 @@ public class LocationRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryReadLocationWithBadRequest() throws Exception {
 
-        when(locationService.findByName(tenant, application, location1.getName(), true))
+        when(locationSearchService.findByName(tenant, application, location1.getName(), true))
             .thenReturn(ServiceResponseBuilder.<Location>error().withMessage(LocationService.Validations.LOCATION_GUID_DOES_NOT_EXIST.getCode()).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH, location1.getName()))
@@ -226,7 +230,7 @@ public class LocationRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldCreateLocationWithInvalidParent() throws Exception {
 
-        when(locationService.findByName(tenant, application, locationBR.getName(), false))
+        when(locationSearchService.findByName(tenant, application, locationBR.getName(), false))
             .thenReturn(ServiceResponseBuilder.<Location>error().withMessage(LocationService.Messages.LOCATION_NOT_FOUND.getCode()).build());
 
         when(locationService.save(org.mockito.Matchers.any(Tenant.class),
@@ -394,7 +398,7 @@ public class LocationRestControllerTest extends WebLayerTestContext {
         devices.add(Device.builder().name("dev-01").build());
         devices.add(Device.builder().name("dev-02").build());
 
-        when(locationService.listDevicesByLocationName(tenant, application, location1.getName()))
+        when(locationSearchService.listDevicesByLocationName(tenant, application, location1.getName()))
             .thenReturn(ServiceResponseBuilder.<List<Device>>ok().withResult(devices).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}/devices", application.getName(), BASEPATH, location1.getName()))

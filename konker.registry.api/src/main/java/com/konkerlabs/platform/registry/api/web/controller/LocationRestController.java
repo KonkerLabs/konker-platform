@@ -30,6 +30,7 @@ import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Location;
 import com.konkerlabs.platform.registry.business.model.Location.Validations;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.services.api.LocationSearchService;
 import com.konkerlabs.platform.registry.business.services.api.LocationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 
@@ -46,6 +47,9 @@ public class LocationRestController extends AbstractRestController implements In
     @Autowired
     private LocationService locationService;
 
+    @Autowired
+    private LocationSearchService locationSearchService;
+
     private Set<String> validationsCode = new HashSet<>();
 
     @GetMapping(path = "/")
@@ -58,7 +62,7 @@ public class LocationRestController extends AbstractRestController implements In
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
 
-        ServiceResponse<Location> locationResponse = locationService.findRoot(tenant, application);
+        ServiceResponse<Location> locationResponse = locationSearchService.findRoot(tenant, application);
 
         if (!locationResponse.isOk()) {
             throw new BadServiceResponseException(user, locationResponse, validationsCode);
@@ -81,7 +85,7 @@ public class LocationRestController extends AbstractRestController implements In
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
 
-        ServiceResponse<Location> locationResponse = locationService.findByName(tenant, application, locationName, true);
+        ServiceResponse<Location> locationResponse = locationSearchService.findByName(tenant, application, locationName, true);
 
         if (!locationResponse.isOk()) {
             throw new NotFoundResponseException(user, locationResponse);
@@ -104,7 +108,7 @@ public class LocationRestController extends AbstractRestController implements In
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
 
-        ServiceResponse<List<Device>> locationResponse = locationService.listDevicesByLocationName(tenant, application, locationName);
+        ServiceResponse<List<Device>> locationResponse = locationSearchService.listDevicesByLocationName(tenant, application, locationName);
 
         if (!locationResponse.isOk()) {
             throw new BadServiceResponseException(user, locationResponse, validationsCode);
@@ -165,7 +169,7 @@ public class LocationRestController extends AbstractRestController implements In
         Location parent = getParent(locationForm, tenant, application);
 
         Location locationFromDB = null;
-        ServiceResponse<Location> locationResponse = locationService.findByName(tenant, application, locationName, false);
+        ServiceResponse<Location> locationResponse = locationSearchService.findByName(tenant, application, locationName, false);
 
         if (!locationResponse.isOk()) {
             throw new BadServiceResponseException(user, locationResponse, validationsCode);
@@ -197,7 +201,7 @@ public class LocationRestController extends AbstractRestController implements In
 
         Location parent = null;
 
-        ServiceResponse<Location> parentResponse = locationService.findByName(tenant, application, locationForm.getParentName(), false);
+        ServiceResponse<Location> parentResponse = locationSearchService.findByName(tenant, application, locationForm.getParentName(), false);
         if (!parentResponse.isOk()) {
             if (parentResponse.getResponseMessages().containsKey(LocationService.Messages.LOCATION_NOT_FOUND.getCode())) {
                 Map<String, Object[]> responseMessages = new HashMap<>();

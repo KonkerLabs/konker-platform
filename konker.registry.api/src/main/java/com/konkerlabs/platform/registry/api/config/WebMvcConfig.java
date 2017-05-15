@@ -17,14 +17,15 @@ public class WebMvcConfig  {
     @Bean(name = "messageSource")
     public MessageSource getMessageSource() {
         ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
-        messageSource.addBasenames("classpath:/messages/devices");
-        messageSource.addBasenames("classpath:/messages/locations");
-        messageSource.addBasenames("classpath:/messages/routes");
-        messageSource.addBasenames("classpath:/messages/transformations");
-        messageSource.addBasenames("classpath:/messages/rest-destination");
-        messageSource.addBasenames("classpath:/messages/users");
         messageSource.addBasenames("classpath:/messages/applications");
         messageSource.addBasenames("classpath:/messages/device-model");
+        messageSource.addBasenames("classpath:/messages/devices");
+        messageSource.addBasenames("classpath:/messages/devices-config");
+        messageSource.addBasenames("classpath:/messages/locations");
+        messageSource.addBasenames("classpath:/messages/rest-destination");
+        messageSource.addBasenames("classpath:/messages/routes");
+        messageSource.addBasenames("classpath:/messages/transformations");
+        messageSource.addBasenames("classpath:/messages/users");
         messageSource.setDefaultEncoding("UTF-8");
 
         return messageSource;
