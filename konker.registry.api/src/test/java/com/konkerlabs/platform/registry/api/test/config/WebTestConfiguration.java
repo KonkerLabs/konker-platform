@@ -98,11 +98,6 @@ public class WebTestConfiguration {
     }
 
     @Bean
-    public DeviceModelService deviceModelService() {
-        return Mockito.mock(DeviceModelService.class);
-    }
-
-    @Bean
     public DeviceConfigSetupService deviceConfigSetupService() {
         return Mockito.mock(DeviceConfigSetupService.class);
     }
