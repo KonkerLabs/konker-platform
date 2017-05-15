@@ -7,6 +7,7 @@ import java.util.Set;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -46,7 +47,7 @@ public class DeviceModelRestController extends AbstractRestController implements
     private Set<String> validationsCode = new HashSet<>();
 
     @GetMapping(path = "/")
-//    @PreAuthorize("hasAuthority('LIST_REST_DESTINATIONS')")
+    @PreAuthorize("hasAuthority('LIST_DEVICE_MODEL')")
     @ApiOperation(
             value = "List all device models by application",
             response = DeviceModelVO.class)
@@ -70,7 +71,7 @@ public class DeviceModelRestController extends AbstractRestController implements
             value = "Get a device model by name",
             response = RestResponse.class
     )
-//    @PreAuthorize("hasAuthority('SHOW_REST_DESTINATION')")
+    @PreAuthorize("hasAuthority('SHOW_DEVICE_MODEL')")
     public DeviceModelVO read(
             @PathVariable("application") String applicationId,
             @PathVariable("deviceModelName") String deviceModelName) throws BadServiceResponseException, NotFoundResponseException {
@@ -93,7 +94,7 @@ public class DeviceModelRestController extends AbstractRestController implements
             value = "List all devices of a device model",
             response = RestResponse.class
     )
-    //@PreAuthorize("hasAuthority('SHOW_LOCATION')")
+    @PreAuthorize("hasAuthority('SHOW_DEVICE_MODEL')")
     public List<DeviceVO> devices(
             @PathVariable("application") String applicationId,
             @PathVariable("deviceModelName") String deviceModelName) throws BadServiceResponseException, NotFoundResponseException {
@@ -113,7 +114,7 @@ public class DeviceModelRestController extends AbstractRestController implements
 
     @PostMapping
     @ApiOperation(value = "Create a device model")
-//    @PreAuthorize("hasAuthority('CREATE_REST_DESTINATION')")
+    @PreAuthorize("hasAuthority('CREATE_DEVICE_MODEL')")
     public DeviceModelVO create(
             @PathVariable("application") String applicationId,
             @ApiParam(
@@ -143,7 +144,7 @@ public class DeviceModelRestController extends AbstractRestController implements
 
     @PutMapping(path = "/{deviceModelName}")
     @ApiOperation(value = "Update a device model")
-//    @PreAuthorize("hasAuthority('EDIT_REST_DESTINATION')")
+    @PreAuthorize("hasAuthority('EDIT_DEVICE_MODEL')")
     public void update(
             @PathVariable("application") String applicationId,
             @PathVariable("deviceModelName") String deviceModelName,
@@ -181,7 +182,7 @@ public class DeviceModelRestController extends AbstractRestController implements
 
     @DeleteMapping(path = "/{deviceModelName}")
     @ApiOperation(value = "Delete a device model")
-//    @PreAuthorize("hasAuthority('REMOVE_REST_DESTINATION')")
+    @PreAuthorize("hasAuthority('REMOVE_DEVICE_MODEL')")
     public void delete(
             @PathVariable("application") String applicationId,
             @PathVariable("deviceModelName") String deviceModelName) throws BadServiceResponseException, NotFoundResponseException {

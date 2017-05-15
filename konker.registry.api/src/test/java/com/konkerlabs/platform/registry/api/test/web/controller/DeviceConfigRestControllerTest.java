@@ -116,7 +116,7 @@ public class DeviceConfigRestControllerTest extends WebLayerTestContext {
         when(applicationService.getByApplicationName(tenant, application.getName()))
             .thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
 
-        when(deviceModelService.getByTenantIdApplicationNameAndName(tenant, application, deviceModel.getName()))
+        when(deviceModelService.getByTenantApplicationAndName(tenant, application, deviceModel.getName()))
             .thenReturn(ServiceResponseBuilder.<DeviceModel> ok().withResult(deviceModel).build());
 
         when(locationSearchService.findByName(tenant, application, location.getName(), false))
@@ -254,7 +254,7 @@ public class DeviceConfigRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldReadWithWrongDeviceModel() throws Exception {
 
-        when(deviceModelService.getByTenantIdApplicationNameAndName(tenant, application, NONEXIST_APPLICATION_NANE))
+        when(deviceModelService.getByTenantApplicationAndName(tenant, application, NONEXIST_APPLICATION_NANE))
             .thenReturn(ServiceResponseBuilder.<DeviceModel> error()
                     .withMessage(DeviceModelService.Validations.DEVICE_MODEL_NOT_FOUND.getCode())
                     .build());

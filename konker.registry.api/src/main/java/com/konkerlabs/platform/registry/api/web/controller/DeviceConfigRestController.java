@@ -203,7 +203,7 @@ public class DeviceConfigRestController extends AbstractRestController implement
 
     private DeviceModel getDeviceModel(Tenant tenant, Application application, String deviceModelName) throws BadServiceResponseException, NotFoundResponseException {
 
-        ServiceResponse<DeviceModel> applicationResponse = deviceModelService.getByTenantIdApplicationNameAndName(tenant, application, deviceModelName);
+        ServiceResponse<DeviceModel> applicationResponse = deviceModelService.getByTenantApplicationAndName(tenant, application, deviceModelName);
         if (!applicationResponse.isOk()) {
             if (applicationResponse.getResponseMessages().containsKey(DeviceModelService.Validations.DEVICE_MODEL_NOT_FOUND.getCode())) {
                 throw new NotFoundResponseException(user, applicationResponse);
