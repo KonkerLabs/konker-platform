@@ -66,6 +66,7 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
                 // .operationOrdering(getOperationOrdering()) try with swagger 2.7.0
                 .tags(new Tag("devices", "Operations to list and edit devices"),
                         new Tag("device credentials", "Operations to manage device credentials (username, password and URLs)"),
+                        new Tag("device model", "Operations to manage device model"),
                         new Tag("routes", "Operations to list and edit routes"),
                         new Tag("users", "Operations to list and edit organization users"),
                         new Tag("events", "Operations to query incoming and outgoing device events"),
