@@ -24,6 +24,7 @@ public class WebMvcConfig  {
         messageSource.addBasenames("classpath:/messages/rest-destination");
         messageSource.addBasenames("classpath:/messages/users");
         messageSource.addBasenames("classpath:/messages/applications");
+        messageSource.addBasenames("classpath:/messages/device-model");
         messageSource.setDefaultEncoding("UTF-8");
 
         return messageSource;
