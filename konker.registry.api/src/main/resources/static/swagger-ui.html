@@ -87,7 +87,7 @@
 			<h3 id="get-oauth-2-access-token">Get OAuth 2 Access Token</h3>
 			<ul>
 				<li>Grant Type: Implicit Grant (or User Agent) Flow</li>
-				<li>Access Token URL: <a href="http://api.demo.konkerlabs.net/v1/swagger-ui.html">http://localhost:8080/v1/oauth/token</a></li>
+				<li>Access Token URL: <a href="http://localhost:8080/v1/swagger-ui.html" id="token_url_link"><span id="token_url_text">http://localhost:8080/v1/oauth/token</span></a></li>
 				<li>Client ID: your e-mail</li>
 				<li>Client Secret: your password</li>
 			</ul>
@@ -137,11 +137,12 @@
             </ul>
 
 			<h3 id="devices-configuration">Devices Configuration</h3>
-			<p>A device can probe the platform to receive configuration information about itself.</p>
-			<p>A device configuration is based on a device model and a location.</p>
+			<p>A device can probe the platform to receive its configuration information.</p>
+			<p>A configuration is based on the application, the device model and location set to the device.</p>
+			<p>The locations are organized in a hierarchical (tree) structure. Each application has one root location. Each location can have multiples sublocations.</p>
 			<p>Related endpoints:</p>
 			<ul>
-				<li><a href='#' onclick="showResource()">Device Model</a></li>
+				<li><a href='#' onclick="showResource('device_models')">Device Model</a></li>
 				<li><a href='#' onclick="showResource('locations')">Location</a></li>
 				<li><a href='#' onclick="showResource('device_configs')">Device Configuration</a></li>
 			</ul>
@@ -163,12 +164,22 @@
 
 <script>
 	function showResource(name) {
+		$('.endpoints:visible').parent().find('.toggleEndpointList').click(); // hide endpoints with expanded (listed) operations
 		window.Docs.expandEndpointListForResource(name);
 
 		$('html, body').animate({
 	        scrollTop: $('#resource_' + name).offset().top
 	    }, 500);
 	}
+
+	$(document).ready(function(){
+		var url = window.location.href
+		var arr = url.split("/");
+		var newurl = arr[0] + "//" + arr[2] + "/v1/oauth/token"
+
+		$('#token_url_link').attr('href', newurl);
+		$('#token_url_text').text(newurl);
+	})
 </script>
 
 <div id="message-bar" class="swagger-ui-wrap" data-sw-translate>&nbsp;</div>
