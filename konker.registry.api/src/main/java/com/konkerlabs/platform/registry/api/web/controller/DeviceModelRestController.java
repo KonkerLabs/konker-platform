@@ -38,7 +38,7 @@ import io.swagger.annotations.ApiParam;
 @RestController
 @Scope("request")
 @RequestMapping(value = "/{application}/deviceModels")
-@Api(tags = "device model")
+@Api(tags = "device models")
 public class DeviceModelRestController extends AbstractRestController implements InitializingBean {
 
     @Autowired
@@ -88,12 +88,13 @@ public class DeviceModelRestController extends AbstractRestController implements
         }
 
     }
-    
+
     @GetMapping(path = "/{deviceModelName}/devices")
     @ApiOperation(
             value = "List all devices of a device model",
             response = RestResponse.class
     )
+
     @PreAuthorize("hasAuthority('SHOW_DEVICE_MODEL')")
     public List<DeviceVO> devices(
             @PathVariable("application") String applicationId,

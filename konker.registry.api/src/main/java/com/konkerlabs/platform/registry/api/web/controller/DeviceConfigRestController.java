@@ -7,6 +7,7 @@ import java.util.Set;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -56,7 +57,7 @@ public class DeviceConfigRestController extends AbstractRestController implement
     private Set<String> validationsCode = new HashSet<>();
 
     @GetMapping(path = "/")
-    // @PreAuthorize("hasAuthority('LIST_DEVICE_CONFIGS')")
+    @PreAuthorize("hasAuthority('LIST_DEVICE_CONFIGS')")
     @ApiOperation(
             value = "List all device configs by application",
             response = DeviceConfigVO.class)
@@ -80,7 +81,7 @@ public class DeviceConfigRestController extends AbstractRestController implement
             value = "Get a device config by guid",
             response = RestResponse.class
     )
-    // @PreAuthorize("hasAuthority('SHOW_DEVICE_CONFIG')")
+    @PreAuthorize("hasAuthority('SHOW_DEVICE_CONFIG')")
     public Object read(
             @PathVariable("application") String applicationId,
             @PathVariable("deviceModelName") String deviceModelName,
@@ -103,7 +104,7 @@ public class DeviceConfigRestController extends AbstractRestController implement
 
     @PostMapping(path = "/{deviceModelName}/{locationName}")
     @ApiOperation(value = "Create a device config")
-    // @PreAuthorize("hasAuthority('CREATE_DEVICE_CONFIG')")
+    @PreAuthorize("hasAuthority('CREATE_DEVICE_CONFIG')")
     public DeviceConfigVO create(
             @PathVariable("application") String applicationId,
             @PathVariable("deviceModelName") String deviceModelName,
@@ -131,7 +132,7 @@ public class DeviceConfigRestController extends AbstractRestController implement
 
     @PutMapping(path = "/{deviceModelName}/{locationName}")
     @ApiOperation(value = "Update a device config")
-    // @PreAuthorize("hasAuthority('EDIT_DEVICE_CONFIG')")
+    @PreAuthorize("hasAuthority('EDIT_DEVICE_CONFIG')")
     public void update(
             @PathVariable("application") String applicationId,
             @PathVariable("deviceModelName") String deviceModelName,
@@ -157,7 +158,7 @@ public class DeviceConfigRestController extends AbstractRestController implement
 
     @DeleteMapping(path = "/{deviceModelName}/{locationName}")
     @ApiOperation(value = "Delete a device config")
-    // @PreAuthorize("hasAuthority('REMOVE_DEVICE_CONFIG')")
+    @PreAuthorize("hasAuthority('REMOVE_DEVICE_CONFIG')")
     public void delete(
             @PathVariable("application") String applicationId,
             @PathVariable("deviceModelName") String deviceModelName,
