@@ -182,6 +182,38 @@ public class DeviceEventRestEndpoint {
         		.message(HttpStatus.OK.name()).build(),
         		HttpStatus.OK);
     }
+    
+    @RequestMapping(
+            value = { "cfg/{apiKey}" },
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    @JsonView(EventJsonView.class)
+    public ResponseEntity<EventResponse> configEvent(HttpServletRequest servletRequest,
+                                                 @PathVariable("apiKey") String apiKey,
+                                                 @AuthenticationPrincipal Device principal,
+                                                 Locale locale) {
+    	Device device = deviceRegisterService.findByApiKey(apiKey);
+
+    	if (!principal.getApiKey().equals(apiKey)) {
+            return new ResponseEntity<EventResponse>(
+            			EventResponse.builder().code(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+            		.message(applicationContext.getMessage(Messages.INVALID_RESOURCE.getCode(), null, locale)).build(), 
+            		HttpStatus.BAD_REQUEST);
+    	}
+    	
+    	if (!Optional.of(device).isPresent()) {
+    		return new ResponseEntity<EventResponse>(
+        			EventResponse.builder().code(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+        		.message(applicationContext.getMessage(Messages.DEVICE_NOT_FOUND.getCode(), null, locale)).build(), 
+        		HttpStatus.BAD_REQUEST);
+    	}
+
+        return new ResponseEntity<EventResponse>(
+        		EventResponse.builder().code(String.valueOf(HttpStatus.OK.value()))
+        		.message(HttpStatus.OK.name()).build(),
+        		HttpStatus.OK);
+    }
 
     @Data
     @Builder
