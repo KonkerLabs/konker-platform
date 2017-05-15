@@ -18,10 +18,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @JsonInclude(Include.NON_EMPTY)
-@ApiModel(value = "Device Security Credentials", discriminator = "com.konkerlabs.platform.registry.api.model")
+@ApiModel(value = "Device Security Credentials", discriminator = "com.konkerlabs.platform.registry.web.model")
 public class DeviceSecurityCredentialsVO {
 
-    @ApiModelProperty(position = 0, value = "the device username (api key)", example = "L12UXrlnPd")
+    @ApiModelProperty(position = 0, value = "the device username (web key)", example = "L12UXrlnPd")
     protected String username;
     @ApiModelProperty(position = 2, value = "Publish Events REST URL", example = "http://server/pub/2q7kibmutjdj/<Channel>")
     private String httpURLPub;

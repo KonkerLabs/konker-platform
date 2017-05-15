@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @ApiModel(
         value = "Route Input",
-        discriminator = "com.konkerlabs.platform.registry.api.model")
+        discriminator = "com.konkerlabs.platform.registry.web.model")
 public class EventRouteInputVO {
 
     @ApiModelProperty(value = "the route name", required = true, position = 1, example = "route01")

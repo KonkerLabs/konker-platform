@@ -17,7 +17,8 @@
         <module>konker.registry.api</module>
         <module>konker.registry.data</module>
     	<module>konker.registry.cassandra-etl</module>
-  </modules>
+        <module>konker.registry.idm.server</module>
+    </modules>
 
     <build>
         <plugins>

@@ -36,7 +36,7 @@ public class CaptchaServiceImpl implements CaptchaService {
     @Override
     public ServiceResponse<Boolean> validateCaptcha(String secret, String response, String host) {
         String charset = java.nio.charset.StandardCharsets.UTF_8.name();
-        String url = "https://www.google.com/recaptcha/api/siteverify";
+        String url = "https://www.google.com/recaptcha/web/siteverify";
         String query;
         URL finalUrl;
 

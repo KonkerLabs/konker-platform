@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @ApiModel(
         value = "Route",
-        discriminator = "com.konkerlabs.platform.registry.api.model")
+        discriminator = "com.konkerlabs.platform.registry.web.model")
 public class EventRouteVO extends EventRouteInputVO
 implements SerializableVO<EventRoute, EventRouteVO> {
 

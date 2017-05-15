@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @ApiModel(
         value = "Device Input",
-        discriminator = "com.konkerlabs.platform.registry.api.model")
+        discriminator = "com.konkerlabs.platform.registry.web.model")
 public class DeviceInputVO {
 
     @ApiModelProperty(value = "the device id", example = "serialNumber", required = true, position = 1)

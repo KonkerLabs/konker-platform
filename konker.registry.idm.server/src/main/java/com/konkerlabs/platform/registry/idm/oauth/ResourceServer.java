@@ -1,4 +1,4 @@
-package com.konkerlabs.platform.registry.api.config.oauth;
+package com.konkerlabs.platform.registry.idm.oauth;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -10,7 +10,7 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Res
 @EnableResourceServer
 public class ResourceServer extends ResourceServerConfigurerAdapter {
 
-	public static final String RESOURCE_ID = "registryapi";
+	public static final String RESOURCE_ID = "registryidm";
 	private static final String[] PUBLIC_RESOURCES = new String[]{
 			"/oauth/token",
 			"/configuration/ui",

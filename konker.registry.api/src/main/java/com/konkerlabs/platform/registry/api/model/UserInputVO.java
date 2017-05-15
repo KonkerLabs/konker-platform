@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @ApiModel(
         value = "User Input",
-        discriminator = "com.konkerlabs.platform.registry.api.model")
+        discriminator = "com.konkerlabs.platform.registry.web.model")
 public class UserInputVO {
 
 	@ApiModelProperty(value = "the user's password", example = "mypass123", required = true, position = 1)

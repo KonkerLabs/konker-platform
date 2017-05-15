@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @ApiModel(
 		value = "Rest Destination",
-		discriminator = "com.konkerlabs.platform.registry.api.model")
+		discriminator = "com.konkerlabs.platform.registry.web.model")
 public class RestDestinationVO extends RestDestinationInputVO
 		implements SerializableVO<RestDestination, RestDestinationVO>{
 

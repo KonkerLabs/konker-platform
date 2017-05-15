@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @ApiModel(
         value = "User",
-        discriminator = "com.konkerlabs.platform.registry.api.model")
+        discriminator = "com.konkerlabs.platform.registry.web.model")
 public class UserVO extends UserInputVO implements SerializableVO<User, UserVO> {
 
     @ApiModelProperty(value = "the user's email", example = "login@domain.com", required = true, position = 0)

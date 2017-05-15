@@ -79,7 +79,7 @@ public final class KonkerLoggerFactory implements IKonkerLoggerFactory {
             msg = var3.getMessage();
             if(msg != null && msg.contains("org.slf4j.impl.StaticLoggerBinder.getSingleton()")) {
                 INITIALIZATION_STATE = 2;
-                Util.report("slf4j-api 1.6.x (or later) is incompatible with this binding.");
+                Util.report("slf4j-web 1.6.x (or later) is incompatible with this binding.");
                 Util.report("Your binding is version 1.5.5 or earlier.");
                 Util.report("Upgrade your binding to version 1.6.x.");
             }

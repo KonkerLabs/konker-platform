@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @ApiModel(
         value = "Transformation",
-        discriminator = "com.konkerlabs.platform.registry.api.model")
+        discriminator = "com.konkerlabs.platform.registry.web.model")
 public class RestTransformationVO
         implements SerializableVO<Transformation, RestTransformationVO> {
 

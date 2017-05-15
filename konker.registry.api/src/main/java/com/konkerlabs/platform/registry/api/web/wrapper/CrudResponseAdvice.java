@@ -27,7 +27,7 @@ import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseExcepti
 import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
 import com.konkerlabs.platform.registry.api.model.RestResponseBuilder;
 
-@ControllerAdvice(basePackages = "com.konkerlabs.platform.registry.api.web.controller")
+@ControllerAdvice(basePackages = "com.konkerlabs.platform.registry.web.web.controller")
 @Order(1)
 public class CrudResponseAdvice implements ResponseBodyAdvice<Object> {
 

@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @ApiModel(
 		value = "Rest Destination input",
-		discriminator = "com.konkerlabs.platform.registry.api.model")
+		discriminator = "com.konkerlabs.platform.registry.web.model")
 public class RestDestinationInputVO {
 	
 	@ApiModelProperty(
@@ -34,7 +34,7 @@ public class RestDestinationInputVO {
 	
 	@ApiModelProperty(
 			value = "Address of the rest destination", 
-			example = "http://www.konker.com/api", 
+			example = "http://www.konker.com/web",
 			required = true, 
 			position = 4)
 	protected String serviceURI;

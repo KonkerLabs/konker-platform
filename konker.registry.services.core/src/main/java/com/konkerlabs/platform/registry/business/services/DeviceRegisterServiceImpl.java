@@ -119,7 +119,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         device.setGuid(UUID.randomUUID().toString());
 
         if (Optional.ofNullable(deviceRepository.findByApiKey(device.getApiKey())).isPresent()) {
-            LOGGER.debug("device api key cannot exists",
+            LOGGER.debug("device web key cannot exists",
                     Device.builder().guid("NULL").tenant(tenant).build().toURI(),
                     device.getLogLevel());
             return ServiceResponseBuilder.<Device>error()

@@ -14,7 +14,7 @@ import lombok.Data;
 @JsonInclude(Include.NON_EMPTY)
 @ApiModel(
         value = "RestResponse",
-        discriminator = "com.konkerlabs.platform.registry.api.model",
+        discriminator = "com.konkerlabs.platform.registry.web.model",
         subTypes = DeviceVO.class
 )
 public class RestResponse<T> {

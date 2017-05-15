@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor
-@ApiModel(value = "EventActor", discriminator = "com.konkerlabs.platform.registry.api.model")
+@ApiModel(value = "EventActor", discriminator = "com.konkerlabs.platform.registry.web.model")
 @JsonInclude(Include.NON_EMPTY)
 public class EventActorVO implements SerializableVO<EventActor, EventActorVO> {
 

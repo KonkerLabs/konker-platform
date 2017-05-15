@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(Include.NON_EMPTY)
-@ApiModel(value = "Device Security Credentials With Password", discriminator = "com.konkerlabs.platform.registry.api.model")
+@ApiModel(value = "Device Security Credentials With Password", discriminator = "com.konkerlabs.platform.registry.web.model")
 public class DeviceSecurityCredentialsPwdVO extends DeviceSecurityCredentialsVO {
 
     @ApiModelProperty(position = 1, value = "the device password", example = "sW2YEG1i3e")

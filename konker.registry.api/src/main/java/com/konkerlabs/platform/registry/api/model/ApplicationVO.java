@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @ApiModel(
 		value = "Application",
-		discriminator = "com.konkerlabs.platform.registry.api.model")
+		discriminator = "com.konkerlabs.platform.registry.web.model")
 public class ApplicationVO extends ApplicationInputVO
 		implements SerializableVO<Application, ApplicationVO>{
 

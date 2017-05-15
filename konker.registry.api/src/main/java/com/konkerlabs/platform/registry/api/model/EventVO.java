@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @ApiModel(
         value = "Event",
-        discriminator = "com.konkerlabs.platform.registry.api.model")
+        discriminator = "com.konkerlabs.platform.registry.web.model")
 @JsonInclude(Include.NON_EMPTY)
 public class EventVO implements SerializableVO<Event, EventVO> {
 
@@ -46,7 +46,7 @@ public class EventVO implements SerializableVO<Event, EventVO> {
 
     @Override
     public Event patchDB(Event t) {
-        // api doesn't update events
+        // web doesn't update events
         return t;
     }
 
