@@ -47,7 +47,7 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("swagger-ui.html").addResourceLocations("classpath:/META-INF/resources/");
+        registry.addResourceHandler("swagger-ui.html").addResourceLocations("classpath:/static/");
         registry.addResourceHandler("/webjars/**").addResourceLocations("classpath:/META-INF/resources/webjars/");
         registry.addResourceHandler("/static/**").addResourceLocations("classpath:/static/");
     }
@@ -55,6 +55,7 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
     @Bean
     public Docket api() {
         return new Docket(DocumentationType.SWAGGER_2)
+                .groupName("default")
                 .select()
                 .apis(RequestHandlerSelectors.withClassAnnotation(RestController.class))
                 .paths(PathSelectors.any())
@@ -66,13 +67,15 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
                 // .operationOrdering(getOperationOrdering()) try with swagger 2.7.0
                 .tags(new Tag("devices", "Operations to list and edit devices"),
                         new Tag("device credentials", "Operations to manage device credentials (username, password and URLs)"),
-                        new Tag("device model", "Operations to manage device model"),
+                        new Tag("device models", "Operations to manage device models"),
                         new Tag("routes", "Operations to list and edit routes"),
                         new Tag("users", "Operations to list and edit organization users"),
                         new Tag("events", "Operations to query incoming and outgoing device events"),
                         new Tag("applications", "Operations to list organization applications"),
                         new Tag("rest destinations", "Operations to list organization REST destinations"),
-                        new Tag("rest transformations", "Operations to manage REST transformations"))
+                        new Tag("rest transformations", "Operations to manage REST transformations"),
+                        new Tag("locations", "Operations to list and edit locations"),
+                        new Tag("device configs", "Operations to list and edit device configurations"))
                 .enableUrlTemplating(false);
 
     }
@@ -123,17 +126,12 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
 
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
-                .title("Konker Platform API")
-                .description(getDescription())
-                .termsOfServiceUrl("https://demo.konkerlabs.net/registry/resources/konker/pdf/termos_de_uso_20161014a-9d089e3f67c4b4ab9c83c0a0313158ef.pdf")
-                .contact(new Contact(null, null, "support@konkerlabs.com"))
-                .license("Apache 2.0")
-                .licenseUrl("http://www.apache.org/licenses/LICENSE-2.0")
                 .version("v1")
                 .build();
     }
 
-    private String getDescription() {
+    @SuppressWarnings("unused")
+    private String getDescription(String filename) {
 
         Map<String, Object> defaultMap = new HashMap<>();
         defaultMap.put("swagger.hostname", "localhost:8080");

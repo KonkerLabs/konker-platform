@@ -54,9 +54,6 @@ public class DeviceRestController extends AbstractRestController implements Init
     private LocationSearchService locationSearchService;
 
     @Autowired
-    private LocationService locationService;
-    
-    @Autowired
     private DeviceModelService deviceModelService;
 
     private Set<String> validationsCode = new HashSet<>();
