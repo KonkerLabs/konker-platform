@@ -55,6 +55,7 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
     @Bean
     public Docket api() {
         return new Docket(DocumentationType.SWAGGER_2)
+                .groupName("default")
                 .select()
                 .apis(RequestHandlerSelectors.withClassAnnotation(RestController.class))
                 .paths(PathSelectors.any())
@@ -71,7 +72,10 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
                         new Tag("events", "Operations to query incoming and outgoing device events"),
                         new Tag("applications", "Operations to list organization applications"),
                         new Tag("rest destinations", "Operations to list organization REST destinations"),
-                        new Tag("rest transformations", "Operations to manage REST transformations"))
+                        new Tag("rest transformations", "Operations to manage REST transformations"),
+                        new Tag("device models", "Operations to list and edit device models"),
+                        new Tag("locations", "Operations to list and edit locations"),
+                        new Tag("device configs", "Operations to list and edit device configurations"))
                 .enableUrlTemplating(false);
 
     }
@@ -123,7 +127,7 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
                 .title("Konker Platform API")
-                .description(getDescription())
+                .description(getDescription("description.md"))
                 .termsOfServiceUrl("https://demo.konkerlabs.net/registry/resources/konker/pdf/termos_de_uso_20161014a-9d089e3f67c4b4ab9c83c0a0313158ef.pdf")
                 .contact(new Contact(null, null, "support@konkerlabs.com"))
                 .license("Apache 2.0")
@@ -132,7 +136,7 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
                 .build();
     }
 
-    private String getDescription() {
+    private String getDescription(String filename) {
 
         Map<String, Object> defaultMap = new HashMap<>();
         defaultMap.put("swagger.hostname", "localhost:8080");

@@ -53,6 +53,18 @@ Each device has a key and a password. The 'device credentials' operations manage
 
 The Platform will receive the device's messages. The 'events' operations list these messages.
 
+### Devices Configuration
+
+A device can probe the platform to receive configuration information about itself.
+
+A device configuration is based on a device model and a location.
+
+Related endpoints:
+
+* Device Model
+* Location
+* Device Configuration
+
 ### More Informations
 
 * [Developer Portal](http://developers.konkerlabs.com)
