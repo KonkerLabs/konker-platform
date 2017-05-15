@@ -47,7 +47,8 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("swagger-ui.html").addResourceLocations("classpath:/META-INF/resources/");
+        registry.addResourceHandler("swagger-ui.html").addResourceLocations("classpath:/static/");
+        //registry.addResourceHandler("swagger-ui.html").addResourceLocations("classpath:/META-INF/resources/");
         registry.addResourceHandler("/webjars/**").addResourceLocations("classpath:/META-INF/resources/webjars/");
         registry.addResourceHandler("/static/**").addResourceLocations("classpath:/static/");
     }
@@ -126,16 +127,11 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
 
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
-                .title("Konker Platform API")
-                .description(getDescription("description.md"))
-                .termsOfServiceUrl("https://demo.konkerlabs.net/registry/resources/konker/pdf/termos_de_uso_20161014a-9d089e3f67c4b4ab9c83c0a0313158ef.pdf")
-                .contact(new Contact(null, null, "support@konkerlabs.com"))
-                .license("Apache 2.0")
-                .licenseUrl("http://www.apache.org/licenses/LICENSE-2.0")
                 .version("v1")
                 .build();
     }
 
+    @SuppressWarnings("unused")
     private String getDescription(String filename) {
 
         Map<String, Object> defaultMap = new HashMap<>();
