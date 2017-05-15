@@ -25,8 +25,10 @@ import com.konkerlabs.platform.registry.api.model.DeviceVO;
 import com.konkerlabs.platform.registry.api.model.RestResponse;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.DeviceModel;
 import com.konkerlabs.platform.registry.business.model.Location;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.Validations;
 import com.konkerlabs.platform.registry.business.services.api.LocationSearchService;
@@ -49,6 +51,12 @@ public class DeviceRestController extends AbstractRestController implements Init
 
     @Autowired
     private LocationSearchService locationSearchService;
+
+    @Autowired
+    private LocationService locationService;
+    
+    @Autowired
+    private DeviceModelService deviceModelService;
 
     private Set<String> validationsCode = new HashSet<>();
 
@@ -106,12 +114,14 @@ public class DeviceRestController extends AbstractRestController implements Init
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
         Location location = getLocation(tenant, application, deviceForm);
+        DeviceModel deviceModel = getDeviceModel(tenant, application, deviceForm);
 
         Device device = Device.builder()
                 .name(deviceForm.getName())
                 .deviceId(deviceForm.getId())
                 .description(deviceForm.getDescription())
                 .location(location)
+                .deviceModel(deviceModel)
                 .active(true)
                 .build();
 
@@ -125,7 +135,22 @@ public class DeviceRestController extends AbstractRestController implements Init
 
     }
 
-    private Location getLocation(Tenant tenant, Application application, DeviceInputVO deviceForm) throws BadServiceResponseException {
+    private DeviceModel getDeviceModel(Tenant tenant, Application application, DeviceInputVO deviceForm) throws BadServiceResponseException {
+    	if (deviceForm == null || StringUtils.isBlank(deviceForm.getDeviceModelName())) {
+            return null;
+        }
+
+        ServiceResponse<DeviceModel> deviceModelResponse = deviceModelService
+        		.getByTenantApplicationAndName(tenant, application, deviceForm.getDeviceModelName());
+        if (deviceModelResponse.isOk()) {
+        	DeviceModel deviceModel = deviceModelResponse.getResult();
+            return deviceModel;
+        } else {
+            throw new BadServiceResponseException(user, deviceModelResponse, validationsCode);
+        }
+	}
+
+	private Location getLocation(Tenant tenant, Application application, DeviceInputVO deviceForm) throws BadServiceResponseException {
 
         if (deviceForm == null || StringUtils.isBlank(deviceForm.getLocationName())) {
             return null;
@@ -153,6 +178,7 @@ public class DeviceRestController extends AbstractRestController implements Init
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
         Location location = getLocation(tenant, application, deviceForm);
+        DeviceModel deviceModel = getDeviceModel(tenant, application, deviceForm);
 
         Device deviceFromDB = null;
         ServiceResponse<Device> deviceResponse = deviceRegisterService.getByDeviceGuid(tenant, application, deviceGuid);
@@ -167,6 +193,7 @@ public class DeviceRestController extends AbstractRestController implements Init
         deviceFromDB.setName(deviceForm.getName());
         deviceFromDB.setDescription(deviceForm.getDescription());
         deviceFromDB.setLocation(location);
+        deviceFromDB.setDeviceModel(deviceModel);
         deviceFromDB.setActive(deviceForm.isActive());
 
         ServiceResponse<Device> updateResponse = deviceRegisterService.update(tenant, application, deviceGuid, deviceFromDB);

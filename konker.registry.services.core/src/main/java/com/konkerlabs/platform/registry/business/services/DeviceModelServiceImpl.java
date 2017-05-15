@@ -153,8 +153,11 @@ public class DeviceModelServiceImpl implements DeviceModelService {
 		
 		if (deviceModel.isDefaultModel()) {
 			DeviceModel defaultModel = deviceModelRepository.findDefault(tenant.getId(), application.getName(), true);
-			defaultModel.setDefaultModel(false);
-			deviceModelRepository.save(defaultModel);
+			
+			Optional.ofNullable(defaultModel).ifPresent(def -> {
+				def.setDefaultModel(false);
+				deviceModelRepository.save(def);
+			});
 		}
 
 		List<DeviceModel> allModels = deviceModelRepository.findAllByTenantIdAndApplicationName(tenant.getId(), application.getName());
@@ -163,6 +166,7 @@ public class DeviceModelServiceImpl implements DeviceModelService {
 		}
 
 		deviceModel.setTenant(tenant);
+		deviceModel.setApplication(application);
 		deviceModel.setGuid(UUID.randomUUID().toString());
 		DeviceModel save = deviceModelRepository.save(deviceModel);
 		LOGGER.info("DeviceModel created. Name: {}", save.getName(), tenant.toURI(), tenant.getLogLevel());
@@ -182,13 +186,25 @@ public class DeviceModelServiceImpl implements DeviceModelService {
                     .withMessage(Validations.DEVICE_MODEL_NAME_IS_NULL.getCode())
                     .build();
 
-		DeviceModel devModelFromDB = getByTenantIdApplicationNameAndName(tenant, application, name).getResult();
+		DeviceModel devModelFromDB = getByTenantApplicationAndName(tenant, application, name).getResult();
 		if (!Optional.ofNullable(devModelFromDB).isPresent()) {
 			return ServiceResponseBuilder.<DeviceModel>error()
                     .withMessage(Validations.DEVICE_MODEL_DOES_NOT_EXIST.getCode())
                     .build();
 		}
 
+		if (!devModelFromDB.getName().equals(updatingDeviceModel.getName()) &&
+				deviceModelRepository
+					.findByTenantIdApplicationNameAndName(tenant.getId(), application.getName(), updatingDeviceModel.getName()) != null) {
+			LOGGER.debug("error saving device model",
+					DeviceModel.builder().guid("NULL").tenant(tenant).build().toURI(),
+					tenant.getLogLevel());
+			return ServiceResponseBuilder.<DeviceModel>error()
+					.withMessage(Validations.DEVICE_MODEL_ALREADY_REGISTERED.getCode())
+					.build();
+		}
+
+		devModelFromDB.setName(updatingDeviceModel.getName());
 		devModelFromDB.setDescription(updatingDeviceModel.getDescription());
 		devModelFromDB.setDefaultModel(updatingDeviceModel.isDefaultModel());
 
@@ -197,6 +213,13 @@ public class DeviceModelServiceImpl implements DeviceModelService {
 			return ServiceResponseBuilder.<DeviceModel>error()
 					.withMessages(validations.get())
 					.build();
+		}
+		
+		
+		if (devModelFromDB.isDefaultModel()) {
+			DeviceModel defaultModel = deviceModelRepository.findDefault(tenant.getId(), application.getName(), true);
+			defaultModel.setDefaultModel(false);
+			deviceModelRepository.save(defaultModel);
 		}
 
 		DeviceModel updated = deviceModelRepository.save(devModelFromDB);
@@ -257,7 +280,7 @@ public class DeviceModelServiceImpl implements DeviceModelService {
 	}
 
 	@Override
-	public ServiceResponse<DeviceModel> getByTenantIdApplicationNameAndName(Tenant tenant, Application application, String name) {
+	public ServiceResponse<DeviceModel> getByTenantApplicationAndName(Tenant tenant, Application application, String name) {
 		if (!Optional.ofNullable(tenant).isPresent()) {
 			return ServiceResponseBuilder.<DeviceModel>error()
 					.withMessage(CommonValidations.TENANT_NULL.getCode())
@@ -291,6 +314,57 @@ public class DeviceModelServiceImpl implements DeviceModelService {
 		}
 
 		return ServiceResponseBuilder.<DeviceModel>ok().withResult(deviceModel).build();
+	}
+
+	@Override
+	public ServiceResponse<List<Device>> listDevicesByDeviceModelName(Tenant tenant, 
+			Application application,
+			String deviceModelName) {
+
+		if (!Optional.ofNullable(tenant).isPresent())
+            return ServiceResponseBuilder.<List<Device>>error()
+                    .withMessage(CommonValidations.TENANT_NULL.getCode())
+                    .build();
+
+        if (!Optional.ofNullable(application).isPresent())
+            return ServiceResponseBuilder.<List<Device>>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode())
+                    .build();
+        
+        DeviceModel devModel = getByTenantApplicationAndName(tenant, application, deviceModelName).getResult();
+        if (!Optional.ofNullable(devModel).isPresent()) {
+			return ServiceResponseBuilder.<List<Device>>error()
+                    .withMessage(Validations.DEVICE_MODEL_DOES_NOT_EXIST.getCode())
+                    .build();
+		}
+        
+        List<Device> devices = deviceRepository.findAllByTenantIdApplicationNameAndDeviceModel(
+        		tenant.getId(), 
+        		application.getName(), 
+        		devModel.getId());
+		
+        return ServiceResponseBuilder.<List<Device>>ok()
+                .withResult(devices)
+                .build();
+	}
+
+	@Override
+	public ServiceResponse<DeviceModel> findDefault(Tenant tenant, Application application, boolean defaultModel) {
+		if (!Optional.ofNullable(tenant).isPresent())
+            return ServiceResponseBuilder.<DeviceModel>error()
+                    .withMessage(CommonValidations.TENANT_NULL.getCode())
+                    .build();
+
+        if (!Optional.ofNullable(application).isPresent())
+            return ServiceResponseBuilder.<DeviceModel>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode())
+                    .build();
+
+        DeviceModel deviceModelDefault = deviceModelRepository.findDefault(tenant.getId(), application.getName(), defaultModel);
+        
+        return ServiceResponseBuilder.<DeviceModel>ok()
+                .withResult(deviceModelDefault)
+                .build();
 	}
 
 }

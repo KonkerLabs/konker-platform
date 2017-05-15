@@ -1,33 +1,19 @@
 package com.konkerlabs.platform.registry.business.services;
 
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.EncodeHintType;
-import com.google.zxing.client.j2se.MatrixToImageWriter;
-import com.google.zxing.common.BitMatrix;
-import com.google.zxing.qrcode.QRCodeWriter;
-import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.EventRoute;
-import com.konkerlabs.platform.registry.business.model.Location;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
-import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
-import com.konkerlabs.platform.registry.business.repositories.EventRouteRepository;
-import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
-import com.konkerlabs.platform.registry.business.repositories.events.api.EventRepository;
-import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.LocationSearchService;
-import com.konkerlabs.platform.registry.business.services.api.LocationService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
-import com.konkerlabs.platform.registry.config.EventStorageConfig;
-import com.konkerlabs.platform.registry.config.PubServerConfig;
-import com.konkerlabs.platform.registry.type.EventStorageConfigType;
-import com.konkerlabs.platform.security.exceptions.SecurityException;
-import com.konkerlabs.platform.security.managers.PasswordManager;
+import java.io.ByteArrayOutputStream;
+import java.text.MessageFormat;
+import java.util.AbstractMap;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.codec.binary.Base64OutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,13 +25,37 @@ import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.io.ByteArrayOutputStream;
-import java.text.MessageFormat;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.annotation.PostConstruct;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
+import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
+import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.DeviceModel;
+import com.konkerlabs.platform.registry.business.model.EventRoute;
+import com.konkerlabs.platform.registry.business.model.Location;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
+import com.konkerlabs.platform.registry.business.repositories.DeviceModelRepository;
+import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
+import com.konkerlabs.platform.registry.business.repositories.EventRouteRepository;
+import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
+import com.konkerlabs.platform.registry.business.repositories.events.api.EventRepository;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.LocationSearchService;
+import com.konkerlabs.platform.registry.business.services.api.LocationService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.config.EventStorageConfig;
+import com.konkerlabs.platform.registry.config.PubServerConfig;
+import com.konkerlabs.platform.registry.type.EventStorageConfigType;
+import com.konkerlabs.platform.security.exceptions.SecurityException;
+import com.konkerlabs.platform.security.managers.PasswordManager;
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
@@ -77,6 +87,12 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
     @Autowired
     private LocationSearchService locationSearchService;
 
+    @Autowired
+    private LocationService locationService;
+    
+    @Autowired
+    private DeviceModelService deviceModelService;
+    
     @PostConstruct
     public void init() {
         try {
@@ -163,6 +179,24 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                         Device.builder().guid("NULL").tenant(tenant).build().toURI(),
                         device.getLogLevel());
             }
+        }
+        
+        if (device.getDeviceModel() == null) {
+            ServiceResponse<DeviceModel> response = deviceModelService.findDefault(tenant, application, true);
+            DeviceModel defaultModel = response.getResult();
+            
+            if (!Optional.ofNullable(defaultModel).isPresent()) {
+            	defaultModel = DeviceModel.builder()
+            			.name("default")
+            			.description("default model")
+            			.defaultModel(true)
+            			.guid(UUID.randomUUID().toString())
+            			.build();
+            	ServiceResponse<DeviceModel> serviceResponse = deviceModelService.register(tenant, application, defaultModel);
+            	defaultModel = serviceResponse.getResult();
+            } 
+            
+            device.setDeviceModel(defaultModel);
         }
 
         device.onRegistration();

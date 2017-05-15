@@ -2,7 +2,6 @@ package com.konkerlabs.platform.registry.api.model;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -21,7 +20,9 @@ public class DeviceInputVO {
     protected String description;
     @ApiModelProperty(value = "the location name of device", example = "br_sp", position = 4)
     protected String locationName;
-    @ApiModelProperty(example = "true", position = 5)
+    @ApiModelProperty(value = "the device model name of device", example = "PresenceSensor", position = 5)
+    protected String deviceModelName;
+    @ApiModelProperty(example = "true", position = 6)
     protected boolean active = true;
 
 }
