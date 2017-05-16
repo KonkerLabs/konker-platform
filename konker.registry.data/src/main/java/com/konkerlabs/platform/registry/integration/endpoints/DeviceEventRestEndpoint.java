@@ -193,7 +193,6 @@ public class DeviceEventRestEndpoint {
             method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    @JsonView(EventJsonView.class)
     public ResponseEntity<EventResponse> configEvent(HttpServletRequest servletRequest,
                                                  @PathVariable("apiKey") String apiKey,
                                                  @AuthenticationPrincipal Device principal,
