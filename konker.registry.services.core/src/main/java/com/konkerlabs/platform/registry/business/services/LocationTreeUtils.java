@@ -1,9 +1,14 @@
 package com.konkerlabs.platform.registry.business.services;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +70,28 @@ public class LocationTreeUtils {
         return nodes;
     }
 
+    public static List<Location> getNodesListBreadthFirstOrder(Location root) {
+        if (root == null) {
+            return null;
+        }
+
+        List<Location> nodes = new ArrayList<>();
+
+        Queue<Location> queue = new LinkedList<Location>() ;
+        queue.add(root);
+
+        while(!queue.isEmpty()) {
+            Location node = queue.remove();
+            nodes.add(node);
+
+            if (node.getChildrens() != null) {
+                queue.addAll(node.getChildrens());
+            }
+        }
+
+        return nodes;
+    }
+
     public static Location searchLocationByName(Location root, String locationName, int deep) {
 
         if (deep > 50) {
@@ -87,47 +114,55 @@ public class LocationTreeUtils {
 
     }
 
-    public static List<Location> listNewLocationns(Location currentTree, Location newTree) {
+    public static List<Location> listNewLocations(Location currentTree, Location newTree) {
 
-        List<Location> currentNodes = getNodesList(currentTree);
-        List<Location> newNodes = getNodesList(newTree);
+        List<Location> newNodes = new ArrayList<>();
 
-        Map<String, Location> currentNodesMap = getNodesMapByName(newNodes);
+        List<Location> newTreeNodes = getNodesListBreadthFirstOrder(newTree);
+        Set<String> currentNodesSet = getNodesSetName(getNodesList(currentTree));
 
-        for (Location location : currentNodes) {
-            currentNodesMap.remove(location.getName());
+        for (Location location : newTreeNodes) {
+            if (!currentNodesSet.contains(location.getName())) {
+                newNodes.add(location);
+            }
         }
 
-        return new ArrayList<Location>(currentNodesMap.values());
+        // deepest location first
+        Collections.reverse(newNodes);
+
+        return newNodes;
 
     }
 
-    public static List<Location> listRemovedLocationns(Location currentTree, Location newTree) {
+    public static List<Location> listRemovedLocations(Location currentTree, Location newTree) {
 
-        List<Location> currentNodes = getNodesList(currentTree);
-        List<Location> newNodes = getNodesList(newTree);
+        List<Location> removedNodes = new ArrayList<>();
 
-        Map<String, Location> currentNodesMap = getNodesMapByName(currentNodes);
+        List<Location> currrentNodes = getNodesListBreadthFirstOrder(currentTree);
+        Set<String> newNodesSet = getNodesSetName(getNodesList(newTree));
 
-        for (Location location : newNodes) {
-            currentNodesMap.remove(location.getName());
+        for (Location location : currrentNodes) {
+            if (!newNodesSet.contains(location.getName())) {
+                removedNodes.add(location);
+            }
         }
 
-        return new ArrayList<Location>(currentNodesMap.values());
+        // deepest location first
+        Collections.reverse(removedNodes);
+
+        return removedNodes;
 
     }
 
-    public static List<Location> listExistingLocationns(Location currentTree, Location newTree) {
+    public static List<Location> listExistingLocations(Location currentTree, Location newTree) {
 
         List<Location> existingLocations = new ArrayList<>();
 
-        List<Location> currentNodes = getNodesList(currentTree);
+        Set<String> currentNodesMap = getNodesSetName(getNodesList(currentTree));
         List<Location> newNodes = getNodesList(newTree);
 
-        Map<String, Location> currentNodesMap = getNodesMapByName(currentNodes);
-
         for (Location location : newNodes) {
-            if (currentNodesMap.containsKey(location.getName())) {
+            if (currentNodesMap.contains(location.getName())) {
                 existingLocations.add(location);
             }
         }
@@ -135,15 +170,15 @@ public class LocationTreeUtils {
         return existingLocations;
     }
 
-    private static Map<String, Location> getNodesMapByName(List<Location> currentNodes) {
+    private static Set<String> getNodesSetName(List<Location> currentNodes) {
 
-        Map<String, Location> locationsMap = new HashMap<>();
+        Set<String> locationsSet = new HashSet<>();
 
         for (Location location : currentNodes) {
-            locationsMap.put(location.getName(), location);
+            locationsSet.add(location.getName());
         }
 
-        return locationsMap;
+        return locationsSet;
 
     }
 

@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.business.services;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -208,8 +209,18 @@ public class LocationServiceImpl implements LocationService {
                     .build();
         }
 
-        // remove
-        locationRepository.delete(location);
+        // build node tree
+        List<Location> allNodes = locationRepository.findAllByTenantIdAndApplicationName(tenant.getId(), application.getName());
+        Location currentTree = LocationTreeUtils.searchLocationByName(LocationTreeUtils.buildTree(allNodes), location.getName(), 0);
+
+        // list deepest order
+        List<Location> allTreeNodes = LocationTreeUtils.getNodesListBreadthFirstOrder(currentTree);
+        Collections.reverse(allTreeNodes);
+
+        // remove children first
+        for (Location node: allTreeNodes) {
+            locationRepository.delete(node);
+        }
 
         LOGGER.info("Location removed. Id: {}", location.getId(), tenant.toURI(), tenant.getLogLevel());
 
@@ -334,6 +345,9 @@ public class LocationServiceImpl implements LocationService {
                     .build();
         }
 
+        // set parent
+        setLocationParent(parentNode, sublocations);
+
         // all nodes must have a valid name
         for (Location location : sublocations) {
             location.setTenant(tenant);
@@ -352,9 +366,9 @@ public class LocationServiceImpl implements LocationService {
         Location newSubtree = parentNode;
         newSubtree.setChildrens(sublocations);
 
-        List<Location> removedLocations = LocationTreeUtils.listRemovedLocationns(currentSubtree, newSubtree);
-        List<Location> newLocations = LocationTreeUtils.listNewLocationns(currentSubtree, newSubtree);
-        List<Location> existingLocations = LocationTreeUtils.listExistingLocationns(currentSubtree, newSubtree);
+        List<Location> removedLocations = LocationTreeUtils.listRemovedLocations(currentSubtree, newSubtree);
+        List<Location> newLocations = LocationTreeUtils.listNewLocations(currentSubtree, newSubtree);
+        List<Location> existingLocations = LocationTreeUtils.listExistingLocations(currentSubtree, newSubtree);
 
         // verify multiples defaults
         if (isMultipleDefaults(newSubtree)) {
@@ -401,7 +415,35 @@ public class LocationServiceImpl implements LocationService {
             }
         }
 
+        // update nodes
+        for (Location location: existingLocations) {
+            this.update(tenant, application, location.getGuid(), location);
+        }
+
+        // create nodes
+        for (Location location: newLocations) {
+            this.save(tenant, application, location);
+        }
+
+        // remove nodes
+        for (Location location: removedLocations) {
+            this.remove(tenant, application, location.getGuid());
+        }
+
         return ServiceResponseBuilder.<Location>ok().build();
+    }
+
+    private void setLocationParent(Location parent, List<Location> childrens) {
+
+        if (childrens == null) {
+            return;
+        }
+
+        for (Location child : childrens) {
+            child.setParent(parent);
+            setLocationParent(child, child.getChildrens());
+        }
+
     }
 
     private Map<String, Object[]> verifyNameInUse(Location root) {
