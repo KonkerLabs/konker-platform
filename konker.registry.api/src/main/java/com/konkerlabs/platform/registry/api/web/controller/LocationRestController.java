@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.api.web.controller;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.Set;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -53,7 +55,7 @@ public class LocationRestController extends AbstractRestController implements In
     private Set<String> validationsCode = new HashSet<>();
 
     @GetMapping(path = "/")
-    //@PreAuthorize("hasAuthority('LIST_LOCATIONS')")
+    @PreAuthorize("hasAuthority('LIST_LOCATIONS')")
     @ApiOperation(
             value = "List all locations by application",
             response = LocationVO.class)
@@ -77,7 +79,7 @@ public class LocationRestController extends AbstractRestController implements In
             value = "Get a location by name",
             response = RestResponse.class
     )
-    //@PreAuthorize("hasAuthority('SHOW_LOCATION')")
+    @PreAuthorize("hasAuthority('SHOW_LOCATION')")
     public LocationVO read(
             @PathVariable("application") String applicationId,
             @PathVariable("locationName") String locationName) throws BadServiceResponseException, NotFoundResponseException {
@@ -100,7 +102,7 @@ public class LocationRestController extends AbstractRestController implements In
             value = "List the devices of a location and its sub-locations",
             response = RestResponse.class
     )
-    //@PreAuthorize("hasAuthority('SHOW_LOCATION')")
+    @PreAuthorize("hasAuthority('SHOW_LOCATION')")
     public List<DeviceVO> devices(
             @PathVariable("application") String applicationId,
             @PathVariable("locationName") String locationName) throws BadServiceResponseException, NotFoundResponseException {
@@ -120,7 +122,7 @@ public class LocationRestController extends AbstractRestController implements In
 
     @PostMapping
     @ApiOperation(value = "Create a location")
-    //@PreAuthorize("hasAuthority('CREATE_LOCATION')")
+    @PreAuthorize("hasAuthority('CREATE_LOCATION')")
     public LocationVO create(
             @PathVariable("application") String applicationId,
             @ApiParam(
@@ -132,7 +134,7 @@ public class LocationRestController extends AbstractRestController implements In
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
 
-        Location parent = getParent(locationForm, tenant, application);
+        Location parent = getParent(tenant, application, locationForm);
 
         Location location = Location.builder()
                 .parent(parent)
@@ -153,7 +155,7 @@ public class LocationRestController extends AbstractRestController implements In
 
     @PutMapping(path = "/{locationName}")
     @ApiOperation(value = "Update a location")
-    //@PreAuthorize("hasAuthority('EDIT_LOCATION')")
+    @PreAuthorize("hasAuthority('EDIT_LOCATION')")
     public void update(
             @PathVariable("application") String applicationId,
             @PathVariable("locationName") String locationName,
@@ -166,7 +168,7 @@ public class LocationRestController extends AbstractRestController implements In
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
 
-        Location parent = getParent(locationForm, tenant, application);
+        Location parent = getParent(tenant, application, locationForm);
 
         Location locationFromDB = null;
         ServiceResponse<Location> locationResponse = locationSearchService.findByName(tenant, application, locationName, false);
@@ -183,16 +185,67 @@ public class LocationRestController extends AbstractRestController implements In
         locationFromDB.setDescription(locationForm.getDescription());
         locationFromDB.setDefaultLocation(locationForm.isDefaultLocation());
 
-
         ServiceResponse<Location> updateResponse = locationService.update(tenant, application, locationFromDB.getGuid(), locationFromDB);
 
         if (!updateResponse.isOk()) {
             throw new BadServiceResponseException(user, locationResponse, validationsCode);
         }
 
+        // update childrens (subtree)
+        List<Location> sublocations = getSublocationsFromVO(locationForm.getSublocations());
+
+        if (sublocations != null) {
+            updateResponse = locationService.updateSubtree(tenant, application, locationFromDB.getGuid(), sublocations);
+
+            if (!updateResponse.isOk()) {
+                throw new BadServiceResponseException(user, locationResponse, validationsCode);
+            }
+        }
+
     }
 
-    private Location getParent(LocationInputVO locationForm, Tenant tenant, Application application)
+    private List<Location> getSublocationsFromVO(List<LocationVO> sublocationsVO) {
+
+        if (sublocationsVO == null) {
+            return null;
+        }
+
+        List<Location> sublocations = new ArrayList<>();
+
+        for (LocationVO locationVO : sublocationsVO) {
+            sublocations.add(getLocationFromVO(locationVO));
+        }
+
+        return sublocations;
+
+    }
+
+    private Location getLocationFromVO(LocationVO locationVO) {
+        return Location.builder()
+                       .guid(locationVO.getGuid())
+                       .parent(getParentFromVO(locationVO))
+                       .name(locationVO.getName())
+                       .description(locationVO.getDescription())
+                       .childrens(getSublocationsFromVO(locationVO.getSublocations()))
+                       .defaultLocation(locationVO.isDefaultLocation())
+                       .build();
+    }
+
+    private Location getParentFromVO(LocationVO locationVO) {
+
+        final String parentName = locationVO.getParentName();
+
+        if (!StringUtils.hasText(parentName)) {
+            return null;
+        } else {
+            return Location.builder()
+                           .name(parentName)
+                           .build();
+        }
+
+    }
+
+    private Location getParent(Tenant tenant, Application application, LocationInputVO locationForm)
             throws BadServiceResponseException {
 
         if (!StringUtils.hasText(locationForm.getParentName())) {
@@ -221,7 +274,7 @@ public class LocationRestController extends AbstractRestController implements In
 
     @DeleteMapping(path = "/{locationName}")
     @ApiOperation(value = "Delete a location")
-    //@PreAuthorize("hasAuthority('REMOVE_LOCATION')")
+    @PreAuthorize("hasAuthority('REMOVE_LOCATION')")
     public void delete(
             @PathVariable("application") String applicationId,
             @PathVariable("locationName") String locationName) throws BadServiceResponseException, NotFoundResponseException {

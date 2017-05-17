@@ -1,11 +1,7 @@
 package com.konkerlabs.platform.registry.api.model;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.konkerlabs.platform.registry.api.model.core.SerializableVO;
 import com.konkerlabs.platform.registry.business.model.DeviceConfig;
-import com.konkerlabs.platform.registry.business.model.Location;
-import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.mongodb.util.JSON;
 
 import io.swagger.annotations.ApiModel;

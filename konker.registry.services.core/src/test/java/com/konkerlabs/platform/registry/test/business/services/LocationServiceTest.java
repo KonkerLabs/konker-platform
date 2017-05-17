@@ -391,12 +391,6 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldTryToRemoveWithSubLocations() {
-        ServiceResponse<Location> response = locationService.remove(tenant, application, "d75758a6-235b-413b-85b3-d218404f8c11");
-        assertThat(response, hasErrorMessage(LocationService.Validations.LOCATION_HAVE_CHILDRENS.getCode()));
-    }
-
-    @Test
     public void shouldTryToRemoveWithDevices() {
         Location location = locationRepository.findByTenantAndApplicationAndGuid(tenant.getId(), application.getName(), "d75758a6-235b-413b-85b3-d218404f8c11");
 

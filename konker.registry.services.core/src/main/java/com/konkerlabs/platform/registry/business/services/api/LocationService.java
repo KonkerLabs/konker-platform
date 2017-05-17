@@ -15,8 +15,8 @@ public interface LocationService {
 		LOCATION_PARENT_NULL("service.location.parent_null"),
 		LOCATION_PARENT_NOT_FOUND("service.location.parent_not_found"),
 		LOCATION_HAVE_DEVICES("service.location.have_devices"),
-		LOCATION_HAVE_CHILDRENS("service.location.have_device_configs"),
-		LOCATION_HAVE_DEVICE_CONFIGS("service.location.have_configs")
+		LOCATION_HAVE_DEVICE_CONFIGS("service.location.have_device_configs"),
+		LOCATION_MULTIPLE_DEFAULTS(null)
 		;
 
 		public String getCode() {
@@ -51,6 +51,7 @@ public interface LocationService {
 
     ServiceResponse<Location> save(Tenant tenant, Application application, Location location);
 	ServiceResponse<Location> update(Tenant tenant, Application application, String guid, Location location);
-	ServiceResponse<Location> remove(Tenant tenant, Application application, String guid);
+    ServiceResponse<Location> updateSubtree(Tenant tenant, Application application, String guid, List<Location> sublocations);
+    ServiceResponse<Location> remove(Tenant tenant, Application application, String guid);
 
 }

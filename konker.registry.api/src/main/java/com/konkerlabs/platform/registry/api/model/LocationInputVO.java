@@ -46,6 +46,6 @@ public class LocationInputVO {
             example = "false",
             required = true,
             position = 5)
-    protected List<LocationVO> subLocations;
+    protected List<LocationVO> sublocations;
 
 }

@@ -337,9 +337,6 @@ public class LocationRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryDeleteWithWrongApplication() throws Exception {
 
-        when(locationService.remove(tenant, application, location1.getName()))
-            .thenReturn(ServiceResponseBuilder.<Location>error().withMessage(LocationService.Validations.LOCATION_HAVE_CHILDRENS.getCode()).build());
-
         getMockMvc().perform(MockMvcRequestBuilders.delete(MessageFormat.format("/{0}/{1}/{2}", NONEXIST_APPLICATION_NANE, BASEPATH, location1.getName()))
                     .contentType("application/json")
                     .accept(MediaType.APPLICATION_JSON))
