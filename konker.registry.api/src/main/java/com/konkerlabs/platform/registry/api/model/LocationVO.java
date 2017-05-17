@@ -32,19 +32,12 @@ public class LocationVO extends LocationInputVO implements SerializableVO<Locati
         this.name = location.getName();
         this.description = location.getDescription();
         this.defaultLocation = location.isDefaultLocation();
-        this.subLocations = getSubLocations(location.getChildrens());
+        this.sublocations = getSublocations(location.getChildrens());
     }
 
     @Override
     public LocationVO apply(Location model) {
-        LocationVO vo = new LocationVO();
-        vo.setGuid(model.getGuid());
-        vo.setParentName(getParentName(model.getParent()));
-        vo.setName(model.getName());
-        vo.setDescription(model.getDescription());
-        vo.setDefaultLocation(model.isDefaultLocation());
-        vo.setSubLocations(getSubLocations(model.getChildrens()));
-        return vo;
+        return new LocationVO(model);
     }
 
     @Override
@@ -67,17 +60,17 @@ public class LocationVO extends LocationInputVO implements SerializableVO<Locati
         }
     }
 
-    private List<LocationVO> getSubLocations(List<Location> childrens) {
-        List<LocationVO> subLocations = null;
+    private List<LocationVO> getSublocations(List<Location> childrens) {
+        List<LocationVO> sublocations = null;
 
         if (childrens != null && !childrens.isEmpty()) {
-            subLocations = new ArrayList<>();
+            sublocations = new ArrayList<>();
             for (Location subLocation : childrens) {
-                subLocations.add(new LocationVO(subLocation));
+                sublocations.add(new LocationVO(subLocation));
             }
         }
 
-        return subLocations;
+        return sublocations;
     }
 
 }
