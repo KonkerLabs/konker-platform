@@ -101,5 +101,11 @@ public class WebTestConfiguration {
     public DeviceConfigSetupService deviceConfigSetupService() {
         return Mockito.mock(DeviceConfigSetupService.class);
     }
+    
+    @Bean
+    public DeviceModelService deviceModelService() {
+    	return Mockito.mock(DeviceModelService.class);
+    }
+    
 
 }

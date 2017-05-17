@@ -4,9 +4,11 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.services.api.DeviceConfigSetupService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.DeviceConfigSetupService.Validations;
 import com.konkerlabs.platform.registry.data.services.JedisTaskService;
 import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
@@ -64,6 +66,7 @@ public class DeviceEventRestEndpoint {
     private DeviceRegisterService deviceRegisterService;
     private Executor executor;
     private JedisTaskService jedisTaskService;
+    private DeviceConfigSetupService deviceConfigSetupService;
 
     @Autowired
     public DeviceEventRestEndpoint(ApplicationContext applicationContext,
@@ -72,7 +75,8 @@ public class DeviceEventRestEndpoint {
                                    DeviceEventService deviceEventService,
                                    DeviceRegisterService deviceRegisterService,
                                    Executor executor,
-                                   JedisTaskService jedisTaskService) {
+                                   JedisTaskService jedisTaskService,
+                                   DeviceConfigSetupService deviceConfigSetupService) {
         this.applicationContext = applicationContext;
         this.deviceEventProcessor = deviceEventProcessor;
         this.jsonParsingService = jsonParsingService;
@@ -80,6 +84,7 @@ public class DeviceEventRestEndpoint {
         this.deviceRegisterService = deviceRegisterService;
         this.executor = executor;
         this.jedisTaskService = jedisTaskService;
+        this.deviceConfigSetupService = deviceConfigSetupService;
     }
 
     @RequestMapping(
@@ -181,6 +186,48 @@ public class DeviceEventRestEndpoint {
         		EventResponse.builder().code(String.valueOf(HttpStatus.OK.value()))
         		.message(HttpStatus.OK.name()).build(),
         		HttpStatus.OK);
+    }
+    
+    @RequestMapping(
+            value = { "cfg/{apiKey}" },
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity<EventResponse> configEvent(HttpServletRequest servletRequest,
+                                                 @PathVariable("apiKey") String apiKey,
+                                                 @AuthenticationPrincipal Device principal,
+                                                 Locale locale) {
+    	Device device = deviceRegisterService.findByApiKey(apiKey);
+
+    	if (!principal.getApiKey().equals(apiKey)) {
+            return new ResponseEntity<EventResponse>(
+            			EventResponse.builder().code(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+            		.message(applicationContext.getMessage(Messages.INVALID_RESOURCE.getCode(), null, locale)).build(), 
+            		HttpStatus.BAD_REQUEST);
+    	}
+    	
+    	if (!Optional.ofNullable(device).isPresent()) {
+    		return new ResponseEntity<EventResponse>(
+        			EventResponse.builder().code(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+        		.message(applicationContext.getMessage(Messages.DEVICE_NOT_FOUND.getCode(), null, locale)).build(), 
+        		HttpStatus.BAD_REQUEST);
+    	}
+    	
+    	ServiceResponse<String> serviceResponse = deviceConfigSetupService
+    			.findByModelAndLocation(device.getTenant(), device.getApplication(), device.getDeviceModel(), device.getLocation());
+
+    	if (serviceResponse.isOk()) {
+    		return new ResponseEntity<EventResponse>(
+            		EventResponse.builder().code(String.valueOf(HttpStatus.OK.value()))
+            		.message(serviceResponse.getResult()).build(),
+            		HttpStatus.OK);
+    	} else {
+    		return new ResponseEntity<EventResponse>(
+            		EventResponse.builder().code(String.valueOf(HttpStatus.NOT_FOUND.value()))
+            		.message(applicationContext.getMessage(Validations.DEVICE_CONFIG_NOT_FOUND.getCode(), null, locale))
+            		.build(),
+            		HttpStatus.NOT_FOUND);
+    	}
     }
 
     @Data

@@ -30,9 +30,16 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.DeviceModel;
+import com.konkerlabs.platform.registry.business.model.Location;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.services.api.DeviceConfigSetupService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.business.services.api.DeviceConfigSetupService.Validations;
 import com.konkerlabs.platform.registry.data.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.data.services.JedisTaskService;
 import com.konkerlabs.platform.registry.integration.endpoints.DeviceEventRestEndpoint;
@@ -73,6 +80,9 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
 
     @Autowired
     private DeviceRegisterService deviceRegisterService;
+    
+    @Autowired
+    private DeviceConfigSetupService deviceConfigSetupService;
 
     @Autowired
     private Executor executor;
@@ -97,12 +107,17 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
                 deviceEventService,
                 deviceRegisterService,
                 executor,
-                jedisTaskService);
+                jedisTaskService,
+                deviceConfigSetupService);
     }
 
 	@After
 	public void tearDown() {
 		Mockito.reset(jsonParsingService);
+		Mockito.reset(deviceEventService);
+		Mockito.reset(deviceRegisterService);
+		Mockito.reset(jedisTaskService);
+		Mockito.reset(deviceConfigSetupService);
 	}
 
     @Test
@@ -164,6 +179,121 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
                 	.andExpect(content().string(org.hamcrest.Matchers.containsString("origin")));
 
     }
+    
+    @Test
+    public void shouldReturnBadRequestInvalidResource() throws Exception {
+        Device device = Device.builder().deviceId("tug6g6essh4m")
+                .active(true)
+                .apiKey("e4399b2ed998")
+                .guid("7d51c242-81db-11e6-a8c2-0746f010e945")
+                .description("test")
+                .deviceId("device_id")
+                .guid("67014de6-81db-11e6-a5bc-3f99b38315c6").build();
+
+        SecurityContext context = SecurityContextHolder.getContext();
+        Authentication auth = new UsernamePasswordAuthenticationToken(device, null);
+        context.setAuthentication(auth);
+
+        getMockMvc().perform(
+                get("/cfg/"+ DEVICE_USER)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .param("offset", String.valueOf(OFFSET))
+                        .param("waitTime", String.valueOf(waitTime)))
+                .andExpect(status().isBadRequest());
+   
+    }
+    
+    @Test
+    public void shouldReturnBadRequestDeviceNotFound() throws Exception {
+        Device device = Device.builder().deviceId("tug6g6essh4m")
+                .active(true)
+                .apiKey("e4399b2ed998")
+                .guid("7d51c242-81db-11e6-a8c2-0746f010e945")
+                .description("test")
+                .deviceId("device_id")
+                .guid("67014de6-81db-11e6-a5bc-3f99b38315c6").build();
+
+        SecurityContext context = SecurityContextHolder.getContext();
+        Authentication auth = new UsernamePasswordAuthenticationToken(device, null);
+        context.setAuthentication(auth);
+
+        getMockMvc().perform(
+                get("/cfg/"+ device.getApiKey())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .param("offset", String.valueOf(OFFSET))
+                        .param("waitTime", String.valueOf(waitTime)))
+                .andExpect(status().isBadRequest());
+   
+    }
+    
+    @Test
+    public void shouldReturnDeviceConfigNotFound() throws Exception {
+        Device device = Device.builder().deviceId("tug6g6essh4m")
+                .active(true)
+                .apiKey("e4399b2ed998")
+                .guid("7d51c242-81db-11e6-a8c2-0746f010e945")
+                .description("test")
+                .deviceId("device_id")
+                .guid("67014de6-81db-11e6-a5bc-3f99b38315c6")
+                .tenant(Tenant.builder().domainName("konker").name("Konker").build())
+                .application(Application.builder().name("SmartAC").build())
+                .deviceModel(DeviceModel.builder().name("SensorTemp").build())
+                .location(Location.builder().name("sp_br").build())
+                .build();
+        
+        when(deviceRegisterService.findByApiKey(device.getApiKey()))
+        	.thenReturn(device);
+        when(deviceConfigSetupService.findByModelAndLocation(device.getTenant(), device.getApplication(), device.getDeviceModel(), device.getLocation()))
+        	.thenReturn(ServiceResponseBuilder.<String> error()
+        			.withMessage(Validations.DEVICE_CONFIG_NOT_FOUND.getCode()).build());
+
+        SecurityContext context = SecurityContextHolder.getContext();
+        Authentication auth = new UsernamePasswordAuthenticationToken(device, null);
+        context.setAuthentication(auth);
+
+        getMockMvc().perform(
+                get("/cfg/"+ device.getApiKey())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .param("offset", String.valueOf(OFFSET))
+                        .param("waitTime", String.valueOf(waitTime)))
+                .andExpect(status().isNotFound());
+   
+    }
+    
+    @Test
+    public void shouldReturnConfig() throws Exception {
+        Device device = Device.builder().deviceId("tug6g6essh4m")
+                .active(true)
+                .apiKey("e4399b2ed998")
+                .guid("7d51c242-81db-11e6-a8c2-0746f010e945")
+                .description("test")
+                .deviceId("device_id")
+                .guid("67014de6-81db-11e6-a5bc-3f99b38315c6")
+                .tenant(Tenant.builder().domainName("konker").name("Konker").build())
+                .application(Application.builder().name("SmartAC").build())
+                .deviceModel(DeviceModel.builder().name("SensorTemp").build())
+                .location(Location.builder().name("sp_br").build())
+                .build();
+        
+        when(deviceRegisterService.findByApiKey(device.getApiKey()))
+        	.thenReturn(device);
+        when(deviceConfigSetupService.findByModelAndLocation(device.getTenant(), device.getApplication(), device.getDeviceModel(), device.getLocation()))
+        	.thenReturn(ServiceResponseBuilder.<String> ok()
+        			.withResult("{'minimalInterval': 10, "
+        					+ "'unit': 'celsius' }").build());
+
+        SecurityContext context = SecurityContextHolder.getContext();
+        Authentication auth = new UsernamePasswordAuthenticationToken(device, null);
+        context.setAuthentication(auth);
+
+        getMockMvc().perform(
+                get("/cfg/"+ device.getApiKey())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .param("offset", String.valueOf(OFFSET))
+                        .param("waitTime", String.valueOf(waitTime)))
+                .andExpect(status().isOk());
+   
+    }
 
     @Configuration
     static class DeviceEventRestEndpointTestContextConfig {
@@ -201,6 +331,11 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
         @Bean
         public Executor executor() {
             return Mockito.mock(Executor.class);
+        }
+        
+        @Bean
+        public DeviceConfigSetupService deviceConfigSetupService() {
+        	return Mockito.mock(DeviceConfigSetupService.class);
         }
     }
 }
