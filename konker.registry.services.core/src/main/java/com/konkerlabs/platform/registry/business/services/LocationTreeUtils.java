@@ -53,10 +53,12 @@ public class LocationTreeUtils {
         List<Location> nodes = new ArrayList<>();
         nodes.add(root);
 
-        for (Location child: root.getChildrens()) {
-            List<Location> childNodes = getNodesList(child);
-            if (childNodes != null && !childNodes.isEmpty()) {
-                nodes.addAll(childNodes);
+        if (root.getChildrens() != null) {
+            for (Location child: root.getChildrens()) {
+                List<Location> childNodes = getNodesList(child);
+                if (childNodes != null && !childNodes.isEmpty()) {
+                    nodes.addAll(childNodes);
+                }
             }
         }
 

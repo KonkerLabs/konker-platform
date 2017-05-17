@@ -1,9 +1,11 @@
 package com.konkerlabs.platform.registry.business.services;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -223,7 +225,7 @@ public class LocationServiceImpl implements LocationService {
 
         Optional<Map<String, Object[]>> validations = location.applyValidations();
 
-        if (validations.isPresent()) {
+        if (validations.isPresent() && !validations.get().isEmpty()) {
             messages.putAll(validations.get());
             return messages;
         }
@@ -248,7 +250,7 @@ public class LocationServiceImpl implements LocationService {
 
         Optional<Map<String, Object[]>> validations = location.applyValidations();
 
-        if (validations.isPresent()) {
+        if (validations.isPresent() && !validations.get().isEmpty()) {
             messages.putAll(validations.get());
             return messages;
         }
@@ -332,7 +334,17 @@ public class LocationServiceImpl implements LocationService {
                     .build();
         }
 
-        // TODO: verificar se todos os sublocations tem name (nao pode ser null)
+        // all nodes must have a valid name
+        for (Location location : sublocations) {
+            location.setTenant(tenant);
+            location.setApplication(application);
+            Optional<Map<String, Object[]>> modelValidations = location.applyValidations();
+            if (modelValidations.isPresent() && !modelValidations.get().isEmpty()) {
+                return ServiceResponseBuilder.<Location>error()
+                                             .withMessages(modelValidations.get())
+                                             .build();
+            }
+        }
 
         List<Location> all = locationRepository.findAllByTenantIdAndApplicationName(tenant.getId(), application.getName());
         Location currentSubtree = LocationTreeUtils.searchLocationByName(LocationTreeUtils.buildTree(all), parentNode.getName(), 0);
@@ -351,9 +363,17 @@ public class LocationServiceImpl implements LocationService {
                     .build();
         }
 
+        // verify same name in use
+        Map<String, Object[]> validations = verifyNameInUse(newSubtree);
+        if (validations != null && !validations.isEmpty()) {
+            return ServiceResponseBuilder.<Location>error()
+                    .withMessages(validations)
+                    .build();
+        }
+
         // verify removed locations
         for (Location location: removedLocations) {
-            Map<String, Object[]> validations = checkLocationIsRemovable(tenant, application, location);
+            validations = checkLocationIsRemovable(tenant, application, location);
             if (validations != null && !validations.isEmpty()) {
                 return ServiceResponseBuilder.<Location>error()
                         .withMessages(validations)
@@ -363,7 +383,7 @@ public class LocationServiceImpl implements LocationService {
 
         // verify new locations
         for (Location location: newLocations) {
-            Map<String, Object[]> validations = checkLocationIsInsertable(tenant, application, location);
+            validations = checkLocationIsInsertable(tenant, application, location);
             if (validations != null && !validations.isEmpty()) {
                 return ServiceResponseBuilder.<Location>error()
                         .withMessages(validations)
@@ -373,7 +393,7 @@ public class LocationServiceImpl implements LocationService {
 
         // verify new existing
         for (Location location: existingLocations) {
-            Map<String, Object[]> validations = checkLocationIsUpdatable(tenant, application, location);
+            validations = checkLocationIsUpdatable(tenant, application, location);
             if (validations != null && !validations.isEmpty()) {
                 return ServiceResponseBuilder.<Location>error()
                         .withMessages(validations)
@@ -381,11 +401,29 @@ public class LocationServiceImpl implements LocationService {
             }
         }
 
-        // TODO: verificar se tem nos a serem criados com o mesmo nome
+        return ServiceResponseBuilder.<Location>ok().build();
+    }
 
-        return ServiceResponseBuilder.<Location>ok()
-                .withResult(null)
-                .build();
+    private Map<String, Object[]> verifyNameInUse(Location root) {
+
+        Map<String, Object[]> messages = new HashMap<>();
+
+        List<Location> locations = LocationTreeUtils.getNodesList(root);
+
+        Set<String> namesInUse = new HashSet<>();
+
+        for (Location location : locations) {
+            String name = location.getName();
+            if (namesInUse.contains(name)) {
+                messages.put(Validations.LOCATION_NAME_ALREADY_REGISTERED.getCode(), new Object[] {location.getName()});
+                return messages;
+            } else {
+                namesInUse.add(name);
+            }
+        }
+
+        return messages;
+
     }
 
     private boolean isMultipleDefaults(Location root) {
