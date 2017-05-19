@@ -1,11 +1,13 @@
 package com.konkerlabs.platform.registry.test.integration.endpoints;
 
-import com.konkerlabs.platform.registry.business.services.api.DeviceConfigSetupService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.integration.endpoints.DeviceConfigMqttEndpoint;
-import com.konkerlabs.platform.registry.integration.endpoints.DeviceEventMqttEndpoint;
-import com.konkerlabs.platform.registry.integration.gateways.MqttMessageGateway;
-import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.text.MessageFormat;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -16,10 +18,16 @@ import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessagingException;
 
-import java.text.MessageFormat;
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.DeviceModel;
+import com.konkerlabs.platform.registry.business.model.Location;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.services.api.DeviceConfigSetupService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.integration.endpoints.DeviceConfigMqttEndpoint;
+import com.konkerlabs.platform.registry.integration.gateways.MqttMessageGateway;
 
 public class DeviceConfigMqttEndpointTest {
 
@@ -32,9 +40,9 @@ public class DeviceConfigMqttEndpointTest {
     private DeviceRegisterService deviceRegisterService;
     private MessageSource messageSource;
     private MqttMessageGateway mqttMessageGateway;
-
+    
+    private Device device;
     private String deviceId = "95c14b36ba2b43f1";
-    private String channel = "data";
     private String payload = "message";
     private String topic = MessageFormat.format("mgmt/{0}/pub/cfg", deviceId);
 
@@ -48,6 +56,15 @@ public class DeviceConfigMqttEndpointTest {
         										deviceRegisterService, 
         										messageSource, 
         										mqttMessageGateway);
+        
+        device = Device.builder()
+        	.apiKey(deviceId)
+        	.name("sendor1")
+        	.tenant(Tenant.builder().domainName("konker").build())
+        	.application(Application.builder().name("SmartAC").build())
+        	.deviceModel(DeviceModel.builder().name("TempSensor").build())
+        	.location(Location.builder().name("br_sp").build())
+        	.build();
 
         message = MessageBuilder.withPayload(payload).setHeader(MqttHeaders.TOPIC,topic).build();
     }
@@ -75,15 +92,56 @@ public class DeviceConfigMqttEndpointTest {
     @Test
     public void shouldRaiseAnExceptionIfDeviceNotExists() throws Exception {
         thrown.expect(MessagingException.class);
-        thrown.expectMessage("Topic cannot be null or empty");
+        thrown.expectMessage("Device does not exist");
 
         subject.onEvent(message);
     }
     
     @Test
-    public void shouldDelegateEventToItsProcessor() throws Exception {
+    public void shouldReturnEmptyDeviceConfig() throws Exception {
+    	when(deviceRegisterService.findByApiKey(anyString()))
+    		.thenReturn(device);
+    	
+    	when(deviceConfigSetupService.findByModelAndLocation(
+    			any(Tenant.class), 
+    			any(Application.class), 
+    			any(DeviceModel.class), 
+    			any(Location.class)))
+    		.thenReturn(ServiceResponseBuilder.<String> ok()
+    				.withResult("{ }")
+    				.build());
+    	
         subject.onEvent(message);
 
-//        verify(processor).process(deviceId,channel,payload);
+        verify(deviceRegisterService).findByApiKey(device.getApiKey());
+        verify(deviceConfigSetupService).findByModelAndLocation(
+        		device.getTenant(), 
+        		device.getApplication(), 
+        		device.getDeviceModel(), 
+        		device.getLocation());
+    }
+    
+    @Test
+    public void shouldReturnDeviceConfig() throws Exception {
+    	when(deviceRegisterService.findByApiKey(anyString()))
+    		.thenReturn(device);
+    	
+    	when(deviceConfigSetupService.findByModelAndLocation(
+    			any(Tenant.class), 
+    			any(Application.class), 
+    			any(DeviceModel.class), 
+    			any(Location.class)))
+    		.thenReturn(ServiceResponseBuilder.<String> ok()
+    				.withResult("{'sleepInterval' : 5, 'unit' : 'celsius'}")
+    				.build());
+    	
+        subject.onEvent(message);
+
+        verify(deviceRegisterService).findByApiKey(device.getApiKey());
+        verify(deviceConfigSetupService).findByModelAndLocation(
+        		device.getTenant(), 
+        		device.getApplication(), 
+        		device.getDeviceModel(), 
+        		device.getLocation());
     }
 }

@@ -58,8 +58,7 @@ public class DeviceConfigMqttEndpoint {
 		Device device = deviceRegisterService.findByApiKey(apikey);
         
         if (!Optional.ofNullable(device).isPresent()) {
-        	throw new MessagingException(message, 
-        			messageSource.getMessage(DeviceRegisterService.Validations.DEVICE_ID_DOES_NOT_EXIST.getCode(), null, Locale.US));
+        	throw new MessagingException(message, "Device does not exist");
         }
         
         ServiceResponse<String> serviceResponse = deviceConfigSetupService
