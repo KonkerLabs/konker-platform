@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.data.config;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -54,7 +55,7 @@ public class MqttConfig {
     public MqttConfig() {
     	Map<String, Object> defaultMap = new HashMap<>();
     	defaultMap.put("mqtt.subcribe.uris", Collections.singleton("tcp://dev-server:1883"));
-    	defaultMap.put("mqtt.subcribe.topics", Collections.singleton("pub/+/+"));
+    	defaultMap.put("mqtt.subcribe.topics", Arrays.asList("pub/+/+"));
     	defaultMap.put("mqtt.subcribe.username", "user");
     	defaultMap.put("mqtt.subcribe.password", "pass");
     	defaultMap.put("mqtt.publish.uris", Collections.singleton("tcp://dev-server:1883"));
@@ -116,7 +117,7 @@ public class MqttConfig {
         adapter.setOutputChannel(inputChannel());
         return adapter;
     }
-
+    
     @Bean
     @ServiceActivator(inputChannel = "konkerMqttOutputChannel")
     public MessageHandler mqttOutbound() {
@@ -142,4 +143,22 @@ public class MqttConfig {
     public RestTemplate enrichmentRestTemplate() {
         return new RestTemplate();
     }
+    
+    @Bean
+    public AbstractMqttMessageDrivenChannelAdapter configInbound() {
+        MqttPahoMessageDrivenChannelAdapter adapter =
+                new MqttPahoMessageDrivenChannelAdapter(UUID.randomUUID().toString(),
+                        mqttInboudClientFactory(), new String[]{"mgmt/+/pub/+"});
+        adapter.setCompletionTimeout(5000);
+        adapter.setConverter(new DefaultPahoMessageConverter());
+        adapter.setQos(1);
+        adapter.setOutputChannel(inputConfigChannel());
+        return adapter;
+    }
+    
+    @Bean(name = "konkerMqttInputConfigChannel")
+    public MessageChannel inputConfigChannel() {
+        return new ExecutorChannel(executor);
+    }
+
 }
