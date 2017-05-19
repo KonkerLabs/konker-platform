@@ -23,20 +23,24 @@ public class DeviceEventMqttEndpointTest {
 
     public DeviceEventMqttEndpoint subject;
     private Message<String> message;
+    private Message<String> messageData;
     private DeviceEventProcessor processor;
 
     private String deviceId = "95c14b36ba2b43f1";
     private String channel = "data";
     private String payload = "message";
-    private String topic = MessageFormat.format("iot/{0}/{1}",deviceId,channel);
+    private String topic = MessageFormat.format("pub/{0}/{1}", deviceId, channel);
+    private String topicData = MessageFormat.format("data/{0}/pub/{1}", deviceId, channel);
 
     @Before
     public void setUp() throws Exception {
         processor = mock(DeviceEventProcessor.class);
         subject = new DeviceEventMqttEndpoint(processor);
 
-        message = MessageBuilder.withPayload(payload).setHeader(MqttHeaders.TOPIC,topic).build();
+        message = MessageBuilder.withPayload(payload).setHeader(MqttHeaders.TOPIC, topic).build();
+        messageData = MessageBuilder.withPayload(payload).setHeader(MqttHeaders.TOPIC, topicData).build();
     }
+
     @Test
     public void shouldRaiseAnExceptionIfTopicIsNull() throws Exception {
         message = MessageBuilder.withPayload(payload).build();
@@ -46,6 +50,7 @@ public class DeviceEventMqttEndpointTest {
 
         subject.onEvent(message);
     }
+
     @Test
     public void shouldRaiseAnExceptionIfTopicIsEmpty() throws Exception {
         message = MessageBuilder.withPayload(payload).setHeader(MqttHeaders.TOPIC,"").build();
@@ -55,10 +60,19 @@ public class DeviceEventMqttEndpointTest {
 
         subject.onEvent(message);
     }
+
     @Test
     public void shouldDelegateEventToItsProcessor() throws Exception {
         subject.onEvent(message);
 
-        verify(processor).process(deviceId,channel,payload);
+        verify(processor).process(deviceId, channel, payload);
     }
+
+    @Test
+    public void shouldDelegateEventToDataProcessor() throws Exception {
+        subject.onEvent(messageData);
+
+        verify(processor).process(deviceId, channel, payload);
+    }
+
 }

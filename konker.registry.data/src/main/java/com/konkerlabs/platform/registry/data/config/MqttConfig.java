@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.data.config;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -54,7 +55,7 @@ public class MqttConfig {
     public MqttConfig() {
     	Map<String, Object> defaultMap = new HashMap<>();
     	defaultMap.put("mqtt.subcribe.uris", Collections.singleton("tcp://dev-server:1883"));
-    	defaultMap.put("mqtt.subcribe.topics", Collections.singleton("pub/+/+"));
+    	defaultMap.put("mqtt.subcribe.topics", Arrays.asList("pub/+/+", "data/+/pub/+"));
     	defaultMap.put("mqtt.subcribe.username", "user");
     	defaultMap.put("mqtt.subcribe.password", "pass");
     	defaultMap.put("mqtt.publish.uris", Collections.singleton("tcp://dev-server:1883"));

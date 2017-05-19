@@ -32,6 +32,8 @@ public class EventPublisherDevice implements EventPublisher {
 
     private static final String MQTT_OUTGOING_TOPIC_TEMPLATE = "sub/{0}/{1}";
 
+    private static final String MQTT_OUTGOING_TOPIC_DATA_TEMPLATE = "data/{0}/sub/{1}";
+
     public static final String DEVICE_MQTT_CHANNEL = "channel";
 
     private MqttMessageGateway mqttMessageGateway;
@@ -87,9 +89,17 @@ public class EventPublisherDevice implements EventPublisher {
                             .deviceId(outgoingDevice.getDeviceId())
                             .build()
             );
+
+            // pub
             String destinationTopic = MessageFormat.format(MQTT_OUTGOING_TOPIC_TEMPLATE,
                     outgoingDevice.getApiKey(), data.get(DEVICE_MQTT_CHANNEL));
             mqttMessageGateway.send(outgoingEvent.getPayload(), destinationTopic);
+
+            // data/pub
+            String destinationDataTopic = MessageFormat.format(MQTT_OUTGOING_TOPIC_DATA_TEMPLATE,
+                    outgoingDevice.getApiKey(), data.get(DEVICE_MQTT_CHANNEL));
+            mqttMessageGateway.send(outgoingEvent.getPayload(), destinationDataTopic);
+
             ServiceResponse<Event> response = deviceLogEventService.logOutgoingEvent(outgoingDevice, outgoingEvent);
 
             if (!response.isOk())

@@ -18,7 +18,7 @@ mqtt {
   subcribe {
     uris = [ "tcp://127.0.0.1:1883" ]
     # yes, we subscribe to a topic named pub. "pub" is from the device perspective
-    topics = [ "pub/+/+" ]
+    topics = [ "pub/+/+", "data/+/pub/+" ]
     username = "${USR_SUB}"
     password = "${PWD_SUB}"
   }
