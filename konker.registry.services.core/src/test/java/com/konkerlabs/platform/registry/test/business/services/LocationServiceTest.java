@@ -7,6 +7,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.rules.ExpectedException.none;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Before;
@@ -20,17 +21,22 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.DeviceConfig;
+import com.konkerlabs.platform.registry.business.model.DeviceModel;
 import com.konkerlabs.platform.registry.business.model.Location;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
+import com.konkerlabs.platform.registry.business.repositories.DeviceModelRepository;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.LocationRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceConfigSetupService;
 import com.konkerlabs.platform.registry.business.services.api.LocationSearchService;
 import com.konkerlabs.platform.registry.business.services.api.LocationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.LocationService.Validations;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
@@ -54,10 +60,16 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
     private LocationRepository locationRepository;
 
     @Autowired
+    private DeviceModelRepository deviceModelRepository;
+
+    @Autowired
     private TenantRepository tenantRepository;
 
     @Autowired
     private DeviceRepository deviceRepository;
+
+    @Autowired
+    private DeviceConfigSetupService deviceConfigSetupService;
 
     @Autowired
     private ApplicationRepository applicationRepository;
@@ -391,12 +403,6 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldTryToRemoveWithSubLocations() {
-        ServiceResponse<Location> response = locationService.remove(tenant, application, "d75758a6-235b-413b-85b3-d218404f8c11");
-        assertThat(response, hasErrorMessage(LocationService.Validations.LOCATION_HAVE_CHILDRENS.getCode()));
-    }
-
-    @Test
     public void shouldTryToRemoveWithDevices() {
         Location location = locationRepository.findByTenantAndApplicationAndGuid(tenant.getId(), application.getName(), "d75758a6-235b-413b-85b3-d218404f8c11");
 
@@ -415,11 +421,22 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldRemove() {
-        ServiceResponse<Location> response = locationService.remove(tenant, application, "a14e671f-32d7-4ec0-8006-8d93eeed401c");
+        Location locationRJ = locationRepository.findByTenantAndApplicationAndName(tenant.getId(), application.getName(), "rj");
+        Location locationSala = locationRepository.findByTenantAndApplicationAndName(tenant.getId(), application.getName(), "sala-101");
+
+        assertThat(locationRJ, notNullValue());
+        assertThat(locationSala, notNullValue());
+
+        ServiceResponse<Location> response = locationService.remove(tenant, application, locationRJ.getGuid());
         assertThat(response.isOk(), is(true));
         assertThat(response.getResponseMessages(), hasEntry(LocationService.Messages.LOCATION_REMOVED_SUCCESSFULLY.getCode(), null));
 
-        assertThat(locationRepository.findByTenantAndApplicationAndGuid(tenant.getId(), application.getName(), "a14e671f-32d7-4ec0-8006-8d93eeed401c"), nullValue());
+        locationRJ = locationRepository.findByTenantAndApplicationAndName(tenant.getId(), application.getName(), "rj");
+        locationSala = locationRepository.findByTenantAndApplicationAndName(tenant.getId(), application.getName(), "sala-101");
+
+        assertThat(locationRJ, nullValue());
+        assertThat(locationSala, nullValue());
+
     }
 
     // ============================== findRoot ==============================//
@@ -621,6 +638,195 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
         assertThat(response.getResult().size(), is(2));
         assertThat(response.getResult().get(0).getName(), is("rj-device"));
         assertThat(response.getResult().get(1).getName(), is("sala-device"));
+    }
+
+    // ============================== updateSubtree ==============================//
+
+    @Test
+    public void shouldUpdateSubtreeWithNullTenant() {
+        List<Location> sublocations = new ArrayList<>();
+
+        Location locationRJ = locationSearchService.findByName(tenant, application, "rj", false).getResult();
+
+        ServiceResponse<Location> response = locationService.updateSubtree(null, application, locationRJ.getGuid(), sublocations);
+        assertThat(response, hasErrorMessage(TENANT_NULL.getCode()));
+    }
+
+    @Test
+    public void shouldUpdateSubtreeWithNullApplication() {
+        List<Location> sublocations = new ArrayList<>();
+
+        Location locationRJ = locationSearchService.findByName(tenant, application, "rj", false).getResult();
+
+        ServiceResponse<Location> response = locationService.updateSubtree(tenant, null, locationRJ.getGuid(), sublocations);
+        assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
+    }
+
+    @Test
+    public void shouldTryUpdateSubtreeWithNonExistingGuid() {
+
+        List<Location> sublocations = new ArrayList<>();
+
+        ServiceResponse<Location> response = locationService.updateSubtree(tenant, application, "invalid-guid", sublocations);
+        assertThat(response, hasErrorMessage(Validations.LOCATION_GUID_DOES_NOT_EXIST.getCode()));
+
+    }
+
+    @Test
+    public void shouldTryUpdateSubtreeWithNodeWithoutName() {
+
+        List<Location> sublocations = new ArrayList<>();
+        sublocations.add(Location.builder().tenant(tenant).build());
+
+        Location locationRJ = locationSearchService.findByName(tenant, application, "rj", false).getResult();
+
+        ServiceResponse<Location> response = locationService.updateSubtree(tenant, application, locationRJ.getGuid(), sublocations);
+        assertThat(response, hasErrorMessage(Location.Validations.NAME_NULL_EMPTY.getCode()));
+
+    }
+
+    @Test
+    public void shouldTryUpdateSubtreeWithMultiplesDefault() {
+
+        List<Location> sublocations = new ArrayList<>();
+        sublocations.add(Location.builder().name("rj-01").tenant(tenant).defaultLocation(true).build());
+        sublocations.add(Location.builder().name("rj-02").tenant(tenant).defaultLocation(true).build());
+
+        Location locationRJ = locationSearchService.findByName(tenant, application, "rj", false).getResult();
+
+        ServiceResponse<Location> response = locationService.updateSubtree(tenant, application, locationRJ.getGuid(), sublocations);
+        assertThat(response, hasErrorMessage(Validations.LOCATION_MULTIPLE_DEFAULTS.getCode()));
+
+    }
+
+    @Test
+    public void shouldTryUpdateSubtreeWithNodesWithSameName() {
+
+        List<Location> sublocations = new ArrayList<>();
+        sublocations.add(Location.builder().name("rj-01").tenant(tenant).build());
+        sublocations.add(Location.builder().name("rj-01").tenant(tenant).build());
+
+        Location locationRJ = locationSearchService.findByName(tenant, application, "rj", false).getResult();
+
+        ServiceResponse<Location> response = locationService.updateSubtree(tenant, application, locationRJ.getGuid(), sublocations);
+        assertThat(response, hasErrorMessage(Validations.LOCATION_NAME_ALREADY_REGISTERED.getCode()));
+
+    }
+
+    @Test
+    public void shouldTryUpdateSubtreeWithNodesWithNameInUse() {
+
+        List<Location> sublocations = new ArrayList<>();
+        sublocations.add(Location.builder().name("sp").tenant(tenant).build());
+
+        Location locationRJ = locationSearchService.findByName(tenant, application, "rj", false).getResult();
+
+        ServiceResponse<Location> response = locationService.updateSubtree(tenant, application, locationRJ.getGuid(), sublocations);
+        assertThat(response, hasErrorMessage(Validations.LOCATION_NAME_ALREADY_REGISTERED.getCode()));
+
+    }
+
+    @Test
+    public void shouldTryUpdateSubtreeWithNodesSubtreeWithConfigs() {
+
+        Location locationRJ = locationSearchService.findByName(tenant, application, "rj", false).getResult();
+        Location locationSala101 = locationSearchService.findByName(tenant, application, "sala-101", false).getResult();
+
+        List<Location> sublocations = new ArrayList<>();
+        // remove sala-101
+
+        Location locationSala101Teto = Location.builder()
+                                               .tenant(tenant)
+                                               .application(application)
+                                               .parent(locationSala101)
+                                               .name("sala-101-teto")
+                                               .guid("f06d9d2d-f5ce-4cc6-8637-348743e8acad")
+                                               .build();
+
+        locationRepository.save(locationSala101Teto);
+
+        DeviceModel deviceModel = DeviceModel.builder()
+                                             .guid("5fddb765-fef6-4e2a-b8bc-770a46197f1a")
+                                             .tenant(tenant)
+                                             .application(application)
+                                             .name("sensor")
+                                             .build();
+
+        deviceModelRepository.save(deviceModel);
+
+        ServiceResponse<DeviceConfig> deviceConfigResponse = deviceConfigSetupService.save(tenant, application, deviceModel, locationSala101Teto, "{}");
+        assertThat(deviceConfigResponse, isResponseOk());
+
+        ServiceResponse<Location> response = locationService.updateSubtree(tenant, application, locationRJ.getGuid(), sublocations);
+        assertThat(response, hasErrorMessage(Validations.LOCATION_HAVE_DEVICE_CONFIGS.getCode()));
+
+    }
+
+
+    @Test
+    public void shouldUpdateSubtreeWithNewNodes() {
+
+        Location locationRJ = locationSearchService.findByName(tenant, application, "rj", false).getResult();
+        Location locationSala101 = locationSearchService.findByName(tenant, application, "sala-101", false).getResult();
+
+        Location rj01 = Location.builder().name("rj-01").tenant(tenant).build();
+        Location rj02 = Location.builder().name("rj-02").tenant(tenant).build();
+
+        locationSala101.setChildrens(new ArrayList<>());
+        locationSala101.getChildrens().add(rj02);
+
+        List<Location> sublocations = new ArrayList<>();
+        sublocations.add(rj01);
+        sublocations.add(locationSala101);
+
+        ServiceResponse<Location> response = locationService.updateSubtree(tenant, application, locationRJ.getGuid(), sublocations);
+        assertThat(response, isResponseOk());
+
+        rj01 = locationRepository.findByTenantAndApplicationAndName(tenant.getId(), application.getName(), "rj-01");
+        assertThat(rj01, notNullValue());
+        assertThat(rj01.getParent().getName(), is("rj"));
+
+        rj02 = locationRepository.findByTenantAndApplicationAndName(tenant.getId(), application.getName(), "rj-02");
+        assertThat(rj02, notNullValue());
+        assertThat(rj02.getParent().getName(), is("sala-101"));
+
+    }
+
+    @Test
+    public void shouldUpdateSubtreeChangingDescription() {
+
+        Location locationRJ = locationSearchService.findByName(tenant, application, "rj", false).getResult();
+        Location locationSala101 = locationSearchService.findByName(tenant, application, "sala-101", false).getResult();
+
+        List<Location> sublocations = new ArrayList<>();
+        sublocations.add(locationSala101);
+
+        locationSala101.setDescription("test change description");
+
+        ServiceResponse<Location> response = locationService.updateSubtree(tenant, application, locationRJ.getGuid(), sublocations);
+        assertThat(response, isResponseOk());
+
+        locationSala101 = locationSearchService.findByName(tenant, application, "sala-101", false).getResult();
+        assertThat(locationSala101.getDescription(), is("test change description"));
+
+    }
+
+    @Test
+    public void shouldUpdateSubtreeRemovingNode() {
+
+        List<Location> sublocations = new ArrayList<>();
+
+        Location locationRJ = locationSearchService.findByName(tenant, application, "rj", false).getResult();
+
+        Location locationSala101 = locationRepository.findByTenantAndApplicationAndName(tenant.getId(), application.getName(), "sala-101");
+        assertThat(locationSala101, notNullValue());
+
+        ServiceResponse<Location> response = locationService.updateSubtree(tenant, application, locationRJ.getGuid(), sublocations);
+        assertThat(response, isResponseOk());
+
+        locationSala101 = locationRepository.findByTenantAndApplicationAndName(tenant.getId(), application.getName(), "sala-101");
+        assertThat(locationSala101, nullValue());
+
     }
 
 }

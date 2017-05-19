@@ -11,6 +11,7 @@ from bson.dbref import DBRef
 
 client = MongoClient("mongodb://localhost:27017")
 db = client.registry
+# db.authenticate("", "")
 
 def add_device_model():
     for device in db.devices.find():

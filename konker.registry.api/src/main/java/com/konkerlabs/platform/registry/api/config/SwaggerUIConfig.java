@@ -39,6 +39,9 @@ import static com.google.common.collect.Lists.newArrayList;
 @EnableSwagger2
 public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
 
+    private static final String SWAGGER_HOSTNAME = "swagger.hostname";
+    private static final String SWAGGER_PROTOCOL = "swagger.protocol";
+
     private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
     public static final String securitySchemaOAuth2 = "oauth2schema";
@@ -54,13 +57,14 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
 
     @Bean
     public Docket api() {
+
         return new Docket(DocumentationType.SWAGGER_2)
                 .groupName("default")
                 .select()
                 .apis(RequestHandlerSelectors.withClassAnnotation(RestController.class))
                 .paths(PathSelectors.any())
                 .build()
-                .protocols(Sets.newHashSet("https"))
+                .protocols(Sets.newHashSet(getSwaggerConfig().getString(SWAGGER_PROTOCOL)))
                 .apiInfo(apiInfo())
                 .securitySchemes(newArrayList(securitySchema()))
                 .securityContexts(newArrayList(securityContext()))
@@ -133,12 +137,8 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
     @SuppressWarnings("unused")
     private String getDescription(String filename) {
 
-        Map<String, Object> defaultMap = new HashMap<>();
-        defaultMap.put("swagger.hostname", "localhost:8080");
-        Config defaultConf = ConfigFactory.parseMap(defaultMap);
-
-        Config config = ConfigFactory.load().withFallback(defaultConf);
-        String hostname = config.getString("swagger.hostname");
+        Config config = getSwaggerConfig();
+        String hostname = config.getString(SWAGGER_HOSTNAME);
 
         try {
             InputStream is = new ClassPathResource("description.md").getInputStream();
@@ -163,6 +163,16 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
             return "";
         }
 
+    }
+
+    private Config getSwaggerConfig() {
+        Map<String, Object> defaultMap = new HashMap<>();
+        defaultMap.put(SWAGGER_HOSTNAME, "localhost:8080");
+        defaultMap.put(SWAGGER_PROTOCOL, "http");
+        Config defaultConf = ConfigFactory.parseMap(defaultMap);
+
+        Config config = ConfigFactory.load().withFallback(defaultConf);
+        return config;
     }
 
 }

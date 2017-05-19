@@ -1,9 +1,8 @@
 package com.konkerlabs.platform.registry.business.services;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -61,7 +60,7 @@ public class LocationSearchServiceImpl implements LocationSearchService {
             location = locationRepository.findByTenantAndApplicationAndName(tenant.getId(), application.getName(), locationName);
         } else {
             Location root = this.findTree(tenant, application);
-            location = searchElementByName(root, locationName, 0);
+            location = LocationTreeUtils.searchLocationByName(root, locationName, 0);
         }
 
         if (Optional.ofNullable(location).isPresent()) {
@@ -76,61 +75,11 @@ public class LocationSearchServiceImpl implements LocationSearchService {
 
     }
 
-
     private Location findTree(Tenant tenant, Application application) {
-
-        Location root = null;
 
         List<Location> all = locationRepository.findAllByTenantIdAndApplicationName(tenant.getId(), application.getName());
 
-        Map<String, List<Location>> childrenListMap = new HashMap<>();
-
-        for (Location location: all) {
-            if (location.getParent() == null) {
-                root = location;
-            } else {
-                String parentGuid = location.getParent().getGuid();
-                List<Location> childrens = childrenListMap.get(parentGuid);
-                if (childrens == null) {
-                    childrens = new ArrayList<>();
-                    childrenListMap.put(parentGuid, childrens);
-                }
-                childrens.add(location);
-             }
-        }
-
-        for (Location location: all) {
-            List<Location> childrens = childrenListMap.get(location.getGuid());
-            if (childrens == null) {
-                childrens = new ArrayList<>();
-            }
-            location.setChildrens(childrens);
-        }
-
-        return root;
-
-    }
-
-
-    private Location searchElementByName(Location node, String locationName, int deep) {
-
-        if (deep > 50) {
-            LOGGER.warn("Too deep structure. Cyclic graph?");
-            return null;
-        }
-
-        if (node.getName().equals(locationName)) {
-            return node;
-        }
-
-        for (Location child : node.getChildrens()) {
-            Location element = searchElementByName(child, locationName, deep + 1);
-            if (element != null) {
-                return element;
-            }
-        }
-
-        return null;
+        return LocationTreeUtils.buildTree(all);
 
     }
 
@@ -194,7 +143,7 @@ public class LocationSearchServiceImpl implements LocationSearchService {
 
         List<Device> devices = deviceRepository.findAllByTenantIdAndApplicationName(tenant.getId(), application.getName());
         Location root = this.findTree(tenant, application);
-        Location location = searchElementByName(root, locationName, 0);
+        Location location = LocationTreeUtils.searchLocationByName(root, locationName, 0);
 
         if (Optional.ofNullable(location).isPresent()) {
             List<Device> locationDevices = new ArrayList<>();
