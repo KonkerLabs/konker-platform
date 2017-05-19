@@ -23,11 +23,7 @@ import lombok.NoArgsConstructor;
 @ApiModel(value = "Location", discriminator = "com.konkerlabs.platform.registry.api.model")
 public class LocationVO extends LocationInputVO implements SerializableVO<Location, LocationVO> {
 
-    @ApiModelProperty(value = "Unique identifier of the location", position = 0, example = "818599ad-3502-4e70-a852-fc7af8e0a9f3")
-    private String guid;
-
     public LocationVO(Location location) {
-        this.guid = location.getGuid();
         this.parentName = getParentName(location.getParent());
         this.name = location.getName();
         this.description = location.getDescription();
@@ -42,7 +38,6 @@ public class LocationVO extends LocationInputVO implements SerializableVO<Locati
 
     @Override
     public Location patchDB(Location model) {
-        model.setGuid(this.getGuid());
         if (StringUtils.isNotBlank(this.getParentName())) {
             model.setParent(Location.builder().name(this.getParentName()).build());
         }

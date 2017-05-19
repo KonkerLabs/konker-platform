@@ -222,7 +222,6 @@ public class LocationRestController extends AbstractRestController implements In
 
     private Location getLocationFromVO(LocationVO locationVO) {
         return Location.builder()
-                       .guid(locationVO.getGuid())
                        .parent(getParentFromVO(locationVO))
                        .name(locationVO.getName())
                        .description(locationVO.getDescription())

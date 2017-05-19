@@ -143,4 +143,22 @@ public class MqttConfig {
     public RestTemplate enrichmentRestTemplate() {
         return new RestTemplate();
     }
+
+    @Bean
+    public AbstractMqttMessageDrivenChannelAdapter configInbound() {
+        MqttPahoMessageDrivenChannelAdapter adapter =
+                new MqttPahoMessageDrivenChannelAdapter(UUID.randomUUID().toString(),
+                        mqttInboudClientFactory(), new String[]{"mgmt/+/pub/+"});
+        adapter.setCompletionTimeout(5000);
+        adapter.setConverter(new DefaultPahoMessageConverter());
+        adapter.setQos(1);
+        adapter.setOutputChannel(inputConfigChannel());
+        return adapter;
+    }
+
+    @Bean(name = "konkerMqttInputConfigChannel")
+    public MessageChannel inputConfigChannel() {
+        return new ExecutorChannel(executor);
+    }
+
 }

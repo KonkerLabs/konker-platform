@@ -125,7 +125,6 @@ public class LocationRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
                     .andExpect(jsonPath("$.result.name", is("sp")))
                     .andExpect(jsonPath("$.result.description", is("desc-sp")))
-                    .andExpect(jsonPath("$.result.guid", is("guid-sp")))
                     .andExpect(jsonPath("$.result.defaultLocation", is(false)));
 
     }
@@ -163,7 +162,6 @@ public class LocationRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.result").isMap())
                     .andExpect(jsonPath("$.result.name", is("sp")))
                     .andExpect(jsonPath("$.result.description", is("desc-sp")))
-                    .andExpect(jsonPath("$.result.guid", is("guid-sp")))
                     .andExpect(jsonPath("$.result.defaultLocation", is(false)));
 
     }
@@ -223,7 +221,6 @@ public class LocationRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.result").isMap())
                     .andExpect(jsonPath("$.result.name", is("rj")))
                     .andExpect(jsonPath("$.result.description", is("desc-rj")))
-                    .andExpect(jsonPath("$.result.guid", is("guid-rj")))
                     .andExpect(jsonPath("$.result.defaultLocation", is(true)));
     }
 
