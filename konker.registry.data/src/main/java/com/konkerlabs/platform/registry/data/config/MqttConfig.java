@@ -55,7 +55,7 @@ public class MqttConfig {
     public MqttConfig() {
     	Map<String, Object> defaultMap = new HashMap<>();
     	defaultMap.put("mqtt.subcribe.uris", Collections.singleton("tcp://dev-server:1883"));
-    	defaultMap.put("mqtt.subcribe.topics", Arrays.asList("pub/+/+"));
+    	defaultMap.put("mqtt.subcribe.topics", Arrays.asList("pub/+/+", "data/+/pub/+"));
     	defaultMap.put("mqtt.subcribe.username", "user");
     	defaultMap.put("mqtt.subcribe.password", "pass");
     	defaultMap.put("mqtt.publish.uris", Collections.singleton("tcp://dev-server:1883"));
@@ -117,7 +117,7 @@ public class MqttConfig {
         adapter.setOutputChannel(inputChannel());
         return adapter;
     }
-    
+
     @Bean
     @ServiceActivator(inputChannel = "konkerMqttOutputChannel")
     public MessageHandler mqttOutbound() {
@@ -143,7 +143,7 @@ public class MqttConfig {
     public RestTemplate enrichmentRestTemplate() {
         return new RestTemplate();
     }
-    
+
     @Bean
     public AbstractMqttMessageDrivenChannelAdapter configInbound() {
         MqttPahoMessageDrivenChannelAdapter adapter =
@@ -155,7 +155,7 @@ public class MqttConfig {
         adapter.setOutputChannel(inputConfigChannel());
         return adapter;
     }
-    
+
     @Bean(name = "konkerMqttInputConfigChannel")
     public MessageChannel inputConfigChannel() {
         return new ExecutorChannel(executor);

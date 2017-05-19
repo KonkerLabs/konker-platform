@@ -2,6 +2,10 @@ package com.konkerlabs.platform.registry.integration.endpoints;
 
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +21,9 @@ public class DeviceEventMqttEndpoint {
     private static final Logger LOGGER = LoggerFactory.getLogger(DeviceEventMqttEndpoint.class);
 
     private DeviceEventProcessor deviceEventProcessor;
+
+    private Pattern subPattern = Pattern.compile("pub/(.*?)/(.*)");
+    private Pattern subDataPattern = Pattern.compile("data/(.*?)/pub/(.*)");
 
     @Autowired
     public DeviceEventMqttEndpoint(DeviceEventProcessor deviceEventProcessor) {
@@ -35,19 +42,29 @@ public class DeviceEventMqttEndpoint {
         }
 
         try {
-            deviceEventProcessor.process(extractFromResource(topic.toString(),1),
-                    extractFromResource(topic.toString(),2),
-                    message.getPayload());
+            String apiKey = null;
+            String channel = null;
+            String payload = message.getPayload();
+
+            Matcher subMatcher = subPattern.matcher(topic.toString());
+
+            if (!subMatcher.matches()) {
+                subMatcher = subDataPattern.matcher(topic.toString());
+            }
+
+            if (subMatcher.matches()) {
+                apiKey = subMatcher.group(1);
+                channel = subMatcher.group(2);
+
+                deviceEventProcessor.process(apiKey, channel, payload);
+            } else {
+
+                LOGGER.error("Invalid topic: " + topic.toString());
+            }
+
         } catch (BusinessException be) {
-            LOGGER.error(message.getPayload(),be);
+            LOGGER.error(message.getPayload(), be);
         }
     }
 
-    private String extractFromResource(String channel, int index) {
-        try {
-            return channel.split("/")[index];
-        } catch (ArrayIndexOutOfBoundsException e) {
-            return null;
-        }
-    }
 }
