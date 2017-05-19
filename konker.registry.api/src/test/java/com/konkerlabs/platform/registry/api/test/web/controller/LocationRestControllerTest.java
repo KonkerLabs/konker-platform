@@ -316,7 +316,10 @@ public class LocationRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldDeleteLocation() throws Exception {
 
-        when(locationService.remove(tenant, application, location1.getName()))
+        when(locationSearchService.findByName(tenant, application, location2.getName(), false))
+            .thenReturn(ServiceResponseBuilder.<Location>ok().withResult(location2).build());
+
+        when(locationService.remove(tenant, application, location1.getGuid()))
             .thenReturn(ServiceResponseBuilder.<Location>ok().withResult(location2).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.delete(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH, location1.getName()))
@@ -350,7 +353,10 @@ public class LocationRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryDeleteLocationWithInternalError() throws Exception {
 
-        when(locationService.remove(tenant, application, location1.getName()))
+        when(locationSearchService.findByName(tenant, application, location1.getName(), false))
+            .thenReturn(ServiceResponseBuilder.<Location>ok().withResult(location1).build());
+
+        when(locationService.remove(tenant, application, location1.getGuid()))
             .thenReturn(ServiceResponseBuilder.<Location>error().build());
 
         getMockMvc().perform(MockMvcRequestBuilders.delete(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH, location1.getName()))
@@ -369,7 +375,7 @@ public class LocationRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryDeleteNonexistentLocation() throws Exception {
 
-        when(locationService.remove(tenant, application, location1.getName()))
+        when(locationSearchService.findByName(tenant, application, location1.getName(), false))
             .thenReturn(ServiceResponseBuilder.<Location>error().withMessage(LocationService.Messages.LOCATION_NOT_FOUND.getCode()).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.delete(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH, location1.getName()))

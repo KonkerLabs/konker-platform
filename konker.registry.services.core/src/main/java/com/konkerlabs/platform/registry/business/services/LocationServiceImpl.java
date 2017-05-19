@@ -284,9 +284,14 @@ public class LocationServiceImpl implements LocationService {
 
     }
 
-    private Map<String, Object[]> checkLocationIsRemovable(Tenant tenant, Application application, Location location){
+    private Map<String, Object[]> checkLocationIsRemovable(Tenant tenant, Application application, Location location) {
 
         Map<String, Object[]> messages = new HashMap<>();
+
+        // root location?
+        if (location.getParent() == null) {
+            messages.put(Validations.LOCATION_IS_ROOT.getCode(), new Object[] {location.getName()});
+        }
 
         // dependencies: devices
         List<Device> devices =

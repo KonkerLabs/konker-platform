@@ -578,13 +578,13 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
     @Test
     public void shouldFindByGuidWithNullName() {
         ServiceResponse<Location> response = locationSearchService.findByGuid(tenant, application, null);
-        assertThat(response, hasErrorMessage(LocationService.Messages.LOCATION_NOT_FOUND.getCode()));
+        assertThat(response, hasErrorMessage(LocationService.Validations.LOCATION_GUID_DOES_NOT_EXIST.getCode()));
     }
 
     @Test
     public void shouldTryToFindByGuidNonExistingName() {
         ServiceResponse<Location> response = locationSearchService.findByGuid(tenant, application, "br2");
-        assertThat(response, hasErrorMessage(LocationService.Messages.LOCATION_NOT_FOUND.getCode()));
+        assertThat(response, hasErrorMessage(LocationService.Validations.LOCATION_GUID_DOES_NOT_EXIST.getCode()));
     }
 
     @Test

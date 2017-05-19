@@ -1,7 +1,6 @@
 package com.konkerlabs.platform.registry.business.services;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -23,6 +22,7 @@ import com.konkerlabs.platform.registry.business.repositories.LocationRepository
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.LocationSearchService;
 import com.konkerlabs.platform.registry.business.services.api.LocationService.Messages;
+import com.konkerlabs.platform.registry.business.services.api.LocationService.Validations;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 
@@ -69,7 +69,7 @@ public class LocationSearchServiceImpl implements LocationSearchService {
                     .build();
         } else {
             return ServiceResponseBuilder.<Location>error()
-                    .withMessage(Messages.LOCATION_NOT_FOUND.getCode())
+                    .withMessage(Messages.LOCATION_NOT_FOUND.getCode(), new Object[] {locationName})
                     .build();
         }
 
@@ -154,7 +154,7 @@ public class LocationSearchServiceImpl implements LocationSearchService {
                     .build();
         } else {
             return ServiceResponseBuilder.<List<Device>>error()
-                    .withMessage(Messages.LOCATION_NOT_FOUND.getCode())
+                    .withMessage(Messages.LOCATION_NOT_FOUND.getCode(), new Object[] {locationName})
                     .build();
         }
 
@@ -206,7 +206,7 @@ public class LocationSearchServiceImpl implements LocationSearchService {
                     .build();
         } else {
             return ServiceResponseBuilder.<Location>error()
-                    .withMessage(Messages.LOCATION_NOT_FOUND.getCode())
+                    .withMessage(Validations.LOCATION_GUID_DOES_NOT_EXIST.getCode())
                     .build();
         }
 
