@@ -91,8 +91,8 @@ public class ApplicationRestController implements InitializingBean {
     @PreAuthorize("hasAuthority('ADD_APPLICATION')")
     public ApplicationVO create(
             @ApiParam(
-            		name = "body", 
-            		value = "JSON filled with the fields described in Model and Example Value beside", 
+            		name = "body",
+            		value = "JSON filled with the fields described in Model and Example Value beside",
             		required = true)
             @RequestBody ApplicationVO applicationForm) throws BadServiceResponseException {
 
@@ -120,7 +120,7 @@ public class ApplicationRestController implements InitializingBean {
     public void update(
             @PathVariable("applicationName") String applicationName,
             @ApiParam(
-            		name = "body", 
+            		name = "body",
             		value = "JSON filled with the fields described in Model and Example Value beside",
             		required = true)
             @RequestBody ApplicationInputVO applicationForm) throws BadServiceResponseException {
@@ -143,7 +143,7 @@ public class ApplicationRestController implements InitializingBean {
         ServiceResponse<Application> updateResponse = applicationService.update(tenant, applicationName, applicationFromDB);
 
         if (!updateResponse.isOk()) {
-            throw new BadServiceResponseException(user, applicationResponse, validationsCode);
+            throw new BadServiceResponseException(user, updateResponse, validationsCode);
 
         }
 
