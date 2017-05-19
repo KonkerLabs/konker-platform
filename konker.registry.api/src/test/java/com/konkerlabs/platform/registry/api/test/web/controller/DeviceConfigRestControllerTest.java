@@ -233,7 +233,7 @@ public class DeviceConfigRestControllerTest extends WebLayerTestContext {
 
         when(locationSearchService.findByName(tenant, application, NONEXIST_APPLICATION_NANE, false))
             .thenReturn(ServiceResponseBuilder.<Location> error()
-                    .withMessage(LocationService.Messages.LOCATION_NOT_FOUND.getCode())
+                    .withMessage(LocationService.Messages.LOCATION_NOT_FOUND.getCode(), new Object[] {"mg"})
                     .withResult(location)
                     .build());
 
@@ -246,7 +246,7 @@ public class DeviceConfigRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.code", is(HttpStatus.NOT_FOUND.value())))
                     .andExpect(jsonPath("$.status", is("error")))
                     .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
-                    .andExpect(jsonPath("$.messages[0]", is("Location not found")))
+                    .andExpect(jsonPath("$.messages[0]", is("Location not found: mg")))
                     .andExpect(jsonPath("$.result").doesNotExist());
 
     }

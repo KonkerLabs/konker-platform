@@ -198,7 +198,7 @@ public class LocationRestController extends AbstractRestController implements In
             updateResponse = locationService.updateSubtree(tenant, application, locationFromDB.getGuid(), sublocations);
 
             if (!updateResponse.isOk()) {
-                throw new BadServiceResponseException(user, locationResponse, validationsCode);
+                throw new BadServiceResponseException(user, updateResponse, validationsCode);
             }
         }
 
@@ -281,16 +281,18 @@ public class LocationRestController extends AbstractRestController implements In
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
 
-        ServiceResponse<Location> locationResponse = locationService.remove(tenant, application, locationName);
+        ServiceResponse<Location> locationResponse = locationSearchService.findByName(tenant, application, locationName, false);
 
         if (!locationResponse.isOk()) {
-            if (locationResponse.getResponseMessages().containsKey(LocationService.Messages.LOCATION_NOT_FOUND.getCode())) {
-                throw new NotFoundResponseException(user, locationResponse);
-            } else {
-                throw new BadServiceResponseException(user, locationResponse, validationsCode);
-            }
+            throw new NotFoundResponseException(user, locationResponse);
         }
 
+        Location location = locationResponse.getResult();
+        locationResponse = locationService.remove(tenant, application, location.getGuid());
+
+        if (!locationResponse.isOk()) {
+            throw new BadServiceResponseException(user, locationResponse, validationsCode);
+        }
     }
 
     @Override

@@ -43,7 +43,6 @@ public class LocationInputVO {
 
     @ApiModelProperty(
             value = "List sub-locations",
-            example = "null",
             required = true,
             position = 5)
     protected List<LocationVO> sublocations;

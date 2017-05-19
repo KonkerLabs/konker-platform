@@ -88,10 +88,10 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
     @Autowired
     private LocationService locationService;
-    
+
     @Autowired
     private DeviceModelService deviceModelService;
-    
+
     @PostConstruct
     public void init() {
         try {
@@ -179,11 +179,11 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                         device.getLogLevel());
             }
         }
-        
+
         if (device.getDeviceModel() == null) {
             ServiceResponse<DeviceModel> response = deviceModelService.findDefault(tenant, application, true);
             DeviceModel defaultModel = response.getResult();
-            
+
             if (!Optional.ofNullable(defaultModel).isPresent()) {
             	defaultModel = DeviceModel.builder()
             			.name("default")
@@ -193,8 +193,8 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
             			.build();
             	ServiceResponse<DeviceModel> serviceResponse = deviceModelService.register(tenant, application, defaultModel);
             	defaultModel = serviceResponse.getResult();
-            } 
-            
+            }
+
             device.setDeviceModel(defaultModel);
         }
 
@@ -611,8 +611,8 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
             .httpsURLSub(MessageFormat.format("https://{0}:{1}/sub/{2}/<{3}>", httpHostname, pubServerConfig.getHttpsPort(), username, channelMsg))
             .mqttURL(MessageFormat.format("mqtt://{0}:{1}", mqttHostName, pubServerConfig.getMqttPort()))
             .mqttsURL(MessageFormat.format("mqtts://{0}:{1}", mqttHostName, pubServerConfig.getMqttTlsPort()))
-            .mqttPubTopic(MessageFormat.format("pub/{0}/<{1}>", username, channelMsg))
-            .mqttSubTopic(MessageFormat.format("sub/{0}/<{1}>", username, channelMsg))
+            .mqttPubTopic(MessageFormat.format("data/{0}/pub/<{1}>", username, channelMsg))
+            .mqttSubTopic(MessageFormat.format("data/{0}/sub/<{1}>", username, channelMsg))
             .build();
 
         return ServiceResponseBuilder.<DeviceDataURLs>ok().withResult(deviceDataURLs).build();
