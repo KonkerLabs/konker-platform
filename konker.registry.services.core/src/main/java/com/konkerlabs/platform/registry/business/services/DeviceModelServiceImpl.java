@@ -192,6 +192,12 @@ public class DeviceModelServiceImpl implements DeviceModelService {
                     .withMessage(Validations.DEVICE_MODEL_DOES_NOT_EXIST.getCode())
                     .build();
 		}
+		
+		if (devModelFromDB.isDefaultModel()) {
+			return ServiceResponseBuilder.<DeviceModel>error()
+                    .withMessage(Validations.DEVICE_MODEL_NOT_UPDATED_IS_DEFAULT.getCode())
+                    .build();
+		}
 
 		if (!devModelFromDB.getName().equals(updatingDeviceModel.getName()) &&
 				deviceModelRepository
@@ -254,6 +260,12 @@ public class DeviceModelServiceImpl implements DeviceModelService {
 		if (!Optional.ofNullable(deviceModel).isPresent()) {
 			return ServiceResponseBuilder.<DeviceModel>error()
                     .withMessage(Validations.DEVICE_MODEL_DOES_NOT_EXIST.getCode())
+                    .build();
+		}
+		
+		if (deviceModel.isDefaultModel()) {
+			return ServiceResponseBuilder.<DeviceModel>error()
+                    .withMessage(Validations.DEVICE_MODEL_NOT_REMOVED_IS_DEFAULT.getCode())
                     .build();
 		}
 		

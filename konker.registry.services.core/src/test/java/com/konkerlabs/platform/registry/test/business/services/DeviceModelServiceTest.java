@@ -53,6 +53,7 @@ public class DeviceModelServiceTest extends BusinessLayerTestSupport {
     private TenantRepository tenantRepository;
 
     private DeviceModel deviceModel;
+    private DeviceModel tempDeviceModel;
     private DeviceModel newDeviceModel;
     private Application application;
     private Application otherApplication;
@@ -94,6 +95,15 @@ public class DeviceModelServiceTest extends BusinessLayerTestSupport {
     					.defaultModel(true)
     					.tenant(currentTenant)
     					.build();
+    	
+    	tempDeviceModel = DeviceModel.builder()
+				.guid("7d51c242-81db-11e6-a8c2-0746f908e997")
+    			.name("sensor")
+    			.description("temperature sensor")
+				.application(application)
+				.defaultModel(false)
+				.tenant(currentTenant)
+				.build();
     	
     	newDeviceModel = DeviceModel.builder()
     			.name("SensorAC")
@@ -254,12 +264,20 @@ public class DeviceModelServiceTest extends BusinessLayerTestSupport {
     
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/device-model.json"})
+    public void shouldReturnErrorIfUpdatingDevModelDefault() throws Exception {
+    	ServiceResponse<DeviceModel> serviceResponse = deviceModelService.update(currentTenant, application, deviceModel.getName(), deviceModel);
+    	
+    	assertThat(serviceResponse, hasErrorMessage(Validations.DEVICE_MODEL_NOT_UPDATED_IS_DEFAULT.getCode()));
+    }
+    
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/device-model.json"})
     public void shouldUpdateApp() throws Exception {
-    	deviceModel.setDescription("Updating description");
-    	ServiceResponse<DeviceModel> serviceResponse = deviceModelService.update(application.getTenant(), application, deviceModel.getName(), deviceModel);
+    	tempDeviceModel.setDescription("Updating description");
+    	ServiceResponse<DeviceModel> serviceResponse = deviceModelService.update(application.getTenant(), application, tempDeviceModel.getName(), tempDeviceModel);
 
         assertThat(serviceResponse, isResponseOk());
-        assertThat(serviceResponse.getResult().getDescription(), equalTo(deviceModel.getDescription()));
+        assertThat(serviceResponse.getResult().getDescription(), equalTo(tempDeviceModel.getDescription()));
     }
     
     @Test
@@ -296,15 +314,23 @@ public class DeviceModelServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/device-model.json", "/fixtures/devices.json"})
     public void shouldReturnErrorIfRemovingDevModelHasDevice() throws Exception {
-    	ServiceResponse<DeviceModel> serviceResponse = deviceModelService.remove(currentTenant, application, deviceModel.getName());
+    	ServiceResponse<DeviceModel> serviceResponse = deviceModelService.remove(currentTenant, application, tempDeviceModel.getName());
     	
     	assertThat(serviceResponse, hasErrorMessage(Validations.DEVICE_MODEL_HAS_DEVICE.getCode()));
     }
     
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/device-model.json"})
-    public void shouldRemoveDevModel() throws Exception {
+    public void shouldReturnErrorIfRemovingDevModelDefault() throws Exception {
     	ServiceResponse<DeviceModel> serviceResponse = deviceModelService.remove(currentTenant, application, deviceModel.getName());
+    	
+    	assertThat(serviceResponse, hasErrorMessage(Validations.DEVICE_MODEL_NOT_REMOVED_IS_DEFAULT.getCode()));
+    }
+    
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/device-model.json"})
+    public void shouldRemoveDevModel() throws Exception {
+    	ServiceResponse<DeviceModel> serviceResponse = deviceModelService.remove(currentTenant, application, tempDeviceModel.getName());
     	
     	assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.OK));
     	assertThat(serviceResponse.getResponseMessages(), hasEntry(Messages.DEVICE_MODEL_REMOVED_SUCCESSFULLY.getCode(), null));
@@ -317,7 +343,7 @@ public class DeviceModelServiceTest extends BusinessLayerTestSupport {
     	
     	assertThat(response, isResponseOk());
     	assertThat(response.getResult(), notNullValue());
-    	assertThat(response.getResult(), hasSize(1));
+    	assertThat(response.getResult(), hasSize(2));
     }
     
     @Test
@@ -407,7 +433,7 @@ public class DeviceModelServiceTest extends BusinessLayerTestSupport {
     	ServiceResponse<List<Device>> response = deviceModelService.listDevicesByDeviceModelName(currentTenant, application, deviceModel.getName());
     	
     	assertThat(response, isResponseOk());
-    	assertThat(response.getResult(), hasSize(2));
+    	assertThat(response.getResult(), hasSize(1));
     }
     
     @Test

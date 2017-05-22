@@ -16,7 +16,9 @@ public interface DeviceModelService {
 		DEVICE_MODEL_NAME_IS_NULL("service.devicemodel.name.null"),
 		DEVICE_MODEL_NOT_FOUND("service.devicemodel.not_found"),
 		DEVICE_MODEL_HAS_DEVICE("service.devicemodel.has.device"),
-		DEVICE_MODEL_HAS_ROUTE("service.devicemodel.has.route");
+		DEVICE_MODEL_HAS_ROUTE("service.devicemodel.has.route"),
+		DEVICE_MODEL_NOT_REMOVED_IS_DEFAULT("service.devicemodel.not.removed.is.default"),
+		DEVICE_MODEL_NOT_UPDATED_IS_DEFAULT("service.devicemodel.not.updated.is.default");
 
 		public String getCode() {
 			return code;

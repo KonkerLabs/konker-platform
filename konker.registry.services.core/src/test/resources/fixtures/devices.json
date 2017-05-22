@@ -36,7 +36,7 @@
       	"$ref" : "applications"
       },
       "deviceModel" : {
-      	"$id" : "67014de6-81db-11e6-a5bc-3f99b78823c9",
+      	"$id" : "67014de6-81db-11e6-a5bc-3f99b788249c",
       	"$ref" : "devicesModel"
       },
       "deviceId" : "SN1234567891",

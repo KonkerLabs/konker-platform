@@ -87,6 +87,10 @@ public class LocationServiceImpl implements LocationService {
         if (location.isDefaultLocation()) {
             setFalseDefaultToAllLocations(tenant, application);
         }
+        
+        if (!Optional.ofNullable(location.getParent()).isPresent()) {
+        	location.setDefaultLocation(true);
+        }
 
         Location saved = locationRepository.save(location);
 
@@ -199,6 +203,12 @@ public class LocationServiceImpl implements LocationService {
         if(!Optional.ofNullable(location).isPresent()){
             return ServiceResponseBuilder.<Location>error()
                     .withMessage(Validations.LOCATION_GUID_DOES_NOT_EXIST.getCode())
+                    .build();
+        }
+        
+        if (location.isDefaultLocation()) {
+        	return ServiceResponseBuilder.<Location>error()
+                    .withMessage(Validations.LOCATION_NOT_REMOVED_IS_DEFAULT.getCode())
                     .build();
         }
 
