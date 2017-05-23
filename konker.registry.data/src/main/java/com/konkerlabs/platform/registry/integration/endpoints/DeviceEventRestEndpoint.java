@@ -232,7 +232,7 @@ public class DeviceEventRestEndpoint {
     	} else {
     		return new ResponseEntity<EventResponse>(
             		EventResponse.builder().code(String.valueOf(HttpStatus.NOT_FOUND.value()))
-            		.message("")
+            		.message("{ }")
             		.build(),
             		HttpStatus.NOT_FOUND);
     	}
