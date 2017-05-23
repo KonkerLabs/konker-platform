@@ -1,33 +1,5 @@
 package com.konkerlabs.platform.registry.integration.endpoints;
 
-import com.fasterxml.jackson.annotation.JsonView;
-import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.services.api.DeviceConfigSetupService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.DeviceConfigSetupService.Validations;
-import com.konkerlabs.platform.registry.data.services.JedisTaskService;
-import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
-import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
-import com.konkerlabs.platform.registry.integration.serializers.EventJsonView;
-import com.konkerlabs.platform.registry.integration.serializers.EventVO;
-import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
-import lombok.Builder;
-import lombok.Data;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.async.DeferredResult;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
@@ -36,6 +8,42 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.regex.Pattern;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.async.DeferredResult;
+
+import com.fasterxml.jackson.annotation.JsonView;
+import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
+import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.services.api.DeviceConfigSetupService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.data.services.JedisTaskService;
+import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
+import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
+import com.konkerlabs.platform.registry.integration.serializers.EventJsonView;
+import com.konkerlabs.platform.registry.integration.serializers.EventVO;
+import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
+
+import lombok.Builder;
+import lombok.Data;
 
 @RestController
 public class DeviceEventRestEndpoint {
@@ -224,7 +232,7 @@ public class DeviceEventRestEndpoint {
     	} else {
     		return new ResponseEntity<EventResponse>(
             		EventResponse.builder().code(String.valueOf(HttpStatus.NOT_FOUND.value()))
-            		.message(applicationContext.getMessage(Validations.DEVICE_CONFIG_NOT_FOUND.getCode(), null, locale))
+            		.message("{ }")
             		.build(),
             		HttpStatus.NOT_FOUND);
     	}

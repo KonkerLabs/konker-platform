@@ -17,7 +17,8 @@ public interface LocationService {
 		LOCATION_HAVE_DEVICES("service.location.have_devices"),
 		LOCATION_IS_ROOT("service.location.is_root"),
 		LOCATION_HAVE_DEVICE_CONFIGS("service.location.have_device_configs"),
-		LOCATION_MULTIPLE_DEFAULTS("service.location.multiple_defaults")
+		LOCATION_MULTIPLE_DEFAULTS("service.location.multiple_defaults"),
+		LOCATION_NOT_REMOVED_IS_DEFAULT("service.not.removed.is.default")
 		;
 
 		public String getCode() {
