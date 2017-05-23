@@ -17,6 +17,7 @@ public class WebMvcConfig  {
     @Bean(name = "messageSource")
     public MessageSource getMessageSource() {
         ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
+        messageSource.addBasenames("classpath:/messages/alert-triggers");
         messageSource.addBasenames("classpath:/messages/applications");
         messageSource.addBasenames("classpath:/messages/device-model");
         messageSource.addBasenames("classpath:/messages/devices");
