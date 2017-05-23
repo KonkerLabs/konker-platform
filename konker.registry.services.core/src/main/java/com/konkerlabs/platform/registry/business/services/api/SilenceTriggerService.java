@@ -12,6 +12,7 @@ public interface SilenceTriggerService {
 
     enum Validations {
         GUID_NULL("service.silence_trigger.guid.not_null"),
+        SILENCE_TRIGGER_ALREADY_EXISTS("service.silence_trigger.already_exists"),
         SILENCE_TRIGGER_NOT_FOUND("service.silence_trigger.not_found");
 
         private String code;
@@ -27,7 +28,7 @@ public interface SilenceTriggerService {
 
     enum Messages {
         SILENCE_TRIGGER_REMOVED_SUCCESSFULLY("service.silence_trigger.removed_succesfully");
-        
+
         public String getCode() {
             return code;
         }

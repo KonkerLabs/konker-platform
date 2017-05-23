@@ -17,6 +17,8 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.SilenceTriggerRepository;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
+import com.konkerlabs.platform.registry.business.services.api.LocationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.SilenceTriggerService;
@@ -73,6 +75,26 @@ public class SilenceTriggerServiceImpl implements SilenceTriggerService {
         Optional<Map<String, Object[]>> validations = trigger.applyValidations();
         if (validations.isPresent()) {
             return ServiceResponseBuilder.<SilenceTrigger>error().withMessages(validations.get()).build();
+        }
+
+        DeviceModel deviceModel = trigger.getDeviceModel();
+        if (!Optional.ofNullable(deviceModel).isPresent() || !Optional.ofNullable(deviceModel.getGuid()).isPresent()) {
+            return ServiceResponseBuilder.<SilenceTrigger>error()
+                    .withMessage(DeviceModelService.Validations.DEVICE_MODEL_NULL.getCode()).build();
+        }
+
+        Location location = trigger.getLocation();
+        if (!Optional.ofNullable(location).isPresent() || !Optional.ofNullable(location.getGuid()).isPresent()) {
+            return ServiceResponseBuilder.<SilenceTrigger>error()
+                    .withMessage(LocationService.Validations.LOCATION_GUID_NULL.getCode()).build();
+        }
+
+        //
+        SilenceTrigger existing = silenceTriggerRepository.findByTenantAndApplicationAndDeviceModelAndLocation(
+                tenant.getId(), application.getName(), deviceModel.getId(), location.getId());
+        if (existing != null) {
+            return ServiceResponseBuilder.<SilenceTrigger>error()
+                    .withMessage(Validations.SILENCE_TRIGGER_ALREADY_EXISTS.getCode()).build();
         }
 
         trigger.setTenant(tenant);
