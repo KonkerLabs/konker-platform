@@ -15,6 +15,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertSeverity;
 import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
@@ -157,7 +158,7 @@ public class Device implements URIDealer, Validatable, UserDetails {
 	@Builder
 	public static class DeviceHealth {
 		
-		private String status;
+		private HealthAlertSeverity severity;
 		private Long lastUpdate;
 		
 	}

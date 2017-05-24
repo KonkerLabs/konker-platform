@@ -197,7 +197,7 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 		}
 		
 		device.setHealth(DeviceHealth.builder()
-				.status(healthAlert.getSeverity().name())
+				.severity(healthAlert.getSeverity())
 				.lastUpdate(lastUpdate)
 				.build());
 		deviceRepository.save(device);
