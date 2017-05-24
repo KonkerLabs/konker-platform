@@ -58,8 +58,8 @@ public class JedisTaskService {
 
         // register last timestamp
         final String eventTimestamp = Long.toString(event.getTimestamp().getEpochSecond());
-        redisTemplate.opsForHash().put(LAST_TS_HASHNAME, event.getIncoming().getDeviceGuid(), eventTimestamp);
-        redisTemplate.opsForHash().put(LAST_TS_HASHNAME, "all", eventTimestamp);
+        redisTemplate.boundHashOps(LAST_TS_HASHNAME).put(event.getIncoming().getDeviceGuid(), eventTimestamp);
+        redisTemplate.boundHashOps(LAST_TS_HASHNAME).put("all", eventTimestamp);
 
 	}
 
