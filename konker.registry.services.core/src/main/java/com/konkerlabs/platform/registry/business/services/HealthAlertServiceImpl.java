@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.business.services;
 
+import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -15,17 +16,14 @@ import org.springframework.stereotype.Service;
 
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.DeviceModel;
 import com.konkerlabs.platform.registry.business.model.HealthAlert;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
-import com.konkerlabs.platform.registry.business.repositories.DeviceModelRepository;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.HealthAlertRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.HealthAlertService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
@@ -128,8 +126,10 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 					.build();
 		}
 		
-		if (!Optional.ofNullable(healthAlert.getDeviceGuid()).isPresent()) {
+		if (!Optional.ofNullable(healthAlert.getDeviceGuid()).isPresent()
+				|| healthAlert.getDeviceGuid().isEmpty()) {
 			if(LOGGER.isDebugEnabled()){
+				healthAlert.setGuid("NULL");
 				LOGGER.debug(DeviceRegisterService.Validations.DEVICE_GUID_NULL.getCode(),
 						healthAlert.toURI(),
 						healthAlert.getTenant().getLogLevel());
@@ -168,7 +168,7 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 
 		if (validations.isPresent()) {
 			LOGGER.debug("error saving health alert",
-					DeviceModel.builder().guid("NULL").tenant(tenant).build().toURI(),
+					HealthAlert.builder().guid("NULL").tenant(tenant).build().toURI(),
 					tenant.getLogLevel());
 			return ServiceResponseBuilder.<HealthAlert>error()
 					.withMessages(validations.get())
@@ -179,14 +179,32 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 		healthAlert.setApplication(application);
 		healthAlert.setGuid(UUID.randomUUID().toString());
 		HealthAlert save = healthAlertRepository.save(healthAlert);
+		
+		updateDeviceHealth(healthAlert);
+		
 		LOGGER.info("HealthAlert created. Guid: {}", save.getGuid(), tenant.toURI(), tenant.getLogLevel());
-
 		return ServiceResponseBuilder.<HealthAlert>ok().withResult(save).build();
 	}
 
+	private void updateDeviceHealth(HealthAlert healthAlert) {
+		Device device = deviceRepository.findByTenantAndGuid(healthAlert.getTenant().getId(), healthAlert.getDeviceGuid());
+		Long lastUpdate = null;
+		
+		if (Optional.ofNullable(healthAlert.getLastChange()).isPresent()) {
+			lastUpdate = healthAlert.getLastChange().toEpochMilli();
+		} else {
+			lastUpdate = healthAlert.getRegistrationDate().toEpochMilli();
+		}
+		
+		device.setHealth(MessageFormat.format("'{' \"status\" : \"{0}\", \"lastUpdate\" : {1} '}'", 
+				healthAlert.getSeverity().name(),
+				lastUpdate));
+		deviceRepository.save(device);
+	}
+
 	@Override
-	public ServiceResponse<HealthAlert> update(Tenant tenant, Application application, String healthAlertGuid, HealthAlert updatingDeviceModel) {
-		ServiceResponse<HealthAlert> response = basicValidate(tenant, application, updatingDeviceModel);
+	public ServiceResponse<HealthAlert> update(Tenant tenant, Application application, String healthAlertGuid, HealthAlert updatingHealthAlert) {
+		ServiceResponse<HealthAlert> response = basicValidate(tenant, application, updatingHealthAlert);
 
 		if (Optional.ofNullable(response).isPresent())
 			return response;
@@ -207,9 +225,9 @@ public class HealthAlertServiceImpl implements HealthAlertService {
                     .build();
 		}
 		
-		healthAlertFromDB.setDescription(updatingDeviceModel.getDescription());
-		healthAlertFromDB.setSeverity(updatingDeviceModel.getSeverity());
-		healthAlertFromDB.setType(updatingDeviceModel.getType());
+		healthAlertFromDB.setDescription(updatingHealthAlert.getDescription());
+		healthAlertFromDB.setSeverity(updatingHealthAlert.getSeverity());
+		healthAlertFromDB.setType(updatingHealthAlert.getType());
 		healthAlertFromDB.setLastChange(Instant.now());
 
 		Optional<Map<String, Object[]>> validations = healthAlertFromDB.applyValidations();
@@ -221,8 +239,9 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 		
 		HealthAlert updated = healthAlertRepository.save(healthAlertFromDB);
 
+		updateDeviceHealth(updated);
+		
 		LOGGER.info("HealthAlert updated. Guid: {}", healthAlertFromDB.getGuid(), tenant.toURI(), tenant.getLogLevel());
-
 		return ServiceResponseBuilder.<HealthAlert>ok().withResult(updated).build();
 	}
 
@@ -265,7 +284,7 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 
 	@Override
 	public ServiceResponse<List<HealthAlert>> findAllByTenantAndApplication(Tenant tenant, Application application) {
-		List<HealthAlert> all = deviceModelRepository.findAllByTenantIdAndApplicationName(tenant.getId(), application.getName());
+		List<HealthAlert> all = healthAlertRepository.findAllByTenantIdAndApplicationName(tenant.getId(), application.getName());
 		return ServiceResponseBuilder.<List<HealthAlert>>ok().withResult(all).build();
 	}
 
@@ -284,20 +303,17 @@ public class HealthAlertServiceImpl implements HealthAlertService {
                     .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode())
                     .build();
         
-        DeviceModel devModel = getByTenantApplicationAndName(tenant, application, deviceGuid).getResult();
-        if (!Optional.ofNullable(devModel).isPresent()) {
+        if (!Optional.ofNullable(deviceGuid).isPresent()) {
 			return ServiceResponseBuilder.<List<HealthAlert>>error()
-                    .withMessage(Validations.HEALTH_ALERT_DOES_NOT_EXIST.getCode())
-                    .build();
+					.withMessage(DeviceRegisterService.Validations.DEVICE_GUID_NULL.getCode())
+					.build();
 		}
-        
-        List<Device> devices = deviceRepository.findAllByTenantIdApplicationNameAndDeviceModel(
-        		tenant.getId(), 
-        		application.getName(), 
-        		devModel.getId());
 		
+        List<HealthAlert> healthAlerts = healthAlertRepository
+        		.findAllByTenantIdApplicationNameAndDeviceGuid(tenant.getId(), application.getName(), deviceGuid);
+
         return ServiceResponseBuilder.<List<HealthAlert>>ok()
-                .withResult(devices)
+                .withResult(healthAlerts)
                 .build();
 	}
 	
@@ -329,13 +345,15 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 			return ServiceResponseBuilder.<HealthAlert> error()
 					.withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode()).build();
 		
-		DeviceModel deviceModel = deviceModelRepository.findByTenantIdApplicationNameAndName(tenantFromDB.getId(), appFromDB.getName(), healthAlertGuid);
-		if (!Optional.ofNullable(deviceModel).isPresent()) {
+		HealthAlert healthAlert = healthAlertRepository
+				.findByTenantIdApplicationNameAndGuid(tenantFromDB.getId(), appFromDB.getName(), healthAlertGuid);
+		
+		if (!Optional.ofNullable(healthAlert).isPresent()) {
 			return ServiceResponseBuilder.<HealthAlert> error()
 					.withMessage(Validations.HEALTH_ALERT_DOES_NOT_EXIST.getCode()).build();
 		}
 
-		return ServiceResponseBuilder.<HealthAlert>ok().withResult(deviceModel).build();
+		return ServiceResponseBuilder.<HealthAlert>ok().withResult(healthAlert).build();
 	}
 
 }

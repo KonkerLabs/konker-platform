@@ -79,6 +79,7 @@ public class Device implements URIDealer, Validatable, UserDetails {
 	private String description;
 	private Instant registrationDate;
     private LogLevel logLevel;
+    private String health;
     @DBRef
     private DeviceModel deviceModel;
     @DBRef

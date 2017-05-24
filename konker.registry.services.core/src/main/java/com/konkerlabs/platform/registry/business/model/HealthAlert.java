@@ -1,20 +1,20 @@
 package com.konkerlabs.platform.registry.business.model;
 
-import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
-import org.springframework.data.mongodb.core.mapping.Document;
-
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.regex.Pattern;
+
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
@@ -64,9 +64,9 @@ public class HealthAlert implements URIDealer {
 	}
 
 	public enum Validations {
-		NAME_NULL_EMPTY("model.application.name.not_null"),
-		NAME_INVALID("model.application.name.invalid"),
-		FRIENDLY_NAME_NULL_EMPTY("model.application.friendly.name.not_null");
+		DESCRIPTION_NULL_EMPTY("model.healthalert.description.not_null"),
+		SEVERITY_NULL("model.healthalert.severity.not_null"),
+		TYPE_NULL("model.healthalert.type.not_null");
 
 		public String getCode() {
 			return code;
@@ -80,16 +80,14 @@ public class HealthAlert implements URIDealer {
 	}
 
 	public Optional<Map<String, Object[]>> applyValidations() {
-		Pattern regex = Pattern.compile("[^a-zA-Z0-9{2,}]");
-
 		Map<String, Object[]> validations = new HashMap<>();
 
-		if (getName() != null && regex.matcher(getName()).find())
-			validations.put(Validations.NAME_INVALID.code,null);
-		if (getName() == null || getName().isEmpty())
-			validations.put(Validations.NAME_NULL_EMPTY.code,null);
-		if (getFriendlyName() == null || getFriendlyName().isEmpty())
-			validations.put(Validations.FRIENDLY_NAME_NULL_EMPTY.code,null);
+		if (getDescription() == null || getDescription().isEmpty())
+			validations.put(Validations.DESCRIPTION_NULL_EMPTY.code,null);
+		if (getSeverity() == null)
+			validations.put(Validations.SEVERITY_NULL.code,null);
+		if (getType() == null)
+			validations.put(Validations.TYPE_NULL.code,null);
 
 		return Optional.of(validations).filter(map -> !map.isEmpty());
 	}

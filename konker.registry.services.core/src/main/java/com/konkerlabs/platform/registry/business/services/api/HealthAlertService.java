@@ -9,15 +9,9 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 public interface HealthAlertService {
 
 	enum Validations {
-		HEALTH_ALERT_NULL("service.devicemodel.null"),
-		DEVICE_MODEL_ALREADY_REGISTERED("service.devicemodel.already.registered"),
-		HEALTH_ALERT_DOES_NOT_EXIST("service.devicemodel.does.not.exist"),
-		HEALTH_ALERT_GUID_IS_NULL("service.devicemodel.name.null"),
-		DEVICE_MODEL_NOT_FOUND("service.devicemodel.not_found"),
-		DEVICE_MODEL_HAS_DEVICE("service.devicemodel.has.device"),
-		DEVICE_MODEL_HAS_ROUTE("service.devicemodel.has.route"),
-		DEVICE_MODEL_NOT_REMOVED_IS_DEFAULT("service.devicemodel.not.removed.is.default"),
-		DEVICE_MODEL_NOT_UPDATED_IS_DEFAULT("service.devicemodel.not.updated.is.default");
+		HEALTH_ALERT_NULL("service.healthalert.null"),
+		HEALTH_ALERT_DOES_NOT_EXIST("service.healthalert.does.not.exist"),
+		HEALTH_ALERT_GUID_IS_NULL("service.healthalert.guid.null");
 
 		public String getCode() {
 			return code;
@@ -31,8 +25,7 @@ public interface HealthAlertService {
 	}
 	
 	public enum Messages {
-		HEALTH_ALERT_REMOVED_SUCCESSFULLY("controller.devicemodel.removed.succesfully"),
-		DEVICE_MODEL_REMOVED_UNSUCCESSFULLY("controller.devicemodel.removed.unsuccesfully");
+		HEALTH_ALERT_REMOVED_SUCCESSFULLY("controller.healthalert.removed.succesfully");
 
 		public String getCode() {
 			return code;
