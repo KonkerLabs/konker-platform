@@ -17,9 +17,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.konkerlabs.platform.registry.business.model.AlertTrigger;
-import com.konkerlabs.platform.registry.business.model.AlertTriggerType;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.DeviceModel;
+import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertType;
 import com.konkerlabs.platform.registry.business.model.Location;
 import com.konkerlabs.platform.registry.business.model.SilenceTrigger;
 import com.konkerlabs.platform.registry.business.model.Tenant;
@@ -144,10 +144,10 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
         assertThat(serviceResponse.isOk(), is(true));
         assertThat(serviceResponse.getResult().size(), is(2));
         assertThat(serviceResponse.getResult().get(0).getLocation().getName(), is("BR"));
-        assertThat(serviceResponse.getResult().get(0).getType(), is(AlertTriggerType.SILENCE));
+        assertThat(serviceResponse.getResult().get(0).getType(), is(HealthAlertType.SILENCE));
 
         assertThat(serviceResponse.getResult().get(1).getLocation().getName(), is("CL"));
-        assertThat(serviceResponse.getResult().get(1).getType(), is(AlertTriggerType.SILENCE));
+        assertThat(serviceResponse.getResult().get(1).getType(), is(HealthAlertType.SILENCE));
 
     }
 

@@ -158,7 +158,7 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
     @Test
     public void shouldLogFirstDeviceEvent() throws Exception {
 
-        doNothing().when(jedisTaskService).registerLastEventTimeStamp(event);
+        doNothing().when(jedisTaskService).registerLastEventTimestamp(event);
 
         deviceEventService.logIncomingEvent(device, event);
 

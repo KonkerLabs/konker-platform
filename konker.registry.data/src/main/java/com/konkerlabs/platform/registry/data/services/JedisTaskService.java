@@ -54,7 +54,7 @@ public class JedisTaskService {
 		return response.getResult();
 	}
 
-	public void registerLastEventTimeStamp(Event event) {
+	public void registerLastEventTimestamp(Event event) {
 
         // register last timestamp
         final String eventTimestamp = Long.toString(event.getTimestamp().getEpochSecond());

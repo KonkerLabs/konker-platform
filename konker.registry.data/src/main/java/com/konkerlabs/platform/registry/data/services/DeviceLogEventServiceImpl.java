@@ -61,7 +61,7 @@ public class DeviceLogEventServiceImpl implements DeviceLogEventService {
             try {
                 ServiceResponse<EventSchema> schemaResponse = eventSchemaService.appendIncomingSchema(event);
 
-                jedisTaskService.registerLastEventTimeStamp(event);
+                jedisTaskService.registerLastEventTimestamp(event);
 
                 if (schemaResponse.isOk()) {
                     return ServiceResponseBuilder.<Event>ok()
