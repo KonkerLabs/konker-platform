@@ -1,6 +1,5 @@
 package com.konkerlabs.platform.registry.business.services;
 
-import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.Device.DeviceHealth;
 import com.konkerlabs.platform.registry.business.model.HealthAlert;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
@@ -196,9 +196,10 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 			lastUpdate = healthAlert.getRegistrationDate().toEpochMilli();
 		}
 		
-		device.setHealth(MessageFormat.format("'{' \"status\" : \"{0}\", \"lastUpdate\" : {1} '}'", 
-				healthAlert.getSeverity().name(),
-				lastUpdate));
+		device.setHealth(DeviceHealth.builder()
+				.status(healthAlert.getSeverity().name())
+				.lastUpdate(lastUpdate)
+				.build());
 		deviceRepository.save(device);
 	}
 
