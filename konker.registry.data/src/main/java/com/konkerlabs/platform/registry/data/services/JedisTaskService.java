@@ -28,6 +28,8 @@ public class JedisTaskService {
 
 	protected ServiceResponse<List<Event>> response;
 
+	public static final String LAST_TS_HASHNAME = "lasteventts";
+
 	public JedisTaskService() {
 
 	}
@@ -50,6 +52,15 @@ public class JedisTaskService {
 		jedis.subscribe(jedisPubSub, channel);
 
 		return response.getResult();
+	}
+
+	public void registerLastEventTimeStamp(Event event) {
+
+        // register last timestamp
+        final String eventTimestamp = Long.toString(event.getTimestamp().getEpochSecond());
+        redisTemplate.opsForHash().put(LAST_TS_HASHNAME, event.getIncoming().getDeviceGuid(), eventTimestamp);
+        redisTemplate.opsForHash().put(LAST_TS_HASHNAME, "all", eventTimestamp);
+
 	}
 
 }
