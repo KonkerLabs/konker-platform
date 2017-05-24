@@ -20,19 +20,21 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
 import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
+import com.konkerlabs.platform.registry.api.model.DeviceHealthVO;
 import com.konkerlabs.platform.registry.api.model.DeviceInputVO;
 import com.konkerlabs.platform.registry.api.model.DeviceVO;
 import com.konkerlabs.platform.registry.api.model.RestResponse;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.DeviceModel;
+import com.konkerlabs.platform.registry.business.model.HealthAlert;
 import com.konkerlabs.platform.registry.business.model.Location;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.Validations;
+import com.konkerlabs.platform.registry.business.services.api.HealthAlertService;
 import com.konkerlabs.platform.registry.business.services.api.LocationSearchService;
-import com.konkerlabs.platform.registry.business.services.api.LocationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 
 import io.swagger.annotations.Api;
@@ -55,6 +57,9 @@ public class DeviceRestController extends AbstractRestController implements Init
 
     @Autowired
     private DeviceModelService deviceModelService;
+    
+    @Autowired
+    private HealthAlertService healthAlertService;
 
     private Set<String> validationsCode = new HashSet<>();
 
@@ -221,6 +226,33 @@ public class DeviceRestController extends AbstractRestController implements Init
             } else {
                 throw new BadServiceResponseException(user, deviceResponse, validationsCode);
             }
+        }
+
+    }
+    
+    @GetMapping(path = "/{deviceGuid}/health")
+    @ApiOperation(
+            value = "Get a device health by device guid",
+            response = RestResponse.class
+    )
+    @PreAuthorize("hasAuthority('SHOW_DEVICE')")
+    public DeviceHealthVO health(
+    		@PathVariable("application") String applicationId,
+    		@PathVariable("deviceGuid") String deviceGuid) throws BadServiceResponseException, NotFoundResponseException {
+
+        Tenant tenant = user.getTenant();
+        Application application = getApplication(applicationId);
+
+        ServiceResponse<List<HealthAlert>> deviceResponse = healthAlertService.findAllByTenantApplicationAndDeviceGuid(
+        		tenant, 
+        		application, 
+        		deviceGuid); 
+
+        if (deviceResponse.isOk() && !deviceResponse.getResult().isEmpty()) {
+        	List<HealthAlert> result = deviceResponse.getResult();
+			return new DeviceHealthVO().apply(result.get(0));
+        } else {
+        	throw new NotFoundResponseException(user, deviceResponse);
         }
 
     }

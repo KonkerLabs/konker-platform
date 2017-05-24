@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.Device.DeviceHealth;
 import com.konkerlabs.platform.registry.business.model.HealthAlert;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
@@ -180,27 +179,8 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 		healthAlert.setGuid(UUID.randomUUID().toString());
 		HealthAlert save = healthAlertRepository.save(healthAlert);
 		
-		updateDeviceHealth(healthAlert);
-		
 		LOGGER.info("HealthAlert created. Guid: {}", save.getGuid(), tenant.toURI(), tenant.getLogLevel());
 		return ServiceResponseBuilder.<HealthAlert>ok().withResult(save).build();
-	}
-
-	private void updateDeviceHealth(HealthAlert healthAlert) {
-		Device device = deviceRepository.findByTenantAndGuid(healthAlert.getTenant().getId(), healthAlert.getDeviceGuid());
-		Long lastUpdate = null;
-		
-		if (Optional.ofNullable(healthAlert.getLastChange()).isPresent()) {
-			lastUpdate = healthAlert.getLastChange().toEpochMilli();
-		} else {
-			lastUpdate = healthAlert.getRegistrationDate().toEpochMilli();
-		}
-		
-		device.setHealth(DeviceHealth.builder()
-				.severity(healthAlert.getSeverity())
-				.lastUpdate(lastUpdate)
-				.build());
-		deviceRepository.save(device);
 	}
 
 	@Override
@@ -240,8 +220,6 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 		
 		HealthAlert updated = healthAlertRepository.save(healthAlertFromDB);
 
-		updateDeviceHealth(updated);
-		
 		LOGGER.info("HealthAlert updated. Guid: {}", healthAlertFromDB.getGuid(), tenant.toURI(), tenant.getLogLevel());
 		return ServiceResponseBuilder.<HealthAlert>ok().withResult(updated).build();
 	}
