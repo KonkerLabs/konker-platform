@@ -37,6 +37,8 @@ public class DeviceLogEventServiceImpl implements DeviceLogEventService {
     private EventSchemaService eventSchemaService;
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
+    @Autowired
+    private JedisTaskService jedisTaskService;
 
     @PostConstruct
     public void init() {
@@ -59,6 +61,8 @@ public class DeviceLogEventServiceImpl implements DeviceLogEventService {
             try {
                 ServiceResponse<EventSchema> schemaResponse = eventSchemaService.appendIncomingSchema(event);
 
+                jedisTaskService.registerLastEventTimeStamp(event);
+
                 if (schemaResponse.isOk()) {
                     return ServiceResponseBuilder.<Event>ok()
                             .withResult(eventRepository.saveIncoming(device.getTenant(), device.getApplication(),event)).build();
@@ -66,6 +70,7 @@ public class DeviceLogEventServiceImpl implements DeviceLogEventService {
                     return ServiceResponseBuilder.<Event>error()
                         .withMessages(schemaResponse.getResponseMessages()).build();
                 }
+
             } catch (BusinessException e) {
                 return ServiceResponseBuilder.<Event>error()
                         .withMessage(e.getMessage()).build();

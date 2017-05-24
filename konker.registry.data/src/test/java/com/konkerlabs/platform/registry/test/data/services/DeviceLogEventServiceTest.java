@@ -4,20 +4,22 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.mockito.Mockito.doNothing;
 
 import java.text.MessageFormat;
 import java.time.Duration;
 import java.time.Instant;
 
-import com.konkerlabs.platform.registry.business.repositories.events.api.EventRepository;
-import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -28,9 +30,12 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
+import com.konkerlabs.platform.registry.business.repositories.events.api.EventRepository;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
+import com.konkerlabs.platform.registry.data.services.JedisTaskService;
 import com.konkerlabs.platform.registry.data.services.api.DeviceLogEventService;
 import com.konkerlabs.platform.registry.test.data.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.data.base.BusinessTestConfiguration;
@@ -46,7 +51,8 @@ import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
         BusinessTestConfiguration.class,
         BusinessTestConfiguration.class,
         PubServerConfig.class,
-        EventStorageConfig.class
+        EventStorageConfig.class,
+        DeviceLogEventServiceTest.DeviceLogEventServiceTestConfig.class
 })
 @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json"})
 public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
@@ -65,6 +71,9 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
 
     @Autowired
     private DeviceRepository deviceRepository;
+
+    @Autowired
+    private JedisTaskService jedisTaskService;
 
     @Autowired
     @Qualifier("mongoEvents")
@@ -148,6 +157,9 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldLogFirstDeviceEvent() throws Exception {
+
+        doNothing().when(jedisTaskService).registerLastEventTimeStamp(event);
+
         deviceEventService.logIncomingEvent(device, event);
 
         Event last = eventRepository.findIncomingBy(tenant,application,device.getGuid(),channel,event.getTimestamp().minusSeconds(1l), null, false, 1).get(0);
@@ -157,6 +169,18 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
         long gap = Duration.between(last.getTimestamp(), Instant.now()).abs().getSeconds();
 
         assertThat(gap, not(greaterThan(60L)));
+
+    }
+
+    @Configuration
+    static class DeviceLogEventServiceTestConfig {
+
+        @Bean
+        @SuppressWarnings("unchecked")
+        public JedisTaskService jedisTaskService() {
+            return Mockito.mock(JedisTaskService.class);
+        }
+
     }
 
 }
