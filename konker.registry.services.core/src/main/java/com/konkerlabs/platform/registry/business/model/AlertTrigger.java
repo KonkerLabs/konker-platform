@@ -23,6 +23,6 @@ public abstract class AlertTrigger implements URIDealer {
     private DeviceModel deviceModel;
     @DBRef
     private Location location;
-    private AlertTriggerType type;
+    protected AlertTriggerType type;
 
 }
