@@ -9,21 +9,21 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
-import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
-import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
-
-import lombok.experimental.Tolerate;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertSeverity;
+import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
+import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.utilities.validations.api.Validatable;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.experimental.Tolerate;
 
 @Data
 @Builder
@@ -79,6 +79,7 @@ public class Device implements URIDealer, Validatable, UserDetails {
 	private String description;
 	private Instant registrationDate;
     private LogLevel logLevel;
+    private DeviceHealth health;
     @DBRef
     private DeviceModel deviceModel;
     @DBRef
@@ -151,5 +152,14 @@ public class Device implements URIDealer, Validatable, UserDetails {
 	@Override
 	public boolean isEnabled() {
 		return true;
+	}
+	
+	@Data
+	@Builder
+	public static class DeviceHealth {
+		
+		private HealthAlertSeverity severity;
+		private Long lastUpdate;
+		
 	}
 }

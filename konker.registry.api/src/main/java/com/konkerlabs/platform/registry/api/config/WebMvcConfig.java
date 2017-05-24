@@ -26,6 +26,7 @@ public class WebMvcConfig  {
         messageSource.addBasenames("classpath:/messages/routes");
         messageSource.addBasenames("classpath:/messages/transformations");
         messageSource.addBasenames("classpath:/messages/users");
+        messageSource.addBasenames("classpath:/messages/health-alert");
         messageSource.setDefaultEncoding("UTF-8");
 
         return messageSource;
