@@ -1,7 +1,6 @@
 package com.konkerlabs.platform.registry.api.web.controller;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.InitializingBean;
@@ -40,7 +39,7 @@ import io.swagger.annotations.ApiParam;
 @RestController
 @Scope("request")
 @RequestMapping(value = "/{application}/triggers/silence")
-@Api(tags = "silence triggers")
+@Api(tags = "alert triggers")
 public class SilenceTriggerRestController extends AbstractRestController implements InitializingBean {
 
     @Autowired
@@ -54,33 +53,13 @@ public class SilenceTriggerRestController extends AbstractRestController impleme
 
     private Set<String> validationsCode = new HashSet<>();
 
-    @GetMapping(path = "/")
-    // @PreAuthorize("hasAuthority('LIST_ALERT_TRIGGERS')")
-    @ApiOperation(
-            value = "List all silence triggers by application",
-            response = SilenceTriggerVO.class)
-    public List<SilenceTriggerVO> list(@PathVariable("application") String applicationId) throws BadServiceResponseException, NotFoundResponseException {
-
-        Tenant tenant = user.getTenant();
-        Application application = getApplication(applicationId);
-
-        ServiceResponse<List<SilenceTrigger>> restDestinationResponse = silenceTriggerService.listByTenantAndApplication(tenant, application);
-
-        if (!restDestinationResponse.isOk()) {
-            throw new BadServiceResponseException(user, restDestinationResponse, validationsCode);
-        } else {
-            return new SilenceTriggerVO().apply(restDestinationResponse.getResult());
-        }
-
-    }
-
     @GetMapping(path = "/{deviceModelName}/{locationName}")
     @ApiOperation(
             value = "Get a silence trigger by guid",
             response = RestResponse.class
     )
     // @PreAuthorize("hasAuthority('SHOW_ALERT_TRIGGER')")
-    public SilenceTrigger read(
+    public SilenceTriggerVO read(
             @PathVariable("application") String applicationId,
             @PathVariable("deviceModelName") String deviceModelName,
             @PathVariable("locationName") String locationName) throws BadServiceResponseException, NotFoundResponseException {
@@ -95,7 +74,7 @@ public class SilenceTriggerRestController extends AbstractRestController impleme
         if (!restDestinationResponse.isOk()) {
             throw new NotFoundResponseException(user, restDestinationResponse);
         } else {
-            return restDestinationResponse.getResult();
+            return new SilenceTriggerVO(restDestinationResponse.getResult());
         }
 
     }
@@ -262,6 +241,10 @@ public class SilenceTriggerRestController extends AbstractRestController impleme
         }
 
         for (SilenceTriggerService.Validations value : SilenceTriggerService.Validations.values()) {
+            validationsCode.add(value.getCode());
+        }
+
+        for (SilenceTrigger.Validations value : SilenceTrigger.Validations.values()) {
             validationsCode.add(value.getCode());
         }
     }

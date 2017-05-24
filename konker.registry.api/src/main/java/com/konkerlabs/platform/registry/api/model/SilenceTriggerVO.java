@@ -25,12 +25,15 @@ public class SilenceTriggerVO
     protected String deviceModelName;
     @ApiModelProperty(value = "the location name of device", example = "br_sp", position = 2)
     protected String locationName;
+    @ApiModelProperty(value = "alert type", example = "silence", position = 3)
+    protected String type;
 
     public SilenceTriggerVO(SilenceTrigger silenceTrigger) {
         this.guid = silenceTrigger.getGuid();
         this.deviceModelName  = silenceTrigger.getDeviceModel().getName();
         this.locationName = silenceTrigger.getLocation().getName();
         this.minutes = silenceTrigger.getMinutes();
+        this.type = silenceTrigger.getType().name().toLowerCase();
     }
 
     public SilenceTriggerVO apply(SilenceTrigger t) {

@@ -69,17 +69,20 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
                 .securitySchemes(newArrayList(securitySchema()))
                 .securityContexts(newArrayList(securityContext()))
                 // .operationOrdering(getOperationOrdering()) try with swagger 2.7.0
-                .tags(new Tag("devices", "Operations to list and edit devices"),
+                .tags(
+                        new Tag("alert triggers", "Operations to manage alert triggers"),
+                        new Tag("applications", "Operations to list organization applications"),
+                        new Tag("device configs", "Operations to list and edit device configurations"),
                         new Tag("device credentials", "Operations to manage device credentials (username, password and URLs)"),
                         new Tag("device models", "Operations to manage device models"),
-                        new Tag("routes", "Operations to list and edit routes"),
-                        new Tag("users", "Operations to list and edit organization users"),
+                        new Tag("devices", "Operations to list and edit devices"),
                         new Tag("events", "Operations to query incoming and outgoing device events"),
-                        new Tag("applications", "Operations to list organization applications"),
+                        new Tag("locations", "Operations to list and edit locations"),
                         new Tag("rest destinations", "Operations to list organization REST destinations"),
                         new Tag("rest transformations", "Operations to manage REST transformations"),
-                        new Tag("locations", "Operations to list and edit locations"),
-                        new Tag("device configs", "Operations to list and edit device configurations"))
+                        new Tag("routes", "Operations to list and edit routes"),
+                        new Tag("users", "Operations to list and edit organization users")
+                     )
                 .enableUrlTemplating(false);
 
     }

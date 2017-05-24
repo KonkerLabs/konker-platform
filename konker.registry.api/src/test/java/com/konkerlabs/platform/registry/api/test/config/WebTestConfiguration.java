@@ -10,6 +10,7 @@ import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
 import com.konkerlabs.platform.registry.business.model.enumerations.Language;
 import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
+import com.konkerlabs.platform.registry.business.services.api.AlertTriggerService;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceConfigSetupService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
@@ -20,6 +21,7 @@ import com.konkerlabs.platform.registry.business.services.api.LocationSearchServ
 import com.konkerlabs.platform.registry.business.services.api.LocationService;
 import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.RoleService;
+import com.konkerlabs.platform.registry.business.services.api.SilenceTriggerService;
 import com.konkerlabs.platform.registry.business.services.api.TransformationService;
 import com.konkerlabs.platform.registry.business.services.api.UserService;
 
@@ -101,11 +103,20 @@ public class WebTestConfiguration {
     public DeviceConfigSetupService deviceConfigSetupService() {
         return Mockito.mock(DeviceConfigSetupService.class);
     }
-    
+
     @Bean
     public DeviceModelService deviceModelService() {
     	return Mockito.mock(DeviceModelService.class);
     }
-    
+
+    @Bean
+    public SilenceTriggerService silenceTriggerService() {
+        return Mockito.mock(SilenceTriggerService.class);
+    }
+
+    @Bean
+    public AlertTriggerService alertTriggerService() {
+        return Mockito.mock(AlertTriggerService.class);
+    }
 
 }

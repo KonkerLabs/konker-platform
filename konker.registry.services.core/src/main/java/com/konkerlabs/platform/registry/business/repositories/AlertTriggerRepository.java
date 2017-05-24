@@ -1,0 +1,15 @@
+package com.konkerlabs.platform.registry.business.repositories;
+
+import java.util.List;
+
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
+
+import com.konkerlabs.platform.registry.business.model.AlertTrigger;
+
+public interface AlertTriggerRepository  extends MongoRepository<AlertTrigger, String> {
+
+    @Query("{ 'tenant.id' : ?0, 'application.name' : ?1 }")
+    List<AlertTrigger> listByTenantIdAndApplicationName(String tenantId, String applicationName);
+
+}

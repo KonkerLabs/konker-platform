@@ -27,6 +27,10 @@ public class SilenceTrigger extends AlertTrigger {
         }
     }
 
+    public SilenceTrigger() {
+        super.type = AlertTriggerType.SILENCE;
+    }
+
     @Override
     public String getUriScheme() {
         return URI_SCHEME;
