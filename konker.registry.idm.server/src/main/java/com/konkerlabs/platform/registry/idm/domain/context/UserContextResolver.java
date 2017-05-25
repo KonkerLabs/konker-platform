@@ -1,24 +1,23 @@
-package com.konkerlabs.platform.registry.idm.security;
+package com.konkerlabs.platform.registry.idm.domain.context;
 
-import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
 import org.springframework.beans.factory.SmartFactoryBean;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-@Component("tenant")
-public class TenantContextResolver implements SmartFactoryBean<Tenant> {
+@Component("user")
+public class UserContextResolver implements SmartFactoryBean<User> {
 
     @Override
-    public Tenant getObject() throws Exception {
+    public User getObject(){
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return User.class.cast(userDetails).getTenant();
+        return User.class.cast(userDetails);
     }
 
     @Override
     public Class<?> getObjectType() {
-        return Tenant.class;
+        return User.class;
     }
 
     @Override

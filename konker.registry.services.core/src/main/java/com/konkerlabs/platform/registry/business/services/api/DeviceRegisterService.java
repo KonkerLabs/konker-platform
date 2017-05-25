@@ -162,7 +162,7 @@ public interface DeviceRegisterService {
 	ServiceResponse<Device> switchEnabledDisabled(Tenant tenant, Application application, String guid);
 
 	/**
-	 * Generates a security token for an existing device
+	 * Generates a context token for an existing device
 	 *
 	 * @param tenant
 	 * @param guid
@@ -181,7 +181,7 @@ public interface DeviceRegisterService {
 	ServiceResponse<DeviceDataURLs> getDeviceDataURLs(Tenant tenant, Application application, Device device, Locale locale);
 
 	/**
-	 * Generates a security token for an existing device
+	 * Generates a context token for an existing device
 	 *
 	 * @param credentials
 	 * @param width

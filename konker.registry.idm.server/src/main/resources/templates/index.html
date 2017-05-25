@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html data-layout-decorate="~{layouts/default}">
+<head>
+</head>
+<body>
+<div data-layout-fragment="content">
+    <fieldset>
+        <div>
+            <h1 class="page-title" data-th-text="#{devices.index.legend}"></h1>
+        </div>
+        <div class="alert alert-success" role="alert" data-th-if="${message != null}">
+            <span data-th-text="${message}"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="alert alert-danger" role="alert" data-th-if="${errors != null and !errors.empty}">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <ul>
+            <li data-th-each="error : ${errors}" data-th-text="${error}"></li>
+            </ul>
+        </div>
+        <div>
+            <a data-th-href="@{/devices/new}"
+               class="mb btn btn-theme action pull-right">
+                <span class="glyphicon glyphicon-plus"></span>
+                <span data-th-text="#{nav.new}"></span>
+            </a>
+        </div>
+        <table class="table table-bordered table-hover table-striped">
+            <thead>
+            <tr>
+                <th class="col-md-1" data-th-text="#{devices.index.id}"></th>
+                <th class="col-md-3" data-th-text="#{devices.index.name}"></th>
+                <th class="col-md-1" data-th-text="#{devices.index.active}"></th>
+                <th class="col-md-3 text-center" data-th-text="#{devices.index.actions}"></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr data-th-each="device : ${devices}">
+                <td data-th-text="${device.deviceId}"></td>
+                <td data-th-text="${device.name}"></td>
+                <td>
+                    <img data-konker-enabled-img="${device.active}"></img>
+                </td>
+                <td class="text-center">
+                    <a data-th-href="@{/devices/{applicationName}/{guid}/edit(guid=${device.guid}, applicationName=${device.application.name})}"
+                       class="btn btn-default">
+                        <img data-th-attr="src=@{/resources/konker/images/icons-bt/edit-icon-bt-01.svg}"
+                             class="icon-menu" />
+                        <span data-th-text="#{nav.edit}"></span>
+                    </a>
+                    <a data-th-href="@{/devices/{applicationName}/{guid}/password(guid=${device.guid}, applicationName=${device.application.name})}"
+                       class="btn btn-default">
+                        <img data-th-attr="src=@{/resources/konker/images/icons-bt/conect-icon-bt-01.svg}"
+                             class="icon-menu" />
+                        <span data-th-text="#{devices.index.access}"></span>
+                    </a>
+                    <a data-th-href="@{/devices/{applicationName}/{guid}/events(guid=${device.guid}, applicationName=${device.application.name})}"
+                       class="btn btn-default">
+                        <img data-th-attr="src=@{/resources/konker/images/icons-bt/messages-icon-bt-01.svg}"
+                             class="icon-menu" />
+                        <span data-th-text="#{devices.index.events}"></span>
+                    </a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </fieldset>
+</div>
+</body>
+</html>

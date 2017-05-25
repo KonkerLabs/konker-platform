@@ -1,6 +1,9 @@
 package com.konkerlabs.platform.registry.idm.domain.repository;
 
 
+import lombok.Builder;
+import lombok.Data;
+import lombok.experimental.Tolerate;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
@@ -12,12 +15,13 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.Date;
 
+@Data
+@Builder
 @Document(collection = "authorizationcodes")
 public class AuthorizationCode implements Serializable {
 
     @Id
     private String code;
-
 
     @CreatedDate
     private Date createTime = Date.from(Instant.now());
@@ -27,29 +31,9 @@ public class AuthorizationCode implements Serializable {
 
     private byte[] authenticationBytes;
 
-
+    @Tolerate
     public AuthorizationCode() {
     }
-
-
-    public String code() {
-        return code;
-    }
-
-    public AuthorizationCode code(String code) {
-        this.code = code;
-        return this;
-    }
-
-    public Date createTime() {
-        return createTime;
-    }
-
-
-    public Long version() {
-        return version;
-    }
-
 
     public OAuth2Authentication authentication() {
         return SerializationUtils.deserialize(authenticationBytes);

@@ -1,0 +1,64 @@
+package com.konkerlabs.platform.registry.idm.web.converters.utils;
+
+import com.konkerlabs.platform.registry.idm.domain.context.UserContextResolver;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.LocaleResolver;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.Locale;
+
+@Component
+public class ConverterUtils {
+
+    @Autowired
+    private HttpServletRequest request;
+    @Autowired
+    private HttpServletResponse response;
+    @Autowired
+    private ApplicationContext appContext;
+    @Autowired
+    private UserContextResolver userContextResolver;
+    @Autowired
+    private LocaleResolver localeResolver;
+
+    private static final String GLOBAL_DATETIME_FORMAT_PATTERN = "datetime.format.pattern";
+    private static final String GLOBAL_TIME_FORMAT_PATTERN = "time.format.pattern";
+
+    public Locale getCurrentLocale() {
+        return localeResolver.resolveLocale(request);
+    }
+
+    /**
+     * Flush locale from session and update with user locale
+     */
+    public void flushLocale() {
+        localeResolver.setLocale(
+                request,
+                response,
+                userContextResolver.getObject().getLanguage().getLocale());
+    }
+
+    public void setLocale(Locale locale) {
+        localeResolver.setLocale(request, response, locale);
+    }
+
+
+    public String getDateTimeFormatPattern() {
+        String date = userContextResolver.getObject().getDateFormat().getId();
+        return MessageFormat.format(
+                appContext.getMessage(
+                        GLOBAL_DATETIME_FORMAT_PATTERN,
+                        Arrays.asList(date).toArray(),
+                        userContextResolver.getObject().getLanguage().getLocale()),
+                date);
+    }
+
+    public String getUserZoneID() {
+        return userContextResolver.getObject().getZoneId().getId();
+    }
+}

@@ -1,8 +1,8 @@
-package com.konkerlabs.platform.registry.config;
+package com.konkerlabs.platform.registry.idm.config;
 
 import com.konkerlabs.platform.registry.business.services.KonkerDaoAuthenticationProvider;
 import com.konkerlabs.platform.registry.business.services.api.LoginAuditService;
-import com.konkerlabs.platform.registry.security.TenantUserDetailsService;
+import com.konkerlabs.platform.registry.idm.domain.context.TenantUserDetailsService;
 import com.konkerlabs.platform.security.managers.PasswordManager;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -50,6 +50,23 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         @Qualifier("tenantUserDetails")
         private UserDetailsService userDetailsService;
 
+        private static final String[] PUBLIC_RESOURCES = new String[]{
+                "/oauth/authorize",
+                "/oauth/token",
+                "/oauth/check_token",
+                "/oauth/confirm_access",
+                "/oauth/config/error",
+                "/oauth/token_key",
+                "/bootstrap/**",
+                "/konker/**",
+                "/bootstrap/**",
+                "/font-awesome/**",
+                "/recoverpassword",
+                "/health",
+                "/info",
+                "/error"
+        };
+
         @Autowired
         private LoginAuditService loginAuditService;
 
@@ -64,7 +81,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         public FormWebSecurityConfig() {
         	Map<String, Object> defaultMap = new HashMap<>();
         	defaultMap.put("context.loginPage", "/login");
-        	defaultMap.put("context.successLoginUrl", "/");
+        	defaultMap.put("context.successLoginUrl", "/account");
         	Config defaultConf = ConfigFactory.parseMap(defaultMap);
 
         	Config config = ConfigFactory.load().withFallback(defaultConf);
@@ -101,7 +118,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
             http.headers().frameOptions().sameOrigin()
                     .and().authorizeRequests()
-                          .antMatchers("/resources/**", "/recoverpassword/**")
+                          .antMatchers(PUBLIC_RESOURCES)
                           .permitAll()
                           .anyRequest()
                           .hasAuthority("LOGIN")

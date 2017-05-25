@@ -8,6 +8,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
+import org.springframework.web.servlet.LocaleResolver;
+import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 
 @Configuration
 @EnableResourceServer
@@ -15,19 +17,20 @@ public class ResourceServer extends ResourceServerConfigurerAdapter {
 
 	public static final String RESOURCE_ID = "registryidm";
 	private static final String[] PUBLIC_RESOURCES = new String[]{
-			"/config/authorize",
-			"/config/token",
-			"/config/check_token",
-			"/config/confirm_access",
-			"/config/config/error",
-			"/config/token_key",
+			"/oauth/authorize",
+			"/oauth/token",
+			"/oauth/check_token",
+			"/oauth/confirm_access",
+			"/oauth/config/error",
+			"/oauth/token_key",
 			"/bootstrap/**",
 			"/konker/**",
 			"/bootstrap/**",
 			"/font-awesome/**",
 			"/probe",
-			"/account/**",
-			"/error"
+			"/health",
+			"/info",
+			"/error",
 	};
 
 
@@ -40,7 +43,8 @@ public class ResourceServer extends ResourceServerConfigurerAdapter {
 				"classpath:/i18n/error",
 				"classpath:/i18n/global",
 				"classpath:/i18n/languages",
-				"classpath:/i18n/menu");
+				"classpath:/i18n/menu",
+				"classpath:/i18n/account");
 		messageSource.setDefaultEncoding("UTF-8");
 		return messageSource;
 	}
@@ -61,4 +65,9 @@ public class ResourceServer extends ResourceServerConfigurerAdapter {
 		resources.resourceId(RESOURCE_ID);
 	}
 
+	@Bean
+	public LocaleResolver localeResolver() {
+		final SessionLocaleResolver ret = new SessionLocaleResolver();
+		return ret;
+	}
 }

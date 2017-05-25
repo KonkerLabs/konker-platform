@@ -23,24 +23,24 @@
     <title>Konker Platform</title>
 
     <!-- Bootstrap core CSS -->
-    <link rel="stylesheet" type="text/css" data-th-href="@{/resources/bootstrap/css/bootstrap.min.css}" />
+    <link rel="stylesheet" type="text/css" data-th-href="@{/bootstrap/css/bootstrap.min.css}" />
  
     <!-- Custom styles for this template -->
-    <link rel="stylesheet" type="text/css" data-th-href="@{/resources/font-awesome/css/font-awesome.min.css}">
-    <link rel="stylesheet" type="text/css" data-th-href="@{/resources/konker/css/opensans.css}">
-    <link rel="stylesheet" type="text/css" data-th-href="@{/resources/konker/css/style2.css(v3)}">
-    <link rel="stylesheet" type="text/css" data-th-href="@{/resources/konker/css/style-responsive.css}">
+    <link rel="stylesheet" type="text/css" data-th-href="@{/font-awesome/css/font-awesome.min.css}">
+    <link rel="stylesheet" type="text/css" data-th-href="@{/konker/css/opensans.css}">
+    <link rel="stylesheet" type="text/css" data-th-href="@{/konker/css/style2.css(v3)}">
+    <link rel="stylesheet" type="text/css" data-th-href="@{/konker/css/style-responsive.css}">
 
     <!-- Favicon -->
-    <link rel="icon" data-th-href="@{/resources/konker/images/favicon.png}" sizes="16x16 32x32 48x48 56x56"
+    <link rel="icon" data-th-href="@{/konker/images/favicon.png}" sizes="16x16 32x32 48x48 56x56"
           type="image/vnd.microsoft.icon" />
           
-    <link data-th-href="@{/resources/konker/css/toggle-switch.css}" rel="stylesheet" />
+    <link data-th-href="@{/konker/css/toggle-switch.css}" rel="stylesheet" />
 
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
-      <script data-th-attr="src=@{/resources/konker/scripts/html5shiv.js}" type="text/javascript"></script>
-      <script data-th-attr="src=@{/resources/konker/scripts/respond.min.js}" type="text/javascript"></script>
+      <script data-th-attr="src=@{/konker/scripts/html5shiv.js}" type="text/javascript"></script>
+      <script data-th-attr="src=@{/konker/scripts/respond.min.js}" type="text/javascript"></script>
     <![endif]-->
   </head>
 
@@ -58,7 +58,7 @@
             </div>
             -->
             <!--logo start-->
-            <a data-th-href="@{/}" class="logo"><img data-th-attr="src=@{/resources/konker/images/konker-principal2.png}" alt="Konker" title="Konker" width="120px" /></a>
+            <a data-th-href="@{/}" class="logo"><img data-th-attr="src=@{/konker/images/konker-principal2.png}" alt="Konker" title="Konker" width="120px" /></a>
             <!--logo end-->
             <div class="nav notify-row pull-right" id="top_menu">
 
@@ -68,8 +68,8 @@
     			  <!-- Notifications -->
     			  <li>
     				<a data-th-href="@{/notifications}">
-                        <img id="notification-icon-off" data-th-attr="src=@{/resources/konker/images/alert-1.svg}" width="35px" />
-                        <img id="notification-icon-on" data-th-attr="src=@{/resources/konker/images/alert-2.svg}" width="35px" style="display: none;" />
+                        <img id="notification-icon-off" data-th-attr="src=@{/konker/images/alert-1.svg}" width="35px" />
+                        <img id="notification-icon-on" data-th-attr="src=@{/konker/images/alert-2.svg}" width="35px" style="display: none;" />
                     </a>
     			  </li>
     			  <!-- /notifications -->
@@ -118,35 +118,35 @@
 
                   <li class="sub-menu" th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'', ''ROLE_IOT_READ_ONLY'')')}">
                       <a data-th-href="@{/devices}">
-                          <img data-th-attr="src=@{/resources/konker/images/icons-menu/icon-device2.svg}" class="icon-menu" />
+                          <img data-th-attr="src=@{/konker/images/icons-menu/icon-device2.svg}" class="icon-menu" />
                           <span data-th-text="#{nav.menu.devices}">Dispositivos</span>
                       </a>                      
                   </li>
 
                   <li class="sub-menu" th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'', ''ROLE_IOT_READ_ONLY'')')}">
                       <a data-th-href="@{/routes}">
-                          <img data-th-attr="src=@{/resources/konker/images/icons-menu/icon-route.svg}" class="icon-menu" />
+                          <img data-th-attr="src=@{/konker/images/icons-menu/icon-route.svg}" class="icon-menu" />
                           <span data-th-text="#{nav.menu.routes}">Roteador de eventos</span>
                       </a>                      
                   </li>
 
                   <li class="sub-menu" th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'', ''ROLE_IOT_READ_ONLY'')')}">
                       <a data-th-href="@{/transformation}">
-                          <img data-th-attr="src=@{/resources/konker/images/icons-menu/icon-transform.svg}" class="icon-menu" />
+                          <img data-th-attr="src=@{/konker/images/icons-menu/icon-transform.svg}" class="icon-menu" />
                           <span data-th-text="#{nav.menu.transformations}">Transformações</span>
                       </a>                     
                   </li>
 
                   <li class="sub-menu" th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'', ''ROLE_IOT_READ_ONLY'')')}">
                       <a data-th-href="@{/destinations/rest}">
-                          <img data-th-attr="src=@{/resources/konker/images/icons-menu/icon-rest6.svg}" class="icon-menu" />
+                          <img data-th-attr="src=@{/konker/images/icons-menu/icon-rest6.svg}" class="icon-menu" />
                           <span data-th-text="#{nav.menu.rest_destinations}">Destinos REST</span>
                       </a>
                   </li>
 
                   <li class="sub-menu" th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'', ''ROLE_IOT_READ_ONLY'')')}">
                       <a data-th-href="@{/tenants/log}">
-                          <img data-th-attr="src=@{/resources/konker/images/icons-menu/icon-debug4.svg}" class="icon-menu" />
+                          <img data-th-attr="src=@{/konker/images/icons-menu/icon-debug4.svg}" class="icon-menu" />
                           <span data-th-text="#{nav.menu.debug_messages}">Debug</span>
                       </a>                      
                   </li>
@@ -161,14 +161,14 @@
 
                   <li class="sub-menu" th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_ANALYTICS_USER'')')}">
                       <a data-th-href="@{/dashboards}">
-                          <img data-th-attr="src=@{/resources/konker/images/icons-menu/icon-dashboard.svg}" class="icon-menu" />
+                          <img data-th-attr="src=@{/konker/images/icons-menu/icon-dashboard.svg}" class="icon-menu" />
                           <span data-th-text="#{nav.menu.dashboards}">Dashboards</span>
                       </a>                      
                   </li>
 
                   <li class="sub-menu" th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_ANALYTICS_USER'')')}">
                       <a data-th-href="@{/notebooks}">
-                          <img data-th-attr="src=@{/resources/konker/images/icons-menu/icon-notebook.svg}" class="icon-menu" />
+                          <img data-th-attr="src=@{/konker/images/icons-menu/icon-notebook.svg}" class="icon-menu" />
                           <span data-th-text="#{nav.menu.notebooks}">Notebooks</span>
                       </a>                      
                   </li>
@@ -179,14 +179,14 @@
               
                   <li class="sub-menu">
                       <a target="_blank" href="https://konker.atlassian.net/wiki/display/DEV/Guia+de+Uso+da+Plataforma+Konker">
-                          <img data-th-attr="src=@{/resources/konker/images/icons-menu/icon-help.svg}" class="icon-menu" />
+                          <img data-th-attr="src=@{/konker/images/icons-menu/icon-help.svg}" class="icon-menu" />
                           <span data-th-text="#{nav.menu.help}">Ajuda</span>
                       </a>
                   </li>
 
                   <li class="sub-menu">
                       <a href="http://www.konkerlabs.com/#contact" target="_blank" >
-                          <img data-th-attr="src=@{/resources/konker/images/icons-menu/icon-msg.svg}" class="icon-menu" />
+                          <img data-th-attr="src=@{/konker/images/icons-menu/icon-msg.svg}" class="icon-menu" />
                           <span data-th-text="#{nav.menu.contact_us}">Fale com a gente</span>
                       </a>                      
                   </li>
@@ -226,7 +226,7 @@
   </section>
 
     <!-- js placed at the end of the document so the pages load faster -->
-    <script data-th-attr="src=@{/resources/konker/scripts/jquery-1.11.1.min.js}" type="text/javascript"></script>
+    <script data-th-attr="src=@{/konker/scripts/jquery-1.11.1.min.js}" type="text/javascript"></script>
     <script data-th-inline="javascript">
         /*<![CDATA[*/
             function contextPath() {
@@ -241,11 +241,11 @@
         /*]]>*/
     </script>
 
-    <script data-th-attr="src=@{/resources/bootstrap/js/bootstrap.min.js}" type="text/javascript"></script>
-    <script data-th-attr="src=@{/resources/bootstrap/js/moment.js}" type="text/javascript"></script>
-    <script data-th-attr="src=@{/resources/bootstrap/js/bootstrap-datetimepicker.min.js}" type="text/javascript"></script>
-    <script data-th-attr="src=@{/resources/js/notifications/status.js}" type="text/javascript"></script>
-    <script data-th-attr="src=@{/resources/js/global.js}" type="text/javascript"></script>
+    <script data-th-attr="src=@{/bootstrap/js/bootstrap.min.js}" type="text/javascript"></script>
+    <script data-th-attr="src=@{/bootstrap/js/moment.js}" type="text/javascript"></script>
+    <script data-th-attr="src=@{/bootstrap/js/bootstrap-datetimepicker.min.js}" type="text/javascript"></script>
+    <script data-th-attr="src=@{/js/notifications/status.js}" type="text/javascript"></script>
+    <script data-th-attr="src=@{/js/global.js}" type="text/javascript"></script>
 
     <!-- page javascripts -->
     <div data-layout-fragment="script">

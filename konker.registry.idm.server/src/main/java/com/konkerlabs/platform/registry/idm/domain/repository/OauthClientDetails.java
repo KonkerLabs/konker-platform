@@ -1,9 +1,15 @@
 package com.konkerlabs.platform.registry.idm.domain.repository;
 
+import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import lombok.Builder;
+import lombok.Data;
+import lombok.experimental.Tolerate;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.oauth2.provider.ClientDetails;
 import org.springframework.security.oauth2.provider.client.BaseClientDetails;
@@ -12,15 +18,16 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.Date;
 
+
+@Data
+@Builder
 @Document(collection = "oauthclientdetails")
 public class OauthClientDetails implements Serializable {
 
     @Id
     private String clientId;
-
     @CreatedDate
     private Date createTime = Date.from(Instant.now());
-
     @Version
     private Long version;
     private boolean archived = false;
@@ -34,10 +41,15 @@ public class OauthClientDetails implements Serializable {
     private Integer refreshTokenValidity;
     private String additionalInformation;
     private boolean trusted = false;
+    @DBRef
+    private Tenant tenant;
+    @DBRef
+    private Application application;
+    private String name;
 
+    @Tolerate
     public OauthClientDetails() {
     }
-
 
     public ClientDetails toClientDetails() {
         BaseClientDetails clientDetails = new BaseClientDetails(clientId, resourceIds, scope, authorizedGrantTypes, authorities, webServerRedirectUri);
@@ -51,68 +63,6 @@ public class OauthClientDetails implements Serializable {
 
         return clientDetails;
     }
-
-    public Long version() {
-        return version;
-    }
-
-    public boolean trusted() {
-        return trusted;
-    }
-
-    public Date createTime() {
-        return createTime;
-    }
-
-    public boolean archived() {
-        return archived;
-    }
-
-    public OauthClientDetails archived(boolean archived) {
-        this.archived = archived;
-        return this;
-    }
-
-    public String clientId() {
-        return clientId;
-    }
-
-    public String resourceIds() {
-        return resourceIds;
-    }
-
-    public String clientSecret() {
-        return clientSecret;
-    }
-
-    public String scope() {
-        return scope;
-    }
-
-    public String authorizedGrantTypes() {
-        return authorizedGrantTypes;
-    }
-
-    public String webServerRedirectUri() {
-        return webServerRedirectUri;
-    }
-
-    public String authorities() {
-        return authorities;
-    }
-
-    public Integer accessTokenValidity() {
-        return accessTokenValidity;
-    }
-
-    public Integer refreshTokenValidity() {
-        return refreshTokenValidity;
-    }
-
-    public String additionalInformation() {
-        return additionalInformation;
-    }
-
 
     @Override
     public String toString() {
@@ -134,60 +84,5 @@ public class OauthClientDetails implements Serializable {
         sb.append(", trusted=").append(trusted);
         sb.append('}');
         return sb.toString();
-    }
-
-    public OauthClientDetails clientId(String clientId) {
-        this.clientId = clientId;
-        return this;
-    }
-
-    public OauthClientDetails clientSecret(String clientSecret) {
-        this.clientSecret = clientSecret;
-        return this;
-    }
-
-    public OauthClientDetails resourceIds(String resourceIds) {
-        this.resourceIds = resourceIds;
-        return this;
-    }
-
-    public OauthClientDetails authorizedGrantTypes(String authorizedGrantTypes) {
-        this.authorizedGrantTypes = authorizedGrantTypes;
-        return this;
-    }
-
-    public OauthClientDetails scope(String scope) {
-        this.scope = scope;
-        return this;
-    }
-
-    public OauthClientDetails webServerRedirectUri(String webServerRedirectUri) {
-        this.webServerRedirectUri = webServerRedirectUri;
-        return this;
-    }
-
-    public OauthClientDetails authorities(String authorities) {
-        this.authorities = authorities;
-        return this;
-    }
-
-    public OauthClientDetails accessTokenValidity(Integer accessTokenValidity) {
-        this.accessTokenValidity = accessTokenValidity;
-        return this;
-    }
-
-    public OauthClientDetails refreshTokenValidity(Integer refreshTokenValidity) {
-        this.refreshTokenValidity = refreshTokenValidity;
-        return this;
-    }
-
-    public OauthClientDetails trusted(boolean trusted) {
-        this.trusted = trusted;
-        return this;
-    }
-
-    public OauthClientDetails additionalInformation(String additionalInformation) {
-        this.additionalInformation = additionalInformation;
-        return this;
     }
 }

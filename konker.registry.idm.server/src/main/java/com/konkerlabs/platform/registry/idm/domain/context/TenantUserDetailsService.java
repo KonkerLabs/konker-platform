@@ -1,4 +1,4 @@
-package com.konkerlabs.platform.registry.idm.security;
+package com.konkerlabs.platform.registry.idm.domain.context;
 
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
@@ -32,7 +32,7 @@ public class TenantUserDetailsService implements UserDetailsService {
         try {
             Thread.sleep(delayTime);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            LOGGER.error("Error on login silence timer...");
         }
         User user = userRepository.findOne(Optional.of(email).orElse("").trim().toLowerCase());
         if(user == null){
