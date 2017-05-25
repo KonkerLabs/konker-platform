@@ -48,7 +48,8 @@ public class AccountRestController implements ApplicationContextAware {
     @RequestMapping(value = "/", method = RequestMethod.POST)
     public ResponseEntity<OauthClientDetails> create(@PathVariable("applicationId") String applicationId){
         ServiceResponse<OauthClientDetails> result =
-                oAuthClientDetailsService.saveClient(tenant);
+                oAuthClientDetailsService.saveClient(tenant,
+                        Application.builder().name(applicationId).build());
         if(result.isOk()){
             return ResponseEntity
                     .created(URI.create("/"))
