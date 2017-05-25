@@ -9,10 +9,10 @@ import com.konkerlabs.platform.registry.business.model.HealthAlert;
 
 public interface HealthAlertRepository extends MongoRepository<HealthAlert, String> {
 
-	@Query("{ 'tenant.id' : ?0, 'application.name' : ?1 }")
+	@Query("{ 'tenant.id' : ?0, 'application.name' : ?1, 'solved' : false }")
 	List<HealthAlert> findAllByTenantIdAndApplicationName(String tenantId, String applicationName);
 	
-	@Query("{ 'tenant.id' : ?0, 'application.name' : ?1, 'deviceGuid' : ?2 }")
+	@Query("{ 'tenant.id' : ?0, 'application.name' : ?1, 'deviceGuid' : ?2, 'solved' : false }")
 	List<HealthAlert> findAllByTenantIdApplicationNameAndDeviceGuid(String tenantId, String applicationName, String deviceGuid);
     
     @Query("{ 'tenant.id' : ?0, 'application.name' : ?1, 'guid' : ?2 }")

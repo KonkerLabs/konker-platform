@@ -17,6 +17,7 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceEventService
 import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
+import com.konkerlabs.platform.registry.business.services.api.HealthAlertService;
 import com.konkerlabs.platform.registry.business.services.api.LocationSearchService;
 import com.konkerlabs.platform.registry.business.services.api.LocationService;
 import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
@@ -117,6 +118,11 @@ public class WebTestConfiguration {
     @Bean
     public AlertTriggerService alertTriggerService() {
         return Mockito.mock(AlertTriggerService.class);
+    }
+
+    @Bean
+    public HealthAlertService healthAlertService() {
+        return Mockito.mock(HealthAlertService.class);
     }
 
 }

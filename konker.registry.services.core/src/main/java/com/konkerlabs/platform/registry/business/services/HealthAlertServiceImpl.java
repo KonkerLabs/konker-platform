@@ -13,6 +13,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
+import com.konkerlabs.platform.registry.business.model.AlertTrigger;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.HealthAlert;
@@ -22,6 +23,7 @@ import com.konkerlabs.platform.registry.business.repositories.ApplicationReposit
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.HealthAlertRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
+import com.konkerlabs.platform.registry.business.services.api.AlertTriggerService;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.HealthAlertService;
@@ -42,6 +44,9 @@ public class HealthAlertServiceImpl implements HealthAlertService {
     
     @Autowired
     private HealthAlertRepository healthAlertRepository;
+    
+    @Autowired
+    private AlertTriggerService alertTriggerService;
     
     @Autowired
     private DeviceRepository deviceRepository;
@@ -152,6 +157,35 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 					.withMessage(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode())
 					.build();
 		}
+		
+		if (!Optional.ofNullable(healthAlert.getTriggerGuid()).isPresent()
+				|| healthAlert.getTriggerGuid().isEmpty()) {
+			if(LOGGER.isDebugEnabled()){
+				healthAlert.setGuid("NULL");
+				LOGGER.debug(Validations.HEALTH_ALERT_TRIGGER_GUID_NULL.getCode(),
+						healthAlert.toURI(),
+						healthAlert.getTenant().getLogLevel());
+			}
+
+			return ServiceResponseBuilder.<HealthAlert>error()
+					.withMessage(Validations.HEALTH_ALERT_TRIGGER_GUID_NULL.getCode())
+					.build();
+		}
+		
+		AlertTrigger trigger = null;//alertTriggerService.; 
+				
+		if (!Optional.ofNullable(trigger).isPresent()) {
+			if(LOGGER.isDebugEnabled()){
+				LOGGER.debug(Validations.HEALTH_ALERT_TRIGGER_NOT_EXIST.getCode(),
+						healthAlert.toURI(),
+						healthAlert.getTenant().getLogLevel());
+			}
+
+			return ServiceResponseBuilder.<HealthAlert>error()
+					.withMessage(Validations.HEALTH_ALERT_TRIGGER_NOT_EXIST.getCode())
+					.build();
+		}
+		
 
 		return null;
 	}
@@ -291,6 +325,12 @@ public class HealthAlertServiceImpl implements HealthAlertService {
         List<HealthAlert> healthAlerts = healthAlertRepository
         		.findAllByTenantIdApplicationNameAndDeviceGuid(tenant.getId(), application.getName(), deviceGuid);
 
+        if (healthAlerts.isEmpty()) {
+        	return ServiceResponseBuilder.<List<HealthAlert>>error()
+					.withMessage(Validations.HEALTH_ALERT_DOES_NOT_EXIST.getCode())
+					.build();
+        }
+        
         return ServiceResponseBuilder.<List<HealthAlert>>ok()
                 .withResult(healthAlerts)
                 .build();

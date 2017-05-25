@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
 import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
+import com.konkerlabs.platform.registry.api.model.DeviceHealthAlertVO;
 import com.konkerlabs.platform.registry.api.model.DeviceHealthVO;
 import com.konkerlabs.platform.registry.api.model.DeviceInputVO;
 import com.konkerlabs.platform.registry.api.model.DeviceVO;
@@ -251,6 +252,32 @@ public class DeviceRestController extends AbstractRestController implements Init
         if (deviceResponse.isOk() && !deviceResponse.getResult().isEmpty()) {
         	List<HealthAlert> result = deviceResponse.getResult();
 			return new DeviceHealthVO().apply(result.get(0));
+        } else {
+        	throw new NotFoundResponseException(user, deviceResponse);
+        }
+
+    }
+    
+    @GetMapping(path = "/{deviceGuid}/health/alerts")
+    @ApiOperation(
+            value = "List all device health alerts by device guid",
+            response = RestResponse.class
+    )
+    @PreAuthorize("hasAuthority('SHOW_DEVICE')")
+    public List<DeviceHealthAlertVO> alerts(
+    		@PathVariable("application") String applicationId,
+    		@PathVariable("deviceGuid") String deviceGuid) throws BadServiceResponseException, NotFoundResponseException {
+
+        Tenant tenant = user.getTenant();
+        Application application = getApplication(applicationId);
+
+        ServiceResponse<List<HealthAlert>> deviceResponse = healthAlertService.findAllByTenantApplicationAndDeviceGuid(
+        		tenant, 
+        		application, 
+        		deviceGuid); 
+
+        if (deviceResponse.isOk()) {
+			return new DeviceHealthAlertVO().apply(deviceResponse.getResult());
         } else {
         	throw new NotFoundResponseException(user, deviceResponse);
         }

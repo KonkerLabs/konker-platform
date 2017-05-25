@@ -190,6 +190,26 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     }
     
     @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json"})
+    public void shouldReturnErrorIfSavingHealthAlertTriggerGuidNullOrEmpty() throws Exception {
+    	healthAlert.setTriggerGuid(null);
+    	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.register(currentTenant, application, healthAlert);
+    	assertThat(serviceResponse, hasErrorMessage(Validations.HEALTH_ALERT_TRIGGER_GUID_NULL.getCode()));
+    	
+    	healthAlert.setTriggerGuid("");
+    	serviceResponse = healthAlertService.register(currentTenant, application, healthAlert);
+    	assertThat(serviceResponse, hasErrorMessage(Validations.HEALTH_ALERT_TRIGGER_GUID_NULL.getCode()));
+    }
+    
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json"})
+    public void shouldReturnErrorIfSavingHealthAlertTriggerNotExists() throws Exception {
+    	healthAlert.setTriggerGuid("7d51c242-81db-11e6-a8c2-0746f010e911");
+    	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.register(currentTenant, application, healthAlert);
+    	assertThat(serviceResponse, hasErrorMessage(Validations.HEALTH_ALERT_TRIGGER_NOT_EXIST.getCode()));
+    }
+    
+    @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json", "/fixtures/health-alert.json"})
     public void shouldSaveHealthAlert() throws Exception {
         ServiceResponse<HealthAlert> response = healthAlertService.register(currentTenant, application, newHealthAlert);

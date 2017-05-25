@@ -1,9 +1,6 @@
 package com.konkerlabs.platform.registry.api.model;
 
-import java.util.Optional;
-
 import com.konkerlabs.platform.registry.api.model.core.SerializableVO;
-import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.HealthAlert;
 
 import io.swagger.annotations.ApiModel;

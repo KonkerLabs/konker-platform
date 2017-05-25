@@ -9,7 +9,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.text.MessageFormat;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.After;
@@ -34,12 +36,17 @@ import com.konkerlabs.platform.registry.api.web.controller.DeviceRestController;
 import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.HealthAlert;
+import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertSeverity;
+import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertType;
 import com.konkerlabs.platform.registry.business.model.Location;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.HealthAlertService;
 import com.konkerlabs.platform.registry.business.services.api.LocationSearchService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.business.services.api.HealthAlertService.Validations;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = DeviceRestController.class)
@@ -64,6 +71,9 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     private ApplicationService applicationService;
 
     @Autowired
+    private HealthAlertService healthAlertService;
+    
+    @Autowired
     private Tenant tenant;
 
     @Autowired
@@ -72,6 +82,12 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     private Device device1;
 
     private Device device2;
+    
+    private HealthAlert health1;
+    
+    private HealthAlert health2;
+    
+    private List<HealthAlert> healths;
 
     private String BASEPATH = "devices";
 
@@ -82,6 +98,25 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
         device1 = Device.builder().deviceId("id1").name("name1").guid("guid1").location(locationBR).application(application).active(true).build();
         device2 = Device.builder().deviceId("id2").name("name2").guid("guid2").location(locationBR).application(application).active(false).build();
 
+        Instant registrationDate = Instant.ofEpochMilli(1495716970000l).minusSeconds(3600l);
+        
+		health1 = HealthAlert.builder()
+        		.deviceGuid(device1.getGuid())
+        		.severity(HealthAlertSeverity.FAIL)
+        		.registrationDate(registrationDate)
+        		.lastChange(Instant.ofEpochMilli(1495716970000l))
+        		.type(HealthAlertType.SILENCE)
+        		.build();
+		
+		health2 = HealthAlert.builder()
+        		.deviceGuid(device1.getGuid())
+        		.severity(HealthAlertSeverity.OK)
+        		.registrationDate(registrationDate)
+        		.type(HealthAlertType.SILENCE)
+        		.build();
+		
+		healths = Arrays.asList(health1, health2);
+        
         when(locationSearchService.findByName(tenant, application, "br", false))
             .thenReturn(ServiceResponseBuilder.<Location>ok().withResult(locationBR).build());
 
@@ -213,6 +248,97 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .andExpect(jsonPath("$.result").doesNotExist());
 
     }
+    
+    @Test
+    public void shouldShowDeviceHealth() throws Exception {
+
+        when(healthAlertService.findAllByTenantApplicationAndDeviceGuid(tenant, application, device1.getGuid()))
+				.thenReturn(ServiceResponseBuilder.<List<HealthAlert>>ok().withResult(healths).build());
+        
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
+
+        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}/health", application.getName(), BASEPATH, device1.getGuid()))
+                    .contentType("application/json")
+                    .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType("application/json;charset=UTF-8"))
+                    .andExpect(jsonPath("$.code", is(HttpStatus.OK.value())))
+                    .andExpect(jsonPath("$.status", is("success")))
+                    .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                    .andExpect(jsonPath("$.result").isMap())
+                    .andExpect(jsonPath("$.result.severity", is("FAIL")))
+                    .andExpect(jsonPath("$.result.lastUpdate", is("2017-05-25T12:56:10Z")));
+
+    }
+    
+    @Test
+    public void shouldShowDeviceHealthWithDeviceHealthEmpty() throws Exception {
+
+    	when(healthAlertService.findAllByTenantApplicationAndDeviceGuid(tenant, application, device1.getGuid()))
+				.thenReturn(ServiceResponseBuilder.<List<HealthAlert>> error().withMessage(Validations.HEALTH_ALERT_DOES_NOT_EXIST.getCode()).build());
+
+		when(applicationService.getByApplicationName(tenant, application.getName()))
+				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
+
+		getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}/health", application.getName(), BASEPATH, device1.getGuid()))
+                .contentType("application/json")
+                .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().is4xxClientError())
+                    .andExpect(content().contentType("application/json;charset=UTF-8"))
+                    .andExpect(jsonPath("$.code", is(HttpStatus.NOT_FOUND.value())))
+                    .andExpect(jsonPath("$.status", is("error")))
+                    .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
+                    .andExpect(jsonPath("$.messages[0]", is("Health alert does not exist")))
+                    .andExpect(jsonPath("$.result").doesNotExist());
+
+    }
+    
+    @Test
+    public void shouldShowDeviceHealthAlerts() throws Exception {
+
+        when(healthAlertService.findAllByTenantApplicationAndDeviceGuid(tenant, application, device1.getGuid()))
+				.thenReturn(ServiceResponseBuilder.<List<HealthAlert>>ok().withResult(healths).build());
+        
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
+
+        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}/health/alerts", application.getName(), BASEPATH, device1.getGuid()))
+                    .contentType("application/json")
+                    .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType("application/json;charset=UTF-8"))
+                    .andExpect(jsonPath("$.code", is(HttpStatus.OK.value())))
+                    .andExpect(jsonPath("$.status", is("success")))
+                    .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                    .andExpect(jsonPath("$.result").isMap())
+                    .andExpect(jsonPath("$.result.severity", is("FAIL")))
+                    .andExpect(jsonPath("$.result.lastUpdate", is("2017-05-25T12:56:10Z")));
+
+    }
+    
+    @Test
+    public void shouldShowDeviceHealthAlertsWithDeviceHealthEmpty() throws Exception {
+
+    	when(healthAlertService.findAllByTenantApplicationAndDeviceGuid(tenant, application, device1.getGuid()))
+				.thenReturn(ServiceResponseBuilder.<List<HealthAlert>> error().withMessage(Validations.HEALTH_ALERT_DOES_NOT_EXIST.getCode()).build());
+
+		when(applicationService.getByApplicationName(tenant, application.getName()))
+				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
+
+		getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}/health", application.getName(), BASEPATH, device1.getGuid()))
+                .contentType("application/json")
+                .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().is4xxClientError())
+                    .andExpect(content().contentType("application/json;charset=UTF-8"))
+                    .andExpect(jsonPath("$.code", is(HttpStatus.NOT_FOUND.value())))
+                    .andExpect(jsonPath("$.status", is("error")))
+                    .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
+                    .andExpect(jsonPath("$.messages[0]", is("Health alert does not exist")))
+                    .andExpect(jsonPath("$.result").doesNotExist());
+
+    }
+
 
     @Test
     public void shouldCreateDevice() throws Exception {

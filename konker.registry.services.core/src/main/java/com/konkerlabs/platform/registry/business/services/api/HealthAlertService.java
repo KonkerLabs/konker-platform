@@ -11,7 +11,10 @@ public interface HealthAlertService {
 	enum Validations {
 		HEALTH_ALERT_NULL("service.healthalert.null"),
 		HEALTH_ALERT_DOES_NOT_EXIST("service.healthalert.does.not.exist"),
-		HEALTH_ALERT_GUID_IS_NULL("service.healthalert.guid.null");
+		HEALTH_ALERT_GUID_IS_NULL("service.healthalert.guid.null"),
+		HEALTH_ALERT_NOT_FOUND("service.healthalert.not.found"),
+		HEALTH_ALERT_TRIGGER_GUID_NULL("service.healthalert.trigger.guid.null"),
+		HEALTH_ALERT_TRIGGER_NOT_EXIST("service.healthalert.trigger.not.exist");
 
 		public String getCode() {
 			return code;
