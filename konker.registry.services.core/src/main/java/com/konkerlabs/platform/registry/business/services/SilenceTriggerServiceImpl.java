@@ -8,9 +8,9 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.konkerlabs.platform.registry.business.model.AlertTriggerType;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.DeviceModel;
+import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertType;
 import com.konkerlabs.platform.registry.business.model.Location;
 import com.konkerlabs.platform.registry.business.model.SilenceTrigger;
 import com.konkerlabs.platform.registry.business.model.Tenant;
@@ -100,7 +100,7 @@ public class SilenceTriggerServiceImpl implements SilenceTriggerService {
         trigger.setTenant(tenant);
         trigger.setApplication(application);
         trigger.setGuid(UUID.randomUUID().toString());
-        trigger.setType(AlertTriggerType.SILENCE);
+        trigger.setType(HealthAlertType.SILENCE);
 
         SilenceTrigger saved = silenceTriggerRepository.save(trigger);
 

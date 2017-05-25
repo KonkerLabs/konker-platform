@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertType;
+
 import lombok.Data;
 
 @Data
@@ -28,7 +30,7 @@ public class SilenceTrigger extends AlertTrigger {
     }
 
     public SilenceTrigger() {
-        super.type = AlertTriggerType.SILENCE;
+        super.type = HealthAlertType.SILENCE;
     }
 
     @Override
