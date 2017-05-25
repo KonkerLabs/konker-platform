@@ -18,6 +18,7 @@ import com.konkerlabs.platform.registry.business.model.validation.CommonValidati
 import com.konkerlabs.platform.registry.business.repositories.SilenceTriggerRepository;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
+import com.konkerlabs.platform.registry.business.services.api.HealthAlertService;
 import com.konkerlabs.platform.registry.business.services.api.LocationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
@@ -29,6 +30,9 @@ public class SilenceTriggerServiceImpl implements SilenceTriggerService {
 
     @Autowired
     private SilenceTriggerRepository silenceTriggerRepository;
+
+    @Autowired
+    private HealthAlertService healthAlertService;
 
     @Autowired
     private HealthAlertsConfig healthAlertsConfig;
@@ -158,6 +162,7 @@ public class SilenceTriggerServiceImpl implements SilenceTriggerService {
                     .withMessage(Validations.SILENCE_TRIGGER_NOT_FOUND.getCode()).build();
         }
 
+        healthAlertService.removeAlertsFromTrigger(tenant, application, guid);
         silenceTriggerRepository.delete(fromDb);
 
         return ServiceResponseBuilder.<SilenceTrigger>ok().withResult(fromDb).build();

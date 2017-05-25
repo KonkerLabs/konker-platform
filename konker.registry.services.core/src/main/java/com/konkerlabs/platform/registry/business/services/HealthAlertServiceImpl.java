@@ -359,4 +359,39 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 		return ServiceResponseBuilder.<HealthAlert>ok().withResult(healthAlert).build();
 	}
 
+    @Override
+    public ServiceResponse<List<HealthAlert>> removeAlertsFromTrigger(Tenant tenant, Application application,
+            String triggerGuid) {
+
+        if (!Optional.ofNullable(tenant).isPresent()) {
+            return ServiceResponseBuilder.<List<HealthAlert>>error()
+                    .withMessage(CommonValidations.TENANT_NULL.getCode())
+                    .build();
+        }
+        if (!Optional.ofNullable(application).isPresent()) {
+            return ServiceResponseBuilder.<List<HealthAlert>>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode())
+                    .build();
+        }
+        if (!Optional.ofNullable(triggerGuid).isPresent()) {
+            return ServiceResponseBuilder.<List<HealthAlert>>error()
+                    .withMessage(Validations.HEALTH_ALERT_GUID_IS_NULL.getCode())
+                    .build();
+        }
+
+        List<HealthAlert> alerts = healthAlertRepository.findAllByTenantIdApplicationNameAndTriggerGuid(tenant.getId(), application.getName(), triggerGuid);
+
+        for (HealthAlert healthAlertFromDB : alerts) {
+            healthAlertFromDB.setSolved(true);
+            healthAlertFromDB.setLastChange(Instant.now());
+            healthAlertRepository.save(healthAlertFromDB);
+        }
+
+        return ServiceResponseBuilder.<List<HealthAlert>>ok()
+                .withMessage(Messages.HEALTH_ALERT_REMOVED_SUCCESSFULLY.getCode())
+                .withResult(alerts)
+                .build();
+
+    }
+
 }
