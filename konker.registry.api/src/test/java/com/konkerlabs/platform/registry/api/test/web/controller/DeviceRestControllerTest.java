@@ -101,18 +101,24 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
         Instant registrationDate = Instant.ofEpochMilli(1495716970000l).minusSeconds(3600l);
         
 		health1 = HealthAlert.builder()
-        		.deviceGuid(device1.getGuid())
-        		.severity(HealthAlertSeverity.FAIL)
-        		.registrationDate(registrationDate)
-        		.lastChange(Instant.ofEpochMilli(1495716970000l))
+				.guid("7d51c242-81db-11e6-a8c2-0746f976f223")
+				.severity(HealthAlertSeverity.FAIL)
+				.description("Device sem enviar mensagem por mais de 5 minutos")
+				.registrationDate(registrationDate)
+				.lastChange(Instant.ofEpochMilli(1495716970000l))
         		.type(HealthAlertType.SILENCE)
+        		.deviceGuid(device1.getGuid())
+        		.triggerGuid("7d51c242-81db-11e6-a8c2-0746f976f666")
         		.build();
 		
 		health2 = HealthAlert.builder()
-        		.deviceGuid(device1.getGuid())
-        		.severity(HealthAlertSeverity.OK)
-        		.registrationDate(registrationDate)
+				.guid("7d51c242-81db-11e6-a8c2-0746f976f223")
+				.severity(HealthAlertSeverity.OK)
+				.description("Device sem enviar mensagem por mais de 5 minutos")
+				.registrationDate(registrationDate)
         		.type(HealthAlertType.SILENCE)
+        		.deviceGuid(device1.getGuid())
+        		.triggerGuid("7d51c242-81db-11e6-a8c2-0746f976f666")
         		.build();
 		
 		healths = Arrays.asList(health1, health2);
@@ -311,10 +317,19 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.code", is(HttpStatus.OK.value())))
                     .andExpect(jsonPath("$.status", is("success")))
                     .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
-                    .andExpect(jsonPath("$.result").isMap())
-                    .andExpect(jsonPath("$.result.severity", is("FAIL")))
-                    .andExpect(jsonPath("$.result.lastUpdate", is("2017-05-25T12:56:10Z")));
-
+                    .andExpect(jsonPath("$.result", hasSize(2)))
+                    .andExpect(jsonPath("$.result[0].guid", is(health1.getGuid())))
+                    .andExpect(jsonPath("$.result[0].severity", is(health1.getSeverity().toString())))
+                    .andExpect(jsonPath("$.result[0].description", is(health1.getDescription())))
+                    .andExpect(jsonPath("$.result[0].occurenceDate", is(health1.getLastChange().toString())))
+                    .andExpect(jsonPath("$.result[0].type", is(health1.getType().toString())))
+                    .andExpect(jsonPath("$.result[0].triggerGuid", is(health1.getTriggerGuid())))
+                    .andExpect(jsonPath("$.result[1].guid", is(health2.getGuid())))
+                    .andExpect(jsonPath("$.result[1].severity", is(health2.getSeverity().toString())))
+                    .andExpect(jsonPath("$.result[1].description", is(health2.getDescription())))
+                    .andExpect(jsonPath("$.result[1].occurenceDate", is(health2.getRegistrationDate().toString())))
+                    .andExpect(jsonPath("$.result[1].type", is(health2.getType().toString())))
+                    .andExpect(jsonPath("$.result[1].triggerGuid", is(health2.getTriggerGuid())));
     }
     
     @Test
@@ -326,7 +341,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 		when(applicationService.getByApplicationName(tenant, application.getName()))
 				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
 
-		getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}/health", application.getName(), BASEPATH, device1.getGuid()))
+		getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}/health/alerts", application.getName(), BASEPATH, device1.getGuid()))
                 .contentType("application/json")
                 .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is4xxClientError())
