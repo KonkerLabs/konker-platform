@@ -17,6 +17,7 @@
       "type" : "SILENCE",
       "registrationDate" : 1453320973747,
       "deviceGuid" : "7d51c242-81db-11e6-a8c2-0746f010e945",
+      "triggerGuid" : "7d51c242-81db-11e6-a8c2-0746f976f666",
       "solved" : false
     },
     {
@@ -36,6 +37,7 @@
       "type" : "SILENCE",
       "registrationDate" : 1453320973747,
       "deviceGuid" : "7d51c242-81db-11e6-a8c2-0746f010e945",
+      "triggerGuid" : "7d51c242-81db-11e6-a8c2-0746f976f666",
       "solved" : false
     }
   ]

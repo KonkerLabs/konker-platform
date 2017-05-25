@@ -19,11 +19,11 @@ import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.HealthAlert;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.repositories.AlertTriggerRepository;
 import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.HealthAlertRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
-import com.konkerlabs.platform.registry.business.services.api.AlertTriggerService;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.HealthAlertService;
@@ -46,7 +46,7 @@ public class HealthAlertServiceImpl implements HealthAlertService {
     private HealthAlertRepository healthAlertRepository;
 
     @Autowired
-    private AlertTriggerService alertTriggerService;
+    private AlertTriggerRepository alertTriggerRepository;
     
     @Autowired
     private DeviceRepository deviceRepository;
@@ -145,7 +145,6 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 		}
 
 		Device device = deviceRepository.findByTenantAndApplicationAndGuid(tenant.getId(), application.getName(), healthAlert.getDeviceGuid());
-
 		if (!Optional.ofNullable(device).isPresent()) {
 			if(LOGGER.isDebugEnabled()){
 				LOGGER.debug(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode(),
@@ -172,8 +171,7 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 					.build();
 		}
 		
-		AlertTrigger trigger = null;//alertTriggerService.; 
-				
+		AlertTrigger trigger = alertTriggerRepository.findByTenantIdAndApplicationNameAndGuid(tenant.getId(), application.getName(), healthAlert.getTriggerGuid()); 
 		if (!Optional.ofNullable(trigger).isPresent()) {
 			if(LOGGER.isDebugEnabled()){
 				LOGGER.debug(Validations.HEALTH_ALERT_TRIGGER_NOT_EXIST.getCode(),

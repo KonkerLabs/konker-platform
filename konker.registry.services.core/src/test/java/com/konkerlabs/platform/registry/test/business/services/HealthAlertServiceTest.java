@@ -51,7 +51,11 @@ import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
 
-    @Rule
+    private static final String DEVICE_GUID = "7d51c242-81db-11e6-a8c2-0746f010e945";
+
+	private static final String TRIGGER_GUID = "7d51c242-81db-11e6-a8c2-0746f976f666";
+
+	@Rule
     public ExpectedException thrown = ExpectedException.none();
 
     @Autowired
@@ -105,7 +109,8 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     			.severity(HealthAlertSeverity.FAIL)
     			.type(HealthAlertType.SILENCE)
     			.registrationDate(Instant.ofEpochMilli(1453320973747l))
-    			.deviceGuid("7d51c242-81db-11e6-a8c2-0746f010e945")
+    			.deviceGuid(DEVICE_GUID)
+    			.triggerGuid(TRIGGER_GUID)
     			.application(application)
     			.tenant(currentTenant)
     			.build();
@@ -117,8 +122,9 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     			.severity(HealthAlertSeverity.WARN)
     			.type(HealthAlertType.SILENCE)
     			.registrationDate(Instant.ofEpochMilli(1453320973747l))
-    			.deviceGuid("7d51c242-81db-11e6-a8c2-0746f010e945")
-				.application(application)
+    			.deviceGuid(DEVICE_GUID)
+    			.triggerGuid(TRIGGER_GUID)
+    			.application(application)
 				.tenant(currentTenant)
 				.build();
 
@@ -128,10 +134,19 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     			.severity(HealthAlertSeverity.OK)
     			.type(HealthAlertType.SILENCE)
     			.registrationDate(Instant.ofEpochMilli(1453320973747l))
-    			.deviceGuid("7d51c242-81db-11e6-a8c2-0746f010e945")
+    			.deviceGuid(DEVICE_GUID)
+    			.triggerGuid(TRIGGER_GUID)
 				.application(application)
 				.tenant(currentTenant)
 				.build();
+    	
+    	SilenceTrigger trigger = new SilenceTrigger();
+    	trigger.setGuid(TRIGGER_GUID);
+    	trigger.setApplication(application);
+    	trigger.setTenant(currentTenant);
+    	trigger.setMinutes(1);
+    	trigger.setType(HealthAlertType.SILENCE);
+    	trigger = alertTriggerRepository.save(trigger);
 
     }
 
