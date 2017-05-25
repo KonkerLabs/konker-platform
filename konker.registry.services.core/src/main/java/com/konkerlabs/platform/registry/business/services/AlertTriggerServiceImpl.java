@@ -37,6 +37,24 @@ public class AlertTriggerServiceImpl implements AlertTriggerService {
 
     }
 
+    @Override
+    public ServiceResponse<AlertTrigger> findByTenantAndApplicationAndGuid(Tenant tenant, Application application,
+            String triggerGuid) {
+
+        ServiceResponse<AlertTrigger> validationsResponse = validate(tenant, application);
+        if (validationsResponse != null && !validationsResponse.isOk()) {
+            return validationsResponse;
+        }
+
+        AlertTrigger trigger = alertTriggerRepository.findByTenantIdAndApplicationNameAndGuid(tenant.getId(), application.getName(), triggerGuid);
+
+        if (trigger != null) {
+            return ServiceResponseBuilder.<AlertTrigger>ok().withResult(trigger).build();
+        } else {
+            return ServiceResponseBuilder.<AlertTrigger>error().withMessage(Validations.ALERT_TRIGGER_NOT_FOUND.getCode()).build();
+        }
+    }
+
     private <T> ServiceResponse<T> validate(Tenant tenant, Application application) {
 
         if (!Optional.ofNullable(tenant).isPresent()) {
@@ -50,5 +68,6 @@ public class AlertTriggerServiceImpl implements AlertTriggerService {
 
         return null;
     }
+
 
 }
