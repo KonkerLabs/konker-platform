@@ -29,6 +29,7 @@ import com.konkerlabs.platform.registry.business.repositories.DeviceModelReposit
 import com.konkerlabs.platform.registry.business.repositories.LocationRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.AlertTriggerService;
+import com.konkerlabs.platform.registry.business.services.api.AlertTriggerService.Validations;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.config.EventStorageConfig;
@@ -164,6 +165,23 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
 
         ServiceResponse<List<AlertTrigger>> serviceResponse = alertTriggerService.listByTenantAndApplication(currentTenant, null);
         assertThat(serviceResponse, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
+
+    }
+
+    @Test
+    public void shouldFindByTenantAndApplicationAndGuid() throws Exception {
+
+        ServiceResponse<AlertTrigger> serviceResponse = alertTriggerService.findByTenantAndApplicationAndGuid(currentTenant, application, triggerA.getGuid());
+        assertThat(serviceResponse.isOk(), is(true));
+        assertThat(serviceResponse.getResult().getGuid(), is(triggerA.getGuid()));
+
+    }
+
+    @Test
+    public void shouldTryFindByTenantAndApplicationAndGuidNonExistingTrigger() throws Exception {
+
+        ServiceResponse<AlertTrigger> serviceResponse = alertTriggerService.findByTenantAndApplicationAndGuid(currentTenant, application, "000-000");
+        assertThat(serviceResponse, hasErrorMessage(Validations.ALERT_TRIGGER_NOT_FOUND.getCode()));
 
     }
 

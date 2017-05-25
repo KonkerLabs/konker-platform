@@ -23,6 +23,11 @@ mongoAudit {
   port = 27017
 }
 
+mongoBilling {
+  hostname = "localhost"
+  port = 27017
+}
+
 web {
   views {
     cache = false

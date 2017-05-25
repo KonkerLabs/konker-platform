@@ -35,6 +35,7 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.SilenceTriggerService;
 import com.konkerlabs.platform.registry.business.services.api.SilenceTriggerService.Validations;
 import com.konkerlabs.platform.registry.config.EventStorageConfig;
+import com.konkerlabs.platform.registry.config.HealthAlertsConfig;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
@@ -46,6 +47,7 @@ import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
         MongoTestConfiguration.class,
         BusinessTestConfiguration.class,
 		PubServerConfig.class,
+		HealthAlertsConfig.class,
         EventStorageConfig.class})
 @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/device-model.json", "/fixtures/locations.json"})
 public class SilenceTriggerServiceTest extends BusinessLayerTestSupport {
