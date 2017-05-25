@@ -22,12 +22,16 @@ import com.konkerlabs.platform.registry.business.services.api.LocationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.SilenceTriggerService;
+import com.konkerlabs.platform.registry.config.HealthAlertsConfig;
 
 @Service
 public class SilenceTriggerServiceImpl implements SilenceTriggerService {
 
     @Autowired
     private SilenceTriggerRepository silenceTriggerRepository;
+
+    @Autowired
+    private HealthAlertsConfig healthAlertsConfig;
 
     @Override
     public ServiceResponse<SilenceTrigger> findByTenantAndApplicationAndModelAndLocation(Tenant tenant,
@@ -72,7 +76,7 @@ public class SilenceTriggerServiceImpl implements SilenceTriggerService {
             return validationsResponse;
         }
 
-        Optional<Map<String, Object[]>> validations = trigger.applyValidations();
+        Optional<Map<String, Object[]>> validations = trigger.applyValidations(healthAlertsConfig.getSilenceMinimumMinutes());
         if (validations.isPresent()) {
             return ServiceResponseBuilder.<SilenceTrigger>error().withMessages(validations.get()).build();
         }
@@ -117,7 +121,7 @@ public class SilenceTriggerServiceImpl implements SilenceTriggerService {
             return validationsResponse;
         }
 
-        Optional<Map<String, Object[]>> validations = trigger.applyValidations();
+        Optional<Map<String, Object[]>> validations = trigger.applyValidations(healthAlertsConfig.getSilenceMinimumMinutes());
         if (validations.isPresent()) {
             return ServiceResponseBuilder.<SilenceTrigger>error().withMessages(validations.get()).build();
         }
