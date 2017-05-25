@@ -51,7 +51,11 @@ import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
 
-    @Rule
+    private static final String DEVICE_GUID = "7d51c242-81db-11e6-a8c2-0746f010e945";
+
+	private static final String TRIGGER_GUID = "7d51c242-81db-11e6-a8c2-0746f976f666";
+
+	@Rule
     public ExpectedException thrown = ExpectedException.none();
 
     @Autowired
@@ -105,7 +109,8 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     			.severity(HealthAlertSeverity.FAIL)
     			.type(HealthAlertType.SILENCE)
     			.registrationDate(Instant.ofEpochMilli(1453320973747l))
-    			.deviceGuid("7d51c242-81db-11e6-a8c2-0746f010e945")
+    			.deviceGuid(DEVICE_GUID)
+    			.triggerGuid(TRIGGER_GUID)
     			.application(application)
     			.tenant(currentTenant)
     			.build();
@@ -117,8 +122,9 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     			.severity(HealthAlertSeverity.WARN)
     			.type(HealthAlertType.SILENCE)
     			.registrationDate(Instant.ofEpochMilli(1453320973747l))
-    			.deviceGuid("7d51c242-81db-11e6-a8c2-0746f010e945")
-				.application(application)
+    			.deviceGuid(DEVICE_GUID)
+    			.triggerGuid(TRIGGER_GUID)
+    			.application(application)
 				.tenant(currentTenant)
 				.build();
 
@@ -128,10 +134,19 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     			.severity(HealthAlertSeverity.OK)
     			.type(HealthAlertType.SILENCE)
     			.registrationDate(Instant.ofEpochMilli(1453320973747l))
-    			.deviceGuid("7d51c242-81db-11e6-a8c2-0746f010e945")
+    			.deviceGuid(DEVICE_GUID)
+    			.triggerGuid(TRIGGER_GUID)
 				.application(application)
 				.tenant(currentTenant)
 				.build();
+    	
+    	SilenceTrigger trigger = new SilenceTrigger();
+    	trigger.setGuid(TRIGGER_GUID);
+    	trigger.setApplication(application);
+    	trigger.setTenant(currentTenant);
+    	trigger.setMinutes(1);
+    	trigger.setType(HealthAlertType.SILENCE);
+    	trigger = alertTriggerRepository.save(trigger);
 
     }
 
@@ -194,6 +209,26 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     	assertThat(serviceResponse, hasErrorMessage(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode()));
     }
 
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json"})
+    public void shouldReturnErrorIfSavingHealthAlertTriggerGuidNullOrEmpty() throws Exception {
+    	healthAlert.setTriggerGuid(null);
+    	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.register(currentTenant, application, healthAlert);
+    	assertThat(serviceResponse, hasErrorMessage(Validations.HEALTH_ALERT_TRIGGER_GUID_NULL.getCode()));
+    	
+    	healthAlert.setTriggerGuid("");
+    	serviceResponse = healthAlertService.register(currentTenant, application, healthAlert);
+    	assertThat(serviceResponse, hasErrorMessage(Validations.HEALTH_ALERT_TRIGGER_GUID_NULL.getCode()));
+    }
+    
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json"})
+    public void shouldReturnErrorIfSavingHealthAlertTriggerNotExists() throws Exception {
+    	healthAlert.setTriggerGuid("7d51c242-81db-11e6-a8c2-0746f010e911");
+    	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.register(currentTenant, application, healthAlert);
+    	assertThat(serviceResponse, hasErrorMessage(Validations.HEALTH_ALERT_TRIGGER_NOT_EXIST.getCode()));
+    }
+    
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json", "/fixtures/health-alert.json"})
     public void shouldSaveHealthAlert() throws Exception {
