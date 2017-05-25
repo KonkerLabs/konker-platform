@@ -1,9 +1,13 @@
 package com.konkerlabs.platform.registry.business.model;
 
+import java.util.Set;
+
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertType;
 import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 
 import lombok.Data;
@@ -23,6 +27,9 @@ public abstract class AlertTrigger implements URIDealer {
     private DeviceModel deviceModel;
     @DBRef
     private Location location;
-    protected AlertTriggerType type;
+    protected HealthAlertType type;
+
+    @Transient
+    private Set<Location> mappedLocations;
 
 }

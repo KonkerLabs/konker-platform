@@ -18,4 +18,7 @@ public interface HealthAlertRepository extends MongoRepository<HealthAlert, Stri
     @Query("{ 'tenant.id' : ?0, 'application.name' : ?1, 'guid' : ?2 }")
     HealthAlert findByTenantIdApplicationNameAndGuid(String tenantId, String applicationName, String healthAlertGuid);
 
+    @Query("{ 'tenant.id' : ?0, 'application.name' : ?1, 'triggerGuid' : ?2, 'solved' : false }")
+    List<HealthAlert> findAllByTenantIdApplicationNameAndTriggerGuid(String tenantId, String applicationName, String triggerGuid);
+
 }

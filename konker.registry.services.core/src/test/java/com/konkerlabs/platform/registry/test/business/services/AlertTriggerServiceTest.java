@@ -17,9 +17,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.konkerlabs.platform.registry.business.model.AlertTrigger;
-import com.konkerlabs.platform.registry.business.model.AlertTriggerType;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.DeviceModel;
+import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertType;
 import com.konkerlabs.platform.registry.business.model.Location;
 import com.konkerlabs.platform.registry.business.model.SilenceTrigger;
 import com.konkerlabs.platform.registry.business.model.Tenant;
@@ -29,6 +29,7 @@ import com.konkerlabs.platform.registry.business.repositories.DeviceModelReposit
 import com.konkerlabs.platform.registry.business.repositories.LocationRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.AlertTriggerService;
+import com.konkerlabs.platform.registry.business.services.api.AlertTriggerService.Validations;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.config.EventStorageConfig;
@@ -144,10 +145,10 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
         assertThat(serviceResponse.isOk(), is(true));
         assertThat(serviceResponse.getResult().size(), is(2));
         assertThat(serviceResponse.getResult().get(0).getLocation().getName(), is("BR"));
-        assertThat(serviceResponse.getResult().get(0).getType(), is(AlertTriggerType.SILENCE));
+        assertThat(serviceResponse.getResult().get(0).getType(), is(HealthAlertType.SILENCE));
 
         assertThat(serviceResponse.getResult().get(1).getLocation().getName(), is("CL"));
-        assertThat(serviceResponse.getResult().get(1).getType(), is(AlertTriggerType.SILENCE));
+        assertThat(serviceResponse.getResult().get(1).getType(), is(HealthAlertType.SILENCE));
 
     }
 
@@ -164,6 +165,23 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
 
         ServiceResponse<List<AlertTrigger>> serviceResponse = alertTriggerService.listByTenantAndApplication(currentTenant, null);
         assertThat(serviceResponse, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
+
+    }
+
+    @Test
+    public void shouldFindByTenantAndApplicationAndGuid() throws Exception {
+
+        ServiceResponse<AlertTrigger> serviceResponse = alertTriggerService.findByTenantAndApplicationAndGuid(currentTenant, application, triggerA.getGuid());
+        assertThat(serviceResponse.isOk(), is(true));
+        assertThat(serviceResponse.getResult().getGuid(), is(triggerA.getGuid()));
+
+    }
+
+    @Test
+    public void shouldTryFindByTenantAndApplicationAndGuidNonExistingTrigger() throws Exception {
+
+        ServiceResponse<AlertTrigger> serviceResponse = alertTriggerService.findByTenantAndApplicationAndGuid(currentTenant, application, "000-000");
+        assertThat(serviceResponse, hasErrorMessage(Validations.ALERT_TRIGGER_NOT_FOUND.getCode()));
 
     }
 

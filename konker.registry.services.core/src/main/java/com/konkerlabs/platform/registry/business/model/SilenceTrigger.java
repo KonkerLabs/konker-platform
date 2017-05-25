@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertType;
+
 import lombok.Data;
 
 @Data
@@ -28,7 +30,7 @@ public class SilenceTrigger extends AlertTrigger {
     }
 
     public SilenceTrigger() {
-        super.type = AlertTriggerType.SILENCE;
+        super.type = HealthAlertType.SILENCE;
     }
 
     @Override
@@ -46,12 +48,12 @@ public class SilenceTrigger extends AlertTrigger {
         return guid;
     }
 
-    public Optional<Map<String, Object[]>> applyValidations() {
+    public Optional<Map<String, Object[]>> applyValidations(int minimumMinutes) {
 
         Map<String, Object[]> validations = new HashMap<>();
 
-        if (getMinutes() < 10) {
-            validations.put(Validations.INVALID_MINUTES_VALUE.getCode(),null);
+        if (getMinutes() < minimumMinutes) {
+            validations.put(Validations.INVALID_MINUTES_VALUE.getCode(), new Object[] {minimumMinutes});
         }
 
         return Optional.of(validations).filter(map -> !map.isEmpty());

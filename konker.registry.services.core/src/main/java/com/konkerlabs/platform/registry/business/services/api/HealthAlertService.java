@@ -26,7 +26,7 @@ public interface HealthAlertService {
 			this.code = code;
 		}
 	}
-	
+
 	public enum Messages {
 		HEALTH_ALERT_REMOVED_SUCCESSFULLY("controller.healthalert.removed.succesfully");
 
@@ -41,12 +41,12 @@ public interface HealthAlertService {
 		}
 	}
 
-	ServiceResponse<HealthAlert> register(Tenant tenant, Application application, HealthAlert deviceModel);
-	ServiceResponse<HealthAlert> update(Tenant tenant, Application application, String healthAlertGuid, HealthAlert deviceModel);
+	ServiceResponse<HealthAlert> register(Tenant tenant, Application application, HealthAlert healthAlert);
+	ServiceResponse<HealthAlert> update(Tenant tenant, Application application, String healthAlertGuid, HealthAlert healthAlert);
 	ServiceResponse<HealthAlert> remove(Tenant tenant, Application application, String healthAlertGuid);
 	ServiceResponse<List<HealthAlert>> findAllByTenantAndApplication(Tenant tenant, Application application);
 	ServiceResponse<List<HealthAlert>> findAllByTenantApplicationAndDeviceGuid(Tenant tenant, Application application, String deviceGuid);
 	ServiceResponse<HealthAlert> getByTenantApplicationAndHealthAlertGuid(Tenant tenant, Application application, String healthAlertGuid);
-
+    ServiceResponse<List<HealthAlert>>  removeAlertsFromTrigger(Tenant tenant, Application application, String guid);
 
 }

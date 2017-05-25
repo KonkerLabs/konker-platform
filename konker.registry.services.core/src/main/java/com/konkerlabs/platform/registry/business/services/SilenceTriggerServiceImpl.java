@@ -8,9 +8,9 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.konkerlabs.platform.registry.business.model.AlertTriggerType;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.DeviceModel;
+import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertType;
 import com.konkerlabs.platform.registry.business.model.Location;
 import com.konkerlabs.platform.registry.business.model.SilenceTrigger;
 import com.konkerlabs.platform.registry.business.model.Tenant;
@@ -18,16 +18,24 @@ import com.konkerlabs.platform.registry.business.model.validation.CommonValidati
 import com.konkerlabs.platform.registry.business.repositories.SilenceTriggerRepository;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
+import com.konkerlabs.platform.registry.business.services.api.HealthAlertService;
 import com.konkerlabs.platform.registry.business.services.api.LocationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.SilenceTriggerService;
+import com.konkerlabs.platform.registry.config.HealthAlertsConfig;
 
 @Service
 public class SilenceTriggerServiceImpl implements SilenceTriggerService {
 
     @Autowired
     private SilenceTriggerRepository silenceTriggerRepository;
+
+    @Autowired
+    private HealthAlertService healthAlertService;
+
+    @Autowired
+    private HealthAlertsConfig healthAlertsConfig;
 
     @Override
     public ServiceResponse<SilenceTrigger> findByTenantAndApplicationAndModelAndLocation(Tenant tenant,
@@ -72,7 +80,7 @@ public class SilenceTriggerServiceImpl implements SilenceTriggerService {
             return validationsResponse;
         }
 
-        Optional<Map<String, Object[]>> validations = trigger.applyValidations();
+        Optional<Map<String, Object[]>> validations = trigger.applyValidations(healthAlertsConfig.getSilenceMinimumMinutes());
         if (validations.isPresent()) {
             return ServiceResponseBuilder.<SilenceTrigger>error().withMessages(validations.get()).build();
         }
@@ -100,7 +108,7 @@ public class SilenceTriggerServiceImpl implements SilenceTriggerService {
         trigger.setTenant(tenant);
         trigger.setApplication(application);
         trigger.setGuid(UUID.randomUUID().toString());
-        trigger.setType(AlertTriggerType.SILENCE);
+        trigger.setType(HealthAlertType.SILENCE);
 
         SilenceTrigger saved = silenceTriggerRepository.save(trigger);
 
@@ -117,7 +125,7 @@ public class SilenceTriggerServiceImpl implements SilenceTriggerService {
             return validationsResponse;
         }
 
-        Optional<Map<String, Object[]>> validations = trigger.applyValidations();
+        Optional<Map<String, Object[]>> validations = trigger.applyValidations(healthAlertsConfig.getSilenceMinimumMinutes());
         if (validations.isPresent()) {
             return ServiceResponseBuilder.<SilenceTrigger>error().withMessages(validations.get()).build();
         }
@@ -154,6 +162,7 @@ public class SilenceTriggerServiceImpl implements SilenceTriggerService {
                     .withMessage(Validations.SILENCE_TRIGGER_NOT_FOUND.getCode()).build();
         }
 
+        healthAlertService.removeAlertsFromTrigger(tenant, application, guid);
         silenceTriggerRepository.delete(fromDb);
 
         return ServiceResponseBuilder.<SilenceTrigger>ok().withResult(fromDb).build();
