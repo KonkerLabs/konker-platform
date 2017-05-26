@@ -95,6 +95,23 @@
             <artifactId>jcl-over-slf4j</artifactId>
             <version>1.7.14</version>
         </dependency>
+        <!-- Thymeleaf -->
+        <dependency>
+            <groupId>org.thymeleaf</groupId>
+            <artifactId>thymeleaf-spring4</artifactId>
+            <version>3.0.1.RELEASE</version>
+        </dependency>
+        <!-- Mail -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context-support</artifactId>
+            <version>4.3.6.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.mail</groupId>
+            <artifactId>mail</artifactId>
+            <version>1.4.7</version>
+        </dependency>
         <!-- Konker -->
         <dependency>
             <groupId>com.konkerlabs.platform</groupId>
