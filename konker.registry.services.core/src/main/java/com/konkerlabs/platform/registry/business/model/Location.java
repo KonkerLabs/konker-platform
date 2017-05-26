@@ -17,11 +17,13 @@ import com.konkerlabs.platform.utilities.validations.api.Validatable;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.experimental.Tolerate;
 
 @Data
 @Builder
 @Document(collection = "locations")
+@EqualsAndHashCode(of = {"guid", "name"})
 public class Location implements URIDealer, Validatable {
 
     public static final String URI_SCHEME = "location";
