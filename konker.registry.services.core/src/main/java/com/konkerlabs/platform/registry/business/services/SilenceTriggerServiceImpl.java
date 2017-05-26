@@ -34,8 +34,7 @@ public class SilenceTriggerServiceImpl implements SilenceTriggerService {
     @Autowired
     private HealthAlertService healthAlertService;
 
-    @Autowired
-    private HealthAlertsConfig healthAlertsConfig;
+    private HealthAlertsConfig healthAlertsConfig = new HealthAlertsConfig();
 
     @Override
     public ServiceResponse<SilenceTrigger> findByTenantAndApplicationAndModelAndLocation(Tenant tenant,
