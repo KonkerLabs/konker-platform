@@ -11,7 +11,6 @@ import com.typesafe.config.ConfigFactory;
 import lombok.Data;
 
 @Data
-@Configuration
 public class HealthAlertsConfig {
 
     private int silenceMinimumMinutes;
