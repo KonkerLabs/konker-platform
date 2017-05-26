@@ -107,6 +107,7 @@ public class ApplicationRestControllerTest extends WebLayerTestContext {
 				.severity(HealthAlertSeverity.OK)
 				.description("Device sem enviar mensagem por mais de 5 minutos")
 				.registrationDate(registrationDate)
+				.lastChange(Instant.ofEpochMilli(1495716970000l))
         		.type(HealthAlertType.SILENCE)
         		.deviceGuid("guid1")
         		.triggerGuid("7d51c242-81db-11e6-a8c2-0746f976f666")
@@ -403,7 +404,7 @@ public class ApplicationRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.result[1].guid", is(health2.getGuid())))
                     .andExpect(jsonPath("$.result[1].severity", is(health2.getSeverity().toString())))
                     .andExpect(jsonPath("$.result[1].description", is(health2.getDescription())))
-                    .andExpect(jsonPath("$.result[1].occurenceDate", is(health2.getRegistrationDate().toString())))
+                    .andExpect(jsonPath("$.result[1].occurenceDate", is(health2.getLastChange().toString())))
                     .andExpect(jsonPath("$.result[1].type", is(health2.getType().toString())))
                     .andExpect(jsonPath("$.result[1].triggerGuid", is(health2.getTriggerGuid())));
     }

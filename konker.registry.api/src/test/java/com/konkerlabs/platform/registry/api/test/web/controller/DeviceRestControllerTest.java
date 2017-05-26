@@ -116,6 +116,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 				.severity(HealthAlertSeverity.OK)
 				.description("Device sem enviar mensagem por mais de 5 minutos")
 				.registrationDate(registrationDate)
+				.lastChange(Instant.ofEpochMilli(1495716970000l))
         		.type(HealthAlertType.SILENCE)
         		.deviceGuid(device1.getGuid())
         		.triggerGuid("7d51c242-81db-11e6-a8c2-0746f976f666")
@@ -258,8 +259,8 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldShowDeviceHealth() throws Exception {
 
-        when(healthAlertService.findAllByTenantApplicationAndDeviceGuid(tenant, application, device1.getGuid()))
-				.thenReturn(ServiceResponseBuilder.<List<HealthAlert>>ok().withResult(healths).build());
+        when(healthAlertService.getLastHightServerityByDeviceGuid(tenant, application, device1.getGuid()))
+				.thenReturn(ServiceResponseBuilder.<HealthAlert>ok().withResult(health1).build());
         
         when(applicationService.getByApplicationName(tenant, application.getName()))
 				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
@@ -280,9 +281,9 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     
     @Test
     public void shouldShowDeviceHealthWithDeviceHealthEmpty() throws Exception {
-
-    	when(healthAlertService.findAllByTenantApplicationAndDeviceGuid(tenant, application, device1.getGuid()))
-				.thenReturn(ServiceResponseBuilder.<List<HealthAlert>> error().withMessage(Validations.HEALTH_ALERT_DOES_NOT_EXIST.getCode()).build());
+    	
+    	when(healthAlertService.getLastHightServerityByDeviceGuid(tenant, application, device1.getGuid()))
+				.thenReturn(ServiceResponseBuilder.<HealthAlert>error().withMessage(Validations.HEALTH_ALERT_DOES_NOT_EXIST.getCode()).build());
 
 		when(applicationService.getByApplicationName(tenant, application.getName()))
 				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
@@ -327,7 +328,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.result[1].guid", is(health2.getGuid())))
                     .andExpect(jsonPath("$.result[1].severity", is(health2.getSeverity().toString())))
                     .andExpect(jsonPath("$.result[1].description", is(health2.getDescription())))
-                    .andExpect(jsonPath("$.result[1].occurenceDate", is(health2.getRegistrationDate().toString())))
+                    .andExpect(jsonPath("$.result[1].occurenceDate", is(health2.getLastChange().toString())))
                     .andExpect(jsonPath("$.result[1].type", is(health2.getType().toString())))
                     .andExpect(jsonPath("$.result[1].triggerGuid", is(health2.getTriggerGuid())));
     }
