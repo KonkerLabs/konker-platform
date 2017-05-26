@@ -54,9 +54,20 @@ public class HealthAlert implements URIDealer {
 	}
 	
 	public enum HealthAlertSeverity {
-		OK,
-		WARN,
-		FAIL;
+		OK(3),
+		WARN(2),
+		FAIL(1);
+		
+		private Integer prior;
+		
+		HealthAlertSeverity(Integer prior) {
+			this.prior = prior;
+		}
+
+		public Integer getPrior() {
+			return prior;
+		}
+		
 	}
 	
 	public enum HealthAlertType {
