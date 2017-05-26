@@ -28,7 +28,7 @@ public class DeviceHealthVO implements SerializableVO<HealthAlert, DeviceHealthV
     public DeviceHealthVO apply(HealthAlert t) {
         DeviceHealthVO vo = new DeviceHealthVO();
         vo.setSeverity(t.getSeverity().name());
-        vo.setLastUpdate(t.getLastChange() != null ? t.getLastChange().toString() : t.getRegistrationDate().toString());
+        vo.setLastUpdate(t.getLastChange().toString());
         return vo;
     }
 

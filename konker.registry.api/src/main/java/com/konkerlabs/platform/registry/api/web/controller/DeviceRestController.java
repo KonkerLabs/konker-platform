@@ -244,14 +244,13 @@ public class DeviceRestController extends AbstractRestController implements Init
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
 
-        ServiceResponse<List<HealthAlert>> deviceResponse = healthAlertService.findAllByTenantApplicationAndDeviceGuid(
+        ServiceResponse<HealthAlert> deviceResponse = healthAlertService.getLastHightServerityByDeviceGuid(
         		tenant, 
         		application, 
         		deviceGuid); 
 
-        if (deviceResponse.isOk() && !deviceResponse.getResult().isEmpty()) {
-        	List<HealthAlert> result = deviceResponse.getResult();
-			return new DeviceHealthVO().apply(result.get(0));
+        if (deviceResponse.isOk()) {
+			return new DeviceHealthVO().apply(deviceResponse.getResult());
         } else {
         	throw new NotFoundResponseException(user, deviceResponse);
         }
