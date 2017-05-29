@@ -33,7 +33,10 @@ public class DeviceHealthAlertVO implements SerializableVO<HealthAlert, DeviceHe
     @ApiModelProperty(value = "the severity status", position = 4, example = "SILENCE")
     private String type;
     
-    @ApiModelProperty(value = "the severity status", position = 5, example = "1cfc3f38-497e-4ff3-b5b4-c04940c53c6c")
+    @ApiModelProperty(value = "the device guid identification", position = 5, example = "1cfc3f38-497e-4ff3-b5b4-c04940c22a9a")
+    private String deviceGuid;
+    
+    @ApiModelProperty(value = "the trigger guid identification", position = 5, example = "1cfc3f38-497e-4ff3-b5b4-c04940c53c6c")
     private String triggerGuid;
 
     @Override
@@ -42,8 +45,9 @@ public class DeviceHealthAlertVO implements SerializableVO<HealthAlert, DeviceHe
         vo.setGuid(t.getGuid());
         vo.setSeverity(t.getSeverity().name());
         vo.setDescription(t.getDescription());
-        vo.setOccurenceDate(t.getLastChange() != null ? t.getLastChange().toString() : t.getRegistrationDate().toString());
+        vo.setOccurenceDate(t.getLastChange().toString());
         vo.setType(t.getType().name());
+        vo.setDeviceGuid(t.getDeviceGuid());
         vo.setTriggerGuid(t.getTriggerGuid());
         return vo;
     }

@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry.business.services;
 
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -17,6 +18,7 @@ import com.konkerlabs.platform.registry.business.model.AlertTrigger;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.HealthAlert;
+import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertSeverity;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.AlertTriggerRepository;
@@ -206,10 +208,13 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 					.build();
 		}
 
+		Instant now = Instant.now();
+
 		healthAlert.setTenant(tenant);
 		healthAlert.setApplication(application);
 		healthAlert.setGuid(UUID.randomUUID().toString());
-		healthAlert.setRegistrationDate(Instant.now());
+		healthAlert.setRegistrationDate(now);
+		healthAlert.setLastChange(now);
 		HealthAlert save = healthAlertRepository.save(healthAlert);
 		
 		LOGGER.info("HealthAlert created. Guid: {}", save.getGuid(), tenant.toURI(), tenant.getLogLevel());
@@ -409,5 +414,40 @@ public class HealthAlertServiceImpl implements HealthAlertService {
                 .build();
 
     }
+
+	@Override
+	public ServiceResponse<HealthAlert> getLastHightServerityByDeviceGuid(Tenant tenant, Application application,
+			String deviceGuid) {
+		
+		ServiceResponse<List<HealthAlert>> serviceResponse = findAllByTenantApplicationAndDeviceGuid(tenant, application, deviceGuid);
+		
+		if (!serviceResponse.isOk()) {
+			if (serviceResponse.getResponseMessages().containsKey(Validations.HEALTH_ALERT_DOES_NOT_EXIST.getCode())) {
+				return ServiceResponseBuilder.<HealthAlert> ok()
+							.withResult(HealthAlert.builder()
+									.severity(HealthAlertSeverity.OK)
+									.lastChange(Instant.now())
+									.build())
+							.build();
+			}
+			
+			return ServiceResponseBuilder.<HealthAlert>error()
+                    .withMessages(serviceResponse.getResponseMessages())
+                    .build();
+		}
+		
+		List<HealthAlert> healths = serviceResponse.getResult();
+
+		healths.sort(
+				Comparator
+				.comparing((HealthAlert health) -> health.getSeverity().getPrior())
+				.thenComparing(
+						Comparator.comparing(health -> health.getLastChange())
+						));
+		
+		return ServiceResponseBuilder.<HealthAlert> ok()
+				.withResult(healths.get(0))
+				.build();
+	}
 
 }
