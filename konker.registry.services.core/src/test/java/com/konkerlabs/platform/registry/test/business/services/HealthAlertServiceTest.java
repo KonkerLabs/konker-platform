@@ -35,11 +35,13 @@ import com.konkerlabs.platform.registry.business.services.api.HealthAlertService
 import com.konkerlabs.platform.registry.business.services.api.HealthAlertService.Messages;
 import com.konkerlabs.platform.registry.business.services.api.HealthAlertService.Validations;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.config.EmailConfig;
 import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.SpringMailTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -47,7 +49,9 @@ import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
         MongoTestConfiguration.class,
         BusinessTestConfiguration.class,
 		PubServerConfig.class,
-        EventStorageConfig.class})
+        EventStorageConfig.class,
+        SpringMailTestConfiguration.class,
+        EmailConfig.class})
 public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
 
