@@ -1,10 +1,8 @@
 package com.konkerlabs.platform.registry.idm.web.converters;
 
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.stereotype.Component;
+public class MaskPasswordConverter {}
 
-@Component
+/*@Component
 public class MaskPasswordConverter implements Converter<String, String> {
 
 	@Override
@@ -18,4 +16,4 @@ public class MaskPasswordConverter implements Converter<String, String> {
 
 	}
 
-}
+}*/

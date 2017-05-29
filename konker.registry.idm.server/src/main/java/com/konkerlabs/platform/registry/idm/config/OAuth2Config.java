@@ -26,7 +26,6 @@ import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
-import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
@@ -43,7 +42,8 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 	@Autowired
 	private AuthenticationManager authenticationManager;
 
-
+	@Autowired
+	private MongoTokenStore mongoTokenStore;
 
 	@Autowired
 	@Qualifier("oauth2ClientDetails")
@@ -62,7 +62,7 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 		
 		
 		endpoints.authenticationManager(authenticationManager)
-				.tokenStore(tokenStore())
+				.tokenStore(mongoTokenStore)
 				.tokenEnhancer(tokenEnhancerChain)
 				.allowedTokenEndpointRequestMethods(HttpMethod.GET, HttpMethod.POST);
 	}
@@ -108,14 +108,15 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 		return converter;
 	}
 
+	/*@Bean
 	public MongoTokenStore mongoTokenStore(){
 		return new MongoTokenStore();
-	}
+	}*/
 
 	@Bean
 	public TokenStore tokenStore() {
-
-		return new JwtTokenStore(accessTokenConverter());
+		return mongoTokenStore;
+		//return new JwtTokenStore(accessTokenConverter());
 
 	}
 	

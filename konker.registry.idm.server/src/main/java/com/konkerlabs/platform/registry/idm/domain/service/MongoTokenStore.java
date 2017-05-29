@@ -4,27 +4,34 @@ package com.konkerlabs.platform.registry.idm.domain.service;
 import com.konkerlabs.platform.registry.idm.domain.repository.AccessToken;
 import com.konkerlabs.platform.registry.idm.domain.repository.AccessTokenRepository;
 import com.konkerlabs.platform.registry.idm.domain.repository.RefreshToken;
+import com.konkerlabs.platform.registry.idm.domain.repository.RefreshTokenRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2RefreshToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.token.AuthenticationKeyGenerator;
 import org.springframework.security.oauth2.provider.token.DefaultAuthenticationKeyGenerator;
 import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-
+@Component
 public class MongoTokenStore implements TokenStore, InitializingBean {
 
     private static final Logger LOG = LoggerFactory.getLogger(MongoTokenStore.class);
 
+    @Autowired
     private AccessTokenRepository tokenRepository;
+
+    @Autowired
+    private RefreshTokenRepository refreshTokenRepository;
 
     private AuthenticationKeyGenerator authenticationKeyGenerator = new DefaultAuthenticationKeyGenerator();
 
@@ -72,7 +79,7 @@ public class MongoTokenStore implements TokenStore, InitializingBean {
                 .authentication(authentication)
                 .refreshToken(extractTokenKey(refreshToken));
 
-        tokenRepository.saveAccessToken(accessToken);
+        tokenRepository.save(accessToken);
     }
 
 
@@ -84,7 +91,7 @@ public class MongoTokenStore implements TokenStore, InitializingBean {
         try {
             final String tokenId = extractTokenKey(tokenValue);
 
-            final AccessToken accessToken = tokenRepository.findAccessToken(tokenId);
+            final AccessToken accessToken = tokenRepository.findOne(tokenId);
             token = accessToken == null ? null : accessToken.token();
         } catch (IllegalArgumentException e) {
             LOG.warn("Failed to deserialize access token for {}", tokenValue);
@@ -113,7 +120,7 @@ public class MongoTokenStore implements TokenStore, InitializingBean {
         try {
             final String tokenId = extractTokenKey(token);
 
-            AccessToken accessToken = tokenRepository.findAccessToken(tokenId);
+            AccessToken accessToken = tokenRepository.findOne(tokenId);
             authentication = accessToken == null ? null : accessToken.authentication();
 
         } catch (IllegalArgumentException e) {
@@ -127,7 +134,7 @@ public class MongoTokenStore implements TokenStore, InitializingBean {
 
     protected void removeAccessToken(String tokenValue) {
         final String tokenId = extractTokenKey(tokenValue);
-        tokenRepository.removeAccessToken(tokenId);
+        tokenRepository.delete(tokenId);
     }
 
     @Override
@@ -139,7 +146,7 @@ public class MongoTokenStore implements TokenStore, InitializingBean {
                 .token(refreshToken)
                 .authentication(authentication);
 
-        tokenRepository.saveRefreshToken(token);
+        refreshTokenRepository.save(token);
     }
 
     @Override
@@ -150,7 +157,7 @@ public class MongoTokenStore implements TokenStore, InitializingBean {
         try {
             final String tokenId = extractTokenKey(tokenValue);
 
-            RefreshToken refreshTokenFounded = tokenRepository.findRefreshToken(tokenId);
+            RefreshToken refreshTokenFounded = refreshTokenRepository.findOne(tokenId);
             refreshToken = refreshTokenFounded == null ? null : refreshTokenFounded.token();
         } catch (IllegalArgumentException e) {
             LOG.warn("Failed to deserialize refresh token for token {}", tokenValue);
@@ -169,7 +176,7 @@ public class MongoTokenStore implements TokenStore, InitializingBean {
 
     protected void removeRefreshToken(String token) {
         final String tokenId = extractTokenKey(token);
-        tokenRepository.removeRefreshToken(tokenId);
+        refreshTokenRepository.delete(tokenId);
     }
 
     @Override
@@ -182,7 +189,7 @@ public class MongoTokenStore implements TokenStore, InitializingBean {
 
         try {
             final String tokenId = extractTokenKey(tokenValue);
-            RefreshToken refreshToken = tokenRepository.findRefreshToken(tokenId);
+            RefreshToken refreshToken = refreshTokenRepository.findOne(tokenId);
 
             authentication = refreshToken == null ? null : refreshToken.authentication();
         } catch (IllegalArgumentException e) {

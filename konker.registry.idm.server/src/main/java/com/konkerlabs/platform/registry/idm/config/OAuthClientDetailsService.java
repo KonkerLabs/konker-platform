@@ -22,7 +22,8 @@ public class OAuthClientDetailsService implements ClientDetailsService {
 
     enum Validations {
         INVALID_TENTANT("service.oauth.validation.tenant.invalid"),
-        INVALID_ID("service.oauth.validation.id.invalid");
+        INVALID_ID("service.oauth.validation.id.invalid"),
+        INVALID_DETAILS("service.oauth.validation.details.invalid");
 
         private String code;
 
@@ -35,7 +36,23 @@ public class OAuthClientDetailsService implements ClientDetailsService {
         }
     }
 
-    enum Errors {
+    public enum Messages {
+        CLIENT_REGISTERED_SUCCESSFULLY("controller.clients.registered.success"),
+        CLIENT_REMOVED_SUCCESSFULLY("controller.clients.removed.succesfully"),
+        CLIENT_REMOVED_UNSUCCESSFULLY("controller.clients.removed.unsuccesfully");
+
+        private String code;
+
+        Messages(String code) {
+            this.code = code;
+        }
+
+        public String getCode() {
+            return code;
+        }
+    }
+
+    static enum Errors {
         ERROR_SAVE_USER("service.oauth.error.saveClient");
 
         private String code;
@@ -62,9 +79,30 @@ public class OAuthClientDetailsService implements ClientDetailsService {
         if (!Optional.ofNullable(clientId).isPresent()) {
             throw new ClientRegistrationException(Validations.INVALID_ID.getCode());
         }
-        return oauthClientDetailRepository
-                .findOne(clientId)
-                .toClientDetails();
+        ServiceResponse<OauthClientDetails> response =
+                loadById(clientId);
+        if(Optional.ofNullable(response).isPresent() && response.isOk()){
+            return response.getResult().toClientDetails();
+        }
+        return null;
+
+    }
+
+    public ServiceResponse<OauthClientDetails> loadById(String clientId) throws ClientRegistrationException {
+        if (!Optional.ofNullable(clientId).isPresent()) {
+            throw new ClientRegistrationException(Validations.INVALID_ID.getCode());
+        }
+        OauthClientDetails details = oauthClientDetailRepository.findOne(clientId);
+        if(details != null){
+            return ServiceResponseBuilder.<OauthClientDetails> ok()
+                    .withResult(details)
+                    .build();
+        } else {
+            return ServiceResponseBuilder.<OauthClientDetails> ok()
+                    .build();
+        }
+
+
 
     }
 
@@ -99,18 +137,44 @@ public class OAuthClientDetailsService implements ClientDetailsService {
         return ServiceResponseBuilder.<OauthClientDetails>ok().build();
     }
 
-    public ServiceResponse<OauthClientDetails> saveClient(Tenant tenant, Application application) {
+    public ServiceResponse<OauthClientDetails> saveClient(Tenant tenant, Application application, OauthClientDetails clientDetails) {
         if (!Optional.ofNullable(tenant).isPresent()) {
             return ServiceResponseBuilder.<OauthClientDetails>error()
                     .withMessage(Validations.INVALID_TENTANT.getCode()).build();
         }
 
+        if(!Optional.ofNullable(clientDetails).isPresent()){
+            return ServiceResponseBuilder.<OauthClientDetails>error()
+                    .withMessage(Validations.INVALID_DETAILS.getCode()).build();
+        }
+
+        if(!Optional.ofNullable(clientDetails.getClientId()).isPresent()){
+            return ServiceResponseBuilder.<OauthClientDetails>error()
+                    .withMessage(Validations.INVALID_DETAILS.getCode()).build();
+        }
+
+        if(!Optional.ofNullable(clientDetails.getWebServerRedirectUri()).isPresent()){
+            return ServiceResponseBuilder.<OauthClientDetails>error()
+                    .withMessage(Validations.INVALID_DETAILS.getCode()).build();
+        }
+
+        if(!Optional.ofNullable(clientDetails.getClientId()).isPresent()){
+            return ServiceResponseBuilder.<OauthClientDetails>error()
+                    .withMessage(Validations.INVALID_DETAILS.getCode()).build();
+        }
+        if(!Optional.ofNullable(clientDetails.getClientSecret()).isPresent()){
+            clientDetails.setClientSecret(UUID.randomUUID().toString());
+        }
+
+
         oauthClientDetailRepository.save(
                 OauthClientDetails.builder()
+                        .clientId(clientDetails.getClientId())
                         .tenant(tenant)
-                        .clientId(UUID.randomUUID().toString())
+                        .clientSecret(clientDetails.getClientSecret())
                         .accessTokenValidity(TOKEN_VALIDITY)
                         .application(application)
+                        .webServerRedirectUri(clientDetails.getWebServerRedirectUri())
                         .build());
 
         return ServiceResponseBuilder.<OauthClientDetails>ok().build();

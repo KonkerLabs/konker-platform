@@ -183,7 +183,7 @@
                         </div>
 
                         <div>
-                            <a data-th-href="@{/clients/new}"
+                            <a data-th-href="@{'/account/' + ${applicationId} + '/clients/new'}"
                                class="mb btn btn-theme action pull-right">
                                 <span class="glyphicon glyphicon-plus"></span>
                                 <span data-th-text="#{nav.new}"></span>
@@ -193,27 +193,25 @@
                         <table class="table table-bordered table-striped">
                             <thead>
                             <tr>
-                                <th class="col-md-2" data-th-text="#{clients.index.id}">Name</th>
-                                <th class="col-md-1" data-th-text="#{clients.index.application}">Application</th>
+                                <th class="col-md-2" data-th-text="#{clients.index.name}">Name</th>
+                                <th class="col-md-1" data-th-text="#{clients.index.clientSecret}">Application</th>
+                                <th class="col-md-1" data-th-text="#{clients.index.webServerRedirectUri}">Application</th>
                                 <th class="col-md-1" data-th-text="#{clients.index.active}">Active</th>
                                 <th class="col-md-1 text-center" data-th-text="#{clients.index.actions}">Actions</th>
                             </tr>
                             </thead>
                             <tbody>
                             <tr data-th-each="client : ${allClients}">
-                                <td data-th-text="${client.name}"></td>
-                                <td data-th-text="${client.application}"></td>
+                                <td data-th-text="${client.clientId}"></td>
+                                <td data-th-text="${client.clientSecret}"></td>
+                                <td data-th-text="${client.webServerRedirectUri}"></td>
                                 <td>
                                     <img data-konker-enabled-img="${client.active}"></img>
                                 </td>
                                 <td class="text-center">
-                                    <!--  <a data-th-href="@{/destinations/rest/{id}(id=${destination.guid})}" class="btn btn-default" data-th-text="#{nav.show}">
+                                    <a data-th-href="@{/account/{applicationName}/clients/{id}/show(id=${client.clientId}, applicationName=${client.application.name})}"
+                                       class="btn btn-default" data-th-text="#{nav.show}">
                                         Show
-                                    </a> -->
-                                    <a data-th-href="@{/clients/{applicationName}/{id}/edit(id=${client.guid}, applicationName=${client.application.name})}"
-                                       class="btn btn-default">
-                                        <img data-th-attr="src=@{/konker/images/icons-bt/edit-icon-bt-01.svg}" class="bt-icon" />
-                                        <span data-th-text="#{nav.edit}"></span>
                                     </a>
                                 </td>
                             </tr>

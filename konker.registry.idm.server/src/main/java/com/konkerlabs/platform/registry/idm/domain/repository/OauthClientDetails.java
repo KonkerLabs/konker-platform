@@ -45,7 +45,7 @@ public class OauthClientDetails implements Serializable {
     private Tenant tenant;
     @DBRef
     private Application application;
-    private String name;
+    private Boolean active;
 
     @Tolerate
     public OauthClientDetails() {

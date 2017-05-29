@@ -5,6 +5,7 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.idm.config.OAuthClientDetailsService;
 import com.konkerlabs.platform.registry.idm.domain.repository.OauthClientDetails;
+import com.konkerlabs.platform.registry.idm.web.form.OauthClientRegistrationForm;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -48,8 +49,10 @@ public class AccountRestController implements ApplicationContextAware {
     @RequestMapping(value = "/", method = RequestMethod.POST)
     public ResponseEntity<OauthClientDetails> create(@PathVariable("applicationId") String applicationId){
         ServiceResponse<OauthClientDetails> result =
-                oAuthClientDetailsService.saveClient(tenant,
-                        Application.builder().name(applicationId).build());
+                oAuthClientDetailsService.saveClient(
+                        tenant,
+                        Application.builder().name(applicationId).build(),
+                        new OauthClientRegistrationForm().toModel());
         if(result.isOk()){
             return ResponseEntity
                     .created(URI.create("/"))

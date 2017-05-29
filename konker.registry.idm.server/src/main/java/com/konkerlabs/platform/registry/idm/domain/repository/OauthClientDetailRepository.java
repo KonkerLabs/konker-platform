@@ -12,7 +12,7 @@ public interface OauthClientDetailRepository extends MongoRepository<OauthClient
     /*@Query("{ 'clientId' : ?0 }")
     OauthClientDetails findOauthClientDetails(String clientId);*/
 
-    @Query("{'tenantId': ?0, 'applicationId': ?1}")
+    @Query("{'tenant.id': ?0, 'application.name': ?1}")
     List<OauthClientDetails> findAllOauthClientDetailsByTenant(String tenantId, String applicationId);
 
     /*boolean updateOauthClientDetailsArchive(String clientId, boolean archive);*/

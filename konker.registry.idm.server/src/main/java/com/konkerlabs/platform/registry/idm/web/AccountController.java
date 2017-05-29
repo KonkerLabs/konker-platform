@@ -17,9 +17,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.Locale;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 
 @Scope("request")
@@ -41,7 +45,10 @@ public class AccountController implements ApplicationContextAware {
                                 tenant.getDomainName()
                         ).build());
 
-        ModelAndView view = new ModelAndView("clients/index");
+        ModelAndView view = new ModelAndView(
+                String.format("/clients/index", applicationId))
+                .addObject("applicationId", tenant.getDomainName())
+                .addObject("allClients", clientList.getResult());
         if (clientList.isOk()) {
             view.addObject("clients", clientList.getResult());
         }
@@ -50,26 +57,49 @@ public class AccountController implements ApplicationContextAware {
     }
 
     @RequestMapping(value = "/{applicationId}/clients/new", method = RequestMethod.GET)
-    public ModelAndView newClient() {
+    public ModelAndView newClient(
+            @PathVariable("applicationId") String applicationId
+    ) {
         ModelAndView view = new ModelAndView("clients/form")
-                .addObject("device", new OauthClientRegistrationForm())
+                .addObject("oauthClient", new OauthClientRegistrationForm().toModel())
+                .addObject("applicationId", tenant.getDomainName())
                 .addObject("action",
                         MessageFormat.format("/account/{0}/clients/saveClient", tenant.getDomainName()));
         return view;
     }
 
-    @RequestMapping(value = "/{applicationId}/clients/saveClient", method = RequestMethod.GET)
-    public ModelAndView saveClient(
+    @RequestMapping(value = "/{applicationId}/clients/{clientId}/show", method = RequestMethod.GET)
+    public ModelAndView showClient(
             @PathVariable("applicationId") String applicationId,
-            @ModelAttribute("deviceForm") OauthClientRegistrationForm form
+            @PathVariable("clientId") String clientId
     ) {
-        ServiceResponse<OauthClientDetails> result =
-                oAuthClientDetailsService.saveClient(
-                        tenant, Application.builder().name(applicationId).build());
+
+        ServiceResponse<OauthClientDetails> client =
+                oAuthClientDetailsService.loadById(clientId);
 
         ModelAndView view = new ModelAndView("clients/form")
-                .addObject(result);
+                .addObject("oauthClient", client.getResult())
+                .addObject("applicationId", tenant.getDomainName())
+                .addObject("action",
+                        MessageFormat.format("/account/{0}/clients/saveClient", tenant.getDomainName()));
         return view;
+    }
+
+    @RequestMapping(value = "/{applicationId}/clients/saveClient", method = RequestMethod.POST)
+    public ModelAndView saveClient(
+            @PathVariable("applicationId") String applicationId,
+            @ModelAttribute("oauthClient") OauthClientRegistrationForm form,
+            RedirectAttributes redirectAttributes, Locale locale
+    ) {
+
+        return doSave(
+                () -> oAuthClientDetailsService.saveClient(
+                        tenant,
+                        Application.builder().name(applicationId).build(),
+                        form.toModel()),
+                Application.builder().name(applicationId).build(),
+                form, locale,
+                redirectAttributes, "");
     }
 
     @RequestMapping(value = "/{applicationId}/clients/{clientId}/remove", method = RequestMethod.GET)
@@ -86,6 +116,35 @@ public class AccountController implements ApplicationContextAware {
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
+    }
+
+    private ModelAndView doSave(Supplier<ServiceResponse<OauthClientDetails>> responseSupplier,
+                                Application application,
+                                OauthClientRegistrationForm registrationForm, Locale locale,
+                                RedirectAttributes redirectAttributes, String action) {
+
+        ServiceResponse<OauthClientDetails> serviceResponse = responseSupplier.get();
+
+        if (serviceResponse.getStatus().equals(ServiceResponse.Status.OK)) {
+            redirectAttributes.addFlashAttribute("message",
+                    applicationContext.getMessage(OAuthClientDetailsService.Messages.CLIENT_REGISTERED_SUCCESSFULLY.getCode(),
+                            null, locale));
+            return new ModelAndView(MessageFormat.format("redirect:/account/{0}/clients/",
+                    application.getName(),
+                    serviceResponse.getResult().getClientId()));
+        } else {
+            List<String> messages = serviceResponse.getResponseMessages()
+                    .entrySet().stream()
+                    .map(message -> applicationContext.getMessage(message.getKey(), message.getValue(), locale))
+                    .collect(Collectors.toList());
+            return new ModelAndView("clients/form").addObject("errors", messages)
+                    .addObject("oauthClient", new OauthClientRegistrationForm().toModel())
+                    .addObject("applicationId", tenant.getDomainName())
+                    .addObject("action",
+                            MessageFormat.format("/account/{0}/clients/saveClient", tenant.getDomainName()))
+                    .addObject("method", action);
+        }
+
     }
 
 }
