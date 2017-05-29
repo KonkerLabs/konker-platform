@@ -8,9 +8,9 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 public interface DeviceCustomDataService {
 
 	enum Validations {
-		DEVICE_CUSTOM_DATA_NULL("service.devicemodel.null"),
-		DEVICE_CUSTOM_DATA_ALREADY_REGISTERED("service.devicemodel.already.registered"),
-		DEVICE_CUSTOM_DATA_DOES_NOT_EXIST("service.devicemodel.does.not.exist"),
+		DEVICE_CUSTOM_DATA_NULL("service.device.custom_data.null"),
+		DEVICE_CUSTOM_DATA_ALREADY_REGISTERED("service.device.custom_data.already_registered"),
+		DEVICE_CUSTOM_DATA_DOES_NOT_EXIST("service.device.custom_data.does_not_exist"),
 		DEVICE_CUSTOM_DATA_INVALID_JSON("service.device.custom_data.invalid_json");
 
 		public String getCode() {
@@ -25,8 +25,7 @@ public interface DeviceCustomDataService {
 	}
 
 	public enum Messages {
-		DEVICE_CUSTOM_DATA_REMOVED_SUCCESSFULLY("controller.devicemodel.removed.succesfully"),
-		DEVICE_CUSTOM_DATA_REMOVED_UNSUCCESSFULLY("controller.devicemodel.removed.unsuccesfully");
+		DEVICE_CUSTOM_DATA_REMOVED_SUCCESSFULLY("controller.device.custom_data.removed_succesfully");
 
 		public String getCode() {
 			return code;

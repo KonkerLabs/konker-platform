@@ -58,7 +58,7 @@ public class DeviceRestController extends AbstractRestController implements Init
 
     @Autowired
     private DeviceModelService deviceModelService;
-    
+
     @Autowired
     private HealthAlertService healthAlertService;
 
@@ -203,7 +203,7 @@ public class DeviceRestController extends AbstractRestController implements Init
         ServiceResponse<Device> updateResponse = deviceRegisterService.update(tenant, application, deviceGuid, deviceFromDB);
 
         if (!updateResponse.isOk()) {
-            throw new BadServiceResponseException(user, deviceResponse, validationsCode);
+            throw new BadServiceResponseException(user, updateResponse, validationsCode);
 
         }
 
@@ -230,7 +230,7 @@ public class DeviceRestController extends AbstractRestController implements Init
         }
 
     }
-    
+
     @GetMapping(path = "/{deviceGuid}/health")
     @ApiOperation(
             value = "Get a device health by device guid",
@@ -245,9 +245,9 @@ public class DeviceRestController extends AbstractRestController implements Init
         Application application = getApplication(applicationId);
 
         ServiceResponse<List<HealthAlert>> deviceResponse = healthAlertService.findAllByTenantApplicationAndDeviceGuid(
-        		tenant, 
-        		application, 
-        		deviceGuid); 
+        		tenant,
+        		application,
+        		deviceGuid);
 
         if (deviceResponse.isOk() && !deviceResponse.getResult().isEmpty()) {
         	List<HealthAlert> result = deviceResponse.getResult();
@@ -257,7 +257,7 @@ public class DeviceRestController extends AbstractRestController implements Init
         }
 
     }
-    
+
     @GetMapping(path = "/{deviceGuid}/health/alerts")
     @ApiOperation(
             value = "List all device health alerts by device guid",
@@ -272,9 +272,9 @@ public class DeviceRestController extends AbstractRestController implements Init
         Application application = getApplication(applicationId);
 
         ServiceResponse<List<HealthAlert>> deviceResponse = healthAlertService.findAllByTenantApplicationAndDeviceGuid(
-        		tenant, 
-        		application, 
-        		deviceGuid); 
+        		tenant,
+        		application,
+        		deviceGuid);
 
         if (deviceResponse.isOk()) {
 			return new DeviceHealthAlertVO().apply(deviceResponse.getResult());
