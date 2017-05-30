@@ -240,13 +240,15 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 		
 		if (serviceResponse.isOk() && !serviceResponse.getResult().isEmpty()) {
 			serviceResponse.getResult().forEach(u -> {
+				String body = MessageFormat.format("{0} - {1}", healthAlert.getSeverity().name(), healthAlert.getDescription());
+				
 				userNotificationService.postNotification(u, UserNotification.buildFresh(u.getEmail(), 
 						MessageFormat.format("Health of device {0}", device.getDeviceId()), 
 						u.getLanguage().getLanguage(), 
 						"text/plain", 
 						Instant.now(), 
 						null, 
-						healthAlert.getDescription()));
+						body));
 				
 			});
 		}
@@ -325,7 +327,8 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 		healthAlertFromDB.setLastChange(Instant.now());
 		HealthAlert updated = healthAlertRepository.save(healthAlertFromDB);
 		
-		sendNotification(tenant, healthAlertFromDB);
+		ServiceResponse<HealthAlert> serviceResponse = getLastHightServerityByDeviceGuid(tenant, application, healthAlertFromDB.getDeviceGuid());
+		sendNotification(tenant, serviceResponse.getResult());
 
 		return ServiceResponseBuilder.<HealthAlert>ok()
 				.withMessage(Messages.HEALTH_ALERT_REMOVED_SUCCESSFULLY.getCode())
@@ -459,6 +462,8 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 				return ServiceResponseBuilder.<HealthAlert> ok()
 							.withResult(HealthAlert.builder()
 									.severity(HealthAlertSeverity.OK)
+									.description("Health of device is ok.")
+									.deviceGuid(deviceGuid)
 									.lastChange(Instant.now())
 									.build())
 							.build();

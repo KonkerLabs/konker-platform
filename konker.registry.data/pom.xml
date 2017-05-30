@@ -49,6 +49,17 @@
             <artifactId>spring-data-redis</artifactId>
             <version>1.7.3.RELEASE</version>
         </dependency>
+        <!-- Thymeleaf -->
+        <dependency>
+            <groupId>org.thymeleaf</groupId>
+            <artifactId>thymeleaf-spring4</artifactId>
+            <version>3.0.1.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>org.thymeleaf</groupId>
+            <artifactId>thymeleaf</artifactId>
+            <version>3.0.1.RELEASE</version>
+        </dependency>
         <!-- Konker -->
         <dependency>
             <groupId>com.konkerlabs</groupId>
