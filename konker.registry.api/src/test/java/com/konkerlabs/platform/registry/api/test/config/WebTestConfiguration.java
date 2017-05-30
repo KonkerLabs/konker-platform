@@ -13,6 +13,7 @@ import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
 import com.konkerlabs.platform.registry.business.services.api.AlertTriggerService;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceConfigSetupService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceCustomDataService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
@@ -123,6 +124,11 @@ public class WebTestConfiguration {
     @Bean
     public HealthAlertService healthAlertService() {
         return Mockito.mock(HealthAlertService.class);
+    }
+
+    @Bean
+    public DeviceCustomDataService deviceCustomDataService() {
+        return Mockito.mock(DeviceCustomDataService.class);
     }
 
 }

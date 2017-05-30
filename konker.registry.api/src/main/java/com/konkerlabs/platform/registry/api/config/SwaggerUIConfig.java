@@ -72,16 +72,17 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
                 .tags(
                         new Tag("alert triggers", "Operations to manage alert triggers"),
                         new Tag("applications", "Operations to list organization applications"),
-                        new Tag("device configs", "Operations to list and edit device configurations"),
+                        new Tag("device configs", "Operations to manage device configurations"),
                         new Tag("device credentials", "Operations to manage device credentials (username, password and URLs)"),
                         new Tag("device models", "Operations to manage device models"),
-                        new Tag("devices", "Operations to list and edit devices"),
+                        new Tag("devices", "Operations to manage devices"),
+                        new Tag("devices custom data", "Operations to manage devices custom data"),
                         new Tag("events", "Operations to query incoming and outgoing device events"),
-                        new Tag("locations", "Operations to list and edit locations"),
+                        new Tag("locations", "Operations to manage locations"),
                         new Tag("rest destinations", "Operations to list organization REST destinations"),
                         new Tag("rest transformations", "Operations to manage REST transformations"),
-                        new Tag("routes", "Operations to list and edit routes"),
-                        new Tag("users", "Operations to list and edit organization users")
+                        new Tag("routes", "Operations tomanage routes"),
+                        new Tag("users", "Operations to manage organization users")
                      )
                 .enableUrlTemplating(false);
 
