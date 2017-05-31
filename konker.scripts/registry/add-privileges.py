@@ -19,8 +19,8 @@ db = client.registry
 def main():
           
     parser = argparse.ArgumentParser()
-    parser.add_argument('-p', type=str, dest='privileges', help='Add privileges common to all roles')
-    parser.add_argument('-sp', type=str, dest='superPrivileges', help='Add privileges just to super user role')
+    parser.add_argument('-p', type=str, dest='privileges', help='Add privileges common to all roles, separate by comma.')
+    parser.add_argument('-sp', type=str, dest='superPrivileges', help='Add privileges just to super user role, separate by comma.')
      
     results = parser.parse_args()
     if results.privileges is not None:
