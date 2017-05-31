@@ -1,6 +1,9 @@
 package com.konkerlabs.platform.registry.idm.domain.repository;
 
 
+import lombok.Builder;
+import lombok.Data;
+import lombok.experimental.Tolerate;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
@@ -13,6 +16,8 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.Date;
 
+@Data
+@Builder
 @Document(collection = "accesstokens")
 public class AccessToken implements Serializable {
 
@@ -45,80 +50,33 @@ public class AccessToken implements Serializable {
     public AccessToken() {
     }
 
-
-    public String tokenId() {
-        return tokenId;
-    }
-
-    public AccessToken tokenId(String tokenId) {
-        this.tokenId = tokenId;
-        return this;
-    }
-
-    public Date createTime() {
-        return createTime;
-    }
-
-
-    public Long version() {
-        return version;
-    }
-
-
+    @Tolerate
     public OAuth2AccessToken token() {
         return SerializationUtils.deserialize(token);
     }
 
+    @Tolerate
     public AccessToken token(OAuth2AccessToken token) {
         this.token = SerializationUtils.serialize(token);
         return this;
     }
 
-    public String authenticationId() {
-        return authenticationId;
-    }
-
-    public AccessToken authenticationId(String authenticationId) {
-        this.authenticationId = authenticationId;
-        return this;
-    }
-
+    @Tolerate
     public OAuth2Authentication authentication() {
         return SerializationUtils.deserialize(authentication);
     }
 
+    @Tolerate
     public AccessToken authentication(OAuth2Authentication authentication) {
         this.authentication = SerializationUtils.serialize(authentication);
         return this;
     }
 
-    public String username() {
-        return username;
-    }
-
+    @Tolerate
     public AccessToken username(String username) {
         this.username = username;
         return this;
     }
-
-    public String clientId() {
-        return clientId;
-    }
-
-    public AccessToken clientId(String clientId) {
-        this.clientId = clientId;
-        return this;
-    }
-
-    public String refreshToken() {
-        return refreshToken;
-    }
-
-    public AccessToken refreshToken(String refreshToken) {
-        this.refreshToken = refreshToken;
-        return this;
-    }
-
 
     @Override
     public String toString() {

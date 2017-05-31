@@ -17,12 +17,7 @@ public class ResourceServer extends ResourceServerConfigurerAdapter {
 
 	public static final String RESOURCE_ID = "registryidm";
 	private static final String[] PUBLIC_RESOURCES = new String[]{
-			"/oauth/authorize",
-			"/oauth/token",
-			"/oauth/check_token",
-			"/oauth/confirm_access",
-			"/oauth/config/error",
-			"/oauth/token_key",
+			"/oauth/**",
 			"/bootstrap/**",
 			"/konker/**",
 			"/bootstrap/**",

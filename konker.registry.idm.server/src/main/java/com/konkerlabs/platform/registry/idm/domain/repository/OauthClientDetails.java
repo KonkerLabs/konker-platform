@@ -34,7 +34,7 @@ public class OauthClientDetails implements Serializable {
     private String resourceIds;
     private String clientSecret;
     private String scope;
-    private String authorizedGrantTypes = "authorization_code,refresh_token";
+    private String authorizedGrantTypes = "authorization_code,refresh_token,client_credentials";
     private String webServerRedirectUri;
     private String authorities;
     private Integer accessTokenValidity;
@@ -46,6 +46,14 @@ public class OauthClientDetails implements Serializable {
     @DBRef
     private Application application;
     private Boolean active;
+
+    public String getName(){
+        return clientId;
+    }
+
+    public void setName(String val){
+        setClientId(val);
+    }
 
     @Tolerate
     public OauthClientDetails() {

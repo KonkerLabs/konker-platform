@@ -11,9 +11,10 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.code.RandomValueAuthorizationCodeServices;
+import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
-
+@Component
 public class MongoAuthorizationCodeServices extends RandomValueAuthorizationCodeServices implements InitializingBean {
 
 
@@ -27,8 +28,7 @@ public class MongoAuthorizationCodeServices extends RandomValueAuthorizationCode
     private AuthorizationCodeRepository authorizationCodeRepository;
 
 
-    public MongoAuthorizationCodeServices() {
-    }
+    public MongoAuthorizationCodeServices() {}
 
 
     @Override

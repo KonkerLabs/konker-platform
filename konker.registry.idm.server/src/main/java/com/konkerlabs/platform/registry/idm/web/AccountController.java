@@ -4,6 +4,7 @@ import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.idm.config.OAuthClientDetailsService;
+import com.konkerlabs.platform.registry.idm.domain.repository.AccessToken;
 import com.konkerlabs.platform.registry.idm.domain.repository.OauthClientDetails;
 import com.konkerlabs.platform.registry.idm.web.form.OauthClientRegistrationForm;
 import org.springframework.beans.BeansException;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Scope;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,6 +39,48 @@ public class AccountController implements ApplicationContextAware {
     @Autowired
     private Tenant tenant;
 
+
+    @PreAuthorize("hasAuthority('LIST_OAUTHCLIENTS_ROOT')")
+    @RequestMapping(value = "/{applicationId}/clients/", method = RequestMethod.GET)
+    public ModelAndView indexAsRoot(@PathVariable("applicationId") String applicationId) {
+        ServiceResponse<List<OauthClientDetails>> clientList =
+                oAuthClientDetailsService.loadAllClients(
+                        Application.builder().name(
+                                applicationId
+                        ).build());
+
+        ModelAndView view = new ModelAndView(
+                String.format("/clients/index", applicationId))
+                .addObject("applicationId", tenant.getDomainName())
+                .addObject("allClients", clientList.getResult());
+        if (clientList.isOk()) {
+            view.addObject("clients", clientList.getResult());
+        }
+
+        return view;
+    }
+
+    @PreAuthorize("hasAuthority('LIST_OAUTHTOKENS_ROOT')")
+    @RequestMapping(value = "/{applicationId}/tokens/", method = RequestMethod.GET)
+    public ModelAndView tokensAsRoot(@PathVariable("applicationId") String applicationId) {
+        ServiceResponse<List<AccessToken>> tokenList =
+                oAuthClientDetailsService.loadAllTokens(
+                        Application.builder().name(
+                                applicationId
+                        ).build());
+
+        ModelAndView view = new ModelAndView(
+                String.format("/tokens/index", applicationId))
+                .addObject("applicationId", tenant.getDomainName())
+                .addObject("allTokens", tokenList.getResult());
+        if (tokenList.isOk()) {
+            view.addObject("tokens", tokenList.getResult());
+        }
+
+        return view;
+    }
+
+    @PreAuthorize("hasAuthority('LIST_OAUTHCLIENTS')")
     @RequestMapping(value = "/{applicationId}/clients/", method = RequestMethod.GET)
     public ModelAndView index(@PathVariable("applicationId") String applicationId) {
         ServiceResponse<List<OauthClientDetails>> clientList =
@@ -56,6 +100,7 @@ public class AccountController implements ApplicationContextAware {
         return view;
     }
 
+    @PreAuthorize("hasAuthority('ADD_OAUTHCLIENTS')")
     @RequestMapping(value = "/{applicationId}/clients/new", method = RequestMethod.GET)
     public ModelAndView newClient(
             @PathVariable("applicationId") String applicationId
@@ -68,14 +113,15 @@ public class AccountController implements ApplicationContextAware {
         return view;
     }
 
-    @RequestMapping(value = "/{applicationId}/clients/{clientId}/show", method = RequestMethod.GET)
+    @PreAuthorize("hasAuthority('SHOW_OAUTHTOKENS')")
+    @RequestMapping(value = "/{applicationId}/tokens/{tokenId}/show", method = RequestMethod.GET)
     public ModelAndView showClient(
             @PathVariable("applicationId") String applicationId,
             @PathVariable("clientId") String clientId
     ) {
 
         ServiceResponse<OauthClientDetails> client =
-                oAuthClientDetailsService.loadById(clientId);
+                oAuthClientDetailsService.loadClientById(tenant, clientId);
 
         ModelAndView view = new ModelAndView("clients/form")
                 .addObject("oauthClient", client.getResult())
@@ -85,6 +131,55 @@ public class AccountController implements ApplicationContextAware {
         return view;
     }
 
+    @PreAuthorize("hasAuthority('SHOW_OAUTHCLIENTS')")
+    @RequestMapping(value = "/{applicationId}/clients/{clientId}/show", method = RequestMethod.GET)
+    public ModelAndView showToken(
+            @PathVariable("applicationId") String applicationId,
+            @PathVariable("tokenId") String tokenId
+    ) {
+
+        ServiceResponse<AccessToken> token =
+                oAuthClientDetailsService.loadTokenById(tenant, tokenId);
+
+        ModelAndView view = new ModelAndView("tokens/form")
+                .addObject("oauthToken", token.getResult())
+                .addObject("applicationId", tenant.getDomainName());
+        return view;
+    }
+
+    @PreAuthorize("hasAuthority('SHOW_OAUTHCLIENTS_ROOT')")
+    @RequestMapping(value = "/{applicationId}/clients/{clientId}/show", method = RequestMethod.GET)
+    public ModelAndView showClientsAsRoot(
+            @PathVariable("applicationId") String applicationId,
+            @PathVariable("tokenId") String tokenId
+    ) {
+
+        ServiceResponse<AccessToken> token =
+                oAuthClientDetailsService.loadTokenByIdAsRoot(tokenId);
+
+        ModelAndView view = new ModelAndView("tokens/form")
+                .addObject("oauthToken", token.getResult())
+                .addObject("applicationId", tenant.getDomainName());
+        return view;
+    }
+
+    @PreAuthorize("hasAuthority('SHOW_OAUTHTOKENS_ROOT')")
+    @RequestMapping(value = "/{applicationId}/clients/{tokenId}/show", method = RequestMethod.GET)
+    public ModelAndView showTokenAsRoot(
+            @PathVariable("applicationId") String applicationId,
+            @PathVariable("tokenId") String tokenId
+    ) {
+
+        ServiceResponse<AccessToken> token =
+                oAuthClientDetailsService.loadTokenByIdAsRoot(tokenId);
+
+        ModelAndView view = new ModelAndView("tokens/form")
+                .addObject("oauthToken", token.getResult())
+                .addObject("applicationId", tenant.getDomainName());
+        return view;
+    }
+
+    @PreAuthorize("hasAuthority('ADD_OAUTHCLIENTS')")
     @RequestMapping(value = "/{applicationId}/clients/saveClient", method = RequestMethod.POST)
     public ModelAndView saveClient(
             @PathVariable("applicationId") String applicationId,
@@ -92,7 +187,7 @@ public class AccountController implements ApplicationContextAware {
             RedirectAttributes redirectAttributes, Locale locale
     ) {
 
-        return doSave(
+        return doSaveClient(
                 () -> oAuthClientDetailsService.saveClient(
                         tenant,
                         Application.builder().name(applicationId).build(),
@@ -102,15 +197,92 @@ public class AccountController implements ApplicationContextAware {
                 redirectAttributes, "");
     }
 
-    @RequestMapping(value = "/{applicationId}/clients/{clientId}/remove", method = RequestMethod.GET)
+    @PreAuthorize("hasAuthority('ADD_OAUTHCLIENTS_ROOT')")
+    @RequestMapping(value = "/{applicationId}/clients/saveClient", method = RequestMethod.POST)
+    public ModelAndView saveClientAsRoot(
+            @PathVariable("applicationId") String applicationId,
+            @PathVariable("tenantDomainName") String tenantDomainName,
+            @ModelAttribute("oauthClient") OauthClientRegistrationForm form,
+            RedirectAttributes redirectAttributes, Locale locale
+    ) {
+
+        return doSaveClient(
+                () -> oAuthClientDetailsService.saveClientAsRoot(
+                        tenantDomainName,
+                        Application.builder().name(applicationId).build(),
+                        form.toModel()),
+                Application.builder().name(applicationId).build(),
+                form, locale,
+                redirectAttributes, "");
+    }
+
+    @PreAuthorize("hasAuthority('REMOVE_OAUTHCLIENTS')")
+    @RequestMapping(value = "/{applicationId}/clients/{clientId}/deleteClient", method = RequestMethod.GET)
     public ModelAndView removeClient(
             @PathVariable("applicationId") String applicationId,
             @PathVariable("clientId") String clientId,
-            @ModelAttribute("clientForm") OauthClientRegistrationForm form) {
+            @ModelAttribute("clientForm") OauthClientRegistrationForm form,
+            RedirectAttributes redirectAttributes, Locale locale) {
 
 
-        ModelAndView view = new ModelAndView("clients/form");
-        return view;
+        return doRemoveClient(
+                () -> oAuthClientDetailsService.deleteClient(
+                        tenant,
+                        clientId),
+                Application.builder().name(applicationId).build(),
+                form, locale,
+                redirectAttributes, "");
+    }
+
+    @PreAuthorize("hasAuthority('REMOVE_OAUTHCLIENTS_ROOT')")
+    @RequestMapping(value = "/{applicationId}/clients/{clientId}", method = RequestMethod.DELETE)
+    public ModelAndView removeClientAsRoot(
+            @PathVariable("applicationId") String applicationId,
+            @PathVariable("clientId") String clientId,
+            @ModelAttribute("clientForm") OauthClientRegistrationForm form,
+            RedirectAttributes redirectAttributes, Locale locale) {
+
+        ServiceResponse<OauthClientDetails> deletionResult =
+                oAuthClientDetailsService.deleteClientAsRoot(clientId);
+
+        return doRemoveClient(
+                () -> oAuthClientDetailsService.deleteClientAsRoot(
+                        clientId),
+                Application.builder().name(applicationId).build(),
+                form, locale,
+                redirectAttributes, "");
+    }
+
+    @PreAuthorize("hasAuthority('REMOVE_OAUTHTOKENS')")
+    @RequestMapping(value = "/{applicationId}/clients/{clientId}", method = RequestMethod.DELETE)
+    public ModelAndView removeToken(
+            @PathVariable("applicationId") String applicationId,
+            @PathVariable("clientId") String clientId,
+            @ModelAttribute("clientForm") OauthClientRegistrationForm form,
+            RedirectAttributes redirectAttributes, Locale locale) {
+
+        return doRemoveToken(
+                () -> oAuthClientDetailsService.deleteTokenAsRoot(clientId),
+                Application.builder().name(applicationId).build(),
+                form, locale,
+                redirectAttributes, "");
+    }
+
+    @PreAuthorize("hasAuthority('REMOVE_OAUTHTOKENS_ROOT')")
+    @RequestMapping(value = "/{applicationId}/tokens/{tokenId}", method = RequestMethod.DELETE)
+    public ModelAndView removeTokenAsRoot(
+            @PathVariable("applicationId") String applicationId,
+            @PathVariable("clientId") String clientId,
+            @ModelAttribute("clientForm") OauthClientRegistrationForm form,
+            RedirectAttributes redirectAttributes, Locale locale) {
+
+        return doRemoveToken(
+                () -> oAuthClientDetailsService.deleteToken(
+                        tenant,
+                        clientId),
+                Application.builder().name(applicationId).build(),
+                form, locale,
+                redirectAttributes, "");
     }
 
     @Override
@@ -118,10 +290,68 @@ public class AccountController implements ApplicationContextAware {
         this.applicationContext = applicationContext;
     }
 
-    private ModelAndView doSave(Supplier<ServiceResponse<OauthClientDetails>> responseSupplier,
-                                Application application,
-                                OauthClientRegistrationForm registrationForm, Locale locale,
-                                RedirectAttributes redirectAttributes, String action) {
+    private ModelAndView doRemoveClient(Supplier<ServiceResponse<OauthClientDetails>> responseSupplier,
+                                        Application application,
+                                        OauthClientRegistrationForm registrationForm, Locale locale,
+                                        RedirectAttributes redirectAttributes, String action) {
+
+        ServiceResponse<OauthClientDetails> serviceResponse = responseSupplier.get();
+
+        if (serviceResponse.getStatus().equals(ServiceResponse.Status.OK)) {
+            redirectAttributes.addFlashAttribute("message",
+                    applicationContext.getMessage(OAuthClientDetailsService.Messages.CLIENT_REMOVED_SUCCESSFULLY.getCode(),
+                            null, locale));
+            return new ModelAndView(MessageFormat.format("redirect:/account/{0}/clients/",
+                    application.getName(),
+                    serviceResponse.getResult().getClientId()));
+        } else {
+            List<String> messages = serviceResponse.getResponseMessages()
+                    .entrySet().stream()
+                    .map(message -> applicationContext.getMessage(message.getKey(), message.getValue(), locale))
+                    .collect(Collectors.toList());
+            return new ModelAndView("clients/form").addObject("errors", messages)
+                    .addObject("oauthClient", new OauthClientRegistrationForm().toModel())
+                    .addObject("applicationId", tenant.getDomainName())
+                    .addObject("action",
+                            MessageFormat.format("/account/{0}/clients/saveClient", tenant.getDomainName()))
+                    .addObject("method", action);
+        }
+
+    }
+
+    private ModelAndView doRemoveToken(Supplier<ServiceResponse<AccessToken>> responseSupplier,
+                                        Application application,
+                                        OauthClientRegistrationForm registrationForm, Locale locale,
+                                        RedirectAttributes redirectAttributes, String action) {
+
+        ServiceResponse<AccessToken> serviceResponse = responseSupplier.get();
+
+        if (serviceResponse.getStatus().equals(ServiceResponse.Status.OK)) {
+            redirectAttributes.addFlashAttribute("message",
+                    applicationContext.getMessage(OAuthClientDetailsService.Messages.TOKEN_REMOVED_SUCCESSFULLY.getCode(),
+                            null, locale));
+            return new ModelAndView(MessageFormat.format("redirect:/account/{0}/tokens/",
+                    application.getName(),
+                    serviceResponse.getResult().getTokenId()));
+        } else {
+            List<String> messages = serviceResponse.getResponseMessages()
+                    .entrySet().stream()
+                    .map(message -> applicationContext.getMessage(message.getKey(), message.getValue(), locale))
+                    .collect(Collectors.toList());
+            return new ModelAndView("clients/form").addObject("errors", messages)
+                    .addObject("oauthClient", new OauthClientRegistrationForm().toModel())
+                    .addObject("applicationId", tenant.getDomainName())
+                    .addObject("action",
+                            MessageFormat.format("/account/{0}/clients/saveClient", tenant.getDomainName()))
+                    .addObject("method", action);
+        }
+
+    }
+
+    private ModelAndView doSaveClient(Supplier<ServiceResponse<OauthClientDetails>> responseSupplier,
+                                      Application application,
+                                      OauthClientRegistrationForm registrationForm, Locale locale,
+                                      RedirectAttributes redirectAttributes, String action) {
 
         ServiceResponse<OauthClientDetails> serviceResponse = responseSupplier.get();
 

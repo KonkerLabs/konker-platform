@@ -1,7 +1,6 @@
 package com.konkerlabs.platform.registry.idm.config;
 
 import com.konkerlabs.platform.registry.idm.domain.service.MongoTokenStore;
-import com.konkerlabs.platform.security.exceptions.SecurityException;
 import com.konkerlabs.platform.security.managers.PasswordManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,15 +19,12 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
-import org.springframework.security.oauth2.provider.ClientDetailsService;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 
 @Configuration
@@ -47,7 +43,10 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 
 	@Autowired
 	@Qualifier("oauth2ClientDetails")
-	private ClientDetailsService clientDetailsService;
+	private OAuthClientDetailsService clientDetailsService;
+	//private ClientDetailsService clientDetailsService;
+
+
 
 	@Override
 	public void configure(AuthorizationServerEndpointsConfigurer endpoints)
@@ -79,8 +78,10 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 			@Override
 			public boolean matches(CharSequence rawPassword, String encodedPassword) {
 				try {
-					return new PasswordManager().validatePassword(rawPassword.toString(), encodedPassword);
-				} catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+
+					return clientDetailsService.validatePassword(rawPassword.toString(), encodedPassword);
+					//return new PasswordManager().validatePassword(rawPassword.toString(), encodedPassword);
+				} catch (Exception e) {
 					LOGGER.error(e.getMessage(), e);
 					return false;
 				}
@@ -90,7 +91,7 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 			public String encode(CharSequence rawPassword) {
 				try {
 					return new PasswordManager().createHash(rawPassword.toString());
-				} catch (SecurityException e) {
+				} catch (Exception e) {
 					LOGGER.error(e.getMessage(), e);
 					return "";
 				}

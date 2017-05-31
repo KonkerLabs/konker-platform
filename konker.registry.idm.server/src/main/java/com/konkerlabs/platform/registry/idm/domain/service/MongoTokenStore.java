@@ -70,15 +70,24 @@ public class MongoTokenStore implements TokenStore, InitializingBean {
         LOG.debug("Call storeAccessToken, token = {}, authentication = {}", token, authentication);
         String refreshToken = token.getRefreshToken() != null ? token.getRefreshToken().getValue() : null;
 
-        AccessToken accessToken = new AccessToken()
-                .tokenId(extractTokenKey(token.getValue()))
-                .token(token)
-                .authenticationId(authenticationKeyGenerator.extractKey(authentication))
-                .username(authentication.isClientOnly() ? null : authentication.getName())
-                .clientId(authentication.getOAuth2Request().getClientId())
-                .authentication(authentication)
-                .refreshToken(extractTokenKey(refreshToken));
+        AccessToken accessToken = tokenRepository.findOne(extractTokenKey(token.getValue()));
+        if (accessToken != null) {
+            accessToken.token(token);
+            accessToken.setAuthenticationId(authenticationKeyGenerator.extractKey(authentication));
+            accessToken.authentication(authentication);
+            accessToken.setRefreshToken(extractTokenKey(refreshToken));
+        } else {
+            accessToken = AccessToken.builder()
+                    .tokenId(extractTokenKey(token.getValue()))
+                    .authenticationId(authenticationKeyGenerator.extractKey(authentication))
+                    .username(authentication.isClientOnly() ? null : authentication.getName())
+                    .clientId(authentication.getOAuth2Request().getClientId())
+                    .refreshToken(extractTokenKey(refreshToken))
+                    .build();
 
+            accessToken.token(token);
+            accessToken.authentication(authentication);
+        }
         tokenRepository.save(accessToken);
     }
 
