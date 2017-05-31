@@ -4,7 +4,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestTemplate;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -32,5 +34,10 @@ public class IntegrationConfig {
 		setTimeoutDefault(Integer.parseInt(config.getObjectList("integration.timeout").get(0).withFallback(defaultConfListValue).get("default").render()));
 		setEnrichment(Integer.parseInt(config.getObjectList("integration.timeout").get(0).withFallback(defaultConfListValue).get("enrichment").render()));
 	}
+
+    @Bean
+    public RestTemplate enrichmentRestTemplate() {
+        return new RestTemplate();
+    }
 
 }

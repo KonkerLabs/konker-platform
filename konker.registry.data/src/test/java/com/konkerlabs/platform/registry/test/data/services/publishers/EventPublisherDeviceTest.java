@@ -46,7 +46,7 @@ import com.konkerlabs.platform.registry.config.PubServerConfig;
 import com.konkerlabs.platform.registry.data.services.api.DeviceLogEventService;
 import com.konkerlabs.platform.registry.data.services.publishers.EventPublisherDevice;
 import com.konkerlabs.platform.registry.data.services.publishers.api.EventPublisher;
-import com.konkerlabs.platform.registry.integration.gateways.MqttMessageGateway;
+import com.konkerlabs.platform.registry.integration.gateways.RabbitGateway;
 import com.konkerlabs.platform.registry.test.data.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.data.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.data.base.MongoTestConfiguration;
@@ -68,9 +68,6 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
     private static final String REGISTERED_TENANT_DOMAIN = "konker";
     private static final String REGISTERED_DEVICE_GUID = "7d51c242-81db-11e6-a8c2-0746f010e945";
 
-    private static final String MQTT_OUTGOING_TOPIC_TEMPLATE = "sub/{0}/{1}";
-    private static final String MQTT_OUTGOING_TOPIC_DATA_TEMPLATE = "data/{0}/sub/{1}";
-
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
@@ -84,7 +81,7 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
     private ApplicationRepository applicationRepository;
 
     @Autowired
-    private MqttMessageGateway mqttMessageGateway;
+    private RabbitGateway rabbitGateway;
 
     @Autowired
     @Qualifier("device")
@@ -253,7 +250,7 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
 
         subject.send(event,destinationUri,data,device.getTenant(),device.getApplication());
 
-        verify(mqttMessageGateway,never()).send(anyString(),anyString());
+        verify(rabbitGateway,never()).sendEvent(anyString(), anyString(), anyString());
         verify(deviceLogEventService,never()).logIncomingEvent(Mockito.any() , Mockito.any());
         verify(deviceLogEventService,never()).logOutgoingEvent(Mockito.any() , Mockito.any());
     }
@@ -273,21 +270,12 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
 
         device = deviceRegisterService.findByTenantDomainNameAndDeviceGuid(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_GUID);
 
-        String expectedMqttTopic = MessageFormat
-            .format(MQTT_OUTGOING_TOPIC_TEMPLATE, device.getApiKey(),
-                    data.get(DEVICE_MQTT_CHANNEL));
-
-        String expectedMqttDataTopic = MessageFormat
-            .format(MQTT_OUTGOING_TOPIC_DATA_TEMPLATE, device.getApiKey(),
-                    data.get(DEVICE_MQTT_CHANNEL));
-
         assertThat(event.getIncoming().getChannel(), equalTo(INPUT_CHANNEL));
         subject.send(event,destinationUri,data,device.getTenant(),device.getApplication());
 
-        InOrder inOrder = inOrder(mqttMessageGateway,deviceLogEventService);
+        InOrder inOrder = inOrder(rabbitGateway,deviceLogEventService);
 
-        inOrder.verify(mqttMessageGateway).send(event.getPayload(),expectedMqttTopic);
-        inOrder.verify(mqttMessageGateway).send(event.getPayload(),expectedMqttDataTopic);
+        inOrder.verify(rabbitGateway).sendEvent(device.getApiKey(),  data.get(DEVICE_MQTT_CHANNEL), event.getPayload());
         inOrder.verify(deviceLogEventService).logOutgoingEvent(eq(device), eq(event));
     }
 

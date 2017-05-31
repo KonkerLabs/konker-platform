@@ -20,7 +20,7 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterServ
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.data.services.api.DeviceLogEventService;
 import com.konkerlabs.platform.registry.data.services.publishers.api.EventPublisher;
-import com.konkerlabs.platform.registry.integration.gateways.MqttMessageGateway;
+import com.konkerlabs.platform.registry.integration.gateways.RabbitGateway;
 
 @Service("device")
 @Scope(BeanDefinition.SCOPE_SINGLETON)
@@ -30,20 +30,16 @@ public class EventPublisherDevice implements EventPublisher {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EventPublisherDevice.class);
 
-    private static final String MQTT_OUTGOING_TOPIC_TEMPLATE = "sub/{0}/{1}";
-
-    private static final String MQTT_OUTGOING_TOPIC_DATA_TEMPLATE = "data/{0}/sub/{1}";
-
     public static final String DEVICE_MQTT_CHANNEL = "channel";
 
-    private MqttMessageGateway mqttMessageGateway;
+    private RabbitGateway rabbitGateway;
     private DeviceRegisterService deviceRegisterService;
     private DeviceLogEventService deviceLogEventService;
 
     @Autowired
-    public EventPublisherDevice(MqttMessageGateway mqttMessageGateway,
+    public EventPublisherDevice(RabbitGateway rabbitGateway,
                                 DeviceRegisterService deviceRegisterService) {
-        this.mqttMessageGateway = mqttMessageGateway;
+        this.rabbitGateway = rabbitGateway;
         this.deviceRegisterService = deviceRegisterService;
     }
 
@@ -90,15 +86,7 @@ public class EventPublisherDevice implements EventPublisher {
                             .build()
             );
 
-            // pub
-            String destinationTopic = MessageFormat.format(MQTT_OUTGOING_TOPIC_TEMPLATE,
-                    outgoingDevice.getApiKey(), data.get(DEVICE_MQTT_CHANNEL));
-            mqttMessageGateway.send(outgoingEvent.getPayload(), destinationTopic);
-
-            // data/pub
-            String destinationDataTopic = MessageFormat.format(MQTT_OUTGOING_TOPIC_DATA_TEMPLATE,
-                    outgoingDevice.getApiKey(), data.get(DEVICE_MQTT_CHANNEL));
-            mqttMessageGateway.send(outgoingEvent.getPayload(), destinationDataTopic);
+            rabbitGateway.sendEvent(outgoingDevice.getApiKey(), data.get(DEVICE_MQTT_CHANNEL), outgoingEvent.getPayload());
 
             ServiceResponse<Event> response = deviceLogEventService.logOutgoingEvent(outgoingDevice, outgoingEvent);
 

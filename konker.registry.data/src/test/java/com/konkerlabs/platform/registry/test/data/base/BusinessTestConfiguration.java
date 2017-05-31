@@ -5,7 +5,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
-import com.konkerlabs.platform.registry.integration.gateways.MqttMessageGateway;
+import com.konkerlabs.platform.registry.integration.gateways.RabbitGateway;
 
 import static org.mockito.Mockito.mock;
 
@@ -20,8 +20,8 @@ import static org.mockito.Mockito.mock;
 public class BusinessTestConfiguration {
 
     @Bean
-    public MqttMessageGateway mqttMessageGateway() {
-        return mock(MqttMessageGateway.class);
+    public RabbitGateway rabbitGateway() {
+        return mock(RabbitGateway.class);
     }
 
     @Bean
