@@ -17,25 +17,28 @@ db = client.registry
 
 
 def main():
+          
     parser = argparse.ArgumentParser()
-    parser.add_argument('-a', action='append', dest='privileges',
-                    default=[], help='Add privileges common to all roles')
-    parser.add_argument('-s', action='append', dest='superPrivileges',
-                    default=[], help='Add privileges just to super user role')
-    
+    parser.add_argument('-p', type=str, dest='privileges', help='Add privileges common to all roles')
+    parser.add_argument('-sp', type=str, dest='superPrivileges', help='Add privileges just to super user role')
+     
     results = parser.parse_args()
-    for priv in results.privileges:
-        save_privilege(priv)
-        update_role('ROLE_IOT_USER', priv)
-        update_role('ROLE_SUPER_USER', priv)
+    if results.privileges is not None:
+        for priv in results.privileges.split(','):
+            save_privilege(priv)
+            update_role('ROLE_IOT_USER', priv)
+            update_role('ROLE_SUPER_USER', priv)
+             
+            if priv.startswith('LIST') or priv.startswith('SHOW') or priv.startswith('VIEW') :
+                update_role('ROLE_IOT_READ_ONLY', priv) 
+     
+    if results.superPrivileges is not None:     
+        for superPriv in results.superPrivileges.split(','):
+            save_privilege(superPriv)
+            update_role('ROLE_SUPER_USER', superPriv)
         
-        if priv.startswith('LIST') or priv.startswith('SHOW') or priv.startswith('VIEW') :
-            update_role('ROLE_IOT_READ_ONLY', priv) 
     
-    for superPriv in results.superPrivileges:
-        save_privilege(superPriv)
-        update_role('ROLE_SUPER_USER', superPriv)
-    
+     
     print "Finish"
     
 def update_role(roleName, privilege):
