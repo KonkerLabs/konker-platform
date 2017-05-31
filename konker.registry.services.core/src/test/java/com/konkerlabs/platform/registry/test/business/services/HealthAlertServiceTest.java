@@ -35,11 +35,13 @@ import com.konkerlabs.platform.registry.business.services.api.HealthAlertService
 import com.konkerlabs.platform.registry.business.services.api.HealthAlertService.Messages;
 import com.konkerlabs.platform.registry.business.services.api.HealthAlertService.Validations;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.config.EmailConfig;
 import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.SpringMailTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -47,7 +49,9 @@ import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
         MongoTestConfiguration.class,
         BusinessTestConfiguration.class,
 		PubServerConfig.class,
-        EventStorageConfig.class})
+        EventStorageConfig.class,
+        SpringMailTestConfiguration.class,
+        EmailConfig.class})
 public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
 
@@ -106,7 +110,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     			.id("67014de6-81db-11e6-a5bc-3f99b78823c9")
     			.guid("7d51c242-81db-11e6-a8c2-0746f976f224")
     			.description("Device sem enviar mensagem por mais de 10 minutos")
-    			.severity(HealthAlertSeverity.FAIL)
+    			.severity(HealthAlertSeverity.WARN)
     			.type(HealthAlertType.SILENCE)
     			.registrationDate(Instant.ofEpochMilli(1453320973747l))
     			.deviceGuid(DEVICE_GUID)
@@ -119,7 +123,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     			.id("67014de6-81db-11e6-a5bc-3f99b788249c")
 				.guid("7d51c242-81db-11e6-a8c2-0746f976f223")
 				.description("Device sem enviar mensagem por mais de 5 minutos")
-    			.severity(HealthAlertSeverity.WARN)
+    			.severity(HealthAlertSeverity.FAIL)
     			.type(HealthAlertType.SILENCE)
     			.registrationDate(Instant.ofEpochMilli(1453320973747l))
     			.deviceGuid(DEVICE_GUID)
@@ -450,6 +454,17 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     	assertThat(response, hasErrorMessage(DeviceRegisterService.Validations.DEVICE_GUID_NULL.getCode()));
     }
+    
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json"})
+    public void shouldReturnHealthNotExistFindAllHealthAlertByTenantAppDeviceGuid() throws Exception {
+    	ServiceResponse<List<HealthAlert>> response = healthAlertService.findAllByTenantApplicationAndDeviceGuid(
+    			currentTenant,
+    			application,
+    			"7d51c242-81db-11e6-a8c2-0746f010e949");
+
+    	assertThat(response, hasErrorMessage(Validations.HEALTH_ALERT_DOES_NOT_EXIST.getCode()));
+    }
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json", "/fixtures/devices.json"})
@@ -604,6 +619,51 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
         healthAlerts = healthAlertService.findAllByTenantAndApplication(currentTenant, application).getResult();
         assertThat(healthAlerts.size(), equalTo(0));
+    }
+    
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json"})
+    public void shouldReturnTenantNullGetLastHightSeverity() throws Exception {
+    	ServiceResponse<HealthAlert> response = healthAlertService.getLastHightServerityByDeviceGuid(
+    			null,
+    			application,
+    			healthAlert.getDeviceGuid());
+
+    	assertThat(response, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json"})
+    public void shouldReturnAppNullGetLastHightSeverity() throws Exception {
+    	ServiceResponse<HealthAlert> response = healthAlertService.getLastHightServerityByDeviceGuid(
+    			currentTenant,
+    			null,
+    			healthAlert.getDeviceGuid());
+
+    	assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json"})
+    public void shouldReturnDeviceNullGetLastHightSeverity() throws Exception {
+    	ServiceResponse<HealthAlert> response = healthAlertService.getLastHightServerityByDeviceGuid(
+    			currentTenant,
+    			application,
+    			null);
+
+    	assertThat(response, hasErrorMessage(DeviceRegisterService.Validations.DEVICE_GUID_NULL.getCode()));
+    }
+    
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json", "/fixtures/devices.json"})
+    public void shouldGetLastHightSeverity() throws Exception {
+    	ServiceResponse<HealthAlert> response = healthAlertService.getLastHightServerityByDeviceGuid(
+    			currentTenant,
+    			application,
+    			healthAlert.getDeviceGuid());
+
+    	assertThat(response, isResponseOk());
+    	assertThat(response.getResult(), equalTo(tempHealthAlert));
     }
 
 }

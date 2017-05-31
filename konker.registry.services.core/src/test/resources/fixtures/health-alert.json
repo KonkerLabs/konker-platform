@@ -13,7 +13,7 @@
         "$ref" : "applications"
       },
       "description" : "Device sem enviar mensagem por mais de 10 minutos",
-      "severity" : "FAIL",
+      "severity" : "WARN",
       "type" : "SILENCE",
       "registrationDate" : 1453320973747,
       "deviceGuid" : "7d51c242-81db-11e6-a8c2-0746f010e945",
@@ -33,7 +33,7 @@
         "$ref" : "applications"
       },
       "description" : "Device sem enviar mensagem por mais de 5 minutos",
-      "severity" : "WARN",
+      "severity" : "FAIL",
       "type" : "SILENCE",
       "registrationDate" : 1453320973747,
       "deviceGuid" : "7d51c242-81db-11e6-a8c2-0746f010e945",

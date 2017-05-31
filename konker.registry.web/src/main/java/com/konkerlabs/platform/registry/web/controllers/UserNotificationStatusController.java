@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.web.services.api.UserNotificationService;
+import com.konkerlabs.platform.registry.business.services.api.UserNotificationService;
 
 @Controller
 @RequestMapping("/notification-status")
