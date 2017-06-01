@@ -11,6 +11,7 @@ import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 @Service
 public class DeviceEventRabbitEndpoint {
@@ -39,6 +40,16 @@ public class DeviceEventRabbitEndpoint {
         String apiKey = (String) properties.getHeaders().get(RabbitMQConfig.MSG_HEADER_APIKEY);
         String channel = (String) properties.getHeaders().get(RabbitMQConfig.MSG_HEADER_CHANNEL);
         String payload = new String(message.getBody());
+
+        if (!StringUtils.hasText(apiKey)) {
+            LOGGER.error("Apikey not found.");
+            return;
+        }
+        if (!StringUtils.hasText(channel)) {
+            LOGGER.error("Channel not found.");
+            return;
+        }
+
 
         try {
             deviceEventProcessor.process(apiKey, channel, payload);

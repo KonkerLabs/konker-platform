@@ -9,6 +9,7 @@ import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.services.api.DeviceConfigSetupService;
@@ -31,6 +32,18 @@ public class DeviceConfigRabbitEndpoint {
     @Autowired
     private DeviceRegisterService deviceRegisterService;
 
+    public void setRabbitGateway(RabbitGateway rabbitGateway) {
+        this.rabbitGateway = rabbitGateway;
+    }
+
+    public void setDeviceConfigSetupService(DeviceConfigSetupService deviceConfigSetupService) {
+        this.deviceConfigSetupService = deviceConfigSetupService;
+    }
+
+    public void setDeviceRegisterService(DeviceRegisterService deviceRegisterService) {
+        this.deviceRegisterService = deviceRegisterService;
+    }
+
     @RabbitListener(queues = "mgmt.config.pub")
     public void onConfigPub(Message message) {
 
@@ -44,6 +57,11 @@ public class DeviceConfigRabbitEndpoint {
         }
 
         String apiKey = (String) properties.getHeaders().get(RabbitMQConfig.MSG_HEADER_APIKEY);
+        if (!StringUtils.hasText(apiKey)) {
+            LOGGER.error("Apikey not found.");
+            return;
+        }
+
 		Device device = deviceRegisterService.findByApiKey(apiKey);
 
         if (!Optional.ofNullable(device).isPresent()) {
@@ -57,7 +75,7 @@ public class DeviceConfigRabbitEndpoint {
         				device.getDeviceModel(),
         				device.getLocation());
 
-        String config = Optional.ofNullable(serviceResponse.getResult()).orElse(" { } ");
+        String config = Optional.ofNullable(serviceResponse.getResult()).orElse("{ }");
 
         rabbitGateway.sendConfig(apiKey, config);
 

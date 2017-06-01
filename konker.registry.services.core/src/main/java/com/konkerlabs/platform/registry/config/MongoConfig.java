@@ -1,6 +1,5 @@
 package com.konkerlabs.platform.registry.config;
 
-import java.net.UnknownHostException;
 import java.util.*;
 
 import org.slf4j.Logger;

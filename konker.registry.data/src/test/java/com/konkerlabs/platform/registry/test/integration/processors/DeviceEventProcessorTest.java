@@ -44,14 +44,14 @@ import com.konkerlabs.platform.registry.data.services.api.DeviceLogEventService;
 import com.konkerlabs.platform.registry.data.services.routes.api.EventRouteExecutor;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
 import com.konkerlabs.platform.registry.test.data.base.BusinessTestConfiguration;
-import com.konkerlabs.platform.registry.test.data.base.IntegrationLayerTestContext;
+import com.konkerlabs.platform.registry.test.data.base.IntegrationTestConfiguration;
 import com.konkerlabs.platform.registry.test.data.base.MongoTestConfiguration;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
         MongoTestConfiguration.class,
         BusinessTestConfiguration.class,
-        IntegrationLayerTestContext.class,
+        IntegrationTestConfiguration.class,
         DeviceEventProcessorTest.BusinessLayerConfiguration.class,
         RedisConfig.class,
         EventStorageConfig.class
