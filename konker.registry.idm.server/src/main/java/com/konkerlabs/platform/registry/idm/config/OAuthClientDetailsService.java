@@ -236,7 +236,7 @@ public class OAuthClientDetailsService implements ClientDetailsService {
                     .withMessage(Validations.INVALID_DETAILS.getCode()).build();
         }
         OauthClientDetails oauthClientDetails =
-                oauthClientDetailRepository.findOne(fromDB.clientId());
+                oauthClientDetailRepository.findOne(fromDB.getClientId());
 
         if(!Optional.ofNullable(oauthClientDetails).isPresent()){
             return ServiceResponseBuilder.<AccessToken>error()
