@@ -228,7 +228,8 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 		healthAlert.setLastChange(now);
 		HealthAlert save = healthAlertRepository.save(healthAlert);
 		
-		sendNotification(tenant, healthAlert);
+		ServiceResponse<HealthAlert> serviceResponse = getLastHightServerityByDeviceGuid(tenant, application, healthAlert.getDeviceGuid());
+		sendNotification(tenant, serviceResponse.getResult());
 		
 		LOGGER.info("HealthAlert created. Guid: {}", save.getGuid(), tenant.toURI(), tenant.getLogLevel());
 		return ServiceResponseBuilder.<HealthAlert>ok().withResult(save).build();
