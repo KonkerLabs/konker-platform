@@ -19,6 +19,7 @@ public class Tenant implements URIDealer {
     private String domainName;
     private String dataApiDomain; // subscrive and publish events API domain name
     private LogLevel logLevel = LogLevel.WARNING;
+    private Long devicesLimit;
 
     public static final String URI_SCHEME = "tenant";
 

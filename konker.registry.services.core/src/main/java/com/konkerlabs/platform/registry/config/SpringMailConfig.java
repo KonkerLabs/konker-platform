@@ -60,7 +60,7 @@ public class SpringMailConfig implements ApplicationContextAware, EnvironmentAwa
 	}
 	
 	@Bean
-	public TemplateEngine emailTemplateEngine() {
+	public SpringTemplateEngine emailTemplateEngine() {
 		final SpringTemplateEngine templateEngine = new SpringTemplateEngine();
         templateEngine.addTemplateResolver(textTemplateResolver());
         templateEngine.addTemplateResolver(htmlTemplateResolver());

@@ -1,54 +1,72 @@
-function getSegments(data) {
-    var segments = [];
+function DataFilter(data) {
 
-    for (var i = 1; i < data.length; i++) {
-        segments.push(data[i - 1]["timestamp"] - data[i]["timestamp"]);
-    }
+	var obj = {};
+	var segments;
+	var outliers;
 
-    segments.sort(function(a,b) { return a - b; });
+	function getSegments(data) {
+	    var segments = [];
 
-    return segments;
-}
+	    for (var i = 1; i < data.length; i++) {
+	        segments.push(data[i - 1]["timestamp"] - data[i]["timestamp"]);
+	    }
 
-function getOutlierLimit(values) {
-    var median = d3.median(values);
-    var q3 = d3.quantile(values, 0.75);
+	    segments.sort(function(a,b) { return a - b; });
 
-    if (values.length < 10) {
-        // no outliers: small sample
-        outlier = d3.max(values) + median; 
-    } else {
-        outlier = median + 10.0 * q3;
-    }
+	    return segments;
+	};
 
-    return outlier;
-}
+	function getOutlierLimit(values) {
+	    var median = d3.median(values);
+	    var q3 = d3.quantile(values, 0.75);
 
-function data_filter(data) {
-    var segments = getSegments(data);
-    var outlierLimit = getOutlierLimit(segments);
-    return filter(outlierLimit, data);
-}
+	    if (values.length < 10) {
+	        // no outliers: small sample
+	        outlier = d3.max(values) + median;
+	    } else {
+	        outlier = median + 10.0 * q3;
+	    }
 
-function filter(outlierLimit, data) {
-    var result = []
-    var set = [];
+	    return outlier;
+	};
 
-    set.push(data[0]);
-    result.push(set);
+	function filter(outlierLimit, data) {
+	    var resultSegments = [];
+	    var resultOutliers = [];
+	    var set = [];
 
-    for (var i = 1; i < data.length; i++) {
-        if (i < data.length - 1) {
-            var distance =  data[i - 1]["timestamp"] - data[i]["timestamp"];
-            if (distance > outlierLimit) {
-                set = [];
-                set.push(data[i]);
-                result.push(set);
-            } else {
-                set.push(data[i]);
-            }
-        }
-    }
+	    set.push(data[0]);
+	    resultSegments.push(set);
 
-    return result;
+	    for (var i = 1; i < data.length; i++) {
+	        if (i < data.length - 1) {
+	            var distance =  data[i - 1]["timestamp"] - data[i]["timestamp"];
+	            if (distance > outlierLimit) {
+	                set = [];
+	                set.push(data[i]);
+	                resultSegments.push(set);
+
+	                setOut = [];
+	                setOut.push(data[i]);
+	                setOut.push(data[i - 1]);
+	                resultOutliers.push(setOut);
+	            } else {
+	                set.push(data[i]);
+	            }
+	        }
+	    }
+
+	    segments = resultSegments;
+	    outliers = resultOutliers;
+	}
+
+    var allSegments = getSegments(data);
+    var outlierLimit = getOutlierLimit(allSegments);
+    filter(outlierLimit, data);
+
+    obj.segments = segments;
+    obj.outliers = outliers;
+
+    return obj;
+
 }

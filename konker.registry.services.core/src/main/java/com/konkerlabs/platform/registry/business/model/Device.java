@@ -9,21 +9,20 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
-import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
-import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
-
-import lombok.experimental.Tolerate;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
+import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.utilities.validations.api.Validatable;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.experimental.Tolerate;
 
 @Data
 @Builder
@@ -69,6 +68,8 @@ public class Device implements URIDealer, Validatable, UserDetails {
 	private String id;
 	@DBRef
 	private Tenant tenant;
+	@DBRef
+	private Application application;
 	private String deviceId;
     private String apiKey;
 	private String securityHash;
@@ -77,11 +78,11 @@ public class Device implements URIDealer, Validatable, UserDetails {
 	private String description;
 	private Instant registrationDate;
     private LogLevel logLevel;
-//	private List<Event> events;
+    @DBRef
+    private DeviceModel deviceModel;
+    @DBRef
+    private Location location;
 	private boolean active;
-	
-	@DBRef
-    private Application application;
 
 	public Optional<Map<String, Object[]>> applyValidations() {
 
@@ -107,22 +108,10 @@ public class Device implements URIDealer, Validatable, UserDetails {
 		setRegistrationDate(Instant.now());
 		regenerateApiKey();
 	}
-	
+
 	public void regenerateApiKey() {
 		setApiKey(new BigInteger(60, new Random()).toString(32));
 	}
-
-//	public Event getLastEvent() {
-//		return getMostRecentEvents().stream().findFirst().orElse(null);
-//	}
-
-	// FIXME Needs performance improvement. Sorting those items on the
-	// application server and returning all of them is not efficient.
-//	public List<Event> getMostRecentEvents() {
-//		return Optional.ofNullable(getEvents()).orElse(Collections.emptyList()).stream()
-//				.sorted((eventA, eventB) -> eventB.getTimestamp().compareTo(eventA.getTimestamp()))
-//				.collect(Collectors.toList());
-//	}
 
 	public LogLevel getLogLevel() {
 		return Optional.ofNullable(logLevel).orElse(LogLevel.WARNING);
@@ -162,4 +151,5 @@ public class Device implements URIDealer, Validatable, UserDetails {
 	public boolean isEnabled() {
 		return true;
 	}
+	
 }

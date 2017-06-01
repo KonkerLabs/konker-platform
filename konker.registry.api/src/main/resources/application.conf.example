@@ -1,9 +1,16 @@
 eventstorage {
     bean=mongoEvents
 }
+
 cassandra {
     clustername=local
     keyspace=registrykeyspace
     hostname=localhost
     port=9042
+}
+
+healthAlerts {
+    silence {
+        minimumMinutes=10
+    }
 }

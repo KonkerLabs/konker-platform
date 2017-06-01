@@ -1,10 +1,9 @@
-package com.konkerlabs.platform.registry.web.services.api;
+package com.konkerlabs.platform.registry.business.services.api;
 
 import java.util.List;
 
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.model.UserNotification;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 
 public interface UserNotificationService {
     enum Validations {

@@ -21,12 +21,15 @@ import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseExcepti
 import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
 import com.konkerlabs.platform.registry.api.model.ApplicationInputVO;
 import com.konkerlabs.platform.registry.api.model.ApplicationVO;
+import com.konkerlabs.platform.registry.api.model.DeviceHealthAlertVO;
 import com.konkerlabs.platform.registry.api.model.RestResponse;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Application.Validations;
+import com.konkerlabs.platform.registry.business.model.HealthAlert;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
+import com.konkerlabs.platform.registry.business.services.api.HealthAlertService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 
 import io.swagger.annotations.Api;
@@ -37,10 +40,13 @@ import io.swagger.annotations.ApiParam;
 @Scope("request")
 @RequestMapping(value = "/applications")
 @Api(tags = "applications")
-public class ApplicationRestController implements InitializingBean {
+public class ApplicationRestController extends AbstractRestController implements InitializingBean {
 
     @Autowired
     private ApplicationService applicationService;
+    
+    @Autowired
+    private HealthAlertService healthAlertService;
 
     @Autowired
     private User user;
@@ -91,8 +97,8 @@ public class ApplicationRestController implements InitializingBean {
     @PreAuthorize("hasAuthority('ADD_APPLICATION')")
     public ApplicationVO create(
             @ApiParam(
-            		name = "body", 
-            		value = "JSON filled with the fields described in Model and Example Value beside", 
+            		name = "body",
+            		value = "JSON filled with the fields described in Model and Example Value beside",
             		required = true)
             @RequestBody ApplicationVO applicationForm) throws BadServiceResponseException {
 
@@ -120,7 +126,7 @@ public class ApplicationRestController implements InitializingBean {
     public void update(
             @PathVariable("applicationName") String applicationName,
             @ApiParam(
-            		name = "body", 
+            		name = "body",
             		value = "JSON filled with the fields described in Model and Example Value beside",
             		required = true)
             @RequestBody ApplicationInputVO applicationForm) throws BadServiceResponseException {
@@ -143,7 +149,7 @@ public class ApplicationRestController implements InitializingBean {
         ServiceResponse<Application> updateResponse = applicationService.update(tenant, applicationName, applicationFromDB);
 
         if (!updateResponse.isOk()) {
-            throw new BadServiceResponseException(user, applicationResponse, validationsCode);
+            throw new BadServiceResponseException(user, updateResponse, validationsCode);
 
         }
 
@@ -166,6 +172,48 @@ public class ApplicationRestController implements InitializingBean {
             }
         }
 
+    }
+    
+    @GetMapping(path = "/{applicationName}/health/alerts")
+    @ApiOperation(
+            value = "List all health alerts from this application",
+            response = RestResponse.class
+    )
+    @PreAuthorize("hasAuthority('SHOW_APPLICATION')")
+    public List<DeviceHealthAlertVO> alerts(@PathVariable("applicationName") String applicationName) throws BadServiceResponseException, NotFoundResponseException {
+
+        Tenant tenant = user.getTenant();
+        Application application = getApplication(applicationName);
+
+        ServiceResponse<List<HealthAlert>> serviceResponse = healthAlertService.findAllByTenantAndApplication(tenant, application);
+
+        if (!serviceResponse.isOk()) {
+            throw new NotFoundResponseException(user, serviceResponse);
+        } else {
+            return new DeviceHealthAlertVO().apply(serviceResponse.getResult());
+        }
+
+    }
+    
+    @DeleteMapping(path = "/{applicationName}/health/alerts/{alertGuid}")
+    @ApiOperation(
+            value = "Remove health alert from this application",
+            response = RestResponse.class
+    )
+    @PreAuthorize("hasAuthority('SHOW_APPLICATION')")
+    public void deleteAlert(
+    		@PathVariable("applicationName") String applicationName,
+    		@PathVariable("alertGuid") String alertGuid) throws BadServiceResponseException, NotFoundResponseException {
+
+        Tenant tenant = user.getTenant();
+        Application application = getApplication(applicationName);
+
+        ServiceResponse<HealthAlert> serviceResponse = healthAlertService.remove(tenant, application, alertGuid);
+
+        if (!serviceResponse.isOk()) {
+            throw new NotFoundResponseException(user, serviceResponse);
+        } 
+        
     }
 
     @Override

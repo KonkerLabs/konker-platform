@@ -1,78 +1,47 @@
 package com.konkerlabs.platform.registry;
 
-import com.konkerlabs.platform.registry.config.*;
-import com.konkerlabs.platform.utilities.config.UtilitiesConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.core.io.support.ResourcePatternResolver;
-import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
-import org.springframework.core.type.classreading.MetadataReader;
-import org.springframework.core.type.classreading.MetadataReaderFactory;
-import org.springframework.util.ClassUtils;
-import org.springframework.util.StringUtils;
-import org.springframework.util.SystemPropertyUtils;
-import org.springframework.web.context.request.RequestContextListener;
-import org.springframework.web.filter.HiddenHttpMethodFilter;
-import org.springframework.web.servlet.resource.ResourceUrlEncodingFilter;
-import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.servlet.Filter;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration.Dynamic;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+
+import org.springframework.util.StringUtils;
+import org.springframework.web.context.request.RequestContextListener;
+import org.springframework.web.filter.HiddenHttpMethodFilter;
+import org.springframework.web.servlet.resource.ResourceUrlEncodingFilter;
+import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
+
+import com.konkerlabs.platform.registry.config.CdnConfig;
+import com.konkerlabs.platform.registry.config.EmailConfig;
+import com.konkerlabs.platform.registry.config.PubServerConfig;
+import com.konkerlabs.platform.registry.config.WebMvcConfig;
 
 public class RegistryAppInitializer
         extends AbstractAnnotationConfigDispatcherServletInitializer {
 
-    private static final Logger LOG = LoggerFactory.getLogger(RegistryAppInitializer.class);
-
-
     @Override
     protected Class<?>[] getRootConfigClasses() {
-        try {
-            return findMyTypes(
-                    "com.konkerlabs.platform.registry.config",
-                    "com.konkerlabs.platform.utilities.config");
-        } catch (IOException | ClassNotFoundException e) {
-            LOG.error("Error scanning packages to boot application configs...", e);
-        }
-        return null;
-    }
-
-    private String resolveBasePackage(String basePackage) {
-        return ClassUtils.convertClassNameToResourcePath(SystemPropertyUtils.resolvePlaceholders(basePackage));
-    }
-
-    private Class[] findMyTypes(String... basePackages) throws IOException, ClassNotFoundException {
-        ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();
-        MetadataReaderFactory metadataReaderFactory = new CachingMetadataReaderFactory(resourcePatternResolver);
-        List<Class> candidates = new ArrayList<>();
-        for (String basePackage : basePackages) {
-            String packageSearchPath = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +
-                    resolveBasePackage(basePackage) + "/" + "**/*.class";
-            Resource[] resources = resourcePatternResolver.getResources(packageSearchPath);
-            for (Resource resource : resources) {
-                if (resource.isReadable()) {
-                    MetadataReader metadataReader = metadataReaderFactory.getMetadataReader(resource);
-                    candidates.add(Class.forName(metadataReader.getClassMetadata().getClassName()));
-                }
-            }
-
-        }
-        Class[] configResources = new Class[candidates.size()];
-        int iterator = 0;
-        for(Class clazz : candidates){
-            configResources[iterator] = clazz;
-            iterator++;
-        }
-        return configResources;
+        return new Class<?>[] {
+            // Warning: ORDER IS IMPORTANT!
+            com.konkerlabs.platform.registry.config.SecurityConfig.class,
+            com.konkerlabs.platform.registry.config.BusinessConfig.class,
+            com.konkerlabs.platform.registry.config.MongoConfig.class,
+            com.konkerlabs.platform.registry.config.MongoAuditConfig.class,
+            com.konkerlabs.platform.registry.config.MongoBillingConfig.class,
+            com.konkerlabs.platform.registry.config.CassandraConfig.class,
+            com.konkerlabs.platform.utilities.config.UtilitiesConfig.class,
+            com.konkerlabs.platform.registry.config.SpringMailConfig.class,
+            com.konkerlabs.platform.registry.config.WebConfig.class,
+            com.konkerlabs.platform.registry.config.CdnConfig.class,
+            com.konkerlabs.platform.registry.config.RecaptchaConfig.class,
+            com.konkerlabs.platform.registry.config.HotjarConfig.class,
+            com.konkerlabs.platform.registry.config.EmailConfig.class,
+            com.konkerlabs.platform.registry.config.EnvironmentConfig.class,
+            com.konkerlabs.platform.registry.config.EventStorageConfig.class
+        };
     }
 
     @Override

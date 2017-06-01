@@ -69,6 +69,7 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
     private static final String REGISTERED_DEVICE_GUID = "7d51c242-81db-11e6-a8c2-0746f010e945";
 
     private static final String MQTT_OUTGOING_TOPIC_TEMPLATE = "sub/{0}/{1}";
+    private static final String MQTT_OUTGOING_TOPIC_DATA_TEMPLATE = "data/{0}/sub/{1}";
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -276,12 +277,17 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
             .format(MQTT_OUTGOING_TOPIC_TEMPLATE, device.getApiKey(),
                     data.get(DEVICE_MQTT_CHANNEL));
 
+        String expectedMqttDataTopic = MessageFormat
+            .format(MQTT_OUTGOING_TOPIC_DATA_TEMPLATE, device.getApiKey(),
+                    data.get(DEVICE_MQTT_CHANNEL));
+
         assertThat(event.getIncoming().getChannel(), equalTo(INPUT_CHANNEL));
         subject.send(event,destinationUri,data,device.getTenant(),device.getApplication());
 
         InOrder inOrder = inOrder(mqttMessageGateway,deviceLogEventService);
 
         inOrder.verify(mqttMessageGateway).send(event.getPayload(),expectedMqttTopic);
+        inOrder.verify(mqttMessageGateway).send(event.getPayload(),expectedMqttDataTopic);
         inOrder.verify(deviceLogEventService).logOutgoingEvent(eq(device), eq(event));
     }
 

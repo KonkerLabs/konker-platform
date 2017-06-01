@@ -4,6 +4,10 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+
+import java.util.Collections;
+import java.util.List;
+
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
 
 import org.mockito.Matchers;
@@ -22,6 +26,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.ResultActions;
 
+import com.konkerlabs.platform.registry.billing.model.TenantDailyUsage;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
@@ -74,6 +79,16 @@ public class UserControllerTest extends WebLayerTestContext {
 	@Test
 	@WithMockUser(authorities = { "ROLE_SUPER_USER", "ROLE_IOT_USER", "ROLE_ANALYTICS_USER" })
 	public void shouldOpenViewForm() throws Exception {
+		when(tenantService.findTenantDailyUsage(Matchers.anyObject()))
+			.thenReturn(ServiceResponseBuilder.<List<TenantDailyUsage>> ok()
+					.withResult(Collections.singletonList(
+							TenantDailyUsage.builder()
+								.tenantDomain("konker")
+								.incomingPayloadSize(100)
+								.outgoingPayloadSize(128)
+								.build()))
+					.build());
+		
 		ResultActions result = getMockMvc().perform(get("/me"));
 
 		result.andExpect(model().attribute("loglevels", org.hamcrest.Matchers.notNullValue()));

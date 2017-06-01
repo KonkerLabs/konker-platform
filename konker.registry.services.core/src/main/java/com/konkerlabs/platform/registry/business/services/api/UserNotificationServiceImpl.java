@@ -1,4 +1,4 @@
-package com.konkerlabs.platform.registry.web.services;
+package com.konkerlabs.platform.registry.business.services.api;
 
 import java.time.Instant;
 import java.util.Arrays;
@@ -27,11 +27,7 @@ import com.konkerlabs.platform.registry.business.model.UserNotification;
 import com.konkerlabs.platform.registry.business.model.UserNotificationStatus;
 import com.konkerlabs.platform.registry.business.repositories.UserNotificationRepository;
 import com.konkerlabs.platform.registry.business.repositories.UserNotificationStatusRepository;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.config.EmailConfig;
-import com.konkerlabs.platform.registry.web.services.api.EmailService;
-import com.konkerlabs.platform.registry.web.services.api.UserNotificationService;
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)

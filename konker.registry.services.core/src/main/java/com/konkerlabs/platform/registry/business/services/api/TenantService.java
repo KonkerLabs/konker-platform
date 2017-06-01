@@ -1,5 +1,8 @@
 package com.konkerlabs.platform.registry.business.services.api;
 
+import java.util.List;
+
+import com.konkerlabs.platform.registry.billing.model.TenantDailyUsage;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
 
@@ -36,5 +39,7 @@ public interface TenantService {
     }
     
 	ServiceResponse<Tenant> updateLogLevel(Tenant tenant, LogLevel logLevel);
+
+	ServiceResponse<List<TenantDailyUsage>> findTenantDailyUsage(Tenant tenant);
 
 }

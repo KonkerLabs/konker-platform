@@ -1,4 +1,4 @@
-package com.konkerlabs.platform.registry.web.services.api;
+package com.konkerlabs.platform.registry.business.services.api;
 
 import java.util.List;
 import java.util.Locale;
@@ -7,7 +7,6 @@ import java.util.Map;
 import javax.mail.MessagingException;
 
 import com.konkerlabs.platform.registry.business.model.User;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse.Status;
 
 
