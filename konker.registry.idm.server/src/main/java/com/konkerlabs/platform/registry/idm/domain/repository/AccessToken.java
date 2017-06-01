@@ -1,8 +1,10 @@
 package com.konkerlabs.platform.registry.idm.domain.repository;
 
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.Tolerate;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
@@ -19,6 +21,8 @@ import java.util.Date;
 @Data
 @Builder
 @Document(collection = "accesstokens")
+@NoArgsConstructor
+@AllArgsConstructor
 public class AccessToken implements Serializable {
 
     private static final long serialVersionUID = 7588602587200382326L;
@@ -46,9 +50,6 @@ public class AccessToken implements Serializable {
     private String clientId;
 
     private String refreshToken;
-
-    public AccessToken() {
-    }
 
     @Tolerate
     public OAuth2AccessToken token() {

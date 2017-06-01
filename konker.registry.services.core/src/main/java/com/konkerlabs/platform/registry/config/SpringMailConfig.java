@@ -1,9 +1,5 @@
 package com.konkerlabs.platform.registry.config;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Properties;
-
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -15,11 +11,13 @@ import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.core.env.Environment;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
-import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.spring4.SpringTemplateEngine;
-import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import org.thymeleaf.templateresolver.ITemplateResolver;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Properties;
 
 @Configuration
 public class SpringMailConfig implements ApplicationContextAware, EnvironmentAware {
@@ -82,7 +80,7 @@ public class SpringMailConfig implements ApplicationContextAware, EnvironmentAwa
 		templateResolver.setResolvablePatterns(Collections.singleton("text/*"));
 		templateResolver.setPrefix("/mail/");
 		templateResolver.setSuffix(".txt");
-		templateResolver.setTemplateMode(TemplateMode.TEXT);
+		templateResolver.setTemplateMode("TEXT");
 		templateResolver.setCharacterEncoding("UTF-8");
 		templateResolver.setCacheable(false);
 		return templateResolver;
@@ -94,7 +92,7 @@ public class SpringMailConfig implements ApplicationContextAware, EnvironmentAwa
 		templateResolver.setResolvablePatterns(Collections.singleton("html/*"));
 		templateResolver.setPrefix("/mail/");
 		templateResolver.setSuffix(".html");
-		templateResolver.setTemplateMode(TemplateMode.HTML);
+		templateResolver.setTemplateMode("HTML");
 		templateResolver.setCharacterEncoding("UTF-8");
 		templateResolver.setCacheable(false);
 		return templateResolver;
@@ -103,7 +101,7 @@ public class SpringMailConfig implements ApplicationContextAware, EnvironmentAwa
 	private ITemplateResolver stringTemplateResolver() {
 		final ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
 		templateResolver.setOrder(3);
-		templateResolver.setTemplateMode(TemplateMode.HTML5);
+		templateResolver.setTemplateMode("HTML5");
 		templateResolver.setCacheable(false);
 		return templateResolver;
 	}

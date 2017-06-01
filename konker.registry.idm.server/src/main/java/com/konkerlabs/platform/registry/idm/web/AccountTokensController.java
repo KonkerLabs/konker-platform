@@ -98,7 +98,7 @@ public class AccountTokensController implements ApplicationContextAware {
 
 
     @PreAuthorize("hasAuthority('REMOVE_OAUTHTOKENS')")
-    @RequestMapping(value = "/{tokenId}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/{tokenId}/deleteToken", method = RequestMethod.DELETE)
     public ModelAndView removeToken(
             @PathVariable("applicationId") String applicationId,
             @PathVariable("tokenId") String clientId,
@@ -113,7 +113,7 @@ public class AccountTokensController implements ApplicationContextAware {
     }
 
     @PreAuthorize("hasAuthority('REMOVE_OAUTHTOKENS_ROOT')")
-    @RequestMapping(value = "/{tokenId}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/{tokenId}/deleteTokenAll", method = RequestMethod.DELETE)
     public ModelAndView removeTokenAsRoot(
             @PathVariable("applicationId") String applicationId,
             @PathVariable("tokenId") String clientId,

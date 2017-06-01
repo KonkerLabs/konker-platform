@@ -93,24 +93,6 @@ public class AccountClientsController implements ApplicationContextAware {
         return view;
     }
 
-    @PreAuthorize("hasAuthority('SHOW_OAUTHTOKENS')")
-    @RequestMapping(value = "/show", method = RequestMethod.GET)
-    public ModelAndView showClient(
-            @PathVariable("applicationId") String applicationId,
-            @PathVariable("clientId") String clientId
-    ) {
-
-        ServiceResponse<OauthClientDetails> client =
-                oAuthClientDetailsService.loadClientById(tenant, clientId);
-
-        ModelAndView view = new ModelAndView("clients/form")
-                .addObject("oauthClient", client.getResult())
-                .addObject("applicationId", tenant.getDomainName())
-                .addObject("action",
-                        MessageFormat.format("/account/{0}/clients/saveClient", tenant.getDomainName()));
-        return view;
-    }
-
 
     @PreAuthorize("hasAuthority('SHOW_OAUTHCLIENTS_ROOT')")
     @RequestMapping(value = "/showAll", method = RequestMethod.GET)
