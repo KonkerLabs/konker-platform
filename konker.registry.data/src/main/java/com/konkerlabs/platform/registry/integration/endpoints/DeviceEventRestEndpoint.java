@@ -195,7 +195,7 @@ public class DeviceEventRestEndpoint {
         		.message(HttpStatus.OK.name()).build(),
         		HttpStatus.OK);
     }
-    
+
     @RequestMapping(
             value = { "cfg/{apiKey}" },
             method = RequestMethod.GET,
@@ -210,17 +210,17 @@ public class DeviceEventRestEndpoint {
     	if (!principal.getApiKey().equals(apiKey)) {
             return new ResponseEntity<EventResponse>(
             			EventResponse.builder().code(String.valueOf(HttpStatus.BAD_REQUEST.value()))
-            		.message(applicationContext.getMessage(Messages.INVALID_RESOURCE.getCode(), null, locale)).build(), 
+            		.message(applicationContext.getMessage(Messages.INVALID_RESOURCE.getCode(), null, locale)).build(),
             		HttpStatus.BAD_REQUEST);
     	}
-    	
+
     	if (!Optional.ofNullable(device).isPresent()) {
     		return new ResponseEntity<EventResponse>(
         			EventResponse.builder().code(String.valueOf(HttpStatus.BAD_REQUEST.value()))
-        		.message(applicationContext.getMessage(Messages.DEVICE_NOT_FOUND.getCode(), null, locale)).build(), 
+        		.message(applicationContext.getMessage(Messages.DEVICE_NOT_FOUND.getCode(), null, locale)).build(),
         		HttpStatus.BAD_REQUEST);
     	}
-    	
+
     	ServiceResponse<String> serviceResponse = deviceConfigSetupService
     			.findByModelAndLocation(device.getTenant(), device.getApplication(), device.getDeviceModel(), device.getLocation());
 
