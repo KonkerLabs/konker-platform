@@ -82,8 +82,14 @@ populate_users
 echo "starting konker mqtt service..."
 mosquitto -c /etc/mosquitto/mosquitto.conf &
 
+echo "starting RabbitMQ..."
+/usr/sbin/rabbitmq-server &
+
 echo "starting konker registry data ingestion..."
 java -Dconfig.file=/var/lib/jetty/resources/application.conf -jar /var/lib/konker/registry-data.jar --server.port=9090 &
+
+echo "starting konker mqtt rabbit bridge..."
+java -jar /var/lib/konker/mosquitto-rabbitmq-bridge.jar | tee /var/log/konker/mosquitto-rabbitmq-bridge.log &
 
 #Usage statistics feature
 /var/lib/konker/usage-statistics.py &
