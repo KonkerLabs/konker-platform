@@ -1,5 +1,7 @@
 # konker-platform
 
+[![Join the chat at https://gitter.im/konker-platform/Lobby](https://badges.gitter.im/konker-platform/Lobby.svg)](https://gitter.im/konker-platform/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 [![][license img]][license]
 
 Konker Platform is an Open Source Platform for the Internet of Things (IoT). It is developed by Konker and the community.
