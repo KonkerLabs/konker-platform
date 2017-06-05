@@ -39,6 +39,7 @@ import com.konkerlabs.platform.registry.business.model.HealthAlert;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertSeverity;
 import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertType;
+import com.konkerlabs.platform.registry.business.model.HealthAlert.Solution;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.HealthAlertService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
@@ -57,7 +58,7 @@ public class ApplicationRestControllerTest extends WebLayerTestContext {
 
     @Autowired
     private ApplicationService applicationService;
-    
+
     @Autowired
     private HealthAlertService healthAlertService;
 
@@ -67,11 +68,11 @@ public class ApplicationRestControllerTest extends WebLayerTestContext {
     private Application application1;
 
     private Application application2;
-    
+
     private HealthAlert health1;
     private HealthAlert health2;
     private List<HealthAlert> healths;
-    
+
     @Before
     public void setUp() {
         application1 = Application.builder()
@@ -81,7 +82,7 @@ public class ApplicationRestControllerTest extends WebLayerTestContext {
         		.qualifier(tenant.getName())
         		.registrationDate(Instant.now())
         		.build();
-        	
+
         application2 = Application.builder()
         		.name("konkerff")
         		.friendlyName("Konker Frig")
@@ -89,7 +90,7 @@ public class ApplicationRestControllerTest extends WebLayerTestContext {
         		.qualifier(tenant.getName())
         		.registrationDate(Instant.now())
         		.build();
-        
+
         Instant registrationDate = Instant.ofEpochMilli(1495716970000l).minusSeconds(3600l);
         health1 = HealthAlert.builder()
 				.guid("7d51c242-81db-11e6-a8c2-0746f976f223")
@@ -101,7 +102,7 @@ public class ApplicationRestControllerTest extends WebLayerTestContext {
         		.deviceGuid("guid1")
         		.triggerGuid("7d51c242-81db-11e6-a8c2-0746f976f666")
         		.build();
-		
+
 		health2 = HealthAlert.builder()
 				.guid("7d51c242-81db-11e6-a8c2-0746f976f223")
 				.severity(HealthAlertSeverity.OK)
@@ -112,7 +113,7 @@ public class ApplicationRestControllerTest extends WebLayerTestContext {
         		.deviceGuid("guid1")
         		.triggerGuid("7d51c242-81db-11e6-a8c2-0746f976f666")
         		.build();
-		
+
 		healths = Arrays.asList(health1, health2);
     }
 
@@ -377,12 +378,12 @@ public class ApplicationRestControllerTest extends WebLayerTestContext {
     	.andExpect(jsonPath("$.result").doesNotExist());
 
     }
-    
+
     @Test
     public void shouldShowHealthAlerts() throws Exception {
         when(healthAlertService.findAllByTenantAndApplication(tenant, application1))
 				.thenReturn(ServiceResponseBuilder.<List<HealthAlert>>ok().withResult(healths).build());
-        
+
         when(applicationService.getByApplicationName(tenant, application1.getName()))
 				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application1).build());
 
@@ -408,7 +409,7 @@ public class ApplicationRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.result[1].type", is(health2.getType().toString())))
                     .andExpect(jsonPath("$.result[1].triggerGuid", is(health2.getTriggerGuid())));
     }
-    
+
     @Test
     public void shouldShowHealthAlertsWithDeviceHealthEmpty() throws Exception {
     	when(healthAlertService.findAllByTenantAndApplication(tenant, application1))
@@ -429,13 +430,13 @@ public class ApplicationRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.result").doesNotExist());
 
     }
-    
+
     @Test
     public void shouldDeleteHealthAlertFromApplication() throws Exception {
     	when(applicationService.getByApplicationName(tenant, application1.getName()))
     			.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application1).build());
-    	
-        when(healthAlertService.remove(tenant, application1, health1.getGuid()))
+
+        when(healthAlertService.remove(tenant, application1, health1.getGuid(), Solution.ALERT_DELETED))
                 .thenReturn(ServiceResponseBuilder.<HealthAlert>ok().withResult(health1).build());
 
         getMockMvc()
@@ -449,13 +450,13 @@ public class ApplicationRestControllerTest extends WebLayerTestContext {
         .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
         .andExpect(jsonPath("$.result").doesNotExist());
     }
-    
+
     @Test
     public void shouldTryDeleteNonexistentHealthAlert() throws Exception {
     	when(applicationService.getByApplicationName(tenant, application1.getName()))
 				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application1).build());
-		
-		when(healthAlertService.remove(tenant, application1, health1.getGuid()))
+
+		when(healthAlertService.remove(tenant, application1, health1.getGuid(), Solution.ALERT_DELETED))
 		        .thenReturn(ServiceResponseBuilder.<HealthAlert>error()
 		        		.withMessage(HealthAlertService.Validations.HEALTH_ALERT_NOT_FOUND.getCode()).build());
 
@@ -471,5 +472,5 @@ public class ApplicationRestControllerTest extends WebLayerTestContext {
     	.andExpect(jsonPath("$.result").doesNotExist());
 
     }
-    
+
 }

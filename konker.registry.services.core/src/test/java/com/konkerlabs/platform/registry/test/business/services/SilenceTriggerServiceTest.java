@@ -250,7 +250,9 @@ public class SilenceTriggerServiceTest extends BusinessLayerTestSupport {
     @Test
     public void shouldUpdateSilenceTrigger() throws Exception {
 
-        assertThat(silenceTriggerRepository.findByTenantIdApplicationIdAndGuid(currentTenant.getId(), application.getName(), triggerA.getGuid()).getMinutes(), is(100));
+        SilenceTrigger triggerBD = silenceTriggerRepository.findByTenantIdApplicationIdAndGuid(currentTenant.getId(), application.getName(), triggerA.getGuid());
+        assertThat(triggerBD.getMinutes(), is(100));
+        assertThat(triggerBD.getDescription(), nullValue());
 
         SilenceTrigger updating = new SilenceTrigger();
         updating.setGuid("95a79b96-6193-4d13-a85e-8bafc3a44837");
@@ -259,11 +261,14 @@ public class SilenceTriggerServiceTest extends BusinessLayerTestSupport {
         updating.setDeviceModel(deviceModel);
         updating.setLocation(locationB);
         updating.setMinutes(500);
+        updating.setDescription("hypotheses");
 
         ServiceResponse<SilenceTrigger> serviceResponse = silenceTriggerService.update(currentTenant, application, triggerA.getGuid(), updating);
         assertThat(serviceResponse.isOk(), is(true));
 
-        assertThat(silenceTriggerRepository.findByTenantIdApplicationIdAndGuid(currentTenant.getId(), application.getName(), triggerA.getGuid()).getMinutes(), is(500));
+        triggerBD = silenceTriggerRepository.findByTenantIdApplicationIdAndGuid(currentTenant.getId(), application.getName(), triggerA.getGuid());
+        assertThat(triggerBD.getMinutes(), is(500));
+        assertThat(triggerBD.getDescription(), is("hypotheses"));
 
     }
 

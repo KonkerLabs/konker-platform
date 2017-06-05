@@ -6,6 +6,7 @@ import java.util.Set;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
 import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
-import com.konkerlabs.platform.registry.api.model.RestResponse;
 import com.konkerlabs.platform.registry.api.model.SilenceTriggerInputVO;
 import com.konkerlabs.platform.registry.api.model.SilenceTriggerVO;
 import com.konkerlabs.platform.registry.business.model.Application;
@@ -56,9 +56,9 @@ public class SilenceTriggerRestController extends AbstractRestController impleme
     @GetMapping(path = "/{deviceModelName}/{locationName}")
     @ApiOperation(
             value = "Get a silence trigger by guid",
-            response = RestResponse.class
+            response = SilenceTriggerVO.class
     )
-    // @PreAuthorize("hasAuthority('SHOW_ALERT_TRIGGER')")
+    @PreAuthorize("hasAuthority('SHOW_ALERT_TRIGGER')")
     public SilenceTriggerVO read(
             @PathVariable("application") String applicationId,
             @PathVariable("deviceModelName") String deviceModelName,
@@ -81,7 +81,7 @@ public class SilenceTriggerRestController extends AbstractRestController impleme
 
     @PostMapping(path = "/{deviceModelName}/{locationName}")
     @ApiOperation(value = "Create a silence trigger")
-    // @PreAuthorize("hasAuthority('CREATE_ALERT_TRIGGER')")
+    @PreAuthorize("hasAuthority('CREATE_ALERT_TRIGGER')")
     public SilenceTriggerVO create(
             @PathVariable("application") String applicationId,
             @PathVariable("deviceModelName") String deviceModelName,
@@ -116,7 +116,7 @@ public class SilenceTriggerRestController extends AbstractRestController impleme
 
     @PutMapping(path = "/{deviceModelName}/{locationName}")
     @ApiOperation(value = "Update a silence trigger")
-    // @PreAuthorize("hasAuthority('EDIT_ALERT_TRIGGER')")
+    @PreAuthorize("hasAuthority('EDIT_ALERT_TRIGGER')")
     public void update(
             @PathVariable("application") String applicationId,
             @PathVariable("deviceModelName") String deviceModelName,
@@ -139,6 +139,7 @@ public class SilenceTriggerRestController extends AbstractRestController impleme
         trigger.setDeviceModel(deviceModel);
         trigger.setLocation(location);
         trigger.setMinutes(form.getMinutes());
+        trigger.setDescription(form.getDescription());
 
         ServiceResponse<SilenceTrigger> updateResponse = silenceTriggerService.update(tenant, application, guid, trigger);
 
@@ -150,7 +151,7 @@ public class SilenceTriggerRestController extends AbstractRestController impleme
 
     @DeleteMapping(path = "/{deviceModelName}/{locationName}")
     @ApiOperation(value = "Delete a silence trigger")
-    // @PreAuthorize("hasAuthority('REMOVE_ALERT_TRIGGER')")
+    @PreAuthorize("hasAuthority('REMOVE_ALERT_TRIGGER')")
     public void delete(
             @PathVariable("application") String applicationId,
             @PathVariable("deviceModelName") String deviceModelName,
