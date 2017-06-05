@@ -19,6 +19,7 @@ public abstract class AlertTrigger implements URIDealer {
     @Id
     private String id;
     protected String guid;
+    private String description;
     @DBRef
     private Tenant tenant;
     @DBRef

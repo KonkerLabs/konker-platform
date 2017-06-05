@@ -138,6 +138,7 @@ public class SilenceTriggerServiceImpl implements SilenceTriggerService {
         }
 
         fromDb.setMinutes(trigger.getMinutes());
+        fromDb.setDescription(trigger.getDescription());
 
         SilenceTrigger saved = silenceTriggerRepository.save(fromDb);
 
