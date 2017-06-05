@@ -42,7 +42,7 @@ public class RabbitGateway {
             MessageProperties properties = new MessageProperties();
             properties.setHeader(RabbitMQConfig.MSG_HEADER_APIKEY, apiKey);
 
-            Message message = new Message("".getBytes("UTF-8"), properties);
+            Message message = new Message(config.getBytes("UTF-8"), properties);
 
             rabbitTemplate.convertAndSend("mgmt.config.sub", message);
         } catch (AmqpException | UnsupportedEncodingException ex) {
