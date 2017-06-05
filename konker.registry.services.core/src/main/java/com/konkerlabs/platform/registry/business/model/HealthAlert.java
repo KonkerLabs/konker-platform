@@ -25,6 +25,24 @@ public class HealthAlert implements URIDealer {
 
 	public static final String URI_SCHEME = "healthAlert";
 
+    public static enum Solution {
+
+        MESSAGE_RECEIVED("Device received a message"),
+        ALERT_DELETED("Alert deleted"),
+        TRIGGER_DELETED("Alert trigger deleted");
+
+        private String message;
+
+        public String getMessage() {
+            return message;
+        }
+
+        Solution(String message) {
+            this.message = message;
+        }
+
+    }
+
 	@Id
 	private String id;
 	private String guid;
@@ -35,6 +53,7 @@ public class HealthAlert implements URIDealer {
 	private HealthAlertType type;
 	private String triggerGuid;
 	private String deviceGuid;
+	private Solution solution;
 	private boolean solved;
 
 	@DBRef
@@ -52,14 +71,14 @@ public class HealthAlert implements URIDealer {
 	public String getContext() {
 		return getTenant() != null ? getTenant().getDomainName() : null;
 	}
-	
+
 	public enum HealthAlertSeverity {
 		OK(3),
 		WARN(2),
 		FAIL(1);
-		
+
 		private Integer prior;
-		
+
 		HealthAlertSeverity(Integer prior) {
 			this.prior = prior;
 		}
@@ -67,9 +86,9 @@ public class HealthAlert implements URIDealer {
 		public Integer getPrior() {
 			return prior;
 		}
-		
+
 	}
-	
+
 	public enum HealthAlertType {
 		SILENCE;
 	}
