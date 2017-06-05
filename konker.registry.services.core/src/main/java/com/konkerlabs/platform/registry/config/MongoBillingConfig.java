@@ -1,13 +1,16 @@
 package com.konkerlabs.platform.registry.config;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
+import com.konkerlabs.platform.registry.business.model.converters.InstantReadConverter;
+import com.konkerlabs.platform.registry.business.model.converters.InstantWriteConverter;
+import com.konkerlabs.platform.registry.business.model.converters.URIReadConverter;
+import com.konkerlabs.platform.registry.business.model.converters.URIWriteConverter;
+import com.mongodb.Mongo;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoCredential;
+import com.mongodb.ServerAddress;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -19,18 +22,7 @@ import org.springframework.data.mongodb.core.convert.CustomConversions;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.util.StringUtils;
 
-import com.konkerlabs.platform.registry.business.model.converters.InstantReadConverter;
-import com.konkerlabs.platform.registry.business.model.converters.InstantWriteConverter;
-import com.konkerlabs.platform.registry.business.model.converters.URIReadConverter;
-import com.konkerlabs.platform.registry.business.model.converters.URIWriteConverter;
-import com.mongodb.Mongo;
-import com.mongodb.MongoClient;
-import com.mongodb.MongoCredential;
-import com.mongodb.ServerAddress;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
-
-import lombok.Data;
+import java.util.*;
 
 @Configuration
 @EnableMongoRepositories(basePackages = "com.konkerlabs.platform.registry.billing.repositories", mongoTemplateRef = "mongoBillingTemplate")

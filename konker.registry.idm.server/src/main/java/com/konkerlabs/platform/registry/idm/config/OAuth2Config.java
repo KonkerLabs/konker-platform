@@ -134,5 +134,7 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 	public TokenEnhancer tokenEnhancer() {
 		return new CustomTokenEnhancer();
 	}
-	
+
+
+
 }

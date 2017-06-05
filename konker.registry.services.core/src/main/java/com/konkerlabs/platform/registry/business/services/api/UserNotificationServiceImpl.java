@@ -1,18 +1,11 @@
 package com.konkerlabs.platform.registry.business.services.api;
 
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
-import javax.mail.MessagingException;
-
+import com.konkerlabs.platform.registry.business.model.User;
+import com.konkerlabs.platform.registry.business.model.UserNotification;
+import com.konkerlabs.platform.registry.business.model.UserNotificationStatus;
+import com.konkerlabs.platform.registry.business.repositories.UserNotificationRepository;
+import com.konkerlabs.platform.registry.business.repositories.UserNotificationStatusRepository;
+import com.konkerlabs.platform.registry.config.EmailConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,12 +15,13 @@ import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import com.konkerlabs.platform.registry.business.model.User;
-import com.konkerlabs.platform.registry.business.model.UserNotification;
-import com.konkerlabs.platform.registry.business.model.UserNotificationStatus;
-import com.konkerlabs.platform.registry.business.repositories.UserNotificationRepository;
-import com.konkerlabs.platform.registry.business.repositories.UserNotificationStatusRepository;
-import com.konkerlabs.platform.registry.config.EmailConfig;
+import javax.mail.MessagingException;
+import java.time.Instant;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
