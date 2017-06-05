@@ -80,7 +80,7 @@ public class DeviceConfigRabbitEndpointTest {
                             device.getDeviceModel(),
                             device.getLocation())).thenReturn(ServiceResponseBuilder.<String>ok().withResult("{ 'a: 4 }").build());
 
-        Message message = new Message("".getBytes("UTF-8"), messageProperties);
+        Message message = new Message("{ 'a: 4 }".getBytes("UTF-8"), messageProperties);
         deviceConfigRabbitEndpoint.onConfigPub(message);
 
         verify(rabbitTemplate, times(1)).convertAndSend("mgmt.config.sub", message);
@@ -106,7 +106,7 @@ public class DeviceConfigRabbitEndpointTest {
                             device.getDeviceModel(),
                             device.getLocation())).thenReturn(ServiceResponseBuilder.<String>ok().withResult(null).build());
 
-        Message message = new Message("".getBytes("UTF-8"), messageProperties);
+        Message message = new Message("{ }".getBytes("UTF-8"), messageProperties);
         deviceConfigRabbitEndpoint.onConfigPub(message);
 
         verify(rabbitTemplate, times(1)).convertAndSend("mgmt.config.sub", message);
