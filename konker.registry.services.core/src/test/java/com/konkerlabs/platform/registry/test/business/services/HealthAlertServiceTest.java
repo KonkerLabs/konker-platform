@@ -410,7 +410,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json", "/fixtures/devices.json"})
     public void shouldRemoveHealthAlert() throws Exception {
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.remove(
     			currentTenant,
@@ -467,14 +467,25 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json", "/fixtures/devices.json"})
     public void shouldReturnHealthNotExistFindAllHealthAlertByTenantAppDeviceGuid() throws Exception {
     	ServiceResponse<List<HealthAlert>> response = healthAlertService.findAllByTenantApplicationAndDeviceGuid(
     			currentTenant,
     			application,
-    			"7d51c242-81db-11e6-a8c2-0746f010e949");
+    			"8363c556-84ea-11e6-92a2-4b01fea7e243");
 
     	assertThat(response, hasErrorMessage(Validations.HEALTH_ALERT_DOES_NOT_EXIST.getCode()));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json"})
+    public void shouldReturnHealthNotExistGuidFindAllHealthAlertByTenantAppDeviceGuid() throws Exception {
+        ServiceResponse<List<HealthAlert>> response = healthAlertService.findAllByTenantApplicationAndDeviceGuid(
+                currentTenant,
+                application,
+                "7d51c242-81db-11e6-a8c2-0746f010e949");
+
+        assertThat(response, hasErrorMessage(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode()));
     }
 
     @Test

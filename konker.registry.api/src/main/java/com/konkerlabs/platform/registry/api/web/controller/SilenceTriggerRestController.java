@@ -103,6 +103,7 @@ public class SilenceTriggerRestController extends AbstractRestController impleme
         trigger.setDeviceModel(deviceModel);
         trigger.setLocation(location);
         trigger.setMinutes(form.getMinutes());
+        trigger.setDescription(form.getDescription());
 
         ServiceResponse<SilenceTrigger> restDestinationResponse = silenceTriggerService.save(tenant, application, trigger);
 

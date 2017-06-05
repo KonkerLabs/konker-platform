@@ -331,7 +331,14 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 		HealthAlert updated = healthAlertRepository.save(healthAlertFromDB);
 
 		ServiceResponse<HealthAlert> serviceResponse = getLastHightServerityByDeviceGuid(tenant, application, healthAlertFromDB.getDeviceGuid());
-		sendNotification(tenant, serviceResponse.getResult());
+		if (serviceResponse.isOk()) {
+		    sendNotification(tenant, serviceResponse.getResult());
+		} else {
+	        return ServiceResponseBuilder.<HealthAlert>error()
+	                .withMessages(serviceResponse.getResponseMessages())
+	                .withResult(updated)
+	                .build();
+		}
 
 		return ServiceResponseBuilder.<HealthAlert>ok()
 				.withMessage(Messages.HEALTH_ALERT_REMOVED_SUCCESSFULLY.getCode())
@@ -365,6 +372,13 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 					.withMessage(DeviceRegisterService.Validations.DEVICE_GUID_NULL.getCode())
 					.build();
 		}
+
+        Device device = deviceRepository.findByTenantAndApplicationAndGuid(tenant.getId(), application.getName(), deviceGuid);
+        if (!Optional.ofNullable(device).isPresent()) {
+            return ServiceResponseBuilder.<List<HealthAlert>>error()
+                    .withMessage(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode())
+                    .build();
+        }
 
         List<HealthAlert> healthAlerts = healthAlertRepository
         		.findAllByTenantIdApplicationNameAndDeviceGuid(tenant.getId(), application.getName(), deviceGuid);
