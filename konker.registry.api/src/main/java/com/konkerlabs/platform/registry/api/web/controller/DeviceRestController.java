@@ -1,12 +1,14 @@
 package com.konkerlabs.platform.registry.api.web.controller;
 
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -61,6 +63,9 @@ public class DeviceRestController extends AbstractRestController implements Init
 
     @Autowired
     private HealthAlertService healthAlertService;
+
+    @Autowired
+    private MessageSource messageSource;
 
     private Set<String> validationsCode = new HashSet<>();
 
@@ -276,7 +281,16 @@ public class DeviceRestController extends AbstractRestController implements Init
         		deviceGuid);
 
         if (deviceResponse.isOk()) {
-			return new DeviceHealthAlertVO().apply(deviceResponse.getResult());
+            List<DeviceHealthAlertVO> healthAlertsVO = new LinkedList<>();
+
+            for (HealthAlert healthAlert: deviceResponse.getResult()) {
+                DeviceHealthAlertVO healthAlertVO = new DeviceHealthAlertVO();
+                healthAlertVO = healthAlertVO.apply(healthAlert);
+                healthAlertVO.setDescription(messageSource.getMessage(healthAlert.getDescription().getCode(), null, user.getLanguage().getLocale()));
+
+                healthAlertsVO.add(healthAlertVO);
+            }
+            return healthAlertsVO;
         } else {
         	throw new NotFoundResponseException(user, deviceResponse);
         }

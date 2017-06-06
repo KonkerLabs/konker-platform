@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,7 @@ import com.konkerlabs.platform.registry.business.model.AlertTrigger;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.HealthAlert;
+import com.konkerlabs.platform.registry.business.model.HealthAlert.Description;
 import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertSeverity;
 import com.konkerlabs.platform.registry.business.model.HealthAlert.Solution;
 import com.konkerlabs.platform.registry.business.model.Tenant;
@@ -65,6 +67,8 @@ public class HealthAlertServiceImpl implements HealthAlertService {
     @Autowired
     private UserNotificationService userNotificationService;
 
+    @Autowired
+    private MessageSource messageSource;
 
     private ServiceResponse<HealthAlert> basicValidate(Tenant tenant, Application application, HealthAlert healthAlert) {
 		if (!Optional.ofNullable(tenant).isPresent()) {
@@ -242,10 +246,13 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 
 		if (serviceResponse.isOk() && !serviceResponse.getResult().isEmpty()) {
 			serviceResponse.getResult().forEach(u -> {
-				String body = MessageFormat.format("{0} - {1}", healthAlert.getSeverity().name(), healthAlert.getDescription());
+				String body = MessageFormat.format("{0} - {1}", healthAlert.getSeverity().name(), messageSource.getMessage(healthAlert.getDescription().getCode(), null, u.getLanguage().getLocale()));
+				String severity = messageSource.getMessage(healthAlert.getSeverity().getCode(), null, u.getLanguage().getLocale());
 
 				userNotificationService.postNotification(u, UserNotification.buildFresh(u.getEmail(),
-						MessageFormat.format("Health of device {0} - {1}", device.getDeviceId(), healthAlert.getSeverity().name()),
+						messageSource.getMessage("controller.healthalert.email.subject",
+						        new Object[] {device.getDeviceId(), severity},
+						        u.getLanguage().getLocale()),
 						u.getLanguage().getLanguage(),
 						"text/plain",
 						Instant.now(),
@@ -485,7 +492,7 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 				return ServiceResponseBuilder.<HealthAlert> ok()
 							.withResult(HealthAlert.builder()
 									.severity(HealthAlertSeverity.OK)
-									.description("Health of device is ok.")
+									.description(Description.HEALTH_OK)
 									.deviceGuid(deviceGuid)
 									.lastChange(Instant.now())
 									.build())
