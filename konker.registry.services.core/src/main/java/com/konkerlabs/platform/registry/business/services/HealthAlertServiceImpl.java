@@ -245,7 +245,7 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 				String body = MessageFormat.format("{0} - {1}", healthAlert.getSeverity().name(), healthAlert.getDescription());
 
 				userNotificationService.postNotification(u, UserNotification.buildFresh(u.getEmail(),
-						MessageFormat.format("Health of device {0}", device.getDeviceId()),
+						MessageFormat.format("Health of device {0} - {1}", device.getDeviceId(), healthAlert.getSeverity().name()),
 						u.getLanguage().getLanguage(),
 						"text/plain",
 						Instant.now(),
@@ -460,6 +460,11 @@ public class HealthAlertServiceImpl implements HealthAlertService {
             healthAlertFromDB.setLastChange(Instant.now());
             healthAlertFromDB.setSolution(Solution.TRIGGER_DELETED);
             healthAlertRepository.save(healthAlertFromDB);
+
+            ServiceResponse<HealthAlert> serviceResponse = getLastHightServerityByDeviceGuid(tenant, application, healthAlertFromDB.getDeviceGuid());
+            if (serviceResponse.isOk()) {
+                sendNotification(tenant, serviceResponse.getResult());
+            }
         }
 
         return ServiceResponseBuilder.<List<HealthAlert>>ok()
