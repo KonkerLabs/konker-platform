@@ -23,6 +23,7 @@ import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException
 import com.konkerlabs.platform.registry.api.model.DeviceHealthAlertVO;
 import com.konkerlabs.platform.registry.api.model.DeviceHealthVO;
 import com.konkerlabs.platform.registry.api.model.DeviceInputVO;
+import com.konkerlabs.platform.registry.api.model.DeviceStatsVO;
 import com.konkerlabs.platform.registry.api.model.DeviceVO;
 import com.konkerlabs.platform.registry.api.model.RestResponse;
 import com.konkerlabs.platform.registry.business.model.Application;
@@ -279,6 +280,29 @@ public class DeviceRestController extends AbstractRestController implements Init
 			return new DeviceHealthAlertVO().apply(deviceResponse.getResult());
         } else {
         	throw new NotFoundResponseException(user, deviceResponse);
+        }
+
+    }
+    
+    @GetMapping(path = "/{deviceGuid}/stats")
+    @ApiOperation(
+            value = "Get a device stats by guid",
+            response = RestResponse.class
+    )
+    @PreAuthorize("hasAuthority('SHOW_DEVICE')")
+    public DeviceStatsVO stats(
+    		@PathVariable("application") String applicationId,
+    		@PathVariable("deviceGuid") String deviceGuid) throws BadServiceResponseException, NotFoundResponseException {
+
+        Tenant tenant = user.getTenant();
+        Application application = getApplication(applicationId);
+
+        ServiceResponse<Device> deviceResponse = deviceRegisterService.getByDeviceGuid(tenant, application, deviceGuid);
+
+        if (!deviceResponse.isOk()) {
+            throw new NotFoundResponseException(user, deviceResponse);
+        } else {
+            return new DeviceStatsVO().apply(deviceResponse.getResult());
         }
 
     }

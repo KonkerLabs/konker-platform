@@ -90,15 +90,26 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     private List<HealthAlert> healths;
 
     private String BASEPATH = "devices";
+    
+    private Instant registrationDate = Instant.ofEpochMilli(1495716970000l).minusSeconds(3600l);
 
     @Before
     public void setUp() {
         final Location locationBR = Location.builder().name("br").build();
 
-        device1 = Device.builder().deviceId("id1").name("name1").guid("guid1").location(locationBR).application(application).active(true).build();
+        device1 = Device.builder()
+        		.deviceId("id1")
+        		.name("name1")
+        		.guid("guid1")
+        		.location(locationBR)
+        		.application(application)
+        		.active(true)
+        		.registrationDate(registrationDate)
+        		.lastModificationDate(registrationDate)
+        		.lastDataReceivedDate(registrationDate)
+        		.build();
         device2 = Device.builder().deviceId("id2").name("name2").guid("guid2").location(locationBR).application(application).active(false).build();
 
-        Instant registrationDate = Instant.ofEpochMilli(1495716970000l).minusSeconds(3600l);
         
 		health1 = HealthAlert.builder()
 				.guid("7d51c242-81db-11e6-a8c2-0746f976f223")
@@ -538,6 +549,71 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
                     .andExpect(jsonPath("$.messages").exists())
                     .andExpect(jsonPath("$.result").doesNotExist());
+
+    }
+    
+    @Test
+    public void shouldShowDeviceStats() throws Exception {
+
+        when(deviceRegisterService.getByDeviceGuid(tenant, application, device1.getGuid()))
+                .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device1).build());
+
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
+
+        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}/stats", application.getName(), BASEPATH, device1.getGuid()))
+                    .contentType("application/json")
+                    .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType("application/json;charset=UTF-8"))
+                    .andExpect(jsonPath("$.code", is(HttpStatus.OK.value())))
+                    .andExpect(jsonPath("$.status", is("success")))
+                    .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                    .andExpect(jsonPath("$.result").isMap())
+                    .andExpect(jsonPath("$.result.registrationDate", is(registrationDate.toString())))
+                    .andExpect(jsonPath("$.result.lastModificationDate", is(registrationDate.toString())))
+                    .andExpect(jsonPath("$.result.lastDataReceivedDate", is(registrationDate.toString())));
+
+    }
+
+    @Test
+    public void shouldShowStatWithWrongApplication() throws Exception {
+
+        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NANE))
+                .thenReturn(ServiceResponseBuilder.<Application>error().withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode()).build());
+
+        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}/stats", NONEXIST_APPLICATION_NANE, BASEPATH, device1.getGuid()))
+                    .contentType("application/json")
+                    .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().is4xxClientError())
+                    .andExpect(content().contentType("application/json;charset=UTF-8"))
+                    .andExpect(jsonPath("$.code", is(HttpStatus.NOT_FOUND.value())))
+                    .andExpect(jsonPath("$.status", is("error")))
+                    .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
+                    .andExpect(jsonPath("$.messages[0]", is("Application does not exist")))
+                    .andExpect(jsonPath("$.result").doesNotExist());
+
+    }
+
+    @Test
+    public void shouldTryShowDeviceStatWithBadRequest() throws Exception {
+
+        when(deviceRegisterService.getByDeviceGuid(tenant, application, device1.getGuid()))
+                .thenReturn(ServiceResponseBuilder.<Device>error().withMessage(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode()).build());
+
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
+
+        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}/stats", application.getName(), BASEPATH, device1.getGuid()))
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is4xxClientError())
+                .andExpect(content().contentType("application/json;charset=UTF-8"))
+                .andExpect(jsonPath("$.code", is(HttpStatus.NOT_FOUND.value())))
+                .andExpect(jsonPath("$.status", is("error")))
+                .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
+                .andExpect(jsonPath("$.messages[0]", is("Device GUID does not exist")))
+                .andExpect(jsonPath("$.result").doesNotExist());
 
     }
 
