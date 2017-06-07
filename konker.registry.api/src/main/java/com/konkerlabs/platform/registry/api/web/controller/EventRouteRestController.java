@@ -379,6 +379,8 @@ public class EventRouteRestController extends AbstractRestController implements 
         for (LocationService.Validations value : LocationService.Validations.values()) {
             validationsCode.add(value.getCode());
         }
+        validationsCode.add(LocationService.Messages.LOCATION_NOT_FOUND.getCode());
+
     }
 
 }

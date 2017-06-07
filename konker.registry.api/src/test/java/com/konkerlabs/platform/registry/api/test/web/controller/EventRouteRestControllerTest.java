@@ -1,15 +1,19 @@
 package com.konkerlabs.platform.registry.api.test.web.controller;
 
-import com.konkerlabs.platform.registry.api.config.WebMvcConfig;
-import com.konkerlabs.platform.registry.api.model.EventRouteVO;
-import com.konkerlabs.platform.registry.api.model.RouteModelLocationActorVO;
-import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
-import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
-import com.konkerlabs.platform.registry.api.web.controller.EventRouteRestController;
-import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
-import com.konkerlabs.platform.registry.business.model.*;
-import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
-import com.konkerlabs.platform.registry.business.services.api.*;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,15 +28,33 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.hamcrest.Matchers.*;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import com.konkerlabs.platform.registry.api.config.WebMvcConfig;
+import com.konkerlabs.platform.registry.api.model.EventRouteVO;
+import com.konkerlabs.platform.registry.api.model.RouteModelLocationActorVO;
+import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
+import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
+import com.konkerlabs.platform.registry.api.web.controller.EventRouteRestController;
+import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
+import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.DeviceModel;
+import com.konkerlabs.platform.registry.business.model.DeviceModelLocation;
+import com.konkerlabs.platform.registry.business.model.EventRoute;
+import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
+import com.konkerlabs.platform.registry.business.model.Location;
+import com.konkerlabs.platform.registry.business.model.RestDestination;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.Transformation;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
+import com.konkerlabs.platform.registry.business.services.api.LocationSearchService;
+import com.konkerlabs.platform.registry.business.services.api.LocationService;
+import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.business.services.api.TransformationService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceModelService.Validations;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = EventRouteRestController.class)
@@ -420,6 +442,88 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.result.outgoing.type", is("DEVICE")))
                     .andExpect(jsonPath("$.result.outgoing.guid", is("d_guid1")))
                     .andExpect(jsonPath("$.result.active", is(true)));
+
+    }
+
+    @Test
+    public void shouldTryCreateEventRouteFromModelLocationWithInvalidLocation() throws Exception {
+
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+            .thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
+
+        when(deviceModelService.getByTenantApplicationAndName(tenant, application, model1.getName()))
+            .thenReturn(ServiceResponseBuilder.<DeviceModel> ok().withResult(model1).build());
+
+        when(locationSearchService.findByName(tenant, application, location1.getName(), false))
+            .thenReturn(ServiceResponseBuilder.<Location> error().withMessage(LocationService.Messages.LOCATION_NOT_FOUND.getCode()).build());
+
+        when(deviceRegisterService.getByDeviceGuid(tenant, application, device1.getGuid()))
+            .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device1).build());
+
+        when(eventRouteService.save(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(Application.class), org.mockito.Matchers.any(EventRoute.class)))
+            .thenReturn(ServiceResponseBuilder.<EventRoute> ok().withResult(route4).build());
+
+        EventRouteVO routeVO4 = new EventRouteVO().apply(route4);
+        RouteModelLocationActorVO modelLocationVO = (RouteModelLocationActorVO) routeVO4.getIncoming();
+
+        modelLocationVO.setDeviceModelName(deviceModelLocation1.getDeviceModel().getName());
+        modelLocationVO.setDeviceModelGuid(null);
+
+        modelLocationVO.setLocationName(deviceModelLocation1.getLocation().getName());
+        modelLocationVO.setLocationGuid(null);
+
+        getMockMvc().perform(MockMvcRequestBuilders.post(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH))
+                                                   .content(getJson(routeVO4))
+                                                   .contentType("application/json")
+                                                   .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().is4xxClientError())
+                    .andExpect(content().contentType("application/json;charset=UTF-8"))
+                    .andExpect(jsonPath("$.code", is(HttpStatus.BAD_REQUEST.value())))
+                    .andExpect(jsonPath("$.status", is("error")))
+                    .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                    .andExpect(jsonPath("$.messages").exists())
+                    .andExpect(jsonPath("$.result").doesNotExist());
+
+    }
+
+    @Test
+    public void shouldTryCreateEventRouteFromModelLocationWithInvalidDeviceModel() throws Exception {
+
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+            .thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
+
+        when(deviceModelService.getByTenantApplicationAndName(tenant, application, model1.getName()))
+            .thenReturn(ServiceResponseBuilder.<DeviceModel> error().withMessage(Validations.DEVICE_MODEL_DOES_NOT_EXIST.getCode()).build());
+
+        when(locationSearchService.findByName(tenant, application, location1.getName(), false))
+            .thenReturn(ServiceResponseBuilder.<Location> ok().withResult(location1).build());
+
+        when(deviceRegisterService.getByDeviceGuid(tenant, application, device1.getGuid()))
+            .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device1).build());
+
+        when(eventRouteService.save(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(Application.class), org.mockito.Matchers.any(EventRoute.class)))
+            .thenReturn(ServiceResponseBuilder.<EventRoute> ok().withResult(route4).build());
+
+        EventRouteVO routeVO4 = new EventRouteVO().apply(route4);
+        RouteModelLocationActorVO modelLocationVO = (RouteModelLocationActorVO) routeVO4.getIncoming();
+
+        modelLocationVO.setDeviceModelName(deviceModelLocation1.getDeviceModel().getName());
+        modelLocationVO.setDeviceModelGuid(null);
+
+        modelLocationVO.setLocationName(deviceModelLocation1.getLocation().getName());
+        modelLocationVO.setLocationGuid(null);
+
+        getMockMvc().perform(MockMvcRequestBuilders.post(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH))
+                                                   .content(getJson(routeVO4))
+                                                   .contentType("application/json")
+                                                   .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().is4xxClientError())
+                    .andExpect(content().contentType("application/json;charset=UTF-8"))
+                    .andExpect(jsonPath("$.code", is(HttpStatus.BAD_REQUEST.value())))
+                    .andExpect(jsonPath("$.status", is("error")))
+                    .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                    .andExpect(jsonPath("$.messages").exists())
+                    .andExpect(jsonPath("$.result").doesNotExist());
 
     }
 
