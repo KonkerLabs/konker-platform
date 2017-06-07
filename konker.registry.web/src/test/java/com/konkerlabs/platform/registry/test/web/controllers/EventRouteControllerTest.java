@@ -167,7 +167,7 @@ public class EventRouteControllerTest extends WebLayerTestContext {
         URIDealer deviceURI = new URIDealer() {
             @Override
             public String getUriScheme() {
-                return EventRouteForm.URI_SCHEME;
+                return Device.URI_SCHEME;
             }
 
             @Override
