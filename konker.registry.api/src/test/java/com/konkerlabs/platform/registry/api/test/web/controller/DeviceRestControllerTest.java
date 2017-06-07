@@ -12,6 +12,7 @@ import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.After;
@@ -36,6 +37,8 @@ import com.konkerlabs.platform.registry.api.web.controller.DeviceRestController;
 import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.Event.EventActor;
 import com.konkerlabs.platform.registry.business.model.HealthAlert;
 import com.konkerlabs.platform.registry.business.model.HealthAlert.Description;
 import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertSeverity;
@@ -43,6 +46,7 @@ import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertTy
 import com.konkerlabs.platform.registry.business.model.Location;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.HealthAlertService;
 import com.konkerlabs.platform.registry.business.services.api.LocationSearchService;
@@ -70,6 +74,9 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 
     @Autowired
     private ApplicationService applicationService;
+    
+    @Autowired
+    private DeviceEventService deviceEventService;
 
     @Autowired
     private HealthAlertService healthAlertService;
@@ -89,6 +96,8 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     private HealthAlert health2;
 
     private List<HealthAlert> healths;
+    
+    private List<Event> events;
 
     private String BASEPATH = "devices";
     
@@ -134,7 +143,13 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
         		.build();
 
 		healths = Arrays.asList(health1, health2);
-
+		
+		Event event = Event.builder()
+					.incoming(EventActor.builder().channel("out").deviceGuid(device1.getGuid()).build())
+					.timestamp(registrationDate)
+					.build();
+		events = Collections.singletonList(event);
+		
         when(locationSearchService.findByName(tenant, application, "br", false))
             .thenReturn(ServiceResponseBuilder.<Location>ok().withResult(locationBR).build());
 
@@ -560,6 +575,9 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 
         when(applicationService.getByApplicationName(tenant, application.getName()))
 				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
+        
+        when(deviceEventService.findIncomingBy(tenant, application, device1.getGuid(), null, null, null, false, 1))
+        		.thenReturn(ServiceResponseBuilder.<List<Event>> ok().withResult(events).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}/stats", application.getName(), BASEPATH, device1.getGuid()))
                     .contentType("application/json")
@@ -603,6 +621,9 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 
         when(applicationService.getByApplicationName(tenant, application.getName()))
 				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
+        
+        when(deviceEventService.findIncomingBy(tenant, application, device1.getGuid(), null, null, null, false, 1))
+		.thenReturn(ServiceResponseBuilder.<List<Event>> ok().withResult(events).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}/stats", application.getName(), BASEPATH, device1.getGuid()))
                 .accept(MediaType.APPLICATION_JSON)
