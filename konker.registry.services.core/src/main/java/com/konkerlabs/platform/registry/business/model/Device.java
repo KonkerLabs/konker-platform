@@ -78,7 +78,6 @@ public class Device implements URIDealer, Validatable, UserDetails {
 	private String description;
 	private Instant registrationDate;
 	private Instant lastModificationDate;
-	private Instant lastDataReceivedDate;
     private LogLevel logLevel;
     @DBRef
     private DeviceModel deviceModel;

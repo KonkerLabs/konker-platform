@@ -107,7 +107,6 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
         		.active(true)
         		.registrationDate(registrationDate)
         		.lastModificationDate(registrationDate)
-        		.lastDataReceivedDate(registrationDate)
         		.build();
         device2 = Device.builder().deviceId("id2").name("name2").guid("guid2").location(locationBR).application(application).active(false).build();
 

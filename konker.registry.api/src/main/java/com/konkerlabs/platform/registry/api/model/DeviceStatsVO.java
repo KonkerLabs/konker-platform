@@ -34,7 +34,6 @@ public class DeviceStatsVO implements SerializableVO<Device, DeviceStatsVO> {
         DeviceStatsVO vo = new DeviceStatsVO();
         vo.setRegistrationDate(t.getRegistrationDate().toString());
         vo.setLastModificationDate(Optional.ofNullable(t.getLastModificationDate()).isPresent() ? t.getLastModificationDate().toString() : "");
-        vo.setLastDataReceivedDate(Optional.ofNullable(t.getLastDataReceivedDate()).isPresent() ? t.getLastDataReceivedDate().toString() : "");
         return vo;
     }
 

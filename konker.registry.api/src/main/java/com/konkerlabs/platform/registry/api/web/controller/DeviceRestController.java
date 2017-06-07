@@ -31,9 +31,11 @@ import com.konkerlabs.platform.registry.api.model.RestResponse;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.DeviceModel;
+import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.HealthAlert;
 import com.konkerlabs.platform.registry.business.model.Location;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.Validations;
@@ -64,6 +66,9 @@ public class DeviceRestController extends AbstractRestController implements Init
 
     @Autowired
     private HealthAlertService healthAlertService;
+    
+    @Autowired
+    private DeviceEventService deviceEventService;
 
     @Autowired
     private MessageSource messageSource;
@@ -312,11 +317,20 @@ public class DeviceRestController extends AbstractRestController implements Init
         Application application = getApplication(applicationId);
 
         ServiceResponse<Device> deviceResponse = deviceRegisterService.getByDeviceGuid(tenant, application, deviceGuid);
+        ServiceResponse<List<Event>> incomingResponse = deviceEventService.findIncomingBy(tenant, application, deviceGuid, null, null, null, false, 1);
 
         if (!deviceResponse.isOk()) {
             throw new NotFoundResponseException(user, deviceResponse);
         } else {
-            return new DeviceStatsVO().apply(deviceResponse.getResult());
+        	String lastDataReceivedDate = "";
+        	if (incomingResponse.isOk()) {
+        		List<Event> result = incomingResponse.getResult();
+        		lastDataReceivedDate = result.isEmpty() ? "" : result.get(0).getTimestamp().toString();
+        	}
+        	
+            DeviceStatsVO vo = new DeviceStatsVO().apply(deviceResponse.getResult());
+            vo.setLastDataReceivedDate(lastDataReceivedDate);
+			return vo;
         }
 
     }
