@@ -79,8 +79,8 @@ public class EventRouteRestController extends AbstractRestController implements 
             "        \"description\": \"\",\n" +
             "        \"incoming\": {\n" +
             "          \"type\": \"MODEL_LOCATION\",\n" +
-            "          \"guid\": \"818599ad-3502-4e70-a852-fc7af8e0a9f3\",\n" +
-            "          \"channel\": \"temperature\"\n" +
+            "          \"deviceModelName\": \"default\",\n" +
+            "          \"locationName\": \"br\"\n" +
             "        },\n" +
             "        \"outgoing\": {\n" +
             "          \"type\": \"REST\",\n" +
@@ -155,11 +155,13 @@ public class EventRouteRestController extends AbstractRestController implements 
 
             ServiceResponse<DeviceModel> deviceModelResponse = deviceModelService.getByTenantApplicationAndGuid(tenant, application, deviceActorVO.getDeviceModelGuid());
             if (deviceModelResponse.isOk()) {
+                deviceActorVO.setDeviceModelGuid(null);
                 deviceActorVO.setDeviceModelName(deviceModelResponse.getResult().getName());
             }
 
             ServiceResponse<Location> locationResponse = locationSearchService.findByGuid(tenant, application, deviceActorVO.getLocationGuid());
             if (locationResponse.isOk()) {
+                deviceActorVO.setLocationGuid(null);
                 deviceActorVO.setLocationName(locationResponse.getResult().getName());
             }
         }
@@ -225,16 +227,16 @@ public class EventRouteRestController extends AbstractRestController implements 
     }
 
     @SuppressWarnings("serial")
-    private RouteActor getRouteActor(Tenant tenant, Application application, RouteActorVO routeForm) throws BadServiceResponseException {
+    private RouteActor getRouteActor(Tenant tenant, Application application, RouteActorVO actorVO) throws BadServiceResponseException {
 
         RouteActor routeActor = RouteActor.builder().build();
 
-        if (routeForm == null) {
+        if (actorVO == null) {
             return null;
         }
 
-        if (RouteActorType.DEVICE.name().equalsIgnoreCase(routeForm.getType())) {
-            RouteDeviceActorVO deviceActorForm = (RouteDeviceActorVO) routeForm;
+        if (RouteActorType.DEVICE.name().equalsIgnoreCase(actorVO.getType())) {
+            RouteDeviceActorVO deviceActorForm = (RouteDeviceActorVO) actorVO;
             ServiceResponse<Device> deviceResponse = deviceRegisterService.getByDeviceGuid(tenant, application, deviceActorForm.getGuid());
             if (deviceResponse.isOk()) {
                 routeActor.setDisplayName(deviceResponse.getResult().getName());
@@ -244,8 +246,8 @@ public class EventRouteRestController extends AbstractRestController implements 
             } else {
                 throw new BadServiceResponseException(user, deviceResponse, validationsCode);
             }
-        } else if (RouteActorType.REST.name().equalsIgnoreCase(routeForm.getType())) {
-            RouteRestActorVO restActorForm = (RouteRestActorVO) routeForm;
+        } else if (RouteActorType.REST.name().equalsIgnoreCase(actorVO.getType())) {
+            RouteRestActorVO restActorForm = (RouteRestActorVO) actorVO;
             ServiceResponse<RestDestination> restResponse = restDestinationService.getByGUID(tenant, application, restActorForm.getGuid());
             if (restResponse.isOk()) {
                 routeActor.setDisplayName(restResponse.getResult().getName());
@@ -256,20 +258,20 @@ public class EventRouteRestController extends AbstractRestController implements 
                 throw new BadServiceResponseException(user, restResponse, validationsCode);
             }
 
-        } else if (RouteActorType.MODEL_LOCATION.name().equalsIgnoreCase(routeForm.getType())) {
-            RouteModelLocationActorVO restActorForm = (RouteModelLocationActorVO) routeForm;
+        } else if (RouteActorType.MODEL_LOCATION.name().equalsIgnoreCase(actorVO.getType())) {
+            RouteModelLocationActorVO modelLocationActorForm = (RouteModelLocationActorVO) actorVO;
 
             DeviceModel deviceModel = null;
             Location location = null;
 
-            ServiceResponse<DeviceModel> deviceModelResponse = deviceModelService.getByTenantApplicationAndName(tenant, application, restActorForm.getDeviceModelName());
+            ServiceResponse<DeviceModel> deviceModelResponse = deviceModelService.getByTenantApplicationAndName(tenant, application, modelLocationActorForm.getDeviceModelName());
             if (deviceModelResponse.isOk()) {
                 deviceModel = deviceModelResponse.getResult();
             } else {
                 throw new BadServiceResponseException(user, deviceModelResponse, validationsCode);
             }
 
-            ServiceResponse<Location> locationResponse = locationSearchService.findByName(tenant, application, restActorForm.getLocationName(), false);
+            ServiceResponse<Location> locationResponse = locationSearchService.findByName(tenant, application, modelLocationActorForm.getLocationName(), false);
             if (locationResponse.isOk()) {
                 location = locationResponse.getResult();
             } else {
@@ -278,7 +280,7 @@ public class EventRouteRestController extends AbstractRestController implements 
 
             routeActor.setDisplayName(MessageFormat.format("{0} @ {1}", deviceModel.getName(), location.getName()));
             routeActor.setUri(DeviceModelLocation.builder().tenant(tenant).deviceModel(deviceModel).location(location).build().toURI());
-            routeActor.setData(new HashMap<String, String>() {} );
+            routeActor.setData(new HashMap<String, String>() {{ put(EventRoute.DEVICE_MQTT_CHANNEL, modelLocationActorForm.getChannel()); }} );
 
             return routeActor;
         }

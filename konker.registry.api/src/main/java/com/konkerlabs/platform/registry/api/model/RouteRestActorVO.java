@@ -8,10 +8,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @JsonInclude(Include.NON_EMPTY)
 public class RouteRestActorVO
         extends RouteActorVO {
+
+    public RouteRestActorVO() {
+        super();
+        this.setType(RouteActorVO.TYPE_REST);
+    }
 
     @ApiModelProperty(position = 1, value = "actor (device, rest destination, model/location) guid", example = "818599ad-3502-4e70-a852-fc7af8e0a9f3")
     private String guid;

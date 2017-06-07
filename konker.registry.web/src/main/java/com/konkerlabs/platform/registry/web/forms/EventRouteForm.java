@@ -27,6 +27,7 @@ public class EventRouteForm
     private String id;
     private String name;
     private String description;
+    private String incomingScheme = Device.URI_SCHEME;
     private EventRouteActorForm incoming = new EventRouteActorForm();
     private String outgoingScheme = Device.URI_SCHEME;
     private EventRouteActorForm outgoing = new EventRouteActorForm();
@@ -112,6 +113,7 @@ public class EventRouteForm
         this.setId(model.getId());
         this.setName(model.getName());
         this.setDescription(model.getDescription());
+        this.setIncomingScheme(model.getIncoming().getUri().getScheme());
         this.getIncoming().setAuthorityId(model.getIncoming().getUri().getPath().replaceAll("/",""));
         this.getIncoming().setAuthorityData(model.getIncoming().getData());
         this.setOutgoingScheme(model.getOutgoing().getUri().getScheme());

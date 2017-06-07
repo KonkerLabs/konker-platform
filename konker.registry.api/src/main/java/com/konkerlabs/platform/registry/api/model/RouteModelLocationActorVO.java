@@ -10,10 +10,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @JsonInclude(Include.NON_EMPTY)
 public class RouteModelLocationActorVO
         extends RouteActorVO {
+
+    public RouteModelLocationActorVO() {
+        super();
+        this.setType(RouteActorVO.TYPE_MODEL_LOCATION);
+    }
 
     @ApiModelProperty(position = 1, value = "device model name", example = "default")
     private String deviceModelName;

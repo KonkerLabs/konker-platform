@@ -161,8 +161,8 @@ public class EventRouteController implements ApplicationContextAware {
     public ModelAndView outgoingFragment(@PathVariable String outgoingScheme) {
         EventRouteForm route = new EventRouteForm();
         switch (outgoingScheme) {
-            case "device": return new ModelAndView("routes/device-outgoing", "route", route);
-            case "rest" : return new ModelAndView("routes/rest-outgoing", "route", route);
+            case Device.URI_SCHEME:           return new ModelAndView("routes/device-outgoing", "route", route);
+            case RestDestination.URI_SCHEME : return new ModelAndView("routes/rest-outgoing", "route", route);
             //FIXME: Check for a way to render an empty HTTP body without an empty html file
             default: return new ModelAndView("common/empty");
         }

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+<div data-th-fragment="incoming">
+
+    <div class="form-group">
+        <label class="col-sm-1 control-label"
+               data-th-text="#{routes.form.incoming.device}"
+               for="incomingAuthority"></label>
+        <div class="col-sm-4">
+            <input type="text" data-th-field="*{incoming.authorityData['deviceModelLocation']}"
+                   class="form-control"
+                   id="incomingChannel"
+                   name="incomingChannel" data-th-placeholder="#{routes.form.incoming.channel.placeholder}"/>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-1 control-label"
+               data-th-text="#{routes.form.incoming.device}"
+               for="incomingAuthority"></label>
+        <div class="col-sm-4">
+            <input type="text" data-th-field="*{incoming.authorityData['locationName']}"
+                   class="form-control"
+                   id="incomingChannel"
+                   name="incomingChannel" data-th-placeholder="#{routes.form.incoming.channel.placeholder}"/>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-1 control-label"
+               data-th-text="#{routes.form.incoming.channel}"
+               for="incomingChannel"></label>
+        <div class="col-sm-4">
+            <input type="text" data-th-field="*{incoming.authorityData['channel']}"
+                   class="form-control"
+                   id="incomingChannel"
+                   name="incomingChannel" data-th-placeholder="#{routes.form.incoming.channel.placeholder}"/>
+        </div>
+    </div>
+
+
+</div>
+</body>
+</html>
