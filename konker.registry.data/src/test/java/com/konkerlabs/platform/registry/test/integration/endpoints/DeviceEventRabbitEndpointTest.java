@@ -3,6 +3,8 @@ package com.konkerlabs.platform.registry.test.integration.endpoints;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.time.Instant;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,15 +45,18 @@ public class DeviceEventRabbitEndpointTest {
         final String apiKey = "jV5bnJWK";
         final String channel = "temp";
         final String payload = "{ 'a' : '52T' }";
+        final Long epochMilli = 1490001001000L;
+        Instant timestamp = Instant.ofEpochMilli(epochMilli);
 
         MessageProperties messageProperties = new MessageProperties();
         messageProperties.setHeader("apiKey", apiKey);
         messageProperties.setHeader("channel", channel);
+        messageProperties.setHeader("ts", epochMilli);
 
         Message message = new Message(payload.getBytes("UTF-8"), messageProperties);
         deviceEventRabbitEndpoint.onDataPub(message);
 
-        verify(deviceEventProcessor, times(1)).process(apiKey, channel, payload);
+        verify(deviceEventProcessor, times(1)).process(apiKey, channel, payload, timestamp);
 
     }
 

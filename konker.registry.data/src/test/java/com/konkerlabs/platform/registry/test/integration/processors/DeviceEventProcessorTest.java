@@ -195,13 +195,16 @@ public class DeviceEventProcessorTest {
 
     @Test
     public void shouldFireRouteExecution() throws Exception {
+        Instant timestamp = Instant.now();
+        event.setTimestamp(timestamp);
+
         when(deviceRegisterService.findByApiKey(sourceApiKey)).thenReturn(device);
 
         when(deviceLogEventService.logIncomingEvent(eq(device), eq(event))).thenReturn(
                 ServiceResponseBuilder.<Event>ok().withResult(event).build()
         );
 
-        subject.process(sourceApiKey, incomingChannel, originalPayload);
+        subject.process(sourceApiKey, incomingChannel, originalPayload, timestamp);
 
         verify(eventRouteExecutor, times(1)).execute(any(Event.class), any(URI.class));
         verify(deviceLogEventService, times(1)).logIncomingEvent(any(Device.class), any(Event.class));

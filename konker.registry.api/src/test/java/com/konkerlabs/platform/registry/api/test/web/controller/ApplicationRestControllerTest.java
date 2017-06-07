@@ -37,6 +37,7 @@ import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.HealthAlert;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.HealthAlert.Description;
 import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertSeverity;
 import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertType;
 import com.konkerlabs.platform.registry.business.model.HealthAlert.Solution;
@@ -95,7 +96,7 @@ public class ApplicationRestControllerTest extends WebLayerTestContext {
         health1 = HealthAlert.builder()
 				.guid("7d51c242-81db-11e6-a8c2-0746f976f223")
 				.severity(HealthAlertSeverity.FAIL)
-				.description("Device sem enviar mensagem por mais de 5 minutos")
+				.description(Description.NO_MESSAGE_RECEIVED)
 				.registrationDate(registrationDate)
 				.lastChange(Instant.ofEpochMilli(1495716970000l))
         		.type(HealthAlertType.SILENCE)
@@ -106,7 +107,7 @@ public class ApplicationRestControllerTest extends WebLayerTestContext {
 		health2 = HealthAlert.builder()
 				.guid("7d51c242-81db-11e6-a8c2-0746f976f223")
 				.severity(HealthAlertSeverity.OK)
-				.description("Device sem enviar mensagem por mais de 5 minutos")
+				.description(Description.NO_MESSAGE_RECEIVED)
 				.registrationDate(registrationDate)
 				.lastChange(Instant.ofEpochMilli(1495716970000l))
         		.type(HealthAlertType.SILENCE)
@@ -398,13 +399,13 @@ public class ApplicationRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.result", hasSize(2)))
                     .andExpect(jsonPath("$.result[0].guid", is(health1.getGuid())))
                     .andExpect(jsonPath("$.result[0].severity", is(health1.getSeverity().toString())))
-                    .andExpect(jsonPath("$.result[0].description", is(health1.getDescription())))
+                    .andExpect(jsonPath("$.result[0].description", is("No message received from the device since a long time.")))
                     .andExpect(jsonPath("$.result[0].occurenceDate", is(health1.getLastChange().toString())))
                     .andExpect(jsonPath("$.result[0].type", is(health1.getType().toString())))
                     .andExpect(jsonPath("$.result[0].triggerGuid", is(health1.getTriggerGuid())))
                     .andExpect(jsonPath("$.result[1].guid", is(health2.getGuid())))
                     .andExpect(jsonPath("$.result[1].severity", is(health2.getSeverity().toString())))
-                    .andExpect(jsonPath("$.result[1].description", is(health2.getDescription())))
+                    .andExpect(jsonPath("$.result[1].description", is("No message received from the device since a long time.")))
                     .andExpect(jsonPath("$.result[1].occurenceDate", is(health2.getLastChange().toString())))
                     .andExpect(jsonPath("$.result[1].type", is(health2.getType().toString())))
                     .andExpect(jsonPath("$.result[1].triggerGuid", is(health2.getTriggerGuid())));

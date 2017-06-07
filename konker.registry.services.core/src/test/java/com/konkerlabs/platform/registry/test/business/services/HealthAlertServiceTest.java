@@ -22,6 +22,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.HealthAlert;
+import com.konkerlabs.platform.registry.business.model.HealthAlert.Description;
 import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertSeverity;
 import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertType;
 import com.konkerlabs.platform.registry.business.model.HealthAlert.Solution;
@@ -110,7 +111,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     	healthAlert = HealthAlert.builder()
     			.id("67014de6-81db-11e6-a5bc-3f99b78823c9")
     			.guid("7d51c242-81db-11e6-a8c2-0746f976f224")
-    			.description("Device sem enviar mensagem por mais de 10 minutos")
+    			.description(Description.NO_MESSAGE_RECEIVED)
     			.severity(HealthAlertSeverity.WARN)
     			.type(HealthAlertType.SILENCE)
     			.registrationDate(Instant.ofEpochMilli(1453320973747l))
@@ -123,7 +124,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     	tempHealthAlert = HealthAlert.builder()
     			.id("67014de6-81db-11e6-a5bc-3f99b788249c")
 				.guid("7d51c242-81db-11e6-a8c2-0746f976f223")
-				.description("Device sem enviar mensagem por mais de 5 minutos")
+				.description(Description.NO_MESSAGE_RECEIVED)
     			.severity(HealthAlertSeverity.FAIL)
     			.type(HealthAlertType.SILENCE)
     			.registrationDate(Instant.ofEpochMilli(1453320973747l))
@@ -135,7 +136,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     	newHealthAlert = HealthAlert.builder()
     			.guid("7d51c242-81db-11e6-a8c2-0746f976f225")
-    			.description("Device estabilizado")
+    			.description(Description.HEALTH_OK)
     			.severity(HealthAlertSeverity.OK)
     			.type(HealthAlertType.SILENCE)
     			.registrationDate(Instant.ofEpochMilli(1453320973747l))
@@ -349,7 +350,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json", "/fixtures/health-alert.json"})
     public void shouldUpdateHealthAlert() throws Exception {
-    	tempHealthAlert.setDescription("Updating description");
+    	tempHealthAlert.setDescription(Description.HEALTH_OK);
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.update(
     			application.getTenant(),
     			application,
