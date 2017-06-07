@@ -33,20 +33,20 @@ import com.konkerlabs.platform.registry.config.EmailConfig;
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
 public class UserNotificationServiceImpl implements UserNotificationService {
 	private static final Logger LOGGER = LoggerFactory.getLogger(UserNotificationServiceImpl.class);
-	
+
     private static final Sort SORT_DATE_DESC = new Sort(Sort.Direction.DESC, "date");
     @Autowired
     private UserNotificationRepository userNotificationRepository;
 
     @Autowired
     private UserNotificationStatusRepository userNotificationStatusRepository;
-    
+
     @Autowired
     private EmailService emailService;
-    
+
     @Autowired
     private Environment environment;
-    
+
     @Autowired
     private EmailConfig emailConfig;
 
@@ -181,7 +181,7 @@ public class UserNotificationServiceImpl implements UserNotificationService {
 
             UserNotificationStatus userHasNewMessagesFlag = userNotificationStatusRepository
                     .getByDestination(user.getEmail());
-            
+
             if (userHasNewMessagesFlag == null) {
                 userHasNewMessagesFlag = UserNotificationStatus.builder().destination(user.getEmail()).build();
             }
@@ -197,20 +197,22 @@ public class UserNotificationServiceImpl implements UserNotificationService {
 
 	private void sendEmailNotification(User user, UserNotification saved) {
 		List<String> profiles = Arrays.stream(environment.getActiveProfiles()).collect(Collectors.toList());
-		
+
 		if (user.isNotificationViaEmail() && profiles.contains("email")) {
 			Map<String, Object> templateParam = new HashMap<>();
 			templateParam.put("name", user.getName());
 			templateParam.put("body", saved.getBody());
-			
+
 			try {
-				emailService.send(emailConfig.getSender(), 
-						Collections.singletonList(user), 
-						Collections.emptyList(), 
-						saved.getSubject(), 
-						"text/email-notification", 
-						templateParam , 
+				emailService.send(emailConfig.getSender(),
+						Collections.singletonList(user),
+						Collections.emptyList(),
+						saved.getSubject(),
+						"text/email-notification",
+						templateParam ,
 						user.getLanguage().getLocale());
+
+				LOGGER.info("E-mail sent: {}", saved.getSubject());
 			} catch (MessagingException e) {
 				LOGGER.error("Notification: ", user.getTenant().toURI(), user.getTenant().getLogLevel(), e);
 			}

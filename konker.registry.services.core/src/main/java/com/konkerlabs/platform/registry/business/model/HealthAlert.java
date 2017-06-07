@@ -25,20 +25,37 @@ public class HealthAlert implements URIDealer {
 
 	public static final String URI_SCHEME = "healthAlert";
 
-    public static enum Solution {
+    public static enum Description {
 
-        MESSAGE_RECEIVED("Device received a message"),
-        ALERT_DELETED("Alert deleted"),
-        TRIGGER_DELETED("Alert trigger deleted");
+        NO_MESSAGE_RECEIVED("model.healthalert.description.no_message_received"),
+        HEALTH_OK("model.healthalert.description.health_ok");
 
-        private String message;
+        private String code;
 
-        public String getMessage() {
-            return message;
+        public String getCode() {
+            return code;
         }
 
-        Solution(String message) {
-            this.message = message;
+        Description(String code) {
+            this.code = code;
+        }
+
+    }
+
+    public static enum Solution {
+
+        MESSAGE_RECEIVED("model.healthalert.solution.message_received"),
+        ALERT_DELETED("model.healthalert.solution.alert_deleted"),
+        TRIGGER_DELETED("model.healthalert.solution.trigger_deleted");
+
+        private String code;
+
+        public String getCode() {
+            return code;
+        }
+
+        Solution(String code) {
+            this.code = code;
         }
 
     }
@@ -47,7 +64,7 @@ public class HealthAlert implements URIDealer {
 	private String id;
 	private String guid;
 	private HealthAlertSeverity severity;
-	private String description;
+	private Description description;
 	private Instant registrationDate;
 	private Instant lastChange;
 	private HealthAlertType type;
@@ -73,19 +90,25 @@ public class HealthAlert implements URIDealer {
 	}
 
 	public enum HealthAlertSeverity {
-		OK(3),
-		WARN(2),
-		FAIL(1);
+		OK(3, "model.healthalert.severity.ok"),
+		WARN(2, "model.healthalert.severity.warn"),
+		FAIL(1, "model.healthalert.severity.fail");
 
 		private Integer prior;
+        private String code;
 
-		HealthAlertSeverity(Integer prior) {
+		HealthAlertSeverity(Integer prior, String code) {
 			this.prior = prior;
+			this.code  = code;
 		}
 
 		public Integer getPrior() {
 			return prior;
 		}
+
+        public String getCode() {
+            return code;
+        }
 
 	}
 
@@ -112,7 +135,7 @@ public class HealthAlert implements URIDealer {
 	public Optional<Map<String, Object[]>> applyValidations() {
 		Map<String, Object[]> validations = new HashMap<>();
 
-		if (getDescription() == null || getDescription().isEmpty())
+		if (getDescription() == null)
 			validations.put(Validations.DESCRIPTION_NULL_EMPTY.code,null);
 		if (getSeverity() == null)
 			validations.put(Validations.SEVERITY_NULL.code,null);
