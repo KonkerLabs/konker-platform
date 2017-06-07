@@ -2,6 +2,7 @@ package com.konkerlabs.platform.registry.api.test.web.controller;
 
 import com.konkerlabs.platform.registry.api.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.api.model.EventRouteVO;
+import com.konkerlabs.platform.registry.api.model.RouteModelLocationActorVO;
 import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
 import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
 import com.konkerlabs.platform.registry.api.web.controller.EventRouteRestController;
@@ -59,6 +60,12 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
     private ApplicationService applicationService;
 
     @Autowired
+    private DeviceModelService deviceModelService;
+
+    @Autowired
+    private LocationSearchService locationSearchService;
+
+    @Autowired
     private TransformationService transformationService;
 
     @Autowired
@@ -75,11 +82,19 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
 
     private EventRoute route3;
 
+    private EventRoute route4;
+
     private Device device1;
 
     private Device device2;
 
     private RestDestination rest1;
+
+    private DeviceModel model1;
+
+    private Location location1;
+
+    private DeviceModelLocation deviceModelLocation1;
 
     private String BASEPATH = "routes";
 
@@ -92,12 +107,17 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
 
         rest1 = RestDestination.builder().tenant(tenant).guid("r_guid1").build();
 
+        model1 = DeviceModel.builder().tenant(tenant).name("elevator").guid("elevator_guid").build();
+        location1 = Location.builder().tenant(tenant).name("bauru").guid("bauru_guid").build();
+        deviceModelLocation1 = DeviceModelLocation.builder().tenant(tenant).deviceModel(model1).location(location1).build();
+
         Map<String, String> map = new HashMap<>();
         map.put("channel", "SBT");
 
         RouteActor routeActor1 = RouteActor.builder().uri(device1.toURI()).data(map).build();
         RouteActor routeActor2 = RouteActor.builder().uri(device2.toURI()).data(map).build();
         RouteActor routeActor3 = RouteActor.builder().uri(rest1.toURI()).data(map).build();
+        RouteActor routeActor4 = RouteActor.builder().uri(deviceModelLocation1.toURI()).data(map).build();
 
         route1 = EventRoute.builder()
                 .name("name1")
@@ -125,6 +145,14 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
                 .active(true)
                 .build();
 
+        route4 = EventRoute.builder()
+                .name("route4")
+                .guid("guid4")
+                .incoming(routeActor4)
+                .outgoing(routeActor1)
+                .active(true)
+                .build();
+
     }
 
     @After
@@ -132,6 +160,8 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
         Mockito.reset(eventRouteService);
         Mockito.reset(deviceRegisterService);
         Mockito.reset(transformationService);
+        Mockito.reset(deviceModelService);
+        Mockito.reset(locationSearchService);
     }
 
     @Test
@@ -140,9 +170,16 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
         List<EventRoute> routes = new ArrayList<>();
         routes.add(route1);
         routes.add(route2);
+        routes.add(route4);
 
         when(eventRouteService.getAll(tenant, application))
             .thenReturn(ServiceResponseBuilder.<List<EventRoute>> ok().withResult(routes).build());
+
+        when(deviceModelService.getByTenantApplicationAndGuid(tenant, application, model1.getGuid()))
+            .thenReturn(ServiceResponseBuilder.<DeviceModel> ok().withResult(model1).build());
+
+        when(locationSearchService.findByGuid(tenant, application, location1.getGuid()))
+            .thenReturn(ServiceResponseBuilder.<Location> ok().withResult(location1).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH))
                     .accept(MediaType.APPLICATION_JSON))
@@ -151,7 +188,7 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.code", is(HttpStatus.OK.value())))
                     .andExpect(jsonPath("$.status", is("success")))
                     .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
-                    .andExpect(jsonPath("$.result", hasSize(2)))
+                    .andExpect(jsonPath("$.result", hasSize(3)))
                     .andExpect(jsonPath("$.result[0].name", is("name1")))
                     .andExpect(jsonPath("$.result[0].guid", is("guid1")))
                     .andExpect(jsonPath("$.result[0].filteringExpression").doesNotExist())
@@ -162,6 +199,14 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.result[1].filteringExpression", is("val eq 2")))
                     .andExpect(jsonPath("$.result[1].transformationGuid").doesNotExist())
                     .andExpect(jsonPath("$.result[1].active", is(false)))
+                    .andExpect(jsonPath("$.result[2].name", is("route4")))
+                    .andExpect(jsonPath("$.result[2].guid", is("guid4")))
+                    .andExpect(jsonPath("$.result[2].incoming.type", is("MODEL_LOCATION")))
+                    .andExpect(jsonPath("$.result[2].incoming.deviceModelName", is("elevator")))
+                    .andExpect(jsonPath("$.result[2].incoming.locationName", is("bauru")))
+                    .andExpect(jsonPath("$.result[2].filteringExpression").doesNotExist())
+                    .andExpect(jsonPath("$.result[2].transformationGuid").doesNotExist())
+                    .andExpect(jsonPath("$.result[2].active", is(true)))
                     ;
 
     }
@@ -317,6 +362,60 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.result.incoming.guid", is("d_guid1")))
                     .andExpect(jsonPath("$.result.outgoing.type", is("REST")))
                     .andExpect(jsonPath("$.result.outgoing.guid", is("r_guid1")))
+                    .andExpect(jsonPath("$.result.active", is(true)));
+
+    }
+
+    @Test
+    public void shouldCreateEventRouteFromModelLocation() throws Exception {
+
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+            .thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
+
+        when(deviceModelService.getByTenantApplicationAndName(tenant, application, model1.getName()))
+            .thenReturn(ServiceResponseBuilder.<DeviceModel> ok().withResult(model1).build());
+
+        when(locationSearchService.findByName(tenant, application, location1.getName(), false))
+            .thenReturn(ServiceResponseBuilder.<Location> ok().withResult(location1).build());
+
+        when(deviceModelService.getByTenantApplicationAndGuid(tenant, application, model1.getGuid()))
+            .thenReturn(ServiceResponseBuilder.<DeviceModel> ok().withResult(model1).build());
+
+        when(locationSearchService.findByGuid(tenant, application, location1.getGuid()))
+            .thenReturn(ServiceResponseBuilder.<Location> ok().withResult(location1).build());
+
+        when(deviceRegisterService.getByDeviceGuid(tenant, application, device1.getGuid()))
+            .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device1).build());
+
+        when(eventRouteService.save(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(Application.class), org.mockito.Matchers.any(EventRoute.class)))
+            .thenReturn(ServiceResponseBuilder.<EventRoute> ok().withResult(route4).build());
+
+        EventRouteVO routeVO4 = new EventRouteVO().apply(route4);
+        RouteModelLocationActorVO modelLocationVO = (RouteModelLocationActorVO) routeVO4.getIncoming();
+
+        modelLocationVO.setDeviceModelName(deviceModelLocation1.getDeviceModel().getName());
+        modelLocationVO.setDeviceModelGuid(null);
+
+        modelLocationVO.setLocationName(deviceModelLocation1.getLocation().getName());
+        modelLocationVO.setLocationGuid(null);
+
+        getMockMvc().perform(MockMvcRequestBuilders.post(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH))
+                                                   .content(getJson(routeVO4))
+                                                   .contentType("application/json")
+                                                   .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().is2xxSuccessful())
+                    .andExpect(content().contentType("application/json;charset=UTF-8"))
+                    .andExpect(jsonPath("$.code", is(HttpStatus.CREATED.value())))
+                    .andExpect(jsonPath("$.status", is("success")))
+                    .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                    .andExpect(jsonPath("$.result").isMap())
+                    .andExpect(jsonPath("$.result.name", is("route4")))
+                    .andExpect(jsonPath("$.result.guid", is("guid4")))
+                    .andExpect(jsonPath("$.result.incoming.type", is("MODEL_LOCATION")))
+                    .andExpect(jsonPath("$.result.incoming.deviceModelName", is("elevator")))
+                    .andExpect(jsonPath("$.result.incoming.locationName", is("bauru")))
+                    .andExpect(jsonPath("$.result.outgoing.type", is("DEVICE")))
+                    .andExpect(jsonPath("$.result.outgoing.guid", is("d_guid1")))
                     .andExpect(jsonPath("$.result.active", is(true)));
 
     }

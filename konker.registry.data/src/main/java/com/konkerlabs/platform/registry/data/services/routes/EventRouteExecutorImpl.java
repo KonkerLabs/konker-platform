@@ -66,7 +66,7 @@ public class EventRouteExecutorImpl implements EventRouteExecutor {
                 }
 
                 try {
-                    if (isFilterMatch(event, eventRoute)) {
+                    if (isFilterExpressionMatch(event, eventRoute)) {
                         if (Optional.ofNullable(eventRoute.getTransformation()).isPresent()) {
                             Optional<Event> transformed = eventTransformationService.transform(
                                     event, eventRoute.getTransformation());
@@ -97,7 +97,7 @@ public class EventRouteExecutorImpl implements EventRouteExecutor {
         return new AsyncResult<List<Event>>(outEvents);
     }
 
-    private boolean isFilterMatch(Event event, EventRoute eventRoute) throws JsonProcessingException {
+    private boolean isFilterExpressionMatch(Event event, EventRoute eventRoute) throws JsonProcessingException {
         Optional<String> expression = Optional.ofNullable(eventRoute.getFilteringExpression())
                 .filter(filter -> !filter.isEmpty());
 
