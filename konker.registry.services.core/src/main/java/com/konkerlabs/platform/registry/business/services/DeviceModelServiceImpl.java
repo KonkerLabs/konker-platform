@@ -44,7 +44,6 @@ public class DeviceModelServiceImpl implements DeviceModelService {
     @Autowired
     private DeviceRepository deviceRepository;
 
-
     private ServiceResponse<DeviceModel> basicValidate(Tenant tenant, Application application, DeviceModel deviceModel) {
 		if (!Optional.ofNullable(tenant).isPresent()) {
 			Application app = Application.builder()
@@ -288,6 +287,13 @@ public class DeviceModelServiceImpl implements DeviceModelService {
 	@Override
 	public ServiceResponse<List<DeviceModel>> findAll(Tenant tenant, Application application) {
 		List<DeviceModel> all = deviceModelRepository.findAllByTenantIdAndApplicationName(tenant.getId(), application.getName());
+		if (all.isEmpty()) {
+		    ServiceResponse<DeviceModel> defaultResponse = findDefault(tenant, application);
+		    if (defaultResponse.isOk()) {
+		        all.add(defaultResponse.getResult());
+		    }
+		}
+
 		return ServiceResponseBuilder.<List<DeviceModel>>ok().withResult(all).build();
 	}
 
@@ -393,7 +399,7 @@ public class DeviceModelServiceImpl implements DeviceModelService {
 	}
 
 	@Override
-	public ServiceResponse<DeviceModel> findDefault(Tenant tenant, Application application, boolean defaultModel) {
+	public ServiceResponse<DeviceModel> findDefault(Tenant tenant, Application application) {
 		if (!Optional.ofNullable(tenant).isPresent())
             return ServiceResponseBuilder.<DeviceModel>error()
                     .withMessage(CommonValidations.TENANT_NULL.getCode())
@@ -404,7 +410,18 @@ public class DeviceModelServiceImpl implements DeviceModelService {
                     .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode())
                     .build();
 
-        DeviceModel deviceModelDefault = deviceModelRepository.findDefault(tenant.getId(), application.getName(), defaultModel);
+        DeviceModel deviceModelDefault = deviceModelRepository.findDefault(tenant.getId(), application.getName(), true);
+
+        if (!Optional.ofNullable(deviceModelDefault).isPresent()) {
+            deviceModelDefault = DeviceModel.builder()
+                    .name("default")
+                    .description("default model")
+                    .defaultModel(true)
+                    .guid(UUID.randomUUID().toString())
+                    .build();
+            ServiceResponse<DeviceModel> serviceResponse = register(tenant, application, deviceModelDefault);
+            deviceModelDefault = serviceResponse.getResult();
+        }
 
         return ServiceResponseBuilder.<DeviceModel>ok()
                 .withResult(deviceModelDefault)

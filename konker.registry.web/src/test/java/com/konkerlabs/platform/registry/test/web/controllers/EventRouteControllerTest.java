@@ -49,16 +49,20 @@ import org.springframework.util.MultiValueMap;
 
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.DeviceModel;
 import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
+import com.konkerlabs.platform.registry.business.model.Location;
 import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.Transformation;
 import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
+import com.konkerlabs.platform.registry.business.services.api.LocationSearchService;
 import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
@@ -95,6 +99,10 @@ public class EventRouteControllerTest extends WebLayerTestContext {
     @Autowired
     private RestDestinationService restDestinationService;
     @Autowired
+    private DeviceModelService deviceModelService;
+    @Autowired
+    private LocationSearchService locationSearchService;
+    @Autowired
     private ApplicationService applicationService;
     @Autowired
     private ApplicationContext applicationContext;
@@ -123,7 +131,6 @@ public class EventRouteControllerTest extends WebLayerTestContext {
                 ServiceResponseBuilder.<List<Transformation>>ok()
                         .withResult(transformations).build()
         );
-
         List<Device> devices = new ArrayList<>();
         when(deviceRegisterService.findAll(tenant, application)).thenReturn(
                 ServiceResponseBuilder.<List<Device>>ok()
@@ -133,6 +140,16 @@ public class EventRouteControllerTest extends WebLayerTestContext {
         when(restDestinationService.findAll(tenant, application)).thenReturn(
                 ServiceResponseBuilder.<List<RestDestination>>ok()
                         .withResult(restDestinations).build()
+        );
+        List<DeviceModel> deviceModels = new ArrayList<>();
+        when(deviceModelService.findAll(tenant, application)).thenReturn(
+                ServiceResponseBuilder.<List<DeviceModel>>ok()
+                        .withResult(deviceModels).build()
+        );
+        List<Location> locations = new ArrayList<>();
+        when(locationSearchService.findAll(tenant, application)).thenReturn(
+                ServiceResponseBuilder.<List<Location>>ok()
+                        .withResult(locations).build()
         );
 
         incomingDevice = builder().deviceId("0000000000000004").build();
@@ -481,6 +498,16 @@ public class EventRouteControllerTest extends WebLayerTestContext {
         @Bean
         public DeviceRegisterService deviceRegisterService() {
             return mock(DeviceRegisterService.class);
+        }
+
+        @Bean
+        public DeviceModelService deviceModelService() {
+            return mock(DeviceModelService.class);
+        }
+
+        @Bean
+        public LocationSearchService locationSearchService() {
+            return mock(LocationSearchService.class);
         }
 
         @Bean

@@ -68,7 +68,7 @@ public class DeviceModelServiceTest extends BusinessLayerTestSupport {
     			.name("MyCompany")
     			.domainName("MyCompany")
     			.build();
-    	
+
     	application = Application.builder()
     					.name("smartffkonker")
     					.friendlyName("Konker Smart Frig")
@@ -77,7 +77,7 @@ public class DeviceModelServiceTest extends BusinessLayerTestSupport {
                         .qualifier("konker")
                 .registrationDate(Instant.ofEpochMilli(1453320973747L))
                         .build();
-    	
+
     	otherApplication = Application.builder()
 				.name("smartffkonkerother")
 				.friendlyName("Konker Smart Frig")
@@ -86,7 +86,7 @@ public class DeviceModelServiceTest extends BusinessLayerTestSupport {
                 .qualifier("konker")
                 .registrationDate(Instant.ofEpochMilli(1453320973747L))
 				.build();
-    	
+
     	deviceModel = DeviceModel.builder()
     					.guid("7d51c242-81db-11e6-a8c2-0746f908e887")
 		    			.name("SmartFF")
@@ -95,7 +95,7 @@ public class DeviceModelServiceTest extends BusinessLayerTestSupport {
     					.defaultModel(true)
     					.tenant(currentTenant)
     					.build();
-    	
+
     	tempDeviceModel = DeviceModel.builder()
 				.guid("7d51c242-81db-11e6-a8c2-0746f908e997")
     			.name("sensor")
@@ -104,7 +104,7 @@ public class DeviceModelServiceTest extends BusinessLayerTestSupport {
 				.defaultModel(false)
 				.tenant(currentTenant)
 				.build();
-    	
+
     	newDeviceModel = DeviceModel.builder()
     			.name("SensorAC")
     			.description("Sensor AC model")
@@ -121,36 +121,36 @@ public class DeviceModelServiceTest extends BusinessLayerTestSupport {
 
         assertThat(serviceResponse, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
     }
-    
+
     @Test
     @UsingDataSet(locations = "/fixtures/tenants.json")
     public void shouldReturnErrorIfSavingDevModelTenantNotExists() throws Exception {
     	ServiceResponse<DeviceModel> serviceResponse = deviceModelService.register(otherTenant, application, deviceModel);
-    	
+
     	assertThat(serviceResponse, hasErrorMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()));
     }
-    
+
     @Test
     @UsingDataSet(locations = "/fixtures/tenants.json")
     public void shouldReturnErrorIfSavingDevModelAppIsNull() throws Exception {
     	ServiceResponse<DeviceModel> serviceResponse = deviceModelService.register(currentTenant, null, deviceModel);
-    	
+
     	assertThat(serviceResponse, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
     }
-    
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
     public void shouldReturnErrorIfSavingDevModelAppNotExists() throws Exception {
     	ServiceResponse<DeviceModel> serviceResponse = deviceModelService.register(currentTenant, otherApplication, deviceModel);
-    	
+
     	assertThat(serviceResponse, hasErrorMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode()));
     }
-    
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
     public void shouldReturnErrorIfSavingDevModelIsNull() throws Exception {
     	ServiceResponse<DeviceModel> serviceResponse = deviceModelService.register(currentTenant, application, null);
-    	
+
     	assertThat(serviceResponse, hasErrorMessage(Validations.DEVICE_MODEL_NULL.getCode()));
     }
 
@@ -160,36 +160,36 @@ public class DeviceModelServiceTest extends BusinessLayerTestSupport {
     	deviceModel.setName(null);
     	ServiceResponse<DeviceModel> serviceResponse = deviceModelService.register(currentTenant, application, deviceModel);
     	assertThat(serviceResponse, hasErrorMessage(DeviceModel.Validations.NAME_NULL_EMPTY.getCode()));
-    	
+
     	deviceModel.setName("");
     	serviceResponse = deviceModelService.register(currentTenant, application, deviceModel);
     	assertThat(serviceResponse, hasErrorMessage(DeviceModel.Validations.NAME_NULL_EMPTY.getCode()));
     }
-    
-    
+
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/device-model.json"})
     public void shouldReturnErrorIfSavingDevModelExists() throws Exception {
     	ServiceResponse<DeviceModel> serviceResponse = deviceModelService.register(currentTenant, application, deviceModel);
     	assertThat(serviceResponse, hasErrorMessage(Validations.DEVICE_MODEL_ALREADY_REGISTERED.getCode()));
     }
-    
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/device-model.json"})
     public void shouldSavingNewDevModelDefault() throws Exception {
     	newDeviceModel.setDefaultModel(true);
     	ServiceResponse<DeviceModel> serviceResponse = deviceModelService.register(currentTenant, application, newDeviceModel);
     	assertThat(serviceResponse, isResponseOk());
-    	
+
     	ServiceResponse<DeviceModel> serviceResponseOldDefault = deviceModelService
     			.getByTenantApplicationAndName(currentTenant, application, deviceModel.getName());
-    	
+
     	deviceModel.setDefaultModel(false);
     	assertThat(serviceResponseOldDefault, isResponseOk());
     	assertThat(serviceResponseOldDefault.getResult(), equalTo(deviceModel));
     	assertThat(serviceResponseOldDefault.getResult().isDefaultModel(), equalTo(false));
     }
-    
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
     public void shouldSaveTheFirstDevModel() throws Exception {
@@ -198,7 +198,7 @@ public class DeviceModelServiceTest extends BusinessLayerTestSupport {
         assertThat(response, isResponseOk());
         assertThat(response.getResult().isDefaultModel(), equalTo(true));
     }
-    
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/device-model.json"})
     public void shouldSaveDevModel() throws Exception {
@@ -206,70 +206,70 @@ public class DeviceModelServiceTest extends BusinessLayerTestSupport {
 
         assertThat(response, isResponseOk());
     }
-    
+
     @Test
     public void shouldReturnErrorIfUpdatingDevModelTenantIsNull() throws Exception {
         ServiceResponse<DeviceModel> serviceResponse = deviceModelService.update(null, application, "smartffkonker", deviceModel);
 
         assertThat(serviceResponse, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
     }
-    
+
     @Test
     @UsingDataSet(locations = "/fixtures/tenants.json")
     public void shouldReturnErrorIfUpdatingDevModelTenantNotExists() throws Exception {
     	ServiceResponse<DeviceModel> serviceResponse = deviceModelService.update(otherTenant, application, "smartffkonker", deviceModel);
-    	
+
     	assertThat(serviceResponse, hasErrorMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()));
     }
-    
+
     @Test
     @UsingDataSet(locations = "/fixtures/tenants.json")
     public void shouldReturnErrorIfUpdatingDevModelAppIsNull() throws Exception {
     	ServiceResponse<DeviceModel> serviceResponse = deviceModelService.update(currentTenant, null, "smartffkonker", deviceModel);
-    	
+
     	assertThat(serviceResponse, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
     }
-    
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
     public void shouldReturnErrorIfUpdatingDevModelAppNotExists() throws Exception {
     	ServiceResponse<DeviceModel> serviceResponse = deviceModelService.update(currentTenant, otherApplication, "smartffkonker", deviceModel);
-    	
+
     	assertThat(serviceResponse, hasErrorMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode()));
     }
-    
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
     public void shouldReturnErrorIfUpdatingDevModelIsNull() throws Exception {
     	ServiceResponse<DeviceModel> serviceResponse = deviceModelService.update(currentTenant, application, "smartffkonker", null);
-    	
+
     	assertThat(serviceResponse, hasErrorMessage(Validations.DEVICE_MODEL_NULL.getCode()));
     }
-    
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
     public void shouldReturnErrorIfUpdatingDevModelNameNull() throws Exception {
     	ServiceResponse<DeviceModel> serviceResponse = deviceModelService.update(currentTenant, application, null, deviceModel);
-    	
+
     	assertThat(serviceResponse, hasErrorMessage(Validations.DEVICE_MODEL_NAME_IS_NULL.getCode()));
     }
-    
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/device-model.json"})
     public void shouldReturnErrorIfUpdatingDevModelNotExists() throws Exception {
     	ServiceResponse<DeviceModel> serviceResponse = deviceModelService.update(currentTenant, application, newDeviceModel.getName(), deviceModel);
-    	
+
     	assertThat(serviceResponse, hasErrorMessage(Validations.DEVICE_MODEL_DOES_NOT_EXIST.getCode()));
     }
-    
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/device-model.json"})
     public void shouldReturnErrorIfUpdatingDevModelDefault() throws Exception {
     	ServiceResponse<DeviceModel> serviceResponse = deviceModelService.update(currentTenant, application, deviceModel.getName(), deviceModel);
-    	
+
     	assertThat(serviceResponse, hasErrorMessage(Validations.DEVICE_MODEL_NOT_UPDATED_IS_DEFAULT.getCode()));
     }
-    
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/device-model.json"})
     public void shouldUpdateApp() throws Exception {
@@ -279,14 +279,14 @@ public class DeviceModelServiceTest extends BusinessLayerTestSupport {
         assertThat(serviceResponse, isResponseOk());
         assertThat(serviceResponse.getResult().getDescription(), equalTo(tempDeviceModel.getDescription()));
     }
-    
+
     @Test
     public void shouldReturnErrorIfRemovingDevModelTenantIsNull() throws Exception {
         ServiceResponse<DeviceModel> serviceResponse = deviceModelService.remove(null, application, deviceModel.getName());
 
         assertThat(serviceResponse, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
     }
-    
+
     @Test
     @UsingDataSet(locations = "/fixtures/tenants.json")
     public void shouldReturnErrorIfRemovingDevModelAppIsNull() throws Exception {
@@ -294,136 +294,136 @@ public class DeviceModelServiceTest extends BusinessLayerTestSupport {
 
         assertThat(serviceResponse, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
     }
-    
+
     @Test
     @UsingDataSet(locations = "/fixtures/tenants.json")
     public void shouldReturnErrorIfRemovingDevModelNameNull() throws Exception {
     	ServiceResponse<DeviceModel> serviceResponse = deviceModelService.remove(currentTenant, application, null);
-    	
+
     	assertThat(serviceResponse, hasErrorMessage(Validations.DEVICE_MODEL_NAME_IS_NULL.getCode()));
     }
-    
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/device-model.json"})
     public void shouldReturnErrorIfRemovingDevModelNotExists() throws Exception {
     	ServiceResponse<DeviceModel> serviceResponse = deviceModelService.remove(currentTenant, application, otherApplication.getName());
-    	
+
     	assertThat(serviceResponse, hasErrorMessage(Validations.DEVICE_MODEL_DOES_NOT_EXIST.getCode()));
     }
-    
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/device-model.json", "/fixtures/devices.json"})
     public void shouldReturnErrorIfRemovingDevModelHasDevice() throws Exception {
     	ServiceResponse<DeviceModel> serviceResponse = deviceModelService.remove(currentTenant, application, tempDeviceModel.getName());
-    	
+
     	assertThat(serviceResponse, hasErrorMessage(Validations.DEVICE_MODEL_HAS_DEVICE.getCode()));
     }
-    
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/device-model.json"})
     public void shouldReturnErrorIfRemovingDevModelDefault() throws Exception {
     	ServiceResponse<DeviceModel> serviceResponse = deviceModelService.remove(currentTenant, application, deviceModel.getName());
-    	
+
     	assertThat(serviceResponse, hasErrorMessage(Validations.DEVICE_MODEL_NOT_REMOVED_IS_DEFAULT.getCode()));
     }
-    
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/device-model.json"})
     public void shouldRemoveDevModel() throws Exception {
     	ServiceResponse<DeviceModel> serviceResponse = deviceModelService.remove(currentTenant, application, tempDeviceModel.getName());
-    	
+
     	assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.OK));
     	assertThat(serviceResponse.getResponseMessages(), hasEntry(Messages.DEVICE_MODEL_REMOVED_SUCCESSFULLY.getCode(), null));
     }
-    
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/device-model.json"})
     public void shouldReturnAllApp() throws Exception {
     	ServiceResponse<List<DeviceModel>> response = deviceModelService.findAll(currentTenant, application);
-    	
+
     	assertThat(response, isResponseOk());
     	assertThat(response.getResult(), notNullValue());
     	assertThat(response.getResult(), hasSize(2));
     }
-    
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/device-model.json"})
     public void shouldReturnErrorGetDevModelByNameTenantNull() throws Exception {
     	ServiceResponse<DeviceModel> response = deviceModelService.getByTenantApplicationAndName(null, application, deviceModel.getName());
-    	
+
     	assertThat(response, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
     }
-    
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json"})
     public void shouldReturnErrorGetDevModelByNameAppNull() throws Exception {
     	ServiceResponse<DeviceModel> response = deviceModelService.getByTenantApplicationAndName(currentTenant, null, deviceModel.getName());
-    	
+
     	assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
     }
-    
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
     public void shouldReturnErrorGetDevModelByNameNull() throws Exception {
     	ServiceResponse<DeviceModel> response = deviceModelService.getByTenantApplicationAndName(currentTenant, application, null);
-    	
+
     	assertThat(response, hasErrorMessage(Validations.DEVICE_MODEL_NAME_IS_NULL.getCode()));
     }
-    
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
     public void shouldReturnErrorGetDevModelByNameTenantNotExists() throws Exception {
     	ServiceResponse<DeviceModel> response = deviceModelService.getByTenantApplicationAndName(otherTenant, application, deviceModel.getName());
-    	
+
     	assertThat(response, hasErrorMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()));
     }
-    
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
     public void shouldReturnErrorGetDevModelByNameAppNotExists() throws Exception {
     	ServiceResponse<DeviceModel> response = deviceModelService.getByTenantApplicationAndName(currentTenant, otherApplication, deviceModel.getName());
-    	
+
     	assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode()));
     }
-    
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
     public void shouldReturnErrorGetDevModelByNameDevModelNotExists() throws Exception {
     	ServiceResponse<DeviceModel> response = deviceModelService.getByTenantApplicationAndName(currentTenant, application, newDeviceModel.getName());
-    	
+
     	assertThat(response, hasErrorMessage(Validations.DEVICE_MODEL_DOES_NOT_EXIST.getCode()));
     }
-    
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/device-model.json"})
     public void shouldGetDevModelByName() throws Exception {
     	ServiceResponse<DeviceModel> response = deviceModelService.getByTenantApplicationAndName(currentTenant, application, deviceModel.getName());
-    	
+
     	assertThat(response, isResponseOk());
     	assertThat(response.getResult(), equalTo(deviceModel));
     }
-    
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/device-model.json"})
     public void shouldReturnErrorGetDevicesByDeviceModelTenantNull() throws Exception {
     	ServiceResponse<List<Device>> response = deviceModelService.listDevicesByDeviceModelName(null, application, deviceModel.getName());
-    	
+
     	assertThat(response, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
     }
-    
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/device-model.json"})
     public void shouldReturnErrorGetDevicesByDeviceModelAppNUll() throws Exception {
     	ServiceResponse<List<Device>> response = deviceModelService.listDevicesByDeviceModelName(currentTenant, null, deviceModel.getName());
-    	
+
     	assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
     }
-    
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json"})
     public void shouldReturnErrorGetDevicesByDeviceModelNotExist() throws Exception {
     	ServiceResponse<List<Device>> response = deviceModelService.listDevicesByDeviceModelName(currentTenant, application, deviceModel.getName());
-    	
+
     	assertThat(response, hasErrorMessage(Validations.DEVICE_MODEL_DOES_NOT_EXIST.getCode()));
     }
 
@@ -431,34 +431,34 @@ public class DeviceModelServiceTest extends BusinessLayerTestSupport {
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/device-model.json", "/fixtures/devices.json"})
     public void shouldGetDevicesByDeviceModel() throws Exception {
     	ServiceResponse<List<Device>> response = deviceModelService.listDevicesByDeviceModelName(currentTenant, application, deviceModel.getName());
-    	
+
     	assertThat(response, isResponseOk());
     	assertThat(response.getResult(), hasSize(1));
     }
-    
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/device-model.json"})
     public void shouldReturnErrorGetDefaultModelByTenantNull() throws Exception {
-    	ServiceResponse<DeviceModel> response = deviceModelService.findDefault(null, application, true);
-    	
+    	ServiceResponse<DeviceModel> response = deviceModelService.findDefault(null, application);
+
     	assertThat(response, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
     }
-    
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/device-model.json"})
     public void shouldReturnErrorGetDefaultModelByAppNUll() throws Exception {
-    	ServiceResponse<DeviceModel> response = deviceModelService.findDefault(currentTenant, null, true);
-    	
+    	ServiceResponse<DeviceModel> response = deviceModelService.findDefault(currentTenant, null);
+
     	assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
     }
-    
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/device-model.json"})
     public void shouldGetDefaultModel() throws Exception {
-    	ServiceResponse<DeviceModel> response = deviceModelService.findDefault(currentTenant, application, true);
-    	
+    	ServiceResponse<DeviceModel> response = deviceModelService.findDefault(currentTenant, application);
+
     	assertThat(response, isResponseOk());
     	assertThat(response.getResult(), equalTo(deviceModel));
     }
-    
+
 }
