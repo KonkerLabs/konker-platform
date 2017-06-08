@@ -100,6 +100,39 @@
       "active" : true
     },
     {
+      "_id" : "88a3a30a-35af-4a40-a066-42512338a81f",
+      "_class" : "com.konkerlabs.platform.registry.model.EventRoute",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
+      },
+      "application" : {
+        "$id" : "konker",
+        "$ref" : "applications"
+      },
+      "name" : "Device event forwarding route 2",
+      "guid" : "037d835a-c79d-4119-8f03-b2bc9a8cba34",
+      "description" : "Route description",
+      "incoming": {
+        "uri" : "device://konker/f067bfd0-3365-49e9-b7f5-fc5673f869a4",
+        "data" : {
+          "channel" : "data"
+        }
+      },
+      "outgoing": {
+        "uri" : "device://konker/0000000000000006",
+        "data" : {
+          "channel" : "in"
+        }
+      },
+      "filteringExpression" : "#metric == 'X'",
+      "transformation" : {
+        "$id" : "2747ec73-6910-43a1-8ddc-5a4a134ebab3",
+        "$ref" : "transformations"
+      },
+      "active" : true
+    },
+    {
       "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63ad",
       "_class" : "com.konkerlabs.platform.registry.model.EventRoute",
       "tenant" : {
@@ -147,7 +180,7 @@
       "guid" : "99091de2-2ba9-4467-af65-e2ce779a6908",
       "description" : "Route description",
       "incoming": {
-        "uri" : "device://konker/1af9be20-441e-419b-84a9-cb84efd4f49d",
+        "uri" : "device://konker/f067bfd0-3365-49e9-b7f5-fc5673f869a4",
         "data" : {
           "channel" : "data"
         }

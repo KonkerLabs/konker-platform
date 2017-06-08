@@ -2,18 +2,29 @@ package com.konkerlabs.platform.registry.test.data.services;
 
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.DeviceModel;
+import com.konkerlabs.platform.registry.business.model.DeviceModelLocation;
 import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
+import com.konkerlabs.platform.registry.business.model.Location;
+import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.Transformation;
 import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
+import com.konkerlabs.platform.registry.business.repositories.DeviceModelRepository;
 import com.konkerlabs.platform.registry.business.repositories.EventRouteRepository;
+import com.konkerlabs.platform.registry.business.repositories.LocationRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
+import com.konkerlabs.platform.registry.business.services.api.LocationService;
+import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.EventRouteService.Validations;
 import com.konkerlabs.platform.registry.test.data.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.data.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.data.base.MongoTestConfiguration;
@@ -67,6 +78,10 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     private ApplicationRepository applicationRepository;
     @Autowired
     private EventRouteRepository eventRouteRepository;
+    @Autowired
+    private DeviceModelRepository deviceModelRepository;
+    @Autowired
+    private LocationRepository locationRepository;
 
     private EventRoute route;
 
@@ -105,7 +120,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
                                     @Override
                                     public String getGuid() {
-                                        return "1af9be20-441e-419b-84a9-cb84efd4f49d";
+                                        return "f067bfd0-3365-49e9-b7f5-fc5673f869a4";
                                     }
                                 }.toURI()
                         ).data(new HashMap<String, String>() {{
@@ -237,6 +252,236 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json", "/fixtures/devices.json"})
+    public void shouldReturnDeviceNotFoundMessage() throws Exception {
+
+        route.setIncoming(
+                        RouteActor.builder().uri(
+                                new URIDealer() {
+                                    @Override
+                                    public String getUriScheme() {
+                                        return Device.URI_SCHEME;
+                                    }
+
+                                    @Override
+                                    public String getContext() {
+                                        return tenant.getDomainName();
+                                    }
+
+                                    @Override
+                                    public String getGuid() {
+                                        return "6834ebf8-3a69-445e-9780-ddc47b0638bd";
+                                    }
+                                }.toURI()
+                        ).data(new HashMap<String, String>() {{
+                            put(DEVICE_MQTT_CHANNEL, "in");
+                        }}).build()
+                );
+
+        ServiceResponse<EventRoute> response = subject.save(tenant, application, route);
+
+        assertThat(response, hasErrorMessage(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode()));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json", "/fixtures/devices.json"})
+    public void shouldReturnRestNotFoundMessage() throws Exception {
+
+        route.setOutgoing(
+                        RouteActor.builder().uri(
+                                new URIDealer() {
+                                    @Override
+                                    public String getUriScheme() {
+                                        return RestDestination.URI_SCHEME;
+                                    }
+
+                                    @Override
+                                    public String getContext() {
+                                        return tenant.getDomainName();
+                                    }
+
+                                    @Override
+                                    public String getGuid() {
+                                        return "6834ebf8-3a69-445e-9780-ddc47b0638bd";
+                                    }
+                                }.toURI()
+                        ).data(new HashMap<String, String>() {{
+                            put(DEVICE_MQTT_CHANNEL, "in");
+                        }}).build()
+                );
+
+        ServiceResponse<EventRoute> response = subject.save(tenant, application, route);
+
+        assertThat(response, hasErrorMessage(RestDestinationService.Validations.DESTINATION_NOT_FOUND.getCode()));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json", "/fixtures/devices.json"})
+    public void shouldReturnErrorSavingInvalidModelLocationGuid() throws Exception {
+
+        route.setOutgoing(
+                        RouteActor.builder().uri(
+                                new URIDealer() {
+                                    @Override
+                                    public String getUriScheme() {
+                                        return DeviceModelLocation.URI_SCHEME;
+                                    }
+
+                                    @Override
+                                    public String getContext() {
+                                        return tenant.getDomainName();
+                                    }
+
+                                    @Override
+                                    public String getGuid() {
+                                        return "6834ebf8-3a69-445e-9780-ddc47b0638bd";
+                                    }
+                                }.toURI()
+                        ).data(new HashMap<String, String>() {{
+                            put(DEVICE_MQTT_CHANNEL, "in");
+                        }}).build()
+                );
+
+        ServiceResponse<EventRoute> response = subject.save(tenant, application, route);
+
+        assertThat(response, hasErrorMessage(Validations.GUID_NULL.getCode()));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json", "/fixtures/devices.json"})
+    public void shouldReturnErrorSavingNonExistingDeviceModel() throws Exception {
+
+        route.setOutgoing(
+                        RouteActor.builder().uri(
+                                new URIDealer() {
+                                    @Override
+                                    public String getUriScheme() {
+                                        return DeviceModelLocation.URI_SCHEME;
+                                    }
+
+                                    @Override
+                                    public String getContext() {
+                                        return tenant.getDomainName();
+                                    }
+
+                                    @Override
+                                    public String getGuid() {
+                                        return "6834ebf8-3a69-445e-9780-ddc47b0638bd/6834ebf8-3a69-445e-9780-ddc47b0638bd";
+                                    }
+                                }.toURI()
+                        ).data(new HashMap<String, String>() {{
+                            put(DEVICE_MQTT_CHANNEL, "in");
+                        }}).build()
+                );
+
+        ServiceResponse<EventRoute> response = subject.save(tenant, application, route);
+
+        assertThat(response, hasErrorMessage(DeviceModelService.Validations.DEVICE_MODEL_NOT_FOUND.getCode()));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json", "/fixtures/devices.json"})
+    public void shouldReturnErrorSavingNonExistingLocation() throws Exception {
+
+        final String modelGuid = "a5d6b6bd-a258-4a3b-82a9-76dc1727c7a6";
+
+        DeviceModel deviceModel = DeviceModel.builder()
+                                             .tenant(tenant)
+                                             .application(application)
+                                             .name("blue")
+                                             .guid(modelGuid)
+                                             .build();
+        deviceModel = deviceModelRepository.save(deviceModel);
+
+        route.setIncoming(
+                        RouteActor.builder().uri(
+                                new URIDealer() {
+                                    @Override
+                                    public String getUriScheme() {
+                                        return DeviceModelLocation.URI_SCHEME;
+                                    }
+
+                                    @Override
+                                    public String getContext() {
+                                        return tenant.getDomainName();
+                                    }
+
+                                    @Override
+                                    public String getGuid() {
+                                        return modelGuid + "/6834ebf8-3a69-445e-9780-ddc47b0638bd";
+                                    }
+                                }.toURI()
+                        ).data(new HashMap<String, String>() {{
+                            put(DEVICE_MQTT_CHANNEL, "in");
+                        }}).build()
+                );
+
+        ServiceResponse<EventRoute> response = subject.save(tenant, application, route);
+
+        assertThat(response, hasErrorMessage(LocationService.Validations.LOCATION_GUID_DOES_NOT_EXIST.getCode()));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json", "/fixtures/devices.json"})
+    public void shouldSaveModelLocation() throws Exception {
+
+        final String modelGuid    = "a5d6b6bd-a258-4a3b-82a9-76dc1727c7a6";
+        final String locationGuid = "5217e479-e677-4281-a27f-9bbd898e6b6e";
+
+        DeviceModel deviceModel = DeviceModel.builder()
+                                             .tenant(tenant)
+                                             .application(application)
+                                             .name("blue")
+                                             .guid(modelGuid)
+                                             .build();
+        deviceModel = deviceModelRepository.save(deviceModel);
+
+        Location location = Location.builder()
+                                    .tenant(tenant)
+                                    .application(application)
+                                    .name("here")
+                                    .guid(locationGuid)
+                                    .build();
+        location = locationRepository.save(location);
+
+        route.setIncoming(
+                        RouteActor.builder().uri(
+                                new URIDealer() {
+                                    @Override
+                                    public String getUriScheme() {
+                                        return DeviceModelLocation.URI_SCHEME;
+                                    }
+
+                                    @Override
+                                    public String getContext() {
+                                        return tenant.getDomainName();
+                                    }
+
+                                    @Override
+                                    public String getGuid() {
+                                        return modelGuid + "/" + locationGuid;
+                                    }
+                                }.toURI()
+                        ).data(new HashMap<String, String>() {{
+                            put(DEVICE_MQTT_CHANNEL, "in");
+                        }}).build()
+                );
+
+        ServiceResponse<EventRoute> response = subject.save(tenant, application, route);
+
+        assertThat(response, isResponseOk());
+        assertThat(eventRouteRepository.findByIncomingUri(route.getIncoming().getUri()), notNullValue());
+        assertThat(response.getResult().getIncoming().getUri(), equalTo(route.getIncoming().getUri()));
+        assertThat(response.getResult().getIncoming().getDisplayName(), equalTo("blue @ here"));
+        assertThat(response.getResult().getOutgoing().getUri(), equalTo(route.getOutgoing().getUri()));
+        assertThat(response.getResult().getOutgoing().getDisplayName(), equalTo("SN4434567855"));
+        assertThat(response.getResult().getTransformation(), equalTo(route.getTransformation()));
+        assertThat(response.getResult().getGuid(), notNullValue());
+
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json",
+            "/fixtures/transformations.json", "/fixtures/event-routes.json"})
     public void shouldPersistIfRouteIsValid() throws Exception {
 
         ServiceResponse<EventRoute> response = subject.save(tenant, application, route);
@@ -244,6 +489,9 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
         assertThat(response, isResponseOk());
         assertThat(eventRouteRepository.findByIncomingUri(route.getIncoming().getUri()), notNullValue());
         assertThat(response.getResult().getIncoming().getUri(), equalTo(route.getIncoming().getUri()));
+        assertThat(response.getResult().getIncoming().getDisplayName(), equalTo("SN4434567844"));
+        assertThat(response.getResult().getOutgoing().getUri(), equalTo(route.getOutgoing().getUri()));
+        assertThat(response.getResult().getOutgoing().getDisplayName(), equalTo("SN4434567855"));
         assertThat(response.getResult().getTransformation(), equalTo(route.getTransformation()));
         assertThat(response.getResult().getGuid(), notNullValue());
     }
@@ -372,7 +620,8 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/event-routes.json", "/fixtures/devices.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json",
+            "/fixtures/event-routes.json"})
     public void shouldUpdateIfRouteIsValid() throws Exception {
         ServiceResponse<EventRoute> response = subject.update(tenant, application, existingGuid, route);
 
@@ -388,15 +637,16 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
         List<EventRoute> allRoutes = subject.getAll(tenant, application).getResult();
 
         assertThat(allRoutes, notNullValue());
-        assertThat(allRoutes, hasSize(8));
+        assertThat(allRoutes, hasSize(9));
         assertThat(allRoutes.get(0).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63aa"));
         assertThat(allRoutes.get(1).getId(), equalTo("01231829-4435-4eb0-abd6-7a7bae7812bd"));
         assertThat(allRoutes.get(2).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ab"));
-        assertThat(allRoutes.get(3).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ad"));
-        assertThat(allRoutes.get(4).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ae"));
-        assertThat(allRoutes.get(5).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ba"));
-        assertThat(allRoutes.get(6).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63bb"));
-        assertThat(allRoutes.get(7).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63bc"));
+        assertThat(allRoutes.get(3).getId(), equalTo("88a3a30a-35af-4a40-a066-42512338a81f"));
+        assertThat(allRoutes.get(4).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ad"));
+        assertThat(allRoutes.get(5).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ae"));
+        assertThat(allRoutes.get(6).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ba"));
+        assertThat(allRoutes.get(7).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63bb"));
+        assertThat(allRoutes.get(8).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63bc"));
 
 
         allRoutes = subject.getAll(emptyTenant, emptyApplication).getResult();
@@ -502,8 +752,8 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/rest-destinations.json",
-            "/fixtures/event-routes.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json",
+            "/fixtures/transformations.json", "/fixtures/rest-destinations.json", "/fixtures/event-routes.json"})
     public void shouldSaveEditedRouteAndFillDisplayNameForOutgoingREST() throws Exception {
         String expectedDisplayName = "a restful destination";
         EventRoute route = subject.getByGUID(tenant, application, existingGuid).getResult();
@@ -519,8 +769,8 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/rest-destinations.json",
-            "/fixtures/event-routes.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json",
+            "/fixtures/transformations.json", "/fixtures/rest-destinations.json", "/fixtures/event-routes.json"})
     public void shouldUpdateRouteAndFillDisplayNameForOutgoingREST() throws Exception {
         String expectedDisplayName = "a restful destination";
         String newRouteName = "Changing Name To Persist";
@@ -556,9 +806,9 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
         assertThat(routes, notNullValue());
         assertThat(routes, hasSize(3));
-        assertThat(routes.get(0).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ab"));
-        assertThat(routes.get(1).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ae"));
-        assertThat(routes.get(2).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ba"));
+        assertThat(routes.get(0).getId(), equalTo("01231829-4435-4eb0-abd6-7a7bae7812bd"));
+        assertThat(routes.get(1).getId(), equalTo("88a3a30a-35af-4a40-a066-42512338a81f"));
+        assertThat(routes.get(2).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ae"));
     }
 
     /* ---------------------- remove ------------------------- */
