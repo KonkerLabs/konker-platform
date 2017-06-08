@@ -20,22 +20,22 @@ public class DeviceHealthAlertVO implements SerializableVO<HealthAlert, DeviceHe
 
 	@ApiModelProperty(value = "the severity status", position = 0, example = "1cfc3f38-497e-4ff3-b5b4-c04940c53c6d")
 	private String guid;
-	
+
     @ApiModelProperty(value = "the severity status", position = 1, example = "FAIL")
     private String severity;
-    
+
     @ApiModelProperty(value = "the severity status", position = 2, example = "Device does not sent message for 5 minutes")
     private String description;
-    
+
     @ApiModelProperty(value = "last update of device health", position = 3, example = "2017-04-05T13:55:20.150Z")
     private String occurenceDate;
-    
+
     @ApiModelProperty(value = "the severity status", position = 4, example = "SILENCE")
     private String type;
-    
+
     @ApiModelProperty(value = "the device guid identification", position = 5, example = "1cfc3f38-497e-4ff3-b5b4-c04940c22a9a")
     private String deviceGuid;
-    
+
     @ApiModelProperty(value = "the trigger guid identification", position = 5, example = "1cfc3f38-497e-4ff3-b5b4-c04940c53c6c")
     private String triggerGuid;
 
@@ -44,7 +44,6 @@ public class DeviceHealthAlertVO implements SerializableVO<HealthAlert, DeviceHe
         DeviceHealthAlertVO vo = new DeviceHealthAlertVO();
         vo.setGuid(t.getGuid());
         vo.setSeverity(t.getSeverity().name());
-        vo.setDescription(t.getDescription());
         vo.setOccurenceDate(t.getLastChange().toString());
         vo.setType(t.getType().name());
         vo.setDeviceGuid(t.getDeviceGuid());
@@ -56,5 +55,5 @@ public class DeviceHealthAlertVO implements SerializableVO<HealthAlert, DeviceHe
 	public HealthAlert patchDB(HealthAlert t) {
 		return null;
 	}
- 
+
 }

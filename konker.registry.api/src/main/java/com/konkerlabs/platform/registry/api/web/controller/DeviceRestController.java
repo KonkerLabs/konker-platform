@@ -1,12 +1,14 @@
 package com.konkerlabs.platform.registry.api.web.controller;
 
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,14 +25,17 @@ import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException
 import com.konkerlabs.platform.registry.api.model.DeviceHealthAlertVO;
 import com.konkerlabs.platform.registry.api.model.DeviceHealthVO;
 import com.konkerlabs.platform.registry.api.model.DeviceInputVO;
+import com.konkerlabs.platform.registry.api.model.DeviceStatsVO;
 import com.konkerlabs.platform.registry.api.model.DeviceVO;
 import com.konkerlabs.platform.registry.api.model.RestResponse;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.DeviceModel;
+import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.HealthAlert;
 import com.konkerlabs.platform.registry.business.model.Location;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.Validations;
@@ -61,6 +66,12 @@ public class DeviceRestController extends AbstractRestController implements Init
 
     @Autowired
     private HealthAlertService healthAlertService;
+    
+    @Autowired
+    private DeviceEventService deviceEventService;
+
+    @Autowired
+    private MessageSource messageSource;
 
     private Set<String> validationsCode = new HashSet<>();
 
@@ -276,9 +287,50 @@ public class DeviceRestController extends AbstractRestController implements Init
         		deviceGuid);
 
         if (deviceResponse.isOk()) {
-			return new DeviceHealthAlertVO().apply(deviceResponse.getResult());
+            List<DeviceHealthAlertVO> healthAlertsVO = new LinkedList<>();
+
+            for (HealthAlert healthAlert: deviceResponse.getResult()) {
+                DeviceHealthAlertVO healthAlertVO = new DeviceHealthAlertVO();
+                healthAlertVO = healthAlertVO.apply(healthAlert);
+                healthAlertVO.setDescription(messageSource.getMessage(healthAlert.getDescription().getCode(), null, user.getLanguage().getLocale()));
+
+                healthAlertsVO.add(healthAlertVO);
+            }
+            return healthAlertsVO;
         } else {
         	throw new NotFoundResponseException(user, deviceResponse);
+        }
+
+    }
+    
+    @GetMapping(path = "/{deviceGuid}/stats")
+    @ApiOperation(
+            value = "Get a device stats by guid",
+            response = RestResponse.class
+    )
+    @PreAuthorize("hasAuthority('SHOW_DEVICE')")
+    public DeviceStatsVO stats(
+    		@PathVariable("application") String applicationId,
+    		@PathVariable("deviceGuid") String deviceGuid) throws BadServiceResponseException, NotFoundResponseException {
+
+        Tenant tenant = user.getTenant();
+        Application application = getApplication(applicationId);
+
+        ServiceResponse<Device> deviceResponse = deviceRegisterService.getByDeviceGuid(tenant, application, deviceGuid);
+        ServiceResponse<List<Event>> incomingResponse = deviceEventService.findIncomingBy(tenant, application, deviceGuid, null, null, null, false, 1);
+
+        if (!deviceResponse.isOk()) {
+            throw new NotFoundResponseException(user, deviceResponse);
+        } else {
+        	String lastDataReceivedDate = "";
+        	if (incomingResponse.isOk()) {
+        		List<Event> result = incomingResponse.getResult();
+        		lastDataReceivedDate = result.isEmpty() ? "" : result.get(0).getTimestamp().toString();
+        	}
+        	
+            DeviceStatsVO vo = new DeviceStatsVO().apply(deviceResponse.getResult());
+            vo.setLastDataReceivedDate(lastDataReceivedDate);
+			return vo;
         }
 
     }

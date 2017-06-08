@@ -4,6 +4,8 @@ import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.data.config.RabbitMQConfig;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
 
+import java.time.Instant;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
@@ -39,6 +41,9 @@ public class DeviceEventRabbitEndpoint {
 
         String apiKey = (String) properties.getHeaders().get(RabbitMQConfig.MSG_HEADER_APIKEY);
         String channel = (String) properties.getHeaders().get(RabbitMQConfig.MSG_HEADER_CHANNEL);
+        Long epochMilli = (Long) properties.getHeaders().get(RabbitMQConfig.MSG_HEADER_TIMESTAMP);
+        Instant timestamp = null;
+
         String payload = new String(message.getBody());
 
         if (!StringUtils.hasText(apiKey)) {
@@ -49,10 +54,12 @@ public class DeviceEventRabbitEndpoint {
             LOGGER.error("Channel not found.");
             return;
         }
-
+        if (epochMilli != null) {
+            timestamp = Instant.ofEpochMilli(epochMilli);
+        }
 
         try {
-            deviceEventProcessor.process(apiKey, channel, payload);
+            deviceEventProcessor.process(apiKey, channel, payload, timestamp);
         } catch (BusinessException be) {
             LOGGER.error("BusinessException processing message", be);
         }

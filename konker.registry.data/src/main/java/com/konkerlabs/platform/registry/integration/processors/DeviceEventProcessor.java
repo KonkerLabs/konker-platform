@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry.integration.processors;
 
 import java.text.MessageFormat;
+import java.time.Instant;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -57,6 +58,10 @@ public class DeviceEventProcessor {
     }
 
     public void process(String apiKey, String channel, String payload) throws BusinessException {
+        process(apiKey, channel,  payload, Instant.now());
+    }
+
+    public void process(String apiKey, String channel, String payload, Instant timestamp) throws BusinessException {
 
         Optional.ofNullable(apiKey).filter(s -> !s.isEmpty())
                 .orElseThrow(() -> new BusinessException(Messages.APIKEY_MISSING.getCode()));
@@ -79,6 +84,7 @@ public class DeviceEventProcessor {
                                         ? device.getApplication().getName(): null)
                                 .build()
                 )
+                .timestamp(timestamp)
                 .payload(payload)
                 .build();
         if (device.isActive()) {

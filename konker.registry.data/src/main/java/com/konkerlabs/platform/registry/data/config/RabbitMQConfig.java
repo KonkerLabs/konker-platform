@@ -35,6 +35,8 @@ public class RabbitMQConfig {
 
     public static final String MSG_HEADER_CHANNEL = "channel";
 
+    public static final String MSG_HEADER_TIMESTAMP = "ts";
+
     public RabbitMQConfig() {
         Map<String, Object> defaultMap = new HashMap<>();
         defaultMap.put("rabbitmq.hostname", "localhost");

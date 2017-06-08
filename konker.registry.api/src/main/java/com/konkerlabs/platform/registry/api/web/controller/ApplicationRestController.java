@@ -1,11 +1,13 @@
 package com.konkerlabs.platform.registry.api.web.controller;
 
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -28,7 +30,6 @@ import com.konkerlabs.platform.registry.business.model.Application.Validations;
 import com.konkerlabs.platform.registry.business.model.HealthAlert;
 import com.konkerlabs.platform.registry.business.model.HealthAlert.Solution;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.HealthAlertService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
@@ -50,7 +51,7 @@ public class ApplicationRestController extends AbstractRestController implements
     private HealthAlertService healthAlertService;
 
     @Autowired
-    private User user;
+    private MessageSource messageSource;
 
     private Set<String> validationsCode = new HashSet<>();
 
@@ -191,7 +192,16 @@ public class ApplicationRestController extends AbstractRestController implements
         if (!serviceResponse.isOk()) {
             throw new NotFoundResponseException(user, serviceResponse);
         } else {
-            return new DeviceHealthAlertVO().apply(serviceResponse.getResult());
+            List<DeviceHealthAlertVO> healthAlertsVO = new LinkedList<>();
+
+            for (HealthAlert healthAlert: serviceResponse.getResult()) {
+                DeviceHealthAlertVO healthAlertVO = new DeviceHealthAlertVO();
+                healthAlertVO = healthAlertVO.apply(healthAlert);
+                healthAlertVO.setDescription(messageSource.getMessage(healthAlert.getDescription().getCode(), null, user.getLanguage().getLocale()));
+
+                healthAlertsVO.add(healthAlertVO);
+            }
+            return healthAlertsVO;
         }
 
     }

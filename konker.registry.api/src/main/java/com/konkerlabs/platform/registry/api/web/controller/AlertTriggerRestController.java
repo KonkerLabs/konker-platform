@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -43,7 +44,7 @@ public class AlertTriggerRestController extends AbstractRestController implement
     private Set<String> validationsCode = new HashSet<>();
 
     @GetMapping(path = "/")
-    // @PreAuthorize("hasAuthority('LIST_ALERT_TRIGGERS')")
+    @PreAuthorize("hasAuthority('LIST_ALERT_TRIGGERS')")
     @ApiOperation(
             value = "List all triggers by application",
             response = SilenceTriggerVO.class)
