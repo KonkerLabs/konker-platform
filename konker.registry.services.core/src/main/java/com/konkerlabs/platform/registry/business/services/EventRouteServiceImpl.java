@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry.business.services;
 
 import java.net.URI;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,8 +9,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
+import com.konkerlabs.platform.registry.business.services.api.LocationService;
+import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 
 import org.slf4j.Logger;
@@ -21,15 +25,21 @@ import org.springframework.stereotype.Service;
 
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.DeviceModel;
+import com.konkerlabs.platform.registry.business.model.DeviceModelLocation;
 import com.konkerlabs.platform.registry.business.model.EventRoute;
+import com.konkerlabs.platform.registry.business.model.Location;
+import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
 import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
+import com.konkerlabs.platform.registry.business.repositories.DeviceModelRepository;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.EventRouteRepository;
+import com.konkerlabs.platform.registry.business.repositories.LocationRepository;
 import com.konkerlabs.platform.registry.business.repositories.RestDestinationRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
@@ -48,6 +58,10 @@ public class EventRouteServiceImpl implements EventRouteService {
     private EventRouteRepository eventRouteRepository;
     @Autowired
     private DeviceRepository deviceRepository;
+    @Autowired
+    private DeviceModelRepository deviceModelRepository;
+    @Autowired
+    private LocationRepository locationRepository;
     @Autowired
     private RestDestinationRepository restRepository;
 
@@ -96,15 +110,13 @@ public class EventRouteServiceImpl implements EventRouteService {
                     .withMessage(Validations.NAME_IN_USE.getCode()).build();
         }
 
-        Map<String,Object[]> outgoingvalidations = applyOutgoingValidations(application, route);
+        Map<String,Object[]> routeActorValidations = applyRouteActorValidations(application, route);
 
-        if (!outgoingvalidations.isEmpty()) {
+        if (!routeActorValidations.isEmpty()) {
             return ServiceResponseBuilder.<EventRoute>error()
-                                         .withMessages(outgoingvalidations)
+                                         .withMessages(routeActorValidations)
                                          .build();
         }
-
-        fillRouteActorsDisplayName(tenant.getId(), application.getName(), route);
 
         EventRoute saved = eventRouteRepository.save(route);
 
@@ -182,15 +194,13 @@ public class EventRouteServiceImpl implements EventRouteService {
                     .build();
         }
 
-        Map<String,Object[]> outgoingvalidations = applyOutgoingValidations(application, current);
+        Map<String,Object[]> routeActorValidations = applyRouteActorValidations(application, current);
 
-        if (!outgoingvalidations.isEmpty()) {
+        if (!routeActorValidations.isEmpty()) {
             return ServiceResponseBuilder.<EventRoute>error()
-                                         .withMessages(outgoingvalidations)
+                                         .withMessages(routeActorValidations)
                                          .build();
         }
-
-        fillRouteActorsDisplayName(tenant.getId(), application.getName(), current);
 
         EventRoute saved = eventRouteRepository.save(current);
 
@@ -199,56 +209,91 @@ public class EventRouteServiceImpl implements EventRouteService {
         return ServiceResponseBuilder.<EventRoute>ok().withResult(saved).build();
     }
 
-	private void fillRouteActorsDisplayName(String tenantId, String applicationName, EventRoute route) {
-		// setting incoming display name (incoming is always a device)
-		Device incomingDevice = deviceRepository.findByTenantAndGuid(tenantId,
-				route.getIncoming().getUri().getPath().replace("/", ""));
-		if (Optional.ofNullable(incomingDevice).isPresent())
-			route.getIncoming().setDisplayName(incomingDevice.getDeviceId());
-
-		// setting outgoing display name
-		switch (route.getOutgoing().getUri().getScheme()) {
-		case DeviceURIDealer.DEVICE_URI_SCHEME:
-
-			Device outgoingDevice = deviceRepository.findByTenantAndGuid(tenantId,
-					route.getOutgoing().getUri().getPath().replace("/", ""));
-			if (Optional.ofNullable(outgoingDevice).isPresent())
-				route.getOutgoing().setDisplayName(outgoingDevice.getDeviceId());
-
-			break;
-		case RESTDestinationURIDealer.REST_DESTINATION_URI_SCHEME:
-
-			RestDestination outgoingRest = restRepository.getByTenantAndGUID(tenantId,
-			        applicationName,
-					route.getOutgoing().getUri().getPath().replace("/", ""));
-			if (Optional.ofNullable(outgoingRest).isPresent())
-				route.getOutgoing().setDisplayName(outgoingRest.getName());
-
-			break;
-
-		}
-
-	}
-
-    private Map<String,Object[]> applyOutgoingValidations(Application application, EventRoute route) {
+    private Map<String, Object[]> applyRouteActorValidations(Application application, EventRoute route) {
 
         Map<String,Object[]> validations = new HashMap<>();
 
-        String tenantId = route.getTenant().getId();
+        validations.putAll(applyRouteActorValidations(application, route.getIncoming()));
+        validations.putAll(applyRouteActorValidations(application, route.getOutgoing()));
 
-        switch (route.getOutgoing().getUri().getScheme()) {
-        case DeviceURIDealer.DEVICE_URI_SCHEME:
-            Device outgoingDevice = deviceRepository.findByTenantAndGuid(tenantId,
-                    route.getOutgoing().getUri().getPath().replace("/", ""));
+        return validations;
 
-            if (!Optional.ofNullable(outgoingDevice).isPresent()) {
-                validations.put(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode(), null);
-                return validations;
-            }
-            if (!application.equals(outgoingDevice.getApplication())) {
-                validations.put(Validations.CROSS_APPLICATION.getCode(), null);
-                return validations;
-            }
+    }
+
+
+    private Map<String,Object[]> applyRouteActorValidations(Application application, RouteActor actor) {
+
+        Map<String,Object[]> validations = new HashMap<>();
+
+        String tenantId = application.getTenant().getId();
+
+        switch (actor.getUri().getScheme()) {
+            case DeviceURIDealer.DEVICE_URI_SCHEME:
+
+                Device device = deviceRepository.findByTenantAndGuid(tenantId,
+                        actor.getUri().getPath().replace("/", ""));
+
+                if (!Optional.ofNullable(device).isPresent()) {
+                    validations.put(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode(), null);
+                    return validations;
+                }
+                if (!application.equals(device.getApplication())) {
+                    validations.put(Validations.CROSS_APPLICATION.getCode(), null);
+                    return validations;
+                }
+
+                actor.setDisplayName(device.getDeviceId());
+                break;
+
+            case RESTDestinationURIDealer.REST_DESTINATION_URI_SCHEME:
+
+                RestDestination rest = restRepository.getByTenantAndGUID(tenantId,
+                        application.getName(),
+                        actor.getUri().getPath().replace("/", ""));
+
+                if (!Optional.ofNullable(rest).isPresent()) {
+                    validations.put(RestDestinationService.Validations.DESTINATION_NOT_FOUND.getCode(), null);
+                    return validations;
+                }
+
+                actor.setDisplayName(rest.getName());
+                break;
+
+            case DeviceModelLocation.URI_SCHEME:
+
+                String uriPath = actor.getUri().getPath();
+                if (uriPath.startsWith("/")) {
+                    uriPath = uriPath.substring(1);
+                }
+
+                String guids[] = uriPath.split("/");
+                if (guids.length < 2) {
+                    validations.put(Validations.GUID_NULL.getCode(), null);
+                    return validations;
+                }
+
+                DeviceModel deviceModel = deviceModelRepository.findByTenantIdApplicationNameAndGuid(
+                        tenantId, application.getName(), guids[0]);
+
+                if (!Optional.ofNullable(deviceModel).isPresent()) {
+                    validations.put(DeviceModelService.Validations.DEVICE_MODEL_NOT_FOUND.getCode(), null);
+                    return validations;
+                }
+
+                Location location = locationRepository.findByTenantAndApplicationAndGuid(
+                        tenantId, application.getName(), guids[1]);
+
+                if (!Optional.ofNullable(location).isPresent()) {
+                    validations.put(LocationService.Validations.LOCATION_GUID_DOES_NOT_EXIST.getCode(), null);
+                    return validations;
+                }
+
+                actor.setDisplayName(MessageFormat.format("{0} @ {1}", deviceModel.getName(), location.getName()));
+                break;
+
+            default:
+                LOGGER.warn("{} not supported", actor.getUri().getScheme());
+
         }
 
         return validations;

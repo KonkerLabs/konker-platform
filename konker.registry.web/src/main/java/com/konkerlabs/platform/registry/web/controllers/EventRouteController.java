@@ -94,10 +94,16 @@ public class EventRouteController implements ApplicationContextAware {
 
         Application application = applicationService.getByApplicationName(tenant, applicationName).getResult();
 
-        return doSave(() -> {
-            eventRouteForm.setAdditionalSupplier(() -> tenant.getDomainName());
-            return eventRouteService.save(tenant, application, eventRouteForm.toModel());
-        },eventRouteForm,locale,redirectAttributes, "");
+        return doSave(tenant,
+                      application,
+                      () -> {
+                            eventRouteForm.setAdditionalSupplier(() -> tenant.getDomainName());
+                            return eventRouteService.save(tenant, application, eventRouteForm.toModel());
+                      },
+                      eventRouteForm,
+                      locale,
+                      redirectAttributes,
+                      "");
 
     }
 
@@ -117,8 +123,8 @@ public class EventRouteController implements ApplicationContextAware {
 
         model.addObject("allDevices", deviceRegisterService.findAll(tenant, application).getResult());
         model.addObject("allRestDestinations", restDestinationService.findAll(tenant, application).getResult());
-        model.addObject("allLocations", locationSearchService.findAll(tenant, application).getResult());
         model.addObject("allDeviceModels", deviceModelService.findAll(tenant, application).getResult());
+        model.addObject("allLocations", locationSearchService.findAll(tenant, application).getResult());
         model.addObject("allTransformations", transformationService.getAll(tenant, application).getResult());
 
         return model;
@@ -146,15 +152,24 @@ public class EventRouteController implements ApplicationContextAware {
                                  RedirectAttributes redirectAttributes, Locale locale) {
         Application application = applicationService.getByApplicationName(tenant, applicationName).getResult();
 
-        return doSave(() -> {
-            eventRouteForm.setAdditionalSupplier(() -> tenant.getDomainName());
-            return eventRouteService.update(tenant, application, routeGUID, eventRouteForm.toModel());
-        },eventRouteForm,locale,redirectAttributes,"put");
+        return doSave(tenant,
+                      application,
+                      () -> {
+                            eventRouteForm.setAdditionalSupplier(() -> tenant.getDomainName());
+                            return eventRouteService.update(tenant, application, routeGUID, eventRouteForm.toModel());
+                      },
+                      eventRouteForm,
+                      locale,
+                      redirectAttributes,
+                      "put");
 
     }
 
-    @RequestMapping("/incoming/{incomingScheme}")
-    public ModelAndView incomingFragment(@PathVariable String incomingScheme) {
+    @RequestMapping("/{applicationName}/incoming/{incomingScheme}")
+    public ModelAndView incomingFragment(@PathVariable("applicationName") String applicationName,
+                                         @PathVariable String incomingScheme) {
+        Application application = applicationService.getByApplicationName(tenant, applicationName).getResult();
+
         EventRouteForm route = new EventRouteForm();
         ModelAndView model = null;
 
@@ -172,8 +187,11 @@ public class EventRouteController implements ApplicationContextAware {
         return addCombos(tenant, application, model);
     }
 
-    @RequestMapping("/outgoing/{outgoingScheme}")
-    public ModelAndView outgoingFragment(@PathVariable String outgoingScheme) {
+    @RequestMapping("/{applicationName}/outgoing/{outgoingScheme}")
+    public ModelAndView outgoingFragment(@PathVariable("applicationName") String applicationName,
+                                         @PathVariable String outgoingScheme) {
+        Application application = applicationService.getByApplicationName(tenant, applicationName).getResult();
+
         EventRouteForm route = new EventRouteForm();
         ModelAndView model = null;
 
@@ -191,19 +209,25 @@ public class EventRouteController implements ApplicationContextAware {
         return addCombos(tenant, application, model);
     }
 
-    private ModelAndView doSave(Supplier<ServiceResponse<EventRoute>> responseSupplier,
-                                EventRouteForm eventRouteForm, Locale locale,
-                                RedirectAttributes redirectAttributes, String method) {
+    private ModelAndView doSave(Tenant tenant,
+                                Application application,
+                                Supplier<ServiceResponse<EventRoute>> responseSupplier,
+                                EventRouteForm eventRouteForm,
+                                Locale locale,
+                                RedirectAttributes redirectAttributes,
+                                String method) {
         ServiceResponse<EventRoute> response = responseSupplier.get();
 
         switch (response.getStatus()) {
             case ERROR: {
-                return new ModelAndView("routes/form")
+                ModelAndView model = new ModelAndView("routes/form")
                         .addObject("errors",
                             response.getResponseMessages().entrySet().stream().map(message -> applicationContext.getMessage(message.getKey(), message.getValue(), locale)).collect(Collectors.toList())
                         )
                         .addObject("route", eventRouteForm)
-                        .addObject("method",method);
+                        .addObject("method", method);
+
+                return addCombos(tenant, application, model);
             }
             default: {
                 redirectAttributes.addFlashAttribute("message",

@@ -25,6 +25,7 @@ public class EventRouteForm
     private static final int AUTH_IDS_SIZE = 4;
     private String id;
     private String name;
+    private String applicationName;
     private String description;
     private String incomingScheme = Device.URI_SCHEME;
     private EventRouteActorForm incoming = new EventRouteActorForm();
@@ -113,6 +114,7 @@ public class EventRouteForm
     public EventRouteForm fillFrom(EventRoute model) {
         this.setId(model.getId());
         this.setName(model.getName());
+        this.setApplicationName(model.getApplication().getName());
         this.setDescription(model.getDescription());
         this.setIncomingScheme(model.getIncoming().getUri().getScheme());
         this.getIncoming().setAuthorityIds(getAuthorityIds(model.getIncoming().getUri()));

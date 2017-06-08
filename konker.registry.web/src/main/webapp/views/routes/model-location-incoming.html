@@ -10,10 +10,14 @@
                data-th-text="#{routes.form.incoming.device}"
                for="incomingAuthority"></label>
         <div class="col-sm-4">
-            <input type="text" data-th-field="*{incoming.authorityData['deviceModelLocation']}"
-                   class="form-control"
-                   id="incomingChannel"
-                   name="incomingChannel" data-th-placeholder="#{routes.form.incoming.channel.placeholder}"/>
+            <select
+                class="form-control col-md-12"
+                data-th-field="${route.incoming.authorityIds[0]}"
+                id="incomingAuthority0" name="incomingAuthority">
+                <option data-th-each="deviceModel : ${allDeviceModels}"
+                        data-th-value="${deviceModel.guid}"
+                        data-th-text="${deviceModel.name}"></option>
+            </select>
         </div>
     </div>
     <div class="form-group">
@@ -21,10 +25,14 @@
                data-th-text="#{routes.form.incoming.device}"
                for="incomingAuthority"></label>
         <div class="col-sm-4">
-            <input type="text" data-th-field="*{incoming.authorityData['locationName']}"
-                   class="form-control"
-                   id="incomingChannel"
-                   name="incomingChannel" data-th-placeholder="#{routes.form.incoming.channel.placeholder}"/>
+            <select
+                class="form-control col-md-12"
+                data-th-field="${route.incoming.authorityIds[1]}"
+                id="incomingAuthority1" name="incomingAuthority">
+                <option data-th-each="location : ${allLocations}"
+                        data-th-value="${location.guid}"
+                        data-th-text="${location.name}"></option>
+            </select>
         </div>
     </div>
     <div class="form-group">
@@ -32,7 +40,7 @@
                data-th-text="#{routes.form.incoming.channel}"
                for="incomingChannel"></label>
         <div class="col-sm-4">
-            <input type="text" data-th-field="*{incoming.authorityData['channel']}"
+            <input type="text" data-th-field="${route.incoming.authorityData['channel']}"
                    class="form-control"
                    id="incomingChannel"
                    name="incomingChannel" data-th-placeholder="#{routes.form.incoming.channel.placeholder}"/>

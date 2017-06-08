@@ -1,4 +1,15 @@
 $(document).ready(function() {
+
+	// incoming
+    var incomingSchemeControl = $('input[type=radio][name=incomingScheme]');
+
+    incomingSchemeControl.change(function() {
+        renderIncomingFragment(this.value);
+    });
+
+    applyEventBindings(incomingSchemeControl.filter('input:checked').val());
+
+	// outgoing
     var outgoingSchemeControl = $('input[type=radio][name=outgoingScheme]');
 
     outgoingSchemeControl.change(function() {
@@ -6,16 +17,24 @@ $(document).ready(function() {
     });
 
     applyEventBindings(outgoingSchemeControl.filter('input:checked').val());
+
 });
 
-function renderOutgoingFragment(scheme) {
-    var base = urlTo('/routes/outgoing/');
+function renderIncomingFragment(scheme) {
+    var base = urlTo('/routes/' + $('#applicationName').val() + '/incoming/');
     var url = base + scheme;
 
-    fetchViewFragment(scheme, url);
+    fetchViewFragment(scheme, url, $('#incomingFragment'));
 }
 
-function fetchViewFragment(scheme, fetchUrl) {
+function renderOutgoingFragment(scheme) {
+    var base = urlTo('/routes/' + $('#applicationName').val() + '/outgoing/');
+    var url = base + scheme;
+
+    fetchViewFragment(scheme, url, $('#outgoingFragment'));
+}
+
+function fetchViewFragment(scheme, fetchUrl, fragment) {
     var loadSpinner;
 
     $.ajax({
@@ -30,7 +49,7 @@ function fetchViewFragment(scheme, fetchUrl) {
             }, 50);
         },
         success : function(data) {
-            displayFragment(data);
+        	fragment.html(data);
             applyEventBindings(scheme);
         },
         complete : function() {
@@ -38,10 +57,6 @@ function fetchViewFragment(scheme, fetchUrl) {
             $("div.ajax-loading").removeClass('show');
         }
     });
-}
-
-function displayFragment(data) {
-    $('#outgoingFragment').html(data);
 }
 
 function applyEventBindings(scheme) {
