@@ -12,6 +12,7 @@ import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.After;
@@ -36,6 +37,8 @@ import com.konkerlabs.platform.registry.api.web.controller.DeviceRestController;
 import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.Event.EventActor;
 import com.konkerlabs.platform.registry.business.model.HealthAlert;
 import com.konkerlabs.platform.registry.business.model.HealthAlert.Description;
 import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertSeverity;
@@ -43,6 +46,7 @@ import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertTy
 import com.konkerlabs.platform.registry.business.model.Location;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.HealthAlertService;
 import com.konkerlabs.platform.registry.business.services.api.LocationSearchService;
@@ -70,6 +74,9 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 
     @Autowired
     private ApplicationService applicationService;
+    
+    @Autowired
+    private DeviceEventService deviceEventService;
 
     @Autowired
     private HealthAlertService healthAlertService;
@@ -89,18 +96,30 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     private HealthAlert health2;
 
     private List<HealthAlert> healths;
+    
+    private List<Event> events;
 
     private String BASEPATH = "devices";
+    
+    private Instant registrationDate = Instant.ofEpochMilli(1495716970000l).minusSeconds(3600l);
 
     @Before
     public void setUp() {
         final Location locationBR = Location.builder().name("br").build();
 
-        device1 = Device.builder().deviceId("id1").name("name1").guid("guid1").location(locationBR).application(application).active(true).build();
+        device1 = Device.builder()
+        		.deviceId("id1")
+        		.name("name1")
+        		.guid("guid1")
+        		.location(locationBR)
+        		.application(application)
+        		.active(true)
+        		.registrationDate(registrationDate)
+        		.lastModificationDate(registrationDate)
+        		.build();
         device2 = Device.builder().deviceId("id2").name("name2").guid("guid2").location(locationBR).application(application).active(false).build();
 
-        Instant registrationDate = Instant.ofEpochMilli(1495716970000l).minusSeconds(3600l);
-
+        
 		health1 = HealthAlert.builder()
 				.guid("7d51c242-81db-11e6-a8c2-0746f976f223")
 				.severity(HealthAlertSeverity.FAIL)
@@ -124,7 +143,13 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
         		.build();
 
 		healths = Arrays.asList(health1, health2);
-
+		
+		Event event = Event.builder()
+					.incoming(EventActor.builder().channel("out").deviceGuid(device1.getGuid()).build())
+					.timestamp(registrationDate)
+					.build();
+		events = Collections.singletonList(event);
+		
         when(locationSearchService.findByName(tenant, application, "br", false))
             .thenReturn(ServiceResponseBuilder.<Location>ok().withResult(locationBR).build());
 
@@ -539,6 +564,77 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
                     .andExpect(jsonPath("$.messages").exists())
                     .andExpect(jsonPath("$.result").doesNotExist());
+
+    }
+    
+    @Test
+    public void shouldShowDeviceStats() throws Exception {
+
+        when(deviceRegisterService.getByDeviceGuid(tenant, application, device1.getGuid()))
+                .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device1).build());
+
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
+        
+        when(deviceEventService.findIncomingBy(tenant, application, device1.getGuid(), null, null, null, false, 1))
+        		.thenReturn(ServiceResponseBuilder.<List<Event>> ok().withResult(events).build());
+
+        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}/stats", application.getName(), BASEPATH, device1.getGuid()))
+                    .contentType("application/json")
+                    .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType("application/json;charset=UTF-8"))
+                    .andExpect(jsonPath("$.code", is(HttpStatus.OK.value())))
+                    .andExpect(jsonPath("$.status", is("success")))
+                    .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                    .andExpect(jsonPath("$.result").isMap())
+                    .andExpect(jsonPath("$.result.registrationDate", is(registrationDate.toString())))
+                    .andExpect(jsonPath("$.result.lastModificationDate", is(registrationDate.toString())))
+                    .andExpect(jsonPath("$.result.lastDataReceivedDate", is(registrationDate.toString())));
+
+    }
+
+    @Test
+    public void shouldShowStatWithWrongApplication() throws Exception {
+
+        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NANE))
+                .thenReturn(ServiceResponseBuilder.<Application>error().withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode()).build());
+
+        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}/stats", NONEXIST_APPLICATION_NANE, BASEPATH, device1.getGuid()))
+                    .contentType("application/json")
+                    .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().is4xxClientError())
+                    .andExpect(content().contentType("application/json;charset=UTF-8"))
+                    .andExpect(jsonPath("$.code", is(HttpStatus.NOT_FOUND.value())))
+                    .andExpect(jsonPath("$.status", is("error")))
+                    .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
+                    .andExpect(jsonPath("$.messages[0]", is("Application does not exist")))
+                    .andExpect(jsonPath("$.result").doesNotExist());
+
+    }
+
+    @Test
+    public void shouldTryShowDeviceStatWithBadRequest() throws Exception {
+
+        when(deviceRegisterService.getByDeviceGuid(tenant, application, device1.getGuid()))
+                .thenReturn(ServiceResponseBuilder.<Device>error().withMessage(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode()).build());
+
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
+        
+        when(deviceEventService.findIncomingBy(tenant, application, device1.getGuid(), null, null, null, false, 1))
+		.thenReturn(ServiceResponseBuilder.<List<Event>> ok().withResult(events).build());
+
+        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}/stats", application.getName(), BASEPATH, device1.getGuid()))
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is4xxClientError())
+                .andExpect(content().contentType("application/json;charset=UTF-8"))
+                .andExpect(jsonPath("$.code", is(HttpStatus.NOT_FOUND.value())))
+                .andExpect(jsonPath("$.status", is("error")))
+                .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
+                .andExpect(jsonPath("$.messages[0]", is("Device GUID does not exist")))
+                .andExpect(jsonPath("$.result").doesNotExist());
 
     }
 

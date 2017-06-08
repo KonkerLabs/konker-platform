@@ -25,14 +25,17 @@ import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException
 import com.konkerlabs.platform.registry.api.model.DeviceHealthAlertVO;
 import com.konkerlabs.platform.registry.api.model.DeviceHealthVO;
 import com.konkerlabs.platform.registry.api.model.DeviceInputVO;
+import com.konkerlabs.platform.registry.api.model.DeviceStatsVO;
 import com.konkerlabs.platform.registry.api.model.DeviceVO;
 import com.konkerlabs.platform.registry.api.model.RestResponse;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.DeviceModel;
+import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.HealthAlert;
 import com.konkerlabs.platform.registry.business.model.Location;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.Validations;
@@ -63,6 +66,9 @@ public class DeviceRestController extends AbstractRestController implements Init
 
     @Autowired
     private HealthAlertService healthAlertService;
+    
+    @Autowired
+    private DeviceEventService deviceEventService;
 
     @Autowired
     private MessageSource messageSource;
@@ -293,6 +299,38 @@ public class DeviceRestController extends AbstractRestController implements Init
             return healthAlertsVO;
         } else {
         	throw new NotFoundResponseException(user, deviceResponse);
+        }
+
+    }
+    
+    @GetMapping(path = "/{deviceGuid}/stats")
+    @ApiOperation(
+            value = "Get a device stats by guid",
+            response = RestResponse.class
+    )
+    @PreAuthorize("hasAuthority('SHOW_DEVICE')")
+    public DeviceStatsVO stats(
+    		@PathVariable("application") String applicationId,
+    		@PathVariable("deviceGuid") String deviceGuid) throws BadServiceResponseException, NotFoundResponseException {
+
+        Tenant tenant = user.getTenant();
+        Application application = getApplication(applicationId);
+
+        ServiceResponse<Device> deviceResponse = deviceRegisterService.getByDeviceGuid(tenant, application, deviceGuid);
+        ServiceResponse<List<Event>> incomingResponse = deviceEventService.findIncomingBy(tenant, application, deviceGuid, null, null, null, false, 1);
+
+        if (!deviceResponse.isOk()) {
+            throw new NotFoundResponseException(user, deviceResponse);
+        } else {
+        	String lastDataReceivedDate = "";
+        	if (incomingResponse.isOk()) {
+        		List<Event> result = incomingResponse.getResult();
+        		lastDataReceivedDate = result.isEmpty() ? "" : result.get(0).getTimestamp().toString();
+        	}
+        	
+            DeviceStatsVO vo = new DeviceStatsVO().apply(deviceResponse.getResult());
+            vo.setLastDataReceivedDate(lastDataReceivedDate);
+			return vo;
         }
 
     }

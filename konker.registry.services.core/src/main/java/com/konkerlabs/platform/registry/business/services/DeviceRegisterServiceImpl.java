@@ -2,6 +2,7 @@ package com.konkerlabs.platform.registry.business.services;
 
 import java.io.ByteArrayOutputStream;
 import java.text.MessageFormat;
+import java.time.Instant;
 import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.List;
@@ -385,6 +386,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         deviceFromDB.setLocation(updatingDevice.getLocation());
         deviceFromDB.setDeviceModel(updatingDevice.getDeviceModel());
         deviceFromDB.setActive(updatingDevice.isActive());
+        deviceFromDB.setLastModificationDate(Instant.now());
 
         Optional<Map<String, Object[]>> validations = deviceFromDB.applyValidations();
 
