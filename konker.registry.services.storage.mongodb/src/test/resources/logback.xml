@@ -12,18 +12,6 @@
     <logger name="org.springframework.test" level="WARN" additivity="false">
         <appender-ref ref="consoleAppender"/>
     </logger>
-    <logger name="org.springframework.web" level="WARN" additivity="false">
-        <appender-ref ref="consoleAppender"/>
-    </logger>
-    <logger name="org.springframework.security.web" level="WARN" additivity="false">
-        <appender-ref ref="consoleAppender"/>
-    </logger>
-    <logger name="org.springframework.beans.factory.support" level="WARN" additivity="false">
-        <appender-ref ref="consoleAppender"/>
-    </logger>
-    <logger name="org.springframework.mock.web" level="WARN" additivity="false">
-        <appender-ref ref="consoleAppender"/>
-    </logger>
 
     <root>
         <level value="INFO"/>

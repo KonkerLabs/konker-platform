@@ -114,7 +114,7 @@ public class EventRouteForm
     public EventRouteForm fillFrom(EventRoute model) {
         this.setId(model.getId());
         this.setName(model.getName());
-        this.setApplicationName(model.getApplication().getName());
+        this.setApplicationName(model.getApplication() != null ? model.getApplication().getName() : null);
         this.setDescription(model.getDescription());
         this.setIncomingScheme(model.getIncoming().getUri().getScheme());
         this.getIncoming().setAuthorityIds(getAuthorityIds(model.getIncoming().getUri()));

@@ -158,6 +158,7 @@ public class EventRouteControllerTest extends WebLayerTestContext {
         routeForm = new EventRouteForm();
         routeForm.setName("Route name");
         routeForm.setDescription("Route description");
+        routeForm.setApplicationName("konker");
         routeForm.getIncoming().setAuthorityId(incomingDevice.getDeviceId());
         routeForm.getIncoming().getAuthorityData().put("channel","command");
         routeForm.setOutgoingScheme("device");
@@ -298,22 +299,36 @@ public class EventRouteControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    public void shouldRenderDeviceIncomingViewFragment() throws Exception {
+        getMockMvc().perform(get("/routes/{0}/incoming/{1}", application.getName(), "device"))
+                .andExpect(view().name("routes/device-incoming"))
+                .andExpect(model().attribute("route", new EventRouteForm()));
+    }
+
+    @Test
+    public void shouldRenderModelLocationIncomingViewFragment() throws Exception {
+        getMockMvc().perform(get("/routes/{0}/incoming/{1}", application.getName(), "modelLocation"))
+                .andExpect(view().name("routes/model-location-incoming"))
+                .andExpect(model().attribute("route", new EventRouteForm()));
+    }
+
+    @Test
     public void shouldRenderDeviceOutgoingViewFragment() throws Exception {
-        getMockMvc().perform(get("/routes/outgoing/{0}", "device"))
+        getMockMvc().perform(get("/routes/{0}/outgoing/{1}", application.getName(), "device"))
                 .andExpect(view().name("routes/device-outgoing"))
                 .andExpect(model().attribute("route", new EventRouteForm()));
     }
 
     @Test
     public void shouldRenderRestDestinationsViewFragment() throws Exception {
-        getMockMvc().perform(get("/routes/outgoing/{0}", "rest"))
+        getMockMvc().perform(get("/routes/{0}/outgoing/{1}", application.getName(), "rest"))
                 .andExpect(view().name("routes/rest-outgoing"))
                 .andExpect(model().attribute("route", new EventRouteForm()));
     }
 
     @Test
     public void shouldRenderEmptyBodyWhenSchemeIsUnknown() throws Exception {
-        getMockMvc().perform(get("/routes/outgoing/{0}", "unknown_scheme"))
+        getMockMvc().perform(get("/routes/{0}/outgoing/{1}", application.getName(), "unknown_scheme"))
                 .andExpect(view().name("common/empty"));
     }
 
@@ -363,6 +378,7 @@ public class EventRouteControllerTest extends WebLayerTestContext {
     @WithMockUser(authorities={"EDIT_DEVICE_ROUTE"})
     public void shouldShowEditForm() throws Exception {
         routeForm.setAdditionalSupplier(null);
+        routeForm.setApplicationName(null);
 
         when(eventRouteService.getByGUID(tenant, application, routeGuid)).thenReturn(
                 ServiceResponseBuilder.<EventRoute>ok().withResult(newRoute).build());
@@ -423,6 +439,7 @@ public class EventRouteControllerTest extends WebLayerTestContext {
     @WithMockUser(authorities={"SHOW_DEVICE_ROUTE"})
     public void shouldShowRouteDetails() throws Exception {
         routeForm.setAdditionalSupplier(null);
+        routeForm.setApplicationName(null);
 
         routeForm.setId(routeGuid);
         newRoute.setId(routeGuid);
