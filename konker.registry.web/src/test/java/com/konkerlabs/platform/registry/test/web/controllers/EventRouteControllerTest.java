@@ -292,9 +292,12 @@ public class EventRouteControllerTest extends WebLayerTestContext {
     @Test
     @WithMockUser(authorities={"CREATE_DEVICE_ROUTE"})
     public void shouldShowCreationForm() throws Exception {
+        EventRouteForm routeForm = new EventRouteForm();
+        routeForm.setApplicationName("konker");
+
         getMockMvc().perform(get("/routes/new"))
                 .andExpect(view().name("routes/form"))
-                .andExpect(model().attribute("route", new EventRouteForm()))
+                .andExpect(model().attribute("route", routeForm))
                 .andExpect(model().attribute("action", format("/routes/{0}/save", application.getName())));
     }
 

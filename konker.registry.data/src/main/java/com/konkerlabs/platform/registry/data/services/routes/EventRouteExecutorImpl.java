@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry.data.services.routes;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
@@ -21,7 +22,6 @@ import org.springframework.stereotype.Service;
 import static com.konkerlabs.platform.registry.data.services.publishers.EventPublisherDevice.DEVICE_MQTT_CHANNEL;
 
 import java.io.IOException;
-import java.net.URI;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,18 +46,27 @@ public class EventRouteExecutorImpl implements EventRouteExecutor {
     private EventTransformationService eventTransformationService;
 
     @Override
-    public Future<List<Event>> execute(Event event, URI uri) {
-
-        ServiceResponse<List<EventRoute>> serviceResponse = eventRouteService.findByIncomingUri(uri);
+    public Future<List<Event>> execute(Event event, Device device) {
 
         List<Event> outEvents = new ArrayList<Event>();
 
-        if (serviceResponse.isOk()) {
-            List<EventRoute> eventRoutes = serviceResponse.getResult();
+        ServiceResponse<List<EventRoute>> serviceRoutes = eventRouteService.getAll(device.getTenant(), device.getApplication());
+        if (!serviceRoutes.isOk()) {
+            LOGGER.error("Error listing application events routes", device.toURI(), device.getTenant().getLogLevel());
+            return new AsyncResult<List<Event>>(outEvents);
+        }
 
-            String incomingPayload = event.getPayload();
+        List<EventRoute> eventRoutes = serviceRoutes.getResult();
+        if (eventRoutes.isEmpty()) {
+            return new AsyncResult<List<Event>>(outEvents);
+        }
 
-            for (EventRoute eventRoute : eventRoutes) {
+        for (EventRoute eventRoute : eventRoutes) {
+
+            if (eventRoute.getIncoming().getUri().equals(device.toURI())) {
+
+                String incomingPayload = event.getPayload();
+
                 if (!eventRoute.isActive())
                     continue;
                 if (!eventRoute.getIncoming().getData().get(DEVICE_MQTT_CHANNEL).equals(event.getIncoming().getChannel())) {
@@ -91,7 +100,9 @@ public class EventRouteExecutorImpl implements EventRouteExecutor {
                                     eventRoute.getFilteringExpression(),
                                     incomingPayload), eventRoute.toURI(), eventRoute.getTenant().getLogLevel(), e);
                 }
+
             }
+
         }
 
         return new AsyncResult<List<Event>>(outEvents);
