@@ -79,9 +79,12 @@ public class EventRouteController implements ApplicationContextAware {
     @RequestMapping("new")
     @PreAuthorize("hasAuthority('CREATE_DEVICE_ROUTE')")
     public ModelAndView newRoute() {
+        EventRouteForm routeForm = new EventRouteForm();
+        routeForm.setApplicationName(application.getName());
+
         ModelAndView model = new ModelAndView("routes/form")
-            .addObject("route",new EventRouteForm())
-            .addObject("action",MessageFormat.format("/routes/{0}/save", application.getName()));
+            .addObject("route", routeForm)
+            .addObject("action", MessageFormat.format("/routes/{0}/save", application.getName()));
 
         return addCombos(tenant, application, model);
     }
