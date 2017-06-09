@@ -2,9 +2,13 @@ package com.konkerlabs.platform.registry.test.data.services;
 
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.DeviceModel;
 import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.Location;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
+import com.konkerlabs.platform.registry.business.repositories.DeviceModelRepository;
+import com.konkerlabs.platform.registry.business.repositories.LocationRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
@@ -16,6 +20,9 @@ import com.konkerlabs.platform.registry.test.data.base.MongoTestConfiguration;
 import com.konkerlabs.platform.registry.test.data.base.*;
 import com.konkerlabs.platform.utilities.config.UtilitiesConfig;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
+
+import ch.lambdaj.function.matcher.Predicate;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -75,9 +82,17 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
     private TenantRepository tenantRepository;
     @Autowired
     private ApplicationRepository applicationRepository;
+    @Autowired
+    private DeviceModelRepository deviceModelRepository;
+    @Autowired
+    private LocationRepository locationRepository;
 
     private Tenant tenant;
     private Application application;
+    private DeviceModel deviceModel;
+    private Location locationParent;
+    private Location locationChild;
+
     private Event event;
 
     private String inactiveRouteDeviceId = "0000000000000001";
@@ -100,6 +115,31 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
 
         tenant = tenantRepository.findByDomainName(REGISTERED_TENANT_DOMAIN);
         application = applicationRepository.findByTenantAndName(tenant.getId(), "konker");
+
+        deviceModel = DeviceModel.builder()
+                                 .tenant(tenant)
+                                 .application(application)
+                                 .name("model-0002")
+                                 .guid("96fbd654-8240-4003-b5f2-a4aa366b7b18")
+                                 .build();
+        deviceModel = deviceModelRepository.save(deviceModel);
+
+        locationParent = Location.builder()
+                .tenant(tenant)
+                .application(application)
+                .name("ny")
+                .guid("d1e9beb7-046a-4796-b1dd-41aec85f4a94")
+                .build();
+        locationParent = locationRepository.save(locationParent);
+
+        locationChild = Location.builder()
+                .tenant(tenant)
+                .application(application)
+                .parent(locationParent)
+                .name("5th ave")
+                .guid("82751a08-deaf-482c-8609-24ca1203f915")
+                .build();
+        locationChild = locationRepository.save(locationChild);
 
         when(
                 httpGateway.request(
@@ -137,6 +177,28 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
         assertThat(eventFuture.get(), notNullValue());
         assertThat(eventFuture.get(), hasSize(1));
         assertThat(eventFuture.get().get(0).getPayload(), equalTo(transformationResponse));
+    }
+
+    @Test
+    @UsingDataSet(locations = {
+            "/fixtures/tenants.json",
+            "/fixtures/applications.json",
+            "/fixtures/devices.json",
+            "/fixtures/transformations.json",
+            "/fixtures/event-routes.json"})
+    public void shouldSendAnyEventsForInvalidLocation() throws ExecutionException, InterruptedException {
+        Device device = Device.builder()
+                              .tenant(tenant)
+                              .application(application)
+                              .deviceModel(deviceModel)
+                              .location(locationChild)
+                              .guid(nonMatchingFilterDeviceId)
+                              .build();
+
+        Future<List<Event>> eventFuture = subject.execute(event, device);
+        assertThat(eventFuture.get(), notNullValue());
+        assertThat(eventFuture.get(), hasSize(1));
+        assertThat(eventFuture.get().get(0).getPayload(), equalTo(payload));
     }
 
     @Test

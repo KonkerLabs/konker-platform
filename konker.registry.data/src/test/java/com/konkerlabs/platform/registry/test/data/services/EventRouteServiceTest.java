@@ -637,17 +637,17 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
         List<EventRoute> allRoutes = subject.getAll(tenant, application).getResult();
 
         assertThat(allRoutes, notNullValue());
-        assertThat(allRoutes, hasSize(9));
+        assertThat(allRoutes, hasSize(10));
         assertThat(allRoutes.get(0).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63aa"));
         assertThat(allRoutes.get(1).getId(), equalTo("01231829-4435-4eb0-abd6-7a7bae7812bd"));
         assertThat(allRoutes.get(2).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ab"));
-        assertThat(allRoutes.get(3).getId(), equalTo("88a3a30a-35af-4a40-a066-42512338a81f"));
-        assertThat(allRoutes.get(4).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ad"));
-        assertThat(allRoutes.get(5).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ae"));
-        assertThat(allRoutes.get(6).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ba"));
-        assertThat(allRoutes.get(7).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63bb"));
-        assertThat(allRoutes.get(8).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63bc"));
-
+        assertThat(allRoutes.get(3).getId(), equalTo("af85a86f-9c94-4dd5-8281-844ab522b26a"));
+        assertThat(allRoutes.get(4).getId(), equalTo("88a3a30a-35af-4a40-a066-42512338a81f"));
+        assertThat(allRoutes.get(5).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ad"));
+        assertThat(allRoutes.get(6).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ae"));
+        assertThat(allRoutes.get(7).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63ba"));
+        assertThat(allRoutes.get(8).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63bb"));
+        assertThat(allRoutes.get(9).getId(), equalTo("71fb0d48-674b-4f64-a3e5-0256ff3a63bc"));
 
         allRoutes = subject.getAll(emptyTenant, emptyApplication).getResult();
         assertThat(allRoutes, notNullValue());

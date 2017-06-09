@@ -100,6 +100,34 @@
       "active" : true
     },
     {
+      "_id" : "af85a86f-9c94-4dd5-8281-844ab522b26a",
+      "_class" : "com.konkerlabs.platform.registry.model.EventRoute",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
+      },
+      "application" : {
+        "$id" : "konker",
+        "$ref" : "applications"
+      },
+      "name" : "Model location event forwarding route",
+      "guid" : "3db764a7-7241-475f-bda4-6e1957b23280",
+      "description" : "Route description",
+      "incoming": {
+        "uri" : "modelLocation://konker/96fbd654-8240-4003-b5f2-a4aa366b7b18/d1e9beb7-046a-4796-b1dd-41aec85f4a94",
+        "data" : {
+          "channel" : "data"
+        }
+      },
+      "outgoing": {
+        "uri" : "device://konker/7d51c242-81db-11e6-a8c2-0746f010e945",
+        "data" : {
+          "channel" : "in"
+        }
+      },
+      "active" : true
+    },
+    {
       "_id" : "88a3a30a-35af-4a40-a066-42512338a81f",
       "_class" : "com.konkerlabs.platform.registry.model.EventRoute",
       "tenant" : {
