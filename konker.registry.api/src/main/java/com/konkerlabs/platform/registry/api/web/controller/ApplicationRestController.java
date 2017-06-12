@@ -5,6 +5,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -43,7 +45,7 @@ import io.swagger.annotations.ApiParam;
 @RequestMapping(value = "/applications")
 @Api(tags = "applications")
 public class ApplicationRestController extends AbstractRestController implements InitializingBean {
-
+	
     @Autowired
     private ApplicationService applicationService;
 
