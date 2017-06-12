@@ -91,7 +91,7 @@ public class DeviceEventProcessor {
 
             ServiceResponse<Event> logResponse = deviceLogEventService.logIncomingEvent(device, event);
             if (logResponse.isOk()) {
-                eventRouteExecutor.execute(event, device.toURI());
+                eventRouteExecutor.execute(event, device);
             } else {
                 LOGGER.error(MessageFormat.format("Could not log incoming message. Probably invalid payload.: [Device: {0}] - [Payload: {1}]",
                         device.toURI(),

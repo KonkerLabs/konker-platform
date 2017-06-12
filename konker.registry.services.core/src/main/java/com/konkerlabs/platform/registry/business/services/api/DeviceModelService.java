@@ -30,7 +30,7 @@ public interface DeviceModelService {
 			this.code = code;
 		}
 	}
-	
+
 	public enum Messages {
 		DEVICE_MODEL_REMOVED_SUCCESSFULLY("controller.devicemodel.removed.succesfully"),
 		DEVICE_MODEL_REMOVED_UNSUCCESSFULLY("controller.devicemodel.removed.unsuccesfully");
@@ -105,9 +105,11 @@ public interface DeviceModelService {
 	 */
 	ServiceResponse<DeviceModel> getByTenantApplicationAndName(Tenant tenant, Application application, String name);
 
+	ServiceResponse<DeviceModel> getByTenantApplicationAndGuid(Tenant tenant, Application application, String guid);
+
 	ServiceResponse<List<Device>> listDevicesByDeviceModelName(Tenant tenant, Application application,	String deviceModelName);
 
-	ServiceResponse<DeviceModel> findDefault(Tenant tenant, Application application, boolean defaultModel);
+	ServiceResponse<DeviceModel> findDefault(Tenant tenant, Application application);
 
 
 }

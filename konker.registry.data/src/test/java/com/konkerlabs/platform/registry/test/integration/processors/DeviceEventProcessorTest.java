@@ -190,7 +190,7 @@ public class DeviceEventProcessorTest {
 
         subject.process(sourceApiKey, incomingChannel, originalPayload);
 
-        verify(eventRouteExecutor, never()).execute(any(Event.class), any(URI.class));
+        verify(eventRouteExecutor, never()).execute(any(Event.class), any(Device.class));
     }
 
     @Test
@@ -206,7 +206,7 @@ public class DeviceEventProcessorTest {
 
         subject.process(sourceApiKey, incomingChannel, originalPayload, timestamp);
 
-        verify(eventRouteExecutor, times(1)).execute(any(Event.class), any(URI.class));
+        verify(eventRouteExecutor, times(1)).execute(any(Event.class), any(Device.class));
         verify(deviceLogEventService, times(1)).logIncomingEvent(any(Device.class), any(Event.class));
     }
 

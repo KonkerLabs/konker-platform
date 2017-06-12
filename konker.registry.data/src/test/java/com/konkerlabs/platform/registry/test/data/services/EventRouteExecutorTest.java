@@ -1,8 +1,15 @@
 package com.konkerlabs.platform.registry.test.data.services;
 
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.DeviceModel;
 import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
+import com.konkerlabs.platform.registry.business.model.Location;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
+import com.konkerlabs.platform.registry.business.repositories.DeviceModelRepository;
+import com.konkerlabs.platform.registry.business.repositories.LocationRepository;
+import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
 import com.konkerlabs.platform.registry.data.services.routes.api.EventRouteExecutor;
@@ -13,6 +20,9 @@ import com.konkerlabs.platform.registry.test.data.base.MongoTestConfiguration;
 import com.konkerlabs.platform.registry.test.data.base.*;
 import com.konkerlabs.platform.utilities.config.UtilitiesConfig;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
+
+import ch.lambdaj.function.matcher.Predicate;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -51,6 +61,11 @@ import static org.mockito.Mockito.when;
         EventStorageConfig.class
 
 })
+@UsingDataSet(locations = {
+        "/fixtures/tenants.json",
+        "/fixtures/applications.json",
+        "/fixtures/devices.json",
+        "/fixtures/event-routes.json"})
 public class EventRouteExecutorTest extends BusinessLayerTestSupport {
 
     private static final String REGISTERED_TENANT_DOMAIN = "konker";
@@ -63,8 +78,22 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
     @Autowired
     private HttpGateway httpGateway;
 
+    @Autowired
+    private TenantRepository tenantRepository;
+    @Autowired
+    private ApplicationRepository applicationRepository;
+    @Autowired
+    private DeviceModelRepository deviceModelRepository;
+    @Autowired
+    private LocationRepository locationRepository;
+
+    private Tenant tenant;
+    private Application application;
+    private DeviceModel deviceModel;
+    private Location locationParent;
+    private Location locationChild;
+
     private Event event;
-    private URI uri;
 
     private String inactiveRouteDeviceId = "0000000000000001";
     private String malformedRouteDeviceId = "0000000000000002";
@@ -83,22 +112,34 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
                                 .channel("data")
                                 .deviceGuid(matchingRouteDeviceGuid).build()
                 ).timestamp(Instant.now()).payload(payload).build());
-        uri = new URIDealer() {
-            @Override
-            public String getUriScheme() {
-                return Device.URI_SCHEME;
-            }
 
-            @Override
-            public String getContext() {
-                return REGISTERED_TENANT_DOMAIN;
-            }
+        tenant = tenantRepository.findByDomainName(REGISTERED_TENANT_DOMAIN);
+        application = applicationRepository.findByTenantAndName(tenant.getId(), "konker");
 
-            @Override
-            public String getGuid() {
-                return matchingRouteDeviceGuid;
-            }
-        }.toURI();
+        deviceModel = DeviceModel.builder()
+                                 .tenant(tenant)
+                                 .application(application)
+                                 .name("model-0002")
+                                 .guid("96fbd654-8240-4003-b5f2-a4aa366b7b18")
+                                 .build();
+        deviceModel = deviceModelRepository.save(deviceModel);
+
+        locationParent = Location.builder()
+                .tenant(tenant)
+                .application(application)
+                .name("ny")
+                .guid("d1e9beb7-046a-4796-b1dd-41aec85f4a94")
+                .build();
+        locationParent = locationRepository.save(locationParent);
+
+        locationChild = Location.builder()
+                .tenant(tenant)
+                .application(application)
+                .parent(locationParent)
+                .name("5th ave")
+                .guid("82751a08-deaf-482c-8609-24ca1203f915")
+                .build();
+        locationChild = locationRepository.save(locationChild);
 
         when(
                 httpGateway.request(
@@ -126,55 +167,104 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
             "/fixtures/transformations.json",
             "/fixtures/event-routes.json"})
     public void shouldSendEventsForAMatchingRoute() throws ExecutionException, InterruptedException {
-        Future<List<Event>> eventFuture = subject.execute(event, uri);
+        Device device = Device.builder()
+                              .tenant(tenant)
+                              .application(application)
+                              .guid(matchingRouteDeviceGuid)
+                              .build();
+
+        Future<List<Event>> eventFuture = subject.execute(event, device);
         assertThat(eventFuture.get(), notNullValue());
         assertThat(eventFuture.get(), hasSize(1));
         assertThat(eventFuture.get().get(0).getPayload(), equalTo(transformationResponse));
     }
 
     @Test
-    @UsingDataSet(locations = "/fixtures/event-routes.json")
+    @UsingDataSet(locations = {
+            "/fixtures/tenants.json",
+            "/fixtures/applications.json",
+            "/fixtures/devices.json",
+            "/fixtures/transformations.json",
+            "/fixtures/event-routes.json"})
+    public void shouldSendAnyEventsForInvalidLocation() throws ExecutionException, InterruptedException {
+        Device device = Device.builder()
+                              .tenant(tenant)
+                              .application(application)
+                              .deviceModel(deviceModel)
+                              .location(locationChild)
+                              .guid(nonMatchingFilterDeviceId)
+                              .build();
+
+        Future<List<Event>> eventFuture = subject.execute(event, device);
+        assertThat(eventFuture.get(), notNullValue());
+        assertThat(eventFuture.get(), hasSize(1));
+        assertThat(eventFuture.get().get(0).getPayload(), equalTo(payload));
+    }
+
+    @Test
     public void shouldntSendAnyEventsForANonmatchingRoute() throws ExecutionException, InterruptedException, URISyntaxException {
-        URI nonMatchingFilterURI = new URI("device", nonMatchingFilterDeviceId, null, null, null);
-        Future<List<Event>> eventFuture = subject.execute(event, nonMatchingFilterURI);
+        Device device = Device.builder()
+                .tenant(tenant)
+                .application(application)
+                .guid(nonMatchingFilterDeviceId)
+                .build();
+
+        Future<List<Event>> eventFuture = subject.execute(event, device);
         assertThat(eventFuture.get(), notNullValue());
         assertThat(eventFuture.get(), hasSize(0));
     }
 
     @Test
-    @UsingDataSet(locations = "/fixtures/event-routes.json")
     public void shouldntSendAnyEventsForANonMatchingIncomingDevice() throws ExecutionException, InterruptedException, URISyntaxException {
-        URI nonMatchingDeviceURI = new URI("device", nonMatchingRouteDeviceId, null, null, null);
-        Future<List<Event>> eventFuture = subject.execute(event, nonMatchingDeviceURI);
+        Device device = Device.builder()
+                .tenant(tenant)
+                .application(application)
+                .guid(nonMatchingRouteDeviceId)
+                .build();
+
+        Future<List<Event>> eventFuture = subject.execute(event, device);
         assertThat(eventFuture.get(), notNullValue());
         assertThat(eventFuture.get(), hasSize(0));
     }
 
     @Test
-    @UsingDataSet(locations = "/fixtures/event-routes.json")
     public void shouldntSendAnyEventsForANonMatchingIncomingChannel() throws ExecutionException, InterruptedException, URISyntaxException {
-        URI nonMatchingDeviceURI = new URI("device", matchingRouteDeviceGuid, null, null, null);
+        Device device = Device.builder()
+                .tenant(tenant)
+                .application(application)
+                .guid(matchingRouteDeviceGuid)
+                .build();
+
         event.getIncoming().setChannel("non_matching_channel");
-        Future<List<Event>> eventFuture = subject.execute(event, nonMatchingDeviceURI);
+        Future<List<Event>> eventFuture = subject.execute(event, device);
         assertThat(eventFuture.get(), notNullValue());
         assertThat(eventFuture.get(), hasSize(0));
     }
 
     @Test
-    @UsingDataSet(locations = "/fixtures/event-routes.json")
     public void shouldntSendAnyEventsForANonActiveRoute() throws ExecutionException, InterruptedException, URISyntaxException {
-        URI inactiveRouteDeviceURI = new URI("device", inactiveRouteDeviceId, null, null, null);
-        Future<List<Event>> eventFuture = subject.execute(event, inactiveRouteDeviceURI);
+        Device device = Device.builder()
+                .tenant(tenant)
+                .application(application)
+                .guid(inactiveRouteDeviceId)
+                .build();
+
+        Future<List<Event>> eventFuture = subject.execute(event, device);
         assertThat(eventFuture, notNullValue());
         assertThat(eventFuture.get(), hasSize(0));
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/event-routes.json"})
     public void shouldntSendAnyEventsForMalformedExpressionFilter() throws ExecutionException, InterruptedException, URISyntaxException {
-        URI nonBooleanRouteDeviceURI = new URI("device", malformedRouteDeviceId, null, null, null);
-        Future<List<Event>> eventFuture = subject.execute(event, nonBooleanRouteDeviceURI);
+        Device device = Device.builder()
+                .tenant(tenant)
+                .application(application)
+                .guid(malformedRouteDeviceId)
+                .build();
+
+        Future<List<Event>> eventFuture = subject.execute(event, device);
         assertThat(eventFuture, notNullValue());
         assertThat(eventFuture.get(), hasSize(0));
     }
+
 }
