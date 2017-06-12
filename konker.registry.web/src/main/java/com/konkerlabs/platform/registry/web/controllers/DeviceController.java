@@ -166,11 +166,11 @@ public class DeviceController implements ApplicationContextAware {
     private PubServerConfig pubServerConfig = new PubServerConfig();
 
     @Autowired
-    public DeviceController(DeviceRegisterService deviceRegisterService, 
-    		DeviceEventService deviceEventService, 
-    		EventSchemaService eventSchemaService, 
-    		Tenant tenant, 
-    		Application application, 
+    public DeviceController(DeviceRegisterService deviceRegisterService,
+    		DeviceEventService deviceEventService,
+    		EventSchemaService eventSchemaService,
+    		Tenant tenant,
+    		Application application,
     		User user,
     		ApplicationService applicationService) {
         this.deviceRegisterService = deviceRegisterService;
@@ -187,10 +187,10 @@ public class DeviceController implements ApplicationContextAware {
     public ModelAndView index() {
     	List<Application> applications = applicationService.findAll(tenant).getResult();
     	List<Device> all = new ArrayList<>();
-    	
+
     	applications.forEach(
     			app -> all.addAll(deviceRegisterService.findAll(tenant, app).getResult()));
-    	
+
         return new ModelAndView("devices/index", "devices", all);
     }
 
@@ -465,7 +465,7 @@ public class DeviceController implements ApplicationContextAware {
                                          RedirectAttributes redirectAttributes,
                                          Locale locale) {
     	application = applicationService.getByApplicationName(tenant, applicationName).getResult();
-    	
+
         ServiceResponse<DeviceRegisterService.DeviceSecurityCredentials> serviceResponse = deviceRegisterService
                 .generateSecurityPassword(tenant, application, deviceGuid);
 
@@ -482,7 +482,7 @@ public class DeviceController implements ApplicationContextAware {
             		user.getLanguage().getLocale());
 
             return new ModelAndView("devices/password")
-                    .addObject("action", MessageFormat.format("/devices/{0}/password", deviceGuid))
+                    .addObject("action", MessageFormat.format("/devices/{0}/{1}/password", application.getName(), deviceGuid))
                     .addObject("password", credentials.getPassword())
                     .addObject("device", device)
                     .addObject("pubServerInfo", pubServerConfig)
@@ -508,8 +508,8 @@ public class DeviceController implements ApplicationContextAware {
         if (serviceResponse.getStatus().equals(ServiceResponse.Status.OK)) {
             redirectAttributes.addFlashAttribute("message",
                     applicationContext.getMessage(DeviceRegisterService.Messages.DEVICE_REGISTERED_SUCCESSFULLY.getCode(), null, locale));
-            return new ModelAndView(MessageFormat.format("redirect:/devices/{0}/{1}", 
-            								serviceResponse.getResult().getApplication().getName(), 
+            return new ModelAndView(MessageFormat.format("redirect:/devices/{0}/{1}",
+            								serviceResponse.getResult().getApplication().getName(),
             								serviceResponse.getResult().getGuid()));
         } else {
             List<String> messages = serviceResponse.getResponseMessages()
