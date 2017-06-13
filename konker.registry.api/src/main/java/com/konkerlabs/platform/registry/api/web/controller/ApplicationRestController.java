@@ -43,7 +43,7 @@ import io.swagger.annotations.ApiParam;
 @RequestMapping(value = "/applications")
 @Api(tags = "applications")
 public class ApplicationRestController extends AbstractRestController implements InitializingBean {
-
+	
     @Autowired
     private ApplicationService applicationService;
 
