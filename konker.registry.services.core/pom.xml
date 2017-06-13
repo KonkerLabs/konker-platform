@@ -123,17 +123,11 @@
             <artifactId>konker.security</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
-        <dependency>
-            <groupId>com.konkerlabs.platform</groupId>
-            <artifactId>konker.utilities</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
+
         <dependency>
             <groupId>com.konkerlabs</groupId>
-            <artifactId>konker.registry.config</artifactId>
+            <artifactId>konker.registry.common</artifactId>
             <version>1.0-SNAPSHOT</version>
-            <scope>provided</scope>
         </dependency>
         <!-- Test scope -->
         <dependency>
@@ -152,6 +146,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
     </dependencies>
 
     <dependencyManagement>

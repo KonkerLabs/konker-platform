@@ -10,7 +10,7 @@ import java.net.URI;
 import java.text.MessageFormat;
 import java.time.Instant;
 
-import com.konkerlabs.platform.registry.business.repositories.events.api.EventRepository;
+import com.konkerlabs.platform.registry.business.repositories.events.EventRepository;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;

@@ -1,23 +1,5 @@
 package com.konkerlabs.platform.registry.api.web.controller;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
 import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
 import com.konkerlabs.platform.registry.api.model.RestResponse;
@@ -32,12 +14,16 @@ import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
 import com.konkerlabs.platform.registry.business.services.api.RoleService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.UserService;
-import com.konkerlabs.platform.registry.business.services.api.UserService.Validations;
-import com.konkerlabs.platform.registry.business.services.api.UserService.Errors;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.*;
 
 @RestController
 @Scope("request")
@@ -178,11 +164,11 @@ public class UserRestController implements InitializingBean {
     @Override
     public void afterPropertiesSet() throws Exception {
 
-        for (Validations value : UserService.Validations.values()) {
+        for (UserService.Validations value : UserService.Validations.values()) {
             validationsCode.add(value.getCode());
         }
         
-        for (Errors value : UserService.Errors.values()) {
+        for (UserService.Errors value : UserService.Errors.values()) {
             validationsCode.add(value.getCode());
         }
 

@@ -21,7 +21,6 @@ import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Event.EventActor;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.repositories.events.api.BaseEventRepositoryImpl;
 
 @Repository("cassandraEvents")
 public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implements DisposableBean {

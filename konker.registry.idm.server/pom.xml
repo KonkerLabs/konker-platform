@@ -14,7 +14,7 @@
 
     <groupId>com.konkerlabs</groupId>
     <artifactId>konker.registry.idm.server</artifactId>
-    <version>0.0.1</version>
+    <!--<version>1.0-SNAPSHOT</version>-->
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -127,6 +127,16 @@
                     <artifactId>thymeleaf</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.konkerlabs</groupId>
+            <artifactId>konker.registry.services.user</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.konkerlabs</groupId>
+            <artifactId>konker.registry.common</artifactId>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>io.springfox</groupId>

@@ -10,8 +10,11 @@
     <modules>
         <module>konker.utilities</module>
         <module>konker.security</module>
-        <module>konker.registry.config</module>
+        <module>konker.registry.common</module>
         <module>konker.registry.services.core</module>
+        <module>konker.registry.services.mail</module>
+        <module>konker.registry.services.user</module>
+        <module>konker.registry.services.monitoring</module>
         <module>konker.registry.services.storage.cassandra</module>
         <module>konker.registry.services.storage.mongodb</module>
         <module>konker.registry.web</module>
@@ -19,6 +22,7 @@
         <module>konker.registry.data</module>
     	<module>konker.registry.cassandra-etl</module>
         <module>konker.registry.idm.server</module>
+        <module>konker.registry.eurekaserver</module>
 
     </modules>
 
