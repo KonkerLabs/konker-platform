@@ -1,13 +1,5 @@
 package com.konkerlabs.platform.registry.test.base;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
-
-import java.util.Collections;
-
-import javax.mail.internet.MimeMessage;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -15,6 +7,11 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.thymeleaf.spring4.SpringTemplateEngine;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
+
+import javax.mail.internet.MimeMessage;
+import java.util.Collections;
+
+import static org.mockito.Mockito.*;
 
 @Configuration
 public class SpringMailTestConfiguration {

@@ -120,11 +120,23 @@
         <dependency>
             <groupId>com.konkerlabs</groupId>
             <artifactId>konker.registry.services.core</artifactId>
-            <version>0.0.1</version>
+            <version>1.0-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
-                    <groupId>org.thymeleaf</groupId>
-                    <artifactId>thymeleaf</artifactId>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-context-support</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.mail</groupId>
+                    <artifactId>mail</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework.security</groupId>
+                    <artifactId>spring-security-config</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework.security.oauth</groupId>
+                    <artifactId>spring-security-oauth2</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

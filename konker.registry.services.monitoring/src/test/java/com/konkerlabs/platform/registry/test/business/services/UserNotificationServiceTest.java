@@ -1,34 +1,5 @@
 package com.konkerlabs.platform.registry.test.business.services;
 
-import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
-import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.isResponseOk;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.lessThan;
-import static org.hamcrest.Matchers.lessThanOrEqualTo;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.notNullValue;
-
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.model.UserNotification;
 import com.konkerlabs.platform.registry.business.repositories.UserRepository;
@@ -41,6 +12,23 @@ import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.SpringMailTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import java.time.Instant;
+import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
+import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
+import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.isResponseOk;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(
@@ -162,7 +150,7 @@ public class UserNotificationServiceTest extends BusinessLayerTestSupport {
     public void shouldFailWhenUserIsNull() throws Exception {
         ServiceResponse<List<UserNotification>> notificationsResp = userNotificationService.findAll(null);
 
-        assertThat(notificationsResp, hasErrorMessage(UserNotificationService.Validations.USER_NULL.getCode()));
+        assertThat(notificationsResp, hasErrorMessage(Validations.USER_NULL.getCode()));
     }
 
     // ============================= getUnread ========================= //
@@ -218,7 +206,7 @@ public class UserNotificationServiceTest extends BusinessLayerTestSupport {
     public void shouldFailWhenUserForUnreadIsNull() throws Exception {
         ServiceResponse<List<UserNotification>> notificationsResp = userNotificationService.findUnread(null);
 
-        assertThat(notificationsResp, hasErrorMessage(UserNotificationService.Validations.USER_NULL.getCode()));
+        assertThat(notificationsResp, hasErrorMessage(Validations.USER_NULL.getCode()));
     }
 
     // ======================= getUserNotification ========================= //
