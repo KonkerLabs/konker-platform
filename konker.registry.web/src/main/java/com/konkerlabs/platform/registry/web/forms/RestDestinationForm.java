@@ -1,11 +1,5 @@
 package com.konkerlabs.platform.registry.web.forms;
 
-import com.konkerlabs.platform.registry.business.model.RestDestination;
-import com.konkerlabs.platform.registry.business.model.RestDestination.RestDestinationHeader;
-import com.konkerlabs.platform.registry.business.model.enumerations.SupportedHttpMethod;
-import com.konkerlabs.platform.registry.web.forms.api.ModelBuilder;
-import lombok.Data;
-
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,6 +8,14 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
+
+import com.konkerlabs.platform.registry.business.model.RestDestination;
+import com.konkerlabs.platform.registry.business.model.RestDestination.RestDestinationHeader;
+import com.konkerlabs.platform.registry.business.model.RestDestination.RestDestinationType;
+import com.konkerlabs.platform.registry.business.model.enumerations.SupportedHttpMethod;
+import com.konkerlabs.platform.registry.web.forms.api.ModelBuilder;
+
+import lombok.Data;
 
 @Data
 public class RestDestinationForm implements ModelBuilder<RestDestination, RestDestinationForm, Void> {
@@ -26,6 +28,8 @@ public class RestDestinationForm implements ModelBuilder<RestDestination, RestDe
     private String serviceHost;
     private String serviceUsername;
     private String servicePassword;
+    private RestDestinationType type;
+    private String body;
     private boolean active;
 
     public RestDestinationForm() {
@@ -42,6 +46,8 @@ public class RestDestinationForm implements ModelBuilder<RestDestination, RestDe
                 .active(isActive())
                 .method(getMethod())
                 .headers(headersMapToList(getHeaders()))
+                .type(getType())
+                .body(getBody())
                 .build();
     }
 
@@ -56,6 +62,8 @@ public class RestDestinationForm implements ModelBuilder<RestDestination, RestDe
         setMethod(Optional.ofNullable(model.getMethod()).isPresent() ? model.getMethod() :
                 SupportedHttpMethod.POST.getCode());
         setHeaders(headersListToMap(model.getHeaders()));
+        setType(model.getType());
+        setBody(model.getBody());
   
         return this;
     }

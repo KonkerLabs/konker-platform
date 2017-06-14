@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.RestDestination;
+import com.konkerlabs.platform.registry.business.model.RestDestination.RestDestinationType;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
@@ -120,6 +121,10 @@ public class RestDestinationServiceImpl extends AbstractURLBlacklistValidation i
 			return ServiceResponseBuilder.<RestDestination> error().withMessage(Validations.METHOD_INVALID.getCode())
 					.build();
 		}
+		
+		if (!Optional.ofNullable(destination.getType()).isPresent()) {
+			destination.setType(RestDestinationType.FORWARD_MESSAGE);
+		}
 
 		Tenant existingTenant = tenantRepository.findByDomainName(tenant.getDomainName());
 
@@ -175,7 +180,7 @@ public class RestDestinationServiceImpl extends AbstractURLBlacklistValidation i
 		if (!Optional.ofNullable(destination).isPresent())
 			return ServiceResponseBuilder.<RestDestination> error().withMessage(CommonValidations.RECORD_NULL.getCode())
 					.build();
-
+		
 		if (!Optional.ofNullable(guid).filter(s -> !s.isEmpty()).isPresent())
 			return ServiceResponseBuilder.<RestDestination> error().withMessage(Validations.GUID_NULL.getCode())
 					.build();
@@ -220,6 +225,11 @@ public class RestDestinationServiceImpl extends AbstractURLBlacklistValidation i
 		destination.setGuid(existingDestination.getGuid());
 		destination.setTenant(existingTenant);
 		destination.setApplication(application);
+		
+		if (!Optional.ofNullable(destination.getType()).isPresent()) {
+			destination.setType(existingDestination.getType());
+			destination.setBody(existingDestination.getBody());
+		}
 
 		Optional<Map<String, Object[]>> validations = destination.applyValidations();
 
