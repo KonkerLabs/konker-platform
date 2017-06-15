@@ -2,10 +2,11 @@ package com.konkerlabs.platform.registry.business.model.behaviors;
 
 import org.springframework.util.StringUtils;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.text.MessageFormat;
 
-public interface URIDealer {
+public interface URIDealer extends Serializable {
 
     final String URI_TEMPLATE = "{0}://{1}/{2}";
 

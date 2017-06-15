@@ -8,9 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
 
-/**
- * Created by Felipe on 27/12/16.
- */
+
 @Document(collection = "tokens")
 @Data
 @Builder

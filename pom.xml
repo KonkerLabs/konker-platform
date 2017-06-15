@@ -21,8 +21,9 @@
         <module>konker.registry.api</module>
         <module>konker.registry.data</module>
     	<module>konker.registry.cassandra-etl</module>
-        <module>konker.registry.idm.server</module>
+        <module>konker.registry.idm.authserver</module>
         <module>konker.registry.eurekaserver</module>
+        <module>konker.registry.idm.resourceserver</module>
 
     </modules>
 
