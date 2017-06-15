@@ -2,6 +2,7 @@ package com.konkerlabs.platform.registry.test.web.controllers;
 
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.RestDestination;
+import com.konkerlabs.platform.registry.business.model.RestDestination.RestDestinationType;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
@@ -91,6 +92,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
                 .serviceUsername("username")
                 .headers(new HashMap<String, String>())
                 .method("POST")
+                .type(RestDestinationType.FORWARD_MESSAGE)
                 .servicePassword("password").active(true).build();
 
         savedDestination = RestDestination.builder()
@@ -102,6 +104,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
                 .active(destination.isActive())
                 .method(destination.getMethod())
                 .application(application)
+                .type(RestDestinationType.FORWARD_MESSAGE)
                 .build();
 
         registeredDestinations = new ArrayList<>();
@@ -122,6 +125,8 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
         destinationForm.setServiceUsername(destination.getServiceUsername());
         destinationForm.setServicePassword(destination.getServicePassword());
         destinationForm.setActive(destination.isActive());
+        destinationForm.setType(destination.getType().name());
+        destinationForm.setApplicationName(application.getName());
     }
 
     @After

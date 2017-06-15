@@ -108,6 +108,8 @@ public class RestDestinationController extends AbstractRestController implements
                 .serviceURI(restDestinationForm.getServiceURI())
                 .serviceUsername(restDestinationForm.getServiceUsername())
                 .servicePassword(restDestinationForm.getServicePassword())
+                .type(restDestinationForm.getType())
+                .body(restDestinationForm.getBody())
                 .active(true)
                 .build();
 

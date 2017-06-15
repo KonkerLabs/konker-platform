@@ -1,18 +1,24 @@
 package com.konkerlabs.platform.registry.business.model;
 
-import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
-import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.utilities.validations.InterpolableURIValidator;
-import com.konkerlabs.platform.utilities.validations.api.Validatable;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.*;
+import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.utilities.validations.InterpolableURIValidator;
+import com.konkerlabs.platform.utilities.validations.api.Validatable;
+import com.mongodb.util.JSON;
+import com.mongodb.util.JSONParseException;
+
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
@@ -23,7 +29,8 @@ public class RestDestination implements URIDealer, Validatable {
         NAME_NULL("model.rest_destination.name.not_null"),
         URL_NULL("model.rest_destination.url.not_null"),
         GUID_NOT_EMPTY("model.rest_destination.guid.not_empty"),
-        SERVICE_USERNAME_WITHOUT_PASSWORD("model.rest_destination.service.user_without_password");
+        SERVICE_USERNAME_WITHOUT_PASSWORD("model.rest_destination.service.user_without_password"),
+        CUSTOM_BODY_INVALID("model.rest_destination.custom.body.invalid");
 
         private String code;
 
@@ -34,6 +41,11 @@ public class RestDestination implements URIDealer, Validatable {
         Validations(String code) {
             this.code = code;
         }
+    }
+    
+    public enum RestDestinationType {
+    	FORWARD_MESSAGE,
+    	CUSTOM_BODY;
     }
 
     @Id
@@ -49,6 +61,8 @@ public class RestDestination implements URIDealer, Validatable {
     private String serviceURI;
     private String serviceUsername;
     private String servicePassword;
+    private RestDestinationType type;
+    private String body;
     private boolean active;
 
     public static final String URI_SCHEME = "rest";
@@ -97,9 +111,28 @@ public class RestDestination implements URIDealer, Validatable {
 
         if (!Optional.ofNullable(getGuid()).filter(s -> !s.isEmpty()).isPresent())
             validations.put(Validations.GUID_NOT_EMPTY.getCode(), null);
+        
+        if (RestDestinationType.CUSTOM_BODY.equals(getType()) &&
+				isInvalidJson(getBody())) {
+        	validations.put(Validations.CUSTOM_BODY_INVALID.getCode(), null);
+        }
 
         return Optional.of(validations).filter(stringMap -> !stringMap.isEmpty());
     }
+    
+    private boolean isInvalidJson(String body) {
+		if (StringUtils.isBlank(body)) {
+            return true;
+        }
+		
+		try {
+            JSON.parse(body);
+        } catch (JSONParseException e) {
+            return true;
+        }
+		
+		return false;
+	}
 
     @Data
     @NoArgsConstructor

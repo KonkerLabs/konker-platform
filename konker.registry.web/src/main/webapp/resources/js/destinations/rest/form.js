@@ -70,5 +70,51 @@ $(document).ready(function() {
     }
 
     $('#headersBody').find('button').on('click', removeHeaderRow);
+    
+    var restDestinationType = $('input[type=radio][name=type]');
+
+    restDestinationType.change(function() {
+    	renderFragment(this.value);
+    });
+
+    applyEventBindings(restDestinationType.filter('input:checked').val());
 
 });
+
+function renderFragment(scheme) {
+    var base = urlTo('/destinations/rest/' + $('#applicationName').val() + '/body/');
+    var url = base + scheme;
+
+    fetchViewFragment(scheme, url, $('#bodyFragment'));
+}
+
+function fetchViewFragment(scheme, fetchUrl, fragment) {
+    var loadSpinner;
+
+    $.ajax({
+        context : this,
+        type : "GET",
+        url : fetchUrl,
+        dataType: "html",
+        timeout : 100000,
+        beforeSend : function() {
+            loadSpinner = setTimeout(function() {
+                $("div.ajax-loading").addClass('show');
+            }, 50);
+        },
+        success : function(data) {
+        	fragment.html(data);
+            applyEventBindings(scheme);
+        },
+        complete : function() {
+            clearTimeout(loadSpinner);
+            $("div.ajax-loading").removeClass('show');
+        }
+    });
+}
+
+function applyEventBindings(scheme) {
+    switch (scheme) {
+        default : break;
+    }
+}

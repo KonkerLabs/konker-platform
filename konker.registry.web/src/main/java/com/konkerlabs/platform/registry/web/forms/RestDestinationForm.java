@@ -1,11 +1,5 @@
 package com.konkerlabs.platform.registry.web.forms;
 
-import com.konkerlabs.platform.registry.business.model.RestDestination;
-import com.konkerlabs.platform.registry.business.model.RestDestination.RestDestinationHeader;
-import com.konkerlabs.platform.registry.business.model.enumerations.SupportedHttpMethod;
-import com.konkerlabs.platform.registry.web.forms.api.ModelBuilder;
-import lombok.Data;
-
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,17 +9,28 @@ import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.konkerlabs.platform.registry.business.model.RestDestination;
+import com.konkerlabs.platform.registry.business.model.RestDestination.RestDestinationHeader;
+import com.konkerlabs.platform.registry.business.model.RestDestination.RestDestinationType;
+import com.konkerlabs.platform.registry.business.model.enumerations.SupportedHttpMethod;
+import com.konkerlabs.platform.registry.web.forms.api.ModelBuilder;
+
+import lombok.Data;
+
 @Data
 public class RestDestinationForm implements ModelBuilder<RestDestination, RestDestinationForm, Void> {
 
     private String restId;
     private String name;
     private String method;
+    private String applicationName;
     private List<RestDestinationHeader> headers;
     private String serviceProtocol;
     private String serviceHost;
     private String serviceUsername;
     private String servicePassword;
+    private String type = RestDestinationType.FORWARD_MESSAGE.name();
+    private String body;
     private boolean active;
 
     public RestDestinationForm() {
@@ -42,6 +47,8 @@ public class RestDestinationForm implements ModelBuilder<RestDestination, RestDe
                 .active(isActive())
                 .method(getMethod())
                 .headers(headersMapToList(getHeaders()))
+                .type(RestDestinationType.valueOf(getType()))
+                .body(getBody())
                 .build();
     }
 
@@ -56,6 +63,9 @@ public class RestDestinationForm implements ModelBuilder<RestDestination, RestDe
         setMethod(Optional.ofNullable(model.getMethod()).isPresent() ? model.getMethod() :
                 SupportedHttpMethod.POST.getCode());
         setHeaders(headersListToMap(model.getHeaders()));
+        setType(model.getType().name());
+        setBody(model.getBody());
+        setApplicationName(model.getApplication() != null ? model.getApplication().getName() : null);
   
         return this;
     }
