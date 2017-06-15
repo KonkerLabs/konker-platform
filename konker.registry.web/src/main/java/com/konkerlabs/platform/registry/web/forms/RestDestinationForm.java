@@ -23,12 +23,13 @@ public class RestDestinationForm implements ModelBuilder<RestDestination, RestDe
     private String restId;
     private String name;
     private String method;
+    private String applicationName;
     private List<RestDestinationHeader> headers;
     private String serviceProtocol;
     private String serviceHost;
     private String serviceUsername;
     private String servicePassword;
-    private RestDestinationType type;
+    private String type = RestDestinationType.FORWARD_MESSAGE.name();
     private String body;
     private boolean active;
 
@@ -46,7 +47,7 @@ public class RestDestinationForm implements ModelBuilder<RestDestination, RestDe
                 .active(isActive())
                 .method(getMethod())
                 .headers(headersMapToList(getHeaders()))
-                .type(getType())
+                .type(RestDestinationType.valueOf(getType()))
                 .body(getBody())
                 .build();
     }
@@ -62,8 +63,9 @@ public class RestDestinationForm implements ModelBuilder<RestDestination, RestDe
         setMethod(Optional.ofNullable(model.getMethod()).isPresent() ? model.getMethod() :
                 SupportedHttpMethod.POST.getCode());
         setHeaders(headersListToMap(model.getHeaders()));
-        setType(model.getType());
+        setType(model.getType().name());
         setBody(model.getBody());
+        setApplicationName(model.getApplication() != null ? model.getApplication().getName() : null);
   
         return this;
     }

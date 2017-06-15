@@ -30,7 +30,7 @@ public class RestDestination implements URIDealer, Validatable {
         URL_NULL("model.rest_destination.url.not_null"),
         GUID_NOT_EMPTY("model.rest_destination.guid.not_empty"),
         SERVICE_USERNAME_WITHOUT_PASSWORD("model.rest_destination.service.user_without_password"),
-        CUSTOM_BODY_INVALID("service.rest_destination.custom.body.invalid");
+        CUSTOM_BODY_INVALID("model.rest_destination.custom.body.invalid");
 
         private String code;
 
