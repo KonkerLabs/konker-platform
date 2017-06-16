@@ -29,7 +29,7 @@ public class RestDestinationForm implements ModelBuilder<RestDestination, RestDe
     private String serviceHost;
     private String serviceUsername;
     private String servicePassword;
-    private String type = RestDestinationType.FORWARD_MESSAGE.name();
+    private RestDestinationType type = RestDestinationType.FORWARD_MESSAGE;
     private String body;
     private boolean active;
 
@@ -47,7 +47,7 @@ public class RestDestinationForm implements ModelBuilder<RestDestination, RestDe
                 .active(isActive())
                 .method(getMethod())
                 .headers(headersMapToList(getHeaders()))
-                .type(RestDestinationType.valueOf(getType()))
+                .type(getType())
                 .body(getBody())
                 .build();
     }
@@ -63,39 +63,39 @@ public class RestDestinationForm implements ModelBuilder<RestDestination, RestDe
         setMethod(Optional.ofNullable(model.getMethod()).isPresent() ? model.getMethod() :
                 SupportedHttpMethod.POST.getCode());
         setHeaders(headersListToMap(model.getHeaders()));
-        setType(model.getType().name());
+        setType(model.getType());
         setBody(model.getBody());
         setApplicationName(model.getApplication() != null ? model.getApplication().getName() : null);
-  
+
         return this;
     }
 
 	public SupportedHttpMethod[] getMethodList() {
         return SupportedHttpMethod.values();
     }
-    
+
     private Map<String, String> headersMapToList(List<RestDestinationHeader> list) {
     	Map<String, String> map = new HashMap<>();
-    	
+
     	if (list == null) {
     		return map;
     	}
-    	
+
     	for (RestDestinationHeader header : list) {
     		if (StringUtils.isNotBlank(header.getKey()))
     			map.put(header.getKey(), header.getValue());
 		}
-    	
+
 		return map;
 	}
 
     private List<RestDestinationHeader> headersListToMap(Map<String, String> map)  {
     	List<RestDestinationHeader> list = new ArrayList<>();
-    	
+
     	if (map == null) {
     		return list;
     	}
-    	
+
     	for (String key : map.keySet()) {
     		RestDestinationHeader header = new RestDestinationHeader();
     		header.setKey(key);
@@ -133,5 +133,5 @@ public class RestDestinationForm implements ModelBuilder<RestDestination, RestDe
 			serviceHost = tokens[0];
 		}
 	}
-	
+
 }

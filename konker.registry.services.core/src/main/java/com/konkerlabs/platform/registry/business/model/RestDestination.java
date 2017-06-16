@@ -42,7 +42,7 @@ public class RestDestination implements URIDealer, Validatable {
             this.code = code;
         }
     }
-    
+
     public enum RestDestinationType {
     	FORWARD_MESSAGE,
     	CUSTOM_BODY;
@@ -82,6 +82,10 @@ public class RestDestination implements URIDealer, Validatable {
         return guid;
     }
 
+    public RestDestinationType getType() {
+        return type == null ? RestDestinationType.FORWARD_MESSAGE : type;
+    }
+
     public Optional<Map<String, Object[]>> applyValidations() {
         Map<String, Object[]> validations = new HashMap<>();
 
@@ -111,7 +115,7 @@ public class RestDestination implements URIDealer, Validatable {
 
         if (!Optional.ofNullable(getGuid()).filter(s -> !s.isEmpty()).isPresent())
             validations.put(Validations.GUID_NOT_EMPTY.getCode(), null);
-        
+
         if (RestDestinationType.CUSTOM_BODY.equals(getType()) &&
 				isInvalidJson(getBody())) {
         	validations.put(Validations.CUSTOM_BODY_INVALID.getCode(), null);
@@ -119,18 +123,18 @@ public class RestDestination implements URIDealer, Validatable {
 
         return Optional.of(validations).filter(stringMap -> !stringMap.isEmpty());
     }
-    
+
     private boolean isInvalidJson(String body) {
 		if (StringUtils.isBlank(body)) {
             return true;
         }
-		
+
 		try {
             JSON.parse(body);
         } catch (JSONParseException e) {
             return true;
         }
-		
+
 		return false;
 	}
 
