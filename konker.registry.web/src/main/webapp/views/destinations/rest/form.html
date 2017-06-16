@@ -3,7 +3,7 @@
 <head>
     <style>
         .nopadding {
-            padding-left: 0px; 
+            padding-left: 0px;
             padding-right: 0px;
         }
     </style>
@@ -136,7 +136,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="form-group">
             	<label class="col-sm-2 radio control-label"
 		        	data-th-text="#{destinations.rest.form.type}"></label>
@@ -144,25 +144,24 @@
 		        	<label class="radio-inline">
 		            	<input type="radio" name="type"
 		                	data-th-text="#{destinations.rest.form.type.forward}"
-		                    value="FORWARD_MESSAGE" data-th-checked="*{type == 'FORWARD_MESSAGE'}"></input>
+		                    value="FORWARD_MESSAGE" data-th-checked="*{type.name() == 'FORWARD_MESSAGE'}"></input>
 		            </label>
 		            <label class="radio-inline">
 		            	<input type="radio" name="type"
 		                	data-th-text="#{destinations.rest.form.type.custom}"
-		                    value="CUSTOM_BODY" data-th-checked="*{type == 'CUSTOM_BODY'}"></input>
+		                    value="CUSTOM_BODY" data-th-checked="*{type.name() == 'CUSTOM_BODY'}"></input>
 		            </label>
 		       	</div>
 		 	</div>
-		 	
 		 	<div id="bodyFragment">
                 <th:block data-th-include="destinations/rest/empty-body :: emptyBody"
-                          data-th-if="*{type == 'FORWARD_MESSAGE'}">
+                          data-th-if="*{type.name() == 'FORWARD_MESSAGE'}">
                 </th:block>
                 <th:block data-th-include="destinations/rest/custom-body :: customBody"
-                          data-th-if="*{type == 'CUSTOM_BODY'}">
+                          data-th-if="*{type.name() == 'CUSTOM_BODY'}">
                 </th:block>
             </div>
-            
+
             <div class="form-group">
                 <label class="col-sm-1 control-label" for="active" data-th-text="#{destinations.rest.form.active}">Active?</label>
                 <div class="col-sm-4">
@@ -185,7 +184,7 @@
             <a class="btn btn-default confirm-delete"
                data-th-if="*{restId} != null">
             	<img data-th-attr="src=@{/resources/konker/images/icons-bt/trash-icon-bt-01.svg}" class="bt-icon" />
-                <span data-th-text="#{nav.remove}"></span>   
+                <span data-th-text="#{nav.remove}"></span>
             </a>
             <!-- delete confirm modal -->
             <div class="modal" id="removeItemModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
@@ -210,9 +209,9 @@
             </div>
 
         </form>
-        
+
         <div class="ajax-loading"></div>
-        
+
     </fieldset>
 </div>
 <div data-layout-fragment="script">

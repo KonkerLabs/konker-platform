@@ -125,7 +125,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
         destinationForm.setServiceUsername(destination.getServiceUsername());
         destinationForm.setServicePassword(destination.getServicePassword());
         destinationForm.setActive(destination.isActive());
-        destinationForm.setType(destination.getType().name());
+        destinationForm.setType(destination.getType());
         destinationForm.setApplicationName(application.getName());
     }
 
@@ -143,7 +143,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
                 ServiceResponseBuilder.<List<RestDestination>>ok()
                         .withResult(registeredDestinations).build()
         );
-        
+
         when(applicationService.findAll(tenant))
     		.thenReturn(ServiceResponseBuilder.<List<Application>> ok().withResult(Collections.singletonList(application)).build());
 
@@ -334,7 +334,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
         public RestDestinationService restDestinationService() {
             return mock(RestDestinationService.class);
         }
-        
+
         @Bean
         public ApplicationService applicationService() {
             return mock(ApplicationService.class);

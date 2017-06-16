@@ -38,7 +38,7 @@ var controller = {
 }
 
 $(document).ready(function() {
-    
+
     $('.confirm-delete').on('click', function(e) {
         e.preventDefault();
         $('#removeItemModal').modal('show');
@@ -70,18 +70,18 @@ $(document).ready(function() {
     }
 
     $('#headersBody').find('button').on('click', removeHeaderRow);
-    
+
     var restDestinationType = $('input[type=radio][name=type]');
 
     restDestinationType.change(function() {
-    	renderFragment(this.value);
+    	renderBodyFragment(this.value);
     });
 
     applyEventBindings(restDestinationType.filter('input:checked').val());
 
 });
 
-function renderFragment(scheme) {
+function renderBodyFragment(scheme) {
     var base = urlTo('/destinations/rest/' + $('#applicationName').val() + '/body/');
     var url = base + scheme;
 

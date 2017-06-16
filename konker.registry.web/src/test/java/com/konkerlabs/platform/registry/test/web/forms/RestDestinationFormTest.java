@@ -25,13 +25,13 @@ public class RestDestinationFormTest {
     	RestDestinationHeader formHeader = new RestDestinationHeader();
     	formHeader.setKey("Zemaa3Telv");
     	formHeader.setValue("JBhsBW80Ne");
-    	
+
     	List<RestDestinationHeader> formHeaders = new ArrayList<>();
     	formHeaders.add(formHeader);
-    	
+
     	Map<String, String> headersMap = new HashMap<>();
     	headersMap.put(formHeader.getKey(), formHeader.getValue());
-    	
+
         model = RestDestination.builder()
                 .name("Name")
                 .serviceURI("http://localhost:8080/path?query=1")
@@ -50,7 +50,7 @@ public class RestDestinationFormTest {
         form.setActive(model.isActive());
         form.setMethod(model.getMethod());
         form.setHeaders(formHeaders);
-        form.setType(RestDestinationType.FORWARD_MESSAGE.name());
+        form.setType(RestDestinationType.FORWARD_MESSAGE);
     }
 
     @Test
