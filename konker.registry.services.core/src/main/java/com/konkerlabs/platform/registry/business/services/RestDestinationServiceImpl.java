@@ -230,6 +230,10 @@ public class RestDestinationServiceImpl extends AbstractURLBlacklistValidation i
 			destination.setType(existingDestination.getType());
 			destination.setBody(existingDestination.getBody());
 		}
+		
+		if (destination.getType().equals(RestDestinationType.FORWARD_MESSAGE)) {
+			destination.setBody(null);
+		}
 
 		Optional<Map<String, Object[]>> validations = destination.applyValidations();
 

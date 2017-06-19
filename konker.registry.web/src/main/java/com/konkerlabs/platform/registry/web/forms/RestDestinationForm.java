@@ -48,7 +48,7 @@ public class RestDestinationForm implements ModelBuilder<RestDestination, RestDe
                 .method(getMethod())
                 .headers(headersMapToList(getHeaders()))
                 .type(getType())
-                .body(getBody())
+                .body(getBody() != null ? getBody().replaceAll("[\n\r]", "") : null)
                 .build();
     }
 
