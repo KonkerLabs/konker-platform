@@ -16,31 +16,32 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.UserService;
 
 public class ResquestResponseInterceptor extends HandlerInterceptorAdapter {
-	
+
 	private Logger LOGGER = LoggerFactory.getLogger(ResquestResponseInterceptor.class);
-	
+
 	@Autowired
 	private UserService userService;
-	
+
 	@Override
 	public void afterCompletion(
-			HttpServletRequest request, 
-			HttpServletResponse response, 
-			Object handler, 
+			HttpServletRequest request,
+			HttpServletResponse response,
+			Object handler,
 			Exception ex) throws Exception {
 
 		String emailUser = request.getUserPrincipal().getName();
 		ServiceResponse<User> serviceResponse = userService.findByEmail(emailUser);
 		String url = request.getRequestURL().toString();
 		HttpOutput out = (HttpOutput) response.getOutputStream();
-		
+
 		if (serviceResponse.isOk()) {
-			LOGGER.info(MessageFormat.format("{0} {1} {2}", 
-					serviceResponse.getResult().getTenant().getDomainName(),
+			LOGGER.info(MessageFormat.format("{0} {1} {2} {3}",
+                    serviceResponse.getResult().getTenant().getDomainName(),
 					url,
+                    response.getStatus(),
 					out.getWritten()));
 		}
-		
+
 	}
 
 }
