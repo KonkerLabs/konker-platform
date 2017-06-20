@@ -265,6 +265,39 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
 
     @Override
+    public ServiceResponse<Long> countAll(Tenant tenant, Application application) {
+
+        if (!Optional.ofNullable(tenant).isPresent()) {
+            Device noDevice = Device.builder().guid("NULL").tenant(
+                    Tenant.builder().domainName("unknow_domain").build()).build();
+            LOGGER.debug(CommonValidations.TENANT_NULL.getCode(),
+                    noDevice.toURI(),
+                    noDevice.getTenant().getLogLevel());
+            return ServiceResponseBuilder.<Long>error()
+                    .withMessage(CommonValidations.TENANT_NULL.getCode())
+                    .build();
+        }
+
+        if (!Optional.ofNullable(application).isPresent()) {
+            Device noDevice = Device.builder()
+                    .guid("NULL")
+                    .tenant(tenant)
+                    .application(Application.builder().name("unknowapp").tenant(tenant).build())
+                    .build();
+            LOGGER.debug(ApplicationService.Validations.APPLICATION_NULL.getCode(),
+                    noDevice.toURI(),
+                    noDevice.getTenant().getLogLevel());
+            return ServiceResponseBuilder.<Long>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode())
+                    .build();
+        }
+
+        Long all = deviceRepository.countAllByTenantIdAndApplicationName(tenant.getId(), application.getName());
+        return ServiceResponseBuilder.<Long>ok().withResult(all).build();
+
+    }
+
+    @Override
     public Device findByApiKey(String apiKey) {
         return deviceRepository.findByApiKey(apiKey);
     }
