@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.idm.config;
 
+import com.konkerlabs.platform.registry.idm.domain.service.KonkerIdmTokenService;
 import com.konkerlabs.platform.registry.idm.domain.service.MongoTokenStore;
 import com.konkerlabs.platform.security.managers.PasswordManager;
 import org.slf4j.Logger;
@@ -19,7 +20,6 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
-import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
 import org.springframework.security.oauth2.provider.token.TokenStore;
@@ -123,8 +123,8 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 	
 	@Bean
 	@Primary
-	public DefaultTokenServices tokenServices() {
-		DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
+	public KonkerIdmTokenService tokenServices() {
+		KonkerIdmTokenService defaultTokenServices = new KonkerIdmTokenService();
 		defaultTokenServices.setTokenStore(tokenStore());
 		defaultTokenServices.setSupportRefreshToken(true);
 		return defaultTokenServices;

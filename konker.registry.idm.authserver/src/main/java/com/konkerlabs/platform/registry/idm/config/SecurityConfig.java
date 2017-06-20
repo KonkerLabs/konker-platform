@@ -2,7 +2,7 @@ package com.konkerlabs.platform.registry.idm.config;
 
 import com.konkerlabs.platform.registry.business.services.KonkerDaoAuthenticationProvider;
 import com.konkerlabs.platform.registry.business.services.api.LoginAuditService;
-import com.konkerlabs.platform.registry.idm.domain.context.TenantUserDetailsService;
+import com.konkerlabs.platform.registry.api.domain.context.TenantUserDetailsService;
 import com.konkerlabs.platform.security.managers.PasswordManager;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;

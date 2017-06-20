@@ -23,7 +23,11 @@ import org.springframework.util.StringUtils;
 import java.util.*;
 
 @Configuration
-@EnableMongoRepositories(basePackages = "com.konkerlabs.platform.registry.business.repositories")
+@EnableMongoRepositories(basePackages =
+        {
+                "com.konkerlabs.platform.registry.business.repositories",
+                "com.konkerlabs.platform.registry.billing.repositories"
+        })
 @Data
 public class MongoConfig extends AbstractMongoConfiguration {
 

@@ -14,18 +14,17 @@ import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.convert.CustomConversions;
-import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.util.StringUtils;
 
 import java.util.*;
 
-@Configuration
+/*@Configuration
 @EnableMongoRepositories(basePackages = "com.konkerlabs.platform.registry.billing.repositories", mongoTemplateRef = "mongoBillingTemplate")
+*/
 @Data
 public class MongoBillingConfig extends AbstractMongoConfiguration {
 

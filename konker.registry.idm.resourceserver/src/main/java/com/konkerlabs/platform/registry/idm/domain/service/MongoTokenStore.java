@@ -1,10 +1,7 @@
 package com.konkerlabs.platform.registry.idm.domain.service;
 
 
-import com.konkerlabs.platform.registry.idm.domain.repository.AccessToken;
-import com.konkerlabs.platform.registry.idm.domain.repository.AccessTokenRepository;
-import com.konkerlabs.platform.registry.idm.domain.repository.RefreshToken;
-import com.konkerlabs.platform.registry.idm.domain.repository.RefreshTokenRepository;
+import com.konkerlabs.platform.registry.business.repositories.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -21,6 +18,7 @@ import org.springframework.util.Assert;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Random;
 
 @Component
 public class MongoTokenStore implements TokenStore, InitializingBean {
@@ -33,9 +31,15 @@ public class MongoTokenStore implements TokenStore, InitializingBean {
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
 
+    @Autowired
+    private OauthClientDetailRepository oauthClientDetailRepository;
+
     private AuthenticationKeyGenerator authenticationKeyGenerator = new DefaultAuthenticationKeyGenerator();
 
     private ExtractTokenKeyDigester extractTokenKeyDigester = new MD5ExtractTokenKeyDigester();
+
+    private static final int MIN_DELAY_TIME = 100;
+    private static final int MAX_DELAY_TIME = 250;
 
     public MongoTokenStore() {
     }
@@ -77,6 +81,14 @@ public class MongoTokenStore implements TokenStore, InitializingBean {
             accessToken.authentication(authentication);
             accessToken.setRefreshToken(extractTokenKey(refreshToken));
         } else {
+            OauthClientDetails clientDetails =
+                    oauthClientDetailRepository.findOne((String) authentication.getPrincipal());
+
+            OAuth2Authentication auth2Auth =
+                    new OAuth2Authentication(
+                            authentication.getOAuth2Request(),
+                            authentication.getUserAuthentication()
+                    );
             accessToken = AccessToken.builder()
                     .tokenId(extractTokenKey(token.getValue()))
                     .authenticationId(authenticationKeyGenerator.extractKey(authentication))
@@ -89,6 +101,13 @@ public class MongoTokenStore implements TokenStore, InitializingBean {
             accessToken.authentication(authentication);
         }
         tokenRepository.save(accessToken);
+        Random random = new Random();
+        int delayTime = random.nextInt(MAX_DELAY_TIME - MIN_DELAY_TIME) + MIN_DELAY_TIME;
+        try {
+            Thread.sleep(delayTime);
+        } catch (InterruptedException e) {
+            LOG.error("Error on login silence timer...");
+        }
     }
 
 
@@ -131,6 +150,7 @@ public class MongoTokenStore implements TokenStore, InitializingBean {
 
             AccessToken accessToken = tokenRepository.findOne(tokenId);
             authentication = accessToken == null ? null : accessToken.authentication();
+
 
         } catch (IllegalArgumentException e) {
             LOG.warn("Failed to deserialize authentication for {}", token);

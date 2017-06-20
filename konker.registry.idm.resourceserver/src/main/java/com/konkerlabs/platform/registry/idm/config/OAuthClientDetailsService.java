@@ -1,11 +1,12 @@
 package com.konkerlabs.platform.registry.idm.config;
 
 import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.Role;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
+import com.konkerlabs.platform.registry.business.model.User;
+import com.konkerlabs.platform.registry.business.repositories.*;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
-import com.konkerlabs.platform.registry.idm.domain.repository.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +16,7 @@ import org.springframework.security.oauth2.provider.ClientRegistrationException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service("oauth2ClientDetails")
 public class OAuthClientDetailsService implements ClientDetailsService {
@@ -85,6 +83,8 @@ public class OAuthClientDetailsService implements ClientDetailsService {
     private AccessTokenRepository accessTokenRepository;
     @Autowired
     private TenantRepository tenantRepository;
+    @Autowired
+    private RoleRepository roleRepository;
 
     public boolean validatePassword(String raw, String encoded){
         return slowEquals(raw.getBytes(), encoded.getBytes());
@@ -364,7 +364,7 @@ public class OAuthClientDetailsService implements ClientDetailsService {
     }
 
     public ServiceResponse<OauthClientDetails> saveClientAsRoot(
-            String tenantDomainName, Application application, OauthClientDetails clientDetails){
+            User user, String tenantDomainName, Application application, OauthClientDetails clientDetails){
         Tenant tenant = tenantRepository.findByDomainName(tenantDomainName);
         if(!Optional.ofNullable(tenant).isPresent()){
             if(!Optional.ofNullable(clientDetails).isPresent()){
@@ -373,10 +373,14 @@ public class OAuthClientDetailsService implements ClientDetailsService {
             }
         }
 
-        return saveClient(tenant, application, clientDetails);
+        return saveClient(user, tenant, application, clientDetails);
     }
 
-    public ServiceResponse<OauthClientDetails> saveClient(Tenant tenant, Application application, OauthClientDetails clientDetails) {
+    private List<Role> getClientRoles(){
+        return Collections.singletonList(roleRepository.findByName("ROLE_IOT_USER"));
+    }
+
+    public ServiceResponse<OauthClientDetails> saveClient(User user, Tenant tenant, Application application, OauthClientDetails clientDetails) {
         if (!Optional.ofNullable(tenant).isPresent()) {
             return ServiceResponseBuilder.<OauthClientDetails>error()
                     .withMessage(Validations.INVALID_TENTANT.getCode()).build();
@@ -392,25 +396,15 @@ public class OAuthClientDetailsService implements ClientDetailsService {
                     .withMessage(Validations.INVALID_DETAILS.getCode()).build();
         }
 
-        if(!Optional.ofNullable(clientDetails.getWebServerRedirectUri()).isPresent()){
-            return ServiceResponseBuilder.<OauthClientDetails>error()
-                    .withMessage(Validations.INVALID_DETAILS.getCode()).build();
-        }
-
         if(!Optional.ofNullable(clientDetails.getClientId()).isPresent()){
             return ServiceResponseBuilder.<OauthClientDetails>error()
                     .withMessage(Validations.INVALID_DETAILS.getCode()).build();
         }
         if(!Optional.ofNullable(clientDetails.getClientSecret()).isPresent()){
-            /*PasswordManager passwordManager = new PasswordManager();
-            try {
-                clientDetails.setClientSecret(passwordManager.createHash(UUID.randomUUID().toString()));
-            } catch (SecurityException e) {
-                LOG.error("Error creating client secret");
-            }*/
             clientDetails.setClientSecret(UUID.randomUUID().toString());
         }
 
+        clientDetails.setRoles(getClientRoles());
 
         oauthClientDetailRepository.save(
                 OauthClientDetails.builder()
@@ -420,6 +414,7 @@ public class OAuthClientDetailsService implements ClientDetailsService {
                         .accessTokenValidity(TOKEN_VALIDITY)
                         .application(application)
                         .webServerRedirectUri(clientDetails.getWebServerRedirectUri())
+                        .roles(clientDetails.getRoles())
                         .build());
 
         return ServiceResponseBuilder.<OauthClientDetails>ok()

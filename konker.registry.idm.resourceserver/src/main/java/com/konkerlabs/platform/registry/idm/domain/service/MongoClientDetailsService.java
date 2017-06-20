@@ -2,8 +2,8 @@
 package com.konkerlabs.platform.registry.idm.domain.service;
 
 
-import com.konkerlabs.platform.registry.idm.domain.repository.OauthClientDetailRepository;
-import com.konkerlabs.platform.registry.idm.domain.repository.OauthClientDetails;
+import com.konkerlabs.platform.registry.business.repositories.OauthClientDetailRepository;
+import com.konkerlabs.platform.registry.business.repositories.OauthClientDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -27,7 +27,7 @@ public class MongoClientDetailsService implements ClientDetailsService, Initiali
     public ClientDetails loadClientByClientId(String clientId) throws ClientRegistrationException {
         final OauthClientDetails oauthClientDetails = oauthRepository
                 .findOne(clientId);
-        if (oauthClientDetails == null || oauthClientDetails.isArchived()) {
+        if (oauthClientDetails == null) {
             LOG.warn("Not found ClientDetails by clientId '{}', because null or archived", clientId);
             throw new ClientRegistrationException("Not found ClientDetails by clientId '" + clientId + "', because null or archived");
         }

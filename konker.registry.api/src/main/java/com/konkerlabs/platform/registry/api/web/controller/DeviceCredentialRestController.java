@@ -20,6 +20,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 
 @RestController
@@ -57,7 +58,7 @@ public class DeviceCredentialRestController extends AbstractRestController imple
             Device device = deviceResponse.getResult();
 
             ServiceResponse<DeviceDataURLs> deviceURLResponse = deviceRegisterService
-                    .getDeviceDataURLs(tenant, application, device, user.getLanguage().getLocale());
+                    .getDeviceDataURLs(tenant, application, device, new Locale("en", "US"));
 
             return DeviceSecurityCredentialsVO.builder()
                     .username(deviceResponse.getResult().getApiKey())
@@ -90,7 +91,7 @@ public class DeviceCredentialRestController extends AbstractRestController imple
             Device device = deviceResponse.getResult().getDevice();
 
             ServiceResponse<DeviceDataURLs> deviceURLResponse = deviceRegisterService
-                    .getDeviceDataURLs(tenant, application, device, user.getLanguage().getLocale());
+                    .getDeviceDataURLs(tenant, application, device, new Locale("en", "US"));
 
             return new DeviceSecurityCredentialsPwdVO(deviceResponse.getResult(), deviceURLResponse.getResult());
         }

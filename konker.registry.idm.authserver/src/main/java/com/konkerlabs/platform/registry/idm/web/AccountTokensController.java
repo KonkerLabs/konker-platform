@@ -2,10 +2,10 @@ package com.konkerlabs.platform.registry.idm.web;
 
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.repositories.AccessToken;
+import com.konkerlabs.platform.registry.business.repositories.OauthClientDetails;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.idm.config.OAuthClientDetailsService;
-import com.konkerlabs.platform.registry.idm.domain.repository.AccessToken;
-import com.konkerlabs.platform.registry.idm.domain.repository.OauthClientDetails;
 import com.konkerlabs.platform.registry.idm.web.form.AccessTokenRegistrationForm;
 import com.konkerlabs.platform.registry.idm.web.form.OauthClientRegistrationForm;
 import org.springframework.beans.BeansException;
@@ -56,6 +56,7 @@ public class AccountTokensController implements ApplicationContextAware {
                 .addObject("allTokens", tokenList.getResult());
         if (tokenList.isOk()) {
             view.addObject("tokens", tokenList.getResult());
+            view.addObject("applicationId", applicationId);
         }
 
         return view;
@@ -77,6 +78,7 @@ public class AccountTokensController implements ApplicationContextAware {
                 .addObject("allTokens", tokenList.getResult());
         if (tokenList.isOk()) {
             view.addObject("tokens", tokenList.getResult());
+            view.addObject("applicationId",  tenant.getDomainName());
         }
 
         return view;
@@ -120,7 +122,7 @@ public class AccountTokensController implements ApplicationContextAware {
 
 
     @PreAuthorize("hasAuthority('REMOVE_OAUTHTOKENS')")
-    @RequestMapping(value = "/{tokenId}/deleteToken", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/{tokenId}/deleteToken", method = RequestMethod.GET)
     public ModelAndView removeToken(
             @PathVariable("applicationId") String applicationId,
             @PathVariable("tokenId") String clientId,
@@ -135,7 +137,7 @@ public class AccountTokensController implements ApplicationContextAware {
     }
 
     @PreAuthorize("hasAuthority('REMOVE_OAUTHTOKENS_ROOT')")
-    @RequestMapping(value = "/{tokenId}/deleteTokenAll", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/{tokenId}/deleteTokenAll", method = RequestMethod.GET)
     public ModelAndView removeTokenAsRoot(
             @PathVariable("applicationId") String applicationId,
             @PathVariable("tokenId") String clientId,
@@ -197,8 +199,7 @@ public class AccountTokensController implements ApplicationContextAware {
                     applicationContext.getMessage(OAuthClientDetailsService.Messages.TOKEN_REMOVED_SUCCESSFULLY.getCode(),
                             null, locale));
             return new ModelAndView(MessageFormat.format("redirect:/account/{0}/tokens/",
-                    application.getName(),
-                    serviceResponse.getResult().getTokenId()));
+                    application.getName()));
         } else {
             List<String> messages = serviceResponse.getResponseMessages()
                     .entrySet().stream()

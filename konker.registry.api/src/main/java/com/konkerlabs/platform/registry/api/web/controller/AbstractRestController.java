@@ -1,17 +1,16 @@
 package com.konkerlabs.platform.registry.api.web.controller;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
 import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.User;
+import com.konkerlabs.platform.registry.business.repositories.OauthClientDetails;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public abstract class AbstractRestController {
 
@@ -19,7 +18,7 @@ public abstract class AbstractRestController {
     private ApplicationService applicationService;
 
     @Autowired
-    protected User user;
+    protected OauthClientDetails user;
 
     protected Application getApplication(String applicationId) throws BadServiceResponseException, NotFoundResponseException {
 

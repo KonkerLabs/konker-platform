@@ -1,7 +1,7 @@
 package com.konkerlabs.platform.registry.idm.web.converters;
 
 import com.konkerlabs.platform.registry.business.model.User;
-import com.konkerlabs.platform.registry.idm.domain.context.UserContextResolver;
+import com.konkerlabs.platform.registry.api.domain.context.UserContextResolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;

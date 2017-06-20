@@ -2,10 +2,11 @@ package com.konkerlabs.platform.registry.idm.web;
 
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.User;
+import com.konkerlabs.platform.registry.business.repositories.AccessToken;
+import com.konkerlabs.platform.registry.business.repositories.OauthClientDetails;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.idm.config.OAuthClientDetailsService;
-import com.konkerlabs.platform.registry.idm.domain.repository.AccessToken;
-import com.konkerlabs.platform.registry.idm.domain.repository.OauthClientDetails;
 import com.konkerlabs.platform.registry.idm.web.form.OauthClientRegistrationForm;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,8 @@ public class AccountClientsController implements ApplicationContextAware {
     private ApplicationContext applicationContext;
     @Autowired
     private Tenant tenant;
+    @Autowired
+    private User user;
 
 
     @PreAuthorize("hasAuthority('LIST_OAUTHCLIENTS_ROOT')")
@@ -137,6 +140,7 @@ public class AccountClientsController implements ApplicationContextAware {
 
         return doSaveClient(
                 () -> oAuthClientDetailsService.saveClient(
+                        user,
                         tenant,
                         Application.builder().name(applicationId).build(),
                         form.toModel()),
@@ -156,6 +160,7 @@ public class AccountClientsController implements ApplicationContextAware {
 
         return doSaveClient(
                 () -> oAuthClientDetailsService.saveClientAsRoot(
+                        user,
                         tenantDomainName,
                         Application.builder().name(applicationId).build(),
                         form.toModel()),
@@ -218,8 +223,7 @@ public class AccountClientsController implements ApplicationContextAware {
                     applicationContext.getMessage(OAuthClientDetailsService.Messages.CLIENT_REMOVED_SUCCESSFULLY.getCode(),
                             null, locale));
             return new ModelAndView(MessageFormat.format("redirect:/account/{0}/clients/",
-                    application.getName(),
-                    serviceResponse.getResult().getClientId()));
+                    application.getName()));
         } else {
             List<String> messages = serviceResponse.getResponseMessages()
                     .entrySet().stream()
