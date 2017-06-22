@@ -1,0 +1,268 @@
+{
+  "eventRoutes" : [
+    {
+      "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63aa",
+      "_class" : "com.konkerlabs.platform.registry.model.EventRoute",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
+      },
+      "application" : {
+        "$id" : "konker",
+        "$ref" : "applications"
+      },
+      "name" : "Device event forwarding route for device deletion",
+      "guid" : "bd923670-d888-472a-b6d9-b20af31253db",
+      "description" : "Route description",
+      "incoming": {
+        "uri" : "device://konker/7d51c242-81db-11e6-a8c2-0746f010e945",
+        "data" : {
+          "channel" : "data"
+        }
+      },
+      "outgoing": {
+        "uri" : "device://konker/7d51c242-81db-11e6-a8c2-0746f010e945",
+        "data" : {
+          "channel" : "in"
+        }
+      },
+      "filteringExpression" : "#metric == 'temperature' && #value < 40 && #data.sn == 1234",
+      "transformation" : {
+        "$id" : "2747ec73-6910-43a1-8ddc-5a4a134ebab3",
+        "$ref" : "transformations"
+      },
+      "active" : true
+    },
+    {
+      "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+      "_class" : "com.konkerlabs.platform.registry.model.EventRoute",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
+      },
+      "application" : {
+        "$id" : "konker",
+        "$ref" : "applications"
+      },
+      "name" : "Device event forwarding route",
+      "guid" : "bd923670-d888-472a-b6d9-b20af31253da",
+      "description" : "Route description",
+      "incoming": {
+        "uri" : "device://konker/1af9be20-441e-419b-84a9-cb84efd4f49d",
+        "data" : {
+          "channel" : "data"
+        }
+      },
+      "outgoing": {
+        "uri" : "device://konker/7d51c242-81db-11e6-a8c2-0746f010e945",
+        "data" : {
+          "channel" : "in"
+        }
+      },
+      "filteringExpression" : "#metric == 'temperature' && #value < 40 && #data.sn == 1234",
+      "transformation" : {
+        "$id" : "2747ec73-6910-43a1-8ddc-5a4a134ebab3",
+        "$ref" : "transformations"
+      },
+      "active" : true
+    },
+    {
+      "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63ab",
+      "_class" : "com.konkerlabs.platform.registry.model.EventRoute",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
+      },
+      "application" : {
+        "$id" : "konker",
+        "$ref" : "applications"
+      },
+      "name" : "Device event forwarding route 2",
+      "guid" : "037d835a-c79d-4119-8f03-b2bc9a8cba34",
+      "description" : "Route description",
+      "incoming": {
+        "uri" : "device://konker/1af9be20-441e-419b-84a9-cb84efd4f49d",
+        "data" : {
+          "channel" : "data"
+        }
+      },
+      "outgoing": {
+        "uri" : "device://konker/0000000000000006",
+        "data" : {
+          "channel" : "in"
+        }
+      },
+      "filteringExpression" : "#metric == 'X'",
+      "transformation" : {
+        "$id" : "2747ec73-6910-43a1-8ddc-5a4a134ebab3",
+        "$ref" : "transformations"
+      },
+      "active" : true
+    },
+    {
+      "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63ad",
+      "_class" : "com.konkerlabs.platform.registry.model.EventRoute",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
+      },
+      "application" : {
+        "$id" : "konker",
+        "$ref" : "applications"
+      },
+      "name" : "Device event forwarding route 4",
+      "guid" : "6910dd57-ce13-4c5e-9ec2-6776d7a163b3",
+      "description" : "Route description",
+      "incoming": {
+        "uri" : "device://konker/0000000000000007",
+        "data" : {
+          "channel" : "data"
+        }
+      },
+      "outgoing": {
+        "uri" : "device://konker/7d51c242-81db-11e6-a8c2-0746f010e945",
+        "data" : {
+          "channel" : "in"
+        }
+      },
+      "filteringExpression" : "#value < 0",
+      "transformation" : {
+        "$id" : "2747ec73-6910-43a1-8ddc-5a4a134ebab3",
+        "$ref" : "transformations"
+      },
+      "active" : true
+    },
+    {
+      "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63ae",
+      "_class" : "com.konkerlabs.platform.registry.model.EventRoute",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
+      },
+      "application" : {
+        "$id" : "konker",
+        "$ref" : "applications"
+      },
+      "name" : "Device event forwarding route 5",
+      "guid" : "99091de2-2ba9-4467-af65-e2ce779a6908",
+      "description" : "Route description",
+      "incoming": {
+        "uri" : "device://konker/1af9be20-441e-419b-84a9-cb84efd4f49d",
+        "data" : {
+          "channel" : "data"
+        }
+      },
+      "outgoing": {
+        "uri" : "device://konker/7d51c242-81db-11e6-a8c2-0746f010e945",
+        "data" : {
+          "channel" : "in"
+        }
+      },
+      "filteringExpression" : "#XXXX == 'X'",
+      "transformation" : {
+        "$id" : "2747ec73-6910-43a1-8ddc-5a4a134ebab3",
+        "$ref" : "transformations"
+      },
+      "active" : true
+    },
+    {
+      "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63ba",
+      "_class" : "com.konkerlabs.platform.registry.model.EventRoute",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
+      },
+      "application" : {
+        "$id" : "konker",
+        "$ref" : "applications"
+      },
+      "name" : "Device event forwarding route 6",
+      "guid" : "705d8dc0-1bf8-4fb9-b7fd-5aa8778f3e95",
+      "description" : "Route description",
+      "incoming": {
+        "uri" : "device://konker/1af9be20-441e-419b-84a9-cb84efd4f49d",
+        "data" : {
+          "channel" : "data"
+        }
+      },
+      "outgoing": {
+        "uri" : "device://konker/7d51c242-81db-11e6-a8c2-0746f010e945",
+        "data" : {
+          "channel" : "in"
+        }
+      },
+      "filteringExpression" : "",
+      "transformation" : {
+        "$id" : "2747ec73-6910-43a1-8ddc-5a4a134ebab3",
+        "$ref" : "transformations"
+      },
+      "active" : true
+    },
+    {
+      "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63bb",
+      "_class" : "com.konkerlabs.platform.registry.model.EventRoute",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
+      },
+      "application" : {
+        "$id" : "konker",
+        "$ref" : "applications"
+      },
+      "name" : "Device event forwarding route 7",
+      "guid" : "6f35f0dc-5f9f-4af8-9628-6b6d76d36d09",
+      "description" : "Route description",
+      "incoming": {
+        "uri" : "device://konker/0000000000000001",
+        "data" : {
+          "channel" : "data"
+        }
+      },
+      "outgoing": {
+        "uri" : "device://konker/7d51c242-81db-11e6-a8c2-0746f010e945",
+        "data" : {
+          "channel" : "in"
+        }
+      },
+      "filteringExpression" : "",
+      "transformation" : {
+        "$id" : "2747ec73-6910-43a1-8ddc-5a4a134ebab3",
+        "$ref" : "transformations"
+      },
+      "active" : false
+    },
+    {
+      "_id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63bc",
+      "_class" : "com.konkerlabs.platform.registry.model.EventRoute",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
+      },
+      "application" : {
+        "$id" : "konker",
+        "$ref" : "applications"
+      },
+      "name" : "Device event forwarding route 8",
+      "guid" : "efe9bf43-dbc8-4f75-ad0c-a6d57e92761f",
+      "description" : "Route description",
+      "incoming": {
+        "uri" : "device://konker/0000000000000002",
+        "data" : {
+          "channel" : "data"
+        }
+      },
+      "outgoing": {
+        "uri" : "device://konker/7d51c242-81db-11e6-a8c2-0746f010e945",
+        "data" : {
+          "channel" : "in"
+        }
+      },
+      "filteringExpression" : "X",
+      "transformation" : {
+        "$id" : "2747ec73-6910-43a1-8ddc-5a4a134ebab3",
+        "$ref" : "transformations"
+      },
+      "active" : true
+    }
+  ]
+}

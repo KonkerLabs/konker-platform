@@ -118,12 +118,12 @@
                 </li>
 
                 <li class="sub-menu">
-                    <a data-th-href="@{/clients}">
-                        <img data-th-attr="src=@{/konker/images/icons-menu/icon-device.svg}" class="icon-menu" />
+                    <a data-th-href="@{'/account/' + ${applicationId} + '/clients/'}" >
+                        <img data-th-attr="src=@{/konker/images/icons-menu/icon-device.svg}" class="icon-menu"/>
                         <span data-th-text="#{nav.menu.clients}">Oauth Clients</span>
                     </a>
-                    <a data-th-href="@{/tokens}">
-                        <img data-th-attr="src=@{/konker/images/icons-menu/icon-route.svg}" class="icon-menu" />
+                    <a data-th-href="@{'/account/' + ${applicationId} + '/tokens/'}" >
+                        <img data-th-attr="src=@{/konker/images/icons-menu/icon-route.svg}" class="icon-menu"/>
                         <span data-th-text="#{nav.menu.sessions}">Oauth Sessions</span>
                     </a>
                 </li>
@@ -181,14 +181,6 @@
                             </ul>
                         </div>
 
-                        <div>
-                            <a data-th-href="@{'/account/' + ${applicationId} + '/tokens/new'}"
-                               class="mb btn btn-theme action pull-right">
-                                <span class="glyphicon glyphicon-plus"></span>
-                                <span data-th-text="#{nav.new}"></span>
-                            </a>
-                        </div>
-
                         <table class="table table-bordered table-striped">
                             <thead>
                             <tr>
@@ -204,8 +196,9 @@
                                 <td data-th-text="${token.tokenId}"></td>
                                 <td data-th-text="${token.createTime}"></td>
                                 <td class="text-center">
-                                    <a data-th-href="@{/account/{applicationName}/tokens/{id}/remove(id=${token.clientId}, applicationName=${applicationName})}"
-                                       class="btn btn-default" data-th-text="#{nav.remove}">
+                                    <a data-th-href="@{/account/{applicationName}/tokens/{id}/deleteToken(id=${token.tokenId}, applicationName=${applicationId})}"
+                                       class="btn btn-default confirm-delete"
+                                       data-th-text="#{nav.remove}">
                                         Show
                                     </a>
                                 </td>
@@ -216,6 +209,34 @@
                 </div>
             </div>
         </section>
+        <!-- delete confirm modal -->
+        <div class="modal" id="removeItemModal" tabindex="-1" role="dialog"
+             aria-labelledby="myModalLabel">
+            <div class="modal-alignment-helper">
+                <div class="modal-dialog modal-align-center">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal"
+                                    aria-label="Close"><span aria-hidden="true">&times;</span>
+                            </button>
+                            <h3 class="modal-title" data-th-text="#{nav.remove}">Remove</h3>
+                        </div>
+                        <div class="modal-body">
+                            <p data-th-text="#{tokens.form.modal.remove.firstLine}"></p>
+                            <p data-th-text="#{tokens.form.modal.remove.secondLine}"></p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" id="btnYes" class="btn btn-primary"
+                                    data-th-text="#{nav.yes}">Yes
+                            </button>
+                            <button type="button" data-dismiss="modal" aria-hidden="true"
+                                    class="btn btn-default" data-th-text="#{nav.no}">No
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </section>
 
     <!--main content end-->
@@ -252,6 +273,7 @@
 <script data-th-attr="src=@{/bootstrap/js/bootstrap-datetimepicker.min.js}" type="text/javascript"></script>
 <script data-th-attr="src=@{/js/notifications/status.js}" type="text/javascript"></script>
 <script data-th-attr="src=@{/js/global.js}" type="text/javascript"></script>
+<script data-th-attr="src=@{/js/tokens/form.js}"></script>
 
 <!-- page javascripts -->
 <div data-layout-fragment="script">

@@ -5,6 +5,7 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.repositories.AccessToken;
 import com.konkerlabs.platform.registry.business.repositories.OauthClientDetails;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.idm.config.OAuthClientDetailsService;
 import com.konkerlabs.platform.registry.idm.web.form.OauthClientRegistrationForm;
@@ -41,6 +42,8 @@ public class AccountClientsController implements ApplicationContextAware {
     private Tenant tenant;
     @Autowired
     private User user;
+    @Autowired
+    private ApplicationService applicationService;
 
 
     @PreAuthorize("hasAuthority('LIST_OAUTHCLIENTS_ROOT')")
@@ -72,10 +75,14 @@ public class AccountClientsController implements ApplicationContextAware {
                                 tenant.getDomainName()
                         ).build());
 
+        ServiceResponse<List<Application>> allApplications =
+                applicationService.findAll(tenant);
+
         ModelAndView view = new ModelAndView(
                 String.format("/clients/index", applicationId))
                 .addObject("applicationId", tenant.getDomainName())
-                .addObject("allClients", clientList.getResult());
+                .addObject("allClients", clientList.getResult())
+                .addObject("allApplications", allApplications.getResult());
         if (clientList.isOk()) {
             view.addObject("clients", clientList.getResult());
         }

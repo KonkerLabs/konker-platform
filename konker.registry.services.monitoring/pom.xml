@@ -129,6 +129,21 @@
             <artifactId>konker.registry.common</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>com.konkerlabs</groupId>
+            <artifactId>konker.registry.services.core</artifactId>
+            <version>0.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.konkerlabs</groupId>
+            <artifactId>konker.registry.services.user</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.konkerlabs</groupId>
+            <artifactId>konker.registry.services.mail</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
         <!-- Test scope -->
         <dependency>
             <groupId>com.lordofthejars</groupId>
@@ -150,6 +165,11 @@
             <groupId>com.konkerlabs</groupId>
             <artifactId>konker.registry.services.core</artifactId>
             <version>0.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.konkerlabs</groupId>
+            <artifactId>konker.registry.services.user</artifactId>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
 

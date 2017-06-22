@@ -1,13 +1,5 @@
 package com.konkerlabs.platform.registry.test.data.base;
 
-import static org.mockito.Mockito.mock;
-
-import org.mockito.Mockito;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.LocaleResolver;
-import org.springframework.web.servlet.i18n.SessionLocaleResolver;
-
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
@@ -19,6 +11,13 @@ import com.konkerlabs.platform.registry.business.repositories.UserRepository;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.LoginAuditService;
 import com.konkerlabs.platform.registry.data.security.DeviceUserDetailsService;
+import org.mockito.Mockito;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.LocaleResolver;
+import org.springframework.web.servlet.i18n.SessionLocaleResolver;
+
+import static org.mockito.Mockito.mock;
 
 @Configuration
 public class WebTestConfiguration {
@@ -46,7 +45,7 @@ public class WebTestConfiguration {
         return loginAuditService;
     }
 
-    @Bean
+    @Bean("deviceDetails")
     public DeviceUserDetailsService deviceUserDetailsService(){
         DeviceUserDetailsService instance = Mockito.mock(DeviceUserDetailsService.class);
 

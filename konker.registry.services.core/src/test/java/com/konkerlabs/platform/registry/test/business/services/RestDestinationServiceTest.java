@@ -5,6 +5,7 @@ import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
 import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.converters.URIReadConverter;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
 import com.konkerlabs.platform.registry.business.repositories.EventRouteRepository;
@@ -41,7 +42,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = { MongoTestConfiguration.class, BusinessTestConfiguration.class})
+@ContextConfiguration(classes = { MongoTestConfiguration.class, BusinessTestConfiguration.class, URIReadConverter.class})
 @UsingDataSet(locations = { "/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/rest-destinations.json" })
 public class RestDestinationServiceTest extends BusinessLayerTestSupport {
     @Rule

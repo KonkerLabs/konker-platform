@@ -1,11 +1,16 @@
+var urlToRemove = '';
 $('.confirm-delete').on('click', function(e) {
     e.preventDefault();
+     urlToRemove = this.getAttribute("href");
     $('#removeItemModal').modal('show');
 });
 
 
 $('#btnYes').click(function() {
   	$('#removeItemModal').modal('hide');
-    $("input[type=hidden][name=_method]").val('delete');
-    $('form').submit();
+    window.location.href = urlToRemove
+});
+
+$('#btnNo').click(function() {
+  	$('#removeItemModal').modal('hide');
 });

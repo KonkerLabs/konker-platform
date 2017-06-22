@@ -129,15 +129,14 @@
                 </li>
 
                 <li class="sub-menu">
-                    <a data-th-href="@{/tokens}">
+                    <a data-th-href="@{'/account/' + ${applicationId} + '/clients/'}" >
                         <img data-th-attr="src=@{/konker/images/icons-menu/icon-device.svg}" class="icon-menu"/>
-                        <span data-th-text="#{nav.menu.tokens}">Oauth tokens</span>
+                        <span data-th-text="#{nav.menu.clients}">Oauth Clients</span>
                     </a>
-                    <a data-th-href="@{/tokens}">
+                    <a data-th-href="@{'/account/' + ${applicationId} + '/tokens/'}" >
                         <img data-th-attr="src=@{/konker/images/icons-menu/icon-route.svg}" class="icon-menu"/>
                         <span data-th-text="#{nav.menu.sessions}">Oauth Sessions</span>
                     </a>
-
                 </li>
             </ul>
 

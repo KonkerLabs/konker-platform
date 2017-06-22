@@ -19,6 +19,7 @@
     </properties>
 
     <dependencies>
+
         <!-- Compile scope -->
         <dependency>
             <groupId>org.springframework.data</groupId>
@@ -130,6 +131,7 @@
             <version>1.0-SNAPSHOT</version>
         </dependency>
         <!-- Test scope -->
+
         <dependency>
             <groupId>com.lordofthejars</groupId>
             <artifactId>nosqlunit-mongodb</artifactId>

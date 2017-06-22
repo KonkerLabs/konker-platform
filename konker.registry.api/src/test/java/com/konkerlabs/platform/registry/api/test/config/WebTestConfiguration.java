@@ -1,31 +1,20 @@
 package com.konkerlabs.platform.registry.api.test.config;
 
-import org.mockito.Mockito;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
 import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.Role;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
 import com.konkerlabs.platform.registry.business.model.enumerations.Language;
 import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
-import com.konkerlabs.platform.registry.business.services.api.AlertTriggerService;
-import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceConfigSetupService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceCustomDataService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
-import com.konkerlabs.platform.registry.business.services.api.HealthAlertService;
-import com.konkerlabs.platform.registry.business.services.api.LocationSearchService;
-import com.konkerlabs.platform.registry.business.services.api.LocationService;
-import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
-import com.konkerlabs.platform.registry.business.services.api.RoleService;
-import com.konkerlabs.platform.registry.business.services.api.SilenceTriggerService;
-import com.konkerlabs.platform.registry.business.services.api.TransformationService;
-import com.konkerlabs.platform.registry.business.services.api.UserService;
+import com.konkerlabs.platform.registry.business.repositories.OauthClientDetails;
+import com.konkerlabs.platform.registry.business.services.api.*;
+import org.mockito.Mockito;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import java.util.Collections;
+import java.util.List;
 
 @Configuration
 public class WebTestConfiguration {
@@ -49,6 +38,18 @@ public class WebTestConfiguration {
                 .avatar("default.jpg")
                 .dateFormat(DateFormat.YYYYMMDD)
                 .tenant(tenant()).build();
+    }
+
+    @Bean
+    public OauthClientDetails oauthClientDetails() {
+        List<Role> roles = Collections.emptyList();
+        return OauthClientDetails.builder()
+                .clientSecret("f1a28521-43fa-445f-b1a3-2705447c6315 ")
+                .clientId("testid")
+                .tenant(tenant())
+                .active(true)
+                .roles(roles)
+                .build();
     }
 
     @Bean

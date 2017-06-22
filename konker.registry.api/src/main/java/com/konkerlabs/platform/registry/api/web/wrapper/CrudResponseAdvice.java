@@ -1,13 +1,10 @@
 package com.konkerlabs.platform.registry.api.web.wrapper;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import com.konkerlabs.platform.registry.api.exceptions.BadRequestResponseException;
+import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
 import com.konkerlabs.platform.registry.api.exceptions.NotAuthorizedResponseException;
+import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
+import com.konkerlabs.platform.registry.api.model.RestResponseBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.core.MethodParameter;
@@ -23,11 +20,13 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
-import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
-import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
-import com.konkerlabs.platform.registry.api.model.RestResponseBuilder;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
 
-@ControllerAdvice(basePackages = "com.konkerlabs.platform.registry.web.web.controller")
+@ControllerAdvice(basePackages = "com.konkerlabs.platform.registry.api.web.controller")
 @Order(1)
 public class CrudResponseAdvice implements ResponseBodyAdvice<Object> {
 

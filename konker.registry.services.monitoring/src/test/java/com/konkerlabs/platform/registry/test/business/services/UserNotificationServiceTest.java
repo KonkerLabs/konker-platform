@@ -36,8 +36,8 @@ import static org.hamcrest.Matchers.*;
                 MongoTestConfiguration.class,
                 BusinessTestConfiguration.class,
                 SpringMailTestConfiguration.class,
-                EmailConfig.class })
-@UsingDataSet(locations = { "/fixtures/users.json", "/fixtures/userNotifications.json" })
+                EmailConfig.class})
+@UsingDataSet(locations = {"/fixtures/users.json", "/fixtures/userNotifications.json"})
 @ActiveProfiles("email")
 public class UserNotificationServiceTest extends BusinessLayerTestSupport {
 
@@ -82,13 +82,13 @@ public class UserNotificationServiceTest extends BusinessLayerTestSupport {
 
         scheduledMaintenaceNotification = UserNotification.builder().uuid(SCHEDULED_MAINTENANCE_NOTIFICATION_UUID)
                 .destination(THE_USER_ID).date(Instant.ofEpochMilli(1482327799832L)).unread(Boolean.TRUE)
-                .subject("Scheduled Maintenance").<UserNotification> build();
+                .subject("Scheduled Maintenance").<UserNotification>build();
         paymentPendingNotification = UserNotification.builder().uuid(PAYMENT_PENDING_NOTIFICATION_UUID)
                 .destination(THE_USER_ID).date(Instant.ofEpochMilli(1482328450375L)).unread(false)
-                .subject("Pagamento Pendente").<UserNotification> build();
+                .subject("Pagamento Pendente").<UserNotification>build();
         changePasswordNotification = UserNotification.builder().uuid(CHANGE_PASSWORD_NOTIFICATION_UUID)
                 .destination(THE_USER_ID).date(Instant.ofEpochMilli(1482328450375L)).unread(true)
-                .subject("Change your Password").<UserNotification> build();
+                .subject("Change your Password").<UserNotification>build();
     }
 
     // ================================ getAll ============================ //
