@@ -69,32 +69,38 @@ public class EventsMongoToCassandraService {
 
         String deviceGuid = null;
         String channel = null;
-        boolean ascending = false;
-        Integer limit = null;
+        boolean ascending = true;
+        Integer limit = 2500;
 
         LOGGER.info("Tenant {} Application {}", tenant.getName(), application.getName());
 
         List<Event> incomingEvents = mongoEventsRepository.findIncomingBy(tenant, application, deviceGuid, channel, startInstant, endInstant, ascending, limit);
-        LOGGER.info("\tIncoming events: {}", incomingEvents.size());
 
-        for (Event event : incomingEvents) {
-            cassandraEventsRepository.saveIncoming(tenant, application, event);
+        int count = 0;
+        while (!incomingEvents.isEmpty()) {
+            count += incomingEvents.size();
+            LOGGER.info("\tIncoming event ts: {}", incomingEvents.get(0).getTimestamp());
+            for (Event event : incomingEvents) {
+                cassandraEventsRepository.saveIncoming(tenant, application, event);
+            }
+            Event lastEvent = incomingEvents.get(incomingEvents.size() - 1);
+            incomingEvents = mongoEventsRepository.findIncomingBy(tenant, application, deviceGuid, channel, lastEvent.getTimestamp(), endInstant, ascending, limit);
         }
-
-        if (incomingEvents.size() > 0) {
-            LOGGER.info("\tCompleted!");
-        }
+        LOGGER.info("\tTotal Incoming: {}", count);
 
         List<Event> outgoingEvents = mongoEventsRepository.findOutgoingBy(tenant, application, deviceGuid, channel, startInstant, endInstant, ascending, limit);
-        LOGGER.info("\tOutgoing events: {}", outgoingEvents.size());
 
-        for (Event event : outgoingEvents) {
-            cassandraEventsRepository.saveOutgoing(tenant, application, event);
+        count = 0;
+        while (!outgoingEvents.isEmpty()) {
+            count += outgoingEvents.size();
+            LOGGER.info("\tOutgoing event ts: {}", outgoingEvents.get(0).getTimestamp());
+            for (Event event : outgoingEvents) {
+                cassandraEventsRepository.saveOutgoing(tenant, application, event);
+            }
+            Event lastEvent = outgoingEvents.get(outgoingEvents.size() - 1);
+            outgoingEvents = mongoEventsRepository.findOutgoingBy(tenant, application, deviceGuid, channel, lastEvent.getTimestamp(), endInstant, ascending, limit);
         }
-
-        if (outgoingEvents.size() > 0) {
-            LOGGER.info("\tCompleted!");
-        }
+        LOGGER.info("\tTotal Outgoing: {}", count);
 
     }
 

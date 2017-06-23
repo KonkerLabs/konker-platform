@@ -6,6 +6,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
+import org.springframework.util.StringUtils;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Host;
@@ -21,6 +22,8 @@ public class CassandraRegistryConfig {
 
     private String keyspace;
     private String seedHost;
+    private String username;
+    private String password;
     private int seedPort;
 
     @Bean
@@ -36,6 +39,8 @@ public class CassandraRegistryConfig {
             setKeyspace(config.getString("cassandra.keyspace"));
             setSeedHost(config.getString("cassandra.hostname"));
             setSeedPort(config.getInt("cassandra.port"));
+            setUsername(config.getString("cassandra.username"));
+            setPassword(config.getString("cassandra.password"));
         } catch (Exception e) {
             LOGGER.warn(String.format("Cassandra is not configured, using default cassandra config\n" +
                             "cassandra.keyspace: {1\n" +
@@ -45,10 +50,20 @@ public class CassandraRegistryConfig {
             );
         }
 
-        Cluster cluster = Cluster.builder()
-                                 .addContactPoint(getSeedHost())
-                                 .withPort(getSeedPort())
-                                 .build();
+        Cluster cluster = null;
+
+        if (StringUtils.hasText(getUsername())) {
+            cluster = Cluster.builder()
+                             .addContactPoint(getSeedHost())
+                             .withPort(getSeedPort())
+                             .withCredentials(getUsername(), getPassword())
+                             .build();
+        } else {
+            cluster = Cluster.builder()
+                            .addContactPoint(getSeedHost())
+                            .withPort(getSeedPort())
+                            .build();
+        }
 
         return cluster;
 
@@ -101,6 +116,22 @@ public class CassandraRegistryConfig {
 
     public void setSeedPort(int seedPort) {
         this.seedPort = seedPort;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
 }
