@@ -1,9 +1,5 @@
-package com.konkerlabs.platform.registry.business.repositories;
+package com.konkerlabs.platform.registry.business.model;
 
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Role;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.User;
 import lombok.Builder;
 import lombok.experimental.Tolerate;
 import org.springframework.data.annotation.CreatedDate;
@@ -28,7 +24,7 @@ public class OauthClientDetails implements Serializable, ClientDetails {
     @Id
     private String clientId;
     @CreatedDate
-    private Date createTime = Date.from(Instant.now());
+    private Instant createTime = Instant.now();
     @Version
     private Long version;
     private boolean archived = false;
@@ -68,11 +64,11 @@ public class OauthClientDetails implements Serializable, ClientDetails {
         this.clientId = clientId;
     }
 
-    public Date getCreateTime() {
+    public Instant getCreateTime() {
         return createTime;
     }
 
-    public void setCreateTime(Date createTime) {
+    public void setCreateTime(Instant createTime) {
         this.createTime = createTime;
     }
 

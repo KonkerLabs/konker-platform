@@ -1,31 +1,21 @@
 package com.konkerlabs.platform.registry.business.repositories.events;
 
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Random;
-
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
-
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
+import com.datastax.driver.core.*;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Event.EventActor;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.repositories.config.CassandraRegistryConfig;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import java.time.Instant;
+import java.util.*;
 
 @Repository("cassandraEvents")
 public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implements DisposableBean {
-
-    private static final String REGISTRYKEYSPACE = "registrykeyspace";
 
     private static final String INCOMING_EVENTS = "incoming_events";
     private static final String INCOMING_EVENTS_CHANNEL = "incoming_events_channel";
@@ -40,12 +30,19 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
     private static final String OUTGOING_EVENTS_DELETED = "outgoing_events_deleted";
 
     @Autowired
+    private CassandraRegistryConfig config;
+
+    @Autowired
     private Cluster cluster;
 
     @Autowired
     private Session session;
 
     private Random rnd = new Random(System.nanoTime());
+
+    private Map<String, PreparedStatement> insertIncomingMap = new HashMap<>();
+
+    private Map<String, PreparedStatement> insertOutgoingMap = new HashMap<>();
 
     @Override
     protected Event doSave(Tenant tenant, Application application, Event event, Type type) throws BusinessException {
@@ -72,30 +69,8 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
 
         if (type == Type.INCOMING) {
 
-            StringBuilder query = new StringBuilder();
-            query.append("INSERT INTO ");
-            query.append(REGISTRYKEYSPACE);
-            query.append(".");
-            query.append(table);
-            query.append(" (");
-            query.append("tenant_domain, ");
-            query.append("application_name, ");
-            query.append("timestamp, ");
-            query.append("channel, ");
-            query.append("device_guid, ");
-            query.append("device_id, ");
-            query.append("payload");
-            query.append(") VALUES (");
-            query.append("?, ");
-            query.append("?, ");
-            query.append("?, ");
-            query.append("?, ");
-            query.append("?, ");
-            query.append("?, ");
-            query.append("?");
-            query.append(")");
+            PreparedStatement ps = getInsertIncomingPreparedStatement(table);
 
-            PreparedStatement ps = session.prepare(query.toString());
             BoundStatement statement = ps.bind(tenant.getDomainName(),
                                                application.getName(),
                                                event.getEpochTime(),
@@ -103,14 +78,38 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
                                                event.getIncoming().getDeviceGuid(),
                                                event.getIncoming().getDeviceId(),
                                                event.getPayload());
-
             session.executeAsync(statement);
 
         } else if (type == Type.OUTGOING) {
 
+            PreparedStatement ps = getInsertOutgoingPreparedStatement(table);
+
+            BoundStatement statement = ps.bind(tenant.getDomainName(),
+                                               application.getName(),
+                                               event.getEpochTime(),
+                                               event.getOutgoing().getChannel(),
+                                               event.getOutgoing().getDeviceGuid(),
+                                               event.getOutgoing().getDeviceId(),
+                                               event.getIncoming().getChannel(),
+                                               event.getIncoming().getDeviceGuid(),
+                                               event.getIncoming().getDeviceId(),
+                                               event.getPayload());
+
+            session.executeAsync(statement);
+
+        }
+
+    }
+
+    private PreparedStatement getInsertOutgoingPreparedStatement(String table) {
+
+        PreparedStatement ps = insertOutgoingMap.get(table);
+
+        if (ps == null) {
+
             StringBuilder query = new StringBuilder();
             query.append("INSERT INTO ");
-            query.append(REGISTRYKEYSPACE);
+            query.append(config.getKeyspace());
             query.append(".");
             query.append(table);
             query.append(" (");
@@ -139,21 +138,50 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
             query.append("?");
             query.append(")");
 
-            PreparedStatement ps = session.prepare(query.toString());
-            BoundStatement statement = ps.bind(tenant.getDomainName(),
-                                               application.getName(),
-                                               event.getEpochTime(),
-                                               event.getOutgoing().getChannel(),
-                                               event.getOutgoing().getDeviceGuid(),
-                                               event.getOutgoing().getDeviceId(),
-                                               event.getIncoming().getChannel(),
-                                               event.getIncoming().getDeviceGuid(),
-                                               event.getIncoming().getDeviceId(),
-                                               event.getPayload());
-
-            session.executeAsync(statement);
+            ps = session.prepare(query.toString());
+            insertOutgoingMap.put(table, ps);
 
         }
+
+        return ps;
+
+    }
+
+    private PreparedStatement getInsertIncomingPreparedStatement(String table) {
+
+        PreparedStatement ps = insertIncomingMap.get(table);
+
+        if (ps == null) {
+
+            StringBuilder query = new StringBuilder();
+            query.append("INSERT INTO ");
+            query.append(config.getKeyspace());
+            query.append(".");
+            query.append(table);
+            query.append(" (");
+            query.append("tenant_domain, ");
+            query.append("application_name, ");
+            query.append("timestamp, ");
+            query.append("channel, ");
+            query.append("device_guid, ");
+            query.append("device_id, ");
+            query.append("payload");
+            query.append(") VALUES (");
+            query.append("?, ");
+            query.append("?, ");
+            query.append("?, ");
+            query.append("?, ");
+            query.append("?, ");
+            query.append("?, ");
+            query.append("?");
+            query.append(")");
+
+            ps = session.prepare(query.toString());
+            insertIncomingMap.put(table, ps);
+
+        }
+
+        return ps;
 
     }
 
@@ -201,7 +229,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
             }
         }
 
-        query.append(REGISTRYKEYSPACE);
+        query.append(config.getKeyspace());
         query.append(".");
         query.append(table);
         query.append(" WHERE ");
@@ -223,7 +251,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
         }
 
         if (startInstant != null) {
-            query.append(" AND timestamp >= ?");
+            query.append(" AND timestamp > ?");
             filters.add(startInstant.toEpochMilli() * 1000000);
         }
 
@@ -325,7 +353,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
         List<Object> filters = new ArrayList<>();
 
         query.append("DELETE FROM ");
-        query.append(REGISTRYKEYSPACE);
+        query.append(config.getKeyspace());
         query.append(".");
         if (type == Type.INCOMING) {
             query.append(INCOMING_EVENTS_DEVICE_GUID);
@@ -361,7 +389,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
         List<Object> filters = new ArrayList<>();
 
         query.append("DELETE FROM ");
-        query.append(REGISTRYKEYSPACE);
+        query.append(config.getKeyspace());
         query.append(".");
         if (type == Type.INCOMING) {
             query.append(INCOMING_EVENTS);
@@ -387,7 +415,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
         filters = new ArrayList<>();
 
         query.append("DELETE FROM ");
-        query.append(REGISTRYKEYSPACE);
+        query.append(config.getKeyspace());
         query.append(".");
         if (type == Type.INCOMING) {
             query.append(INCOMING_EVENTS_CHANNEL);
@@ -416,7 +444,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
         filters = new ArrayList<>();
 
         query.append("DELETE FROM ");
-        query.append(REGISTRYKEYSPACE);
+        query.append(config.getKeyspace());
         query.append(".");
         if (type == Type.INCOMING) {
             query.append(INCOMING_EVENTS_DEVICE_GUID_CHANNEL);

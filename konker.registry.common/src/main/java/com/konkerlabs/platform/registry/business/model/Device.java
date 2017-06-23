@@ -70,6 +70,7 @@ public class Device implements URIDealer, Validatable, UserDetails {
 	private String guid;
 	private String description;
 	private Instant registrationDate;
+	private Instant lastModificationDate;
     private LogLevel logLevel;
     @DBRef
     private DeviceModel deviceModel;
@@ -98,7 +99,9 @@ public class Device implements URIDealer, Validatable, UserDetails {
 	}
 
 	public void onRegistration() {
-		setRegistrationDate(Instant.now());
+		Instant now = Instant.now();
+		setRegistrationDate(now);
+		setLastModificationDate(now);
 		regenerateApiKey();
 	}
 

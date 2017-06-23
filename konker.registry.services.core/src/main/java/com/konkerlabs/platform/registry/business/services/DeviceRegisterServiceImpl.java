@@ -2,6 +2,7 @@ package com.konkerlabs.platform.registry.business.services;
 
 import java.io.ByteArrayOutputStream;
 import java.text.MessageFormat;
+import java.time.Instant;
 import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.List;
@@ -47,7 +48,6 @@ import com.konkerlabs.platform.registry.business.services.api.ApplicationService
 import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.LocationSearchService;
-import com.konkerlabs.platform.registry.business.services.api.LocationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.config.EventStorageConfig;
@@ -85,9 +85,6 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
     @Autowired
     private LocationSearchService locationSearchService;
-
-    @Autowired
-    private LocationService locationService;
 
     @Autowired
     private DeviceModelService deviceModelService;
@@ -181,21 +178,14 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         }
 
         if (device.getDeviceModel() == null) {
-            ServiceResponse<DeviceModel> response = deviceModelService.findDefault(tenant, application, true);
-            DeviceModel defaultModel = response.getResult();
-
-            if (!Optional.ofNullable(defaultModel).isPresent()) {
-            	defaultModel = DeviceModel.builder()
-            			.name("default")
-            			.description("default model")
-            			.defaultModel(true)
-            			.guid(UUID.randomUUID().toString())
-            			.build();
-            	ServiceResponse<DeviceModel> serviceResponse = deviceModelService.register(tenant, application, defaultModel);
-            	defaultModel = serviceResponse.getResult();
+            ServiceResponse<DeviceModel> response = deviceModelService.findDefault(tenant, application);
+            if (response.isOk()) {
+                device.setDeviceModel(response.getResult());
+            } else {
+                LOGGER.error("error getting default application device model",
+                        Device.builder().guid("NULL").tenant(tenant).build().toURI(),
+                        device.getLogLevel());
             }
-
-            device.setDeviceModel(defaultModel);
         }
 
         device.onRegistration();
@@ -383,7 +373,9 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         deviceFromDB.setDescription(updatingDevice.getDescription());
         deviceFromDB.setName(updatingDevice.getName());
         deviceFromDB.setLocation(updatingDevice.getLocation());
+        deviceFromDB.setDeviceModel(updatingDevice.getDeviceModel());
         deviceFromDB.setActive(updatingDevice.isActive());
+        deviceFromDB.setLastModificationDate(Instant.now());
 
         Optional<Map<String, Object[]>> validations = deviceFromDB.applyValidations();
 

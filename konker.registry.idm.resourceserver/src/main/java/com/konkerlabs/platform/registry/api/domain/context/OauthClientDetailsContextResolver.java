@@ -1,6 +1,6 @@
 package com.konkerlabs.platform.registry.api.domain.context;
 
-import com.konkerlabs.platform.registry.business.repositories.OauthClientDetails;
+import com.konkerlabs.platform.registry.business.model.OauthClientDetails;
 import com.konkerlabs.platform.registry.idm.config.OAuthClientDetailsService;
 import org.springframework.beans.factory.SmartFactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;

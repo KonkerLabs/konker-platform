@@ -2,6 +2,8 @@ package com.konkerlabs.platform.registry.api.model;
 
 import java.util.Map;
 
+import com.konkerlabs.platform.registry.business.model.RestDestination.RestDestinationType;
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -52,9 +54,22 @@ public class RestDestinationInputVO {
 	protected String servicePassword;
 	
 	@ApiModelProperty(
+			value = "Type of rest destination", 
+			example = "CUSTOM_BODY",
+			required = true, 
+			position = 7)
+	protected RestDestinationType type;
+	
+	@ApiModelProperty(
+			value = "Body message in JSON format", 
+			example = "{'temperature' : '28°C'}",
+			position = 8)
+	protected String body;
+	
+	@ApiModelProperty(
 			value = "Property to indicate whether the resting destination is active or not", 
 			example = "true", 
-			position = 7)
+			position = 9)
 	protected boolean active;
 
 }

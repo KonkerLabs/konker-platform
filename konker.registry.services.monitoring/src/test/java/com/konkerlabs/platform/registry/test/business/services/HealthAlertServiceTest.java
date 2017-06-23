@@ -2,8 +2,10 @@ package com.konkerlabs.platform.registry.test.business.services;
 
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.HealthAlert;
+import com.konkerlabs.platform.registry.business.model.HealthAlert.Description;
 import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertSeverity;
 import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertType;
+import com.konkerlabs.platform.registry.business.model.HealthAlert.Solution;
 import com.konkerlabs.platform.registry.business.model.SilenceTrigger;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
@@ -102,7 +104,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     	healthAlert = HealthAlert.builder()
     			.id("67014de6-81db-11e6-a5bc-3f99b78823c9")
     			.guid("7d51c242-81db-11e6-a8c2-0746f976f224")
-    			.description("Device sem enviar mensagem por mais de 10 minutos")
+    			.description(Description.NO_MESSAGE_RECEIVED)
     			.severity(HealthAlertSeverity.WARN)
     			.type(HealthAlertType.SILENCE)
     			.registrationDate(Instant.ofEpochMilli(1453320973747l))
@@ -115,7 +117,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     	tempHealthAlert = HealthAlert.builder()
     			.id("67014de6-81db-11e6-a5bc-3f99b788249c")
 				.guid("7d51c242-81db-11e6-a8c2-0746f976f223")
-				.description("Device sem enviar mensagem por mais de 5 minutos")
+				.description(Description.NO_MESSAGE_RECEIVED)
     			.severity(HealthAlertSeverity.FAIL)
     			.type(HealthAlertType.SILENCE)
     			.registrationDate(Instant.ofEpochMilli(1453320973747l))
@@ -127,7 +129,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     	newHealthAlert = HealthAlert.builder()
     			.guid("7d51c242-81db-11e6-a8c2-0746f976f225")
-    			.description("Device estabilizado")
+    			.description(Description.HEALTH_OK)
     			.severity(HealthAlertSeverity.OK)
     			.type(HealthAlertType.SILENCE)
     			.registrationDate(Instant.ofEpochMilli(1453320973747l))
@@ -136,7 +138,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 				.application(application)
 				.tenant(currentTenant)
 				.build();
-    	
+
     	SilenceTrigger trigger = new SilenceTrigger();
     	trigger.setGuid(TRIGGER_GUID);
     	trigger.setApplication(application);
@@ -212,12 +214,12 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     	healthAlert.setTriggerGuid(null);
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.register(currentTenant, application, healthAlert);
     	assertThat(serviceResponse, hasErrorMessage(Validations.HEALTH_ALERT_TRIGGER_GUID_NULL.getCode()));
-    	
+
     	healthAlert.setTriggerGuid("");
     	serviceResponse = healthAlertService.register(currentTenant, application, healthAlert);
     	assertThat(serviceResponse, hasErrorMessage(Validations.HEALTH_ALERT_TRIGGER_GUID_NULL.getCode()));
     }
-    
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json"})
     public void shouldReturnErrorIfSavingHealthAlertTriggerNotExists() throws Exception {
@@ -225,7 +227,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.register(currentTenant, application, healthAlert);
     	assertThat(serviceResponse, hasErrorMessage(Validations.HEALTH_ALERT_TRIGGER_NOT_EXIST.getCode()));
     }
-    
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json", "/fixtures/health-alert.json"})
     public void shouldSaveHealthAlert() throws Exception {
@@ -341,7 +343,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json", "/fixtures/health-alert.json"})
     public void shouldUpdateHealthAlert() throws Exception {
-    	tempHealthAlert.setDescription("Updating description");
+    	tempHealthAlert.setDescription(Description.HEALTH_OK);
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.update(
     			application.getTenant(),
     			application,
@@ -357,7 +359,9 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
         ServiceResponse<HealthAlert> serviceResponse = healthAlertService.remove(
         		null,
         		application,
-        		healthAlert.getGuid());
+        		healthAlert.getGuid(),
+        		Solution.ALERT_DELETED
+                );
 
         assertThat(serviceResponse, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
     }
@@ -368,7 +372,8 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
         ServiceResponse<HealthAlert> serviceResponse = healthAlertService.remove(
         		currentTenant,
         		null,
-        		healthAlert.getGuid());
+        		healthAlert.getGuid(),
+                Solution.ALERT_DELETED);
 
         assertThat(serviceResponse, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
     }
@@ -379,7 +384,8 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.remove(
     			currentTenant,
     			application,
-    			null);
+    			null,
+                Solution.ALERT_DELETED);
 
     	assertThat(serviceResponse, hasErrorMessage(Validations.HEALTH_ALERT_GUID_IS_NULL.getCode()));
     }
@@ -387,18 +393,24 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json"})
     public void shouldReturnErrorIfRemovingHealthAlertNotExists() throws Exception {
-    	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.remove(currentTenant, application, otherApplication.getName());
+    	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.remove(
+    	        currentTenant,
+    	        application,
+    	        otherApplication.getName(),
+                Solution.ALERT_DELETED
+    	        );
 
     	assertThat(serviceResponse, hasErrorMessage(Validations.HEALTH_ALERT_DOES_NOT_EXIST.getCode()));
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json", "/fixtures/devices.json"})
     public void shouldRemoveHealthAlert() throws Exception {
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.remove(
     			currentTenant,
     			application,
-    			tempHealthAlert.getGuid());
+    			tempHealthAlert.getGuid(),
+                Solution.ALERT_DELETED);
 
     	assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.OK));
     	assertThat(serviceResponse.getResult().isSolved(), equalTo(true));
@@ -447,16 +459,27 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     	assertThat(response, hasErrorMessage(DeviceRegisterService.Validations.DEVICE_GUID_NULL.getCode()));
     }
-    
+
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json", "/fixtures/devices.json"})
     public void shouldReturnHealthNotExistFindAllHealthAlertByTenantAppDeviceGuid() throws Exception {
     	ServiceResponse<List<HealthAlert>> response = healthAlertService.findAllByTenantApplicationAndDeviceGuid(
     			currentTenant,
     			application,
-    			"7d51c242-81db-11e6-a8c2-0746f010e949");
+    			"8363c556-84ea-11e6-92a2-4b01fea7e243");
 
     	assertThat(response, hasErrorMessage(Validations.HEALTH_ALERT_DOES_NOT_EXIST.getCode()));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json"})
+    public void shouldReturnHealthNotExistGuidFindAllHealthAlertByTenantAppDeviceGuid() throws Exception {
+        ServiceResponse<List<HealthAlert>> response = healthAlertService.findAllByTenantApplicationAndDeviceGuid(
+                currentTenant,
+                application,
+                "7d51c242-81db-11e6-a8c2-0746f010e949");
+
+        assertThat(response, hasErrorMessage(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode()));
     }
 
     @Test
@@ -613,7 +636,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
         healthAlerts = healthAlertService.findAllByTenantAndApplication(currentTenant, application).getResult();
         assertThat(healthAlerts.size(), equalTo(0));
     }
-    
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json"})
     public void shouldReturnTenantNullGetLastHightSeverity() throws Exception {
@@ -646,7 +669,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     	assertThat(response, hasErrorMessage(DeviceRegisterService.Validations.DEVICE_GUID_NULL.getCode()));
     }
-    
+
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json", "/fixtures/devices.json"})
     public void shouldGetLastHightSeverity() throws Exception {

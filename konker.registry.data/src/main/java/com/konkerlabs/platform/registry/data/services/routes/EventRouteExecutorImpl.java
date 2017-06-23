@@ -1,15 +1,15 @@
 package com.konkerlabs.platform.registry.data.services.routes;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.EventRoute;
-import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.data.services.publishers.api.EventPublisher;
-import com.konkerlabs.platform.registry.data.services.routes.api.EventRouteExecutor;
-import com.konkerlabs.platform.registry.data.services.routes.api.EventTransformationService;
-import com.konkerlabs.platform.utilities.expressions.ExpressionEvaluationService;
-import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
+import static com.konkerlabs.platform.registry.data.services.publishers.EventPublisherDevice.DEVICE_MQTT_CHANNEL;
+
+import java.io.IOException;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.Future;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,16 +18,24 @@ import org.springframework.expression.spel.SpelEvaluationException;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 
-import static com.konkerlabs.platform.registry.data.services.publishers.EventPublisherDevice.DEVICE_MQTT_CHANNEL;
-
-import java.io.IOException;
-import java.net.URI;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.Future;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.DeviceModel;
+import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.EventRoute;
+import com.konkerlabs.platform.registry.business.model.Location;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.repositories.DeviceModelRepository;
+import com.konkerlabs.platform.registry.business.services.LocationTreeUtils;
+import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
+import com.konkerlabs.platform.registry.business.services.api.LocationSearchService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.data.services.publishers.api.EventPublisher;
+import com.konkerlabs.platform.registry.data.services.routes.api.EventRouteExecutor;
+import com.konkerlabs.platform.registry.data.services.routes.api.EventTransformationService;
+import com.konkerlabs.platform.utilities.expressions.ExpressionEvaluationService;
+import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 
 @Service
 public class EventRouteExecutorImpl implements EventRouteExecutor {
@@ -44,20 +52,33 @@ public class EventRouteExecutorImpl implements EventRouteExecutor {
     private JsonParsingService jsonParsingService;
     @Autowired
     private EventTransformationService eventTransformationService;
+    @Autowired
+    private LocationSearchService locationSearchService;
+    @Autowired
+    private DeviceModelRepository deviceModelRepository;
 
     @Override
-    public Future<List<Event>> execute(Event event, URI uri) {
-
-        ServiceResponse<List<EventRoute>> serviceResponse = eventRouteService.findByIncomingUri(uri);
+    public Future<List<Event>> execute(Event event, Device device) {
 
         List<Event> outEvents = new ArrayList<Event>();
 
-        if (serviceResponse.isOk()) {
-            List<EventRoute> eventRoutes = serviceResponse.getResult();
+        ServiceResponse<List<EventRoute>> serviceRoutes = eventRouteService.getAll(device.getTenant(), device.getApplication());
+        if (!serviceRoutes.isOk()) {
+            LOGGER.error("Error listing application events routes", device.toURI(), device.getTenant().getLogLevel());
+            return new AsyncResult<List<Event>>(outEvents);
+        }
 
-            String incomingPayload = event.getPayload();
+        List<EventRoute> eventRoutes = serviceRoutes.getResult();
+        if (eventRoutes.isEmpty()) {
+            return new AsyncResult<List<Event>>(outEvents);
+        }
 
-            for (EventRoute eventRoute : eventRoutes) {
+        for (EventRoute eventRoute : eventRoutes) {
+
+            if (isEventRouteDeviceMatch(eventRoute, device)) {
+
+                String incomingPayload = event.getPayload();
+
                 if (!eventRoute.isActive())
                     continue;
                 if (!eventRoute.getIncoming().getData().get(DEVICE_MQTT_CHANNEL).equals(event.getIncoming().getChannel())) {
@@ -66,7 +87,7 @@ public class EventRouteExecutorImpl implements EventRouteExecutor {
                 }
 
                 try {
-                    if (isFilterMatch(event, eventRoute)) {
+                    if (isFilterExpressionMatch(event, eventRoute)) {
                         if (Optional.ofNullable(eventRoute.getTransformation()).isPresent()) {
                             Optional<Event> transformed = eventTransformationService.transform(
                                     event, eventRoute.getTransformation());
@@ -91,13 +112,72 @@ public class EventRouteExecutorImpl implements EventRouteExecutor {
                                     eventRoute.getFilteringExpression(),
                                     incomingPayload), eventRoute.toURI(), eventRoute.getTenant().getLogLevel(), e);
                 }
+
             }
+
         }
 
         return new AsyncResult<List<Event>>(outEvents);
     }
 
-    private boolean isFilterMatch(Event event, EventRoute eventRoute) throws JsonProcessingException {
+    private boolean isEventRouteDeviceMatch(EventRoute eventRoute, Device device) {
+
+        // match device actor
+        if (eventRoute.getIncoming().getUri().equals(device.toURI())) {
+            return true;
+        }
+
+        // match model location actor
+        if (eventRoute.getIncoming().isModelLocation()) {
+
+            if (device.getDeviceModel() == null || device.getLocation() == null){
+                return false;
+            }
+
+            String uriPath = eventRoute.getIncoming().getUri().getPath();
+            if (uriPath.startsWith("/")) {
+                uriPath = uriPath.substring(1);
+            }
+
+            String guids[] = uriPath.split("/");
+            if (guids.length < 2) {
+                LOGGER.warn("Invalid model location URI: {}", uriPath);
+                return false;
+            }
+
+            Tenant tenant = device.getTenant();
+            Application application = device.getApplication();
+
+            // match device model?
+            DeviceModel deviceModel = deviceModelRepository.findByTenantIdApplicationNameAndGuid(tenant.getId(), application.getName(), guids[0]);
+            if (deviceModel == null || !deviceModel.getGuid().equals(device.getDeviceModel().getGuid())) {
+                return false;
+            }
+
+            // match location?
+            ServiceResponse<Location> locationService = locationSearchService.findByGuid(tenant, application, guids[1]);
+            if (!locationService.isOk()) {
+                return false;
+            }
+
+            Location location = locationService.getResult();
+            locationService = locationSearchService.findByName(tenant, application, location.getName(), true);
+            if (!locationService.isOk()) {
+                return false;
+            }
+
+            List<Location> nodes = LocationTreeUtils.getNodesList(locationService.getResult());
+            for (Location node : nodes) {
+                if (node.getGuid().equals(device.getLocation().getGuid())) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isFilterExpressionMatch(Event event, EventRoute eventRoute) throws JsonProcessingException {
         Optional<String> expression = Optional.ofNullable(eventRoute.getFilteringExpression())
                 .filter(filter -> !filter.isEmpty());
 

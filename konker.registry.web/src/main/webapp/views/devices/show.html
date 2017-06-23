@@ -60,7 +60,7 @@
                    for="active"></label>
             <div class="col-sm-4">
             	<label class="switch">
-	                <input type="checkbox" 
+	                <input type="checkbox"
 	                	   data-th-field="${device.active}"
 	                       id="active"
 	                       name="active"/>
@@ -68,6 +68,13 @@
             </div>
         </div>
     </fieldset>
+    <a data-th-href="@{/devices/{applicationName}/{guid}/password(guid=${device.guid}, applicationName=${device.application.name})}"
+       class="btn btn-default"
+       data-th-if="${device.password == null}">
+        <img data-th-attr="src=@{/resources/konker/images/icons-bt/conect-icon-bt-01.svg}"
+             class="icon-menu" />
+        <span data-th-text="#{devices.index.access}"></span>
+    </a>
     <a data-th-href="@{/devices}"
        class="btn btn-default">
         <img data-th-src="@{/resources/konker/images/icons-bt/back-icon-bt-01.svg}" class="bt-icon" />

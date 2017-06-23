@@ -108,6 +108,8 @@ public class RestDestinationController extends AbstractRestController implements
                 .serviceURI(restDestinationForm.getServiceURI())
                 .serviceUsername(restDestinationForm.getServiceUsername())
                 .servicePassword(restDestinationForm.getServicePassword())
+                .type(restDestinationForm.getType())
+                .body(restDestinationForm.getBody())
                 .active(true)
                 .build();
 
@@ -152,12 +154,14 @@ public class RestDestinationController extends AbstractRestController implements
         restDestinationFromDB.setServiceURI(restDestinationForm.getServiceURI());
         restDestinationFromDB.setServiceUsername(restDestinationForm.getServiceUsername());
         restDestinationFromDB.setServicePassword(restDestinationForm.getServicePassword());
+        restDestinationFromDB.setType(restDestinationForm.getType());
+        restDestinationFromDB.setBody(restDestinationForm.getBody());
         restDestinationFromDB.setActive(restDestinationForm.isActive());
 
         ServiceResponse<RestDestination> updateResponse = restDestinationService.update(tenant, application, restDestinationGuid, restDestinationFromDB);
 
         if (!updateResponse.isOk()) {
-            throw new BadServiceResponseException(user, restDestinationResponse, validationsCode);
+            throw new BadServiceResponseException(user, updateResponse, validationsCode);
 
         }
 

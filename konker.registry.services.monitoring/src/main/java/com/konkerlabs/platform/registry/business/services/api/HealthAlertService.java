@@ -2,6 +2,7 @@ package com.konkerlabs.platform.registry.business.services.api;
 
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.HealthAlert;
+import com.konkerlabs.platform.registry.business.model.HealthAlert.Solution;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 
 import java.util.List;
@@ -43,7 +44,7 @@ public interface HealthAlertService {
 
 	ServiceResponse<HealthAlert> register(Tenant tenant, Application application, HealthAlert healthAlert);
 	ServiceResponse<HealthAlert> update(Tenant tenant, Application application, String healthAlertGuid, HealthAlert healthAlert);
-	ServiceResponse<HealthAlert> remove(Tenant tenant, Application application, String healthAlertGuid);
+	ServiceResponse<HealthAlert> remove(Tenant tenant, Application application, String healthAlertGuid, Solution solution);
 	ServiceResponse<List<HealthAlert>> findAllByTenantAndApplication(Tenant tenant, Application application);
 	ServiceResponse<List<HealthAlert>> findAllByTenantApplicationAndDeviceGuid(Tenant tenant, Application application, String deviceGuid);
 	ServiceResponse<HealthAlert> getByTenantApplicationAndHealthAlertGuid(Tenant tenant, Application application, String healthAlertGuid);

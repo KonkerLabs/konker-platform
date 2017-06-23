@@ -8,6 +8,16 @@
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} - %c{1} [%p] %m%n</pattern>
         </encoder>
     </appender>
+    
+    <appender name="fileAppender" class="ch.qos.logback.core.FileAppender">
+    	<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>TRACE</level>
+        </filter>
+        <file>/var/log/konker-platform/access.log</file>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} - %c{1} %p %m%n</pattern>
+        </encoder>
+    </appender>
 
     <appender name="konkerAppender"
               class="com.konkerlabs.platform.registry.audit.KonkerLoggerAppender">
@@ -27,6 +37,7 @@
     <logger name="com.konkerlabs.platform.registry" level="DEBUG" additivity="false">
         <appender-ref ref="konkerAsyncAppender"/>
         <appender-ref ref="consoleAppender"/>
+        <appender-ref ref="fileAppender"/>
     </logger>
 
     <logger name="org.springframework.integration" level="DEBUG" additivity="false">
@@ -38,5 +49,5 @@
         <level value="INFO"/>
         <appender-ref ref="consoleAppender"/>
     </root>
-
+    
 </configuration>

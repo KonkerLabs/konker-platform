@@ -92,7 +92,7 @@ public class EventPublisherRest implements EventPublisher {
                                         restDestination.getMethod() : "POST"),
                         getHeaders(restDestination),
                         URI.create(UriUtils.encodeQuery(serviceURI, "UTF-8")), MediaType.APPLICATION_JSON,
-                        () -> outgoingEvent.getPayload(),
+                        () -> "FORWARD_MESSAGE".equals(restDestination.getType().name()) ? outgoingEvent.getPayload() : restDestination.getBody(),
                         restDestination.getServiceUsername(),
                         restDestination.getServicePassword()
                 );

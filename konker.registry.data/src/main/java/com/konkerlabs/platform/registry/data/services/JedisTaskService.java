@@ -5,7 +5,11 @@ import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import redis.clients.jedis.Jedis;
@@ -16,6 +20,8 @@ import java.util.List;
 
 @Service
 public class JedisTaskService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(JedisTaskService.class);
 
 	@Autowired
 	private RedisTemplate<String, String> redisTemplate;
@@ -56,10 +62,13 @@ public class JedisTaskService {
 
 	public void registerLastEventTimestamp(Event event) {
 
-        // register last timestamp
-        final String eventTimestamp = Long.toString(event.getTimestamp().getEpochSecond());
-        redisTemplate.boundHashOps(LAST_TS_HASHNAME).put(event.getIncoming().getDeviceGuid(), eventTimestamp);
-        redisTemplate.boundHashOps(LAST_TS_HASHNAME).put("all", eventTimestamp);
+	    try {
+            // register last timestamp
+            final String eventTimestamp = Long.toString(event.getTimestamp().getEpochSecond());
+            redisTemplate.boundHashOps(LAST_TS_HASHNAME).put(event.getIncoming().getDeviceGuid(), eventTimestamp);
+	    } catch (RedisConnectionFailureException ex) {
+	        LOGGER.error("RedisConnectionFailureException: {}", ex.getMessage());
+        }
 
 	}
 

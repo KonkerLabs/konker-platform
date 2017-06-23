@@ -103,11 +103,14 @@ public class EventRoute implements URIDealer, Validatable {
         if (!Optional.ofNullable(getGuid()).filter(s -> !s.isEmpty()).isPresent())
             validations.put(Validations.GUID_NULL.getCode(),null);
 
-        if ("device".equals(Optional.ofNullable(getIncoming()).map(RouteActor::getUri).map(URI::getScheme).orElse(""))) {
+        if (Device.URI_SCHEME.equals(Optional.ofNullable(getIncoming()).map(RouteActor::getUri).map(URI::getScheme).orElse(""))) {
             applyDeviceIncomingValidations(validations);
         }
-        if ("device".equals(Optional.ofNullable(getOutgoing()).map(RouteActor::getUri).map(URI::getScheme).orElse(""))) {
+        if (Device.URI_SCHEME.equals(Optional.ofNullable(getOutgoing()).map(RouteActor::getUri).map(URI::getScheme).orElse(""))) {
             applyDeviceOutgoingValidations(validations);
+        }
+        if (DeviceModelLocation.URI_SCHEME.equals(Optional.ofNullable(getIncoming()).map(RouteActor::getUri).map(URI::getScheme).orElse(""))) {
+            applyModelLocationIncomingValidations(validations);
         }
 
 		if (getIncoming() != null && getIncoming().compareAndCheckIfDevicesChannelsAreEqual(getOutgoing()))
@@ -118,7 +121,7 @@ public class EventRoute implements URIDealer, Validatable {
 
     private void applyDeviceIncomingValidations(Map<String,Object[]> validations) {
         Map<String, String> data = getIncoming().getData();
-        if (!"device".equals(getIncoming().getUri().getScheme())) {
+        if (!Device.URI_SCHEME.equals(getIncoming().getUri().getScheme())) {
             validations.put(Validations.INCOMING_ACTOR_URI_MUST_BE_A_DEVICE.getCode(),null);
         } else {
             String channelName = data.get(DEVICE_MQTT_CHANNEL);
@@ -137,7 +140,7 @@ public class EventRoute implements URIDealer, Validatable {
 
 	public void applyDeviceOutgoingValidations(Map<String,Object[]> validations) {
         Map<String, String> data = getOutgoing().getData();
-        if (!"device".equals(getOutgoing().getUri().getScheme())) {
+        if (!Device.URI_SCHEME.equals(getOutgoing().getUri().getScheme())) {
             validations.put(Validations.OUTGOING_ACTOR_URI_MUST_BE_A_DEVICE.getCode(),null);
         } else {
             String channelName = data.get(DEVICE_MQTT_CHANNEL);
@@ -149,6 +152,19 @@ public class EventRoute implements URIDealer, Validatable {
         }
     }
 
+    private void applyModelLocationIncomingValidations(Map<String,Object[]> validations) {
+        Map<String, String> data = getIncoming().getData();
+        if (DeviceModelLocation.URI_SCHEME.equals(getIncoming().getUri().getScheme())) {
+            String channelName = data.get(DEVICE_MQTT_CHANNEL);
+            if (StringUtils.isBlank(channelName)) {
+                validations.put(Validations.INCOMING_ACTOR_CHANNEL_NULL.getCode(),null);
+            } else if (!isValidChannelName(channelName)) {
+                validations.put(Validations.INCOMING_ACTOR_CHANNEL_INVALID_NAME.getCode(),null);
+            }
+        }
+
+    }
+
 	@Data
 	@Builder
 	public static class RouteActor {
@@ -157,12 +173,16 @@ public class EventRoute implements URIDealer, Validatable {
 		private Map<String, String> data = new HashMap<>();
 
 		public boolean isDevice() {
-			return "device".equals(Optional.ofNullable(getUri()).map(URI::getScheme).orElse(""));
+			return Device.URI_SCHEME.equals(Optional.ofNullable(getUri()).map(URI::getScheme).orElse(""));
 		}
 
 	    public boolean isRestDestination() {
-	        return "rest".equals(Optional.ofNullable(getUri()).map(URI::getScheme).orElse(""));
+	        return RestDestination.URI_SCHEME.equals(Optional.ofNullable(getUri()).map(URI::getScheme).orElse(""));
 	    }
+
+        public boolean isModelLocation() {
+            return DeviceModelLocation.URI_SCHEME.equals(Optional.ofNullable(getUri()).map(URI::getScheme).orElse(""));
+        }
 
 		public boolean compareAndCheckIfDevicesChannelsAreEqual(RouteActor route) {
 			boolean areEqual = false;
@@ -177,12 +197,12 @@ public class EventRoute implements URIDealer, Validatable {
 					&& !route.getData().get("channel").isEmpty();
 
 			// check if both (this instance and incoming parameter) are devices
-			elegibleToValidateDeviceChannel = elegibleToValidateDeviceChannel && this.isDevice() && route.isDevice();
+			elegibleToValidateDeviceChannel = elegibleToValidateDeviceChannel && (this.isDevice() || this.isModelLocation()) && (route.isDevice() || route.isModelLocation());
 
 			if (elegibleToValidateDeviceChannel) {
 				// both can't have the same pair (device - channel)
 				areEqual = this.getUri().equals(route.getUri())
-						&& this.getData().get("channel").equals(route.getData().get("channel"));
+						&& this.getData().get("channel").compareTo(route.getData().get("channel")) == 0;
 			}
 
 			return areEqual;

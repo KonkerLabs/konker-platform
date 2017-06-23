@@ -1,4 +1,4 @@
-package com.konkerlabs.platform.registry.business.repositories;
+package com.konkerlabs.platform.registry.business.model;
 
 
 import lombok.AllArgsConstructor;

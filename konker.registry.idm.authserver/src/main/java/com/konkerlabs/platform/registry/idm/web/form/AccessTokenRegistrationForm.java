@@ -1,7 +1,7 @@
 package com.konkerlabs.platform.registry.idm.web.form;
 
 
-import com.konkerlabs.platform.registry.business.repositories.AccessToken;
+import com.konkerlabs.platform.registry.business.model.AccessToken;
 import com.konkerlabs.platform.registry.idm.web.form.api.ModelBuilder;
 import lombok.Data;
 

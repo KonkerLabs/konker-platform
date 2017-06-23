@@ -3,7 +3,7 @@ package com.konkerlabs.platform.registry.idm.domain.service;
 
 
 import com.konkerlabs.platform.registry.business.repositories.OauthClientDetailRepository;
-import com.konkerlabs.platform.registry.business.repositories.OauthClientDetails;
+import com.konkerlabs.platform.registry.business.model.OauthClientDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;

@@ -1,5 +1,16 @@
 package com.konkerlabs.platform.registry.config;
 
+import java.net.UnknownHostException;
+import java.util.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
+import org.springframework.data.mongodb.core.convert.CustomConversions;
+import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
+
 import com.konkerlabs.platform.registry.business.model.converters.InstantReadConverter;
 import com.konkerlabs.platform.registry.business.model.converters.InstantWriteConverter;
 import com.konkerlabs.platform.registry.business.model.converters.URIReadConverter;

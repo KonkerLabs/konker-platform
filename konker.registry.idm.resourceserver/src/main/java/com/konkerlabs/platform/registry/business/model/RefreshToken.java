@@ -1,4 +1,4 @@
-package com.konkerlabs.platform.registry.business.repositories;
+package com.konkerlabs.platform.registry.business.model;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
@@ -10,7 +10,6 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.Date;
 
 @Document(collection = "refreshtokens")
 public class RefreshToken implements Serializable {
@@ -20,7 +19,7 @@ public class RefreshToken implements Serializable {
 
 
     @CreatedDate
-    private Date createTime = Date.from(Instant.now());
+    private Instant createTime = Instant.now();
 
     @Version
     private Long version;
@@ -43,7 +42,7 @@ public class RefreshToken implements Serializable {
         return this;
     }
 
-    public Date createTime() {
+    public Instant createTime() {
         return createTime;
     }
 

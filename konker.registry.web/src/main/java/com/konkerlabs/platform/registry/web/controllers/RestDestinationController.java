@@ -76,8 +76,10 @@ public class RestDestinationController implements ApplicationContextAware {
     @RequestMapping("new")
     @PreAuthorize("hasAuthority('CREATE_REST_DESTINATION')")
     public ModelAndView newDestination() {
-        return new ModelAndView("destinations/rest/form")
-                .addObject("destination", new RestDestinationForm())
+        RestDestinationForm destinationForm = new RestDestinationForm();
+        destinationForm.setApplicationName(application.getName());
+		return new ModelAndView("destinations/rest/form")
+                .addObject("destination", destinationForm)
                 .addObject("action", MessageFormat.format("/destinations/rest/{0}/save", application.getName()));
     }
 
@@ -180,6 +182,21 @@ public class RestDestinationController implements ApplicationContextAware {
         }
 
         return new ModelAndView("redirect:/destinations/rest");
+    }
+    
+    @RequestMapping("/{applicationName}/body/{restType}")
+    public ModelAndView bodyFragment(@PathVariable("applicationName") String applicationName,
+                                         @PathVariable String restType) {
+        ModelAndView model = null;
+        RestDestinationForm destinationForm = new RestDestinationForm();
+
+        if (restType.equals("FORWARD_MESSAGE")) {
+        	model = new ModelAndView("destinations/rest/empty-body", "destination", destinationForm);
+        } else {
+        	model = new ModelAndView("destinations/rest/custom-body", "destination", destinationForm);
+        }
+
+        return model;
     }
 
     @Override

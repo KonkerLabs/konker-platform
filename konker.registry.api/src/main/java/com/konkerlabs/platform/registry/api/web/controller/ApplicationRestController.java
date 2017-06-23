@@ -9,8 +9,8 @@ import com.konkerlabs.platform.registry.api.model.RestResponse;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Application.Validations;
 import com.konkerlabs.platform.registry.business.model.HealthAlert;
+import com.konkerlabs.platform.registry.business.model.HealthAlert.Solution;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.repositories.OauthClientDetails;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.HealthAlertService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
@@ -19,13 +19,12 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @RestController
 @Scope("request")
@@ -40,7 +39,7 @@ public class ApplicationRestController extends AbstractRestController implements
     private HealthAlertService healthAlertService;
 
     @Autowired
-    private OauthClientDetails user;
+    private MessageSource messageSource;
 
     private Set<String> validationsCode = new HashSet<>();
 
@@ -176,16 +175,30 @@ public class ApplicationRestController extends AbstractRestController implements
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationName);
 
-        ServiceResponse<List<HealthAlert>> serviceResponse = healthAlertService.findAllByTenantAndApplication(tenant, application);
+        ServiceResponse<List<HealthAlert>> serviceResponse =
+                healthAlertService.findAllByTenantAndApplication(tenant, application);
 
         if (!serviceResponse.isOk()) {
             throw new NotFoundResponseException(user, serviceResponse);
         } else {
-            return new DeviceHealthAlertVO().apply(serviceResponse.getResult());
+            List<DeviceHealthAlertVO> healthAlertsVO = new LinkedList<>();
+
+            for (HealthAlert healthAlert: serviceResponse.getResult()) {
+                DeviceHealthAlertVO healthAlertVO = new DeviceHealthAlertVO();
+                healthAlertVO = healthAlertVO.apply(healthAlert);
+                healthAlertVO.setDescription(
+                        messageSource.getMessage(
+                                healthAlert.getDescription().getCode(),
+                        null,
+                                new Locale("en", "US")));
+
+                healthAlertsVO.add(healthAlertVO);
+            }
+            return healthAlertsVO;
         }
 
     }
-    
+
     @DeleteMapping(path = "/{applicationName}/health/alerts/{alertGuid}")
     @ApiOperation(
             value = "Remove health alert from this application",
@@ -199,12 +212,12 @@ public class ApplicationRestController extends AbstractRestController implements
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationName);
 
-        ServiceResponse<HealthAlert> serviceResponse = healthAlertService.remove(tenant, application, alertGuid);
+        ServiceResponse<HealthAlert> serviceResponse = healthAlertService.remove(tenant, application, alertGuid, Solution.ALERT_DELETED);
 
         if (!serviceResponse.isOk()) {
             throw new NotFoundResponseException(user, serviceResponse);
-        } 
-        
+        }
+
     }
 
     @Override

@@ -257,6 +257,11 @@ public class LocationSearchServiceImpl implements LocationSearchService {
         }
 
         List<Location> all = locationRepository.findAllByTenantIdAndApplicationName(tenant.getId(), application.getName());
+
+        if (all.isEmpty()) {
+            all.add(getRootDefaultLocation(tenant, application));
+        }
+
         return ServiceResponseBuilder.<List<Location>>ok().withResult(all).build();
     }
 

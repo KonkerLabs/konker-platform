@@ -2,6 +2,7 @@ package com.konkerlabs.platform.registry.test.web.forms;
 
 import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.RestDestination.RestDestinationHeader;
+import com.konkerlabs.platform.registry.business.model.RestDestination.RestDestinationType;
 import com.konkerlabs.platform.registry.web.forms.RestDestinationForm;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,13 +25,13 @@ public class RestDestinationFormTest {
     	RestDestinationHeader formHeader = new RestDestinationHeader();
     	formHeader.setKey("Zemaa3Telv");
     	formHeader.setValue("JBhsBW80Ne");
-    	
+
     	List<RestDestinationHeader> formHeaders = new ArrayList<>();
     	formHeaders.add(formHeader);
-    	
+
     	Map<String, String> headersMap = new HashMap<>();
     	headersMap.put(formHeader.getKey(), formHeader.getValue());
-    	
+
         model = RestDestination.builder()
                 .name("Name")
                 .serviceURI("http://localhost:8080/path?query=1")
@@ -38,6 +39,7 @@ public class RestDestinationFormTest {
                 .servicePassword("password")
                 .method("POST")
                 .headers(headersMap)
+                .type(RestDestinationType.FORWARD_MESSAGE)
                 .active(true).build();
 
         form = new RestDestinationForm();
@@ -48,6 +50,7 @@ public class RestDestinationFormTest {
         form.setActive(model.isActive());
         form.setMethod(model.getMethod());
         form.setHeaders(formHeaders);
+        form.setType(RestDestinationType.FORWARD_MESSAGE);
     }
 
     @Test

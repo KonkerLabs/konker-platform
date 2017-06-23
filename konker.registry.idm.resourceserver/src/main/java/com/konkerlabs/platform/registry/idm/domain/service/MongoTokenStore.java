@@ -1,6 +1,9 @@
 package com.konkerlabs.platform.registry.idm.domain.service;
 
 
+import com.konkerlabs.platform.registry.business.model.AccessToken;
+import com.konkerlabs.platform.registry.business.model.OauthClientDetails;
+import com.konkerlabs.platform.registry.business.model.RefreshToken;
 import com.konkerlabs.platform.registry.business.repositories.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

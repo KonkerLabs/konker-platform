@@ -42,6 +42,8 @@ public class RestDestinationVO extends RestDestinationInputVO
 		vo.setServiceURI(model.getServiceURI());
 		vo.setServiceUsername(model.getServiceUsername());
 		vo.setServicePassword(model.getServicePassword());
+		vo.setType(model.getType());
+		vo.setBody(model.getBody());
 		vo.setActive(model.isActive());
 		return vo;
 	}
@@ -55,6 +57,8 @@ public class RestDestinationVO extends RestDestinationInputVO
 		model.setServiceURI(this.getServiceURI());
 		model.setServiceUsername(this.getServiceUsername());
 		model.setServicePassword(this.getServicePassword());
+		model.setType(this.getType());
+		model.setBody(this.getBody());
 		model.setActive(this.isActive());
 		return model;
 	}
