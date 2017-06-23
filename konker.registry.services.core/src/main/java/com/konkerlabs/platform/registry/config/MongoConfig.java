@@ -13,9 +13,11 @@ import com.typesafe.config.ConfigFactory;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.convert.CustomConversions;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.util.StringUtils;
@@ -61,14 +63,17 @@ public class MongoConfig extends AbstractMongoConfiguration {
 
     }
 
-    public static final List<Converter<?, ?>> converters = Arrays.asList(
-            new Converter[]{
-                    new InstantReadConverter(),
-                    new InstantWriteConverter(),
-                    new URIReadConverter(),
-                    new URIWriteConverter()
-            }
-    );
+    public static final List<Converter<?, ?>> converters =
+            Arrays.asList(getMongoConverter());
+
+    public static final Converter[] getMongoConverter(){
+        return new Converter[]{
+                new InstantReadConverter(),
+                new InstantWriteConverter(),
+                new URIReadConverter(),
+                new URIWriteConverter()
+        };
+    }
 
     @Override
     protected String getDatabaseName() {
@@ -76,10 +81,10 @@ public class MongoConfig extends AbstractMongoConfiguration {
     }
 
 
-    /*@Bean(name = "mongoTemplate")
+    @Bean(name = "mongoTemplate")
     public MongoTemplate mongoTemplate() throws Exception {
         return new MongoTemplate(this.mongo(), this.getDatabaseName());
-    }*/
+    }
 
     @Override
     public Mongo mongo() throws Exception {
@@ -98,7 +103,7 @@ public class MongoConfig extends AbstractMongoConfiguration {
 
     @Override
     public CustomConversions customConversions() {
-        return new CustomConversions(converters);
+        return new CustomConversions(this.converters);
     }
 
 }
