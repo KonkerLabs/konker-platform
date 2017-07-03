@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
@@ -34,7 +33,7 @@ public class ControlPanelController {
 
 	@Autowired
 	private EventRouteService eventRouteService;
-	
+
 	@Autowired
 	private ApplicationService applicationService;
 
@@ -52,25 +51,25 @@ public class ControlPanelController {
 		int routesCount = 0;
 		int transformationsCount = 0;
 		int restDestinationsCount = 0;
-		
+
 		List<Application> applications = applicationService.findAll(tenant).getResult();
-		
+
 		for (Application app : applications) {
-			ServiceResponse<List<Device>> deviceResponse = deviceRegisterService.findAll(tenant, app);
+			ServiceResponse<Long> deviceResponse = deviceRegisterService.countAll(tenant, app);
 			if (deviceResponse.isOk()) {
-				devicesCount += deviceResponse.getResult().size();
+				devicesCount += deviceResponse.getResult();
 			}
-			
+
 			ServiceResponse<List<EventRoute>> routesResponse = eventRouteService.getAll(tenant, app);
 			if (routesResponse.isOk()) {
 				routesCount += routesResponse.getResult().size();
 			}
-			
+
 			ServiceResponse<List<Transformation>> transformationResponse = transformationService.getAll(tenant, app);
 			if (transformationResponse.isOk()) {
 				transformationsCount += transformationResponse.getResult().size();
 			}
-			
+
 			ServiceResponse<List<RestDestination>> destinationsResponse = restDestinationService.findAll(tenant, app);
 			if (destinationsResponse.isOk()) {
 				restDestinationsCount += destinationsResponse.getResult().size();

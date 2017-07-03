@@ -116,6 +116,7 @@ public interface DeviceRegisterService {
 	 */
 	ServiceResponse<List<Device>> findAll(Tenant tenant, Application application);
 
+	ServiceResponse<Long> countAll(Tenant tenant, Application application);
 
 	/**
 	 * Returns a device by its deviceGuid and tenant.

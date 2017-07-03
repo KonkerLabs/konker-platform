@@ -18,6 +18,8 @@ public interface DeviceRepository extends MongoRepository<Device, String> {
     Device findByApiKey(String apiKey);
     @Query("{ 'tenant.id' : ?0, 'application.name' : ?1 }")
 	List<Device> findAllByTenantIdAndApplicationName(String tenantId, String applicationName);
+    @Query(value = "{ 'tenant.id' : ?0, 'application.name' : ?1 }", count = true)
+    Long countAllByTenantIdAndApplicationName(String tenantId, String applicationName);
     @Query("{ 'tenant.id' : ?0, 'application.name' : ?1, 'guid' : ?2 }")
     Device findByTenantAndApplicationAndGuid(String tenantId, String applicationName, String guid);
     @Query("{ 'tenant.id' : ?0, 'application.name' : ?1, 'location.id' : ?2 }")
