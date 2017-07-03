@@ -21,7 +21,7 @@ public class CassandraRegistryConfig {
     private Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
     private String keyspace;
-    private String seedHost;
+    private String seedHosts[];
     private String username;
     private String password;
     private int seedPort;
@@ -37,16 +37,16 @@ public class CassandraRegistryConfig {
         try {
             Config config = ConfigFactory.load().withFallback(defaultConf);
             setKeyspace(config.getString("cassandra.keyspace"));
-            setSeedHost(config.getString("cassandra.hostname"));
+            setSeedHosts(config.getString("cassandra.hostname").split("[,;]"));
             setSeedPort(config.getInt("cassandra.port"));
             setUsername(config.getString("cassandra.username"));
             setPassword(config.getString("cassandra.password"));
         } catch (Exception e) {
             LOGGER.warn(String.format("Cassandra is not configured, using default cassandra config\n" +
-                            "cassandra.keyspace: {1\n" +
+                            "cassandra.keyspace: {}\n" +
                             "cassandra.hostname: {}\n" +
                             "cassandra.port: {}\n",
-                    getKeyspace(), getSeedHost(), getSeedPort())
+                    getKeyspace(), getSeedHosts(), getSeedPort())
             );
         }
 
@@ -54,13 +54,13 @@ public class CassandraRegistryConfig {
 
         if (StringUtils.hasText(getUsername())) {
             cluster = Cluster.builder()
-                             .addContactPoint(getSeedHost())
+                             .addContactPoints(getSeedHosts())
                              .withPort(getSeedPort())
                              .withCredentials(getUsername(), getPassword())
                              .build();
         } else {
             cluster = Cluster.builder()
-                            .addContactPoint(getSeedHost())
+                            .addContactPoints(getSeedHosts())
                             .withPort(getSeedPort())
                             .build();
         }
@@ -102,12 +102,12 @@ public class CassandraRegistryConfig {
         this.keyspace = keyspace;
     }
 
-    public String getSeedHost() {
-        return seedHost;
+    public String[] getSeedHosts() {
+        return seedHosts;
     }
 
-    public void setSeedHost(String seedHost) {
-        this.seedHost = seedHost;
+    public void setSeedHosts(String[] seedHosts) {
+        this.seedHosts = seedHosts;
     }
 
     public int getSeedPort() {
