@@ -62,7 +62,7 @@ public class ControlPanelControllerTest extends WebLayerTestContext {
 
 	@Autowired
 	private ApplicationService applicationService;
-	
+
 	@After
 	public void tearDown() {
 		Mockito.reset(deviceRegisterService);
@@ -94,8 +94,8 @@ public class ControlPanelControllerTest extends WebLayerTestContext {
 		destinations.add(RestDestination.builder().build());
 		destinations.add(RestDestination.builder().build());
 
-		when(deviceRegisterService.findAll(tenant, application))
-				.thenReturn(ServiceResponseBuilder.<List<Device>>ok().withResult(devices).build());
+		when(deviceRegisterService.countAll(tenant, application))
+				.thenReturn(ServiceResponseBuilder.<Long>ok().withResult(1L).build());
 		when(eventRouteService.getAll(tenant, application))
 				.thenReturn(ServiceResponseBuilder.<List<EventRoute>>ok().withResult(routes).build());
 		when(transformationService.getAll(tenant, application))
