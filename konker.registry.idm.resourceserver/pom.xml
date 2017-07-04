@@ -10,6 +10,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>konker.registry.idm.resourceserver</artifactId>
+    <groupId>com.konkerlabs.platform</groupId>
+    <version>1.0-SNAPSHOT</version>
 
     <dependencies>
         <dependency>
@@ -84,7 +86,7 @@
             <version>1.3.0</version>
         </dependency>
         <!-- data store -->
-        <!--<dependency>
+        <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-mongodb</artifactId>
             <version>1.10.1.RELEASE</version>
@@ -95,7 +97,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
--->
         <!-- session -->
         <dependency>
             <groupId>org.springframework.session</groupId>

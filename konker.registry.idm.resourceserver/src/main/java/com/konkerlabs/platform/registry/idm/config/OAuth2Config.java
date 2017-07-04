@@ -20,12 +20,8 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
-import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
 import org.springframework.security.oauth2.provider.token.TokenStore;
-import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
-
-import java.util.Arrays;
 
 @Configuration
 @EnableAuthorizationServer
@@ -53,11 +49,11 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 			throws Exception {
 
 		TokenEnhancerChain tokenEnhancerChain = new TokenEnhancerChain();
-		tokenEnhancerChain.setTokenEnhancers(
+		/*tokenEnhancerChain.setTokenEnhancers(
 				Arrays.asList(
 						tokenEnhancer(), 
 						accessTokenConverter()
-					));
+					));*/
 		
 		
 		endpoints.authenticationManager(authenticationManager)
@@ -102,12 +98,12 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 				.allowFormAuthenticationForClients();
 	}
 	
-	@Bean
+	/*@Bean
 	public JwtAccessTokenConverter accessTokenConverter() {
 		JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
 		converter.setSigningKey("apikonkeroauth");
 		return converter;
-	}
+	}*/
 
 	/*@Bean
 	public MongoTokenStore mongoTokenStore(){
@@ -130,10 +126,10 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 		return defaultTokenServices;
 	}
 	
-	@Bean
+	/*@Bean
 	public TokenEnhancer tokenEnhancer() {
 		return new CustomTokenEnhancer();
-	}
+	}*/
 
 
 

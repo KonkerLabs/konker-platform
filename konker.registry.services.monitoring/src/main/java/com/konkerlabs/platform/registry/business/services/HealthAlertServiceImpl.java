@@ -1,13 +1,12 @@
 package com.konkerlabs.platform.registry.business.services;
 
-import java.text.MessageFormat;
-import java.time.Instant;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-
+import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.model.HealthAlert.Description;
+import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertSeverity;
+import com.konkerlabs.platform.registry.business.model.HealthAlert.Solution;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.repositories.*;
+import com.konkerlabs.platform.registry.business.services.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,29 +15,9 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
-import com.konkerlabs.platform.registry.business.model.AlertTrigger;
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.HealthAlert;
-import com.konkerlabs.platform.registry.business.model.HealthAlert.Description;
-import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertSeverity;
-import com.konkerlabs.platform.registry.business.model.HealthAlert.Solution;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.User;
-import com.konkerlabs.platform.registry.business.model.UserNotification;
-import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.registry.business.repositories.AlertTriggerRepository;
-import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
-import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
-import com.konkerlabs.platform.registry.business.repositories.HealthAlertRepository;
-import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
-import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.HealthAlertService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
-import com.konkerlabs.platform.registry.business.services.api.UserNotificationService;
-import com.konkerlabs.platform.registry.business.services.api.UserService;
+import java.text.MessageFormat;
+import java.time.Instant;
+import java.util.*;
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
@@ -324,7 +303,13 @@ public class HealthAlertServiceImpl implements HealthAlertService {
                     .build();
 		}
 
-		HealthAlert healthAlertFromDB = healthAlertRepository.findByTenantIdApplicationNameAndGuid(tenant.getId(), application.getName(), healthAlertGuid);
+		HealthAlert healthAlertFromDB = null;
+		try {
+			healthAlertFromDB = healthAlertRepository.findByTenantIdApplicationNameAndGuid(tenant.getId(), application.getName(), healthAlertGuid);
+		} catch (Exception e){
+			LOGGER.error("Error getting health logs", e);
+		}
+
 
 		if (!Optional.ofNullable(healthAlertFromDB).isPresent()) {
 			return ServiceResponseBuilder.<HealthAlert>error()
@@ -387,8 +372,13 @@ public class HealthAlertServiceImpl implements HealthAlertService {
                     .build();
         }
 
-        List<HealthAlert> healthAlerts = healthAlertRepository
-        		.findAllByTenantIdApplicationNameAndDeviceGuid(tenant.getId(), application.getName(), deviceGuid);
+		List<HealthAlert> healthAlerts = Collections.emptyList();
+		try {
+			healthAlerts = healthAlertRepository
+					.findAllByTenantIdApplicationNameAndDeviceGuid(tenant.getId(), application.getName(), deviceGuid);
+		} catch (Exception e){
+			LOGGER.error("Error collecting alerts", e);
+		}
 
         if (healthAlerts.isEmpty()) {
         	return ServiceResponseBuilder.<List<HealthAlert>>error()

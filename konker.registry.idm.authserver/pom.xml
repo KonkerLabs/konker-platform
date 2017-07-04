@@ -14,7 +14,7 @@
 
     <groupId>com.konkerlabs</groupId>
     <artifactId>konker.registry.idm.authserver</artifactId>
-    <!--<version>1.0-SNAPSHOT</version>-->
+    <version>1.0-SNAPSHOT</version>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -107,7 +107,7 @@
         <dependency>
             <groupId>com.konkerlabs</groupId>
             <artifactId>konker.registry.services.storage.mongodb</artifactId>
-            <version>0.0.1</version>
+            <version>1.0-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.httpcomponents</groupId>
@@ -126,10 +126,10 @@
             <artifactId>spring-session</artifactId>
             <version>1.3.1.RELEASE</version>
         </dependency>
-        <!--<dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
-        </dependency>-->
+        </dependency>
 
         <!-- Konker -->
         <dependency>
@@ -160,7 +160,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>com.konkerlabs</groupId>
+            <groupId>com.konkerlabs.platform</groupId>
             <artifactId>konker.registry.idm.resourceserver</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>

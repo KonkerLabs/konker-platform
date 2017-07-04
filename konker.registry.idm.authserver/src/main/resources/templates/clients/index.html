@@ -165,16 +165,6 @@
                         <div>
                             <h1 class="page-title" data-th-text="#{clients.index.legend}"></h1>
                         </div>
-                        <div>
-                            <form id='api_selector'>
-                                <div class='input'>
-                                    <select id="select_baseUrl" name="select_baseUrl"/>
-                                </div>
-                                <div class='input'><input placeholder="http://example.com/api" id="input_baseUrl" name="baseUrl" type="text"/></div>
-                                <div id='auth_container'></div>
-                                <div class='input'><a id="explore" class="header__btn" href="#" data-sw-translate>Explore</a></div>
-                            </form>
-                        </div>
                         <div class="alert alert-success" role="alert" data-th-if="${message != null}">
                             <span data-th-text="${message}"></span>
                             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -189,7 +179,15 @@
                                 <li data-th-each="error : ${errors}" data-th-text="${error}"></li>
                             </ul>
                         </div>
-
+                        <div class="col-sm-2">
+                                <select data-th-field="*{applicationId}"
+                                        class="form-control"
+                                        id="applicationId"
+                                        name="method">
+                                    <option data-th-each="applicationItem: *{allApplications}" data-th-text="${applicationItem.name}"
+                                            data-th-value="${applicationItem.name}"></option>
+                                </select>
+                        </div>
                         <div>
                             <a data-th-href="@{'/account/' + ${applicationId} + '/clients/new'}"
                                class="mb btn btn-theme action pull-right">

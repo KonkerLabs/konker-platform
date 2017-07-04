@@ -111,7 +111,7 @@ public class HealthAlert implements URIDealer {
 	}
 
 	public enum HealthAlertType {
-		SILENCE;
+		SILENCE
 	}
 
 	public enum Validations {
@@ -142,5 +142,7 @@ public class HealthAlert implements URIDealer {
 
 		return Optional.of(validations).filter(map -> !map.isEmpty());
 	}
+
+
 
 }

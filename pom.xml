@@ -17,14 +17,12 @@
         <module>konker.registry.services.monitoring</module>
         <module>konker.registry.services.storage.cassandra</module>
         <module>konker.registry.services.storage.mongodb</module>
-        <module>konker.registry.web</module>
+        <module>konker.registry.idm.resourceserver</module>
+        <module>konker.registry.idm.authserver</module>
         <module>konker.registry.api</module>
         <module>konker.registry.data</module>
+        <module>konker.registry.webconsole</module>
     	<module>konker.registry.cassandra-etl</module>
-        <module>konker.registry.idm.authserver</module>
-        <module>konker.registry.eurekaserver</module>
-        <module>konker.registry.idm.resourceserver</module>
-
     </modules>
 
     <build>

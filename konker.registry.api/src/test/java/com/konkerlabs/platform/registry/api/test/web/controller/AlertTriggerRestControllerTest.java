@@ -1,18 +1,12 @@
 package com.konkerlabs.platform.registry.api.test.web.controller;
 
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
+import com.konkerlabs.platform.registry.api.config.WebMvcConfig;
+import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
+import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
+import com.konkerlabs.platform.registry.api.web.controller.AlertTriggerRestController;
+import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
+import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.services.api.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,22 +21,14 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import com.konkerlabs.platform.registry.api.config.WebMvcConfig;
-import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
-import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
-import com.konkerlabs.platform.registry.api.web.controller.AlertTriggerRestController;
-import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
-import com.konkerlabs.platform.registry.business.model.AlertTrigger;
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.DeviceModel;
-import com.konkerlabs.platform.registry.business.model.Location;
-import com.konkerlabs.platform.registry.business.model.SilenceTrigger;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.services.api.AlertTriggerService;
-import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
-import com.konkerlabs.platform.registry.business.services.api.LocationSearchService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = AlertTriggerRestController.class)
@@ -171,7 +157,7 @@ public class AlertTriggerRestControllerTest extends WebLayerTestContext {
                 .andExpect(status().is5xxServerError())
                 .andExpect(content().contentType("application/json;charset=UTF-8"))
                 .andExpect(jsonPath("$.code", is(HttpStatus.INTERNAL_SERVER_ERROR.value())))
-                .andExpect(jsonPath("$.status", is("error")))
+                .andExpect(jsonPath("$.status", is("ERROR")))
                 .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
                 .andExpect(jsonPath("$.messages").doesNotExist())
                 .andExpect(jsonPath("$.result").doesNotExist());

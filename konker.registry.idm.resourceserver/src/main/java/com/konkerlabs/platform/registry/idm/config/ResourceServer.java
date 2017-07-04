@@ -34,6 +34,8 @@ public class ResourceServer extends ResourceServerConfigurerAdapter {
 			"/web/docs",
 			"/static/**",
 			"/v2/web-docs",
+			"/v2/api-docs",
+			"/swagger-resources/configuration/security"
 	};
 
 

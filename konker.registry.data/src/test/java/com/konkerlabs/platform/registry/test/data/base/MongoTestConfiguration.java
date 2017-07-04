@@ -1,13 +1,13 @@
 package com.konkerlabs.platform.registry.test.data.base;
 
 import com.github.fakemongo.Fongo;
-import com.konkerlabs.platform.registry.data.config.MongoDataConfig;
+import com.konkerlabs.platform.registry.data.config.MongoConfig;
 import com.mongodb.Mongo;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class MongoTestConfiguration extends MongoDataConfig {
+public class MongoTestConfiguration extends MongoConfig {
 
     @Override
     protected String getDatabaseName() {

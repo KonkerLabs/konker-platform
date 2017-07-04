@@ -424,7 +424,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     	assertThat(response, isResponseOk());
     	assertThat(response.getResult(), notNullValue());
-    	assertThat(response.getResult(), hasSize(2));
+    	assertThat(response.getResult(), hasSize(3));
     }
 
     @Test
@@ -491,7 +491,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     			healthAlert.getDeviceGuid());
 
     	assertThat(response, isResponseOk());
-    	assertThat(response.getResult(), hasSize(2));
+    	assertThat(response.getResult(), hasSize(3));
     }
 
     @Test
@@ -569,7 +569,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     			healthAlert.getGuid());
 
     	assertThat(response, isResponseOk());
-    	assertThat(response.getResult(), equalTo(healthAlert));
+    	assertThat(response.getResult().getGuid(), equalTo(healthAlert.getGuid()));
     }
 
     ////////////////// removeAlertsFromTrigger //////////////////
@@ -673,13 +673,14 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json", "/fixtures/devices.json"})
     public void shouldGetLastHightSeverity() throws Exception {
+    	tempHealthAlert.setSeverity(HealthAlertSeverity.FAIL);
     	ServiceResponse<HealthAlert> response = healthAlertService.getLastHightServerityByDeviceGuid(
     			currentTenant,
     			application,
     			healthAlert.getDeviceGuid());
 
     	assertThat(response, isResponseOk());
-    	assertThat(response.getResult(), equalTo(tempHealthAlert));
+    	assertThat(response.getResult().getSeverity(), equalTo(tempHealthAlert.getSeverity()));
     }
 
 }
