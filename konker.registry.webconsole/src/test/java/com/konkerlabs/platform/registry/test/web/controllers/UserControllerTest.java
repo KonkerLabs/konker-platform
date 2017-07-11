@@ -1,40 +1,11 @@
 package com.konkerlabs.platform.registry.test.web.controllers;
 
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
-
-import java.util.Collections;
-import java.util.List;
-
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
-
-import org.mockito.Matchers;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.test.web.servlet.ResultActions;
-
 import com.konkerlabs.platform.registry.billing.model.TenantDailyUsage;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
-import com.konkerlabs.platform.registry.business.services.api.TenantService;
-import com.konkerlabs.platform.registry.business.services.api.UserService;
+import com.konkerlabs.platform.registry.business.services.api.*;
 import com.konkerlabs.platform.registry.config.CdnConfig;
 import com.konkerlabs.platform.registry.config.HotjarConfig;
 import com.konkerlabs.platform.registry.config.WebConfig;
@@ -45,6 +16,30 @@ import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
 import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
 import com.konkerlabs.platform.registry.web.converters.utils.ConverterUtils;
 import com.konkerlabs.platform.registry.web.services.api.AvatarService;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Matchers;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.web.servlet.ResultActions;
+
+import java.util.Collections;
+import java.util.List;
+
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
@@ -55,13 +50,12 @@ public class UserControllerTest extends WebLayerTestContext {
 
 	@Autowired
 	private UserService userService;
-
 	@Autowired
 	private TenantService tenantService;
-
 	@Autowired
 	private AvatarService avatarService;
-
+	@Autowired
+	private TenantBillingService tenantBillingService;
 	@Autowired
 	private User user;
 
@@ -79,7 +73,7 @@ public class UserControllerTest extends WebLayerTestContext {
 	@Test
 	@WithMockUser(authorities = { "ROLE_SUPER_USER", "ROLE_IOT_USER", "ROLE_ANALYTICS_USER" })
 	public void shouldOpenViewForm() throws Exception {
-		when(tenantService.findTenantDailyUsage(Matchers.anyObject()))
+		when(tenantBillingService.findTenantDailyUsage(Matchers.anyObject()))
 			.thenReturn(ServiceResponseBuilder.<List<TenantDailyUsage>> ok()
 					.withResult(Collections.singletonList(
 							TenantDailyUsage.builder()

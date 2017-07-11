@@ -23,6 +23,7 @@
         <module>konker.registry.data</module>
         <module>konker.registry.webconsole</module>
     	<module>konker.registry.cassandra-etl</module>
+        <module>konker.registry.services.billing</module>
     </modules>
 
     <build>

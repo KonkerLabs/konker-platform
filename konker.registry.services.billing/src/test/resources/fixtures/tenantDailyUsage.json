@@ -1,0 +1,16 @@
+{
+  "tenantDailyUsage" : [{
+	    "_id" : "590cc54f27b75a23c7592a3c",
+	    "_class" : "com.konkerlabs.platform.registry.billing.model.TenantDailyUsage",
+	    "tenantDomain" : "konker",
+	    "date" : 1494015268,
+	    "incomingEventsCount" : 0,
+	    "incomingPayloadSize" : 112,
+	    "incomingDevices" : 0,
+	    "outgoingEventsCount" : 0,
+	    "outgoingPayloadSize" : 512,
+	    "outgoingDevices" : 0,
+	    "processedAt" : 1494015268
+	}
+  ]
+}

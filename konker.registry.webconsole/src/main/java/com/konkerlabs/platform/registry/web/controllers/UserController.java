@@ -1,13 +1,18 @@
 package com.konkerlabs.platform.registry.web.controllers;
 
-import java.text.DecimalFormat;
-import java.util.List;
-import java.util.Locale;
-import java.util.stream.Collectors;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.konkerlabs.platform.registry.billing.model.TenantDailyUsage;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.User;
+import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
+import com.konkerlabs.platform.registry.business.model.enumerations.Language;
+import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
+import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.TenantBillingService;
+import com.konkerlabs.platform.registry.business.services.api.TenantService;
+import com.konkerlabs.platform.registry.business.services.api.UserService;
+import com.konkerlabs.platform.registry.web.forms.UserForm;
+import com.konkerlabs.platform.registry.web.services.api.AvatarService;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -19,18 +24,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.konkerlabs.platform.registry.billing.model.TenantDailyUsage;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.User;
-import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
-import com.konkerlabs.platform.registry.business.model.enumerations.Language;
-import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
-import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.TenantService;
-import com.konkerlabs.platform.registry.business.services.api.UserService;
-import com.konkerlabs.platform.registry.web.forms.UserForm;
-import com.konkerlabs.platform.registry.web.services.api.AvatarService;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.text.DecimalFormat;
+import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
 
 
 @Controller()
@@ -44,6 +43,8 @@ public class UserController implements ApplicationContextAware {
     private AvatarService avatarService;
     @Autowired
     private TenantService tenantService;
+    @Autowired
+    private TenantBillingService tenantBillingService;
 
     private User user;
 
@@ -74,7 +75,7 @@ public class UserController implements ApplicationContextAware {
     
     @RequestMapping(value = "", method = RequestMethod.GET)
     public ModelAndView userPage(HttpServletRequest request, HttpServletResponse response, Locale locale) {
-    	ServiceResponse<List<TenantDailyUsage>> serviceResponse = tenantService.findTenantDailyUsage(user.getTenant());
+    	ServiceResponse<List<TenantDailyUsage>> serviceResponse = tenantBillingService.findTenantDailyUsage(user.getTenant());
     	List<TenantDailyUsage> usages = serviceResponse.getResult();
 
         ModelAndView mv = new ModelAndView("users/form")

@@ -1,15 +1,5 @@
 package com.konkerlabs.platform.registry.business.services;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import com.konkerlabs.platform.registry.billing.model.TenantDailyUsage;
-import com.konkerlabs.platform.registry.billing.repositories.TenantDailyUsageRepository;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
@@ -18,6 +8,13 @@ import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.TenantService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TenantServiceImpl implements TenantService {
@@ -29,9 +26,6 @@ public class TenantServiceImpl implements TenantService {
 
 	@Autowired
 	private DeviceRepository deviceRepository;
-	
-	@Autowired
-	private TenantDailyUsageRepository tenantDailyUsageRepository;
 
 	@Override
 	public ServiceResponse<Tenant> updateLogLevel(Tenant tenant, LogLevel newLogLevel) {
@@ -75,13 +69,6 @@ public class TenantServiceImpl implements TenantService {
 			return ServiceResponseBuilder.<Tenant>error().withMessage(Errors.ERROR_SAVE_TENANT.getCode()).build();
 		}
 
-	}
-
-	@Override
-	public ServiceResponse<List<TenantDailyUsage>> findTenantDailyUsage(Tenant tenant) {
-		 List<TenantDailyUsage> usages = tenantDailyUsageRepository.findAllByTenantDomain(tenant.getDomainName());
-		
-		 return ServiceResponseBuilder.<List<TenantDailyUsage>> ok().withResult(usages).build();
 	}
 
 }

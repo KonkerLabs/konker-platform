@@ -86,17 +86,56 @@
 
 			<h3 id="get-oauth-2-access-token">Get OAuth 2 Access Token</h3>
 			<ul>
-				<li>Grant Type: Implicit Grant (or User Agent) Flow</li>
-				<li>Access Token URL: <a href="http://localhost:8080/v1/swagger-ui.html" id="token_url_link"><span id="token_url_text">http://localhost:8080/v1/oauth/token</span></a></li>
-				<li>Client ID: your e-mail</li>
-				<li>Client Secret: your password</li>
+				<li>Grant Type: client_credentials</li>
+				<li>Access Token URL: <a href="http://idm.konkerlabs.net/" id="token_url_link"><span id="token_url_text">http://idm.konerklabs.net/oauth/token</span></a></li>
+				<li>Client ID: the application ahtorization code</li>
+				<li>Client Secret: the application secret</li>
 			</ul>
+
 
 			<h3 id="swagger-authorization">Swagger Authorization</h3>
 			<p>To use Swagger endpoints:</p>
 			<ul>
-				<li>Login using your email and password: <a href="/v1/oauth/token?grant_type=client_credentials" target="_blank">here</a></li>
-				<li>Click the 'Authorize' button in upper right conner</li>
+				<li>Login using your email and password: <a href="https://idm.konkerlabs.net/" target="_blank">here</a></li>
+				<li>Click the 'Create a Client'</li>
+				<li>Copy client id and client secret to call Oauth token endpoint</li>
+				<li>
+					Call the token endpoint
+					<table>
+						<tr>
+							<td>Address</td>
+							<td>http://idm.konkerlabs.net/oauth/token</td>
+						</tr>
+						<tr>
+							<td>Body</td>
+							<td>form-data</td>
+						</tr>
+						<tr>
+							<td><b>attributes</b></td>
+							<table>
+								<tr>
+									<td>grant_type</td>
+									<td>client_credentials</td>
+								</tr>
+								<tr>
+									<td>client_id</td>
+									<td>{your_client_Id}</td>
+								</tr>
+								<tr>
+									<td>client_secret</td>
+									<td>{your_client_secret}</td>
+								</tr>
+								<tr>
+									<td>scope</td>
+									<td>read</td>
+								</tr>
+							</table>
+						</tr>
+
+					</table>
+				</li>
+				<li>Use the 'Authorize' button in this page to provide the result token</li>
+				<li>Don't forget to add 'Bearer ' before to hash</li>
 			</ul>
 
 			<hr>

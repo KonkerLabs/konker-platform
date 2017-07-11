@@ -1,21 +1,5 @@
 package com.konkerlabs.platform.registry.test.business.services;
 
-import java.time.Instant;
-import java.util.List;
-
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import com.konkerlabs.platform.registry.billing.model.TenantDailyUsage;
-import com.konkerlabs.platform.registry.billing.repositories.TenantDailyUsageRepository;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
@@ -29,6 +13,12 @@ import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoBillingTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
+import org.junit.*;
+import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { MongoTestConfiguration.class, BusinessTestConfiguration.class, MongoBillingTestConfiguration.class })
@@ -47,26 +37,11 @@ public class TenantServiceTest extends BusinessLayerTestSupport {
 	@Autowired
 	private DeviceRepository deviceRepository;
 	
-	@Autowired
-	private TenantDailyUsageRepository tenantDailyUsageRepository;
-	
 	private Tenant tenant;
 
 	@Before
 	public void setUp() throws Exception {
 		tenant = tenantRepository.findByDomainName("konker");
-		List<TenantDailyUsage> usages = tenantDailyUsageRepository.findAllByTenantDomain("konker");
-		
-		tenantDailyUsageRepository.save(TenantDailyUsage.builder()
-				.date(Instant.now())
-				.incomingDevices(4)
-				.incomingEventsCount(200)
-				.incomingPayloadSize(512)
-				.outgoingDevices(2)
-				.outgoingEventsCount(200)
-				.outgoingPayloadSize(680)
-				.tenantDomain(tenant.getDomainName())
-				.build());
 	}
 
 	@After
@@ -153,15 +128,6 @@ public class TenantServiceTest extends BusinessLayerTestSupport {
 		Assert.assertNotNull(device);
 		Assert.assertEquals(device.getLogLevel(), LogLevel.DISABLED);
 
-	}
-	
-	@Test
-	public void shouldFindTenantDailyUsage() {
-		ServiceResponse<List<TenantDailyUsage>> responseService = tenantService.findTenantDailyUsage(tenant);
-		
-		Assert.assertNotNull(responseService);
-		Assert.assertEquals(responseService.getStatus(), ServiceResponse.Status.OK);
-		Assert.assertEquals(responseService.getResult().size(), 1);
 	}
 
 }

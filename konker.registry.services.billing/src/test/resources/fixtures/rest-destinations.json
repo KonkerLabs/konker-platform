@@ -1,0 +1,59 @@
+{
+    "restDestinations": [
+        {
+            "_id": "4e6c441c-eaf9-11e5-a33b-8374b127eaa8",
+            "_class": "com.konkerlabs.platform.registry.business.model.RestDestination",
+            "tenant": {
+                "$id": "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+                "$ref": "tenants"
+            },
+            "application" : {
+              "$id" : "konker",
+              "$ref" : "applications"
+            },
+            "guid": "dda64780-eb81-11e5-958b-a73dab8b32ee",
+            "name": "a restful destination",
+            "serviceURI": "http://host/service/@{#field}",
+            "serviceUsername": "a username",
+            "servicePassword": "a password",
+            "active": true
+      },
+               {
+            "_id": "96723516-eafc-11e5-a510-4317362f7cf2",
+            "_class": "com.konkerlabs.platform.registry.business.model.RestDestination",
+            "tenant": {
+                "$id": "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+                "$ref": "tenants"
+            },
+            "application" : {
+              "$id" : "konker",
+              "$ref" : "applications"
+            },
+            "guid": "e6d8e466-eb81-11e5-8a7c-eb0c7d7c235c",
+            "name": "sjhsdf",
+            "serviceURI": "http://sdg/sdsdf",
+            "serviceUsername": "djfg",
+            "servicePassword": "djghkfjg",
+            "active": false
+      },
+        {
+            "_id": "109cd550-eafb-11e5-b610-d3af18d1439d",
+            "_class": "com.konkerlabs.platform.registry.business.model.RestDestination",
+            "tenant": {
+                "$id": "33d7cc77-91f2-4d22-ba31-e44c87963347",
+                "$ref": "tenants"
+            },
+            "application" : {
+              "$id" : "inm",
+              "$ref" : "applications"
+            },
+            "guid": "faf3391a-eb81-11e5-8c84-33e0d9a91f0c",
+            "name": "another tenant restful destination",
+            "serviceURI": "http://host-3/service-4",
+            "serviceUsername": "zdfg",
+            "servicePassword": "zdfghfgh",
+            "active": false
+      }
+
+  ]
+}

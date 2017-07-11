@@ -63,8 +63,6 @@ public class MongoTokenStore implements TokenStore, InitializingBean {
         if (accessToken != null
                 && !authenticationId.equals(authenticationKeyGenerator.extractKey(readAuthentication(accessToken.getValue())))) {
             removeAccessToken(accessToken.getValue());
-            // Keep the store consistent (maybe the same user is represented by this authentication but the details have
-            // changed)
             storeAccessToken(accessToken, authentication);
         }
 

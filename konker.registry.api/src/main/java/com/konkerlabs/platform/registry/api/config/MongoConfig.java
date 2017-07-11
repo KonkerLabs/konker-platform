@@ -23,9 +23,11 @@ import org.springframework.util.StringUtils;
 import java.util.*;
 
 @Configuration
-@EnableMongoRepositories(
-        basePackages = "com.konkerlabs.platform.registry.business.repositories"
-)
+@EnableMongoRepositories(basePackages =
+        {
+                "com.konkerlabs.platform.registry.business.repositories"
+        }
+, mongoTemplateRef = "mongoTemplate")
 @Data
 public class MongoConfig extends AbstractMongoConfiguration {
 
@@ -80,12 +82,6 @@ public class MongoConfig extends AbstractMongoConfiguration {
         return "registry";
     }
 
-
-    /*@Bean(name = "mongoDefaultTemplate")*/
-    /*public MongoTemplate mongoTemplate() throws Exception {
-        return new MongoTemplate(this.mongo(), this.getDatabaseName());
-    }
-*/
     @Override
     public Mongo mongo() throws Exception {
         if (!StringUtils.isEmpty(getUsername()) && !StringUtils.isEmpty(getPassword())) {

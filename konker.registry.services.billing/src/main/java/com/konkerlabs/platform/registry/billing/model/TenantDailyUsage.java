@@ -1,12 +1,11 @@
 package com.konkerlabs.platform.registry.billing.model;
 
-import java.time.Instant;
-
+import lombok.Builder;
+import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import lombok.Builder;
-import lombok.Data;
+import java.time.Instant;
 
 @Data
 @Builder

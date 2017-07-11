@@ -1,0 +1,44 @@
+{
+  "healthAlerts" : [
+    {
+      "_id" : "67014de6-81db-11e6-a5bc-3f99b78823c9",
+      "guid" : "7d51c242-81db-11e6-a8c2-0746f976f224",
+      "_class" : "com.konkerlabs.platform.registry.model.HealthAlert",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
+      },
+      "application" : {
+        "$id" : "smartffkonker",
+        "$ref" : "applications"
+      },
+      "description" : "NO_MESSAGE_RECEIVED",
+      "severity" : "WARN",
+      "type" : "SILENCE",
+      "registrationDate" : 1453320973747,
+      "deviceGuid" : "7d51c242-81db-11e6-a8c2-0746f010e945",
+      "triggerGuid" : "7d51c242-81db-11e6-a8c2-0746f976f666",
+      "solved" : false
+    },
+    {
+      "_id" : "67014de6-81db-11e6-a5bc-3f99b788249c",
+      "guid" : "7d51c242-81db-11e6-a8c2-0746f976f223",
+      "_class" : "com.konkerlabs.platform.registry.model.HealthAlert",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
+      },
+      "application" : {
+        "$id" : "smartffkonker",
+        "$ref" : "applications"
+      },
+      "description" : "NO_MESSAGE_RECEIVED",
+      "severity" : "FAIL",
+      "type" : "SILENCE",
+      "registrationDate" : 1453320973747,
+      "deviceGuid" : "7d51c242-81db-11e6-a8c2-0746f010e945",
+      "triggerGuid" : "7d51c242-81db-11e6-a8c2-0746f976f666",
+      "solved" : false
+    }
+  ]
+}

@@ -66,8 +66,8 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
                 .build()
                 .protocols(Sets.newHashSet(getSwaggerConfig().getString(SWAGGER_PROTOCOL)))
                 .apiInfo(apiInfo())
-                .securitySchemes(newArrayList(securitySchema()))
-                .securityContexts(newArrayList(securityContext()))
+                .securitySchemes(newArrayList(apiKey()))
+                //.securityContexts(newArrayList(securityContext()))
                 // .operationOrdering(getOperationOrdering()) try with swagger 2.7.0
                 .tags(
                         new Tag("alert triggers", "Operations to manage alert triggers"),
@@ -87,6 +87,12 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
                 .enableUrlTemplating(false);
 
     }
+
+    @Bean
+    SecurityScheme apiKey() {
+        return new ApiKey("Authorization", "Authorization", "header");
+    }
+
 
     @SuppressWarnings("unused")
     private Ordering<Operation> getOperationOrdering() {
