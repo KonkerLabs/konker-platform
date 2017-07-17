@@ -16,6 +16,7 @@
             "serviceURI": "http://host/service/@{#field}",
             "serviceUsername": "a username",
             "servicePassword": "a password",
+            "type": "FORWARD_MESSAGE",
             "active": true
       },
                {
@@ -52,6 +53,7 @@
             "serviceURI": "http://host-3/service-4",
             "serviceUsername": "zdfg",
             "servicePassword": "zdfghfgh",
+            "type": "FORWARD_MESSAGE",
             "active": false
       }
 

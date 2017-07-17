@@ -1,11 +1,14 @@
 package com.konkerlabs.platform.registry.api.web.controller;
 
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,14 +22,25 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
 import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
+import com.konkerlabs.platform.registry.api.model.DeviceHealthAlertVO;
+import com.konkerlabs.platform.registry.api.model.DeviceHealthVO;
 import com.konkerlabs.platform.registry.api.model.DeviceInputVO;
+import com.konkerlabs.platform.registry.api.model.DeviceStatsVO;
 import com.konkerlabs.platform.registry.api.model.DeviceVO;
 import com.konkerlabs.platform.registry.api.model.RestResponse;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.DeviceModel;
+import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.HealthAlert;
+import com.konkerlabs.platform.registry.business.model.Location;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.Validations;
+import com.konkerlabs.platform.registry.business.services.api.HealthAlertService;
+import com.konkerlabs.platform.registry.business.services.api.LocationSearchService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 
 import io.swagger.annotations.Api;
@@ -43,6 +57,21 @@ public class DeviceRestController extends AbstractRestController implements Init
 
     @Autowired
     private DeviceRegisterService deviceRegisterService;
+
+    @Autowired
+    private LocationSearchService locationSearchService;
+
+    @Autowired
+    private DeviceModelService deviceModelService;
+
+    @Autowired
+    private HealthAlertService healthAlertService;
+    
+    @Autowired
+    private DeviceEventService deviceEventService;
+
+    @Autowired
+    private MessageSource messageSource;
 
     private Set<String> validationsCode = new HashSet<>();
 
@@ -99,11 +128,15 @@ public class DeviceRestController extends AbstractRestController implements Init
 
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
+        Location location = getLocation(tenant, application, deviceForm);
+        DeviceModel deviceModel = getDeviceModel(tenant, application, deviceForm);
 
         Device device = Device.builder()
                 .name(deviceForm.getName())
                 .deviceId(deviceForm.getId())
                 .description(deviceForm.getDescription())
+                .location(location)
+                .deviceModel(deviceModel)
                 .active(true)
                 .build();
 
@@ -113,6 +146,37 @@ public class DeviceRestController extends AbstractRestController implements Init
             throw new BadServiceResponseException(user, deviceResponse, validationsCode);
         } else {
             return new DeviceVO().apply(deviceResponse.getResult());
+        }
+
+    }
+
+    private DeviceModel getDeviceModel(Tenant tenant, Application application, DeviceInputVO deviceForm) throws BadServiceResponseException {
+    	if (deviceForm == null || StringUtils.isBlank(deviceForm.getDeviceModelName())) {
+            return null;
+        }
+
+        ServiceResponse<DeviceModel> deviceModelResponse = deviceModelService
+        		.getByTenantApplicationAndName(tenant, application, deviceForm.getDeviceModelName());
+        if (deviceModelResponse.isOk()) {
+        	DeviceModel deviceModel = deviceModelResponse.getResult();
+            return deviceModel;
+        } else {
+            throw new BadServiceResponseException(user, deviceModelResponse, validationsCode);
+        }
+	}
+
+	private Location getLocation(Tenant tenant, Application application, DeviceInputVO deviceForm) throws BadServiceResponseException {
+
+        if (deviceForm == null || StringUtils.isBlank(deviceForm.getLocationName())) {
+            return null;
+        }
+
+        ServiceResponse<Location> locationResponse = locationSearchService.findByName(tenant, application, deviceForm.getLocationName(), false);
+        if (locationResponse.isOk()) {
+            Location location = locationResponse.getResult();
+            return location;
+        } else {
+            throw new BadServiceResponseException(user, locationResponse, validationsCode);
         }
 
     }
@@ -128,6 +192,8 @@ public class DeviceRestController extends AbstractRestController implements Init
 
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
+        Location location = getLocation(tenant, application, deviceForm);
+        DeviceModel deviceModel = getDeviceModel(tenant, application, deviceForm);
 
         Device deviceFromDB = null;
         ServiceResponse<Device> deviceResponse = deviceRegisterService.getByDeviceGuid(tenant, application, deviceGuid);
@@ -141,12 +207,14 @@ public class DeviceRestController extends AbstractRestController implements Init
         // update fields
         deviceFromDB.setName(deviceForm.getName());
         deviceFromDB.setDescription(deviceForm.getDescription());
+        deviceFromDB.setLocation(location);
+        deviceFromDB.setDeviceModel(deviceModel);
         deviceFromDB.setActive(deviceForm.isActive());
 
         ServiceResponse<Device> updateResponse = deviceRegisterService.update(tenant, application, deviceGuid, deviceFromDB);
 
         if (!updateResponse.isOk()) {
-            throw new BadServiceResponseException(user, deviceResponse, validationsCode);
+            throw new BadServiceResponseException(user, updateResponse, validationsCode);
 
         }
 
@@ -170,6 +238,99 @@ public class DeviceRestController extends AbstractRestController implements Init
             } else {
                 throw new BadServiceResponseException(user, deviceResponse, validationsCode);
             }
+        }
+
+    }
+
+    @GetMapping(path = "/{deviceGuid}/health")
+    @ApiOperation(
+            value = "Get a device health by device guid",
+            response = RestResponse.class
+    )
+    @PreAuthorize("hasAuthority('SHOW_DEVICE')")
+    public DeviceHealthVO health(
+    		@PathVariable("application") String applicationId,
+    		@PathVariable("deviceGuid") String deviceGuid) throws BadServiceResponseException, NotFoundResponseException {
+
+        Tenant tenant = user.getTenant();
+        Application application = getApplication(applicationId);
+
+        ServiceResponse<HealthAlert> deviceResponse = healthAlertService.getLastHightServerityByDeviceGuid(
+        		tenant,
+        		application,
+        		deviceGuid);
+
+        if (deviceResponse.isOk()) {
+			return new DeviceHealthVO().apply(deviceResponse.getResult());
+        } else {
+        	throw new NotFoundResponseException(user, deviceResponse);
+        }
+
+    }
+
+    @GetMapping(path = "/{deviceGuid}/health/alerts")
+    @ApiOperation(
+            value = "List all device health alerts by device guid",
+            response = RestResponse.class
+    )
+    @PreAuthorize("hasAuthority('SHOW_DEVICE')")
+    public List<DeviceHealthAlertVO> alerts(
+    		@PathVariable("application") String applicationId,
+    		@PathVariable("deviceGuid") String deviceGuid) throws BadServiceResponseException, NotFoundResponseException {
+
+        Tenant tenant = user.getTenant();
+        Application application = getApplication(applicationId);
+
+        ServiceResponse<List<HealthAlert>> deviceResponse = healthAlertService.findAllByTenantApplicationAndDeviceGuid(
+        		tenant,
+        		application,
+        		deviceGuid);
+
+        if (deviceResponse.isOk()) {
+            List<DeviceHealthAlertVO> healthAlertsVO = new LinkedList<>();
+
+            for (HealthAlert healthAlert: deviceResponse.getResult()) {
+                DeviceHealthAlertVO healthAlertVO = new DeviceHealthAlertVO();
+                healthAlertVO = healthAlertVO.apply(healthAlert);
+                healthAlertVO.setDescription(messageSource.getMessage(healthAlert.getDescription().getCode(), null, user.getLanguage().getLocale()));
+
+                healthAlertsVO.add(healthAlertVO);
+            }
+            return healthAlertsVO;
+        } else {
+        	throw new NotFoundResponseException(user, deviceResponse);
+        }
+
+    }
+    
+    @GetMapping(path = "/{deviceGuid}/stats")
+    @ApiOperation(
+            value = "Get a device stats by guid",
+            response = RestResponse.class
+    )
+    @PreAuthorize("hasAuthority('SHOW_DEVICE')")
+    public DeviceStatsVO stats(
+    		@PathVariable("application") String applicationId,
+    		@PathVariable("deviceGuid") String deviceGuid) throws BadServiceResponseException, NotFoundResponseException {
+
+        Tenant tenant = user.getTenant();
+        Application application = getApplication(applicationId);
+
+        ServiceResponse<Device> deviceResponse = deviceRegisterService.getByDeviceGuid(tenant, application, deviceGuid);
+        ServiceResponse<List<Event>> incomingResponse = deviceEventService.findIncomingBy(tenant, application, deviceGuid, null, null, null, false, 1);
+
+        if (!deviceResponse.isOk()) {
+            throw new NotFoundResponseException(user, deviceResponse);
+        } else {
+        	String lastDataReceivedDate = "";
+        	if (incomingResponse.isOk()) {
+        		List<Event> result = incomingResponse.getResult();
+        		lastDataReceivedDate = result.isEmpty() ? "" : result.get(0).getTimestamp().toString();
+        	}
+        	
+            DeviceStatsVO vo = new DeviceStatsVO().apply(deviceResponse.getResult());
+            vo.setLastDataReceivedDate(lastDataReceivedDate);
+			return vo;
         }
 
     }

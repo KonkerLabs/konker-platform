@@ -125,12 +125,18 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements Application
                 "/WEB-INF/i18n/usernotifications",
                 "/WEB-INF/i18n/users",
                 "/WEB-INF/i18n/visualization",
+                "classpath:/messages/alert-triggers",
+                "classpath:/messages/applications",
+                "classpath:/messages/device-model",
                 "classpath:/messages/devices",
+                "classpath:/messages/rest-destination",
                 "classpath:/messages/routes",
                 "classpath:/messages/transformations",
                 "classpath:/messages/rest-destination",
                 "classpath:/messages/users",
-                "classpath:/messages/applications");
+                "classpath:/messages/applications",
+                "classpath:/messages/device-model",
+                "classpath:/messages/health-alert");
         messageSource.setDefaultEncoding("UTF-8");
         return messageSource;
     }

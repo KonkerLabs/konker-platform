@@ -49,16 +49,20 @@ import org.springframework.util.MultiValueMap;
 
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.DeviceModel;
 import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
+import com.konkerlabs.platform.registry.business.model.Location;
 import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.Transformation;
 import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
+import com.konkerlabs.platform.registry.business.services.api.LocationSearchService;
 import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
@@ -95,6 +99,10 @@ public class EventRouteControllerTest extends WebLayerTestContext {
     @Autowired
     private RestDestinationService restDestinationService;
     @Autowired
+    private DeviceModelService deviceModelService;
+    @Autowired
+    private LocationSearchService locationSearchService;
+    @Autowired
     private ApplicationService applicationService;
     @Autowired
     private ApplicationContext applicationContext;
@@ -123,7 +131,6 @@ public class EventRouteControllerTest extends WebLayerTestContext {
                 ServiceResponseBuilder.<List<Transformation>>ok()
                         .withResult(transformations).build()
         );
-
         List<Device> devices = new ArrayList<>();
         when(deviceRegisterService.findAll(tenant, application)).thenReturn(
                 ServiceResponseBuilder.<List<Device>>ok()
@@ -134,6 +141,16 @@ public class EventRouteControllerTest extends WebLayerTestContext {
                 ServiceResponseBuilder.<List<RestDestination>>ok()
                         .withResult(restDestinations).build()
         );
+        List<DeviceModel> deviceModels = new ArrayList<>();
+        when(deviceModelService.findAll(tenant, application)).thenReturn(
+                ServiceResponseBuilder.<List<DeviceModel>>ok()
+                        .withResult(deviceModels).build()
+        );
+        List<Location> locations = new ArrayList<>();
+        when(locationSearchService.findAll(tenant, application)).thenReturn(
+                ServiceResponseBuilder.<List<Location>>ok()
+                        .withResult(locations).build()
+        );
 
         incomingDevice = builder().deviceId("0000000000000004").build();
         outgoingDevice = builder().deviceId("0000000000000005").build();
@@ -141,6 +158,7 @@ public class EventRouteControllerTest extends WebLayerTestContext {
         routeForm = new EventRouteForm();
         routeForm.setName("Route name");
         routeForm.setDescription("Route description");
+        routeForm.setApplicationName("konker");
         routeForm.getIncoming().setAuthorityId(incomingDevice.getDeviceId());
         routeForm.getIncoming().getAuthorityData().put("channel","command");
         routeForm.setOutgoingScheme("device");
@@ -167,7 +185,7 @@ public class EventRouteControllerTest extends WebLayerTestContext {
         URIDealer deviceURI = new URIDealer() {
             @Override
             public String getUriScheme() {
-                return EventRouteForm.URI_SCHEME;
+                return Device.URI_SCHEME;
             }
 
             @Override
@@ -274,29 +292,46 @@ public class EventRouteControllerTest extends WebLayerTestContext {
     @Test
     @WithMockUser(authorities={"CREATE_DEVICE_ROUTE"})
     public void shouldShowCreationForm() throws Exception {
+        EventRouteForm routeForm = new EventRouteForm();
+        routeForm.setApplicationName("konker");
+
         getMockMvc().perform(get("/routes/new"))
                 .andExpect(view().name("routes/form"))
-                .andExpect(model().attribute("route", new EventRouteForm()))
+                .andExpect(model().attribute("route", routeForm))
                 .andExpect(model().attribute("action", format("/routes/{0}/save", application.getName())));
     }
 
     @Test
+    public void shouldRenderDeviceIncomingViewFragment() throws Exception {
+        getMockMvc().perform(get("/routes/{0}/incoming/{1}", application.getName(), "device"))
+                .andExpect(view().name("routes/device-incoming"))
+                .andExpect(model().attribute("route", new EventRouteForm()));
+    }
+
+    @Test
+    public void shouldRenderModelLocationIncomingViewFragment() throws Exception {
+        getMockMvc().perform(get("/routes/{0}/incoming/{1}", application.getName(), "modelLocation"))
+                .andExpect(view().name("routes/model-location-incoming"))
+                .andExpect(model().attribute("route", new EventRouteForm()));
+    }
+
+    @Test
     public void shouldRenderDeviceOutgoingViewFragment() throws Exception {
-        getMockMvc().perform(get("/routes/outgoing/{0}", "device"))
+        getMockMvc().perform(get("/routes/{0}/outgoing/{1}", application.getName(), "device"))
                 .andExpect(view().name("routes/device-outgoing"))
                 .andExpect(model().attribute("route", new EventRouteForm()));
     }
 
     @Test
     public void shouldRenderRestDestinationsViewFragment() throws Exception {
-        getMockMvc().perform(get("/routes/outgoing/{0}", "rest"))
+        getMockMvc().perform(get("/routes/{0}/outgoing/{1}", application.getName(), "rest"))
                 .andExpect(view().name("routes/rest-outgoing"))
                 .andExpect(model().attribute("route", new EventRouteForm()));
     }
 
     @Test
     public void shouldRenderEmptyBodyWhenSchemeIsUnknown() throws Exception {
-        getMockMvc().perform(get("/routes/outgoing/{0}", "unknown_scheme"))
+        getMockMvc().perform(get("/routes/{0}/outgoing/{1}", application.getName(), "unknown_scheme"))
                 .andExpect(view().name("common/empty"));
     }
 
@@ -346,6 +381,7 @@ public class EventRouteControllerTest extends WebLayerTestContext {
     @WithMockUser(authorities={"EDIT_DEVICE_ROUTE"})
     public void shouldShowEditForm() throws Exception {
         routeForm.setAdditionalSupplier(null);
+        routeForm.setApplicationName(null);
 
         when(eventRouteService.getByGUID(tenant, application, routeGuid)).thenReturn(
                 ServiceResponseBuilder.<EventRoute>ok().withResult(newRoute).build());
@@ -406,6 +442,7 @@ public class EventRouteControllerTest extends WebLayerTestContext {
     @WithMockUser(authorities={"SHOW_DEVICE_ROUTE"})
     public void shouldShowRouteDetails() throws Exception {
         routeForm.setAdditionalSupplier(null);
+        routeForm.setApplicationName(null);
 
         routeForm.setId(routeGuid);
         newRoute.setId(routeGuid);
@@ -481,6 +518,16 @@ public class EventRouteControllerTest extends WebLayerTestContext {
         @Bean
         public DeviceRegisterService deviceRegisterService() {
             return mock(DeviceRegisterService.class);
+        }
+
+        @Bean
+        public DeviceModelService deviceModelService() {
+            return mock(DeviceModelService.class);
+        }
+
+        @Bean
+        public LocationSearchService locationSearchService() {
+            return mock(LocationSearchService.class);
         }
 
         @Bean

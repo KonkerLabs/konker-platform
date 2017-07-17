@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.web.controllers;
 
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.konkerlabs.platform.registry.billing.model.TenantDailyUsage;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
@@ -69,9 +71,11 @@ public class UserController implements ApplicationContextAware {
     public UserController(UserService userService, User user) {
         this.user = user;
     }
-
+    
     @RequestMapping(value = "", method = RequestMethod.GET)
     public ModelAndView userPage(HttpServletRequest request, HttpServletResponse response, Locale locale) {
+    	ServiceResponse<List<TenantDailyUsage>> serviceResponse = tenantService.findTenantDailyUsage(user.getTenant());
+    	List<TenantDailyUsage> usages = serviceResponse.getResult();
 
         ModelAndView mv = new ModelAndView("users/form")
                 .addObject("user", new UserForm().fillFrom(user))
@@ -79,7 +83,8 @@ public class UserController implements ApplicationContextAware {
                 .addObject("dateformats", DateFormat.values())
                 .addObject("languages", Language.values())
                 .addObject("timezones", TimeZone.values())
-                .addObject("loglevels", LogLevel.values());
+                .addObject("loglevels", LogLevel.values())
+                .addObject("usedSpace", formatSize(usages.stream().mapToInt(u -> u.getIncomingPayloadSize() + u.getOutgoingPayloadSize()).sum()));
 
         return mv;
     }
@@ -120,6 +125,16 @@ public class UserController implements ApplicationContextAware {
 				.getMessage(Messages.USER_UPDATED_SUCCESSFULLY.getCode(), null, locale));
 
 		return new ModelAndView("redirect:/me");
+	}
+	
+	private String formatSize(Integer size) {
+		if (size.equals(0))
+			return "0 B";
+		
+		final String[] units = new String[] { "B", "kB", "MB", "GB", "TB" };
+		
+		int digitGroups = (int) (Math.log10(size)/Math.log10(1024));
+		return new DecimalFormat("#,##0.#").format(size/Math.pow(1024, digitGroups)) + " " + units[digitGroups];
 	}
 
 	private ModelAndView redirectErrorMessages(RedirectAttributes redirectAttributes, Locale locale,

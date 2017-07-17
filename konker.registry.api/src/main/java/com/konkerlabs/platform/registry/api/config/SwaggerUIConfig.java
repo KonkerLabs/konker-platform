@@ -11,6 +11,7 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 import com.google.common.collect.Ordering;
+import com.google.common.collect.Sets;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
@@ -38,6 +39,9 @@ import static com.google.common.collect.Lists.newArrayList;
 @EnableSwagger2
 public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
 
+    private static final String SWAGGER_HOSTNAME = "swagger.hostname";
+    private static final String SWAGGER_PROTOCOL = "swagger.protocol";
+
     private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
     public static final String securitySchemaOAuth2 = "oauth2schema";
@@ -46,30 +50,40 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("swagger-ui.html").addResourceLocations("classpath:/META-INF/resources/");
+        registry.addResourceHandler("swagger-ui.html").addResourceLocations("classpath:/static/");
         registry.addResourceHandler("/webjars/**").addResourceLocations("classpath:/META-INF/resources/webjars/");
         registry.addResourceHandler("/static/**").addResourceLocations("classpath:/static/");
     }
 
     @Bean
     public Docket api() {
+
         return new Docket(DocumentationType.SWAGGER_2)
+                .groupName("default")
                 .select()
                 .apis(RequestHandlerSelectors.withClassAnnotation(RestController.class))
                 .paths(PathSelectors.any())
                 .build()
+                .protocols(Sets.newHashSet(getSwaggerConfig().getString(SWAGGER_PROTOCOL)))
                 .apiInfo(apiInfo())
                 .securitySchemes(newArrayList(securitySchema()))
                 .securityContexts(newArrayList(securityContext()))
                 // .operationOrdering(getOperationOrdering()) try with swagger 2.7.0
-                .tags(new Tag("devices", "Operations to list and edit devices"),
-                        new Tag("device credentials", "Operations to manage device credentials (username, password and URLs)"),
-                        new Tag("routes", "Operations to list and edit routes"),
-                        new Tag("users", "Operations to list and edit organization users"),
-                        new Tag("events", "Operations to query incoming and outgoing device events"),
+                .tags(
+                        new Tag("alert triggers", "Operations to manage alert triggers"),
                         new Tag("applications", "Operations to list organization applications"),
+                        new Tag("device configs", "Operations to manage device configurations"),
+                        new Tag("device credentials", "Operations to manage device credentials (username, password and URLs)"),
+                        new Tag("device models", "Operations to manage device models"),
+                        new Tag("devices", "Operations to manage devices"),
+                        new Tag("devices custom data", "Operations to manage devices custom data"),
+                        new Tag("events", "Operations to query incoming and outgoing device events"),
+                        new Tag("locations", "Operations to manage locations"),
                         new Tag("rest destinations", "Operations to list organization REST destinations"),
-                        new Tag("rest transformations", "Operations to manage REST transformations"))
+                        new Tag("rest transformations", "Operations to manage REST transformations"),
+                        new Tag("routes", "Operations tomanage routes"),
+                        new Tag("users", "Operations to manage organization users")
+                     )
                 .enableUrlTemplating(false);
 
     }
@@ -120,24 +134,15 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
 
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
-                .title("Konker Platform API")
-                .description(getDescription())
-                .termsOfServiceUrl("https://demo.konkerlabs.net/registry/resources/konker/pdf/termos_de_uso_20161014a-9d089e3f67c4b4ab9c83c0a0313158ef.pdf")
-                .contact(new Contact(null, null, "support@konkerlabs.com"))
-                .license("Apache 2.0")
-                .licenseUrl("http://www.apache.org/licenses/LICENSE-2.0")
                 .version("v1")
                 .build();
     }
 
-    private String getDescription() {
+    @SuppressWarnings("unused")
+    private String getDescription(String filename) {
 
-        Map<String, Object> defaultMap = new HashMap<>();
-        defaultMap.put("swagger.hostname", "localhost:8080");
-        Config defaultConf = ConfigFactory.parseMap(defaultMap);
-
-        Config config = ConfigFactory.load().withFallback(defaultConf);
-        String hostname = config.getString("swagger.hostname");
+        Config config = getSwaggerConfig();
+        String hostname = config.getString(SWAGGER_HOSTNAME);
 
         try {
             InputStream is = new ClassPathResource("description.md").getInputStream();
@@ -162,6 +167,16 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
             return "";
         }
 
+    }
+
+    private Config getSwaggerConfig() {
+        Map<String, Object> defaultMap = new HashMap<>();
+        defaultMap.put(SWAGGER_HOSTNAME, "localhost:8080");
+        defaultMap.put(SWAGGER_PROTOCOL, "http");
+        Config defaultConf = ConfigFactory.parseMap(defaultMap);
+
+        Config config = ConfigFactory.load().withFallback(defaultConf);
+        return config;
     }
 
 }

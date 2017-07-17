@@ -35,6 +35,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -172,9 +173,12 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
     public void shouldReturnResponseMessagesIfRecordIsInvalid() throws Exception {
-        Map<String, Object[]> errorMessages = new HashMap() {{
-            put("some.error", new Object[]{"some_value"});
-        }};
+        Map<String, Object[]> errorMessages = new HashMap<String, Object[]>() {
+            private static final long serialVersionUID = 6888355713114248747L;
+            {
+                put("some.error", new Object[]{"some_value"});
+            }
+        };
         when(device.applyValidations()).thenReturn(Optional.of(errorMessages));
 
         ServiceResponse<Device> response = deviceRegisterService.register(currentTenant, currentApplication, device);
@@ -187,13 +191,27 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     public void shouldReturnResponseMessageIfDeviceIdAlreadyInUse() throws Exception {
         device.setDeviceId(DEVICE_ID_IN_USE);
 
-        Map<String, Object[]> errorMessages = new HashMap() {{
-            put(DeviceRegisterService.Validations.DEVICE_ID_ALREADY_REGISTERED.getCode(), null);
-        }};
+        Map<String, Object[]> errorMessages = new HashMap<String, Object[]>() {
+            private static final long serialVersionUID = -8293081311357160161L;
+            {
+                put(DeviceRegisterService.Validations.DEVICE_ID_ALREADY_REGISTERED.getCode(), null);
+            }
+        };
 
         ServiceResponse<Device> response = deviceRegisterService.register(currentTenant, currentApplication, device);
 
         assertThat(response, hasAllErrors(errorMessages));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
+    public void shouldReturnResponseMessageIfDeviceLimitExceeded() throws Exception {
+    	currentTenant.setDevicesLimit(2l);
+
+    	Map<String, Object[]> errorMessages = Collections.singletonMap(DeviceRegisterService.Validations.DEVICE_TENANT_LIMIT.getCode(), null);
+    	ServiceResponse<Device> response = deviceRegisterService.register(currentTenant, currentApplication, device);
+
+    	assertThat(response, hasAllErrors(errorMessages));
     }
 
     @Test
@@ -240,6 +258,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 		response = deviceRegisterService.register(currentTenant, currentApplication, rawDevice);
 
 		assertThat(response, isResponseOk());
+		assertThat(response.getResult().getLocation().getName(), is("default"));
 
 		saved = deviceRepository.findByTenantIdAndDeviceId(currentTenant.getId(), device.getDeviceId());
 
@@ -273,6 +292,23 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         all = response.getResult();
         assertThat(all, notNullValue());
         assertThat(all, hasSize(2));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
+    public void shouldReturnCountRegisteredDevicesWithinATenant() throws Exception {
+        ServiceResponse<Long> response = deviceRegisterService.countAll(emptyTenant, currentApplication);
+        assertThat(response, isResponseOk());
+        Long all = response.getResult();
+
+        assertThat(all, notNullValue());
+        assertThat(all, is(0L));
+
+        response = deviceRegisterService.countAll(currentTenant, currentApplication);
+        assertThat(response, isResponseOk());
+        all = response.getResult();
+        assertThat(all, notNullValue());
+        assertThat(all, is(2L));
     }
 
 
@@ -342,9 +378,12 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     public void shouldReturnResponseErrorMessageIfDeviceNotExists() throws Exception {
         device.setGuid(ANOTHER_DEVICE_GUID);
 
-        Map<String, Object[]> errorMessages = new HashMap() {{
-            put(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode(), null);
-        }};
+        Map<String, Object[]> errorMessages = new HashMap<String, Object[]>() {
+            private static final long serialVersionUID = -4314418911800720742L;
+            {
+                put(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode(), null);
+            }
+        };
 
         ServiceResponse<Device> response = deviceRegisterService.update(currentTenant, currentApplication, ANOTHER_DEVICE_GUID, device);
 

@@ -44,14 +44,14 @@ import com.konkerlabs.platform.registry.data.services.api.DeviceLogEventService;
 import com.konkerlabs.platform.registry.data.services.routes.api.EventRouteExecutor;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
 import com.konkerlabs.platform.registry.test.data.base.BusinessTestConfiguration;
-import com.konkerlabs.platform.registry.test.data.base.IntegrationLayerTestContext;
+import com.konkerlabs.platform.registry.test.data.base.IntegrationTestConfiguration;
 import com.konkerlabs.platform.registry.test.data.base.MongoTestConfiguration;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
         MongoTestConfiguration.class,
         BusinessTestConfiguration.class,
-        IntegrationLayerTestContext.class,
+        IntegrationTestConfiguration.class,
         DeviceEventProcessorTest.BusinessLayerConfiguration.class,
         RedisConfig.class,
         EventStorageConfig.class
@@ -190,20 +190,23 @@ public class DeviceEventProcessorTest {
 
         subject.process(sourceApiKey, incomingChannel, originalPayload);
 
-        verify(eventRouteExecutor, never()).execute(any(Event.class), any(URI.class));
+        verify(eventRouteExecutor, never()).execute(any(Event.class), any(Device.class));
     }
 
     @Test
     public void shouldFireRouteExecution() throws Exception {
+        Instant timestamp = Instant.now();
+        event.setTimestamp(timestamp);
+
         when(deviceRegisterService.findByApiKey(sourceApiKey)).thenReturn(device);
 
         when(deviceLogEventService.logIncomingEvent(eq(device), eq(event))).thenReturn(
                 ServiceResponseBuilder.<Event>ok().withResult(event).build()
         );
 
-        subject.process(sourceApiKey, incomingChannel, originalPayload);
+        subject.process(sourceApiKey, incomingChannel, originalPayload, timestamp);
 
-        verify(eventRouteExecutor, times(1)).execute(any(Event.class), any(URI.class));
+        verify(eventRouteExecutor, times(1)).execute(any(Event.class), any(Device.class));
         verify(deviceLogEventService, times(1)).logIncomingEvent(any(Device.class), any(Event.class));
     }
 

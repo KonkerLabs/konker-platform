@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html data-layout-decorate="layouts/default">
+<html data-layout-decorate="layouts/default" xmlns:th="http://www.thymeleaf.org">
 <head>
 </head>
 <body>
@@ -36,29 +36,30 @@
             </div>
         </div>
         <div class="form-group">
-            <label class="col-sm-1 control-label"
-                   data-th-text="#{routes.show.incoming.device}"
-                   for="incomingAuthority"></label>
+            <label class="col-sm-1 radio control-label"
+                   data-th-text="#{routes.form.incoming.type}"></label>
             <div class="col-sm-4">
-                <select class="form-control col-md-12" data-th-field="${route.incoming.authorityId}"
-                        id="incomingAuthority" name="incomingAuthority">
-                    <option data-th-each="device : ${allDevices}"
-                            data-th-value="${device.guid}"
-                            data-th-text="${device.deviceId + ' - ' + device.name}"></option>
-                </select>
+                <label class="radio-inline">
+                    <input type="radio" name="incomingScheme"
+                           data-th-text="#{routes.form.incoming.type.device}"
+                           value="device" data-th-checked="${route.incomingScheme == 'device'}"></input>
+                </label>
+                <label class="radio-inline">
+                    <input type="radio" name="incomingScheme"
+                           data-th-text="#{routes.form.incoming.type.model_location}"
+                           value="modelLocation" data-th-checked="${route.incomingScheme == 'modelLocation'}"></input>
+                </label>
             </div>
         </div>
-        <div class="form-group">
-            <label class="col-sm-1 control-label"
-                   data-th-text="#{routes.show.incoming.channel}"
-                   for="incomingChannel"></label>
-            <div class="col-sm-4">
-                <input type="text" data-th-value="${route.incoming.authorityData['channel']}"
-                       class="form-control"
-                       id="incomingChannel"
-                       name="incomingChannel"/>
-            </div>
+        <div id="incomingFragment">
+            <th:block data-th-include="routes/device-incoming :: incoming"
+                      data-th-if="${route.incomingScheme == 'device'}">
+            </th:block>
+            <th:block data-th-include="routes/model-location-incoming :: incoming"
+                      data-th-if="${route.incomingScheme == 'modelLocation'}">
+            </th:block>
         </div>
+
         <div class="form-group">
             <label class="col-sm-1 radio control-label"
                    data-th-text="#{routes.show.outgoing.type}"></label>

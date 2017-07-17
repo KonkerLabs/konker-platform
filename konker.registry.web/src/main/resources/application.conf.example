@@ -2,7 +2,7 @@ mqtt {
   subcribe {
     uris = [ "tcp://dev-server:1883" ]
     # yes, we subscribe to a topic named pub. "pub" is from the device perspective
-    topics = [ "pub/+/+" ]
+    topics = [ "pub/+/+", "data/+/pub/+" ]
     username = "user"
     password = "pass"
   }
@@ -19,6 +19,11 @@ mongo {
 }
 
 mongoAudit {
+  hostname = "localhost"
+  port = 27017
+}
+
+mongoBilling {
   hostname = "localhost"
   port = 27017
 }

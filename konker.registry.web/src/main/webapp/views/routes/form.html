@@ -19,6 +19,7 @@
         <form data-th-action="@{__${action}__}" action="#" data-th-object="${route}"
               method="post" class="form-horizontal" autocomplete="off">
             <input type="hidden" name="_method" data-th-value="${method}" data-th-if="${method != null}"/>
+            <input type="hidden" id="applicationName" data-th-value="*{applicationName}" />
             <div class="form-group">
                 <label class="col-sm-1 control-label"
                        data-th-text="#{routes.form.name}"
@@ -42,30 +43,28 @@
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-sm-1 control-label"
-                       data-th-text="#{routes.form.incoming.device}"
-                       for="incomingAuthority"></label>
+                <label class="col-sm-1 radio control-label"
+                       data-th-text="#{routes.form.incoming.type}"></label>
                 <div class="col-sm-4">
-                    <select
-                        class="form-control col-md-12"
-                        data-th-field="*{incoming.authorityId}"
-                        id="incomingAuthority" name="incomingAuthority">
-                        <option data-th-each="device : ${allDevices}"
-                                data-th-value="${device.guid}"
-                                data-th-text="${device.deviceId + ' - ' + device.name}"></option>
-                    </select>
+                    <label class="radio-inline">
+                        <input type="radio" name="incomingScheme"
+                               data-th-text="#{routes.form.incoming.type.device}"
+                               value="device" data-th-checked="*{incomingScheme == 'device'}"></input>
+                    </label>
+                    <label class="radio-inline">
+                        <input type="radio" name="incomingScheme"
+                               data-th-text="#{routes.form.incoming.type.model_location}"
+                               value="modelLocation" data-th-checked="*{incomingScheme == 'modelLocation'}"></input>
+                    </label>
                 </div>
             </div>
-            <div class="form-group">
-                <label class="col-sm-1 control-label"
-                       data-th-text="#{routes.form.incoming.channel}"
-                       for="incomingChannel"></label>
-                <div class="col-sm-4">
-                    <input type="text" data-th-field="*{incoming.authorityData['channel']}"
-                           class="form-control"
-                           id="incomingChannel"
-                           name="incomingChannel" data-th-placeholder="#{routes.form.incoming.channel.placeholder}"/>
-                </div>
+            <div id="incomingFragment">
+                <th:block data-th-include="routes/device-incoming :: incoming"
+                          data-th-if="*{incomingScheme == 'device'}">
+                </th:block>
+                <th:block data-th-include="routes/model-location-incoming :: incoming"
+                          data-th-if="*{incomingScheme == 'modelLocation'}">
+                </th:block>
             </div>
             <div class="form-group">
                 <label class="col-sm-1 radio control-label"
@@ -84,12 +83,12 @@
                 </div>
             </div>
             <div id="outgoingFragment">
-                <data-th-block data-th-include="routes/device-outgoing :: outgoing"
-                               data-th-if="*{outgoingScheme == 'device'}">
-                </data-th-block>
-                <data-th-block data-th-include="routes/rest-outgoing :: outgoing"
-                               data-th-if="*{outgoingScheme == 'rest'}">
-                </data-th-block>
+                <th:block data-th-include="routes/device-outgoing :: outgoing"
+                          data-th-if="*{outgoingScheme == 'device'}">
+                </th:block>
+                <th:block data-th-include="routes/rest-outgoing :: outgoing"
+                          data-th-if="*{outgoingScheme == 'rest'}">
+                </th:block>
             </div>
             <div class="form-group">
                 <label class="col-sm-1 control-label"

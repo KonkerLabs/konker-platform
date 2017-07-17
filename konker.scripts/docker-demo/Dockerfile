@@ -63,6 +63,11 @@ RUN set -xe \
 #nginx
 RUN yum install -y nginx
 
+#rabbit
+RUN wget https://www.rabbitmq.com/releases/rabbitmq-server/v3.6.10/rabbitmq-server-3.6.10-1.el7.noarch.rpm
+RUN rpm --import https://www.rabbitmq.com/rabbitmq-release-signing-key.asc
+RUN yum install -y rabbitmq-server-3.6.10-1.el7.noarch.rpm
+
 ### KONKER RESOURCES
 
 #MONGO
@@ -70,7 +75,6 @@ RUN mkdir /etc/mongo
 COPY build/mongodb/mongod.conf /etc/default/
 COPY build/mongodb/sleepstart.sh /etc/mongo/
 RUN chmod +x /etc/mongo/sleepstart.sh
-
 
 #ENTRYPONT
 COPY docker-entrypoint.sh /
@@ -95,9 +99,11 @@ COPY build/jetty/logback.xml /var/lib/jetty/resources/
 COPY build/jetty/mail /var/lib/jetty/webapps/resources/mail/
 COPY build/jetty/mail /var/lib/jetty/resources/mail/
 
-#registry data
+#konkers modules
 RUN  mkdir /var/lib/konker
+RUN  mkdir /var/log/konker
 COPY build/konker/registry-data.jar /var/lib/konker/
+COPY build/konker/mosquitto-rabbitmq-bridge.jar /var/lib/konker/
 
 #usage statistics feature
 RUN pip install requests

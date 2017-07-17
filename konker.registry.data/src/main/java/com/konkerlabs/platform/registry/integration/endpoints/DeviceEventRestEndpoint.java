@@ -1,9 +1,37 @@
 package com.konkerlabs.platform.registry.integration.endpoints;
 
+import java.time.Instant;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.regex.Pattern;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.async.DeferredResult;
+
 import com.fasterxml.jackson.annotation.JsonView;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.services.api.DeviceConfigSetupService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
@@ -13,27 +41,9 @@ import com.konkerlabs.platform.registry.integration.processors.DeviceEventProces
 import com.konkerlabs.platform.registry.integration.serializers.EventJsonView;
 import com.konkerlabs.platform.registry.integration.serializers.EventVO;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
+
 import lombok.Builder;
 import lombok.Data;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.async.DeferredResult;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.time.Instant;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.regex.Pattern;
 
 @RestController
 public class DeviceEventRestEndpoint {
@@ -64,6 +74,7 @@ public class DeviceEventRestEndpoint {
     private DeviceRegisterService deviceRegisterService;
     private Executor executor;
     private JedisTaskService jedisTaskService;
+    private DeviceConfigSetupService deviceConfigSetupService;
 
     @Autowired
     public DeviceEventRestEndpoint(ApplicationContext applicationContext,
@@ -72,7 +83,8 @@ public class DeviceEventRestEndpoint {
                                    DeviceEventService deviceEventService,
                                    DeviceRegisterService deviceRegisterService,
                                    Executor executor,
-                                   JedisTaskService jedisTaskService) {
+                                   JedisTaskService jedisTaskService,
+                                   DeviceConfigSetupService deviceConfigSetupService) {
         this.applicationContext = applicationContext;
         this.deviceEventProcessor = deviceEventProcessor;
         this.jsonParsingService = jsonParsingService;
@@ -80,6 +92,7 @@ public class DeviceEventRestEndpoint {
         this.deviceRegisterService = deviceRegisterService;
         this.executor = executor;
         this.jedisTaskService = jedisTaskService;
+        this.deviceConfigSetupService = deviceConfigSetupService;
     }
 
     @RequestMapping(
@@ -181,6 +194,48 @@ public class DeviceEventRestEndpoint {
         		EventResponse.builder().code(String.valueOf(HttpStatus.OK.value()))
         		.message(HttpStatus.OK.name()).build(),
         		HttpStatus.OK);
+    }
+
+    @RequestMapping(
+            value = { "cfg/{apiKey}" },
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity<EventResponse> configEvent(HttpServletRequest servletRequest,
+                                                 @PathVariable("apiKey") String apiKey,
+                                                 @AuthenticationPrincipal Device principal,
+                                                 Locale locale) {
+    	Device device = deviceRegisterService.findByApiKey(apiKey);
+
+    	if (!principal.getApiKey().equals(apiKey)) {
+            return new ResponseEntity<EventResponse>(
+            			EventResponse.builder().code(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+            		.message(applicationContext.getMessage(Messages.INVALID_RESOURCE.getCode(), null, locale)).build(),
+            		HttpStatus.BAD_REQUEST);
+    	}
+
+    	if (!Optional.ofNullable(device).isPresent()) {
+    		return new ResponseEntity<EventResponse>(
+        			EventResponse.builder().code(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+        		.message(applicationContext.getMessage(Messages.DEVICE_NOT_FOUND.getCode(), null, locale)).build(),
+        		HttpStatus.BAD_REQUEST);
+    	}
+
+    	ServiceResponse<String> serviceResponse = deviceConfigSetupService
+    			.findByModelAndLocation(device.getTenant(), device.getApplication(), device.getDeviceModel(), device.getLocation());
+
+    	if (serviceResponse.isOk()) {
+    		return new ResponseEntity<EventResponse>(
+            		EventResponse.builder().code(String.valueOf(HttpStatus.OK.value()))
+            		.message(serviceResponse.getResult()).build(),
+            		HttpStatus.OK);
+    	} else {
+    		return new ResponseEntity<EventResponse>(
+            		EventResponse.builder().code(String.valueOf(HttpStatus.NOT_FOUND.value()))
+            		.message("{ }")
+            		.build(),
+            		HttpStatus.NOT_FOUND);
+    	}
     }
 
     @Data

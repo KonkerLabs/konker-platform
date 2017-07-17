@@ -1,9 +1,8 @@
 package com.konkerlabs.platform.registry.test.integration.gateways;
 
-import com.konkerlabs.platform.registry.data.config.IntegrationConfig;
 import com.konkerlabs.platform.registry.integration.exceptions.IntegrationException;
 import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
-import com.konkerlabs.platform.registry.test.data.base.IntegrationLayerTestContext;
+import com.konkerlabs.platform.registry.test.data.base.IntegrationTestConfiguration;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -30,8 +29,7 @@ import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
-    IntegrationLayerTestContext.class,
-    IntegrationConfig.class
+        IntegrationTestConfiguration.class
 })
 public class HttpGatewayTest {
 
@@ -133,7 +131,7 @@ public class HttpGatewayTest {
 
         assertThat(headers.get(HttpGateway.KONKER_VERSION_HEADER), notNullValue());
     }
-    
+
     @Test
     public void shouldIncludeAuhtorizationHeaderWithEmptyUser() throws IntegrationException {
         when(restTemplate.exchange(eq(uri), eq(HttpMethod.GET), httpEntityCaptor.capture(),
@@ -241,4 +239,5 @@ public class HttpGatewayTest {
 
         httpGateway.request(method, headers, uri, mediaType, null, USERNAME, PASSWORD);
     }
+
 }

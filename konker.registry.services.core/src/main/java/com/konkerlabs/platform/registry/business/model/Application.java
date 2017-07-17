@@ -69,7 +69,7 @@ public class Application implements URIDealer {
 	}
 
 	public Optional<Map<String, Object[]>> applyValidations() {
-		Pattern regex = Pattern.compile("[$&+,:;=?@#|'<>.-^*()%!\\s{2,}]");
+		Pattern regex = Pattern.compile("[^a-zA-Z0-9{2,}]");
 
 		Map<String, Object[]> validations = new HashMap<>();
 
@@ -82,7 +82,5 @@ public class Application implements URIDealer {
 
 		return Optional.of(validations).filter(map -> !map.isEmpty());
 	}
-
-
 
 }

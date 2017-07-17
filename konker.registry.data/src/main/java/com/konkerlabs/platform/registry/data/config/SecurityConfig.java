@@ -92,7 +92,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .addFilter(filter)
                     .addFilterAfter(paramsAuthFilter, BasicAuthenticationFilter.class)
                     .requestMatchers()
-                    .antMatchers("/pub/**", "/sub/**")
+                    .antMatchers("/pub/**", "/sub/**", "/cfg/**")
                 .and()
                     .authorizeRequests()
                     .anyRequest()

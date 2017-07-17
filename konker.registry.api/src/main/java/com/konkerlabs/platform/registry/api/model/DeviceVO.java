@@ -8,10 +8,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Transient;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 
 @Data
@@ -32,6 +28,8 @@ public class DeviceVO extends DeviceInputVO
         vo.setGuid(t.getGuid());
         vo.setName(t.getName());
         vo.setDescription(t.getDescription());
+        vo.setLocationName(t.getLocation() != null ? t.getLocation().getName() : null);
+        vo.setDeviceModelName(t.getDeviceModel() != null ? t.getDeviceModel().getName() : null);
         vo.setActive(t.isActive());
         vo.setId(t.getDeviceId());
         return vo;

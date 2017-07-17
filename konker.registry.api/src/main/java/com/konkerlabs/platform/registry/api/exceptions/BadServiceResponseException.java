@@ -18,10 +18,13 @@ public class BadServiceResponseException extends Exception {
     private Locale locale;
 
     public BadServiceResponseException(User user, ServiceResponse<?> serviceResponse, Set<String> validationsCode) {
+        this(user, serviceResponse != null ? serviceResponse.getResponseMessages() : null, validationsCode);
+    }
 
-        if (serviceResponse != null && validationsCode != null &&
-                serviceResponse.getResponseMessages() != null) {
-            for (String key : serviceResponse.getResponseMessages().keySet()) {
+    public BadServiceResponseException(User user, Map<String, Object[]> responseMessages, Set<String> validationsCode) {
+
+        if (responseMessages != null && validationsCode != null) {
+            for (String key : responseMessages.keySet()) {
                 if (validationsCode.contains(key)) {
                     validationsError = true;
                     break;
@@ -29,7 +32,7 @@ public class BadServiceResponseException extends Exception {
             }
         }
 
-        this.responseMessages = serviceResponse != null ? serviceResponse.getResponseMessages() : null;
+        this.responseMessages = responseMessages;
         this.locale = user.getLanguage().getLocale();
 
     }

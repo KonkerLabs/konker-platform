@@ -35,7 +35,7 @@ public class EventsCassandraToMongoService {
     @Autowired
     private EventRepositoryCassandraImpl cassandraEventsRepository;
 
-    public void migrate(String tenantDomainFilter, Instant startInstant) throws BusinessException {
+    public void migrate(String tenantDomainFilter, Instant startInstant, Instant endInstant) throws BusinessException {
 
         LOGGER.info("Starting...");
 
@@ -47,7 +47,7 @@ public class EventsCassandraToMongoService {
 
         for (Tenant tenant : tenants) {
             if (filterPattern.matcher(tenant.getDomainName()).matches()) {
-                process(tenant, startInstant);
+                process(tenant, startInstant, endInstant);
                 count++;
             }
         }
@@ -56,39 +56,45 @@ public class EventsCassandraToMongoService {
 
     }
 
-    private void process(Tenant tenant, Instant startInstant) throws BusinessException {
+    private void process(Tenant tenant, Instant startInstant, Instant endInstant) throws BusinessException {
 
         List<Application> applications = applicationRepository.findAllByTenant(tenant.getId());
         for (Application application : applications) {
-            process(tenant, application, startInstant);
+            process(tenant, application, startInstant, endInstant);
         }
 
     }
 
-    private void process(Tenant tenant, Application application, Instant startInstant) throws BusinessException {
+    private void process(Tenant tenant, Application application, Instant startInstant, Instant endInstant) throws BusinessException {
 
         String deviceGuid = null;
         String channel = null;
-        Instant endInstant = null;
         boolean ascending = false;
         Integer limit = null;
 
         LOGGER.info("Tenant {} Application {}", tenant.getName(), application.getName());
 
         List<Event> incomingEvents = cassandraEventsRepository.findIncomingBy(tenant, application, deviceGuid, channel, startInstant, endInstant, ascending, limit);
+        LOGGER.info("\tIncoming events: {}", incomingEvents.size());
 
         for (Event event : incomingEvents) {
             mongoEventsRepository.saveIncoming(tenant, application, event);
         }
 
+        if (incomingEvents.size() > 0) {
+            LOGGER.info("\tCompleted!");
+        }
+
         List<Event> outgoingEvents = cassandraEventsRepository.findOutgoingBy(tenant, application, deviceGuid, channel, startInstant, endInstant, ascending, limit);
+        LOGGER.info("\tOutgoing events: {}", outgoingEvents.size());
 
         for (Event event : outgoingEvents) {
             mongoEventsRepository.saveOutgoing(tenant, application, event);
         }
 
-        LOGGER.info("\tIncoming events: {}", incomingEvents.size());
-        LOGGER.info("\tOutgoing events: {}", outgoingEvents.size());
+        if (outgoingEvents.size() > 0) {
+            LOGGER.info("\tCompleted!");
+        }
 
     }
 

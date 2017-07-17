@@ -30,7 +30,7 @@ function improveChart() {
     $('.nv-x .tick text').each(insertLinebreaks);
     $('.nv-axisMaxMin-x text').each(insertLinebreaks);
     $('.nv-x .nv-axislabel').attr('y', 60);
-    
+
     // remove x-axis ticks if there is only one data
     if ($('.nv-x .tick').length === 1) {
         $('.nv-x .tick').remove();
@@ -66,7 +66,7 @@ var graphService = {
               .showMaxMin(false)
               .tickFormat(function(d) {
                 var userDateFormat = $('#userDateFormat').val();
-              
+
                 if (userDateFormat === 'DDMMYYYY') {
                     return d3.time.format('%d/%m/%Y %X')(new Date(d));
                 } else if (userDateFormat === 'YYYYMMDD') {
@@ -74,7 +74,7 @@ var graphService = {
                 } else if (userDateFormat === 'MMDDYYYY') {
                     return d3.time.format('%m/%d/%Y %X')(new Date(d));
                 } else {
-                    return d3.time.format('%d/%m/%Y %X')(new Date(d));                  
+                    return d3.time.format('%d/%m/%Y %X')(new Date(d));
                 }
               });
             chart.yAxis
@@ -92,11 +92,11 @@ var graphService = {
                 .datum(controller.data)
                 .call(controller.chart);
             nv.utils.windowResize(controller.chart.update);
-            
-            chart.dispatch.on('renderEnd', function(){ 
+
+            chart.dispatch.on('renderEnd', function(){
                 improveChart();
             });
-            
+
             improveChart();
 
             return controller.chart;
@@ -107,7 +107,7 @@ var graphService = {
         data.reverse();
 
         for (var i = 0; i < data.length; i++) {
-            var value = getByPath(JSON.parse(data[i].payload),graphService.field)
+            var value = getByPath(JSON.parse(data[i].payload), graphService.field)
 
             if (!isNaN(value)) {
                 var d = new Date(0);
@@ -125,14 +125,15 @@ var graphService = {
         ];
     },
     // Used to handle multiple series
-    prepareSets : function(data) {
+    prepareSets : function(data, outliers) {
         var result = [];
         data.reverse();
+        outliers.reverse();
 
         for (var i = 0; i < data.length; i++) {
             var points = [];
-            for (var j = 0; j < data[i].length; j++){
-                var value = getByPath(JSON.parse(data[i][j].payload),graphService.field)   ;
+            for (var j = 0; j < data[i].length; j++) {
+                var value = getByPath(JSON.parse(data[i][j].payload), graphService.field);
                 if (!isNaN(value)) {
                     var d = new Date(0);
                     d.setUTCSeconds(data[i][j].timestamp / 1000)
@@ -146,15 +147,33 @@ var graphService = {
             });
         }
 
+        for (var i = 0; i < outliers.length; i++) {
+            var points = [];
+            for (var j = 0; j < outliers[i].length; j++){
+                var value = getByPath(JSON.parse(outliers[i][j].payload), graphService.field);
+                if (!isNaN(value)) {
+                    var d = new Date(0);
+                    d.setUTCSeconds(outliers[i][j].timestamp / 1000);
+                    points.push({x: d, y: value});
+                }
+            }
+            result.push({
+                values : points,
+                key : '<span>' + graphService.field + '</span><span style="visibility: collapse;">outlier-' + i + '</span>',
+                color : '#c0c0c0',
+        	    strokeWidth: 1
+            });
+        }
+
         return result;
     },
-    update : function(field,data) {
+    update : function(field, data, outliers) {
         if (this.chart == null || this.field != field) {
             this.field = field;
             this.buildChart();
         }
 
-        this.data = this.prepareSets(data);
+        this.data = this.prepareSets(data, outliers);
         // Update the SVG with the new data and call chart
         if (typeof this.chart !== 'undefined') {
             d3.select('#chart svg').datum(this.data).call(this.chart);
