@@ -128,7 +128,7 @@ public class ApplicationDocumentStoreRestController extends AbstractRestControll
         ServiceResponse<ApplicationDocumentStore> deviceResponse = applicationDocumentStoreService.remove(tenant, application, collection, key);
 
         if (!deviceResponse.isOk()) {
-            if (deviceResponse.getResponseMessages().containsKey(ApplicationDocumentStoreService.Validations.APP_DOCUMENT_DATA_DOES_NOT_EXIST.getCode())) {
+            if (deviceResponse.getResponseMessages().containsKey(ApplicationDocumentStoreService.Validations.APP_DOCUMENT_DOES_NOT_EXIST.getCode())) {
                 throw new NotFoundResponseException(user, deviceResponse);
             } else {
                 throw new BadServiceResponseException(user, deviceResponse, validationsCode);

@@ -93,7 +93,7 @@ public class ApplicationDocumentStoreServiceTest extends BusinessLayerTestSuppor
     public void shouldReturnErrorIfSavingNullJson() throws Exception {
 
         ServiceResponse<ApplicationDocumentStore> serviceResponse = applicationDocumentStoreService.save(tenant, application, "collectionA", "key1", null);
-        assertThat(serviceResponse, hasErrorMessage(Validations.APP_DOCUMENT_DATA_INVALID_JSON.getCode()));
+        assertThat(serviceResponse, hasErrorMessage(Validations.APP_DOCUMENT_INVALID_JSON.getCode()));
 
     }
 
@@ -101,7 +101,7 @@ public class ApplicationDocumentStoreServiceTest extends BusinessLayerTestSuppor
     public void shouldReturnErrorIfSavingInvalidJson() throws Exception {
 
         ServiceResponse<ApplicationDocumentStore> serviceResponse = applicationDocumentStoreService.save(tenant, application, "collectionA", "key1", "a=4");
-        assertThat(serviceResponse, hasErrorMessage(Validations.APP_DOCUMENT_DATA_INVALID_JSON.getCode()));
+        assertThat(serviceResponse, hasErrorMessage(Validations.APP_DOCUMENT_INVALID_JSON.getCode()));
 
     }
 
@@ -114,13 +114,29 @@ public class ApplicationDocumentStoreServiceTest extends BusinessLayerTestSuppor
     }
 
     @Test
+    public void shouldReturnErrorIfSavingApplicationDocumentStoreWithInvalidCollection() throws Exception {
+
+        ServiceResponse<ApplicationDocumentStore> serviceResponse = applicationDocumentStoreService.save(tenant, application, "collection/A", "key1", jsonA);
+        assertThat(serviceResponse, hasErrorMessage(Validations.APP_DOCUMENT_INVALID_COLLECTION_NAME.getCode()));
+
+    }
+
+    @Test
+    public void shouldReturnErrorIfSavingApplicationDocumentStoreWithInvalidKey() throws Exception {
+
+        ServiceResponse<ApplicationDocumentStore> serviceResponse = applicationDocumentStoreService.save(tenant, application, "collectionA", "key,,1", jsonA);
+        assertThat(serviceResponse, hasErrorMessage(Validations.APP_DOCUMENT_INVALID_KEY_NAME.getCode()));
+
+    }
+
+    @Test
     public void shouldReturnErrorIfSaveExistingApplicationDocumentStore() throws Exception {
 
         ServiceResponse<ApplicationDocumentStore> serviceResponse = applicationDocumentStoreService.save(tenant, application, "collectionA", "key1", jsonA);
         assertThat(serviceResponse.isOk(), is(true));
 
         serviceResponse = applicationDocumentStoreService.save(tenant, application, "collectionA", "key1", jsonA);
-        assertThat(serviceResponse, hasErrorMessage(Validations.APP_DOCUMENT_DATA_ALREADY_REGISTERED.getCode()));
+        assertThat(serviceResponse, hasErrorMessage(Validations.APP_DOCUMENT_ALREADY_REGISTERED.getCode()));
 
     }
 
@@ -128,7 +144,7 @@ public class ApplicationDocumentStoreServiceTest extends BusinessLayerTestSuppor
     public void shouldReturnErrorIfUpdateApplicationDocumentStoreWithInvalidJson() throws Exception {
 
         ServiceResponse<ApplicationDocumentStore> serviceResponse = applicationDocumentStoreService.update(tenant, application, "collectionB", "key1", "a=4");
-        assertThat(serviceResponse, hasErrorMessage(Validations.APP_DOCUMENT_DATA_INVALID_JSON.getCode()));
+        assertThat(serviceResponse, hasErrorMessage(Validations.APP_DOCUMENT_INVALID_JSON.getCode()));
 
     }
 
@@ -148,7 +164,7 @@ public class ApplicationDocumentStoreServiceTest extends BusinessLayerTestSuppor
     public void shouldTryUpdateNonExistingApplicationDocumentStore() throws Exception {
 
         ServiceResponse<ApplicationDocumentStore> serviceResponse = applicationDocumentStoreService.update(tenant, application, "collectionA", "key1", jsonA);
-        assertThat(serviceResponse, hasErrorMessage(Validations.APP_DOCUMENT_DATA_DOES_NOT_EXIST.getCode()));
+        assertThat(serviceResponse, hasErrorMessage(Validations.APP_DOCUMENT_DOES_NOT_EXIST.getCode()));
 
     }
 
@@ -168,7 +184,7 @@ public class ApplicationDocumentStoreServiceTest extends BusinessLayerTestSuppor
     public void shouldTryToRemoveNonExistingApplicationDocumentStore() throws Exception {
 
         ServiceResponse<ApplicationDocumentStore> serviceResponse = applicationDocumentStoreService.remove(tenant, application, "collectionA", "key1");
-        assertThat(serviceResponse, hasErrorMessage(Validations.APP_DOCUMENT_DATA_DOES_NOT_EXIST.getCode()));
+        assertThat(serviceResponse, hasErrorMessage(Validations.APP_DOCUMENT_DOES_NOT_EXIST.getCode()));
 
     }
 
@@ -185,7 +201,7 @@ public class ApplicationDocumentStoreServiceTest extends BusinessLayerTestSuppor
     public void shouldFindNonExistingByTenantAndApplicationAndModelAndLocation() throws Exception {
 
         ServiceResponse<ApplicationDocumentStore> serviceResponse = applicationDocumentStoreService.findUniqueByTenantApplication(tenant, application, "collectionA", "key1");
-        assertThat(serviceResponse, hasErrorMessage(Validations.APP_DOCUMENT_DATA_DOES_NOT_EXIST.getCode()));
+        assertThat(serviceResponse, hasErrorMessage(Validations.APP_DOCUMENT_DOES_NOT_EXIST.getCode()));
 
     }
 

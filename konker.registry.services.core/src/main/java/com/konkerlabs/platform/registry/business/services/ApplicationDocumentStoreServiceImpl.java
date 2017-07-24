@@ -41,7 +41,7 @@ public class ApplicationDocumentStoreServiceImpl implements ApplicationDocumentS
 
         if (!isValidJson(jsonCustomData)){
             return ServiceResponseBuilder.<ApplicationDocumentStore>error()
-                    .withMessage(Validations.APP_DOCUMENT_DATA_INVALID_JSON.getCode())
+                    .withMessage(Validations.APP_DOCUMENT_INVALID_JSON.getCode())
                     .build();
         }
 
@@ -53,7 +53,7 @@ public class ApplicationDocumentStoreServiceImpl implements ApplicationDocumentS
 
 		if (keyValueFromDB != null) {
             return ServiceResponseBuilder.<ApplicationDocumentStore>error()
-                    .withMessage(Validations.APP_DOCUMENT_DATA_ALREADY_REGISTERED.getCode())
+                    .withMessage(Validations.APP_DOCUMENT_ALREADY_REGISTERED.getCode())
                     .build();
 		}
 
@@ -81,7 +81,7 @@ public class ApplicationDocumentStoreServiceImpl implements ApplicationDocumentS
 
         if (!isValidJson(jsonCustomData)){
             return ServiceResponseBuilder.<ApplicationDocumentStore>error()
-                    .withMessage(Validations.APP_DOCUMENT_DATA_INVALID_JSON.getCode())
+                    .withMessage(Validations.APP_DOCUMENT_INVALID_JSON.getCode())
                     .build();
         }
 
@@ -93,7 +93,7 @@ public class ApplicationDocumentStoreServiceImpl implements ApplicationDocumentS
 
 		if (!Optional.ofNullable(keyValueFromDB).isPresent()) {
 			return ServiceResponseBuilder.<ApplicationDocumentStore>error()
-                    .withMessage(Validations.APP_DOCUMENT_DATA_DOES_NOT_EXIST.getCode())
+                    .withMessage(Validations.APP_DOCUMENT_DOES_NOT_EXIST.getCode())
                     .build();
 		}
 
@@ -128,14 +128,14 @@ public class ApplicationDocumentStoreServiceImpl implements ApplicationDocumentS
 
 		if (!Optional.ofNullable(keyValueFromDB).isPresent()) {
 			return ServiceResponseBuilder.<ApplicationDocumentStore>error()
-                    .withMessage(Validations.APP_DOCUMENT_DATA_DOES_NOT_EXIST.getCode())
+                    .withMessage(Validations.APP_DOCUMENT_DOES_NOT_EXIST.getCode())
                     .build();
 		}
 
 		applicationDocumentStoreRepository.delete(keyValueFromDB);
 
 		return ServiceResponseBuilder.<ApplicationDocumentStore>ok()
-				.withMessage(Messages.APP_DOCUMENT_DATA_REMOVED_SUCCESSFULLY.getCode())
+				.withMessage(Messages.APP_DOCUMENT_REMOVED_SUCCESSFULLY.getCode())
 				.withResult(keyValueFromDB)
 				.build();
 	}
@@ -157,7 +157,7 @@ public class ApplicationDocumentStoreServiceImpl implements ApplicationDocumentS
 
 		if (!Optional.ofNullable(keyValueFromDB).isPresent()) {
 			return ServiceResponseBuilder.<ApplicationDocumentStore> error()
-					.withMessage(Validations.APP_DOCUMENT_DATA_DOES_NOT_EXIST.getCode()).build();
+					.withMessage(Validations.APP_DOCUMENT_DOES_NOT_EXIST.getCode()).build();
 		}
 
 		return ServiceResponseBuilder.<ApplicationDocumentStore>ok().withResult(keyValueFromDB).build();
@@ -176,11 +176,15 @@ public class ApplicationDocumentStoreServiceImpl implements ApplicationDocumentS
         }
 
         if (collection == null || !collection.matches(COLLECTION_KEY_PATTERN)) {
-            return ServiceResponseBuilder.<T>error().build();
+            return ServiceResponseBuilder.<T>error()
+                    .withMessage(Validations.APP_DOCUMENT_INVALID_COLLECTION_NAME.getCode())
+                    .build();
         }
 
         if (key == null || !key.matches(COLLECTION_KEY_PATTERN)) {
-            return ServiceResponseBuilder.<T>error().build();
+            return ServiceResponseBuilder.<T>error()
+                    .withMessage(Validations.APP_DOCUMENT_INVALID_KEY_NAME.getCode())
+                    .build();
         }
 
         return null;
