@@ -29,37 +29,39 @@ public class ApplicationDocumentStoreServiceImpl implements ApplicationDocumentS
     @Autowired
     private ApplicationDocumentStoreRepository applicationDocumentStoreRepository;
 
-    private static final String DOCUMENT_KEY_PATTERN = "[a-zA-Z0-9\\-_]{2,100}";
+    private static final String COLLECTION_KEY_PATTERN = "[a-zA-Z0-9\\-_]{2,100}";
 
 	@Override
-	public ServiceResponse<ApplicationDocumentStore> save(Tenant tenant, Application application, String document, String key, String jsonCustomData) {
+	public ServiceResponse<ApplicationDocumentStore> save(Tenant tenant, Application application, String collection, String key, String jsonCustomData) {
 
-        ServiceResponse<ApplicationDocumentStore> validationsResponse = validate(tenant, application, document, key);
+        ServiceResponse<ApplicationDocumentStore> validationsResponse = validate(tenant, application, collection, key);
         if (validationsResponse != null && !validationsResponse.isOk()) {
             return validationsResponse;
         }
 
         if (!isValidJson(jsonCustomData)){
             return ServiceResponseBuilder.<ApplicationDocumentStore>error()
-                    .withMessage(Validations.DEVICE_CUSTOM_DATA_INVALID_JSON.getCode())
+                    .withMessage(Validations.APP_DOCUMENT_DATA_INVALID_JSON.getCode())
                     .build();
         }
 
         ApplicationDocumentStore keyValueFromDB = applicationDocumentStoreRepository.findUniqueByTenantIdApplicationName(
                 tenant.getId(),
                 application.getName(),
-                document,
+                collection,
                 key);
 
 		if (keyValueFromDB != null) {
             return ServiceResponseBuilder.<ApplicationDocumentStore>error()
-                    .withMessage(Validations.DEVICE_CUSTOM_DATA_ALREADY_REGISTERED.getCode())
+                    .withMessage(Validations.APP_DOCUMENT_DATA_ALREADY_REGISTERED.getCode())
                     .build();
 		}
 
 		ApplicationDocumentStore applicationDocumentStore = ApplicationDocumentStore.builder()
 		                                                    .tenant(tenant)
 		                                                    .application(application)
+		                                                    .collection(collection)
+		                                                    .key(key)
 		                                                    .json(jsonCustomData)
 		                                                    .lastChange(Instant.now())
 		                                                    .build();
@@ -70,28 +72,28 @@ public class ApplicationDocumentStoreServiceImpl implements ApplicationDocumentS
 	}
 
     @Override
-    public ServiceResponse<ApplicationDocumentStore> update(Tenant tenant, Application application, String document, String key, String jsonCustomData) {
+    public ServiceResponse<ApplicationDocumentStore> update(Tenant tenant, Application application, String collection, String key, String jsonCustomData) {
 
-        ServiceResponse<ApplicationDocumentStore> validationsResponse = validate(tenant, application, document, key);
+        ServiceResponse<ApplicationDocumentStore> validationsResponse = validate(tenant, application, collection, key);
         if (validationsResponse != null && !validationsResponse.isOk()) {
             return validationsResponse;
         }
 
         if (!isValidJson(jsonCustomData)){
             return ServiceResponseBuilder.<ApplicationDocumentStore>error()
-                    .withMessage(Validations.DEVICE_CUSTOM_DATA_INVALID_JSON.getCode())
+                    .withMessage(Validations.APP_DOCUMENT_DATA_INVALID_JSON.getCode())
                     .build();
         }
 
         ApplicationDocumentStore keyValueFromDB = applicationDocumentStoreRepository.findUniqueByTenantIdApplicationName(
                 tenant.getId(),
                 application.getName(),
-                document,
+                collection,
                 key);
 
 		if (!Optional.ofNullable(keyValueFromDB).isPresent()) {
 			return ServiceResponseBuilder.<ApplicationDocumentStore>error()
-                    .withMessage(Validations.DEVICE_CUSTOM_DATA_DOES_NOT_EXIST.getCode())
+                    .withMessage(Validations.APP_DOCUMENT_DATA_DOES_NOT_EXIST.getCode())
                     .build();
 		}
 
@@ -111,9 +113,9 @@ public class ApplicationDocumentStoreServiceImpl implements ApplicationDocumentS
 	}
 
     @Override
-    public ServiceResponse<ApplicationDocumentStore> remove(Tenant tenant, Application application, String document, String key) {
+    public ServiceResponse<ApplicationDocumentStore> remove(Tenant tenant, Application application, String collection, String key) {
 
-        ServiceResponse<ApplicationDocumentStore> validationsResponse = validate(tenant, application, document, key);
+        ServiceResponse<ApplicationDocumentStore> validationsResponse = validate(tenant, application, collection, key);
         if (validationsResponse != null && !validationsResponse.isOk()) {
             return validationsResponse;
         }
@@ -121,28 +123,28 @@ public class ApplicationDocumentStoreServiceImpl implements ApplicationDocumentS
         ApplicationDocumentStore keyValueFromDB = applicationDocumentStoreRepository.findUniqueByTenantIdApplicationName(
                 tenant.getId(),
                 application.getName(),
-                document,
+                collection,
                 key);
 
 		if (!Optional.ofNullable(keyValueFromDB).isPresent()) {
 			return ServiceResponseBuilder.<ApplicationDocumentStore>error()
-                    .withMessage(Validations.DEVICE_CUSTOM_DATA_DOES_NOT_EXIST.getCode())
+                    .withMessage(Validations.APP_DOCUMENT_DATA_DOES_NOT_EXIST.getCode())
                     .build();
 		}
 
 		applicationDocumentStoreRepository.delete(keyValueFromDB);
 
 		return ServiceResponseBuilder.<ApplicationDocumentStore>ok()
-				.withMessage(Messages.DEVICE_CUSTOM_DATA_REMOVED_SUCCESSFULLY.getCode())
+				.withMessage(Messages.APP_DOCUMENT_DATA_REMOVED_SUCCESSFULLY.getCode())
 				.withResult(keyValueFromDB)
 				.build();
 	}
 
     @Override
     public ServiceResponse<ApplicationDocumentStore> findUniqueByTenantApplication(Tenant tenant, Application application,
-            String document, String key) {
+            String collection, String key) {
 
-        ServiceResponse<ApplicationDocumentStore> validationsResponse = validate(tenant, application, document, key);
+        ServiceResponse<ApplicationDocumentStore> validationsResponse = validate(tenant, application, collection, key);
         if (validationsResponse != null && !validationsResponse.isOk()) {
             return validationsResponse;
         }
@@ -150,19 +152,19 @@ public class ApplicationDocumentStoreServiceImpl implements ApplicationDocumentS
         ApplicationDocumentStore keyValueFromDB = applicationDocumentStoreRepository.findUniqueByTenantIdApplicationName(
                 tenant.getId(),
                 application.getName(),
-                document,
+                collection,
                 key);
 
 		if (!Optional.ofNullable(keyValueFromDB).isPresent()) {
 			return ServiceResponseBuilder.<ApplicationDocumentStore> error()
-					.withMessage(Validations.DEVICE_CUSTOM_DATA_DOES_NOT_EXIST.getCode()).build();
+					.withMessage(Validations.APP_DOCUMENT_DATA_DOES_NOT_EXIST.getCode()).build();
 		}
 
 		return ServiceResponseBuilder.<ApplicationDocumentStore>ok().withResult(keyValueFromDB).build();
 
     }
 
-    private <T> ServiceResponse<T> validate(Tenant tenant, Application application, String document, String key) {
+    private <T> ServiceResponse<T> validate(Tenant tenant, Application application, String collection, String key) {
 
         if (!Optional.ofNullable(tenant).isPresent()) {
             return ServiceResponseBuilder.<T>error().withMessage(CommonValidations.TENANT_NULL.getCode()).build();
@@ -173,11 +175,11 @@ public class ApplicationDocumentStoreServiceImpl implements ApplicationDocumentS
                     .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()).build();
         }
 
-        if (document == null || document.matches(DOCUMENT_KEY_PATTERN)) {
+        if (collection == null || !collection.matches(COLLECTION_KEY_PATTERN)) {
             return ServiceResponseBuilder.<T>error().build();
         }
 
-        if (key == null || key.matches(DOCUMENT_KEY_PATTERN)) {
+        if (key == null || !key.matches(COLLECTION_KEY_PATTERN)) {
             return ServiceResponseBuilder.<T>error().build();
         }
 

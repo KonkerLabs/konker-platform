@@ -21,10 +21,9 @@ import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException
 import com.konkerlabs.platform.registry.api.model.RestResponse;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.DeviceCustomData;
+import com.konkerlabs.platform.registry.business.model.ApplicationDocumentStore;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.services.api.DeviceCustomDataService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationDocumentStoreService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.mongodb.util.JSON;
@@ -36,34 +35,31 @@ import io.swagger.annotations.ApiParam;
 @RestController
 @Scope("request")
 @RequestMapping(
-        value = "/{application}/documentStore/"
+        value = "/{application}/documentStore/{collection}/{key}"
 )
 @Api(tags = "application document store")
 public class ApplicationDocumentStoreRestController extends AbstractRestController implements InitializingBean {
 
     @Autowired
-    private DeviceRegisterService deviceRegisterService;
-
-    @Autowired
-    private DeviceCustomDataService deviceCustomDataService;
+    private ApplicationDocumentStoreService applicationDocumentStoreService;
 
     private Set<String> validationsCode = new HashSet<>();
 
     @GetMapping
     @ApiOperation(
-            value = "Get a custom data by device guid",
+            value = "Get a application document by collection and key",
             response = RestResponse.class
     )
-    @PreAuthorize("hasAuthority('SHOW_DEVICE')")
+    @PreAuthorize("hasAuthority('SHOW_APPLICATION')")
     public Object read(
     		@PathVariable("application") String applicationId,
-    		@PathVariable("deviceGuid") String deviceGuid) throws BadServiceResponseException, NotFoundResponseException {
+    		@PathVariable("collection") String collection,
+    		@PathVariable("key") String key) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
-        Device device = getDevice(tenant, application, deviceGuid);
 
-        ServiceResponse<DeviceCustomData> deviceResponse = deviceCustomDataService.getByTenantApplicationAndDevice(tenant, application, device);
+        ServiceResponse<ApplicationDocumentStore> deviceResponse = applicationDocumentStoreService.findUniqueByTenantApplication(tenant, application, collection, key);
 
         if (!deviceResponse.isOk()) {
             throw new NotFoundResponseException(user, deviceResponse);
@@ -74,19 +70,19 @@ public class ApplicationDocumentStoreRestController extends AbstractRestControll
     }
 
     @PostMapping
-    @ApiOperation(value = "Create a device custom data")
-    @PreAuthorize("hasAuthority('ADD_DEVICE')")
+    @ApiOperation(value = "Create a application document")
+    @PreAuthorize("hasAuthority('ADD_APPLICATION')")
     public Object create(
     		@PathVariable("application") String applicationId,
-    		@PathVariable("deviceGuid") String deviceGuid,
+            @PathVariable("collection") String collection,
+            @PathVariable("key") String key,
             @ApiParam(name = "body", required = true)
     		@RequestBody String jsonCustomData) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
-        Device device = getDevice(tenant, application, deviceGuid);
 
-        ServiceResponse<DeviceCustomData> deviceResponse = deviceCustomDataService.save(tenant, application, device, jsonCustomData);
+        ServiceResponse<ApplicationDocumentStore> deviceResponse = applicationDocumentStoreService.save(tenant, application, collection, key, jsonCustomData);
 
         if (!deviceResponse.isOk()) {
             throw new BadServiceResponseException(user, deviceResponse, validationsCode);
@@ -97,19 +93,19 @@ public class ApplicationDocumentStoreRestController extends AbstractRestControll
     }
 
     @PutMapping
-    @ApiOperation(value = "Update a device custom data")
-    @PreAuthorize("hasAuthority('EDIT_DEVICE')")
+    @ApiOperation(value = "Update a application document")
+    @PreAuthorize("hasAuthority('EDIT_APPLICATION')")
     public void update(
     		@PathVariable("application") String applicationId,
-            @PathVariable("deviceGuid") String deviceGuid,
+            @PathVariable("collection") String collection,
+            @PathVariable("key") String key,
             @ApiParam(name = "body", required = true)
             @RequestBody String jsonCustomData) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
-        Device device = getDevice(tenant, application, deviceGuid);
 
-        ServiceResponse<DeviceCustomData> updateResponse = deviceCustomDataService.update(tenant, application, device, jsonCustomData);
+        ServiceResponse<ApplicationDocumentStore> updateResponse = applicationDocumentStoreService.update(tenant, application, collection, key, jsonCustomData);
 
         if (!updateResponse.isOk()) {
             throw new BadServiceResponseException(user, updateResponse, validationsCode);
@@ -119,46 +115,25 @@ public class ApplicationDocumentStoreRestController extends AbstractRestControll
     }
 
     @DeleteMapping
-    @ApiOperation(value = "Delete a device custom data")
-    @PreAuthorize("hasAuthority('REMOVE_DEVICE')")
+    @ApiOperation(value = "Delete a application document")
+    @PreAuthorize("hasAuthority('REMOVE_APPLICATION')")
     public void delete(
     		@PathVariable("application") String applicationId,
-    		@PathVariable("deviceGuid") String deviceGuid) throws BadServiceResponseException, NotFoundResponseException {
+            @PathVariable("collection") String collection,
+            @PathVariable("key") String key) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
-        Device device = getDevice(tenant, application, deviceGuid);
 
-        ServiceResponse<DeviceCustomData> deviceResponse = deviceCustomDataService.remove(tenant, application, device);
+        ServiceResponse<ApplicationDocumentStore> deviceResponse = applicationDocumentStoreService.remove(tenant, application, collection, key);
 
         if (!deviceResponse.isOk()) {
-            if (deviceResponse.getResponseMessages().containsKey(DeviceCustomDataService.Validations.DEVICE_CUSTOM_DATA_DOES_NOT_EXIST.getCode())) {
+            if (deviceResponse.getResponseMessages().containsKey(ApplicationDocumentStoreService.Validations.APP_DOCUMENT_DATA_DOES_NOT_EXIST.getCode())) {
                 throw new NotFoundResponseException(user, deviceResponse);
             } else {
                 throw new BadServiceResponseException(user, deviceResponse, validationsCode);
             }
         }
-
-    }
-
-    private Device getDevice(Tenant tenant, Application application, String deviceGuid) throws BadServiceResponseException, NotFoundResponseException {
-
-        ServiceResponse<Device> applicationResponse = deviceRegisterService.getByDeviceGuid(tenant, application, deviceGuid);
-        if (!applicationResponse.isOk()) {
-            if (applicationResponse.getResponseMessages().containsKey(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode())) {
-                throw new NotFoundResponseException(user, applicationResponse);
-
-            } else {
-                Set<String> validationsCode = new HashSet<>();
-                for (DeviceModelService.Validations value : DeviceModelService.Validations.values()) {
-                    validationsCode.add(value.getCode());
-                }
-
-                throw new BadServiceResponseException(user, applicationResponse, validationsCode);
-            }
-        }
-
-        return applicationResponse.getResult();
 
     }
 

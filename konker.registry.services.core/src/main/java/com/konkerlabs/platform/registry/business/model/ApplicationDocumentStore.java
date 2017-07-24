@@ -14,7 +14,7 @@ import lombok.Data;
 
 @Data
 @Builder
-@Document(collection = "applicationDocumentStore")
+@Document(collection = "applicationDocumentsStore")
 public class ApplicationDocumentStore {
 
     @Id

@@ -6,40 +6,47 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 
 public interface ApplicationDocumentStoreService {
 
-	enum Validations {
-		DEVICE_CUSTOM_DATA_NULL("service.device.custom_data.null"),
-		DEVICE_CUSTOM_DATA_ALREADY_REGISTERED("service.device.custom_data.already_registered"),
-		DEVICE_CUSTOM_DATA_DOES_NOT_EXIST("service.device.custom_data.does_not_exist"),
-		DEVICE_CUSTOM_DATA_INVALID_JSON("service.device.custom_data.invalid_json");
+    public enum Validations {
+        APP_DOCUMENT_DATA_NULL("service.application.document_store.null"),
+        APP_DOCUMENT_DATA_ALREADY_REGISTERED("service.application.document_store.already_registered"),
+        APP_DOCUMENT_DATA_DOES_NOT_EXIST("service.application.document_store.does_not_exist"),
+        APP_DOCUMENT_DATA_INVALID_JSON("service.application.document_store.invalid_json");
 
-		public String getCode() {
-			return code;
-		}
+        public String getCode() {
+            return code;
+        }
 
-		private String code;
+        private String code;
 
-		Validations(String code) {
-			this.code = code;
-		}
-	}
+        Validations(String code) {
+            this.code = code;
+        }
+    }
 
-	public enum Messages {
-		DEVICE_CUSTOM_DATA_REMOVED_SUCCESSFULLY("controller.device.custom_data.removed_succesfully");
+    public enum Messages {
+        APP_DOCUMENT_DATA_REMOVED_SUCCESSFULLY("controller.application.document_store.removed_succesfully");
 
-		public String getCode() {
-			return code;
-		}
+        public String getCode() {
+            return code;
+        }
 
-		private String code;
+        private String code;
 
-		Messages(String code) {
-			this.code = code;
-		}
-	}
+        Messages(String code) {
+            this.code = code;
+        }
+    }
 
-	ServiceResponse<ApplicationDocumentStore> save(Tenant tenant, Application application, String document, String key, String jsonCustomData);
-	ServiceResponse<ApplicationDocumentStore> update(Tenant tenant, Application application, String document, String key, String jsonCustomData);
-	ServiceResponse<ApplicationDocumentStore> remove(Tenant tenant, Application application, String document, String key);
-    ServiceResponse<ApplicationDocumentStore> findUniqueByTenantApplication(Tenant tenant, Application application, String document, String key);
+    ServiceResponse<ApplicationDocumentStore> save(Tenant tenant, Application application, String collection,
+            String key, String jsonCustomData);
+
+    ServiceResponse<ApplicationDocumentStore> update(Tenant tenant, Application application, String collection,
+            String key, String jsonCustomData);
+
+    ServiceResponse<ApplicationDocumentStore> remove(Tenant tenant, Application application, String collection,
+            String key);
+
+    ServiceResponse<ApplicationDocumentStore> findUniqueByTenantApplication(Tenant tenant, Application application,
+            String collection, String key);
 
 }
