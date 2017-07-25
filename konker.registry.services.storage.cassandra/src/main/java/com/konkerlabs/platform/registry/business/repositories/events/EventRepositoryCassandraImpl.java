@@ -56,6 +56,8 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
 
     private Map<String, PreparedStatement> insertOutgoingMap = new HashMap<>();
 
+    private Map<String, PreparedStatement> selectStatementCache = new HashMap<>();
+
     @Override
     protected Event doSave(Tenant tenant, Application application, Event event, Type type) {
 
@@ -214,11 +216,89 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
                                    Type type,
                                    boolean isDeleted) throws BusinessException {
 
-        StringBuilder query = new StringBuilder();
-
         String table = null;
 
         List<Object> filters = new ArrayList<>();
+
+        String query = getQuery(tenant,
+                                application,
+                                deviceGuid,
+                                channel,
+                                startInstant,
+                                endInstant,
+                                ascending,
+                                limit,
+                                type,
+                                table,
+                                filters);
+
+        PreparedStatement ps = selectStatementCache.get(query);
+        if (ps == null) {
+            ps = session.prepare(query);
+            selectStatementCache.put(query, ps);
+        }
+        BoundStatement statement = ps.bind(filters.toArray(new Object[filters.size()]));
+
+        final ResultSet rs = session.execute(statement);
+
+        List<Event> events = new LinkedList<>();
+
+        while (!rs.isExhausted()) {
+            final Row row = rs.one();
+
+            EventActor outgoingActor = null;
+            EventActor incomingActor = null;
+
+            if (type == Type.INCOMING) {
+
+                incomingActor = EventActor.builder()
+                                          .tenantDomain(row.getString("tenant_domain"))
+                                          .applicationName(row.getString("application_name"))
+                                          .deviceGuid(row.getString("device_guid"))
+                                          .deviceId(row.getString("device_id"))
+                                          .channel(row.getString("channel"))
+                                          .build();
+
+            } else if (type == Type.OUTGOING) {
+
+                outgoingActor = EventActor.builder()
+                        .tenantDomain(row.getString("tenant_domain"))
+                        .applicationName(row.getString("application_name"))
+                        .deviceGuid(row.getString("device_guid"))
+                        .deviceId(row.getString("device_id"))
+                        .channel(row.getString("channel"))
+                        .build();
+
+                incomingActor = EventActor.builder()
+                        .tenantDomain(row.getString("tenant_domain"))
+                        .applicationName(row.getString("application_name"))
+                        .deviceGuid(row.getString("incoming_device_guid"))
+                        .deviceId(row.getString("incoming_device_id"))
+                        .channel(row.getString("incoming_channel"))
+                        .build();
+
+            }
+
+            Event event = Event.builder()
+                               .epochTime(row.getLong("timestamp"))
+                               .timestamp(Instant.ofEpochMilli(row.getLong("timestamp") / 1000000))
+                               .incoming(incomingActor)
+                               .outgoing(outgoingActor)
+                               .payload(row.getString("payload"))
+                               .build();
+
+            events.add(event);
+        }
+
+        return events;
+
+    }
+
+    private String getQuery(Tenant tenant, Application application, String deviceGuid, String channel,
+            Instant startInstant, Instant endInstant, boolean ascending, Integer limit, Type type,
+            String table, List<Object> filters) {
+
+        StringBuilder query = new StringBuilder();
 
         if (type == Type.INCOMING) {
             query.append("SELECT tenant_domain, application_name, timestamp, channel, device_guid, device_id, payload FROM ");
@@ -288,61 +368,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
             query.append(limit);
         }
 
-        PreparedStatement ps = session.prepare(query.toString());
-        BoundStatement statement = ps.bind(filters.toArray(new Object[filters.size()]));
-
-        final ResultSet rs = session.execute(statement);
-
-        List<Event> events = new LinkedList<>();
-
-        while (!rs.isExhausted()) {
-            final Row row = rs.one();
-
-            EventActor outgoingActor = null;
-            EventActor incomingActor = null;
-
-            if (type == Type.INCOMING) {
-
-                incomingActor = EventActor.builder()
-                                          .tenantDomain(row.getString("tenant_domain"))
-                                          .applicationName(row.getString("application_name"))
-                                          .deviceGuid(row.getString("device_guid"))
-                                          .deviceId(row.getString("device_id"))
-                                          .channel(row.getString("channel"))
-                                          .build();
-
-            } else if (type == Type.OUTGOING) {
-
-                outgoingActor = EventActor.builder()
-                        .tenantDomain(row.getString("tenant_domain"))
-                        .applicationName(row.getString("application_name"))
-                        .deviceGuid(row.getString("device_guid"))
-                        .deviceId(row.getString("device_id"))
-                        .channel(row.getString("channel"))
-                        .build();
-
-                incomingActor = EventActor.builder()
-                        .tenantDomain(row.getString("tenant_domain"))
-                        .applicationName(row.getString("application_name"))
-                        .deviceGuid(row.getString("incoming_device_guid"))
-                        .deviceId(row.getString("incoming_device_id"))
-                        .channel(row.getString("incoming_channel"))
-                        .build();
-
-            }
-
-            Event event = Event.builder()
-                               .epochTime(row.getLong("timestamp"))
-                               .timestamp(Instant.ofEpochMilli(row.getLong("timestamp") / 1000000))
-                               .incoming(incomingActor)
-                               .outgoing(outgoingActor)
-                               .payload(row.getString("payload"))
-                               .build();
-
-            events.add(event);
-        }
-
-        return events;
+        return query.toString();
 
     }
 

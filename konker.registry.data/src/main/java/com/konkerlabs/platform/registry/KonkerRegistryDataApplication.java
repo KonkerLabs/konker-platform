@@ -6,15 +6,15 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class KonkerRegistryDataApiApplication {
+public class KonkerRegistryDataApplication {
 
-    private static final Logger LOG = LoggerFactory.getLogger(KonkerRegistryDataApiApplication.class);
+    private static final Logger LOG = LoggerFactory.getLogger(KonkerRegistryDataApplication.class);
 
     public static void main(String[] args) {
         if (LOG.isInfoEnabled()) {
             LOG.info("Start the konker registry data...");
         }
-        SpringApplication.run(KonkerRegistryDataApiApplication.class, args);
+        SpringApplication.run(KonkerRegistryDataApplication.class, args);
     }
 
 }
