@@ -57,27 +57,27 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
     private Map<String, PreparedStatement> insertOutgoingMap = new HashMap<>();
 
     @Override
-    protected Event doSave(Tenant tenant, Application application, Event event, Type type) throws BusinessException {
+    protected Event doSave(Tenant tenant, Application application, Event event, Type type) {
 
         event.setEpochTime(event.getTimestamp().toEpochMilli() * 1000000 + rnd.nextInt(1000000));
 
         if (type == Type.INCOMING) {
-            saveEvent(tenant, application, event, type, INCOMING_EVENTS);
-            saveEvent(tenant, application, event, type, INCOMING_EVENTS_DEVICE_GUID);
-            saveEvent(tenant, application, event, type, INCOMING_EVENTS_DEVICE_GUID_CHANNEL);
-            saveEvent(tenant, application, event, type, INCOMING_EVENTS_CHANNEL);
+            saveEvent(tenant, application, event, type, INCOMING_EVENTS, true);
+            saveEvent(tenant, application, event, type, INCOMING_EVENTS_DEVICE_GUID, false);
+            saveEvent(tenant, application, event, type, INCOMING_EVENTS_DEVICE_GUID_CHANNEL, false);
+            saveEvent(tenant, application, event, type, INCOMING_EVENTS_CHANNEL, false);
         } else if (type == Type.OUTGOING) {
-            saveEvent(tenant, application, event, type, OUTGOING_EVENTS);
-            saveEvent(tenant, application, event, type, OUTGOING_EVENTS_DEVICE_GUID);
-            saveEvent(tenant, application, event, type, OUTGOING_EVENTS_DEVICE_GUID_CHANNEL);
-            saveEvent(tenant, application, event, type, OUTGOING_EVENTS_CHANNEL);
+            saveEvent(tenant, application, event, type, OUTGOING_EVENTS, true);
+            saveEvent(tenant, application, event, type, OUTGOING_EVENTS_DEVICE_GUID, false);
+            saveEvent(tenant, application, event, type, OUTGOING_EVENTS_DEVICE_GUID_CHANNEL, false);
+            saveEvent(tenant, application, event, type, OUTGOING_EVENTS_CHANNEL, false);
         }
 
         return event;
 
     }
 
-    private void saveEvent(Tenant tenant, Application application, Event event, Type type, String table) {
+    private void saveEvent(Tenant tenant, Application application, Event event, Type type, String table, boolean synchronous) {
 
         if (type == Type.INCOMING) {
 
@@ -90,8 +90,11 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
                                                event.getIncoming().getDeviceGuid(),
                                                event.getIncoming().getDeviceId(),
                                                event.getPayload());
-            session.executeAsync(statement);
-
+            if (synchronous) {
+                session.execute(statement);
+            } else {
+                session.executeAsync(statement);
+            }
         } else if (type == Type.OUTGOING) {
 
             PreparedStatement ps = getInsertOutgoingPreparedStatement(table);
@@ -106,9 +109,11 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
                                                event.getIncoming().getDeviceGuid(),
                                                event.getIncoming().getDeviceId(),
                                                event.getPayload());
-
-            session.executeAsync(statement);
-
+            if (synchronous) {
+                session.execute(statement);
+            } else {
+                session.executeAsync(statement);
+            }
         }
 
     }
@@ -349,10 +354,10 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
         for (Event key: keys) {
             if (type == Type.INCOMING) {
                 removeByKey(key, type);
-                saveEvent(tenant, application, key, type, INCOMING_EVENTS_DELETED);
+                saveEvent(tenant, application, key, type, INCOMING_EVENTS_DELETED, false);
             } else if (type == Type.OUTGOING) {
                 removeByKey(key, type);
-                saveEvent(tenant, application, key, type, OUTGOING_EVENTS_DELETED);
+                saveEvent(tenant, application, key, type, OUTGOING_EVENTS_DELETED, false);
             }
         }
 
