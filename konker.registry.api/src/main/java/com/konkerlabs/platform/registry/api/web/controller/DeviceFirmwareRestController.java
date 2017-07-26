@@ -151,10 +151,10 @@ public class DeviceFirmwareRestController extends AbstractRestController impleme
     @Override
     public void afterPropertiesSet() throws Exception {
 
-        for (DeviceModel.Validations value : DeviceModel.Validations.values()) {
+        for (DeviceFirmware.Validations value : DeviceFirmware.Validations.values()) {
             validationsCode.add(value.getCode());
         }
-        for (DeviceModelService.Validations value : DeviceModelService.Validations.values()) {
+        for (DeviceFirmwareService.Validations value : DeviceFirmwareService.Validations.values()) {
             validationsCode.add(value.getCode());
         }
 
