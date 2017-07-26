@@ -72,6 +72,7 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
                 .tags(
                         new Tag("alert triggers", "Operations to manage alert triggers"),
                         new Tag("applications", "Operations to list organization applications"),
+                        new Tag("application document store", "Operations to manage generic documents storage"),
                         new Tag("device configs", "Operations to manage device configurations"),
                         new Tag("device credentials", "Operations to manage device credentials (username, password and URLs)"),
                         new Tag("device models", "Operations to manage device models"),

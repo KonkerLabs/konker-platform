@@ -56,28 +56,30 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
 
     private Map<String, PreparedStatement> insertOutgoingMap = new HashMap<>();
 
+    private Map<String, PreparedStatement> selectStatementCache = new HashMap<>();
+
     @Override
-    protected Event doSave(Tenant tenant, Application application, Event event, Type type) throws BusinessException {
+    protected Event doSave(Tenant tenant, Application application, Event event, Type type) {
 
         event.setEpochTime(event.getTimestamp().toEpochMilli() * 1000000 + rnd.nextInt(1000000));
 
         if (type == Type.INCOMING) {
-            saveEvent(tenant, application, event, type, INCOMING_EVENTS);
-            saveEvent(tenant, application, event, type, INCOMING_EVENTS_DEVICE_GUID);
-            saveEvent(tenant, application, event, type, INCOMING_EVENTS_DEVICE_GUID_CHANNEL);
-            saveEvent(tenant, application, event, type, INCOMING_EVENTS_CHANNEL);
+            saveEvent(tenant, application, event, type, INCOMING_EVENTS, true);
+            saveEvent(tenant, application, event, type, INCOMING_EVENTS_DEVICE_GUID, false);
+            saveEvent(tenant, application, event, type, INCOMING_EVENTS_DEVICE_GUID_CHANNEL, false);
+            saveEvent(tenant, application, event, type, INCOMING_EVENTS_CHANNEL, false);
         } else if (type == Type.OUTGOING) {
-            saveEvent(tenant, application, event, type, OUTGOING_EVENTS);
-            saveEvent(tenant, application, event, type, OUTGOING_EVENTS_DEVICE_GUID);
-            saveEvent(tenant, application, event, type, OUTGOING_EVENTS_DEVICE_GUID_CHANNEL);
-            saveEvent(tenant, application, event, type, OUTGOING_EVENTS_CHANNEL);
+            saveEvent(tenant, application, event, type, OUTGOING_EVENTS, true);
+            saveEvent(tenant, application, event, type, OUTGOING_EVENTS_DEVICE_GUID, false);
+            saveEvent(tenant, application, event, type, OUTGOING_EVENTS_DEVICE_GUID_CHANNEL, false);
+            saveEvent(tenant, application, event, type, OUTGOING_EVENTS_CHANNEL, false);
         }
 
         return event;
 
     }
 
-    private void saveEvent(Tenant tenant, Application application, Event event, Type type, String table) {
+    private void saveEvent(Tenant tenant, Application application, Event event, Type type, String table, boolean synchronous) {
 
         if (type == Type.INCOMING) {
 
@@ -90,8 +92,11 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
                                                event.getIncoming().getDeviceGuid(),
                                                event.getIncoming().getDeviceId(),
                                                event.getPayload());
-            session.executeAsync(statement);
-
+            if (synchronous) {
+                session.execute(statement);
+            } else {
+                session.executeAsync(statement);
+            }
         } else if (type == Type.OUTGOING) {
 
             PreparedStatement ps = getInsertOutgoingPreparedStatement(table);
@@ -106,9 +111,11 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
                                                event.getIncoming().getDeviceGuid(),
                                                event.getIncoming().getDeviceId(),
                                                event.getPayload());
-
-            session.executeAsync(statement);
-
+            if (synchronous) {
+                session.execute(statement);
+            } else {
+                session.executeAsync(statement);
+            }
         }
 
     }
@@ -209,11 +216,89 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
                                    Type type,
                                    boolean isDeleted) throws BusinessException {
 
-        StringBuilder query = new StringBuilder();
-
         String table = null;
 
         List<Object> filters = new ArrayList<>();
+
+        String query = getQuery(tenant,
+                                application,
+                                deviceGuid,
+                                channel,
+                                startInstant,
+                                endInstant,
+                                ascending,
+                                limit,
+                                type,
+                                table,
+                                filters);
+
+        PreparedStatement ps = selectStatementCache.get(query);
+        if (ps == null) {
+            ps = session.prepare(query);
+            selectStatementCache.put(query, ps);
+        }
+        BoundStatement statement = ps.bind(filters.toArray(new Object[filters.size()]));
+
+        final ResultSet rs = session.execute(statement);
+
+        List<Event> events = new LinkedList<>();
+
+        while (!rs.isExhausted()) {
+            final Row row = rs.one();
+
+            EventActor outgoingActor = null;
+            EventActor incomingActor = null;
+
+            if (type == Type.INCOMING) {
+
+                incomingActor = EventActor.builder()
+                                          .tenantDomain(row.getString("tenant_domain"))
+                                          .applicationName(row.getString("application_name"))
+                                          .deviceGuid(row.getString("device_guid"))
+                                          .deviceId(row.getString("device_id"))
+                                          .channel(row.getString("channel"))
+                                          .build();
+
+            } else if (type == Type.OUTGOING) {
+
+                outgoingActor = EventActor.builder()
+                        .tenantDomain(row.getString("tenant_domain"))
+                        .applicationName(row.getString("application_name"))
+                        .deviceGuid(row.getString("device_guid"))
+                        .deviceId(row.getString("device_id"))
+                        .channel(row.getString("channel"))
+                        .build();
+
+                incomingActor = EventActor.builder()
+                        .tenantDomain(row.getString("tenant_domain"))
+                        .applicationName(row.getString("application_name"))
+                        .deviceGuid(row.getString("incoming_device_guid"))
+                        .deviceId(row.getString("incoming_device_id"))
+                        .channel(row.getString("incoming_channel"))
+                        .build();
+
+            }
+
+            Event event = Event.builder()
+                               .epochTime(row.getLong("timestamp"))
+                               .timestamp(Instant.ofEpochMilli(row.getLong("timestamp") / 1000000))
+                               .incoming(incomingActor)
+                               .outgoing(outgoingActor)
+                               .payload(row.getString("payload"))
+                               .build();
+
+            events.add(event);
+        }
+
+        return events;
+
+    }
+
+    private String getQuery(Tenant tenant, Application application, String deviceGuid, String channel,
+            Instant startInstant, Instant endInstant, boolean ascending, Integer limit, Type type,
+            String table, List<Object> filters) {
+
+        StringBuilder query = new StringBuilder();
 
         if (type == Type.INCOMING) {
             query.append("SELECT tenant_domain, application_name, timestamp, channel, device_guid, device_id, payload FROM ");
@@ -283,61 +368,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
             query.append(limit);
         }
 
-        PreparedStatement ps = session.prepare(query.toString());
-        BoundStatement statement = ps.bind(filters.toArray(new Object[filters.size()]));
-
-        final ResultSet rs = session.execute(statement);
-
-        List<Event> events = new LinkedList<>();
-
-        while (!rs.isExhausted()) {
-            final Row row = rs.one();
-
-            EventActor outgoingActor = null;
-            EventActor incomingActor = null;
-
-            if (type == Type.INCOMING) {
-
-                incomingActor = EventActor.builder()
-                                          .tenantDomain(row.getString("tenant_domain"))
-                                          .applicationName(row.getString("application_name"))
-                                          .deviceGuid(row.getString("device_guid"))
-                                          .deviceId(row.getString("device_id"))
-                                          .channel(row.getString("channel"))
-                                          .build();
-
-            } else if (type == Type.OUTGOING) {
-
-                outgoingActor = EventActor.builder()
-                        .tenantDomain(row.getString("tenant_domain"))
-                        .applicationName(row.getString("application_name"))
-                        .deviceGuid(row.getString("device_guid"))
-                        .deviceId(row.getString("device_id"))
-                        .channel(row.getString("channel"))
-                        .build();
-
-                incomingActor = EventActor.builder()
-                        .tenantDomain(row.getString("tenant_domain"))
-                        .applicationName(row.getString("application_name"))
-                        .deviceGuid(row.getString("incoming_device_guid"))
-                        .deviceId(row.getString("incoming_device_id"))
-                        .channel(row.getString("incoming_channel"))
-                        .build();
-
-            }
-
-            Event event = Event.builder()
-                               .epochTime(row.getLong("timestamp"))
-                               .timestamp(Instant.ofEpochMilli(row.getLong("timestamp") / 1000000))
-                               .incoming(incomingActor)
-                               .outgoing(outgoingActor)
-                               .payload(row.getString("payload"))
-                               .build();
-
-            events.add(event);
-        }
-
-        return events;
+        return query.toString();
 
     }
 
@@ -349,10 +380,10 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
         for (Event key: keys) {
             if (type == Type.INCOMING) {
                 removeByKey(key, type);
-                saveEvent(tenant, application, key, type, INCOMING_EVENTS_DELETED);
+                saveEvent(tenant, application, key, type, INCOMING_EVENTS_DELETED, false);
             } else if (type == Type.OUTGOING) {
                 removeByKey(key, type);
-                saveEvent(tenant, application, key, type, OUTGOING_EVENTS_DELETED);
+                saveEvent(tenant, application, key, type, OUTGOING_EVENTS_DELETED, false);
             }
         }
 
