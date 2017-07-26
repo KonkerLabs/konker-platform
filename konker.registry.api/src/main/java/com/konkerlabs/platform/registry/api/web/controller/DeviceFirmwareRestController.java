@@ -28,9 +28,7 @@ import com.konkerlabs.platform.registry.api.model.RestResponse;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.DeviceFirmware;
 import com.konkerlabs.platform.registry.business.model.DeviceModel;
-import com.konkerlabs.platform.registry.business.model.RestDestination.Validations;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.services.api.DeviceConfigSetupService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceFirmwareService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
@@ -152,13 +150,14 @@ public class DeviceFirmwareRestController extends AbstractRestController impleme
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        for (Validations value : Validations.values()) {
+
+        for (DeviceModel.Validations value : DeviceModel.Validations.values()) {
+            validationsCode.add(value.getCode());
+        }
+        for (DeviceModelService.Validations value : DeviceModelService.Validations.values()) {
             validationsCode.add(value.getCode());
         }
 
-        for (DeviceConfigSetupService.Validations value : DeviceConfigSetupService.Validations.values()) {
-            validationsCode.add(value.getCode());
-        }
     }
 
     private void validateChecksum(byte firmware[], String checksum) throws BadServiceResponseException {

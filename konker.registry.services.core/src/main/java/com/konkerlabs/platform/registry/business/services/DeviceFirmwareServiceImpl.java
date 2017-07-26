@@ -48,47 +48,9 @@ public class DeviceFirmwareServiceImpl implements DeviceFirmwareService {
     @Override
     public ServiceResponse<DeviceFirmware> save(Tenant tenant, Application application, DeviceFirmware deviceFirmware) {
 
-        if (!Optional.ofNullable(tenant).isPresent()) {
-            Device noDevice = Device.builder().guid("NULL").tenant(
-			        Tenant.builder().domainName("unknow_domain").build()).build();
-			LOGGER.debug(CommonValidations.TENANT_NULL.getCode(),
-                    noDevice.toURI(),
-                    noDevice.getTenant().getLogLevel());
-            return ServiceResponseBuilder.<DeviceFirmware>error()
-                    .withMessage(CommonValidations.TENANT_NULL.getCode())
-                    .build();
-        }
-
-        if (!Optional.ofNullable(application).isPresent()) {
-        	Device noDevice = Device.builder()
-        			.guid("NULL")
-        			.tenant(tenant)
-        			.application(Application.builder().name("unknowapp").tenant(tenant).build())
-        			.build();
-        	LOGGER.debug(ApplicationService.Validations.APPLICATION_NULL.getCode(),
-        			noDevice.toURI(),
-        			noDevice.getTenant().getLogLevel());
-        	return ServiceResponseBuilder.<DeviceFirmware>error()
-        			.withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode())
-        			.build();
-        }
-
-        if (!Optional.ofNullable(deviceFirmware).isPresent()) {
-            return ServiceResponseBuilder.<DeviceFirmware>error()
-                    .withMessage(CommonValidations.RECORD_NULL.getCode())
-                    .build();
-        }
-
-        if (!tenantRepository.exists(tenant.getId())) {
-            return ServiceResponseBuilder.<DeviceFirmware>error()
-                    .withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode())
-                    .build();
-        }
-
-        if (!applicationRepository.exists(application.getName())) {
-            return ServiceResponseBuilder.<DeviceFirmware>error()
-                    .withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode())
-                    .build();
+        ServiceResponse<DeviceFirmware> validationResponse = validate(tenant, application);
+        if (!validationResponse.isOk()) {
+            return validationResponse;
         }
 
         if (deviceFirmware.getDeviceModel() == null) {
@@ -97,7 +59,13 @@ public class DeviceFirmwareServiceImpl implements DeviceFirmwareService {
                 deviceFirmware.setDeviceModel(response.getResult());
             } else {
                 return ServiceResponseBuilder.<DeviceFirmware>error()
-                        .withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode())
+                        .withMessage(DeviceModelService.Validations.DEVICE_MODEL_DOES_NOT_EXIST.getCode())
+                        .build();
+            }
+        } else {
+            if (!deviceFirmware.getDeviceModel().getApplication().getName().equals(application.getName())) {
+                return ServiceResponseBuilder.<DeviceFirmware>error()
+                        .withMessage(DeviceModelService.Validations.DEVICE_MODEL_DOES_NOT_EXIST.getCode())
                         .build();
             }
         }
@@ -125,11 +93,27 @@ public class DeviceFirmwareServiceImpl implements DeviceFirmwareService {
         DeviceFirmware saved = deviceFirmwareRepository.save(deviceFirmware);
 
         return ServiceResponseBuilder.<DeviceFirmware>ok().withResult(saved).build();
+
     }
 
     @Override
     public ServiceResponse<List<DeviceFirmware>> listByDeviceModel(Tenant tenant, Application application,
             DeviceModel deviceModel) {
+
+        ServiceResponse<List<DeviceFirmware>> validationResponse = validate(tenant, application);
+        if (!validationResponse.isOk()) {
+            return validationResponse;
+        }
+
+        List<DeviceFirmware> modelFirmwares = deviceFirmwareRepository.listByDeviceModel(tenant.getId(), application.getName(), deviceModel.getId());
+
+        return ServiceResponseBuilder.<List<DeviceFirmware>>ok()
+                .withResult(modelFirmwares)
+                .build();
+
+    }
+
+    private <T> ServiceResponse<T> validate(Tenant tenant, Application application) {
 
         if (!Optional.ofNullable(tenant).isPresent()) {
             Device noDevice = Device.builder().guid("NULL").tenant(
@@ -137,7 +121,7 @@ public class DeviceFirmwareServiceImpl implements DeviceFirmwareService {
             LOGGER.debug(CommonValidations.TENANT_NULL.getCode(),
                     noDevice.toURI(),
                     noDevice.getTenant().getLogLevel());
-            return ServiceResponseBuilder.<List<DeviceFirmware>>error()
+            return ServiceResponseBuilder.<T>error()
                     .withMessage(CommonValidations.TENANT_NULL.getCode())
                     .build();
         }
@@ -151,17 +135,26 @@ public class DeviceFirmwareServiceImpl implements DeviceFirmwareService {
             LOGGER.debug(ApplicationService.Validations.APPLICATION_NULL.getCode(),
                     noDevice.toURI(),
                     noDevice.getTenant().getLogLevel());
-            return ServiceResponseBuilder.<List<DeviceFirmware>>error()
+            return ServiceResponseBuilder.<T>error()
                     .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode())
                     .build();
         }
 
-        List<DeviceFirmware> modelFirmwares = deviceFirmwareRepository.listByDeviceModel(tenant.getId(), application.getName(), deviceModel.getId());
+        if (!tenantRepository.exists(tenant.getId())) {
+            return ServiceResponseBuilder.<T>error()
+                    .withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode())
+                    .build();
+        }
 
-        return ServiceResponseBuilder.<List<DeviceFirmware>>ok()
-                .withResult(modelFirmwares)
-                .build();
+        if (!applicationRepository.exists(application.getName())) {
+            return ServiceResponseBuilder.<T>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode())
+                    .build();
+        }
+
+        return ServiceResponseBuilder.<T>ok().build();
 
     }
+
 
 }

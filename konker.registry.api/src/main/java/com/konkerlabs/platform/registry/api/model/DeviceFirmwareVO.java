@@ -1,7 +1,5 @@
 package com.konkerlabs.platform.registry.api.model;
 
-import java.time.Instant;
-
 import com.konkerlabs.platform.registry.api.model.core.SerializableVO;
 import com.konkerlabs.platform.registry.business.model.DeviceFirmware;
 

@@ -10,8 +10,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-
 import lombok.Builder;
 import lombok.Data;
 
@@ -55,8 +53,6 @@ public class DeviceFirmware {
 
         Map<String, Object[]> validations = new HashMap<>();
 
-        if (getTenant() == null)
-            validations.put(CommonValidations.TENANT_NULL.getCode(), null);
         if (getVersion() == null || !getVersion().matches("([0-9]+)\\.([0-9]+)\\.([0-9]+)(?:(\\-[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*))?(?:\\+[0-9A-Za-z-\\-\\.]+)?")) {
             validations.put(Validations.INVALID_VERSION.getCode(), null);
         }
