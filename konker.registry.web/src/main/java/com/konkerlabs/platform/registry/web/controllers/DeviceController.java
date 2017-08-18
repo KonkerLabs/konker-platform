@@ -386,12 +386,21 @@ public class DeviceController implements ApplicationContextAware {
                                  RedirectAttributes redirectAttributes, Locale locale) {
     	application = applicationService.getByApplicationName(tenant, applicationName).getResult();
 
+        Device deviceUpdated = deviceForm.toModel();
+
+    	ServiceResponse<Device> deviceFindResponse = deviceRegisterService.getByDeviceGuid(tenant, application, deviceGuid);
+    	if (deviceFindResponse.isOk()) {
+            // set non editable at screen fields
+            deviceUpdated.setLocation(deviceFindResponse.getResult().getLocation());
+            deviceUpdated.setDeviceModel(deviceFindResponse.getResult().getDeviceModel());
+    	}
+
         return doSave(
                 () -> deviceRegisterService.update(
                 		tenant,
                 		application,
                 		deviceGuid,
-                		deviceForm.toModel()),
+                		deviceUpdated),
                 deviceForm, locale,
                 redirectAttributes, "put");
     }

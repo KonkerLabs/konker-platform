@@ -59,17 +59,17 @@ public class LocationRestController extends AbstractRestController implements In
     @ApiOperation(
             value = "List all locations by application",
             response = LocationVO.class)
-    public LocationVO list(@PathVariable("application") String applicationId) throws BadServiceResponseException, NotFoundResponseException {
+    public List<LocationVO> list(@PathVariable("application") String applicationId) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
 
-        ServiceResponse<Location> locationResponse = locationSearchService.findRoot(tenant, application);
+        ServiceResponse<List<Location>> locationResponse = locationSearchService.findAll(tenant, application);
 
         if (!locationResponse.isOk()) {
             throw new BadServiceResponseException(user, locationResponse, validationsCode);
         } else {
-            return new LocationVO(locationResponse.getResult());
+            return new LocationVO().apply(locationResponse.getResult());
         }
 
     }
