@@ -402,6 +402,17 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
             }
         }
 
+        if (updatingDevice.getDeviceModel() == null) {
+            ServiceResponse<DeviceModel> modelResponse = deviceModelService.findDefault(tenant, application);
+            if (modelResponse.isOk()) {
+                updatingDevice.setDeviceModel(modelResponse.getResult());
+            } else {
+                LOGGER.error("error getting default application device model",
+                        Device.builder().guid("NULL").tenant(tenant).build().toURI(),
+                        updatingDevice.getLogLevel());
+            }
+        }
+
         // modify "modifiable" fields
         deviceFromDB.setDescription(updatingDevice.getDescription());
         deviceFromDB.setName(updatingDevice.getName());
