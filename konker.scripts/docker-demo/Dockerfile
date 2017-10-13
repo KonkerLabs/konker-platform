@@ -9,7 +9,7 @@ RUN yum install -y wget nc
 RUN yum -y install java-1.8.0-openjdk-devel
 
 #PYTHON
-RUN rpm -iUvh http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-9.noarch.rpm  && \
+RUN rpm -iUvh http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-10.noarch.rpm  && \
 yum update -y && \
 yum install -y python python-pip && \
     pip install --upgrade pip && \
