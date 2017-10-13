@@ -11,10 +11,12 @@ import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
 import com.konkerlabs.platform.registry.business.model.enumerations.Language;
 import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
 import com.konkerlabs.platform.registry.business.services.api.AlertTriggerService;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationDocumentStoreService;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceConfigSetupService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceCustomDataService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceFirmwareService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
@@ -129,6 +131,16 @@ public class WebTestConfiguration {
     @Bean
     public DeviceCustomDataService deviceCustomDataService() {
         return Mockito.mock(DeviceCustomDataService.class);
+    }
+
+    @Bean
+    public ApplicationDocumentStoreService applicationDocumentStoreService() {
+        return Mockito.mock(ApplicationDocumentStoreService.class);
+    }
+
+    @Bean
+    public DeviceFirmwareService deviceFirmwareServiceeviceFirmwareService() {
+        return Mockito.mock(DeviceFirmwareService.class);
     }
 
 }

@@ -112,8 +112,12 @@ public class LocationRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldListLocations() throws Exception {
 
-        when(locationSearchService.findRoot(tenant, application))
-            .thenReturn(ServiceResponseBuilder.<Location>ok().withResult(location1).build());
+        List<Location> locations = new ArrayList<>();
+        locations.add(location1);
+        locations.add(location2);
+
+        when(locationSearchService.findAll(tenant, application))
+        .thenReturn(ServiceResponseBuilder.<List<Location>>ok().withResult(locations).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH))
                                                    .contentType("application/json")
@@ -123,17 +127,18 @@ public class LocationRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.code", is(HttpStatus.OK.value())))
                     .andExpect(jsonPath("$.status", is("success")))
                     .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
-                    .andExpect(jsonPath("$.result.name", is("sp")))
-                    .andExpect(jsonPath("$.result.description", is("desc-sp")))
-                    .andExpect(jsonPath("$.result.defaultLocation", is(false)));
+                    .andExpect(jsonPath("$.result", hasSize(2)))
+                    .andExpect(jsonPath("$.result[0].name", is("sp")))
+                    .andExpect(jsonPath("$.result[0].description", is("desc-sp")))
+                    .andExpect(jsonPath("$.result[0].defaultLocation", is(false)));
 
     }
 
     @Test
     public void shouldTryListLocationsWithInternalError() throws Exception {
 
-        when(locationSearchService.findRoot(tenant, application))
-            .thenReturn(ServiceResponseBuilder.<Location> error().build());
+        when(locationSearchService.findAll(tenant, application))
+            .thenReturn(ServiceResponseBuilder.<List<Location>> error().build());
 
         getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH))
                 .accept(MediaType.APPLICATION_JSON)

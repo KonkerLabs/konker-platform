@@ -73,51 +73,55 @@ public class EventRouteExecutorImpl implements EventRouteExecutor {
             return new AsyncResult<List<Event>>(outEvents);
         }
 
-        for (EventRoute eventRoute : eventRoutes) {
+        eventRoutes.parallelStream().forEach((eventRoute) -> {
+            processEventRoute(event, device, outEvents, eventRoute);
+        });
 
-            if (isEventRouteDeviceMatch(eventRoute, device)) {
+        return new AsyncResult<List<Event>>(outEvents);
+    }
 
-                String incomingPayload = event.getPayload();
+    private void processEventRoute(Event event, Device device, List<Event> outEvents, EventRoute eventRoute) {
 
-                if (!eventRoute.isActive())
-                    continue;
-                if (!eventRoute.getIncoming().getData().get(DEVICE_MQTT_CHANNEL).equals(event.getIncoming().getChannel())) {
-                    LOGGER.debug("Non matching channel for incoming event: {}", event, eventRoute.getTenant().toURI(), eventRoute.getTenant().getLogLevel());
-                    continue;
-                }
+        if (isEventRouteDeviceMatch(eventRoute, device)) {
 
-                try {
-                    if (isFilterExpressionMatch(event, eventRoute)) {
-                        if (Optional.ofNullable(eventRoute.getTransformation()).isPresent()) {
-                            Optional<Event> transformed = eventTransformationService.transform(
-                                    event, eventRoute.getTransformation());
-                            if (transformed.isPresent()) {
-                                forwardEvent(eventRoute, transformed.get());
-                                outEvents.add(transformed.get());
-                            } else {
-                                logEventWithInvalidTransformation(event, eventRoute);
-                            }
+            String incomingPayload = event.getPayload();
+
+            if (!eventRoute.isActive())
+                return;
+            if (!eventRoute.getIncoming().getData().get(DEVICE_MQTT_CHANNEL).equals(event.getIncoming().getChannel())) {
+                LOGGER.debug("Non matching channel for incoming event: {}", event, eventRoute.getTenant().toURI(), eventRoute.getTenant().getLogLevel());
+                return;
+            }
+
+            try {
+                if (isFilterExpressionMatch(event, eventRoute)) {
+                    if (Optional.ofNullable(eventRoute.getTransformation()).isPresent()) {
+                        Optional<Event> transformed = eventTransformationService.transform(
+                                event, eventRoute.getTransformation());
+                        if (transformed.isPresent()) {
+                            forwardEvent(eventRoute, transformed.get());
+                            outEvents.add(transformed.get());
                         } else {
-                            forwardEvent(eventRoute, event);
-                            outEvents.add(event);
+                            logEventWithInvalidTransformation(event, eventRoute);
                         }
                     } else {
-                        logEventFilterMismatch(event, eventRoute);
+                        forwardEvent(eventRoute, event);
+                        outEvents.add(event);
                     }
-                } catch (IOException e) {
-                    LOGGER.error("Error parsing JSON payload.", eventRoute.toURI(), eventRoute.getTenant().getLogLevel(), e);
-                } catch (SpelEvaluationException e) {
-                    LOGGER.error(MessageFormat
-                            .format("Error evaluating, probably malformed, expression: \"{0}\". Message payload: {1} ",
-                                    eventRoute.getFilteringExpression(),
-                                    incomingPayload), eventRoute.toURI(), eventRoute.getTenant().getLogLevel(), e);
+                } else {
+                    logEventFilterMismatch(event, eventRoute);
                 }
-
+            } catch (IOException e) {
+                LOGGER.error("Error parsing JSON payload.", eventRoute.toURI(), eventRoute.getTenant().getLogLevel(), e);
+            } catch (SpelEvaluationException e) {
+                LOGGER.error(MessageFormat
+                        .format("Error evaluating, probably malformed, expression: \"{0}\". Message payload: {1} ",
+                                eventRoute.getFilteringExpression(),
+                                incomingPayload), eventRoute.toURI(), eventRoute.getTenant().getLogLevel(), e);
             }
 
         }
 
-        return new AsyncResult<List<Event>>(outEvents);
     }
 
     private boolean isEventRouteDeviceMatch(EventRoute eventRoute, Device device) {

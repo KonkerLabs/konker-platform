@@ -34,6 +34,7 @@ import com.konkerlabs.platform.registry.api.model.DeviceVO;
 import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
 import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
 import com.konkerlabs.platform.registry.api.web.controller.DeviceRestController;
+import com.konkerlabs.platform.registry.api.web.controller.DeviceStatusRestController;
 import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
@@ -54,7 +55,7 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBui
 import com.konkerlabs.platform.registry.business.services.api.HealthAlertService.Validations;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = DeviceRestController.class)
+@SpringBootTest(classes = {DeviceRestController.class, DeviceStatusRestController.class})
 @AutoConfigureMockMvc(secure = false)
 @ContextConfiguration(classes = {
         WebTestConfiguration.class,
@@ -74,7 +75,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 
     @Autowired
     private ApplicationService applicationService;
-    
+
     @Autowired
     private DeviceEventService deviceEventService;
 
@@ -96,11 +97,11 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     private HealthAlert health2;
 
     private List<HealthAlert> healths;
-    
+
     private List<Event> events;
 
     private String BASEPATH = "devices";
-    
+
     private Instant registrationDate = Instant.ofEpochMilli(1495716970000l).minusSeconds(3600l);
 
     @Before
@@ -119,7 +120,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
         		.build();
         device2 = Device.builder().deviceId("id2").name("name2").guid("guid2").location(locationBR).application(application).active(false).build();
 
-        
+
 		health1 = HealthAlert.builder()
 				.guid("7d51c242-81db-11e6-a8c2-0746f976f223")
 				.severity(HealthAlertSeverity.FAIL)
@@ -143,13 +144,13 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
         		.build();
 
 		healths = Arrays.asList(health1, health2);
-		
+
 		Event event = Event.builder()
 					.incoming(EventActor.builder().channel("out").deviceGuid(device1.getGuid()).build())
 					.timestamp(registrationDate)
 					.build();
 		events = Collections.singletonList(event);
-		
+
         when(locationSearchService.findByName(tenant, application, "br", false))
             .thenReturn(ServiceResponseBuilder.<Location>ok().withResult(locationBR).build());
 
@@ -566,7 +567,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.result").doesNotExist());
 
     }
-    
+
     @Test
     public void shouldShowDeviceStats() throws Exception {
 
@@ -575,7 +576,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 
         when(applicationService.getByApplicationName(tenant, application.getName()))
 				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
-        
+
         when(deviceEventService.findIncomingBy(tenant, application, device1.getGuid(), null, null, null, false, 1))
         		.thenReturn(ServiceResponseBuilder.<List<Event>> ok().withResult(events).build());
 
@@ -621,7 +622,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 
         when(applicationService.getByApplicationName(tenant, application.getName()))
 				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
-        
+
         when(deviceEventService.findIncomingBy(tenant, application, device1.getGuid(), null, null, null, false, 1))
 		.thenReturn(ServiceResponseBuilder.<List<Event>> ok().withResult(events).build());
 

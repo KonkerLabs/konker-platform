@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.EventRoute;
+import com.konkerlabs.platform.registry.business.model.Location;
 import com.konkerlabs.platform.registry.business.model.RestDestination;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.Transformation;
@@ -26,6 +28,7 @@ import com.konkerlabs.platform.registry.business.repositories.RestDestinationRep
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.TransformationRepository;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
+import com.konkerlabs.platform.registry.business.services.api.LocationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 
@@ -52,6 +55,9 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Autowired
     private EventRouteRepository eventRouteRepository;
+    
+    @Autowired
+    private LocationService locationService;
 
     private ServiceResponse<Application> basicValidate(Tenant tenant, Application application) {
 		if (!Optional.ofNullable(tenant).isPresent()) {
@@ -131,8 +137,21 @@ public class ApplicationServiceImpl implements ApplicationService {
 		application.setQualifier(Application.DEFAULT_QUALIFIER);
 		Application save = applicationRepository.save(application);
 		LOGGER.info("Application created. Name: {}", save.getName(), tenant.toURI(), tenant.getLogLevel());
+		
+		createLocationDefaultToApplication(tenant, save);
 
 		return ServiceResponseBuilder.<Application>ok().withResult(save).build();
+	}
+
+	private void createLocationDefaultToApplication(Tenant tenant, Application application) {
+		Location location  = Location.builder()
+                .tenant(tenant)
+                .application(application)
+                .guid(UUID.randomUUID().toString())
+                .defaultLocation(true)
+                .name("default")
+                .build();
+		locationService.save(tenant, application, location );
 	}
 
 	@Override
