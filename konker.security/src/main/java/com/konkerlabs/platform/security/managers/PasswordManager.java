@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.security.managers;
 
+import com.konkerlabs.platform.security.crypto.BCrypt;
 import com.konkerlabs.platform.security.exceptions.SecurityException;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -27,12 +28,14 @@ public class PasswordManager {
             STORAGE_PATTERN_DELIMITER+"{4}";
 
     // The following constants may be changed without breaking existing hashes.
-    public static final String QUALIFIER = "PBKDF2WithHmac";
+    public static final String QUALIFIER_PBKDF2 = "PBKDF2WithHmac";
+    public static final String QUALIFIER_BCRYPT = "Bcrypt";
     public static final String HASH_ALGORITHM = CONFIG.getString("hash.algorithm");
     public static final int SALT_BYTES = CONFIG.getInt("salt.size");
     public static final int HASH_BYTES = 32;
     public static final int ITERATIONS = CONFIG.getInt("iterations");
 
+    private static final int HASHING_FUNCTION_INDEX = 0;
     private static final int ITERATION_INDEX = 2;
     private static final int SALT_INDEX = 3;
     private static final int PBKDF2_INDEX = 4;
@@ -100,7 +103,7 @@ public class PasswordManager {
                     HASH_BYTES
             );
 
-            return MessageFormat.format(STORAGE_PATTERN,QUALIFIER,HASH_ALGORITHM,ITERATIONS,toBase64(salt),toBase64(hash));
+            return MessageFormat.format(STORAGE_PATTERN, QUALIFIER_PBKDF2,HASH_ALGORITHM,ITERATIONS,toBase64(salt),toBase64(hash));
         } catch (NoSuchAlgorithmException|InvalidKeySpecException e) {
             throw new SecurityException(e);
         }
@@ -145,16 +148,37 @@ public class PasswordManager {
     	} else {
     		// Decode the hash into its parameters
     		String[] params = goodHash.split("\\"+STORAGE_PATTERN_DELIMITER);
-    		int iterations = Integer.parseInt(params[ITERATION_INDEX]);
-    		byte[] salt = fromBase64(params[SALT_INDEX]);
-    		byte[] hash = fromBase64(params[PBKDF2_INDEX]);
-    		// Compute the hash of the provided password, using the same salt,
-    		// iteration count, and hash length
-    		byte[] testHash = pbkdf2(password, salt, iterations, hash.length);
-    		// Compare the hashes in constant time. The password is correct if
-    		// both hashes match.
-    		return slowEquals(hash, testHash);
+
+    		switch (params[HASHING_FUNCTION_INDEX]) {
+                case QUALIFIER_PBKDF2:
+                    return validatePBKDF2Password(params, password);
+                case QUALIFIER_BCRYPT:
+                    return validateBcryptPassword(goodHash, password);
+                 default:
+                     return false;
+            }
+
     	}
+    }
+
+    private boolean validateBcryptPassword(String goodHash, char[] password) {
+        // Remove qualifier
+        goodHash = goodHash.substring(goodHash.indexOf("$"));
+        return BCrypt.checkpw(new String(password), goodHash);
+    }
+
+    private boolean validatePBKDF2Password(String[] params, char[] password) throws InvalidKeySpecException, NoSuchAlgorithmException {
+
+        int iterations = Integer.parseInt(params[ITERATION_INDEX]);
+        byte[] salt = fromBase64(params[SALT_INDEX]);
+        byte[] hash = fromBase64(params[PBKDF2_INDEX]);
+        // Compute the hash of the provided password, using the same salt,
+        // iteration count, and hash length
+        byte[] testHash = pbkdf2(password, salt, iterations, hash.length);
+        // Compare the hashes in constant time. The password is correct if
+        // both hashes match.
+        return slowEquals(hash, testHash);
+
     }
 
     /**
@@ -187,7 +211,7 @@ public class PasswordManager {
             throws NoSuchAlgorithmException, InvalidKeySpecException
     {
         PBEKeySpec spec = new PBEKeySpec(password, salt, iterations, bytes * 8);
-        SecretKeyFactory skf = SecretKeyFactory.getInstance(QUALIFIER+HASH_ALGORITHM);
+        SecretKeyFactory skf = SecretKeyFactory.getInstance(QUALIFIER_PBKDF2 +HASH_ALGORITHM);
         return skf.generateSecret(spec).getEncoded();
     }
 
