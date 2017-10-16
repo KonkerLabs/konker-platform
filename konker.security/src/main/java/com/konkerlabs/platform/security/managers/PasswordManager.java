@@ -120,7 +120,7 @@ public class PasswordManager {
     }
 
     /**
-     * Validates a password using a hash.
+     * Validates a password using a hash (PBKDF2 or BCrypt)
      *
      * @param   password    the password to check
      * @param   goodHash    the hash of the valid password
@@ -133,7 +133,7 @@ public class PasswordManager {
     }
 
     /**
-     * Validates a password using a hash.
+     * Validates a password using a hash (PBKDF2 or BCrypt)
      *
      * @param   password    the password to check
      * @param   goodHash    the hash of the valid password
