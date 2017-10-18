@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry.business.model;
 
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -48,6 +49,9 @@ public class User implements URIDealer, UserDetails, ClientDetails {
     private Language language = Language.PT_BR;
     private DateFormat dateFormat = DateFormat.YYYYMMDD;
     private boolean notificationViaEmail;
+    private Instant registrationDate;
+    private JobEnum job;
+    private boolean active;
 
     @Tolerate
     public User() {
@@ -197,5 +201,20 @@ public class User implements URIDealer, UserDetails, ClientDetails {
 		return Collections.emptyMap();
 	}
 	//methods of ClientDetails OAuth2
+	
+	public enum JobEnum {
+		ENGINEER("model.user.job.engineer"),
+		DEVELOPER("model.user.job.developer");
+
+		public String getCode() {
+			return code;
+		}
+
+		private String code;
+
+		JobEnum(String code) {
+			this.code = code;
+		}
+	}
 
 }

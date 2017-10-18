@@ -3,8 +3,12 @@ package com.konkerlabs.platform.registry.business.services;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.text.MessageFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
+import java.util.TimeZone;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,8 +96,33 @@ public class UserServiceImpl implements UserService {
         return save(user, newPassword, newPasswordConfirmation);
 
     }
+    
+    @Override
+    public ServiceResponse<User> createTrialAccount(User user, String newPassword, String newPasswordConfirmation) {
+    	Instant start = LocalDateTime
+    			.now()
+    			.withHour(0)
+    			.withMinute(0)
+    			.withSecond(0)
+    			.toInstant(ZoneOffset.UTC);
+		Instant end = LocalDateTime
+				.now()
+				.withHour(23)
+				.withMinute(59)
+				.withSecond(59)
+				.toInstant(ZoneOffset.UTC);
 
-
+		Long countUsers = userRepository.countBetweenDate(start, end);
+		
+		if (countUsers.equals(new Long(250l))) {
+			return ServiceResponseBuilder.<User>error()
+					.withMessage(Validations.INVALID_USER_LIMIT_CREATION.getCode())
+					.build();
+		}
+		
+    	return save(user, user.getPassword(), user.getPassword());
+    }
+    
 	@Override
 	public ServiceResponse<User> save(User user, String newPassword, String newPasswordConfirmation) {
 		if (!Optional.ofNullable(user.getEmail()).isPresent()) {

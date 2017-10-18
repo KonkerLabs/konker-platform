@@ -21,7 +21,8 @@ public interface UserService {
         INVALID_PASSWORD_INVALID("service.user.validation.password.invalid"),
         INVALID_PASSWORD_BLACKLISTED("service.user.validation.password.invalid.blacklisted"),
         INVALID_AVATAR("service.user.validation.avatar.invalid"),
-        NO_EXIST_USER("service.user.validation.no.exist");
+        NO_EXIST_USER("service.user.validation.no.exist"), 
+        INVALID_USER_LIMIT_CREATION("service.user.validation.limit.creation");
 
         private String code;
 
@@ -58,6 +59,10 @@ public interface UserService {
                                String password,
                                String newPassword,
                                String newPasswordConfirmation);
+    
+    ServiceResponse<User> createTrialAccount(User user,
+    		String newPassword,
+            String newPasswordConfirmation);
     
     ServiceResponse<User> save(User user,
             String newPassword,
