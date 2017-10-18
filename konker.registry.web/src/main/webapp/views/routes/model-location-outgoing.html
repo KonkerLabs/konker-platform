@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+<div data-th-fragment="outgoing">
+
+    <div class="form-group">
+        <label class="col-sm-1 control-label"
+               data-th-text="#{routes.form.outgoing.device_model}"
+               for="outgoingAuthority0"></label>
+        <div class="col-sm-4">
+            <select
+                    class="form-control col-md-12"
+                    data-th-field="${route.outgoing.authorityIds[0]}"
+                    id="outgoingAuthority0" name="outgoingAuthority">
+                <option data-th-each="deviceModel : ${allDeviceModels}"
+                        data-th-value="${deviceModel.guid}"
+                        data-th-text="${deviceModel.name}"></option>
+            </select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-1 control-label"
+               data-th-text="#{routes.form.outgoing.location}"
+               for="outgoingAuthority1"></label>
+        <div class="col-sm-4">
+            <select
+                    class="form-control col-md-12"
+                    data-th-field="${route.outgoing.authorityIds[1]}"
+                    id="outgoingAuthority1" name="outgoingAuthority">
+                <option data-th-each="location : ${allLocations}"
+                        data-th-value="${location.guid}"
+                        data-th-text="${location.name}"></option>
+            </select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-1 control-label"
+               data-th-text="#{routes.form.outgoing.channel}"
+               for="outgoingChannel"></label>
+        <div class="col-sm-4">
+            <input type="text" data-th-field="${route.outgoing.authorityData['channel']}"
+                   class="form-control"
+                   id="outgoingChannel"
+                   name="outgoingChannel" data-th-placeholder="#{routes.form.outgoing.channel.placeholder}"/>
+        </div>
+    </div>
+    
+</div>
+</body>
+</html>
