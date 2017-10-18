@@ -197,7 +197,7 @@ public class UserServiceImpl implements UserService {
             }
         });
 
-        if (Optional.ofNullable(user.getPassword()).isPresent() && !user.getPassword().startsWith(PasswordManager.QUALIFIER)) {
+        if (Optional.ofNullable(user.getPassword()).isPresent() && !user.getPassword().startsWith(PasswordManager.QUALIFIER_PBKDF2)) {
             LOG.debug(Errors.ERROR_SAVE_USER.getCode(), fromStorage.getTenant().toURI(), fromStorage.getTenant().getLogLevel(), fromStorage);
 
             return ServiceResponseBuilder.<User>error()
