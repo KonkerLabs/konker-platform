@@ -3,8 +3,12 @@ package com.konkerlabs.platform.registry.business.services;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.text.MessageFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +25,7 @@ import com.konkerlabs.platform.registry.business.repositories.PasswordBlacklistR
 import com.konkerlabs.platform.registry.business.repositories.UserRepository;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.business.services.api.TenantService;
 import com.konkerlabs.platform.registry.business.services.api.UserService;
 import com.konkerlabs.platform.registry.config.PasswordUserConfig;
 import com.konkerlabs.platform.security.managers.PasswordManager;
@@ -29,11 +34,20 @@ import com.konkerlabs.platform.security.managers.PasswordManager;
 public class UserServiceImpl implements UserService {
 
     private Logger LOG = LoggerFactory.getLogger(UserServiceImpl.class);
+    
+    private static final String EMAIL_PATTERN =
+    		"^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
+    		+ "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
+    
+    private Pattern patternEmail;
 
     @Autowired
     private UserRepository userRepository;
     @Autowired
     private PasswordBlacklistRepository passwordBlacklistRepository;
+    
+    @Autowired
+    private TenantService tenantService;
 
     private PasswordUserConfig passwordUserConfig; 
 
@@ -42,6 +56,7 @@ public class UserServiceImpl implements UserService {
     public UserServiceImpl() {
         passwordUserConfig = new PasswordUserConfig(); 
         passwordManager = new PasswordManager();
+        patternEmail = Pattern.compile(EMAIL_PATTERN);
     }
 
     @Override
@@ -92,11 +107,11 @@ public class UserServiceImpl implements UserService {
         return save(user, newPassword, newPasswordConfirmation);
 
     }
-
-
-	@Override
+    
+    @Override
 	public ServiceResponse<User> save(User user, String newPassword, String newPasswordConfirmation) {
-		if (!Optional.ofNullable(user.getEmail()).isPresent()) {
+		if (!Optional.ofNullable(user.getEmail()).isPresent() ||
+				!patternEmail.matcher(user.getEmail()).matches()) {
 			return ServiceResponseBuilder.<User>error()
 					.withMessage(Validations.INVALID_USER_EMAIL.getCode())
 					.build();
@@ -226,6 +241,58 @@ public class UserServiceImpl implements UserService {
                     .withMessage(Errors.ERROR_SAVE_USER.getCode()).build();
         }
 	}
+    
+    @Override
+    public ServiceResponse<User> createAccount(User user, String newPassword, String newPasswordConfirmation) {
+    	Instant start = LocalDateTime
+    			.now()
+    			.withHour(0)
+    			.withMinute(0)
+    			.withSecond(0)
+    			.toInstant(ZoneOffset.UTC);
+		Instant end = LocalDateTime
+				.now()
+				.withHour(23)
+				.withMinute(59)
+				.withSecond(59)
+				.toInstant(ZoneOffset.UTC);
+
+		Long countUsers = userRepository.countBetweenDate(start, end);
+
+		if (countUsers.equals(new Long(250l))) {
+			return ServiceResponseBuilder.<User>error()
+					.withMessage(Validations.INVALID_USER_LIMIT_CREATION.getCode())
+					.build();
+		}
+		
+		User fromStorage = userRepository.findByEmail(user.getEmail());
+		
+		if (Optional.ofNullable(fromStorage).isPresent()) {
+			return ServiceResponseBuilder.<User>error()
+					.withMessage(Validations.USER_EXIST.getCode())
+					.build();
+		}
+		
+		if (!Optional.ofNullable(user.getName()).isPresent() ||
+				user.getName().isEmpty()) {
+			return ServiceResponseBuilder.<User>error()
+					.withMessage(Validations.INVALID_USER_NAME.getCode())
+					.build();
+		}
+		
+		ServiceResponse<Tenant> serviceResponse = tenantService.save(Tenant.builder()
+				.name(user.getName())
+				.build());
+		user.setTenant(serviceResponse.getResult());
+		
+    	return save(user, newPassword, newPasswordConfirmation);
+    }
+    
+    @Override
+    public ServiceResponse<User> createAccountWithPasswordHash(User user, String passwordHash) {
+    	// TODO Auto-generated method stub
+    	return null;
+    }
 
     /**
      * Fill new values from form
