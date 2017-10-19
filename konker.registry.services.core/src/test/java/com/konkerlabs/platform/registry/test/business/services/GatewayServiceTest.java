@@ -1,17 +1,18 @@
 package com.konkerlabs.platform.registry.test.business.services;
 
-import static com.konkerlabs.platform.registry.business.model.validation.CommonValidations.TENANT_NULL;
-import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
-import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.isResponseOk;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.rules.ExpectedException.none;
-
-import java.time.Instant;
-import java.util.List;
-
+import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.repositories.*;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
+import com.konkerlabs.platform.registry.business.services.api.GatewayService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
+import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
+import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import org.bson.types.Binary;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -21,42 +22,37 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.DeviceFirmware;
-import com.konkerlabs.platform.registry.business.model.DeviceModel;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
-import com.konkerlabs.platform.registry.business.repositories.DeviceFirmwareRepository;
-import com.konkerlabs.platform.registry.business.repositories.DeviceModelRepository;
-import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
-import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceFirmwareService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
-import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
-import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
+import java.time.Instant;
+import java.util.List;
+
+import static com.konkerlabs.platform.registry.business.model.validation.CommonValidations.TENANT_NULL;
+import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
+import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.isResponseOk;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.rules.ExpectedException.none;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { MongoTestConfiguration.class, BusinessTestConfiguration.class})
 @UsingDataSet(locations = { "/fixtures/tenants.json", "/fixtures/applications.json" })
-public class DeviceFirmwareServiceTest extends BusinessLayerTestSupport {
+public class GatewayServiceTest extends BusinessLayerTestSupport {
 
     @Rule
     public ExpectedException thrown = none();
 
     @Autowired
-    private DeviceFirmwareService subject;
+    private GatewayService subject;
 
     @Autowired
-    private DeviceFirmwareRepository deviceFirmwareRepository;
+    private GatewayRepository gatewayRepository;
 
     @Autowired
     private TenantRepository tenantRepository;
 
     @Autowired
-    private DeviceModelRepository deviceModelRepository;
+    private LocationRepository locationRepository;
 
     @Autowired
     private ApplicationRepository applicationRepository;
@@ -66,56 +62,45 @@ public class DeviceFirmwareServiceTest extends BusinessLayerTestSupport {
     private Application application;
     private Application otherApplication;
 
-    private DeviceModel deviceModel1;
+    private Location location;
+    private Gateway gateway;
 
-    private byte firmwareBinary[] = "{ 'code' : 'tschuss' }".getBytes();
+    private String guid;
 
     @Before
     public void setUp() {
         tenant = tenantRepository.findByName("Konker");
 
+        guid = "baadad6b-31c7-4827-9d17-61633c0f2efd";
+
         application = applicationRepository.findByTenantAndName(tenant.getId(), "konker");
         otherApplication = applicationRepository.findByTenantAndName(tenant.getId(), "smartffkonker");
 
-        deviceModel1 = DeviceModel.builder()
+        location = Location.builder()
+                .guid("3bc07c9e-eb48-4c92-97a8-d9c662d1bfcd")
+                .name("BR")
+                .description("Brazil")
+                .application(application)
+                .defaultLocation(true)
+                .tenant(tenant)
+                .build();
+        location = locationRepository.save(location);
+
+        gateway = Gateway.builder()
                                  .tenant(tenant)
                                  .application(application)
+                                 .location(location)
                                  .name("air conditioner")
-                                 .guid("be68c474-b961-4974-829d-daeed9e4142b")
+                                 .guid(guid)
                                  .build();
-        deviceModelRepository.save(deviceModel1);
+        gatewayRepository.save(gateway);
 
-        DeviceFirmware deviceFirmware = DeviceFirmware.builder()
+        Gateway deviceFirmware = Gateway.builder()
                                                 .tenant(tenant)
                                                 .application(application)
-                                                .deviceModel(deviceModel1)
-                                                .firmware(new Binary(firmwareBinary))
-                                                .uploadDate(Instant.now())
-                                                .version("0.1.0")
+                                                .location(location)
                                                 .build();
-        deviceFirmwareRepository.save(deviceFirmware);
-
-    }
-
-    // ============================== listByDeviceModel ==============================//
-
-    @Test
-    public void shouldListByDeviceModel() {
-
-        ServiceResponse<List<DeviceFirmware>> response = subject.listByDeviceModel(tenant, application, deviceModel1);
-        assertThat(response, isResponseOk());
-        assertThat(response.getResult(), notNullValue());
-        assertThat(response.getResult().size(), is(1));
-        assertThat(response.getResult().get(0).getVersion(), is("0.1.0"));
-        assertThat(response.getResult().get(0).getFirmware().getData(), is(firmwareBinary));
-
-    }
-
-    @Test
-    public void shouldTryListByDeviceModelWithNullTenant() {
-
-        ServiceResponse<List<DeviceFirmware>> response = subject.listByDeviceModel(null, application, deviceModel1);
-        assertThat(response, hasErrorMessage(TENANT_NULL.getCode()));
+        gatewayRepository.save(deviceFirmware);
 
     }
 
@@ -124,102 +109,237 @@ public class DeviceFirmwareServiceTest extends BusinessLayerTestSupport {
     @Test
     public void shouldSave() {
 
-        DeviceFirmware newFirmware = DeviceFirmware.builder()
-                                                   .tenant(tenant)
-                                                   .application(application)
-                                                   .deviceModel(deviceModel1)
-                                                   .version("0.2.0")
-                                                   .firmware(new Binary(firmwareBinary))
-                                                   .build();
+        String newName = "ntdxsmztwi";
 
-        ServiceResponse<DeviceFirmware> response = subject.save(tenant, application, newFirmware);
+        Gateway newFirmware = Gateway.builder()
+                                       .name(newName)
+                                       .tenant(tenant)
+                                       .application(application)
+                                       .location(location)
+                                       .build();
+
+        ServiceResponse<Gateway> response = subject.save(tenant, application, newFirmware);
         assertThat(response, isResponseOk());
         assertThat(response.getResult(), notNullValue());
+        assertThat(response.getResult().getName(), is(newName));
 
-        DeviceFirmware firmwareFromDB = deviceFirmwareRepository.findUnique(tenant.getId(), application.getName(), deviceModel1.getId(), "0.2.0");
-        assertThat(firmwareFromDB.getVersion(), is("0.2.0"));
-        assertThat(firmwareFromDB.getFirmware().getData(), is(firmwareBinary));
-        assertThat(firmwareFromDB.getUploadDate(), notNullValue());
+        Gateway firmwareFromDB = gatewayRepository.findByGuid(tenant.getId(), application.getName(), response.getResult().getGuid());
+        assertThat(firmwareFromDB, notNullValue());
+        assertThat(firmwareFromDB.getName(), is(newName));
+
+    }
+
+    @Test
+    public void shouldTrySaveWithExistingName() {
+
+        Gateway newFirmware = Gateway.builder()
+                .name(gateway.getName())
+                .tenant(tenant)
+                .application(application)
+                .location(location)
+                .build();
+
+        ServiceResponse<Gateway> response = subject.save(tenant, application, newFirmware);
+        assertThat(response, hasErrorMessage(GatewayService.Validations.NAME_IN_USE.getCode()));
+
+    }
+
+    @Test
+    public void shouldTrySaveWithNullLocation() {
+
+        Gateway newFirmware = Gateway.builder()
+                .name(gateway.getName())
+                .tenant(tenant)
+                .application(application)
+                .location(null)
+                .build();
+
+        ServiceResponse<Gateway> response = subject.save(tenant, application, newFirmware);
+        assertThat(response, hasErrorMessage(Gateway.Validations.LOCATION_NULL.getCode()));
+
+    }
+
+    @Test
+    public void shouldTrySaveWithNullTenant() {
+
+        Gateway newFirmware = Gateway.builder()
+                .tenant(tenant)
+                .application(application)
+                .location(location)
+                .build();
+
+        ServiceResponse<Gateway> response = subject.save(null, application, newFirmware);
+        assertThat(response, hasErrorMessage(TENANT_NULL.getCode()));
 
     }
 
     @Test
     public void shouldTrySaveWithNullApplication() {
 
-        DeviceFirmware newFirmware = DeviceFirmware.builder()
+        Gateway newFirmware = Gateway.builder()
                 .tenant(tenant)
                 .application(application)
-                .deviceModel(deviceModel1)
-                .version("0.2.0")
-                .firmware(new Binary(firmwareBinary))
+                .location(location)
                 .build();
 
-        ServiceResponse<DeviceFirmware> response = subject.save(tenant, null, newFirmware);
+        ServiceResponse<Gateway> response = subject.save(tenant, null, newFirmware);
         assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
 
     }
 
+    // ============================== getByGUID ==============================//
+
     @Test
-    public void shouldTrySaveWithNullBinary() {
+    public void shouldGetByGuid() {
 
-        DeviceFirmware newFirmware = DeviceFirmware.builder()
-                .tenant(tenant)
-                .application(application)
-                .deviceModel(deviceModel1)
-                .version("0.2.0")
-                .firmware(null)
-                .build();
-
-        ServiceResponse<DeviceFirmware> response = subject.save(tenant, application, newFirmware);
-        assertThat(response, hasErrorMessage(DeviceFirmware.Validations.FIRMWARE_NULL.getCode()));
+        ServiceResponse<Gateway> response = subject.getByGUID(tenant, application, gateway.getGuid());
+        assertThat(response, isResponseOk());
+        assertThat(response.getResult(), notNullValue());
 
     }
 
     @Test
-    public void shouldTrySaveWithExistingBinary() {
+    public void shouldTryGetByGuidNonExistingGateway() {
 
-        DeviceFirmware newFirmware = DeviceFirmware.builder()
-                .tenant(tenant)
-                .application(application)
-                .deviceModel(deviceModel1)
-                .version("0.1.0")
-                .firmware(new Binary(firmwareBinary))
-                .build();
-
-        ServiceResponse<DeviceFirmware> response = subject.save(tenant, application, newFirmware);
-        assertThat(response, hasErrorMessage(DeviceFirmwareService.Validations.FIRMWARE_ALREADY_REGISTERED.getCode()));
+        ServiceResponse<Gateway> response = subject.getByGUID(tenant, application, "wrong_guid");
+        assertThat(response, hasErrorMessage(GatewayService.Validations.GATEWAY_NOT_FOUND.getCode()));
 
     }
 
     @Test
-    public void shouldTrySaveWithInvalidVersion() {
+    public void shouldTryGetByGuidNonNullGuid() {
 
-        DeviceFirmware newFirmware = DeviceFirmware.builder()
-                .tenant(tenant)
-                .application(application)
-                .deviceModel(deviceModel1)
-                .version("0.1.0cccc")
-                .firmware(new Binary(firmwareBinary))
-                .build();
-
-        ServiceResponse<DeviceFirmware> response = subject.save(tenant, application, newFirmware);
-        assertThat(response, hasErrorMessage(DeviceFirmware.Validations.INVALID_VERSION.getCode()));
+        ServiceResponse<Gateway> response = subject.getByGUID(tenant, application, null);
+        assertThat(response, hasErrorMessage(GatewayService.Validations.GUID_NULL.getCode()));
 
     }
 
     @Test
-    public void shouldTryListByDeviceModelWithOtherApplication() {
+    public void shouldTryGetByGuidWithNullTenant() {
 
-        DeviceFirmware newFirmware = DeviceFirmware.builder()
-                .tenant(tenant)
-                .application(otherApplication)
-                .deviceModel(deviceModel1)
-                .version("0.2.0")
-                .firmware(new Binary(firmwareBinary))
-                .build();
+        ServiceResponse<Gateway> response = subject.getByGUID(null, application, gateway.getGuid());
+        assertThat(response, hasErrorMessage(TENANT_NULL.getCode()));
 
-        ServiceResponse<DeviceFirmware> response = subject.save(tenant, otherApplication, newFirmware);
-        assertThat(response, hasErrorMessage(DeviceModelService.Validations.DEVICE_MODEL_DOES_NOT_EXIST.getCode()));
+    }
+
+    // ============================== getAll ==============================//
+
+    @Test
+    public void shouldGetAll() {
+
+        ServiceResponse<List<Gateway>> response = subject.getAll(tenant, application);
+        assertThat(response, isResponseOk());
+        assertThat(response.getResult(), notNullValue());
+        assertThat(response.getResult().isEmpty(), is(false));
+
+    }
+
+    @Test
+    public void shouldTryGetAllWithNullTenant() {
+
+        ServiceResponse<List<Gateway>> response = subject.getAll(null, application);
+        assertThat(response, hasErrorMessage(TENANT_NULL.getCode()));
+
+    }
+
+
+    // ============================== update ==============================//
+
+    @Test
+    public void shouldUpdate() {
+
+        gateway.setName("new name");
+
+        ServiceResponse<Gateway> response = subject.update(tenant, application, gateway.getGuid(), gateway);
+        assertThat(response, isResponseOk());
+        assertThat(response.getResult(), notNullValue());
+        assertThat(response.getResult().getName(), is("new name"));
+
+        Gateway firmwareFromDB = gatewayRepository.findByGuid(tenant.getId(), application.getName(), response.getResult().getGuid());
+        assertThat(firmwareFromDB, notNullValue());
+        assertThat(firmwareFromDB.getName(), is("new name"));
+
+    }
+
+    @Test
+    public void shouldTryUpdateWithNullTenant() {
+
+        ServiceResponse<Gateway> response = subject.update(null, application, gateway.getGuid(), gateway);
+        assertThat(response, hasErrorMessage(TENANT_NULL.getCode()));
+
+    }
+
+    @Test
+    public void shouldTryUpdateWithNullGuid() {
+
+        ServiceResponse<Gateway> response = subject.update(tenant, application, null, gateway);
+        assertThat(response, hasErrorMessage(GatewayService.Validations.GUID_NULL.getCode()));
+
+    }
+
+    @Test
+    public void shouldTryUpdateWithInvalidGuid() {
+
+        ServiceResponse<Gateway> response = subject.update(tenant, application, "invalid_guid", gateway);
+        assertThat(response, hasErrorMessage(GatewayService.Validations.GATEWAY_NOT_FOUND.getCode()));
+
+    }
+
+    @Test
+    public void shouldTryUpdateWithNullName() {
+
+        gateway.setName(null);
+
+        ServiceResponse<Gateway> response = subject.update(tenant, application, gateway.getGuid(), gateway);
+        assertThat(response, hasErrorMessage(Gateway.Validations.NAME_NULL_EMPTY.getCode()));
+
+    }
+
+    @Test
+    public void shouldTryUpdateWithNullGateway() {
+
+        ServiceResponse<Gateway> response = subject.update(tenant, application, gateway.getGuid(), null);
+        assertThat(response, hasErrorMessage(CommonValidations.RECORD_NULL.getCode()));
+
+    }
+
+
+    // ============================== remove ==============================//
+
+    @Test
+    public void shouldRemove() {
+
+        ServiceResponse<Gateway> response = subject.remove(tenant, application, gateway.getGuid());
+        assertThat(response, isResponseOk());
+        assertThat(response.getResult(), notNullValue());
+
+        Gateway firmwareFromDB = gatewayRepository.findByGuid(tenant.getId(), application.getName(), response.getResult().getGuid());
+        assertThat(firmwareFromDB, nullValue());
+
+    }
+
+    @Test
+    public void shouldTryRemoveWithNullTenant() {
+
+        ServiceResponse<Gateway> response = subject.remove(null, application, gateway.getGuid());
+        assertThat(response, hasErrorMessage(TENANT_NULL.getCode()));
+
+    }
+
+
+    @Test
+    public void shouldTryRemoveWithNullGuid() {
+
+        ServiceResponse<Gateway> response = subject.remove(tenant, application, null);
+        assertThat(response, hasErrorMessage(GatewayService.Validations.GUID_NULL.getCode()));
+
+    }
+
+    @Test
+    public void shouldTryRemoveWithInvalidGuid() {
+
+        ServiceResponse<Gateway> response = subject.remove(tenant, application, "invalid_guid");
+        assertThat(response, hasErrorMessage(GatewayService.Validations.GATEWAY_NOT_FOUND.getCode()));
 
     }
 
