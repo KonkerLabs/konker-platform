@@ -1,21 +1,18 @@
 package com.konkerlabs.platform.registry.business.services.api;
 
+import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.Gateway;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+
 import java.net.URI;
 import java.util.List;
 
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.EventRoute;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-
-public interface EventRouteService {
+public interface GatewayService {
 
     enum Validations {
-        NAME_IN_USE("service.event_route.name.in_use"),
-        GUID_NULL("service.event_route.guid.not_null"),
-        EVENT_ROUTE_NOT_FOUND("service.event_route.not_found"),
-        EVENT_ROUTE_URI_NULL("service.event_route.uri.not_null"),
-        CROSS_APPLICATION("service.event_route.cross_application"),;
+        NAME_IN_USE("service.gateway.name.in_use"),
+        GUID_NULL("service.gateway.guid.not_null"),
+        GATEWAY_NOT_FOUND("service.gateway.not_found");
 
         private String code;
 
@@ -28,11 +25,10 @@ public interface EventRouteService {
         }
     }
 
-    ServiceResponse<EventRoute> save(Tenant tenant, Application application, EventRoute route);
-    ServiceResponse<EventRoute> update(Tenant tenant, Application application, String guid, EventRoute eventRoute);
-    ServiceResponse<List<EventRoute>> getAll(Tenant tenant, Application application);
-    ServiceResponse<EventRoute> getByGUID(Tenant tenant, Application application, String guid);
-	ServiceResponse<List<EventRoute>> findByIncomingUri(URI uri);
-	ServiceResponse<EventRoute> remove(Tenant tenant, Application application, String guid);
+    ServiceResponse<Gateway> save(Tenant tenant, Application application, Gateway route);
+    ServiceResponse<Gateway> update(Tenant tenant, Application application, String guid, Gateway eventRoute);
+    ServiceResponse<List<Gateway>> getAll(Tenant tenant, Application application);
+    ServiceResponse<Gateway> getByGUID(Tenant tenant, Application application, String guid);
+    ServiceResponse<Gateway> remove(Tenant tenant, Application application, String guid);
 
 }
