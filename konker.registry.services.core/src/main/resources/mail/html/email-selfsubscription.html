@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:remove="all">Welcome abord</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+<p th:if="${name.length() > 0}" th:text="#{welcome.greeting(${name})}">
+</p>
+<p th:if="${name.length() == 0}" th:text="#{greetingnoname}">
+</p>
+<p th:text="#{welcome.textmail}">
+</p>
+<p th:text="${link}">
+</p>
+
+<p>
+    <span th:text="#{regards}"></span>, <br />
+    &emsp; <em>The Konkerlabs Team</em>
+</p>
+</body>
+</html>
