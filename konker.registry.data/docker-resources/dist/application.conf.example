@@ -40,3 +40,18 @@ cassandra {
     password = "CHANGE_ME"    
     port=9042
 }
+
+
+rabbitmq {
+    hostname = "konker"
+    username = "CHANGE_ME"
+    password = "CHANGE_ME"
+    virtualHost = "CHANGE_ME"
+}
+
+redis {
+    master {
+        host = "CHANGE_ME"
+        port = "CHANGE_ME"
+    }
+}
