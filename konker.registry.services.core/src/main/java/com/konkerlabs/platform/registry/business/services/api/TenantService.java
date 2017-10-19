@@ -10,7 +10,8 @@ public interface TenantService {
 
     enum Validations {
     	TENANT_NULL("service.tenant.validation.tenant.not_null"),
-        NO_EXIST_TENANT("service.tenant.validation.no_exist");
+        NO_EXIST_TENANT("service.tenant.validation.no_exist"), 
+        TENANT_NAME_NULL("service.tenant.validation.tenant.name.not_null");
 
         private String code;
 
@@ -41,5 +42,7 @@ public interface TenantService {
 	ServiceResponse<Tenant> updateLogLevel(Tenant tenant, LogLevel logLevel);
 
 	ServiceResponse<List<TenantDailyUsage>> findTenantDailyUsage(Tenant tenant);
+	
+	ServiceResponse<Tenant> save(Tenant tenant);
 
 }

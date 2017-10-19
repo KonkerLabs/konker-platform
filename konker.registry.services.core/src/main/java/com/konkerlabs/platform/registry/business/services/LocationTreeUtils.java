@@ -30,21 +30,21 @@ public class LocationTreeUtils {
                 root = location;
             } else {
                 String parentGuid = location.getParent().getGuid();
-                List<Location> childrens = childrenListMap.get(parentGuid);
-                if (childrens == null) {
-                    childrens = new ArrayList<>();
-                    childrenListMap.put(parentGuid, childrens);
+                List<Location> children = childrenListMap.get(parentGuid);
+                if (children == null) {
+                    children = new ArrayList<>();
+                    childrenListMap.put(parentGuid, children);
                 }
-                childrens.add(location);
+                children.add(location);
              }
         }
 
         for (Location location: allNodes) {
-            List<Location> childrens = childrenListMap.get(location.getGuid());
-            if (childrens == null) {
-                childrens = new ArrayList<>();
+            List<Location> children = childrenListMap.get(location.getGuid());
+            if (children == null) {
+                children = new ArrayList<>();
             }
-            location.setChildrens(childrens);
+            location.setChildren(children);
         }
 
         return root;
@@ -58,8 +58,8 @@ public class LocationTreeUtils {
         List<Location> nodes = new ArrayList<>();
         nodes.add(root);
 
-        if (root.getChildrens() != null) {
-            for (Location child: root.getChildrens()) {
+        if (root.getChildren() != null) {
+            for (Location child: root.getChildren()) {
                 List<Location> childNodes = getNodesList(child);
                 if (childNodes != null && !childNodes.isEmpty()) {
                     nodes.addAll(childNodes);
@@ -84,8 +84,8 @@ public class LocationTreeUtils {
             Location node = queue.remove();
             nodes.add(node);
 
-            if (node.getChildrens() != null) {
-                queue.addAll(node.getChildrens());
+            if (node.getChildren() != null) {
+                queue.addAll(node.getChildren());
             }
         }
 
@@ -103,7 +103,7 @@ public class LocationTreeUtils {
             return root;
         }
 
-        for (Location child : root.getChildrens()) {
+        for (Location child : root.getChildren()) {
             Location element = searchLocationByName(child, locationName, deep + 1);
             if (element != null) {
                 return element;

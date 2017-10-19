@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
@@ -23,15 +24,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.DeviceModel;
-import com.konkerlabs.platform.registry.business.model.DeviceModelLocation;
-import com.konkerlabs.platform.registry.business.model.EventRoute;
-import com.konkerlabs.platform.registry.business.model.Location;
 import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
-import com.konkerlabs.platform.registry.business.model.RestDestination;
-import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
@@ -67,33 +60,19 @@ public class EventRouteServiceImpl implements EventRouteService {
 
     @Override
     public ServiceResponse<EventRoute> save(Tenant tenant, Application application, EventRoute route) {
-        if (!Optional.ofNullable(tenant).isPresent())
-            return ServiceResponseBuilder.<EventRoute>error()
-                    .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
+
+        ServiceResponse<EventRoute> validationResponse = validate(tenant, application);
+        if (!validationResponse.isOk()) {
+            return validationResponse;
+        }
 
         if (!Optional.ofNullable(route).isPresent())
             return ServiceResponseBuilder.<EventRoute>error()
                     .withMessage(CommonValidations.RECORD_NULL.getCode()).build();
 
-        Tenant existingTenant = tenantRepository.findByDomainName(tenant.getDomainName());
-
-        if (!Optional.ofNullable(existingTenant).isPresent())
-            return ServiceResponseBuilder.<EventRoute>error()
-                    .withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();
-
-        if (!Optional.ofNullable(application).isPresent())
-            return ServiceResponseBuilder.<EventRoute>error()
-                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()).build();
-
-        Application existingApplication = applicationRepository.findByTenantAndName(tenant.getId(), application.getName());
-
-        if (!Optional.ofNullable(existingApplication).isPresent())
-            return ServiceResponseBuilder.<EventRoute>error()
-                    .withMessage(ApplicationService.Validations.APPLICATION_NOT_FOUND.getCode()).build();
-
         route.setId(null);
-        route.setTenant(existingTenant);
-        route.setApplication(existingApplication);
+        route.setTenant(tenant);
+        route.setApplication(application);
         route.setGuid(UUID.randomUUID().toString());
 
         Optional<Map<String,Object[]>> validations = route.applyValidations();
@@ -127,29 +106,15 @@ public class EventRouteServiceImpl implements EventRouteService {
 
     @Override
     public ServiceResponse<EventRoute> update(Tenant tenant, Application application, String guid, EventRoute eventRoute) {
-        if (!Optional.ofNullable(tenant).isPresent())
-            return ServiceResponseBuilder.<EventRoute>error()
-                    .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
+
+        ServiceResponse<EventRoute> validationResponse = validate(tenant, application);
+        if (!validationResponse.isOk()) {
+            return validationResponse;
+        }
 
         if (!Optional.ofNullable(eventRoute).isPresent())
             return ServiceResponseBuilder.<EventRoute>error()
                     .withMessage(CommonValidations.RECORD_NULL.getCode()).build();
-
-        Tenant existingTenant = tenantRepository.findByDomainName(tenant.getDomainName());
-
-        if (!Optional.ofNullable(existingTenant).isPresent())
-            return ServiceResponseBuilder.<EventRoute>error()
-                    .withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();
-
-        if (!Optional.ofNullable(application).isPresent())
-            return ServiceResponseBuilder.<EventRoute>error()
-                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()).build();
-
-        Application existingApplication = applicationRepository.findByTenantAndName(tenant.getId(), application.getName());
-
-        if (!Optional.ofNullable(existingApplication).isPresent())
-            return ServiceResponseBuilder.<EventRoute>error()
-                    .withMessage(ApplicationService.Validations.APPLICATION_NOT_FOUND.getCode()).build();
 
         if (!Optional.ofNullable(guid).filter(s -> !s.isEmpty()).isPresent()) {
             return ServiceResponseBuilder.<EventRoute>error()
@@ -302,52 +267,24 @@ public class EventRouteServiceImpl implements EventRouteService {
 
     @Override
     public ServiceResponse<List<EventRoute>> getAll(Tenant tenant, Application application) {
-        if (!Optional.ofNullable(tenant).isPresent())
-            return ServiceResponseBuilder.<List<EventRoute>>error()
-                    .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
 
-        Tenant existingTenant = tenantRepository.findByDomainName(tenant.getDomainName());
-
-        if (!Optional.ofNullable(existingTenant).isPresent())
-            return ServiceResponseBuilder.<List<EventRoute>>error()
-                    .withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();
-
-        if (!Optional.ofNullable(application).isPresent())
-            return ServiceResponseBuilder.<List<EventRoute>>error()
-                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()).build();
-
-        Application existingApplication = applicationRepository.findByTenantAndName(tenant.getId(), application.getName());
-
-        if (!Optional.ofNullable(existingApplication).isPresent())
-            return ServiceResponseBuilder.<List<EventRoute>>error()
-                    .withMessage(ApplicationService.Validations.APPLICATION_NOT_FOUND.getCode()).build();
+        ServiceResponse<List<EventRoute>> validationResponse = validate(tenant, application);
+        if (!validationResponse.isOk()) {
+            return validationResponse;
+        }
 
         return ServiceResponseBuilder.<List<EventRoute>>ok()
-            .withResult(eventRouteRepository.findAll(existingTenant.getId(), existingApplication.getName()))
+            .withResult(eventRouteRepository.findAll(tenant.getId(), application.getName()))
             .build();
     }
 
     @Override
     public ServiceResponse<EventRoute> getByGUID(Tenant tenant, Application application, String guid) {
-        if (!Optional.ofNullable(tenant).isPresent())
-            return ServiceResponseBuilder.<EventRoute>error()
-                    .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
 
-        Tenant existingTenant = tenantRepository.findByDomainName(tenant.getDomainName());
-
-        if (!Optional.ofNullable(existingTenant).isPresent())
-            return ServiceResponseBuilder.<EventRoute>error()
-                    .withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();
-
-        if (!Optional.ofNullable(application).isPresent())
-            return ServiceResponseBuilder.<EventRoute>error()
-                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()).build();
-
-        Application existingApplication = applicationRepository.findByTenantAndName(tenant.getId(), application.getName());
-
-        if (!Optional.ofNullable(existingApplication).isPresent())
-            return ServiceResponseBuilder.<EventRoute>error()
-                    .withMessage(ApplicationService.Validations.APPLICATION_NOT_FOUND.getCode()).build();
+        ServiceResponse<EventRoute> validationResponse = validate(tenant, application);
+        if (!validationResponse.isOk()) {
+            return validationResponse;
+        }
 
         if (!Optional.ofNullable(guid).isPresent())
             return ServiceResponseBuilder.<EventRoute>error()
@@ -381,15 +318,11 @@ public class EventRouteServiceImpl implements EventRouteService {
 
     @Override
     public ServiceResponse<EventRoute> remove(Tenant tenant, Application application, String guid) {
-        if (!Optional.ofNullable(tenant).isPresent())
-            return ServiceResponseBuilder.<EventRoute>error()
-                    .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
 
-        Tenant existingTenant = tenantRepository.findByDomainName(tenant.getDomainName());
-
-        if (!Optional.ofNullable(existingTenant).isPresent())
-            return ServiceResponseBuilder.<EventRoute>error()
-                    .withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();
+        ServiceResponse<EventRoute> validationResponse = validate(tenant, application);
+        if (!validationResponse.isOk()) {
+            return validationResponse;
+        }
 
         if (!Optional.ofNullable(guid).filter(s -> !s.isEmpty()).isPresent())
             return ServiceResponseBuilder.<EventRoute>error()
@@ -400,13 +333,7 @@ public class EventRouteServiceImpl implements EventRouteService {
             return ServiceResponseBuilder.<EventRoute>error()
                     .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()).build();
 
-        Application existingApplication = applicationRepository.findByTenantAndName(tenant.getId(), application.getName());
-
-        if (!Optional.ofNullable(existingApplication).isPresent())
-            return ServiceResponseBuilder.<EventRoute>error()
-                    .withMessage(ApplicationService.Validations.APPLICATION_NOT_FOUND.getCode()).build();
-
-        EventRoute route = eventRouteRepository.findByGuid(existingTenant.getId(), application.getName(), guid);
+        EventRoute route = eventRouteRepository.findByGuid(tenant.getId(), application.getName(), guid);
 
         if (!Optional.ofNullable(route).isPresent())
             return ServiceResponseBuilder.<EventRoute>error()
@@ -421,4 +348,31 @@ public class EventRouteServiceImpl implements EventRouteService {
                 .withResult(route)
                 .build();
     }
+
+    private <T> ServiceResponse<T> validate(Tenant tenant, Application application) {
+
+        if (!Optional.ofNullable(tenant).isPresent())
+            return ServiceResponseBuilder.<T>error()
+                    .withMessage(CommonValidations.TENANT_NULL.getCode()).build();
+
+        Tenant existingTenant = tenantRepository.findByDomainName(tenant.getDomainName());
+
+        if (!Optional.ofNullable(existingTenant).isPresent())
+            return ServiceResponseBuilder.<T>error()
+                    .withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();
+
+        if (!Optional.ofNullable(application).isPresent())
+            return ServiceResponseBuilder.<T>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()).build();
+
+        Application existingApplication = applicationRepository.findByTenantAndName(tenant.getId(), application.getName());
+
+        if (!Optional.ofNullable(existingApplication).isPresent())
+            return ServiceResponseBuilder.<T>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_NOT_FOUND.getCode()).build();
+
+        return ServiceResponseBuilder.<T>ok().build();
+
+    }
+
 }

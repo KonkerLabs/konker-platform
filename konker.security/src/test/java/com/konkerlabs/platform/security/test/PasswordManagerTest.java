@@ -103,4 +103,37 @@ public class PasswordManagerTest {
 
         assertThat(subject.validatePassword(password,hash),is(false));
     }
+
+    @Test
+    public void shouldValidateBcryptHash() throws Exception {
+        // 10 rounds
+        assertThat(subject.validatePassword("konker","Bcrypt$2a$10$Up15TT3g1G0yiYPlpY7RUu13twVPTi7Jt63gKzX1gjYfePe5AyMuq"),is(true));
+        assertThat(subject.validatePassword("konker","Bcrypt$2a$10$Up15TT3g1G0yiYPlpY7RUu13twVPTi7Jt65gKzX1gjYfePe5Ay000"),is(false));
+
+        // 6 rounds
+        assertThat(subject.validatePassword("konker","Bcrypt$2a$06$9kw1zoBPhYailCCxOxgt7.hhb4jnNQeOnQOugYOr9iGsQWccEUM/G"),is(true));
+        assertThat(subject.validatePassword("konker","Bcrypt$2a$06$9kw1zoBPhYailCCxOxgt7.hhb4jnNQeOnQOugYOr9iGsQWccEU000"),is(false));
+    }
+
+    @Test
+    public void shouldValidateNonExistingQualifier() throws Exception {
+        assertThat(subject.validatePassword("konker","$2a$10$Up15TT3g1G0yiYPlpY7RUu13twVPTi7Jt63gKzX1gjYfePe5AyMuq"),is(false));
+        assertThat(subject.validatePassword("konker","PowerHash$2a$10$Up15TT3g1G0yiYPlpY7RUu13twVPTi7Jt65gKzX1gjYfePe5Ay000"),is(false));
+    }
+
+    @Test
+    public void shouldValidateTrueHash() throws Exception {
+        assertThat(subject.validateHash("Bcrypt$2a$10$Up15TT3g1G0yiYPlpY7RUu13twVPTi7Jt63gKzX1gjYfePe5AyMuq"),is(true));
+        assertThat(subject.validateHash("PBKDF2WithHmac$SHA256$1000000$OGNjMjk0NTc5Nzc2ZDNkZDM4YThhYzMxY2VmZWNkNzY1ZWU2ZmQyMmJjNWJmOWZmN2UxZTliOGIzNWQxMGFkZg==$tRldzow6EBnf++4tQS1iGserNb7eJOSOn3JkRzQC6wc="),is(true));
+    }
+
+    @Test
+    public void shouldValidateFalseHash() throws Exception {
+        assertThat(subject.validateHash("Bcrypt$2x$10$Up15TT3g1G0yiYPlpY7RUu13twVPTi7Jt63gKzX1gjYfePe5AyMuq"),is(false));
+        assertThat(subject.validateHash("Bcrypt$2a$10$Up15TT3g1G0yiYPlpY7RUu13twVPTi7Jt63g"),is(false));
+
+        assertThat(subject.validateHash("PBKDF2WithHmac$1000000$OGNjMjk0NTc5Nzc2ZDNkZDM4YThhYzMxY2VmZWNkNzY1ZWU2ZmQyMmJjNWJmOWZmN2UxZTliOGIzNWQxMGFkZg==$tRldzow6EBnf++4tQS1iGserNb7eJOSOn3JkRzQC6wc="),is(false));
+        assertThat(subject.validateHash("PBKDF2WithHmac$SHA256$u00$OGNjMjk0NTc5Nzc2ZDNkZDM4YThhYzMxY2VmZWNkNzY1ZWU2ZmQyMmJjNWJmOWZmN2UxZTliOGIzNWQxMGFkZg==$tRldzow6EBnf++4tQS1iGserNb7eJOSOn3JkRzQC6wc="),is(false));
+    }
+
 }
