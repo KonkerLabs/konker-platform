@@ -17,7 +17,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -40,9 +39,14 @@ public class EventPublisherModelLocation implements EventPublisher {
 
     @Autowired
     public EventPublisherModelLocation(RabbitGateway rabbitGateway,
-                                       DeviceRegisterService deviceRegisterService) {
+                                       DeviceRegisterService deviceRegisterService,
+                                       DeviceModelRepository deviceModelRepository,
+                                       LocationSearchService locationSearchService
+                                       ) {
         this.rabbitGateway = rabbitGateway;
         this.deviceRegisterService = deviceRegisterService;
+        this.deviceModelRepository = deviceModelRepository;
+        this.locationSearchService = locationSearchService;
     }
 
     @Autowired
@@ -67,8 +71,20 @@ public class EventPublisherModelLocation implements EventPublisher {
         Optional.ofNullable(application)
                 .orElseThrow(() -> new IllegalArgumentException("Application cannot be null"));
 
-        String deviceModelGuid = "";
-        String locationGuid = null;
+
+        String uriPath = destinationUri.getPath();
+        if (uriPath.startsWith("/")) {
+            uriPath = uriPath.substring(1);
+        }
+
+        String guids[] = uriPath.split("/");
+        if (guids.length < 2) {
+            LOGGER.warn("Invalid model location URI: {}", uriPath);
+            return;
+        }
+
+        String deviceModelGuid = guids[0];
+        String locationGuid = guids[1];
 
         DeviceModel deviceModel = deviceModelRepository.findByTenantIdApplicationNameAndGuid(tenant.getId(), application.getName(), deviceModelGuid);
         Optional.ofNullable(deviceModel)
@@ -91,15 +107,26 @@ public class EventPublisherModelLocation implements EventPublisher {
 
         ServiceResponse<List<Device>> devicesResponse = deviceRegisterService.findAll(tenant, application);
         if (devicesResponse.isOk()) {
-            devicesResponse.getResult().parallelStream().forEach((outgoingDevice) -> {
-                if (matches(outgoingDevice, deviceModel, nodes))
-                sendMesage(outgoingEvent, data, outgoingDevice);
+            List<Device> devices = devicesResponse.getResult();
+            devices.parallelStream().forEach((outgoingDevice) -> {
+                if (matchesModelLocation(outgoingDevice, deviceModel, nodes) &&
+                        !isIncomingDevice(outgoingEvent, outgoingDevice)) {
+                    sendMesage(outgoingEvent, data, outgoingDevice);
+                }
             });
         }
 
     }
 
-    private boolean matches(Device outgoingDevice, DeviceModel deviceModel, List<Location> nodes) {
+    private boolean isIncomingDevice(Event outgoingEvent, Device outgoingDevice) {
+        return outgoingEvent.getIncoming().getDeviceGuid().equals(outgoingDevice.getGuid());
+    }
+
+    private boolean matchesModelLocation(Device outgoingDevice, DeviceModel deviceModel, List<Location> nodes) {
+
+        if (outgoingDevice.getDeviceModel() == null) {
+            return false;
+        }
 
         if (!outgoingDevice.getDeviceModel().getName().equals(deviceModel.getName())) {
             return false;
