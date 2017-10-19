@@ -161,6 +161,31 @@ public class PasswordManager {
     	}
     }
 
+    public boolean validateHash(String hash) {
+
+        if (hash == null) {
+            return false;
+        }
+
+        String[] params = hash.split("\\"+STORAGE_PATTERN_DELIMITER);
+
+        switch (params[HASHING_FUNCTION_INDEX]) {
+            case QUALIFIER_PBKDF2:
+                if (params.length != 5) {
+                    return false;
+                } else if (!params[ITERATION_INDEX].matches("[0-9]{1,7}")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            case QUALIFIER_BCRYPT:
+                return hash.substring(QUALIFIER_BCRYPT.length()).matches("^\\$2[ayb]\\$.{56}$");
+            default:
+                return false;
+        }
+
+    }
+
     private boolean validateBcryptPassword(String goodHash, char[] password) {
         // Remove qualifier
         goodHash = goodHash.substring(goodHash.indexOf("$"));
