@@ -462,16 +462,16 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
 
         Location br = response.getResult();
         assertThat(br.getName(), is("br"));
-        assertThat(br.getChildrens().size(), is(2));
-        assertThat(br.getChildrens().get(0).getName(), is("sp"));
-        assertThat(br.getChildrens().get(1).getName(), is("rj"));
+        assertThat(br.getChildren().size(), is(2));
+        assertThat(br.getChildren().get(0).getName(), is("sp"));
+        assertThat(br.getChildren().get(1).getName(), is("rj"));
 
-        Location sp = br.getChildrens().get(0);
-        Location rj = br.getChildrens().get(1);
+        Location sp = br.getChildren().get(0);
+        Location rj = br.getChildren().get(1);
 
-        assertThat(sp.getChildrens().size(), is(0));
-        assertThat(rj.getChildrens().size(), is(1));
-        assertThat(rj.getChildrens().get(0).getName(), is("sala-101"));
+        assertThat(sp.getChildren().size(), is(0));
+        assertThat(rj.getChildren().size(), is(1));
+        assertThat(rj.getChildren().get(0).getName(), is("sala-101"));
     }
 
     @Test
@@ -547,7 +547,7 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
         assertThat(response.getResult().getName(), is("rj"));
         assertThat(response.getResult().getDescription(), is("Rio Janeiro"));
         assertThat(response.getResult().isDefaultLocation(), is(false));
-        assertThat(response.getResult().getChildrens().size(), is(1));
+        assertThat(response.getResult().getChildren().size(), is(1));
     }
 
     @Test
@@ -558,7 +558,7 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
         assertThat(response.getResult().getName(), is("rj"));
         assertThat(response.getResult().getDescription(), is("Rio Janeiro"));
         assertThat(response.getResult().isDefaultLocation(), is(false));
-        assertThat(response.getResult().getChildrens(), nullValue());
+        assertThat(response.getResult().getChildren(), nullValue());
     }
 
     // ============================== findByGuid ==============================//
@@ -772,8 +772,8 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
         Location rj01 = Location.builder().name("rj-01").tenant(tenant).build();
         Location rj02 = Location.builder().name("rj-02").tenant(tenant).build();
 
-        locationSala101.setChildrens(new ArrayList<>());
-        locationSala101.getChildrens().add(rj02);
+        locationSala101.setChildren(new ArrayList<>());
+        locationSala101.getChildren().add(rj02);
 
         List<Location> sublocations = new ArrayList<>();
         sublocations.add(rj01);

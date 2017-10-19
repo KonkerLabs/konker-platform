@@ -202,6 +202,9 @@ public class EventRouteController implements ApplicationContextAware {
             case Device.URI_SCHEME:
                 model = new ModelAndView("routes/device-outgoing", "route", route);
                 break;
+            case DeviceModelLocation.URI_SCHEME :
+                model = new ModelAndView("routes/model-location-outgoing", "route", route);
+                break;
             case RestDestination.URI_SCHEME:
                 model = new ModelAndView("routes/rest-outgoing", "route", route);
                 break;
