@@ -36,22 +36,36 @@ public class EventPublisherModelLocation implements EventPublisher {
     private DeviceLogEventService deviceLogEventService;
     private DeviceModelRepository deviceModelRepository;
     private LocationSearchService locationSearchService;
+    private EventPublisherDevice eventPublisherDevice;
 
     @Autowired
-    public EventPublisherModelLocation(RabbitGateway rabbitGateway,
-                                       DeviceRegisterService deviceRegisterService,
-                                       DeviceModelRepository deviceModelRepository,
-                                       LocationSearchService locationSearchService
-                                       ) {
+    public EventPublisherModelLocation(RabbitGateway rabbitGateway) {
         this.rabbitGateway = rabbitGateway;
+    }
+
+    @Autowired
+    public void setDeviceRegisterService(DeviceRegisterService deviceRegisterService) {
         this.deviceRegisterService = deviceRegisterService;
-        this.deviceModelRepository = deviceModelRepository;
-        this.locationSearchService = locationSearchService;
     }
 
     @Autowired
     public void setDeviceLogEventService(DeviceLogEventService deviceLogEventService) {
         this.deviceLogEventService = deviceLogEventService;
+    }
+
+    @Autowired
+    public void setDeviceModelRepository(DeviceModelRepository deviceModelRepository) {
+        this.deviceModelRepository = deviceModelRepository;
+    }
+
+    @Autowired
+    public void setLocationSearchService(LocationSearchService locationSearchService) {
+        this.locationSearchService = locationSearchService;
+    }
+
+    @Autowired
+    public void setEventPublisherDevice(EventPublisherDevice eventPublisherDevice) {
+        this.eventPublisherDevice = eventPublisherDevice;
     }
 
     @Override
@@ -111,7 +125,9 @@ public class EventPublisherModelLocation implements EventPublisher {
             devices.parallelStream().forEach((outgoingDevice) -> {
                 if (matchesModelLocation(outgoingDevice, deviceModel, nodes) &&
                         !isIncomingDevice(outgoingEvent, outgoingDevice)) {
-                    sendMesage(outgoingEvent, data, outgoingDevice);
+                    if (outgoingDevice.isActive()) {
+                        eventPublisherDevice.sendMessage(outgoingEvent, data, outgoingDevice);
+                    }
                 }
             });
         }
@@ -140,32 +156,6 @@ public class EventPublisherModelLocation implements EventPublisher {
         }
 
         return false;
-
-    }
-
-    private void sendMesage(Event outgoingEvent, Map<String, String> data, Device outgoingDevice) {
-
-        if (outgoingDevice.isActive()) {
-            outgoingEvent.setOutgoing(
-                    Event.EventActor.builder()
-                            .deviceGuid(outgoingDevice.getGuid())
-                            .channel(data.get(DEVICE_MQTT_CHANNEL))
-                            .tenantDomain(outgoingDevice.getTenant().getDomainName())
-                            .applicationName(outgoingDevice.getApplication().getName())
-                            .deviceId(outgoingDevice.getDeviceId())
-                            .build()
-            );
-
-            rabbitGateway.sendEvent(outgoingDevice.getApiKey(), data.get(DEVICE_MQTT_CHANNEL), outgoingEvent.getPayload());
-
-            ServiceResponse<Event> response = deviceLogEventService.logOutgoingEvent(outgoingDevice, outgoingEvent);
-
-            if (!response.isOk())
-                LOGGER.error("Failed to forward event to its destination",
-                        response.getResponseMessages(),
-                        outgoingDevice.toURI(),
-                        outgoingDevice.getLogLevel());
-        }
 
     }
 
