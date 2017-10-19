@@ -225,7 +225,7 @@ public class LocationRestController extends AbstractRestController implements In
                        .parent(getParentFromVO(locationVO))
                        .name(locationVO.getName())
                        .description(locationVO.getDescription())
-                       .childrens(getSublocationsFromVO(locationVO.getSublocations()))
+                       .children(getSublocationsFromVO(locationVO.getSublocations()))
                        .defaultLocation(locationVO.isDefaultLocation())
                        .build();
     }

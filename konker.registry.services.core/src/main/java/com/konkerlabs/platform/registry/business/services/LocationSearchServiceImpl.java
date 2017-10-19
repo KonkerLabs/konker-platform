@@ -177,7 +177,7 @@ public class LocationSearchServiceImpl implements LocationSearchService {
             }
         }
 
-        for (Location child: location.getChildrens()) {
+        for (Location child: location.getChildren()) {
             locationDevices.addAll(searchLocationDevices(child, devices, deep + 1));
         }
 
