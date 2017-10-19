@@ -118,7 +118,6 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements Application
                 "/WEB-INF/i18n/loglevels",
                 "/WEB-INF/i18n/menu",
                 "/WEB-INF/i18n/routes",
-                "/WEB-INF/i18n/tenants",
                 "/WEB-INF/i18n/timezones",
                 "/WEB-INF/i18n/tokens",
                 "/WEB-INF/i18n/transformations",
@@ -134,6 +133,7 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements Application
                 "classpath:/messages/transformations",
                 "classpath:/messages/rest-destination",
                 "classpath:/messages/users",
+                "classpath:/messages/tenants",
                 "classpath:/messages/applications",
                 "classpath:/messages/device-model",
                 "classpath:/messages/health-alert");

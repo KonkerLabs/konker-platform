@@ -10,6 +10,7 @@ import com.konkerlabs.platform.registry.business.services.api.UserService;
 import com.konkerlabs.platform.registry.config.PasswordUserConfig;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.MongoBillingTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import org.junit.*;
@@ -20,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.time.Instant;
 import java.util.List;
 
 import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
@@ -30,7 +32,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 @ContextConfiguration(classes = {
         MongoTestConfiguration.class,
         BusinessTestConfiguration.class,
-        PasswordUserConfig.class
+        PasswordUserConfig.class,
+        MongoBillingTestConfiguration.class
 })
 @UsingDataSet(locations = {
         "/fixtures/tenants.json",
@@ -271,6 +274,67 @@ public class UserServiceTest extends BusinessLayerTestSupport {
     	Assert.assertNotNull(serviceResponse);
     	assertThat(serviceResponse, isResponseOk());
     	Assert.assertEquals(user, serviceResponse.getResult());
+    }
+    
+    @Test
+    public void shouldReturnErrorForInvalidEmailFormat() {
+    	user.setEmail("emailWithoutATdomain.com");
+    	ServiceResponse<User> serviceResponse = userService.createAccount(user, newPassword, newPassword);
+    	
+    	Assert.assertNotNull(serviceResponse);
+        assertThat(
+                serviceResponse,
+                hasErrorMessage(UserService.Validations.INVALID_USER_EMAIL.getCode()));
+    }
+    
+    @Test
+    public void shouldReturnErrorForUserExists() {
+    	ServiceResponse<User> serviceResponse = userService.createAccount(user, newPassword, newPassword);
+    	
+    	Assert.assertNotNull(serviceResponse);
+        assertThat(
+                serviceResponse,
+                hasErrorMessage(UserService.Validations.USER_EXIST.getCode()));
+    }
+    
+    @Test
+    public void shouldReturnErrorForCreationLimit() {
+    	for (int i = 0; i <= 250; i++) {
+    		user.setEmail("new.user" +i+ "@domain.com.br");
+    		user.setRegistrationDate(Instant.now());
+        	userService.createAccount(user, newPassword, newPassword);
+    	}
+    	
+    	user.setEmail("new.user@domain.com.br");
+    	ServiceResponse<User> serviceResponse = userService.createAccount(user, newPassword, newPassword);
+    	
+    	Assert.assertNotNull(serviceResponse);
+        assertThat(
+                serviceResponse,
+                hasErrorMessage(UserService.Validations.INVALID_USER_LIMIT_CREATION.getCode()));
+    }
+    
+    @Test
+    public void shouldReturnErrorForUserName() {
+    	user.setName("");
+    	user.setEmail("another@email.com");
+    	ServiceResponse<User> serviceResponse = userService.createAccount(user, newPassword, newPassword);
+    	
+    	Assert.assertNotNull(serviceResponse);
+        assertThat(
+                serviceResponse,
+                hasErrorMessage(UserService.Validations.INVALID_USER_NAME.getCode()));
+    }
+    
+    @Test
+    public void shouldCreateAccount() {
+    	user.setEmail("new.user@domain.com.br");
+    	user.setTenant(null);
+    	ServiceResponse<User> serviceResponse = userService.createAccount(user, newPassword, newPassword);
+    	
+    	Assert.assertNotNull(serviceResponse);
+        assertThat(serviceResponse, isResponseOk());
+        Assert.assertEquals(serviceResponse.getResult().getName(), serviceResponse.getResult().getTenant().getName());
     }
      
 }

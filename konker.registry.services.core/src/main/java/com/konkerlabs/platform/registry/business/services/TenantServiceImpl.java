@@ -2,6 +2,7 @@ package com.konkerlabs.platform.registry.business.services;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,6 +83,55 @@ public class TenantServiceImpl implements TenantService {
 		 List<TenantDailyUsage> usages = tenantDailyUsageRepository.findAllByTenantDomain(tenant.getDomainName());
 		
 		 return ServiceResponseBuilder.<List<TenantDailyUsage>> ok().withResult(usages).build();
+	}
+
+	@Override
+	public ServiceResponse<Tenant> save(Tenant tenant) {
+		if (!Optional.ofNullable(tenant).isPresent()) {
+			return ServiceResponseBuilder.<Tenant>error()
+					.withMessage(Validations.TENANT_NULL.getCode())
+					.build();
+		}
+		
+		if (!Optional.ofNullable(tenant.getName()).isPresent() ||
+				tenant.getName().isEmpty()) {
+			return ServiceResponseBuilder.<Tenant>error()
+					.withMessage(Validations.TENANT_NAME_NULL.getCode())
+					.build();
+		}
+
+		tenant.setDevicesLimit(new Long(5l));
+		tenant.setDomainName(generateDomainName());
+
+		Tenant fromStorage = tenantRepository.save(tenant);
+		
+		return ServiceResponseBuilder.<Tenant>ok()
+				.withResult(fromStorage)
+				.build();
+	}
+
+	private String generateDomainName() {
+		String letters = "abcdefghijklmnopqrstuvwxyz";
+		String numbers = "1234567890";
+		String alphaNumeric = letters.concat(numbers);
+		Random random = new Random();
+		StringBuilder domainName = new StringBuilder();
+		
+		int index = (int) (random.nextFloat() * letters.length());
+		domainName.append(letters.charAt(index));
+		
+		while (domainName.length() < 8) {
+			index = (int) (random.nextFloat() * alphaNumeric.length());
+			domainName.append(alphaNumeric.charAt(index));
+		}
+		
+		Tenant fromStorage = tenantRepository.findByDomainName(domainName.toString());
+		
+		if (Optional.ofNullable(fromStorage).isPresent()) {
+			return generateDomainName();
+		}
+		
+		return domainName.toString();
 	}
 
 }
