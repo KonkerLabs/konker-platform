@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -64,6 +65,9 @@ public class UserServiceImpl implements UserService {
     
     @Autowired
     private EmailConfig emailConfig;
+    
+    @Autowired
+    private ApplicationContext applicationContext;
 
     private PasswordUserConfig passwordUserConfig; 
 
@@ -284,9 +288,11 @@ public class UserServiceImpl implements UserService {
 		User fromStorage = userRepository.findByEmail(user.getEmail());
 		
 		if (Optional.ofNullable(fromStorage).isPresent()) {
-			return ServiceResponseBuilder.<User>error()
-					.withMessage(Validations.USER_EXIST.getCode())
-					.build();
+			Map<String, Object> templateParam = new HashMap<>();
+            templateParam.put("link", emailConfig.getBaseurl().concat("login"));
+            templateParam.put("name", fromStorage.getName());
+            
+    		sendMail(fromStorage, templateParam, Messages.USER_HAS_ACCOUNT,"html/email-accountalreadyexists");
 		}
 		
 		if (!Optional.ofNullable(user.getName()).isPresent() ||
@@ -313,19 +319,22 @@ public class UserServiceImpl implements UserService {
             templateParam.put("link", emailConfig.getBaseurl().concat("validateemail/").concat(responseToken.getResult()));
             templateParam.put("name", user.getName());
             
-            
-    		emailService.send(
-    				emailConfig.getSender(), 
-    				Collections.singletonList(user), 
-    				Collections.emptyList(), 
-    				"Trocar Assunto", 
-    				"html/email-selfsubscription", 
-    				templateParam, 
-    				user.getLanguage().getLocale());
+            sendMail(user, templateParam, Messages.USER_SUBJECT_MAIL, "html/email-selfsubscription");
     	}
     	
 		return save;
     }
+
+	private void sendMail(User user, Map<String, Object> templateParam, Messages message, String templateName) {
+		emailService.send(
+				emailConfig.getSender(), 
+				Collections.singletonList(user), 
+				Collections.emptyList(), 
+				applicationContext.getMessage(message.getCode(), null, user.getLanguage().getLocale()), 
+				templateName, 
+				templateParam, 
+				user.getLanguage().getLocale());
+	}
     
     @Override
     public ServiceResponse<User> createAccountWithPasswordHash(User user, String passwordHash) {
