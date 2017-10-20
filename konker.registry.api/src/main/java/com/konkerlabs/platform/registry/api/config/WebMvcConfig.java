@@ -48,7 +48,7 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
                     boolean includeStackTrace) {
                 Map<String, Object> errorAttributes = super.getErrorAttributes(requestAttributes, includeStackTrace);
                 errorAttributes.remove("path");
-                errorAttributes.remove("exception");
+                errorAttributes.remove("exceptions");
                 errorAttributes.remove("error");
                 errorAttributes.put("code", errorAttributes.get("status"));
                 errorAttributes.put("status", "error");
