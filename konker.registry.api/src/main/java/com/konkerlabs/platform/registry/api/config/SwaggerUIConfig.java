@@ -81,6 +81,7 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
                         new Tag("devices", "Operations to manage devices"),
                         new Tag("devices custom data", "Operations to manage devices custom data"),
                         new Tag("events", "Operations to query incoming and outgoing device events"),
+                        new Tag("gateways", "Operations to manage gateways"),
                         new Tag("locations", "Operations to manage locations"),
                         new Tag("rest destinations", "Operations to list organization REST destinations"),
                         new Tag("rest transformations", "Operations to manage REST transformations"),

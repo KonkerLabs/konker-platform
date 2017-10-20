@@ -48,12 +48,6 @@ public class DeviceConfigRestController extends AbstractRestController implement
     @Autowired
     private DeviceConfigSetupService deviceConfigSetupService;
 
-    @Autowired
-    private LocationSearchService locationSearchService;
-
-    @Autowired
-    private DeviceModelService deviceModelService;
-
     private Set<String> validationsCode = new HashSet<>();
 
     @GetMapping(path = "/")
@@ -178,48 +172,6 @@ public class DeviceConfigRestController extends AbstractRestController implement
                 throw new BadServiceResponseException(user, restDestinationResponse, validationsCode);
             }
         }
-
-    }
-
-    private Location getLocation(Tenant tenant, Application application, String locationName) throws BadServiceResponseException, NotFoundResponseException {
-
-        ServiceResponse<Location> applicationResponse = locationSearchService.findByName(tenant, application, locationName, false);
-        if (!applicationResponse.isOk()) {
-            if (applicationResponse.getResponseMessages().containsKey(LocationService.Messages.LOCATION_NOT_FOUND.getCode())) {
-                throw new NotFoundResponseException(user, applicationResponse);
-
-            } else {
-                Set<String> validationsCode = new HashSet<>();
-                for (LocationService.Validations value : LocationService.Validations.values()) {
-                    validationsCode.add(value.getCode());
-                }
-
-                throw new BadServiceResponseException(user, applicationResponse, validationsCode);
-            }
-        }
-
-        return applicationResponse.getResult();
-
-    }
-
-    private DeviceModel getDeviceModel(Tenant tenant, Application application, String deviceModelName) throws BadServiceResponseException, NotFoundResponseException {
-
-        ServiceResponse<DeviceModel> applicationResponse = deviceModelService.getByTenantApplicationAndName(tenant, application, deviceModelName);
-        if (!applicationResponse.isOk()) {
-            if (applicationResponse.getResponseMessages().containsKey(DeviceModelService.Validations.DEVICE_MODEL_NOT_FOUND.getCode())) {
-                throw new NotFoundResponseException(user, applicationResponse);
-
-            } else {
-                Set<String> validationsCode = new HashSet<>();
-                for (DeviceModelService.Validations value : DeviceModelService.Validations.values()) {
-                    validationsCode.add(value.getCode());
-                }
-
-                throw new BadServiceResponseException(user, applicationResponse, validationsCode);
-            }
-        }
-
-        return applicationResponse.getResult();
 
     }
 

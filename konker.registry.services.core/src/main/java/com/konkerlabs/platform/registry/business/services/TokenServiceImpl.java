@@ -56,32 +56,43 @@ public class TokenServiceImpl implements TokenService {
     @Override
     public ServiceResponse<String> generateToken(Purpose purpose, User user, TemporalAmount temporalAmount) {
         Token token;
-        if (user != null && purpose != null && temporalAmount != null &&
-        		userRepository.findOne(user.getEmail()) != null) {
-        	String userEmail = user.getEmail();
-        	token = tokenRepository.findByUserEmail(userEmail, purpose.getName());
-        	
-        	if (Optional.ofNullable(token).isPresent()) {
-        		tokenRepository.delete(token);
-        	}
-        	
-        	token = new Token();
-        	UUID uuid = UUID.randomUUID();
-        	token.setToken(uuid.toString());
-
-        	Instant creationInstant = Instant.now();
-        	token.setCreationDateTime(creationInstant);
-        	token.setExpirationDateTime(creationInstant.plus(temporalAmount));
-        	token.setIsExpired(false);
-        	token.setUserEmail(userEmail);
-        	token.setPurpose(purpose.getName());
-        	tokenRepository.save(token);
-
-        	return ServiceResponseBuilder.<String>ok().withResult(uuid.toString()).build();
-        } else {
-            return ServiceResponseBuilder.<String>error()
-                    .withMessage(UserService.Validations.INVALID_USER_EMAIL.getCode()).build();
+        
+        
+        if (user == null || purpose == null || temporalAmount == null || user.getEmail() == null) {
+	        return ServiceResponseBuilder.<String>error()
+	                .withMessage(UserService.Validations.MISSING_PARAMETERS.getCode()).build();
         }
+        
+        if(userRepository.findOne(user.getEmail()) == null) {
+	        return ServiceResponseBuilder.<String>error()
+	                .withMessage(UserService.Validations.INVALID_USER_EMAIL.getCode()).build();
+	    }
+    
+        
+        
+    	
+    	String userEmail = user.getEmail();
+    	
+    	token = tokenRepository.findByUserEmail(userEmail, purpose.getName());
+    	
+    	if (Optional.ofNullable(token).isPresent()) {
+    		tokenRepository.delete(token);
+    	}
+    	
+    	token = new Token();
+    	UUID uuid = UUID.randomUUID();
+    	token.setToken(uuid.toString());
+
+    	Instant creationInstant = Instant.now();
+    	token.setCreationDateTime(creationInstant);
+    	token.setExpirationDateTime(creationInstant.plus(temporalAmount));
+    	token.setIsExpired(false);
+    	token.setUserEmail(userEmail);
+    	token.setPurpose(purpose.getName());
+    	tokenRepository.save(token);
+
+    	return ServiceResponseBuilder.<String>ok().withResult(uuid.toString()).build();
+
     }
 
     @Override

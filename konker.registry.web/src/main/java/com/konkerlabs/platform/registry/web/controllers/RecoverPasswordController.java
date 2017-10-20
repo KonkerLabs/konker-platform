@@ -159,6 +159,7 @@ public class RecoverPasswordController implements ApplicationContextAware {
         ServiceResponse<Token> serviceResponse = tokenService.getToken(token);
         ServiceResponse<Boolean> validToken = tokenService.isValidToken(token);
 
+        //null response
         if (!Optional.ofNullable(serviceResponse).isPresent()
                 || !Optional.ofNullable(serviceResponse.getResult()).isPresent()) {
 
@@ -166,24 +167,32 @@ public class RecoverPasswordController implements ApplicationContextAware {
                     .map(message -> applicationContext.getMessage(message.getKey(), message.getValue(), locale))
                     .collect(Collectors.toList());
 
+            //show model view of error
             return new ModelAndView("reset-password")
             		.addObject("user", User.builder().build())
                     .addObject("errors", messages)
                     .addObject("isExpired", true);
         }
 
+        
+        
+        //expired or invalid token
         if (serviceResponse.getResult().getIsExpired() || !validToken.getResult()) {
             List<String> messages = new ArrayList<>();
             messages.add(applicationContext.getMessage(TokenService.Validations.EXPIRED_TOKEN.getCode(), null, locale));
 
+          //show model view of error
             return new ModelAndView("reset-password")
             		.addObject("user", User.builder().build())
                     .addObject("errors", messages)
                     .addObject("isExpired", true);
         }
 
+        
+        //get user
         ServiceResponse<User> responseUser = userService.findByEmail(serviceResponse.getResult().getUserEmail());
 
+        //show model view of success
         return new ModelAndView("reset-password")
         		.addObject("user", responseUser.getResult())
         		.addObject("token", token);

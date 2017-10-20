@@ -43,10 +43,10 @@ public class EventRouteRestController extends AbstractRestController implements 
     private RestDestinationService restDestinationService;
 
     @Autowired
-    private DeviceModelService deviceModelService;
+    private LocationSearchService locationSearchService;
 
     @Autowired
-    private LocationSearchService locationSearchService;
+    private DeviceModelService deviceModelService;
 
     private Set<String> validationsCode = new HashSet<>();
 
