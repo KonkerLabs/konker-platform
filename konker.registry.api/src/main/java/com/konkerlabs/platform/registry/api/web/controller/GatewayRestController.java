@@ -7,6 +7,7 @@ import com.konkerlabs.platform.registry.api.model.GatewayVO;
 import com.konkerlabs.platform.registry.api.model.RestResponse;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Gateway;
+import com.konkerlabs.platform.registry.business.model.Location;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.*;
 import com.konkerlabs.platform.registry.business.services.api.GatewayService.Validations;
@@ -35,9 +36,6 @@ public class GatewayRestController extends AbstractRestController implements Ini
 
     @Autowired
     private DeviceRegisterService deviceRegisterService;
-
-    @Autowired
-    private LocationSearchService locationSearchService;
 
     private Set<String> validationsCode = new HashSet<>();
 
@@ -102,10 +100,12 @@ public class GatewayRestController extends AbstractRestController implements Ini
 
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
+        Location location = getLocation(tenant, application, gatewayForm.getLocationName());
 
         Gateway gateway = Gateway.builder()
                 .name(gatewayForm.getName())
                 .description(gatewayForm.getDescription())
+                .location(location)
                 .active(true)
                 .build();
 
@@ -130,6 +130,7 @@ public class GatewayRestController extends AbstractRestController implements Ini
 
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
+        Location location = getLocation(tenant, application, gatewayForm.getLocationName());
 
         Gateway gatewayFromDB = null;
         ServiceResponse<Gateway> gatewayResponse = gatewayService.getByGUID(tenant, application, gatewayGuid);
@@ -143,6 +144,7 @@ public class GatewayRestController extends AbstractRestController implements Ini
         // update fields
         gatewayFromDB.setName(gatewayForm.getName());
         gatewayFromDB.setDescription(gatewayForm.getDescription());
+        gatewayFromDB.setLocation(location);
         gatewayFromDB.setActive(gatewayForm.isActive());
 
         ServiceResponse<Gateway> updateResponse = gatewayService.update(tenant, application, gatewayGuid, gatewayFromDB);

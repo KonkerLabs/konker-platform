@@ -343,5 +343,4 @@ public class GatewayServiceTest extends BusinessLayerTestSupport {
 
     }
 
-
 }

@@ -101,9 +101,10 @@ public class GatewayServiceImpl implements GatewayService {
                     .withMessage(Validations.GATEWAY_NOT_FOUND.getCode())
                     .build();
 
-        current.setActive(updatingGateway.isActive());
-        current.setDescription(updatingGateway.getDescription());
         current.setName(updatingGateway.getName());
+        current.setDescription(updatingGateway.getDescription());
+        current.setLocation(updatingGateway.getLocation());
+        current.setActive(updatingGateway.isActive());
 
         Optional<Map<String,Object[]>> validations = current.applyValidations();
 

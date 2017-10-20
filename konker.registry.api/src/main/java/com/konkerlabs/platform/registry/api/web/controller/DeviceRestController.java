@@ -49,12 +49,6 @@ public class DeviceRestController extends AbstractRestController implements Init
     @Autowired
     private DeviceRegisterService deviceRegisterService;
 
-    @Autowired
-    private LocationSearchService locationSearchService;
-
-    @Autowired
-    private DeviceModelService deviceModelService;
-
     private Set<String> validationsCode = new HashSet<>();
 
     @GetMapping(path = "/")
@@ -110,8 +104,8 @@ public class DeviceRestController extends AbstractRestController implements Init
 
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
-        Location location = getLocation(tenant, application, deviceForm);
-        DeviceModel deviceModel = getDeviceModel(tenant, application, deviceForm);
+        Location location = getLocation(tenant, application, deviceForm.getLocationName());
+        DeviceModel deviceModel = getDeviceModel(tenant, application, deviceForm.getDeviceModelName());
 
         Device device = Device.builder()
                 .name(deviceForm.getName())
@@ -132,37 +126,6 @@ public class DeviceRestController extends AbstractRestController implements Init
 
     }
 
-    private DeviceModel getDeviceModel(Tenant tenant, Application application, DeviceInputVO deviceForm) throws BadServiceResponseException {
-    	if (deviceForm == null || StringUtils.isBlank(deviceForm.getDeviceModelName())) {
-            return null;
-        }
-
-        ServiceResponse<DeviceModel> deviceModelResponse = deviceModelService
-        		.getByTenantApplicationAndName(tenant, application, deviceForm.getDeviceModelName());
-        if (deviceModelResponse.isOk()) {
-        	DeviceModel deviceModel = deviceModelResponse.getResult();
-            return deviceModel;
-        } else {
-            throw new BadServiceResponseException(user, deviceModelResponse, validationsCode);
-        }
-	}
-
-	private Location getLocation(Tenant tenant, Application application, DeviceInputVO deviceForm) throws BadServiceResponseException {
-
-        if (deviceForm == null || StringUtils.isBlank(deviceForm.getLocationName())) {
-            return null;
-        }
-
-        ServiceResponse<Location> locationResponse = locationSearchService.findByName(tenant, application, deviceForm.getLocationName(), false);
-        if (locationResponse.isOk()) {
-            Location location = locationResponse.getResult();
-            return location;
-        } else {
-            throw new BadServiceResponseException(user, locationResponse, validationsCode);
-        }
-
-    }
-
     @PutMapping(path = "/{deviceGuid}")
     @ApiOperation(value = "Update a device")
     @PreAuthorize("hasAuthority('EDIT_DEVICE')")
@@ -174,8 +137,8 @@ public class DeviceRestController extends AbstractRestController implements Init
 
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
-        Location location = getLocation(tenant, application, deviceForm);
-        DeviceModel deviceModel = getDeviceModel(tenant, application, deviceForm);
+        Location location = getLocation(tenant, application, deviceForm.getLocationName());
+        DeviceModel deviceModel = getDeviceModel(tenant, application, deviceForm.getDeviceModelName());
 
         Device deviceFromDB = null;
         ServiceResponse<Device> deviceResponse = deviceRegisterService.getByDeviceGuid(tenant, application, deviceGuid);
