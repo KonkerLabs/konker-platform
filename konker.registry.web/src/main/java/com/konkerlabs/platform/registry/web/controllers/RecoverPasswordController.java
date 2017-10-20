@@ -11,8 +11,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import javax.mail.MessagingException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -122,35 +120,35 @@ public class RecoverPasswordController implements ApplicationContextAware {
         }
 
         if (!requestMap.isEmpty() && isValidCaptcha) {
-            try {
-                String email = (String) requestMap.get("email");
-                if (!Optional.ofNullable(email).isPresent()) {
-                    return Boolean.FALSE;
-                }
+        	String email = (String) requestMap.get("email");
+        	if (!Optional.ofNullable(email).isPresent()) {
+        		return Boolean.FALSE;
+        	}
 
-                ServiceResponse<User> response = userService.findByEmail(email);
-                User user = response.getResult();
-                if (!Optional.ofNullable(user).isPresent()) {
-                    return Boolean.FALSE;
-                }
+        	ServiceResponse<User> response = userService.findByEmail(email);
+        	User user = response.getResult();
+        	if (!Optional.ofNullable(user).isPresent()) {
+        		return Boolean.FALSE;
+        	}
 
-                ServiceResponse<String> responseToken = tokenService.generateToken(TokenService.Purpose.RESET_PASSWORD,
-                        user, Duration.ofMinutes(15));
+        	ServiceResponse<String> responseToken = tokenService.generateToken(TokenService.Purpose.RESET_PASSWORD,
+        			user, Duration.ofMinutes(15));
 
-                Map<String, Object> templateParam = new HashMap<>();
-                templateParam.put("link",
-                        emailConfig.getBaseurl().concat("recoverpassword/").concat(responseToken.getResult()));
-                templateParam.put("name", Optional.ofNullable(user.getName()).orElse(""));
+        	Map<String, Object> templateParam = new HashMap<>();
+        	templateParam.put("link",
+        			emailConfig.getBaseurl().concat("recoverpassword/").concat(responseToken.getResult()));
+        	templateParam.put("name", Optional.ofNullable(user.getName()).orElse(""));
 
-                emailService.send(emailConfig.getSender(), Collections.singletonList(user), Collections.emptyList(),
-                        applicationContext.getMessage(Messages.USER_EMAIL_SUBJECT.getCode(), null,
-                                user.getLanguage().getLocale()),
-                        "html/email-recover-pass", templateParam, user.getLanguage().getLocale());
-                return Boolean.TRUE;
-            } catch (MessagingException e) {
-                LOGGER.warn(e.getLocalizedMessage());
-                return Boolean.FALSE;
-            }
+        	emailService.send(
+        			emailConfig.getSender(), 
+        			Collections.singletonList(user), 
+        			Collections.emptyList(),
+        			applicationContext.getMessage(Messages.USER_EMAIL_SUBJECT.getCode(), null, user.getLanguage().getLocale()),
+        			"html/email-recover-pass", 
+        			templateParam, 
+        			user.getLanguage().getLocale());
+        	
+        	return Boolean.TRUE;
         } else {
             return Boolean.FALSE;
         }

@@ -3,10 +3,14 @@ package com.konkerlabs.platform.registry.business.services;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.text.MessageFormat;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -23,10 +27,13 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.repositories.PasswordBlacklistRepository;
 import com.konkerlabs.platform.registry.business.repositories.UserRepository;
+import com.konkerlabs.platform.registry.business.services.api.EmailService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.TenantService;
+import com.konkerlabs.platform.registry.business.services.api.TokenService;
 import com.konkerlabs.platform.registry.business.services.api.UserService;
+import com.konkerlabs.platform.registry.config.EmailConfig;
 import com.konkerlabs.platform.registry.config.PasswordUserConfig;
 import com.konkerlabs.platform.security.managers.PasswordManager;
 
@@ -48,6 +55,15 @@ public class UserServiceImpl implements UserService {
     
     @Autowired
     private TenantService tenantService;
+    
+    @Autowired
+    private TokenService tokenService;
+    
+    @Autowired
+    private EmailService emailService;
+    
+    @Autowired
+    private EmailConfig emailConfig;
 
     private PasswordUserConfig passwordUserConfig; 
 
@@ -285,7 +301,30 @@ public class UserServiceImpl implements UserService {
 				.build());
 		user.setTenant(serviceResponse.getResult());
 		
-    	return save(user, newPassword, newPasswordConfirmation);
+    	ServiceResponse<User> save = save(user, newPassword, newPasswordConfirmation);
+    	
+    	if (save.isOk()) {
+    		ServiceResponse<String> responseToken = tokenService.generateToken(
+    				TokenService.Purpose.RESET_PASSWORD,
+    				user, 
+    				Duration.ofDays(2L));
+    		
+    		Map<String, Object> templateParam = new HashMap<>();
+            templateParam.put("link", emailConfig.getBaseurl().concat("validateemail/").concat(responseToken.getResult()));
+            templateParam.put("name", user.getName());
+            
+            
+    		emailService.send(
+    				emailConfig.getSender(), 
+    				Collections.singletonList(user), 
+    				Collections.emptyList(), 
+    				"Trocar Assunto", 
+    				"html/email-selfsubscription", 
+    				templateParam, 
+    				user.getLanguage().getLocale());
+    	}
+    	
+		return save;
     }
     
     @Override
