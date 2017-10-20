@@ -75,7 +75,7 @@ public class Location implements URIDealer, Validatable {
     private boolean defaultLocation;
 
     @Transient
-    private List<Location> childrens;
+    private List<Location> children;
 
     public Optional<Map<String, Object[]>> applyValidations() {
         Pattern regex = Pattern.compile("[a-zA-Z0-9\u00C0-\u00FF .\\-+_]{2,100}");

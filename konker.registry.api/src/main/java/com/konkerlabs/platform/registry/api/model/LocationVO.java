@@ -27,7 +27,7 @@ public class LocationVO extends LocationInputVO implements SerializableVO<Locati
         this.name = location.getName();
         this.description = location.getDescription();
         this.defaultLocation = location.isDefaultLocation();
-        this.sublocations = getSublocations(location.getChildrens());
+        this.sublocations = getSublocations(location.getChildren());
     }
 
     @Override

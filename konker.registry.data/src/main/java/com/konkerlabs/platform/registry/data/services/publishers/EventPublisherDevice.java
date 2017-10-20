@@ -76,25 +76,7 @@ public class EventPublisherDevice implements EventPublisher {
                 ));
 
         if (outgoingDevice.isActive()) {
-            outgoingEvent.setOutgoing(
-                    Event.EventActor.builder()
-                            .deviceGuid(outgoingDevice.getGuid())
-                            .channel(data.get(DEVICE_MQTT_CHANNEL))
-                            .tenantDomain(outgoingDevice.getTenant().getDomainName())
-                            .applicationName(outgoingDevice.getApplication().getName())
-                            .deviceId(outgoingDevice.getDeviceId())
-                            .build()
-            );
-
-            rabbitGateway.sendEvent(outgoingDevice.getApiKey(), data.get(DEVICE_MQTT_CHANNEL), outgoingEvent.getPayload());
-
-            ServiceResponse<Event> response = deviceLogEventService.logOutgoingEvent(outgoingDevice, outgoingEvent);
-
-            if (!response.isOk())
-                LOGGER.error("Failed to forward event to its destination",
-                        response.getResponseMessages(),
-                        outgoingDevice.toURI(),
-                        outgoingDevice.getLogLevel());
+            sendMessage(outgoingEvent, data, outgoingDevice);
         } else {
             LOGGER.debug(
                     MessageFormat.format(EVENT_DROPPED, destinationUri, outgoingEvent.getPayload()),
@@ -103,4 +85,29 @@ public class EventPublisherDevice implements EventPublisher {
             );
         }
     }
+
+    public void sendMessage(Event outgoingEvent, Map<String, String> data, Device outgoingDevice) {
+
+        outgoingEvent.setOutgoing(
+                Event.EventActor.builder()
+                        .deviceGuid(outgoingDevice.getGuid())
+                        .channel(data.get(DEVICE_MQTT_CHANNEL))
+                        .tenantDomain(outgoingDevice.getTenant().getDomainName())
+                        .applicationName(outgoingDevice.getApplication().getName())
+                        .deviceId(outgoingDevice.getDeviceId())
+                        .build()
+        );
+
+        rabbitGateway.sendEvent(outgoingDevice.getApiKey(), data.get(DEVICE_MQTT_CHANNEL), outgoingEvent.getPayload());
+
+        ServiceResponse<Event> response = deviceLogEventService.logOutgoingEvent(outgoingDevice, outgoingEvent);
+
+        if (!response.isOk())
+            LOGGER.error("Failed to forward event to its destination",
+                    response.getResponseMessages(),
+                    outgoingDevice.toURI(),
+                    outgoingDevice.getLogLevel());
+
+    }
+
 }

@@ -316,6 +316,13 @@ public class EventRouteControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    public void shouldRenderModelLocationOutgoingViewFragment() throws Exception {
+        getMockMvc().perform(get("/routes/{0}/outgoing/{1}", application.getName(), "modelLocation"))
+                .andExpect(view().name("routes/model-location-outgoing"))
+                .andExpect(model().attribute("route", new EventRouteForm()));
+    }
+
+    @Test
     public void shouldRenderDeviceOutgoingViewFragment() throws Exception {
         getMockMvc().perform(get("/routes/{0}/outgoing/{1}", application.getName(), "device"))
                 .andExpect(view().name("routes/device-outgoing"))

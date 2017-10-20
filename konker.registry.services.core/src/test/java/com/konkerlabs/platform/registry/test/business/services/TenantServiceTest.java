@@ -1,5 +1,8 @@
 package com.konkerlabs.platform.registry.test.business.services;
 
+import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
+import static org.hamcrest.MatcherAssert.assertThat;
+
 import java.time.Instant;
 import java.util.List;
 
@@ -164,4 +167,42 @@ public class TenantServiceTest extends BusinessLayerTestSupport {
 		Assert.assertEquals(responseService.getResult().size(), 1);
 	}
 
+	@Test
+	public void shouldReturnErrorForTenantNull() {
+		ServiceResponse<Tenant> serviceResponse = tenantService.save(null);
+		
+		Assert.assertNotNull(serviceResponse);
+        assertThat(
+                serviceResponse,
+                hasErrorMessage(TenantService.Validations.TENANT_NULL.getCode()));
+	}
+	
+	@Test
+	public void shouldReturnErrorForTenantNameNull() {
+		tenant.setName(null);
+		ServiceResponse<Tenant> serviceResponse = tenantService.save(tenant);
+		
+		Assert.assertNotNull(serviceResponse);
+        assertThat(
+                serviceResponse,
+                hasErrorMessage(TenantService.Validations.TENANT_NAME_NULL.getCode()));
+        
+        tenant.setName("");
+        serviceResponse = tenantService.save(tenant);
+		
+		Assert.assertNotNull(serviceResponse);
+        assertThat(
+                serviceResponse,
+                hasErrorMessage(TenantService.Validations.TENANT_NAME_NULL.getCode()));
+	}
+	
+	@Test
+	public void shouldSaveTenant() {
+		ServiceResponse<Tenant> serviceResponse = tenantService.save(tenant);
+		
+		Assert.assertNotNull(serviceResponse);
+		Assert.assertEquals(serviceResponse.getStatus(), ServiceResponse.Status.OK);
+		Assert.assertEquals(serviceResponse.getResult().getDevicesLimit().longValue(), 5l);
+	}
+	
 }
