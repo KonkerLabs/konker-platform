@@ -9,6 +9,7 @@ import com.konkerlabs.platform.registry.business.model.User;
 public interface UserService {
 
     enum Validations {
+    	MISSING_PARAMETERS("service.user.validation.missing.parameters"),
         INVALID_USER_DETAILS("service.user.validation.detail.invalid"),
         INVALID_USER_EMAIL("service.user.validation.email.invalid"),
         INVALID_USER_NAME("service.user.validation.name.invalid"),

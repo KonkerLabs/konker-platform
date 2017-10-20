@@ -46,11 +46,11 @@ import com.konkerlabs.platform.registry.web.services.api.CaptchaService;
 
 @Controller()
 @Scope("request")
-@RequestMapping("/recoverpassword")
+@RequestMapping("/validateemail")
 @Profile("email")
-public class RecoverPasswordController implements ApplicationContextAware {
+public class EmailConfirmationController implements ApplicationContextAware {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RecoverPasswordController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(EmailConfirmationController.class);
 
     public enum Messages {
         USER_DOES_NOT_EXIST("controller.recover.user.does.not.exist"), USER_EMAIL_SUBJECT(
@@ -78,70 +78,50 @@ public class RecoverPasswordController implements ApplicationContextAware {
     private TokenService tokenService;
 
     @Autowired
-    private CaptchaService captchaService;
-
-    @Autowired
-    private RecaptchaConfig recaptchaConfig;
-
-    @Autowired
     private EmailConfig emailConfig;
 
     private ApplicationContext applicationContext;
 
-    @RequestMapping(method = RequestMethod.GET)
-    public ModelAndView recoveryPasswordPage() {
-        ModelAndView mav = new ModelAndView("recover-password");
-        mav.addObject("recaptchaEnabled", recaptchaConfig.isEnabled());
-        if (recaptchaConfig.isEnabled()) {
-            mav.addObject("recaptchaSiteKey", recaptchaConfig.getSiteKey());
-        }
-        return mav;
-    }
+
 
     @SuppressWarnings("unchecked")
     @RequestMapping(value = "/email", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody Boolean sendEmailRecover(@RequestBody String body, Locale locale) {
+    public @ResponseBody Boolean sendEmail(@RequestBody String body, Locale locale) {
         Map<String, Object> requestMap = Collections.emptyMap();
-        Boolean isValidCaptcha = Boolean.FALSE;
+        
+
         try {
-            requestMap = new ObjectMapper().readValue(body, HashMap.class);
-
-            if (recaptchaConfig.isEnabled()) {
-
-                String recaptcha = (String) requestMap.get("recaptcha");
-
-                isValidCaptcha = captchaService
-                        .validateCaptcha(recaptchaConfig.getSecretKey(), recaptcha, recaptchaConfig.getHost())
-                        .getResult();
-            } else {
-                isValidCaptcha = true;
-            }
+            requestMap = new ObjectMapper().readValue(body, HashMap.class);  
 
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
         }
+        
 
-        if (!requestMap.isEmpty() && isValidCaptcha) {
+        if (!requestMap.isEmpty()) {
             try {
                 String email = (String) requestMap.get("email");
                 if (!Optional.ofNullable(email).isPresent()) {
                     return Boolean.FALSE;
                 }
-
+                
                 ServiceResponse<User> response = userService.findByEmail(email);
+
                 User user = response.getResult();
                 if (!Optional.ofNullable(user).isPresent()) {
                     return Boolean.FALSE;
                 }
+  
+                ServiceResponse<String> responseToken = tokenService.generateToken(TokenService.Purpose.VALIDATE_EMAIL,
+                        user, Duration.ofMinutes(30));
 
-                ServiceResponse<String> responseToken = tokenService.generateToken(TokenService.Purpose.RESET_PASSWORD,
-                        user, Duration.ofMinutes(15));
 
                 Map<String, Object> templateParam = new HashMap<>();
                 templateParam.put("link",
-                        emailConfig.getBaseurl().concat("recoverpassword/").concat(responseToken.getResult()));
+                        emailConfig.getBaseurl().concat("validateemail/").concat(responseToken.getResult()));
                 templateParam.put("name", Optional.ofNullable(user.getName()).orElse(""));
 
+                
                 emailService.send(emailConfig.getSender(), Collections.singletonList(user), Collections.emptyList(),
                         applicationContext.getMessage(Messages.USER_EMAIL_SUBJECT.getCode(), null,
                                 user.getLanguage().getLocale()),
@@ -156,12 +136,15 @@ public class RecoverPasswordController implements ApplicationContextAware {
         }
     }
 
+ 
+    
+
     @RequestMapping(value = "/{token}", method = RequestMethod.GET)
-    public ModelAndView showResetPage(@PathVariable("token") String token, Locale locale) {
+    public ModelAndView showEmailValidationPage(@PathVariable("token") String token, Locale locale) {
         ServiceResponse<Token> serviceResponse = tokenService.getToken(token);
         ServiceResponse<Boolean> validToken = tokenService.isValidToken(token);
 
-        //null response
+
         if (!Optional.ofNullable(serviceResponse).isPresent()
                 || !Optional.ofNullable(serviceResponse.getResult()).isPresent()) {
 
@@ -169,97 +152,31 @@ public class RecoverPasswordController implements ApplicationContextAware {
                     .map(message -> applicationContext.getMessage(message.getKey(), message.getValue(), locale))
                     .collect(Collectors.toList());
 
-            //show model view of error
-            return new ModelAndView("reset-password")
+            return new ModelAndView("validate-email")
             		.addObject("user", User.builder().build())
                     .addObject("errors", messages)
                     .addObject("isExpired", true);
         }
 
-        
-        
-        //expired or invalid token
+
         if (serviceResponse.getResult().getIsExpired() || !validToken.getResult()) {
             List<String> messages = new ArrayList<>();
             messages.add(applicationContext.getMessage(TokenService.Validations.EXPIRED_TOKEN.getCode(), null, locale));
 
-          //show model view of error
-            return new ModelAndView("reset-password")
+            return new ModelAndView("validate-email")
             		.addObject("user", User.builder().build())
                     .addObject("errors", messages)
                     .addObject("isExpired", true);
         }
 
-        
-        //get user
-        ServiceResponse<User> responseUser = userService.findByEmail(serviceResponse.getResult().getUserEmail());
 
-        //show model view of success
-        return new ModelAndView("reset-password")
+        ServiceResponse<User> responseUser = userService.findByEmail(serviceResponse.getResult().getUserEmail());
+        
+        
+
+        return new ModelAndView("validate-email")
         		.addObject("user", responseUser.getResult())
         		.addObject("token", token);
-    }
-
-    @RequestMapping(method = RequestMethod.POST)
-    public ModelAndView resetPassword(@ModelAttribute("userForm") UserForm userForm,
-            RedirectAttributes redirectAttributes, Locale locale) {
-    	ServiceResponse<Token> serviceResponse = tokenService.getToken(userForm.getToken());
-        ServiceResponse<Boolean> validToken = tokenService.isValidToken(userForm.getToken());
-
-        if (!Optional.ofNullable(serviceResponse).isPresent()
-                || !Optional.ofNullable(serviceResponse.getResult()).isPresent()) {
-
-            List<String> messages = serviceResponse.getResponseMessages().entrySet().stream()
-                    .map(message -> applicationContext.getMessage(message.getKey(), message.getValue(), locale))
-                    .collect(Collectors.toList());
-
-            return new ModelAndView("reset-password")
-            		.addObject("user", User.builder().build())
-                    .addObject("errors", messages)
-                    .addObject("isExpired", true);
-        }
-
-        if (serviceResponse.getResult().getIsExpired() || !validToken.getResult()) {
-            List<String> messages = new ArrayList<>();
-            messages.add(applicationContext.getMessage(TokenService.Validations.EXPIRED_TOKEN.getCode(), null, locale));
-
-            return new ModelAndView("reset-password")
-            		.addObject("user", User.builder().build())
-                    .addObject("errors", messages)
-                    .addObject("isExpired", true);
-        }
-        
-        ServiceResponse<User> response = userService.findByEmail(serviceResponse.getResult().getUserEmail());
-
-        if (!Optional.ofNullable(response.getResult()).isPresent()) {
-            List<String> messages = new ArrayList<>();
-            messages.add(applicationContext.getMessage(Messages.USER_DOES_NOT_EXIST.getCode(), null, locale));
-            return new ModelAndView("reset-password")
-            		.addObject("errors", messages)
-            		.addObject("user", User.builder().build());
-        }
-
-        User user = response.getResult();
-
-        ServiceResponse<User> saveResponse = userService.save(user, userForm.getNewPassword(),
-                userForm.getNewPasswordConfirmation());
-        if (!Optional.ofNullable(saveResponse.getResult()).isPresent()) {
-            List<String> messages = saveResponse.getResponseMessages().entrySet().stream()
-                    .map(message -> applicationContext.getMessage(message.getKey(), message.getValue(), locale))
-                    .collect(Collectors.toList());
-
-            return new ModelAndView("reset-password")
-            		.addObject("user", user)
-            		.addObject("token", userForm.getToken())
-            		.addObject("errors", messages);
-        }
-
-        tokenService.invalidateToken(userForm.getToken());
-
-        redirectAttributes.addFlashAttribute("message",
-                applicationContext.getMessage(Messages.USER_CHANGE_PASSWORD_SUCCESS.getCode(), null, locale));
-
-        return new ModelAndView("redirect:/login");
     }
 
     @Override
