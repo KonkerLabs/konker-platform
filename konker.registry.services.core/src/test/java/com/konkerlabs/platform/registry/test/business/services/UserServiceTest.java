@@ -12,6 +12,7 @@ import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoBillingTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.SpringMailTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
@@ -33,7 +34,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
         MongoTestConfiguration.class,
         BusinessTestConfiguration.class,
         PasswordUserConfig.class,
-        MongoBillingTestConfiguration.class
+        MongoBillingTestConfiguration.class,
+        SpringMailTestConfiguration.class
 })
 @UsingDataSet(locations = {
         "/fixtures/tenants.json",

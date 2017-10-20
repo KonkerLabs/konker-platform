@@ -16,6 +16,8 @@ import org.thymeleaf.spring4.SpringTemplateEngine;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 
+import com.konkerlabs.platform.registry.config.EmailConfig;
+
 @Configuration
 public class SpringMailTestConfiguration {
 
@@ -52,5 +54,10 @@ public class SpringMailTestConfiguration {
 		mock.addTemplateResolver(templateResolverTxt);
     	
 		return mock;
+    }
+    
+    @Bean
+    public EmailConfig emailConfig() {
+    	return new EmailConfig();
     }
 }

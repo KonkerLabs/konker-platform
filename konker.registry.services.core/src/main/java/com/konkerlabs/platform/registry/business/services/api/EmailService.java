@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import javax.mail.MessagingException;
-
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse.Status;
 
@@ -40,5 +38,5 @@ public interface EmailService {
 					String subject,
 					String templateName,
 					Map<String, Object> templateParam,
-					Locale locale) throws MessagingException;
+					Locale locale);
 }

@@ -11,11 +11,13 @@ import org.springframework.stereotype.Service;
 
 import com.konkerlabs.platform.registry.billing.model.TenantDailyUsage;
 import com.konkerlabs.platform.registry.billing.repositories.TenantDailyUsageRepository;
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.TenantService;
@@ -33,6 +35,9 @@ public class TenantServiceImpl implements TenantService {
 	
 	@Autowired
 	private TenantDailyUsageRepository tenantDailyUsageRepository;
+	
+	@Autowired
+	private ApplicationService applicationService;
 
 	@Override
 	public ServiceResponse<Tenant> updateLogLevel(Tenant tenant, LogLevel newLogLevel) {
@@ -104,6 +109,12 @@ public class TenantServiceImpl implements TenantService {
 		tenant.setDomainName(generateDomainName());
 
 		Tenant fromStorage = tenantRepository.save(tenant);
+		
+		applicationService.register(fromStorage, 
+				Application.builder()
+					.name(fromStorage.getDomainName())
+					.friendlyName(fromStorage.getDomainName())
+					.build());
 		
 		return ServiceResponseBuilder.<Tenant>ok()
 				.withResult(fromStorage)
