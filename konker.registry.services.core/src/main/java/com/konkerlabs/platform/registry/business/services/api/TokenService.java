@@ -10,7 +10,9 @@ import java.time.temporal.TemporalAmount;
  */
 public interface TokenService {
     enum Purpose {
-        RESET_PASSWORD("service.token.purpose.resetPassword");
+        RESET_PASSWORD("service.token.purpose.resetPassword"),
+    	
+    	VALIDATE_EMAIL("service.token.purpose.validateEmail");
 
         private String name;
 
