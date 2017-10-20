@@ -40,7 +40,7 @@ public class GatewayRestController extends AbstractRestController implements Ini
     private Set<String> validationsCode = new HashSet<>();
 
     @GetMapping(path = "/")
-    // @PreAuthorize("hasAuthority('LIST_GATEWAYS')")
+    @PreAuthorize("hasAuthority('LIST_GATEWAYS')")
     @ApiOperation(
             value = "List all gateways by application",
             response = GatewayVO.class)
@@ -66,7 +66,7 @@ public class GatewayRestController extends AbstractRestController implements Ini
     }
 
     @GetMapping(path = "/{gatewayGuid}")
-    // @PreAuthorize("hasAuthority('SHOW_GATEWAY')")
+    @PreAuthorize("hasAuthority('SHOW_GATEWAY')")
     @ApiOperation(
             value = "Get a gateway by guid",
             response = RestResponse.class
@@ -88,7 +88,7 @@ public class GatewayRestController extends AbstractRestController implements Ini
     }
 
     @PostMapping
-    // @PreAuthorize("hasAuthority('CREATE_GATEWAY')")
+    @PreAuthorize("hasAuthority('CREATE_GATEWAY')")
     @ApiOperation(
             value = "Create a gateway",
             response = GatewayVO.class
@@ -120,7 +120,7 @@ public class GatewayRestController extends AbstractRestController implements Ini
     }
 
     @PutMapping(path = "/{gatewayGuid}")
-    // @PreAuthorize("hasAuthority('EDIT_GATEWAY')")
+    @PreAuthorize("hasAuthority('EDIT_GATEWAY')")
     @ApiOperation(value = "Update a gateway")
     public void update(
             @PathVariable("application") String applicationId,
@@ -156,7 +156,7 @@ public class GatewayRestController extends AbstractRestController implements Ini
     }
 
     @DeleteMapping(path = "/{gatewayGuid}")
-    // @PreAuthorize("hasAuthority('REMOVE_GATEWAY')")
+    @PreAuthorize("hasAuthority('REMOVE_GATEWAY')")
     @ApiOperation(value = "Delete a gateway")
     public void delete(
             @PathVariable("application") String applicationId,
