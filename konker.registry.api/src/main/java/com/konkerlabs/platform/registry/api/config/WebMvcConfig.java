@@ -26,6 +26,7 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
         messageSource.addBasenames("classpath:/messages/device-model");
         messageSource.addBasenames("classpath:/messages/devices");
         messageSource.addBasenames("classpath:/messages/devices-config");
+        messageSource.addBasenames("classpath:/messages/gateways");
         messageSource.addBasenames("classpath:/messages/locations");
         messageSource.addBasenames("classpath:/messages/rest-destination");
         messageSource.addBasenames("classpath:/messages/routes");

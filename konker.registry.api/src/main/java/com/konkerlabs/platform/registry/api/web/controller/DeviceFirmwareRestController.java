@@ -1,26 +1,5 @@
 package com.konkerlabs.platform.registry.api.web.controller;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.commons.codec.digest.DigestUtils;
-import org.bson.types.Binary;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
 import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
 import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
 import com.konkerlabs.platform.registry.api.model.DeviceFirmwareVO;
@@ -30,20 +9,26 @@ import com.konkerlabs.platform.registry.business.model.DeviceFirmware;
 import com.konkerlabs.platform.registry.business.model.DeviceModel;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.DeviceFirmwareService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.bson.types.Binary;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.*;
 
 @RestController
 @Scope("request")
 @RequestMapping(value = "/{application}/firmwares/")
 @Api(tags = "device firmwares")
 public class DeviceFirmwareRestController extends AbstractRestController implements InitializingBean {
-
-    @Autowired
-    private DeviceModelService deviceModelService;
 
     @Autowired
     private DeviceFirmwareService deviceFirmwareService;
@@ -124,27 +109,6 @@ public class DeviceFirmwareRestController extends AbstractRestController impleme
         }
 
         return checksum;
-
-    }
-
-    private DeviceModel getDeviceModel(Tenant tenant, Application application, String deviceModelName) throws BadServiceResponseException, NotFoundResponseException {
-
-        ServiceResponse<DeviceModel> applicationResponse = deviceModelService.getByTenantApplicationAndName(tenant, application, deviceModelName);
-        if (!applicationResponse.isOk()) {
-            if (applicationResponse.getResponseMessages().containsKey(DeviceModelService.Validations.DEVICE_MODEL_NOT_FOUND.getCode())) {
-                throw new NotFoundResponseException(user, applicationResponse);
-
-            } else {
-                Set<String> validationsCode = new HashSet<>();
-                for (DeviceModelService.Validations value : DeviceModelService.Validations.values()) {
-                    validationsCode.add(value.getCode());
-                }
-
-                throw new BadServiceResponseException(user, applicationResponse, validationsCode);
-            }
-        }
-
-        return applicationResponse.getResult();
 
     }
 
