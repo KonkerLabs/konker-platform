@@ -27,10 +27,14 @@ import java.util.Set;
 @Api(tags = "alert triggers")
 public class SilenceTriggerRestController extends AbstractRestController implements InitializingBean {
 
-    @Autowired
-    private SilenceTriggerService silenceTriggerService;
+    private final SilenceTriggerService silenceTriggerService;
 
     private Set<String> validationsCode = new HashSet<>();
+
+    @Autowired
+    public SilenceTriggerRestController(SilenceTriggerService silenceTriggerService) {
+        this.silenceTriggerService = silenceTriggerService;
+    }
 
     @GetMapping(path = "/{deviceModelName}/{locationName}")
     @ApiOperation(

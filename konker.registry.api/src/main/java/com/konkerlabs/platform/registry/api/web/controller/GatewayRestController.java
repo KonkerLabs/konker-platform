@@ -34,9 +34,6 @@ public class GatewayRestController extends AbstractRestController implements Ini
     @Autowired
     private GatewayService gatewayService;
 
-    @Autowired
-    private DeviceRegisterService deviceRegisterService;
-
     private Set<String> validationsCode = new HashSet<>();
 
     @GetMapping(path = "/")
@@ -56,9 +53,7 @@ public class GatewayRestController extends AbstractRestController implements Ini
         } else {
             List<GatewayVO> gatewaysVO = new ArrayList<>();
 
-            for (GatewayVO gatewayVO : new GatewayVO().apply(gatewayResponse.getResult())) {
-                gatewaysVO.add(gatewayVO);
-            }
+            gatewaysVO.addAll(new GatewayVO().apply(gatewayResponse.getResult()));
 
             return gatewaysVO;
         }
@@ -132,7 +127,7 @@ public class GatewayRestController extends AbstractRestController implements Ini
         Application application = getApplication(applicationId);
         Location location = getLocation(tenant, application, gatewayForm.getLocationName());
 
-        Gateway gatewayFromDB = null;
+        Gateway gatewayFromDB;
         ServiceResponse<Gateway> gatewayResponse = gatewayService.getByGUID(tenant, application, gatewayGuid);
 
         if (!gatewayResponse.isOk()) {

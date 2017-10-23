@@ -21,6 +21,7 @@ public interface UserService {
         INVALID_PASSWORD_CONFIRMATION("service.user.validation.password.invalid.confirmation"),
         INVALID_PASSWORD_INVALID("service.user.validation.password.invalid"),
         INVALID_PASSWORD_BLACKLISTED("service.user.validation.password.invalid.blacklisted"),
+        INVALID_PASSWORD_TYPE("service.user.validation.password.invalid_type"),
         INVALID_AVATAR("service.user.validation.avatar.invalid"),
         INVALID_USER_LIMIT_CREATION("service.user.validation.limit.creation"), 
         NO_EXIST_USER("service.user.validation.no.exist"), 
