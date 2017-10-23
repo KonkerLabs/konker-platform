@@ -7,7 +7,6 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -23,13 +22,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-
+import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.Token;
 import com.konkerlabs.platform.registry.business.model.User;
+import com.konkerlabs.platform.registry.business.model.User.JobEnum;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.TokenService;
 import com.konkerlabs.platform.registry.business.services.api.UserService;
-
 import com.konkerlabs.platform.registry.web.forms.UserForm;
 
 
@@ -42,9 +41,9 @@ public class UserSubscriptionController implements ApplicationContextAware {
     private static final Logger LOGGER = LoggerFactory.getLogger(UserSubscriptionController.class);
 
     public enum Messages {
-        USER_DOES_NOT_EXIST("controller.recover.user.does.not.exist"), USER_EMAIL_SUBJECT(
-                "controller.recover.user.email.subject"), USER_CHANGE_PASSWORD_SUCCESS(
-                        "controller.recover.user.success");
+        USER_DOES_NOT_EXIST("controller.recover.user.does.not.exist"), 
+        USER_EMAIL_SUBJECT("controller.recover.user.email.subject"), 
+        USER_CHANGE_PASSWORD_SUCCESS("controller.recover.user.success");
 
         public String getCode() {
             return code;
@@ -57,39 +56,51 @@ public class UserSubscriptionController implements ApplicationContextAware {
         }
     }
 
-
-
     @Autowired
     private UserService userService;
 
     @Autowired
     private TokenService tokenService;
 
-
-
     private ApplicationContext applicationContext;
-
-
-
-    @RequestMapping(value = "/email", method = RequestMethod.POST)
-    public  ModelAndView save(UserForm userForm, RedirectAttributes redirectAttributes, Locale locale) {
-        
-    	User userfromForm = userForm.toModel();      	
-
+    
+    
+    @RequestMapping(method = RequestMethod.GET)
+    public ModelAndView form(UserForm userForm) {
     	
-        ServiceResponse<User> serviceResponse = userService.createAccount(userfromForm, userForm.getNewPassword(),
+    	return new ModelAndView("subscription/form")
+    			.addObject("user", userForm)
+    			.addObject("allJobs", JobEnum.values())
+    			.addObject("action", "/subscription");
+    }
+    
+    @RequestMapping(method = RequestMethod.POST)
+    public  ModelAndView save(UserForm userForm, RedirectAttributes redirectAttributes, Locale locale) {
+    	User user = userForm.toModel();
+    	user.setTenant(Tenant.builder().name(userForm.getTenantName()).build());
+    	
+        ServiceResponse<User> serviceResponse = userService.createAccount(
+        		user, 
+        		userForm.getNewPassword(),
         		userForm.getNewPasswordConfirmation());
        
         
         if (serviceResponse.isOk()) {        	
-
-        	User user = serviceResponse.getResult();
+        	redirectAttributes.addFlashAttribute("message", 
+        			applicationContext.getMessage(UserService.Messages.USER_REGISTERED_SUCCESSFULLY.getCode(), null, locale));
         	return new ModelAndView("redirect:/subscription/success");
         }else {
-       	
-        	return new ModelAndView("redirect:/subscription/fail");
+        	List<String> messages = serviceResponse.getResponseMessages()
+                    .entrySet().stream()
+                    .map(message -> applicationContext.getMessage(message.getKey(), message.getValue(), locale))
+                    .collect(Collectors.toList());
+        	
+        	return new ModelAndView("subscription/form")
+        			.addObject("user", userForm)
+        			.addObject("allJobs", JobEnum.values())
+        			.addObject("action", "/subscription")
+        			.addObject("errors", messages);
         }
-        
 
     }
 

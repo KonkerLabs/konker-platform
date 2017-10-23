@@ -51,27 +51,100 @@
         <div class="container">
             <div class="row">
                 <div class="col-sm-6 col-sm-offset-3 form-box">
+                	<div class="alert alert-danger" role="alert" data-th-if="${errors != null and !errors.empty}">
+		                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+		                    <span aria-hidden="true">&times;</span>
+		                </button>
+		                <ul>
+		                <li data-th-each="error : ${errors}" data-th-text="${error}"></li>
+		                </ul>
+		            </div>
                     <div class="form-top">
                         <div class="form-top-left">
-
+                        	<h2 data-th-text="#{users.subscription.title}"></h2>
                         </div>
                         <div class="form-top-right">
                             <img id="logo-konker" data-th-attr="src=@{/resources/konker/images/logo-konker.png}"/>
                         </div>
                     </div>
+                    
                     <div class="form-bottom">
-                        <form id="formValidateEmail" role="form" method="post" class="login-form">
+                        <form 
+                        	data-th-action="@{__${action}__}" 
+                        	data-th-object="${user}"
+                        	id="formValidateEmail"  
+                        	method="post" 
+                        	class="login-form">
+                        	
                             <div class="form-group">
-                                <label class="sr-only" for="form-username"></label>
-                                <input type="text" name="username" th:placeholder="#{login.username.placeholder}"
-                                       class="form-username form-control" id="form-username"/>
-                            </div>
-                            <div class="form-top-center" th:if="${param.error}"
-                                 th:with="errorMsg=${session['SPRING_SECURITY_LAST_EXCEPTION'].message}">
-                                <p th:text="${errorMsg}"></p>
-                            </div>
-                            
-                            <button type="button" id="btnSend" class="btn"><p data-th-text="#{nav.send}"></p></button>
+				                <label for="createName" data-th-text="#{users.subscription.name}"></label>
+				                <input name="name" data-th-value="*{name}"
+				                	type="text" 
+				                	class="form-control" 
+				                	id="createName" 
+				                	aria-describedby="name"
+				                	placeholder="Enter name" 
+				                	required>
+				            </div>
+				            <div class="form-group">
+				                <label for="createEmail" data-th-text="#{users.subscription.email}"></label>
+				                <input name="email" data-th-value="*{email}"
+				                	type="email" 
+				                	class="form-control" 
+				                	id="createEmail" 
+				                	aria-describedby="emailHelp" 
+				                	placeholder="Enter email" 
+				                	required>
+				                <small id="email" class="form-text text-muted">exemple@yourcompany.com</small>
+				            </div>
+				            <div class="form-group">
+				                <label for="createPass" data-th-text="#{users.subscription.password}"></label>
+				                <input name="newPassword" data-th-value="*{newPassword}"
+				                	type="password" 
+				                	class="form-control" 
+				                	id="createPass" 
+				                	placeholder="Password" 
+				                	required>
+				            </div>
+				            <div class="form-group">
+				                <label for="createConfPass" data-th-text="#{users.subscription.confirm.password}"></label>
+				                <input name="newPasswordConfirmation" data-th-value="*{newPasswordConfirmation}"
+				                	type="password" 
+				                	class="form-control" 
+				                	id="createConfPass" 
+				                	placeholder=" Confirm Password" 
+				                	required>
+				            </div>
+				            <div class="form-group">
+				                <label for="createCompany" data-th-text="#{users.subscription.company}"></label>
+				                <input name="tenantName" data-th-value="*{tenantName}"
+				                	type="text" 
+				                	class="form-control" 
+				                	id="createCompany" 
+				                	placeholder="Your Company" 
+				                	required>
+				            </div>
+				            <div class="form-group">
+				                <label for="createJob" data-th-text="#{users.subscription.jobtitle}"></label>
+				                <select data-th-field="*{job}"
+				                		class="form-control" 
+				                		id="createJob" 
+				                		required>
+				                	<option data-th-each="job : ${allJobs}"
+			                                data-th-value="${job}"
+			                                data-th-text="#{${job.code}}"></option>
+				             	</select>
+				            </div>
+				            <div class="form-group">
+				                <label for="createPhone" data-th-text="#{users.subscription.phone}"></label>
+				                <input name="phone" data-th-value="*{phone}"
+				                	type="tel" 
+				                	class="form-control" 
+				                	id="createPhone" 
+				                	placeholder="Your Phone" 
+				                	required>
+				            </div>
+				            <button type="submit">Create account</button>
                         </form>
                     </div>
                 </div>

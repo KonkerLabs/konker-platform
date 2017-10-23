@@ -54,6 +54,7 @@ public interface UserService {
     }
     
     enum Messages {
+    	USER_REGISTERED_SUCCESSFULLY("controller.user.registered.success"),
         USER_SUBJECT_MAIL("service.user.message.email.subject"),
         USER_HAS_ACCOUNT("service.user.message.has.account");
 
