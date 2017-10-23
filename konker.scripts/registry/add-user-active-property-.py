@@ -4,7 +4,7 @@ from dao.registry import update_user_add_active
 
 def main():
     update_user_add_active()
-    print "Finish"
+    print("Finish")
     
 
 if __name__ == '__main__':
