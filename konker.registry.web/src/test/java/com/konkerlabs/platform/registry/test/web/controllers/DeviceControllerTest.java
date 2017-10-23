@@ -52,7 +52,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebAppConfiguration
 @ContextConfiguration(classes = { WebMvcConfig.class, WebTestConfiguration.class, SecurityTestConfiguration.class,
 		DeviceControllerTest.DeviceTestContextConfig.class, WebConfig.class, HotjarConfig.class, PubServerConfig.class,
-		CdnConfig.class})
+		CdnConfig.class, EmailConfig.class})
 public class DeviceControllerTest extends WebLayerTestContext {
 
 	private static final String USER_DEFINED_DEVICE_ID = "SN1234567890";

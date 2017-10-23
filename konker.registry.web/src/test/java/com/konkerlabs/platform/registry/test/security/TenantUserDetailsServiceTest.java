@@ -16,6 +16,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.konkerlabs.platform.registry.config.EmailConfig;
 import com.konkerlabs.platform.registry.security.TenantUserDetailsService;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
@@ -24,7 +25,8 @@ import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
         MongoTestConfiguration.class,
-        TenantUserDetailsServiceTest.SecurityConfig.class
+        TenantUserDetailsServiceTest.SecurityConfig.class, 
+        EmailConfig.class
 })
 public class TenantUserDetailsServiceTest extends BusinessLayerTestSupport {
 

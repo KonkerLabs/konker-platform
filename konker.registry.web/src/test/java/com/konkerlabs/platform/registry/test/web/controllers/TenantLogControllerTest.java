@@ -30,6 +30,7 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.TenantLogService;
 import com.konkerlabs.platform.registry.config.CdnConfig;
+import com.konkerlabs.platform.registry.config.EmailConfig;
 import com.konkerlabs.platform.registry.config.HotjarConfig;
 import com.konkerlabs.platform.registry.config.WebConfig;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
@@ -42,7 +43,7 @@ import com.konkerlabs.platform.registry.web.converters.DateToStringConverter;
 @WebAppConfiguration
 @ContextConfiguration(classes = { WebMvcConfig.class, WebTestConfiguration.class, SecurityTestConfiguration.class,
 		TenantLogControllerTest.UserControllerTestContextConfig.class, WebConfig.class, HotjarConfig.class,
-		CdnConfig.class})
+		CdnConfig.class, EmailConfig.class})
 public class TenantLogControllerTest extends WebLayerTestContext {
 
 	@Autowired

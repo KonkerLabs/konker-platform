@@ -15,6 +15,7 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceEventService
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.config.EmailConfig;
 import com.konkerlabs.platform.registry.config.EnvironmentConfig;
 import com.konkerlabs.platform.registry.config.HotjarConfig;
 import com.konkerlabs.platform.registry.config.WebConfig;
@@ -60,7 +61,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         DeviceVisualizationControllerTest.DeviceTestContextConfig.class,
         WebConfig.class,
         HotjarConfig.class,
-        EnvironmentConfig.class
+        EnvironmentConfig.class, 
+        EmailConfig.class
 })
 public class DeviceVisualizationControllerTest extends WebLayerTestContext {
 

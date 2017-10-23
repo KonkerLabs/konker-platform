@@ -52,6 +52,22 @@ public interface UserService {
         }
 
     }
+    
+    enum Messages {
+        USER_SUBJECT_MAIL("service.user.message.email.subject"),
+        USER_HAS_ACCOUNT("service.user.message.has.account");
+
+        private String code;
+
+        Messages(String code) {
+            this.code = code;
+        }
+
+        public String getCode() {
+            return code;
+        }
+
+    }
 
     /**
      * Save user details

@@ -14,7 +14,8 @@
       "language": "EN",
       "zoneId": "AMERICA_SAO_PAULO",
       "dateFormat":"YYYYMMDD",
-      "notificationViaEmail" : true
+      "notificationViaEmail" : true,
+      "active" : true
     },
     {
       "_id" : "foo@konkerlabs.com",
@@ -29,7 +30,8 @@
       "name":"Konker Admin",
       "language": "EN",
       "zoneId": "AMERICA_SAO_PAULO",
-      "dateFormat":"YYYYMMDD"
+      "dateFormat":"YYYYMMDD",
+      "active" : true
     },
     {
       "_id" : "bar@konkerlabs.com",
@@ -44,7 +46,8 @@
       "name":"Konker Admin",
       "language": "EN",
       "zoneId": "AMERICA_SAO_PAULO",
-      "dateFormat":"YYYYMMDD"
+      "dateFormat":"YYYYMMDD",
+      "active" : true
     }
   ]
 }

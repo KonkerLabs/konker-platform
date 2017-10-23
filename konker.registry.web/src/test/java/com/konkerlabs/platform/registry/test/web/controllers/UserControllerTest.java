@@ -36,6 +36,7 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBui
 import com.konkerlabs.platform.registry.business.services.api.TenantService;
 import com.konkerlabs.platform.registry.business.services.api.UserService;
 import com.konkerlabs.platform.registry.config.CdnConfig;
+import com.konkerlabs.platform.registry.config.EmailConfig;
 import com.konkerlabs.platform.registry.config.HotjarConfig;
 import com.konkerlabs.platform.registry.config.WebConfig;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
@@ -50,7 +51,7 @@ import com.konkerlabs.platform.registry.web.services.api.AvatarService;
 @WebAppConfiguration
 @ContextConfiguration(classes = { WebMvcConfig.class, WebTestConfiguration.class, SecurityTestConfiguration.class,
 		UserControllerTest.UserControllerTestContextConfig.class,
-        WebConfig.class, HotjarConfig.class, CdnConfig.class })
+        WebConfig.class, HotjarConfig.class, CdnConfig.class, EmailConfig.class })
 public class UserControllerTest extends WebLayerTestContext {
 
 	@Autowired
