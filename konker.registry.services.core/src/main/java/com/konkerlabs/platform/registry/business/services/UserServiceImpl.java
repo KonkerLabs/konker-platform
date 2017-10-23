@@ -120,21 +120,29 @@ public class UserServiceImpl implements UserService {
     
     @Override
 	public ServiceResponse<User> save(User user, String newPassword, String newPasswordConfirmation) {
-		if (!Optional.ofNullable(user.getEmail()).isPresent() ||
-				!patternEmail.matcher(user.getEmail()).matches()) {
-			return ServiceResponseBuilder.<User>error()
-					.withMessage(Validations.INVALID_USER_EMAIL.getCode())
-					.build();
-		}
-		
-		if (!Optional.ofNullable(newPassword).isPresent()) {
-			return ServiceResponseBuilder.<User>error()
-					.withMessage(Validations.INVALID_PASSWORD_INVALID.getCode())
-					.build();
-		}
-		
-    	User fromStorage = Optional.ofNullable(userRepository.findOne(user.getEmail())).orElse(user);
-    	
+
+        ServiceResponse<User> errorResponse = checkNullFields(user);
+        if (errorResponse != null) return errorResponse;
+
+        if (!Optional.ofNullable(newPassword).isPresent()) {
+            return ServiceResponseBuilder.<User>error()
+                    .withMessage(Validations.INVALID_PASSWORD_INVALID.getCode())
+                    .build();
+        }
+
+        if (!newPassword.equals(newPasswordConfirmation)) {
+            LOG.debug("Invalid password confirmation on user update",
+                    user.getTenant().toURI(),
+                    user.getTenant().getLogLevel(),
+                    user);
+
+            return ServiceResponseBuilder.<User>error()
+                    .withMessage(Validations.INVALID_PASSWORD_CONFIRMATION.getCode())
+                    .build();
+        }
+
+        User fromStorage = Optional.ofNullable(userRepository.findOne(user.getEmail())).orElse(user);
+
         if (!Optional.ofNullable(user.getEmail()).isPresent() ||
                 !user.getEmail().equals(fromStorage.getEmail())) {
             return ServiceResponseBuilder.<User>error()
@@ -142,66 +150,13 @@ public class UserServiceImpl implements UserService {
                     .build();
         }
 
-        if (!newPassword.equals(newPasswordConfirmation)) {
-            LOG.debug("Invalid password confirmation on user update",
-                    fromStorage.getTenant().toURI(),
-                    fromStorage.getTenant().getLogLevel(),
-                    fromStorage);
-
-            return ServiceResponseBuilder.<User>error()
-                    .withMessage(Validations.INVALID_PASSWORD_CONFIRMATION.getCode())
-                    .build();
-        }
-
-        if (!Optional.ofNullable(user).isPresent()) {
-            LOG.debug("Invalid user details on update",
-                    fromStorage.getTenant().toURI(),
-                    fromStorage.getTenant().getLogLevel(), fromStorage);
-
-            return ServiceResponseBuilder.<User>error()
-                    .withMessage(Validations.INVALID_USER_DETAILS.getCode())
-                    .build();
-        }
-
-        if (!Optional.ofNullable(user.getDateFormat()).isPresent()) {
-            LOG.debug("Invalid date format preference update",
-                    fromStorage.getTenant().toURI(),
-                    fromStorage.getTenant().getLogLevel(),
-                    fromStorage);
-
-            return ServiceResponseBuilder.<User>error()
-                    .withMessage(Validations.INVALID_USER_PREFERENCE_DATEFORMAT.getCode())
-                    .build();
-        }
-        if (!Optional.ofNullable(user.getZoneId()).isPresent()) {
-            LOG.debug("Invalid locale preference update",
-                    fromStorage.getTenant().toURI(),
-                    fromStorage.getTenant().getLogLevel(),
-                    fromStorage);
-
-            return ServiceResponseBuilder.<User>error()
-                    .withMessage(Validations.INVALID_USER_PREFERENCE_LOCALE.getCode())
-                    .build();
-        }
-        if (!Optional.ofNullable(user.getLanguage()).isPresent()) {
-            LOG.debug("Invalid language preference update",
-                    fromStorage.getTenant().toURI(),
-                    fromStorage.getTenant().getLogLevel(),
-                    fromStorage);
-
-            return ServiceResponseBuilder.<User>error()
-                    .withMessage(Validations.INVALID_USER_PREFERENCE_LANGUAGE.getCode())
-                    .build();
-        }
-
         if (!StringUtils.isEmpty(newPassword)) {
             try {
-                validatePassword(user, fromStorage, newPassword, newPasswordConfirmation);
+                validatePassword(user, newPassword, newPasswordConfirmation);
             } catch (BusinessException e) {
                 return ServiceResponseBuilder.<User>error()
                         .withMessage(e.getMessage())
                         .build();
-
             }
         }
 
@@ -227,30 +182,123 @@ public class UserServiceImpl implements UserService {
             return ServiceResponseBuilder.<User>error()
                     .withMessage(Errors.ERROR_SAVE_USER.getCode()).build();
         }
+
+        fillFrom(user, fromStorage);
+        return persistValidUser(fromStorage);
+    }
+
+    private ServiceResponse<User> saveWithPasswordHash(User user, String passwordHash) {
+
+        ServiceResponse<User> errorResponse = checkNullFields(user);
+        if (errorResponse != null) return errorResponse;
+
+        User fromStorage = Optional.ofNullable(userRepository.findOne(user.getEmail())).orElse(user);
+
+        if (!Optional.ofNullable(user.getEmail()).isPresent() ||
+                !user.getEmail().equals(fromStorage.getEmail())) {
+            return ServiceResponseBuilder.<User>error()
+                    .withMessage(Validations.INVALID_USER_EMAIL.getCode())
+                    .build();
+        }
+
+        if (!Optional.ofNullable(passwordHash).isPresent()) {
+            return ServiceResponseBuilder.<User>error()
+                    .withMessage(Validations.INVALID_PASSWORD_INVALID.getCode())
+                    .build();
+        }
+
+        if (passwordManager.validateHash(passwordHash)) {
+            return ServiceResponseBuilder.<User>error()
+                    .withMessage(Validations.INVALID_PASSWORD_HASH_INVALID.getCode())
+                    .build();
+        } else {
+            user.setPassword(passwordHash);
+        }
+
+        fillFrom(user, fromStorage);
+        return persistValidUser(fromStorage);
+    }
+
+    private ServiceResponse<User> persistValidUser(User user) {
         try {
-            fillFrom(user, fromStorage);
-            userRepository.save(fromStorage);
-            
+            userRepository.save(user);
+
             if (SecurityContextHolder.getContext().getAuthentication() instanceof UsernamePasswordAuthenticationToken) {
-            	Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
-            	.ifPresent(authentication -> {
-            		User principal = (User) Optional.ofNullable(authentication.getPrincipal())
-            				.filter(p -> !p.equals("anonymousUser")).orElse(User.builder().build());
-            		
-            		fillFrom(fromStorage, principal);
-            	});
+                Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
+                        .ifPresent(authentication -> {
+                            User principal = (User) Optional.ofNullable(authentication.getPrincipal())
+                                    .filter(p -> !p.equals("anonymousUser")).orElse(User.builder().build());
+
+                            fillFrom(user, principal);
+                        });
             }
 
-            return ServiceResponseBuilder.<User>ok().withResult(fromStorage).build();
+            return ServiceResponseBuilder.<User>ok().withResult(user).build();
         } catch (Exception e) {
             LOG.debug("Error saving User update",
-                    fromStorage.getTenant().toURI(),
-                    fromStorage.getTenant().getLogLevel(), fromStorage);
+                    user.getTenant().toURI(),
+                    user.getTenant().getLogLevel(), user);
             return ServiceResponseBuilder.<User>error()
                     .withMessage(Errors.ERROR_SAVE_USER.getCode()).build();
         }
-	}
-    
+    }
+
+    private ServiceResponse<User> checkNullFields(User user) {
+
+        if (!Optional.ofNullable(user).isPresent()) {
+            LOG.debug("Invalid user details on update",
+                    user.getTenant().toURI(),
+                    user.getTenant().getLogLevel(),
+                    user);
+
+            return ServiceResponseBuilder.<User>error()
+                    .withMessage(Validations.INVALID_USER_DETAILS.getCode())
+                    .build();
+        }
+
+        if (!Optional.ofNullable(user.getEmail()).isPresent() ||
+                !patternEmail.matcher(user.getEmail()).matches()) {
+            return ServiceResponseBuilder.<User>error()
+                    .withMessage(Validations.INVALID_USER_EMAIL.getCode())
+                    .build();
+        }
+
+        if (!Optional.ofNullable(user.getDateFormat()).isPresent()) {
+            LOG.debug("Invalid date format preference update",
+                    user.getTenant().toURI(),
+                    user.getTenant().getLogLevel(),
+                    user);
+
+            return ServiceResponseBuilder.<User>error()
+                    .withMessage(Validations.INVALID_USER_PREFERENCE_DATEFORMAT.getCode())
+                    .build();
+        }
+
+        if (!Optional.ofNullable(user.getZoneId()).isPresent()) {
+            LOG.debug("Invalid locale preference update",
+                    user.getTenant().toURI(),
+                    user.getTenant().getLogLevel(),
+                    user);
+
+            return ServiceResponseBuilder.<User>error()
+                    .withMessage(Validations.INVALID_USER_PREFERENCE_LOCALE.getCode())
+                    .build();
+        }
+
+        if (!Optional.ofNullable(user.getLanguage()).isPresent()) {
+            LOG.debug("Invalid language preference update",
+                    user.getTenant().toURI(),
+                    user.getTenant().getLogLevel(),
+                    user);
+
+            return ServiceResponseBuilder.<User>error()
+                    .withMessage(Validations.INVALID_USER_PREFERENCE_LANGUAGE.getCode())
+                    .build();
+        }
+
+        return null;
+    }
+
     @Override
     public ServiceResponse<User> createAccount(User user, String newPassword, String newPasswordConfirmation) {
 
@@ -263,17 +311,10 @@ public class UserServiceImpl implements UserService {
         User fromStorage = userRepository.findByEmail(user.getEmail());
 		
 		if (Optional.ofNullable(fromStorage).isPresent()) {
-			Map<String, Object> templateParam = new HashMap<>();
-            templateParam.put("link", emailConfig.getBaseurl().concat("login"));
-            templateParam.put("name", fromStorage.getName());
-            
-    		sendMail(fromStorage, templateParam, Messages.USER_HAS_ACCOUNT,"html/email-accountalreadyexists");
-    		return ServiceResponseBuilder.<User>ok()
-					.build();
+            return sendAccountExistsEmail(fromStorage);
 		}
 		
-		if (!Optional.ofNullable(user.getName()).isPresent() ||
-				user.getName().isEmpty()) {
+		if (user.getName() == null || user.getName().isEmpty()) {
 			return ServiceResponseBuilder.<User>error()
 					.withMessage(Validations.INVALID_USER_NAME.getCode())
 					.build();
@@ -289,19 +330,33 @@ public class UserServiceImpl implements UserService {
     	ServiceResponse<User> save = save(user, newPassword, newPasswordConfirmation);
     	
     	if (save.isOk()) {
-    		ServiceResponse<String> responseToken = tokenService.generateToken(
-    				TokenService.Purpose.RESET_PASSWORD,
-    				user, 
-    				Duration.ofDays(2L));
-    		
-    		Map<String, Object> templateParam = new HashMap<>();
-            templateParam.put("link", emailConfig.getBaseurl().concat("validateemail/").concat(responseToken.getResult()));
-            templateParam.put("name", user.getName());
-            
-            sendMail(user, templateParam, Messages.USER_SUBJECT_MAIL, "html/email-selfsubscription");
+            sendValidateTokenEmail(user);
     	}
     	
 		return save;
+    }
+
+    private ServiceResponse<User> sendAccountExistsEmail(User fromStorage) {
+        Map<String, Object> templateParam = new HashMap<>();
+        templateParam.put("link", emailConfig.getBaseurl().concat("login"));
+        templateParam.put("name", fromStorage.getName());
+
+        sendMail(fromStorage, templateParam, Messages.USER_HAS_ACCOUNT,"html/email-accountalreadyexists");
+        return ServiceResponseBuilder.<User>ok()
+                .build();
+    }
+
+    private void sendValidateTokenEmail(User user) {
+        ServiceResponse<String> responseToken = tokenService.generateToken(
+                TokenService.Purpose.RESET_PASSWORD,
+                user,
+                Duration.ofDays(2L));
+
+        Map<String, Object> templateParam = new HashMap<>();
+        templateParam.put("link", emailConfig.getBaseurl().concat("validateemail/").concat(responseToken.getResult()));
+        templateParam.put("name", user.getName());
+
+        sendMail(user, templateParam, Messages.USER_SUBJECT_MAIL, "html/email-selfsubscription");
     }
 
     private boolean validateUserCreationLimit() {
@@ -320,7 +375,7 @@ public class UserServiceImpl implements UserService {
 
         Long countUsers = userRepository.countRegistrationsBetweenDate(start, end);
 
-        return countUsers >=250l;
+        return countUsers >= 250L;
     }
 
     private void sendMail(User user, Map<String, Object> templateParam, Messages message, String templateName) {
@@ -343,7 +398,33 @@ public class UserServiceImpl implements UserService {
                     .build();
         }
 
-        return null;
+        User fromStorage = userRepository.findByEmail(user.getEmail());
+
+        if (Optional.ofNullable(fromStorage).isPresent()) {
+            return sendAccountExistsEmail(fromStorage);
+        }
+
+        if (user.getName() == null || user.getName().isEmpty()) {
+            return ServiceResponseBuilder.<User>error()
+                    .withMessage(Validations.INVALID_USER_NAME.getCode())
+                    .build();
+        }
+
+        if (!Optional.ofNullable(user.getTenant().getName()).isPresent()){
+            user.getTenant().setName(user.getName());
+        }
+
+        ServiceResponse<Tenant> serviceResponse = tenantService.save(user.getTenant());
+        user.setTenant(serviceResponse.getResult());
+
+        ServiceResponse<User> save = saveWithPasswordHash(user, passwordHash);
+
+        if (save.isOk()) {
+            sendValidateTokenEmail(user);
+        }
+
+        return save;
+
     }
 
     /**
@@ -382,12 +463,8 @@ public class UserServiceImpl implements UserService {
 
     /**
      * Validate password change rules
-     *
-     * @param fromForm
-     * @param fromStorage
-     * @throws BusinessException
      */
-    private void validatePassword(User fromForm, User fromStorage,
+    private void validatePassword(User fromForm,
                                   String newPassword,
                                   String newPasswordConfirmation
     ) throws BusinessException {
