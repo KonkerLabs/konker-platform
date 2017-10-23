@@ -10,6 +10,7 @@ import com.konkerlabs.platform.registry.business.services.api.ApplicationService
 import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.config.CdnConfig;
+import com.konkerlabs.platform.registry.config.EmailConfig;
 import com.konkerlabs.platform.registry.config.HotjarConfig;
 import com.konkerlabs.platform.registry.config.WebConfig;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
@@ -61,7 +62,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         RestDestinationControllerTest.RestDestinationTestContextConfig.class,
         WebConfig.class,
         HotjarConfig.class,
-        CdnConfig.class
+        CdnConfig.class, 
+        EmailConfig.class
 })
 public class RestDestinationControllerTest extends WebLayerTestContext {
 

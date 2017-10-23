@@ -41,12 +41,11 @@ public class TenantUserDetailsService implements UserDetailsService {
         }
         User user = userRepository.findOne(Optional.of(email).orElse("").trim().toLowerCase());
         if(user == null){
-
         	invalidCredentials(email);
+
         } else if (Optional.ofNullable(user).isPresent() &&
         			emailConfig.isEnabled() && 
         			!user.isActive()) {
-        	 
         	invalidCredentials(email);
         }
         

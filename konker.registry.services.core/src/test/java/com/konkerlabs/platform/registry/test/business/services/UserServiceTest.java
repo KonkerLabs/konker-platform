@@ -1,5 +1,26 @@
 package com.konkerlabs.platform.registry.test.business.services;
 
+import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
+import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.isResponseOk;
+import static org.hamcrest.MatcherAssert.assertThat;
+
+import java.time.Instant;
+import java.util.List;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
 import com.konkerlabs.platform.registry.business.model.enumerations.Language;
@@ -10,24 +31,11 @@ import com.konkerlabs.platform.registry.business.services.api.UserService;
 import com.konkerlabs.platform.registry.config.PasswordUserConfig;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.MessageSouceTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoBillingTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.SpringMailTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
-import org.junit.*;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import java.time.Instant;
-import java.util.List;
-
-import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
-import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.isResponseOk;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
@@ -35,7 +43,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
         BusinessTestConfiguration.class,
         PasswordUserConfig.class,
         MongoBillingTestConfiguration.class,
-        SpringMailTestConfiguration.class
+        SpringMailTestConfiguration.class,
+        MessageSouceTestConfiguration.class
 })
 @UsingDataSet(locations = {
         "/fixtures/tenants.json",
@@ -294,9 +303,7 @@ public class UserServiceTest extends BusinessLayerTestSupport {
     	ServiceResponse<User> serviceResponse = userService.createAccount(user, newPassword, newPassword);
     	
     	Assert.assertNotNull(serviceResponse);
-        assertThat(
-                serviceResponse,
-                hasErrorMessage(UserService.Validations.USER_EXIST.getCode()));
+    	assertThat(serviceResponse, isResponseOk());
     }
     
     @Test
@@ -329,14 +336,24 @@ public class UserServiceTest extends BusinessLayerTestSupport {
     }
     
     @Test
-    public void shouldCreateAccount() {
+    public void shouldCreateAccountTenantNoName() {
     	user.setEmail("new.user@domain.com.br");
-    	user.setTenant(null);
+    	user.setTenant(Tenant.builder().build());
     	ServiceResponse<User> serviceResponse = userService.createAccount(user, newPassword, newPassword);
     	
     	Assert.assertNotNull(serviceResponse);
         assertThat(serviceResponse, isResponseOk());
         Assert.assertEquals(serviceResponse.getResult().getName(), serviceResponse.getResult().getTenant().getName());
+    }
+    
+    @Test
+    public void shouldCreateAccount() {
+    	user.setEmail("new.user@domain.com.br");
+    	user.setTenant(Tenant.builder().name("New Org").build());
+    	ServiceResponse<User> serviceResponse = userService.createAccount(user, newPassword, newPassword);
+    	
+    	Assert.assertNotNull(serviceResponse);
+        assertThat(serviceResponse, isResponseOk());
     }
      
 }

@@ -293,6 +293,8 @@ public class UserServiceImpl implements UserService {
             templateParam.put("name", fromStorage.getName());
             
     		sendMail(fromStorage, templateParam, Messages.USER_HAS_ACCOUNT,"html/email-accountalreadyexists");
+    		return ServiceResponseBuilder.<User>ok()
+					.build();
 		}
 		
 		if (!Optional.ofNullable(user.getName()).isPresent() ||
@@ -302,9 +304,11 @@ public class UserServiceImpl implements UserService {
 					.build();
 		}
 		
-		ServiceResponse<Tenant> serviceResponse = tenantService.save(Tenant.builder()
-				.name(user.getName())
-				.build());
+		if (!Optional.ofNullable(user.getTenant().getName()).isPresent()){
+			user.getTenant().setName(user.getName());
+		}
+		
+		ServiceResponse<Tenant> serviceResponse = tenantService.save(user.getTenant());
 		user.setTenant(serviceResponse.getResult());
 		
     	ServiceResponse<User> save = save(user, newPassword, newPasswordConfirmation);
