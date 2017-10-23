@@ -31,7 +31,8 @@ import java.util.List;
 import java.util.Map;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static com.typesafe.config.ConfigFactory.*;
+import static com.typesafe.config.ConfigFactory.load;
+import static com.typesafe.config.ConfigFactory.parseMap;
 
 @EnableWebMvc
 @Configuration
@@ -85,7 +86,9 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
                         new Tag("rest destinations", "Operations to list organization REST destinations"),
                         new Tag("rest transformations", "Operations to manage REST transformations"),
                         new Tag("routes", "Operations tomanage routes"),
-                        new Tag("users", "Operations to manage organization users")
+                        new Tag("users", "Operations to manage organization users"),
+                        new Tag("user subscription", "Operations to subscribe new users")
+
                      )
                 .enableUrlTemplating(false);
 

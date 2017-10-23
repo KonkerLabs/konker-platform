@@ -4,6 +4,7 @@ import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseExcepti
 import com.konkerlabs.platform.registry.api.model.UserSubscriptionVO;
 import com.konkerlabs.platform.registry.api.model.UserVO;
 import com.konkerlabs.platform.registry.business.model.Role;
+import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
 import com.konkerlabs.platform.registry.business.model.enumerations.Language;
@@ -62,11 +63,19 @@ public class UserSubscriptionRestController implements InitializingBean {
             throw new BadServiceResponseException(null, responseMessages, validationsCode);
         }
 
+        User.JobEnum job = getJob(userForm.getJobTitle());
+
+        Tenant tenant = Tenant
+                            .builder()
+                            .name(userForm.getCompany())
+                            .build();
+
         User userFromForm = User.builder()
                 .email(userForm.getEmail())
                 .password(userForm.getPassword())
                 .phone(userForm.getPhoneNumber())
                 .name(userForm.getName())
+                .job(job)
                 .notificationViaEmail(true)
                 .dateFormat(DateFormat.YYYYMMDD)
                 .zoneId(TimeZone.AMERICA_SAO_PAULO)
@@ -102,6 +111,16 @@ public class UserSubscriptionRestController implements InitializingBean {
             return new UserVO().apply(userResponse.getResult());
         }
 
+    }
+
+    private User.JobEnum getJob(String jobTitle) {
+        for (User.JobEnum type: User.JobEnum.values()) {
+            if (type.name().equals(jobTitle)) {
+                return type;
+            }
+        }
+
+        return null;
     }
 
     private PasswordType getPasswordType(String passwordType) {
