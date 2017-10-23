@@ -1,19 +1,14 @@
 package com.konkerlabs.platform.registry.business.services;
 
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-import java.text.MessageFormat;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.regex.Pattern;
-
+import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.User;
+import com.konkerlabs.platform.registry.business.repositories.PasswordBlacklistRepository;
+import com.konkerlabs.platform.registry.business.repositories.UserRepository;
+import com.konkerlabs.platform.registry.business.services.api.*;
+import com.konkerlabs.platform.registry.config.EmailConfig;
+import com.konkerlabs.platform.registry.config.PasswordUserConfig;
+import com.konkerlabs.platform.security.managers.PasswordManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,20 +18,15 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.User;
-import com.konkerlabs.platform.registry.business.repositories.PasswordBlacklistRepository;
-import com.konkerlabs.platform.registry.business.repositories.UserRepository;
-import com.konkerlabs.platform.registry.business.services.api.EmailService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
-import com.konkerlabs.platform.registry.business.services.api.TenantService;
-import com.konkerlabs.platform.registry.business.services.api.TokenService;
-import com.konkerlabs.platform.registry.business.services.api.UserService;
-import com.konkerlabs.platform.registry.config.EmailConfig;
-import com.konkerlabs.platform.registry.config.PasswordUserConfig;
-import com.konkerlabs.platform.security.managers.PasswordManager;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.text.MessageFormat;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.*;
+import java.util.regex.Pattern;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -145,9 +135,8 @@ public class UserServiceImpl implements UserService {
 		
     	User fromStorage = Optional.ofNullable(userRepository.findOne(user.getEmail())).orElse(user);
     	
-        if (!Optional.ofNullable(fromStorage).isPresent() ||
-                !Optional.ofNullable(user.getEmail()).isPresent()
-                || !user.getEmail().equals(fromStorage.getEmail())) {
+        if (!Optional.ofNullable(user.getEmail()).isPresent() ||
+                !user.getEmail().equals(fromStorage.getEmail())) {
             return ServiceResponseBuilder.<User>error()
                     .withMessage(Validations.INVALID_USER_EMAIL.getCode())
                     .build();
@@ -264,28 +253,14 @@ public class UserServiceImpl implements UserService {
     
     @Override
     public ServiceResponse<User> createAccount(User user, String newPassword, String newPasswordConfirmation) {
-    	Instant start = LocalDateTime
-    			.now()
-    			.withHour(0)
-    			.withMinute(0)
-    			.withSecond(0)
-    			.toInstant(ZoneOffset.UTC);
-		Instant end = LocalDateTime
-				.now()
-				.withHour(23)
-				.withMinute(59)
-				.withSecond(59)
-				.toInstant(ZoneOffset.UTC);
 
-		Long countUsers = userRepository.countBetweenDate(start, end);
+        if (validateUserCreationLimit()) {
+            return ServiceResponseBuilder.<User>error()
+                    .withMessage(Validations.INVALID_USER_LIMIT_CREATION.getCode())
+                    .build();
+        }
 
-		if (countUsers.equals(new Long(250l))) {
-			return ServiceResponseBuilder.<User>error()
-					.withMessage(Validations.INVALID_USER_LIMIT_CREATION.getCode())
-					.build();
-		}
-		
-		User fromStorage = userRepository.findByEmail(user.getEmail());
+        User fromStorage = userRepository.findByEmail(user.getEmail());
 		
 		if (Optional.ofNullable(fromStorage).isPresent()) {
 			Map<String, Object> templateParam = new HashMap<>();
@@ -329,7 +304,26 @@ public class UserServiceImpl implements UserService {
 		return save;
     }
 
-	private void sendMail(User user, Map<String, Object> templateParam, Messages message, String templateName) {
+    private boolean validateUserCreationLimit() {
+        Instant start = LocalDateTime
+                .now()
+                .withHour(0)
+                .withMinute(0)
+                .withSecond(0)
+                .toInstant(ZoneOffset.UTC);
+        Instant end = LocalDateTime
+                .now()
+                .withHour(23)
+                .withMinute(59)
+                .withSecond(59)
+                .toInstant(ZoneOffset.UTC);
+
+        Long countUsers = userRepository.countRegistrationsBetweenDate(start, end);
+
+        return countUsers >=250l;
+    }
+
+    private void sendMail(User user, Map<String, Object> templateParam, Messages message, String templateName) {
 		emailService.send(
 				emailConfig.getSender(), 
 				Collections.singletonList(user), 
@@ -342,8 +336,14 @@ public class UserServiceImpl implements UserService {
     
     @Override
     public ServiceResponse<User> createAccountWithPasswordHash(User user, String passwordHash) {
-    	// TODO Auto-generated method stub
-    	return null;
+
+        if (validateUserCreationLimit()) {
+            return ServiceResponseBuilder.<User>error()
+                    .withMessage(Validations.INVALID_USER_LIMIT_CREATION.getCode())
+                    .build();
+        }
+
+        return null;
     }
 
     /**
