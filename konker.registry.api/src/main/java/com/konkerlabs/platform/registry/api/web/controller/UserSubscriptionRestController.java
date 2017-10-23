@@ -42,6 +42,8 @@ public class UserSubscriptionRestController implements InitializingBean {
     @Autowired
     private RoleService roleService;
 
+    private Role role;
+
     private Set<String> validationsCode = new HashSet<>();
 
     @PostMapping
@@ -85,11 +87,11 @@ public class UserSubscriptionRestController implements InitializingBean {
                 userResponse = userService.createAccount(userFromForm, password, password);
                 break;
             case BCRYPT_HASH:
-                String bcryptHash = userForm.getPassword();
+                String bcryptHash = String.format("Bcrypt%s", userForm.getPassword());
                 userResponse = userService.createAccountWithPasswordHash(userFromForm, bcryptHash);
                 break;
             case PBKDF2_HASH:
-                String pbkdf2Hash = userForm.getPassword();
+                String pbkdf2Hash = String.format("PBKDF2WithHmac%s", userForm.getPassword());
                 userResponse = userService.createAccountWithPasswordHash(userFromForm, pbkdf2Hash);
                 break;
         }
@@ -103,7 +105,13 @@ public class UserSubscriptionRestController implements InitializingBean {
     }
 
     private PasswordType getPasswordType(String passwordType) {
-        return PasswordType.valueOf(passwordType);
+        for (PasswordType type: PasswordType.values()) {
+            if (type.name().equals(passwordType)) {
+                return type;
+            }
+        }
+
+        return null;
     }
 
     @Override

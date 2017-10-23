@@ -40,10 +40,14 @@ import io.swagger.annotations.ApiParam;
 @Api(tags = "application document store")
 public class ApplicationDocumentStoreRestController extends AbstractRestController implements InitializingBean {
 
-    @Autowired
-    private ApplicationDocumentStoreService applicationDocumentStoreService;
+    private final ApplicationDocumentStoreService applicationDocumentStoreService;
 
     private Set<String> validationsCode = new HashSet<>();
+
+    @Autowired
+    public ApplicationDocumentStoreRestController(ApplicationDocumentStoreService applicationDocumentStoreService) {
+        this.applicationDocumentStoreService = applicationDocumentStoreService;
+    }
 
     @GetMapping
     @ApiOperation(
