@@ -1,11 +1,13 @@
 package com.konkerlabs.platform.registry.config;
 
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-
+import com.konkerlabs.platform.registry.business.services.KonkerDaoAuthenticationProvider;
+import com.konkerlabs.platform.registry.business.services.api.LoginAuditService;
+import com.konkerlabs.platform.registry.security.TenantUserDetailsService;
+import com.konkerlabs.platform.security.managers.PasswordManager;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+import lombok.Getter;
+import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,15 +25,11 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
-import com.konkerlabs.platform.registry.business.services.KonkerDaoAuthenticationProvider;
-import com.konkerlabs.platform.registry.business.services.api.LoginAuditService;
-import com.konkerlabs.platform.registry.security.TenantUserDetailsService;
-import com.konkerlabs.platform.security.managers.PasswordManager;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
-
-import lombok.Getter;
-import lombok.Setter;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 
 @Configuration
 @EnableWebSecurity
@@ -103,7 +101,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
             http.headers().frameOptions().sameOrigin()
                     .and().authorizeRequests()
-                          .antMatchers("/resources/**", "/recoverpassword/**")
+                          .antMatchers("/resources/**", "/recoverpassword/**", "/subscription/**")
                           .permitAll()
                           .anyRequest()
                           .hasAuthority("LOGIN")
