@@ -17,18 +17,22 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
+import org.springframework.context.MessageSource;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
+import com.konkerlabs.platform.registry.business.model.Role;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
+import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
+import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
 import com.konkerlabs.platform.registry.business.repositories.PasswordBlacklistRepository;
 import com.konkerlabs.platform.registry.business.repositories.UserRepository;
 import com.konkerlabs.platform.registry.business.services.api.EmailService;
+import com.konkerlabs.platform.registry.business.services.api.RoleService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.TenantService;
@@ -64,10 +68,13 @@ public class UserServiceImpl implements UserService {
     private EmailService emailService;
     
     @Autowired
+    private RoleService roleService;
+    
+    @Autowired
     private EmailConfig emailConfig;
     
     @Autowired
-    private ApplicationContext applicationContext;
+    private MessageSource messageSource;
 
     private PasswordUserConfig passwordUserConfig; 
 
@@ -311,16 +318,22 @@ public class UserServiceImpl implements UserService {
 		ServiceResponse<Tenant> serviceResponse = tenantService.save(user.getTenant());
 		user.setTenant(serviceResponse.getResult());
 		
+		ServiceResponse<Role> roleResponse = roleService.findByName("ROLE_IOT_USER");
+		user.setRoles(Collections.singletonList(roleResponse.getResult()));
+		user.setZoneId(TimeZone.AMERICA_SAO_PAULO);
+		user.setDateFormat(DateFormat.YYYYMMDD);
+		user.setRegistrationDate(Instant.now());
+		
     	ServiceResponse<User> save = save(user, newPassword, newPasswordConfirmation);
     	
     	if (save.isOk()) {
     		ServiceResponse<String> responseToken = tokenService.generateToken(
-    				TokenService.Purpose.RESET_PASSWORD,
+    				TokenService.Purpose.VALIDATE_EMAIL,
     				user, 
     				Duration.ofDays(2L));
     		
     		Map<String, Object> templateParam = new HashMap<>();
-            templateParam.put("link", emailConfig.getBaseurl().concat("validateemail/").concat(responseToken.getResult()));
+            templateParam.put("link", emailConfig.getBaseurl().concat("subscription/").concat(responseToken.getResult()));
             templateParam.put("name", user.getName());
             
             sendMail(user, templateParam, Messages.USER_SUBJECT_MAIL, "html/email-selfsubscription");
@@ -334,7 +347,7 @@ public class UserServiceImpl implements UserService {
 				emailConfig.getSender(), 
 				Collections.singletonList(user), 
 				Collections.emptyList(), 
-				applicationContext.getMessage(message.getCode(), null, user.getLanguage().getLocale()), 
+				messageSource.getMessage(message.getCode(), null, user.getLanguage().getLocale()), 
 				templateName, 
 				templateParam, 
 				user.getLanguage().getLocale());
@@ -361,6 +374,7 @@ public class UserServiceImpl implements UserService {
         storage.setName(form.getName());
         storage.setPhone(form.getPhone());
         storage.setNotificationViaEmail(form.isNotificationViaEmail());
+        storage.setActive(form.isActive());
     }
 
     /**

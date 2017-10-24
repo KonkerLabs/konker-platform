@@ -26,6 +26,7 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.Token;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.model.User.JobEnum;
+import com.konkerlabs.platform.registry.business.model.enumerations.Language;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.TokenService;
 import com.konkerlabs.platform.registry.business.services.api.UserService;
@@ -74,11 +75,22 @@ public class UserSubscriptionController implements ApplicationContextAware {
     			.addObject("action", "/subscription");
     }
     
+    @RequestMapping(value = "/successpage", method = RequestMethod.GET)
+    public ModelAndView showSuccessPage() {
+    	
+    	return new ModelAndView("subscription/success");
+    }
+    
     @RequestMapping(method = RequestMethod.POST)
     public  ModelAndView save(UserForm userForm, RedirectAttributes redirectAttributes, Locale locale) {
     	User user = userForm.toModel();
     	user.setTenant(Tenant.builder().name(userForm.getTenantName()).build());
+    	user.setLanguage(Language.valueOf(
+    			Optional.ofNullable(locale.toString())
+    				.filter(l -> l.startsWith("pt"))
+    				.orElse(locale.getLanguage()).toUpperCase()));
     	
+    	    	
         ServiceResponse<User> serviceResponse = userService.createAccount(
         		user, 
         		userForm.getNewPassword(),
@@ -88,7 +100,7 @@ public class UserSubscriptionController implements ApplicationContextAware {
         if (serviceResponse.isOk()) {        	
         	redirectAttributes.addFlashAttribute("message", 
         			applicationContext.getMessage(UserService.Messages.USER_REGISTERED_SUCCESSFULLY.getCode(), null, locale));
-        	return new ModelAndView("redirect:/subscription/success");
+        	return new ModelAndView("redirect:/subscription/successpage");
         }else {
         	List<String> messages = serviceResponse.getResponseMessages()
                     .entrySet().stream()
@@ -108,7 +120,7 @@ public class UserSubscriptionController implements ApplicationContextAware {
     
 
     @RequestMapping(value = "/{token}", method = RequestMethod.GET)
-    public ModelAndView showEmailValidationPage(@PathVariable("token") String token, Locale locale) {
+    public ModelAndView showEmailValidationPage(@PathVariable("token") String token, RedirectAttributes redirectAttributes, Locale locale) {
         ServiceResponse<Token> serviceResponse = tokenService.getToken(token);
         ServiceResponse<Boolean> validToken = tokenService.isValidToken(token);
 
@@ -120,10 +132,8 @@ public class UserSubscriptionController implements ApplicationContextAware {
                     .map(message -> applicationContext.getMessage(message.getKey(), message.getValue(), locale))
                     .collect(Collectors.toList());
 
-            return new ModelAndView("validate-email")
-            		.addObject("user", User.builder().build())
-                    .addObject("errors", messages)
-                    .addObject("isExpired", true);
+            return new ModelAndView("subscription/success")
+                    .addObject("errors", messages);
         }
 
 
@@ -131,10 +141,8 @@ public class UserSubscriptionController implements ApplicationContextAware {
             List<String> messages = new ArrayList<>();
             messages.add(applicationContext.getMessage(TokenService.Validations.EXPIRED_TOKEN.getCode(), null, locale));
 
-            return new ModelAndView("validate-email")
-            		.addObject("user", User.builder().build())
-                    .addObject("errors", messages)
-                    .addObject("isExpired", true);
+            return new ModelAndView("subscription/success")
+                    .addObject("errors", messages);
         }
 
 
@@ -143,11 +151,16 @@ public class UserSubscriptionController implements ApplicationContextAware {
         User user = responseUser.getResult();        
         user.setActive(true);
        
-        userService.save(user,"","");
+        ServiceResponse<User> saveResponse = userService.save(user, "", "");
+        
+        if (saveResponse.isOk()) {
+        	tokenService.invalidateToken(serviceResponse.getResult().getToken());
+        }
 
-        return new ModelAndView("validate-email")
-        		.addObject("user",user)
-        		.addObject("token", token);
+        redirectAttributes.addFlashAttribute("message", 
+        		applicationContext.getMessage(UserService.Messages.USER_ACTIVATED_SUCCESSFULLY.getCode(), null, locale));
+        
+        return new ModelAndView("redirect:/login");
     }
 
     @Override
