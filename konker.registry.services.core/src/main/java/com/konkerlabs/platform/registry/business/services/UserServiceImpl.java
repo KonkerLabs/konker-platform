@@ -203,11 +203,11 @@ public class UserServiceImpl implements UserService {
 
         if (!Optional.ofNullable(passwordHash).isPresent()) {
             return ServiceResponseBuilder.<User>error()
-                    .withMessage(Validations.INVALID_PASSWORD_INVALID.getCode())
+                    .withMessage(Validations.INVALID_PASSWORD_HASH_INVALID.getCode())
                     .build();
         }
 
-        if (passwordManager.validateHash(passwordHash)) {
+        if (!passwordManager.validateHash(passwordHash)) {
             return ServiceResponseBuilder.<User>error()
                     .withMessage(Validations.INVALID_PASSWORD_HASH_INVALID.getCode())
                     .build();
