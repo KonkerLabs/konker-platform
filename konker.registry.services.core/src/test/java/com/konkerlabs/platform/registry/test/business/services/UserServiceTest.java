@@ -28,13 +28,23 @@ import com.konkerlabs.platform.registry.business.repositories.UserRepository;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.UserService;
 import com.konkerlabs.platform.registry.config.PasswordUserConfig;
-import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
-import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.MessageSouceTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.MongoBillingTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.SpringMailTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.*;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
+import org.hamcrest.Matchers;
+import org.junit.*;
+import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import java.time.Instant;
+import java.util.List;
+
+import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
+import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.isResponseOk;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
@@ -191,6 +201,16 @@ public class UserServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
+    public void shouldReturnErrorWhenSaveNullPassword(){
+        ServiceResponse<User> serviceResponse =
+                userService.save(user, oldPassword,
+                        null, null);
+        Assert.assertNotNull(serviceResponse);
+        assertThat(serviceResponse,
+                hasErrorMessage(UserService.Validations.INVALID_PASSWORD_CONFIRMATION.getCode()));
+    }
+
+    @Test
     public void shouldSaveName() {
         user.setName("newName");
         ServiceResponse<User> serviceResponse =
@@ -310,7 +330,8 @@ public class UserServiceTest extends BusinessLayerTestSupport {
     	for (int i = 0; i <= 250; i++) {
     		user.setEmail("new.user" +i+ "@domain.com.br");
     		user.setRegistrationDate(Instant.now());
-        	userService.createAccount(user, newPassword, newPassword);
+    		userRepository.save(user);
+        	//userService.createAccount(user, newPassword, newPassword);
     	}
     	
     	user.setEmail("new.user@domain.com.br");
@@ -354,5 +375,57 @@ public class UserServiceTest extends BusinessLayerTestSupport {
     	Assert.assertNotNull(serviceResponse);
         assertThat(serviceResponse, isResponseOk());
     }
-     
+
+    @Test
+    public void shouldCreateAccountWithPasswordHash() {
+        String validHash = "Bcrypt$2a$04$M.TZlXIXjujdXFpTsj2l2erK0KH40YZtd0TTKz03A3GDC27tXNOM2";
+
+        user.setEmail("new.user@domain.com.br");
+        user.setTenant(Tenant.builder().name("New Org").build());
+        ServiceResponse<User> serviceResponse = userService.createAccountWithPasswordHash(user, validHash);
+
+        Assert.assertNotNull(serviceResponse);
+        assertThat(serviceResponse, isResponseOk());
+
+        User created = userRepository.findOne(user.getEmail());
+        assertThat(created.getPassword(), Matchers.is(validHash));
+    }
+
+    @Test
+    public void shouldReturnErrorCreateAccountWithInvalidPasswordHash() {
+        user.setEmail("new.user@domain.com.br");
+        user.setTenant(Tenant.builder().name("New Org").build());
+        ServiceResponse<User> serviceResponse = userService.createAccountWithPasswordHash(user, "bcrypt$2a$04$M");
+
+        Assert.assertNotNull(serviceResponse);
+        assertThat(
+                serviceResponse,
+                hasErrorMessage(UserService.Validations.INVALID_PASSWORD_HASH_INVALID.getCode()));
+    }
+
+    @Test
+    public void shouldReturnErrorCreateAccountWithNullPasswordHash() {
+        user.setEmail("new.user@domain.com.br");
+        user.setTenant(Tenant.builder().name("New Org").build());
+        ServiceResponse<User> serviceResponse = userService.createAccountWithPasswordHash(user, null);
+
+        Assert.assertNotNull(serviceResponse);
+        assertThat(
+                serviceResponse,
+                hasErrorMessage(UserService.Validations.INVALID_PASSWORD_HASH_INVALID.getCode()));
+    }
+
+    @Test
+    public void shouldReturnErrorCreateAccountWithHashNullName() {
+        user.setEmail("new.user@domain.com.br");
+        user.setName(null);
+        user.setTenant(Tenant.builder().name("New Org").build());
+        ServiceResponse<User> serviceResponse = userService.createAccountWithPasswordHash(user, null);
+
+        Assert.assertNotNull(serviceResponse);
+        assertThat(
+                serviceResponse,
+                hasErrorMessage(UserService.Validations.INVALID_USER_NAME.getCode()));
+    }
+
 }

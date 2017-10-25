@@ -1,10 +1,10 @@
 package com.konkerlabs.platform.registry.business.services.api;
 
 
-import java.util.List;
-
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
+
+import java.util.List;
 
 public interface UserService {
 
@@ -20,6 +20,7 @@ public interface UserService {
         INVALID_PASSWORD_USER_DATA("service.user.validation.password.invalid.userdata"),
         INVALID_PASSWORD_CONFIRMATION("service.user.validation.password.invalid.confirmation"),
         INVALID_PASSWORD_INVALID("service.user.validation.password.invalid"),
+        INVALID_PASSWORD_HASH_INVALID("service.user.validation.password_hash.invalid"),
         INVALID_PASSWORD_BLACKLISTED("service.user.validation.password.invalid.blacklisted"),
         INVALID_PASSWORD_TYPE("service.user.validation.password.invalid_type"),
         INVALID_AVATAR("service.user.validation.avatar.invalid"),
