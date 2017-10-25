@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 
 import java.time.Instant;
@@ -32,6 +33,7 @@ import org.springframework.util.MultiValueMap;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.Token;
 import com.konkerlabs.platform.registry.business.model.User;
+import com.konkerlabs.platform.registry.business.model.User.JobEnum;
 import com.konkerlabs.platform.registry.business.model.enumerations.Language;
 import com.konkerlabs.platform.registry.business.services.api.EmailService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
@@ -60,7 +62,7 @@ import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
 public class UserSubscriptionControllerTest extends WebLayerTestContext {
 
     private static final String USER_EMAIL = "user@testdomain.com";
-    private static final String USER_EMAIL_INVALID = "common@testdomain.com";
+    private static final String USER_EMAIL_INVALID = "commontestdomain.com";
     
 
 
@@ -124,29 +126,30 @@ public class UserSubscriptionControllerTest extends WebLayerTestContext {
     }
     
     @Test
-    public void shouldReturnFalseIfEmailInvalid() throws Exception {
-    	User userWrongEmail;
-    	userWrongEmail=user;
-    	userWrongEmail.setEmail(USER_EMAIL_INVALID);
+    public void shouldReturnToFormAnyError() throws Exception {
+    	user.setEmail(USER_EMAIL_INVALID);
+    	user.setTenant(Tenant.builder().name(user.getName()).build());
     	
-        when(userService.createAccount(userWrongEmail, "qwertyqwertyqwerty", "qwertyqwertyqwerty"))
-    		.thenReturn(ServiceResponseBuilder.<User>error()
-    		.withResult(null).build());
+        when(userService.createAccount(user, "qwertyqwertyqwerty", "qwertyqwertyqwerty"))
+    		.thenReturn(
+    				ServiceResponseBuilder.<User>error()
+    					.withMessage(UserService.Validations.INVALID_USER_EMAIL.getCode())
+    					.build());
     	
         
         userData.set("email", USER_EMAIL_INVALID);
+        List<String> errors = new ArrayList<>();
+    	errors.add(applicationContext.getMessage(UserService.Validations.INVALID_USER_EMAIL.getCode(), null, Locale.ENGLISH));
         
     	getMockMvc().perform(post("/subscription")
     			.params(userData))
     		.andDo(print())
-    		.andExpect(redirectedUrl("/subscription/fail"));
-    	
-    	
-    	userData.set("email", user.getEmail());
+    		.andExpect(view().name("subscription/form"))
+    		.andExpect(model().attribute("errors", equalTo(errors)));
     }
     
     @Test
-    public void shouldReturnTrueIfUserEmailValid() throws Exception {
+    public void shouldRedirectWhenSaveUser() throws Exception {
     	user.setTenant(Tenant.builder().name(user.getName()).build());
         when(userService.createAccount(user, "qwertyqwertyqwerty", "qwertyqwertyqwerty"))
     		.thenReturn(ServiceResponseBuilder.<User>ok()
@@ -203,6 +206,22 @@ public class UserSubscriptionControllerTest extends WebLayerTestContext {
     	getMockMvc().perform(get("/subscription/8a4fd7bd-503e-4e4a-b85e-5501305c7a98"))
     		.andDo(print())
 			.andExpect(model().attribute("errors", equalTo(errors)));
+    }
+    
+    @Test
+    public void shouldShowSuccessPage() throws Exception {
+            
+    	getMockMvc().perform(get("/subscription/successpage"))
+    		.andExpect(view().name("subscription/success"));
+    }
+    
+    @Test
+    public void shouldShowFormPage() throws Exception {
+            
+    	getMockMvc().perform(get("/subscription"))
+    		.andExpect(view().name("subscription/form"))
+    		.andExpect(model().attribute("allJobs", equalTo(JobEnum.values())))
+    		.andExpect(model().attribute("action", equalTo("/subscription")));
     }
  
     @Configuration
