@@ -4,12 +4,12 @@ import java.util.function.Supplier;
 
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
+import com.konkerlabs.platform.registry.business.model.User.JobEnum;
 import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
 import com.konkerlabs.platform.registry.business.model.enumerations.Language;
 import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
 import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
 import com.konkerlabs.platform.registry.config.CdnConfig;
-import com.konkerlabs.platform.registry.web.converters.utils.UserAvatarPathUtil;
 import com.konkerlabs.platform.registry.web.forms.api.ModelBuilder;
 
 import lombok.Builder;
@@ -33,8 +33,10 @@ public class UserForm implements ModelBuilder<User,UserForm,Void> {
     private DateFormat dateFormat;
     private LogLevel logLevel;
     private Tenant tenant;
+    private String tenantName;
     private Boolean avatarUploadEnabled = Boolean.FALSE;
     private boolean notificationViaEmail;
+    private JobEnum job;
 
 
 
@@ -53,6 +55,7 @@ public class UserForm implements ModelBuilder<User,UserForm,Void> {
                 .phone(getPhone())
                 .tenant(getTenant())
                 .notificationViaEmail(isNotificationViaEmail())
+                .job(job)
                 .build();
     }
 
@@ -71,6 +74,7 @@ public class UserForm implements ModelBuilder<User,UserForm,Void> {
         this.setLogLevel(model.getTenant().getLogLevel());
         this.setAvatarUploadEnabled(cdnConfig.isEnabled());
         this.setNotificationViaEmail(model.isNotificationViaEmail());
+        this.setJob(model.getJob());
         return this;
     }
 

@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.Instant;
 import java.util.*;
 
 @RestController
@@ -81,6 +82,7 @@ public class UserSubscriptionRestController implements InitializingBean {
                 .zoneId(TimeZone.AMERICA_SAO_PAULO)
                 .language(Language.PT_BR)
                 .roles(Collections.singletonList(role))
+                .registrationDate(Instant.now())
                 .build();
 
         ServiceResponse<User> userResponse = null;

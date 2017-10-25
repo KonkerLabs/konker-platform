@@ -203,8 +203,13 @@ public class User implements URIDealer, UserDetails, ClientDetails {
 	//methods of ClientDetails OAuth2
 	
 	public enum JobEnum {
-		ENGINEER("model.user.job.engineer"),
-		DEVELOPER("model.user.job.developer");
+		CEO("model.user.job.ceo"),
+		CIO("model.user.job.cio"),
+		ENTERPRENUER("model.user.job.enterprenuer"),
+		MARKETING("model.user.job.marketing"),
+		SALES("model.user.job.sales"),
+		STARTUP("model.user.job.startup"),
+		OTHER("model.user.job.other");
 
 		public String getCode() {
 			return code;

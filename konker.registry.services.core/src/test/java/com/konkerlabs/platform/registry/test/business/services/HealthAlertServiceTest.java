@@ -42,6 +42,7 @@ import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.MessageSouceTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoBillingTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.SpringMailTestConfiguration;
@@ -55,7 +56,8 @@ import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
         EventStorageConfig.class,
         SpringMailTestConfiguration.class,
         EmailConfig.class,
-        MongoBillingTestConfiguration.class})
+        MongoBillingTestConfiguration.class,
+        MessageSouceTestConfiguration.class})
 public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
 

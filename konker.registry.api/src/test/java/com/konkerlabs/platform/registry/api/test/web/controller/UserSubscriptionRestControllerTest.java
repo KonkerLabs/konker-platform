@@ -63,7 +63,7 @@ public class UserSubscriptionRestControllerTest extends WebLayerTestContext {
         subscriptionVO.setEmail("konker@konker.com");
         subscriptionVO.setCompany("konker");
         subscriptionVO.setName("Konker Team");
-        subscriptionVO.setJobTitle(User.JobEnum.DEVELOPER.name());
+        subscriptionVO.setJobTitle(User.JobEnum.CEO.name());
         subscriptionVO.setPassword("encryptme");
         subscriptionVO.setPasswordType("PASSWORD");
 

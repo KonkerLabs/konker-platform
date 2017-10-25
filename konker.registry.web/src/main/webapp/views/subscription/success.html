@@ -51,29 +51,21 @@
         <div class="container">
             <div class="row">
                 <div class="col-sm-6 col-sm-offset-3 form-box">
-                    <div class="form-top">
-                        <div class="form-top-left">
-
-                        </div>
-                        <div class="form-top-right">
-                            <img id="logo-konker" data-th-attr="src=@{/resources/konker/images/logo-konker.png}"/>
-                        </div>
-                    </div>
-                    <div class="form-bottom">
-                        <form id="formValidateEmail" role="form" method="post" class="login-form">
-                            <div class="form-group">
-                                <label class="sr-only" for="form-username"></label>
-                                <input type="text" name="username" th:placeholder="#{login.username.placeholder}"
-                                       class="form-username form-control" id="form-username"/>
-                            </div>
-                            <div class="form-top-center" th:if="${param.error}"
-                                 th:with="errorMsg=${session['SPRING_SECURITY_LAST_EXCEPTION'].message}">
-                                <p th:text="${errorMsg}"></p>
-                            </div>
-                            
-                            <button type="button" id="btnSend" class="btn"><p data-th-text="#{nav.send}"></p></button>
-                        </form>
-                    </div>
+                	<div class="alert alert-danger" role="alert" data-th-if="${errors != null and !errors.empty}">
+		                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+		                    <span aria-hidden="true">&times;</span>
+		                </button>
+		                <ul>
+		                <li data-th-each="error : ${errors}" data-th-text="${error}"></li>
+		                </ul>
+		            </div>
+		            
+                    <div class="alert alert-success" role="alert" data-th-if="${message != null}">
+			            <span data-th-text="${message}"></span>
+			            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+			                <span aria-hidden="true">&times;</span>
+			            </button>
+			        </div>
                 </div>
             </div>
         </div>
