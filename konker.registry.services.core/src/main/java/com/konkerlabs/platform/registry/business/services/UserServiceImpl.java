@@ -371,12 +371,12 @@ public class UserServiceImpl implements UserService {
 
     private void sendValidateTokenEmail(User user) {
         ServiceResponse<String> responseToken = tokenService.generateToken(
-                TokenService.Purpose.RESET_PASSWORD,
+                TokenService.Purpose.VALIDATE_EMAIL,
                 user,
                 Duration.ofDays(2L));
 
         Map<String, Object> templateParam = new HashMap<>();
-        templateParam.put("link", emailConfig.getBaseurl().concat("validateemail/").concat(responseToken.getResult()));
+        templateParam.put("link", emailConfig.getBaseurl().concat("subscription/").concat(responseToken.getResult()));
         templateParam.put("name", user.getName());
 
         sendMail(user, templateParam, Messages.USER_SUBJECT_MAIL, "html/email-selfsubscription");

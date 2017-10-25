@@ -7,6 +7,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import java.time.Instant;
 import java.util.List;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -28,23 +29,13 @@ import com.konkerlabs.platform.registry.business.repositories.UserRepository;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.UserService;
 import com.konkerlabs.platform.registry.config.PasswordUserConfig;
-import com.konkerlabs.platform.registry.test.base.*;
+import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
+import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.MessageSouceTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.MongoBillingTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.SpringMailTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
-import org.hamcrest.Matchers;
-import org.junit.*;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import java.time.Instant;
-import java.util.List;
-
-import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
-import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.isResponseOk;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {

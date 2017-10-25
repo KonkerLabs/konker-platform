@@ -16,7 +16,7 @@ public interface UserRepository extends MongoRepository<User, String> {
 	User findAllByTenantIdAndEmail(String tenantId, String email);
 	
 	@Query(value = "{ 'registrationDate' : { '$gte' : ?0, '$lte' : ?1 }}", count = true)
-	Long countBetweenDate(Instant start, Instant end);
+	Long countRegistrationsBetweenDate(Instant start, Instant end);
 	
 	@Query("{ '_id' : ?0}")
 	User findByEmail(String email);
