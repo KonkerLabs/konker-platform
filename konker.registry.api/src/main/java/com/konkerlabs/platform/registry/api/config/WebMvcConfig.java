@@ -34,6 +34,7 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
         messageSource.addBasenames("classpath:/messages/users");
         messageSource.addBasenames("classpath:/messages/tenants");
         messageSource.addBasenames("classpath:/messages/health-alert");
+        messageSource.addBasenames("classpath:/mail/MailMessages");
         messageSource.setDefaultEncoding("UTF-8");
 
         return messageSource;

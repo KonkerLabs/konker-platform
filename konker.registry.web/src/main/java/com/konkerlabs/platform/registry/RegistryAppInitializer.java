@@ -16,6 +16,7 @@ import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatche
 
 import com.konkerlabs.platform.registry.config.CdnConfig;
 import com.konkerlabs.platform.registry.config.EmailConfig;
+import com.konkerlabs.platform.registry.config.MessageSourceConfig;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
 
@@ -40,7 +41,9 @@ public class RegistryAppInitializer
             com.konkerlabs.platform.registry.config.HotjarConfig.class,
             com.konkerlabs.platform.registry.config.EmailConfig.class,
             com.konkerlabs.platform.registry.config.EnvironmentConfig.class,
-            com.konkerlabs.platform.registry.config.EventStorageConfig.class
+            com.konkerlabs.platform.registry.config.EventStorageConfig.class,
+            MessageSourceConfig.class
+            
         };
     }
 
