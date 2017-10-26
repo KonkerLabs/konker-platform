@@ -6,12 +6,10 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.http.CacheControl;
 import org.springframework.web.servlet.LocaleResolver;
@@ -102,43 +100,6 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter implements Application
     @Bean
     public Java8TimeDialect java8TimeDialect() {
         return new Java8TimeDialect();
-    }
-
-    @Bean(name = "messageSource")
-    public MessageSource getMessageSource() {
-        ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
-        messageSource.addBasenames(
-                "/WEB-INF/i18n/dateformats",
-                "/WEB-INF/i18n/destinations",
-                "/WEB-INF/i18n/devices",
-                "/WEB-INF/i18n/email",
-                "/WEB-INF/i18n/error",
-                "/WEB-INF/i18n/global",
-                "/WEB-INF/i18n/languages",
-                "/WEB-INF/i18n/loglevels",
-                "/WEB-INF/i18n/menu",
-                "/WEB-INF/i18n/routes",
-                "/WEB-INF/i18n/timezones",
-                "/WEB-INF/i18n/tokens",
-                "/WEB-INF/i18n/transformations",
-                "/WEB-INF/i18n/usernotifications",
-                "/WEB-INF/i18n/users",
-                "/WEB-INF/i18n/visualization",
-                "classpath:/messages/alert-triggers",
-                "classpath:/messages/applications",
-                "classpath:/messages/device-model",
-                "classpath:/messages/devices",
-                "classpath:/messages/rest-destination",
-                "classpath:/messages/routes",
-                "classpath:/messages/transformations",
-                "classpath:/messages/rest-destination",
-                "classpath:/messages/users",
-                "classpath:/messages/tenants",
-                "classpath:/messages/applications",
-                "classpath:/messages/device-model",
-                "classpath:/messages/health-alert");
-        messageSource.setDefaultEncoding("UTF-8");
-        return messageSource;
     }
 
     @Bean
