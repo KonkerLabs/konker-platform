@@ -72,6 +72,7 @@ public class UserSubscriptionRestController implements InitializingBean {
 
         User userFromForm = User.builder()
                 .email(userForm.getEmail())
+                .tenant(tenant)
                 .password(userForm.getPassword())
                 .phone(userForm.getPhoneNumber())
                 .name(userForm.getName())
