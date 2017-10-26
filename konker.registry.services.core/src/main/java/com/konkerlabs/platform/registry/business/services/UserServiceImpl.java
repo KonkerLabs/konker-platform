@@ -343,6 +343,7 @@ public class UserServiceImpl implements UserService {
 
         sendMail(fromStorage, templateParam, Messages.USER_HAS_ACCOUNT,"html/email-accountalreadyexists");
         return ServiceResponseBuilder.<User>ok()
+                .withResult(fromStorage)
                 .build();
     }
 
