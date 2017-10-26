@@ -4,7 +4,6 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.repositories.UserRepository;
 import com.konkerlabs.platform.registry.config.EmailConfig;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,13 +39,13 @@ public class TenantUserDetailsService implements UserDetailsService {
             e.printStackTrace();
         }
         User user = userRepository.findOne(Optional.of(email).orElse("").trim().toLowerCase());
-        if(user == null){
-        	invalidCredentials(email);
+        if (user == null || user.isActive() == false) {
+            invalidCredentials(email);
 
         } else if (Optional.ofNullable(user).isPresent() &&
-        			emailConfig.isEnabled() && 
-        			!user.isActive()) {
-        	invalidCredentials(email);
+                emailConfig.isEnabled() &&
+                !user.isActive()) {
+            invalidCredentials(email);
         }
         
         return user;
