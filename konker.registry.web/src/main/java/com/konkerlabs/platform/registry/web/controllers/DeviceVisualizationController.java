@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.Event.EventDecorator;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.config.EnvironmentConfig;
@@ -60,8 +61,8 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     }
 
     private DeviceEventService deviceEventService;
+    private DeviceRegisterService deviceRegisterService;
     private Tenant tenant;
-    private Application application;
     private ApplicationContext applicationContext;
     private EventSchemaService eventSchemaService;
     private User user;
@@ -74,13 +75,15 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     }
 
     @Autowired
-    public DeviceVisualizationController(DeviceEventService deviceEventService, Tenant tenant,
-            Application application,
+    public DeviceVisualizationController(
+            DeviceEventService deviceEventService,
+            DeviceRegisterService deviceRegisterService,
+            Tenant tenant,
     		EventSchemaService eventSchemaService, User user,
     		InstantToStringConverter instantToStringConverter, EnvironmentConfig environmentConfig) {
         this.deviceEventService = deviceEventService;
+        this.deviceRegisterService = deviceRegisterService;
         this.tenant = tenant;
-        this.application = application;
         this.eventSchemaService = eventSchemaService;
         this.user = user;
         this.instantToStringConverter = instantToStringConverter;
@@ -128,6 +131,9 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     		return Arrays.asList(message);
     	}
 
+        Device device = deviceRegisterService.findByTenantDomainNameAndDeviceGuid(tenant.getDomainName(), deviceGuid);
+        Application application = device.getApplication();
+
     	if (online) {
     		ServiceResponse<List<Event>> response = deviceEventService.findIncomingBy(tenant, application, deviceGuid, channel, null,
         			null, false, limit);
@@ -172,6 +178,10 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     @PreAuthorize("hasAuthority('VIEW_DEVICE_CHART')")
     public ModelAndView loadMetrics(@RequestParam String deviceGuid,
     								@RequestParam String channel) {
+
+        Device device = deviceRegisterService.findByTenantDomainNameAndDeviceGuid(tenant.getDomainName(), deviceGuid);
+        Application application = device.getApplication();
+
         ServiceResponse<List<String>> metricsResponse = eventSchemaService.findKnownIncomingMetricsBy(tenant, application, deviceGuid, channel, JsonNodeType.NUMBER);
 
         if (metricsResponse.getResult() == null) {
@@ -202,7 +212,10 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     					 Locale locale, HttpServletResponse response) {
 
     	try  {
-			ServiceResponse<EventSchema> metrics = eventSchemaService.findIncomingBy(tenant, application, deviceGuid, channel);
+            Device device = deviceRegisterService.findByTenantDomainNameAndDeviceGuid(tenant.getDomainName(), deviceGuid);
+            Application application = device.getApplication();
+
+            ServiceResponse<EventSchema> metrics = eventSchemaService.findIncomingBy(tenant, application, deviceGuid, channel);
 
             List<String> additionalHeaders = new ArrayList<String>();
             if (metrics.isOk()) {
