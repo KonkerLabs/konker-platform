@@ -1,24 +1,29 @@
 package com.konkerlabs.platform.registry.test.web.controllers;
 
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.RestDestination;
-import com.konkerlabs.platform.registry.business.model.RestDestination.RestDestinationType;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
-import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
-import com.konkerlabs.platform.registry.config.CdnConfig;
-import com.konkerlabs.platform.registry.config.EmailConfig;
-import com.konkerlabs.platform.registry.config.HotjarConfig;
-import com.konkerlabs.platform.registry.config.WebConfig;
-import com.konkerlabs.platform.registry.config.WebMvcConfig;
-import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
-import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
-import com.konkerlabs.platform.registry.web.controllers.RestDestinationController;
-import com.konkerlabs.platform.registry.web.forms.RestDestinationForm;
+import static java.text.MessageFormat.format;
+import static org.hamcrest.Matchers.any;
+import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,24 +39,26 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.util.LinkedMultiValueMap;
 
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-
-import static java.text.MessageFormat.format;
-import static org.hamcrest.Matchers.any;
-import static org.hamcrest.Matchers.equalTo;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.RestDestination;
+import com.konkerlabs.platform.registry.business.model.RestDestination.RestDestinationType;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
+import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.config.CdnConfig;
+import com.konkerlabs.platform.registry.config.EmailConfig;
+import com.konkerlabs.platform.registry.config.HotjarConfig;
+import com.konkerlabs.platform.registry.config.MessageSourceConfig;
+import com.konkerlabs.platform.registry.config.WebConfig;
+import com.konkerlabs.platform.registry.config.WebMvcConfig;
+import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
+import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
+import com.konkerlabs.platform.registry.web.controllers.RestDestinationController;
+import com.konkerlabs.platform.registry.web.forms.RestDestinationForm;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
@@ -63,7 +70,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         WebConfig.class,
         HotjarConfig.class,
         CdnConfig.class, 
-        EmailConfig.class
+        EmailConfig.class,
+        MessageSourceConfig.class
 })
 public class RestDestinationControllerTest extends WebLayerTestContext {
 

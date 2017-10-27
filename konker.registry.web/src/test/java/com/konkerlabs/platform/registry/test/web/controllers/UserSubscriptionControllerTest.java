@@ -6,8 +6,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -41,6 +41,7 @@ import com.konkerlabs.platform.registry.business.services.api.TokenService;
 import com.konkerlabs.platform.registry.business.services.api.UserService;
 import com.konkerlabs.platform.registry.config.EmailConfig;
 import com.konkerlabs.platform.registry.config.HotjarConfig;
+import com.konkerlabs.platform.registry.config.MessageSourceConfig;
 import com.konkerlabs.platform.registry.config.WebConfig;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
@@ -56,7 +57,8 @@ import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
         UserSubscriptionControllerTest.EmailConfirmationTestContextConfig.class, 
         WebConfig.class,
         EmailConfig.class, 
-        HotjarConfig.class
+        HotjarConfig.class,
+        MessageSourceConfig.class
 })
 @ActiveProfiles("email")
 public class UserSubscriptionControllerTest extends WebLayerTestContext {

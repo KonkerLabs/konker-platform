@@ -25,6 +25,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
 import com.konkerlabs.platform.registry.config.EmailConfig;
+import com.konkerlabs.platform.registry.config.MessageSourceConfig;
 import com.konkerlabs.platform.registry.config.WebConfig;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
@@ -33,7 +34,7 @@ import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
-@ContextConfiguration(classes = { WebMvcConfig.class, WebTestConfiguration.class, SecurityTestConfiguration.class, WebConfig.class, EmailConfig.class })
+@ContextConfiguration(classes = { WebMvcConfig.class, WebTestConfiguration.class, SecurityTestConfiguration.class, WebConfig.class, EmailConfig.class, MessageSourceConfig.class })
 public class EnsureTranslationForAllIdiomsTest extends WebLayerTestContext {
     @Autowired
     MessageSource messageSource;
