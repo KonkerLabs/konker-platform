@@ -1,13 +1,9 @@
 package com.konkerlabs.platform.registry.test.web.controllers;
 
 import com.fasterxml.jackson.databind.node.JsonNodeType;
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.Event.EventActor;
-import com.konkerlabs.platform.registry.business.model.EventSchema;
 import com.konkerlabs.platform.registry.business.model.EventSchema.SchemaField;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
 import com.konkerlabs.platform.registry.business.model.enumerations.Language;
 import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
@@ -15,11 +11,7 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceEventService
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
-import com.konkerlabs.platform.registry.config.EmailConfig;
-import com.konkerlabs.platform.registry.config.EnvironmentConfig;
-import com.konkerlabs.platform.registry.config.HotjarConfig;
-import com.konkerlabs.platform.registry.config.WebConfig;
-import com.konkerlabs.platform.registry.config.WebMvcConfig;
+import com.konkerlabs.platform.registry.config.*;
 import com.konkerlabs.platform.registry.security.UserContextResolver;
 import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
@@ -30,7 +22,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -61,7 +52,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         DeviceVisualizationControllerTest.DeviceTestContextConfig.class,
         WebConfig.class,
         HotjarConfig.class,
-        EnvironmentConfig.class, 
+        EnvironmentConfig.class,
         EmailConfig.class
 })
 public class DeviceVisualizationControllerTest extends WebLayerTestContext {
@@ -74,6 +65,8 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
 	private EventSchemaService eventSchemaService;
     @Autowired
     private DeviceEventService deviceEventService;
+    @Autowired
+	private DeviceRegisterService deviceRegisterService;
     @Autowired
     private Tenant tenant;
     @Autowired
@@ -144,7 +137,10 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
 				.filter(schemaField -> schemaField.getKnownTypes().contains(JsonNodeType.NUMBER))
 				.map(m -> m.getPath()).collect(java.util.stream.Collectors.toList());
 
-    	when(eventSchemaService.findKnownIncomingMetricsBy(tenant, application, DEVICE_GUID, CHANNEL, JsonNodeType.NUMBER))
+        when(deviceRegisterService.findByTenantDomainNameAndDeviceGuid(tenant.getDomainName(), DEVICE_GUID))
+                .thenReturn(Device.builder().application(application).build());
+
+        when(eventSchemaService.findKnownIncomingMetricsBy(tenant, application, DEVICE_GUID, CHANNEL, JsonNodeType.NUMBER))
 			.thenReturn(ServiceResponseBuilder.<List<String>>ok()
 			.withResult(new ArrayList<String>(listMetrics)).build());
 
@@ -194,10 +190,12 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     public void shouldReturnDataOnline() throws Exception {
     	when(userContextResolver.getObject()).thenReturn(user);
 
-    	when(deviceEventService.findIncomingBy(tenant, application, DEVICE_GUID, CHANNEL, null, null, false, 100))
+        when(deviceRegisterService.findByTenantDomainNameAndDeviceGuid(tenant.getDomainName(), DEVICE_GUID))
+                .thenReturn(Device.builder().application(application).build());
+
+        when(deviceEventService.findIncomingBy(tenant, application, DEVICE_GUID, CHANNEL, null, null, false, 100))
 			.thenReturn(ServiceResponseBuilder.<List<Event>>ok()
 				.withResult(eventsList).build());
-
 
     	getMockMvc().perform(get("/devices/visualization/load/").param("dateStart", "").param("dateEnd", "").param("online", "true")
     			.param("deviceGuid", DEVICE_GUID).param("channel", CHANNEL))
@@ -213,7 +211,10 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
     public void shouldReturnDataByDateRange() throws Exception {
     	when(userContextResolver.getObject()).thenReturn(user);
 
-    	when(deviceEventService.findIncomingBy(tenant, application, DEVICE_GUID, CHANNEL, startingTimestamp, endTimestamp, false, 100))
+        when(deviceRegisterService.findByTenantDomainNameAndDeviceGuid(tenant.getDomainName(), DEVICE_GUID))
+                .thenReturn(Device.builder().application(application).build());
+
+        when(deviceEventService.findIncomingBy(tenant, application, DEVICE_GUID, CHANNEL, startingTimestamp, endTimestamp, false, 100))
 			.thenReturn(ServiceResponseBuilder.<List<Event>>ok()
 				.withResult(eventsList).build());
 
@@ -234,7 +235,6 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
         }
         @Bean
         public DeviceEventService deviceEventService() { return Mockito.mock(DeviceEventService.class); }
-
         @Bean
         public EventSchemaService eventSchemaService() {
         	return Mockito.mock(EventSchemaService.class);
