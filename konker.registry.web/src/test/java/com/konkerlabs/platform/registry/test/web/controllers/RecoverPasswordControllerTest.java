@@ -35,7 +35,6 @@ import org.springframework.util.MultiValueMap;
 
 import com.konkerlabs.platform.registry.business.model.Token;
 import com.konkerlabs.platform.registry.business.model.User;
-import com.konkerlabs.platform.registry.web.services.api.CaptchaService;
 import com.konkerlabs.platform.registry.business.services.api.EmailService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.TokenService;
@@ -43,6 +42,7 @@ import com.konkerlabs.platform.registry.business.services.api.UserService;
 import com.konkerlabs.platform.registry.business.services.api.UserService.Validations;
 import com.konkerlabs.platform.registry.config.EmailConfig;
 import com.konkerlabs.platform.registry.config.HotjarConfig;
+import com.konkerlabs.platform.registry.config.MessageSourceConfig;
 import com.konkerlabs.platform.registry.config.RecaptchaConfig;
 import com.konkerlabs.platform.registry.config.WebConfig;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
@@ -50,6 +50,7 @@ import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
 import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
 import com.konkerlabs.platform.registry.web.controllers.RecoverPasswordController;
+import com.konkerlabs.platform.registry.web.services.api.CaptchaService;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
@@ -61,7 +62,8 @@ import com.konkerlabs.platform.registry.web.controllers.RecoverPasswordControlle
         WebConfig.class,
         RecaptchaConfig.class,
         EmailConfig.class, 
-        HotjarConfig.class
+        HotjarConfig.class,
+        MessageSourceConfig.class
 })
 @ActiveProfiles("email")
 public class RecoverPasswordControllerTest extends WebLayerTestContext {

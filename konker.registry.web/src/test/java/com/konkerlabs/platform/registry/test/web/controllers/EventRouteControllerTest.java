@@ -70,6 +70,7 @@ import com.konkerlabs.platform.registry.business.services.api.TransformationServ
 import com.konkerlabs.platform.registry.config.CdnConfig;
 import com.konkerlabs.platform.registry.config.EmailConfig;
 import com.konkerlabs.platform.registry.config.HotjarConfig;
+import com.konkerlabs.platform.registry.config.MessageSourceConfig;
 import com.konkerlabs.platform.registry.config.WebConfig;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
@@ -88,7 +89,8 @@ import com.konkerlabs.platform.registry.web.forms.EventRouteForm;
         WebConfig.class,
         HotjarConfig.class,
         CdnConfig.class, 
-        EmailConfig.class
+        EmailConfig.class,
+        MessageSourceConfig.class
 })
 public class EventRouteControllerTest extends WebLayerTestContext {
 
