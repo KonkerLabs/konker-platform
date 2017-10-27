@@ -4,7 +4,6 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.repositories.UserRepository;
 import com.konkerlabs.platform.registry.config.EmailConfig;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,10 +21,10 @@ public class TenantUserDetailsService implements UserDetailsService {
     private static final Logger LOGGER = LoggerFactory.getLogger(TenantUserDetailsService.class);
     private static final int MIN_DELAY_TIME = 100;
     private static final int MAX_DELAY_TIME = 250;
-    
+
     @Autowired
     private UserRepository userRepository;
-    
+
     @Autowired
     private EmailConfig emailConfig;
 
@@ -44,7 +43,7 @@ public class TenantUserDetailsService implements UserDetailsService {
         	invalidCredentials(email);
 
         } else if (Optional.ofNullable(user).isPresent() &&
-        			emailConfig.isEnabled() && 
+        			emailConfig.isEnabled() &&
         			!user.isActive()) {
         	invalidCredentials(email);
         }

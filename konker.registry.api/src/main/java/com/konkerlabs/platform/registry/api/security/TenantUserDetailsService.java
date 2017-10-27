@@ -3,7 +3,6 @@ package com.konkerlabs.platform.registry.api.security;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.repositories.UserRepository;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +35,7 @@ public class TenantUserDetailsService implements UserDetailsService {
             e.printStackTrace();
         }
         User user = userRepository.findOne(Optional.of(email).orElse("").trim().toLowerCase());
-        if(user == null){
+        if(user == null || user.isActive() == false){
             User noUser = User.builder().email(email).tenant(
 			        Tenant.builder().name("NOT_FOUND").domainName("NOT_FOUND").build()
 			).build();
