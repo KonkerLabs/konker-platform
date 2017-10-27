@@ -21,10 +21,10 @@ public class TenantUserDetailsService implements UserDetailsService {
     private static final Logger LOGGER = LoggerFactory.getLogger(TenantUserDetailsService.class);
     private static final int MIN_DELAY_TIME = 100;
     private static final int MAX_DELAY_TIME = 250;
-    
+
     @Autowired
     private UserRepository userRepository;
-    
+
     @Autowired
     private EmailConfig emailConfig;
 
@@ -39,13 +39,13 @@ public class TenantUserDetailsService implements UserDetailsService {
             e.printStackTrace();
         }
         User user = userRepository.findOne(Optional.of(email).orElse("").trim().toLowerCase());
-        if (user == null || user.isActive() == false) {
-            invalidCredentials(email);
+        if(user == null){
+        	invalidCredentials(email);
 
         } else if (Optional.ofNullable(user).isPresent() &&
-                emailConfig.isEnabled() &&
-                !user.isActive()) {
-            invalidCredentials(email);
+        			emailConfig.isEnabled() &&
+        			!user.isActive()) {
+        	invalidCredentials(email);
         }
         
         return user;
