@@ -53,7 +53,7 @@ public class UserServiceTest extends BusinessLayerTestSupport {
     private UserService userService;
 
     private User user;
-    private List<User> users;
+    private Iterable<User> users;
     private static final String oldPassword="abc123456789$$";
     private static final String oldPasswordWrong="password";
     private static final String newPassword="123456789abc$$";
