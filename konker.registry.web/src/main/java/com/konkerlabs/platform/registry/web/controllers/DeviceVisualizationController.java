@@ -61,7 +61,7 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     }
 
     private DeviceEventService deviceEventService;
-    private DeviceRegisterService deviceService;
+    private DeviceRegisterService deviceRegisterService;
     private Tenant tenant;
     private ApplicationContext applicationContext;
     private EventSchemaService eventSchemaService;
@@ -77,12 +77,12 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     @Autowired
     public DeviceVisualizationController(
             DeviceEventService deviceEventService,
-            DeviceRegisterService deviceService,
+            DeviceRegisterService deviceRegisterService,
             Tenant tenant,
     		EventSchemaService eventSchemaService, User user,
     		InstantToStringConverter instantToStringConverter, EnvironmentConfig environmentConfig) {
         this.deviceEventService = deviceEventService;
-        this.deviceService = deviceService;
+        this.deviceRegisterService = deviceRegisterService;
         this.tenant = tenant;
         this.eventSchemaService = eventSchemaService;
         this.user = user;
@@ -131,7 +131,7 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     		return Arrays.asList(message);
     	}
 
-        Device device = deviceService.findByTenantDomainNameAndDeviceGuid(tenant.getDomainName(), deviceGuid);
+        Device device = deviceRegisterService.findByTenantDomainNameAndDeviceGuid(tenant.getDomainName(), deviceGuid);
         Application application = device.getApplication();
 
     	if (online) {
@@ -179,7 +179,7 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     public ModelAndView loadMetrics(@RequestParam String deviceGuid,
     								@RequestParam String channel) {
 
-        Device device = deviceService.findByTenantDomainNameAndDeviceGuid(tenant.getDomainName(), deviceGuid);
+        Device device = deviceRegisterService.findByTenantDomainNameAndDeviceGuid(tenant.getDomainName(), deviceGuid);
         Application application = device.getApplication();
 
         ServiceResponse<List<String>> metricsResponse = eventSchemaService.findKnownIncomingMetricsBy(tenant, application, deviceGuid, channel, JsonNodeType.NUMBER);
@@ -212,7 +212,7 @@ public class DeviceVisualizationController implements ApplicationContextAware {
     					 Locale locale, HttpServletResponse response) {
 
     	try  {
-            Device device = deviceService.findByTenantDomainNameAndDeviceGuid(tenant.getDomainName(), deviceGuid);
+            Device device = deviceRegisterService.findByTenantDomainNameAndDeviceGuid(tenant.getDomainName(), deviceGuid);
             Application application = device.getApplication();
 
             ServiceResponse<EventSchema> metrics = eventSchemaService.findIncomingBy(tenant, application, deviceGuid, channel);
