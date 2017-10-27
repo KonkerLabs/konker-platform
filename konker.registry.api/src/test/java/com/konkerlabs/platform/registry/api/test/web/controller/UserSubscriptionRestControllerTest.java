@@ -111,6 +111,32 @@ public class UserSubscriptionRestControllerTest extends WebLayerTestContext {
 
     }
 
+
+    @Test
+    public void shouldSubscribeUserWithEmptyCompany() throws Exception {
+
+        when(userService.createAccount(org.mockito.Matchers.any(User.class), org.mockito.Matchers.anyString(), org.mockito.Matchers.anyString())).thenReturn(
+                ServiceResponseBuilder.<User>ok().withResult(user).build()
+        );
+
+        getMockMvc()
+                .perform(MockMvcRequestBuilders.post("/userSubscription")
+                        .content(getJson(subscriptionVO))
+                        .contentType("application/json")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().is2xxSuccessful())
+                .andExpect(content().contentType("application/json;charset=UTF-8"))
+                .andExpect(jsonPath("$.code", is(HttpStatus.CREATED.value())))
+                .andExpect(jsonPath("$.status", is("success")))
+                .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                .andExpect(jsonPath("$.result").isMap())
+                .andExpect(jsonPath("$.result.name", is("Konker Team")))
+                .andExpect(jsonPath("$.result.email", is("konker@konker.com")))
+        ;
+
+    }
+
+
     @Test
     public void shouldTrySubscribeUserWithInvalidPasswordType() throws Exception {
 
