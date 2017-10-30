@@ -3,6 +3,12 @@ package com.konkerlabs.platform.registry.idm.config;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import lombok.Data;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,7 +20,7 @@ import java.util.Map;
  * @author andre
  * @since 2016-09-23
  */
-/*@Configuration*/
+@Configuration
 @Data
 public class RedisConfig {
 
@@ -32,7 +38,7 @@ public class RedisConfig {
 		setPort(config.getInt("redis.master.port"));
 	}
 
-    /*@Bean
+    @Bean
     public RedisConnectionFactory redisConnectionFactory() {
         JedisConnectionFactory cf = new JedisConnectionFactory();
         cf.setHostName(getHost());
@@ -46,5 +52,5 @@ public class RedisConfig {
         StringRedisTemplate rt = new StringRedisTemplate();
         rt.setConnectionFactory(redisConnectionFactory());
         return rt;
-    }*/
+    }
 }
