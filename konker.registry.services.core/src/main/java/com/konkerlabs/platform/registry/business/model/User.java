@@ -1,15 +1,13 @@
 package com.konkerlabs.platform.registry.business.model;
 
 
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
+import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
+import com.konkerlabs.platform.registry.business.model.enumerations.Language;
+import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
+import lombok.Builder;
+import lombok.Data;
+import lombok.experimental.Tolerate;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
@@ -19,14 +17,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.provider.ClientDetails;
 
-import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
-import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
-import com.konkerlabs.platform.registry.business.model.enumerations.Language;
-import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
-
-import lombok.Builder;
-import lombok.Data;
-import lombok.experimental.Tolerate;
+import java.time.Instant;
+import java.util.*;
 
 
 @Document(collection = "users")
@@ -55,7 +47,10 @@ public class User implements URIDealer, UserDetails, ClientDetails {
 
     @Tolerate
     public User() {
+    }
 
+    public void setEmail(String email) {
+        this.email = email == null ? null : email.toLowerCase();
     }
 
     @DBRef
