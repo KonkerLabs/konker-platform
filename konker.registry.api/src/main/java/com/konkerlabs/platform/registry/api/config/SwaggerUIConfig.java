@@ -66,7 +66,7 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
                 .build()
                 .protocols(Sets.newHashSet(getSwaggerConfig().getString(SWAGGER_PROTOCOL)))
                 .apiInfo(apiInfo())
-                .securitySchemes(newArrayList(apiKey()))
+                .securitySchemes(newArrayList(securitySchema()))
                 .securityContexts(newArrayList(securityContext()))
                 // .operationOrdering(getOperationOrdering()) try with swagger 2.7.0
                 .tags(
@@ -94,11 +94,6 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
 
     }
 
-    @Bean
-    SecurityScheme apiKey() {
-        return new ApiKey("Authorization", "Authorization", "header");
-    }
-
 
     @SuppressWarnings("unused")
     private Ordering<Operation> getOperationOrdering() {
@@ -111,11 +106,6 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
                 return 0;
             }
         };
-    }
-
-    @SuppressWarnings("unused")
-    private BasicAuth basicSecuritySchema() {
-        return new BasicAuth("basic");
     }
 
     private OAuth securitySchema() {
@@ -162,7 +152,7 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
 
         try {
             InputStream is = new ClassPathResource("description.md").getInputStream();
-            String         line = null;
+            String         line;
             StringBuilder  stringBuilder = new StringBuilder();
             String         ls = System.getProperty("line.separator");
 
