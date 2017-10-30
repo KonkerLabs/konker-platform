@@ -18,7 +18,7 @@ public class DeviceUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String apiKey) throws UsernameNotFoundException {
         Device device = deviceRepository.findByApiKey(apiKey);
 
-        if (device == null || device.isActive()) {
+        if (device == null || !device.isActive()) {
             throw new UsernameNotFoundException("authentication.credentials.invalid");
         }
 
