@@ -17,7 +17,8 @@ public interface DeviceRegisterService {
 		DEVICE_ID_DOES_NOT_EXIST("service.device.id.does_not_exist"),
 		DEVICE_GUID_DOES_NOT_EXIST("service.device.guid.does_not_exist"),
 		DEVICE_HAVE_EVENTROUTES("service.device.have_eventroutes"),
-		DEVICE_TENANT_LIMIT("service.device.tenant.limit");
+		DEVICE_TENANT_LIMIT("service.device.tenant.limit"),
+		EQUALS_ORIGIN_DESTINATION_APPLICATIONS("service.device.equals_origin_destination_applications");
 
 		public String getCode() {
 			return code;

@@ -1,14 +1,9 @@
 package com.konkerlabs.platform.registry.test.services;
 
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
-import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
-import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
+import com.konkerlabs.platform.registry.business.repositories.*;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
@@ -82,6 +77,10 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     @Autowired
     private DeviceRepository deviceRepository;
     @Autowired
+    private LocationRepository locationRepository;
+    @Autowired
+    private DeviceModelRepository deviceModelRepository;
+    @Autowired
     private ApplicationRepository applicationRepository;
     @Autowired
     private DeviceEventService deviceEventService;
@@ -99,6 +98,8 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         currentTenant = tenantRepository.findByName("Konker");
         emptyTenant = tenantRepository.findByName("EmptyTenant");
         currentApplication = applicationRepository.findByTenantAndName(currentTenant.getId(), "smartffkonker");
+
+        applicationRepository.findAllByTenant(currentTenant.getId());
 
         otherApplication = Application.builder()
 				.name("smartffkonkerother")
@@ -691,10 +692,65 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
     public void shouldMove() {
 
+        Application otherApplication = applicationRepository.findByTenantAndName(currentTenant.getId(), "konker");
+
         ServiceResponse<Device> response = deviceRegisterService
-                .move(currentTenant, currentApplication, THE_DEVICE_GUID, currentApplication);
+                .move(currentTenant, currentApplication, THE_DEVICE_GUID, otherApplication);
 
         assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
+
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
+    public void shouldMoveNonExistingLocationAndDeviceModel() {
+
+        Application otherApplication = applicationRepository.findByTenantAndName(currentTenant.getId(), "konker");
+
+        Location location = Location
+                .builder()
+                .tenant(currentTenant)
+                .application(currentApplication)
+                .name("dxpobdi1yx")
+                .defaultLocation(false)
+                .build();
+
+        locationRepository.save(location);
+
+        ServiceResponse<Device> response = deviceRegisterService
+                .move(currentTenant, currentApplication, THE_DEVICE_GUID, otherApplication);
+
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
+
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json", "/fixtures/event-routes.json"})
+    public void shouldReturnErrorMoveDeviceWithDependencies() {
+
+        Application otherApplication = applicationRepository.findByTenantAndName(currentTenant.getId(), "konker");
+
+        ServiceResponse<Device> serviceResponse = deviceRegisterService
+                .move(currentTenant, currentApplication, THE_DEVICE_GUID, otherApplication);
+
+        assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+        assertThat(serviceResponse.getResponseMessages(),
+                hasEntry(DeviceRegisterService.Validations.DEVICE_HAVE_EVENTROUTES.getCode(), null));
+        assertThat(serviceResponse.getResult(), nullValue());
+
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
+    public void shouldReturnErrorMoveSameDestination() {
+
+        ServiceResponse<Device> serviceResponse = deviceRegisterService
+                .move(currentTenant, currentApplication, THE_DEVICE_GUID, currentApplication);
+
+        assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+        assertThat(serviceResponse.getResponseMessages(),
+                hasEntry(DeviceRegisterService.Validations.EQUALS_ORIGIN_DESTINATION_APPLICATIONS.getCode(), null));
+        assertThat(serviceResponse.getResult(), nullValue());
 
     }
 
@@ -730,8 +786,10 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
     public void shouldReturnErrorMoveWithInvalidGuid() {
 
+        Application otherApplication = applicationRepository.findByTenantAndName(currentTenant.getId(), "konker");
+
         ServiceResponse<Device> serviceResponse = deviceRegisterService
-                .move(currentTenant, currentApplication, "0000-aaaa", currentApplication);
+                .move(currentTenant, currentApplication, "0000-aaaa", otherApplication);
 
         assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.ERROR));
         assertThat(serviceResponse.getResponseMessages(),

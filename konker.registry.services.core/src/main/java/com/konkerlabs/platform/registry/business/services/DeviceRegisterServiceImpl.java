@@ -518,6 +518,12 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .build();
         }
 
+        if (originApplication.getName().equals(destApplication.getName())) {
+            return ServiceResponseBuilder.<Device>error()
+                    .withMessage(Validations.EQUALS_ORIGIN_DESTINATION_APPLICATIONS.getCode())
+                    .build();
+        }
+
         if (applicationRepository.findByTenantAndName(tenant.getId(), destApplication.getName()) == null) {
             return ServiceResponseBuilder.<Device>error()
                     .withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode())
