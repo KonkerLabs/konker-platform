@@ -35,11 +35,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -232,7 +228,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
         assertThat(response, isResponseOk());
 
-        Device saved = deviceRepository.findByTenantIdAndDeviceId(currentTenant.getId(), device.getDeviceId());
+        Device saved = deviceRepository.findByTenantIdAndApplicationAndDeviceId(currentTenant.getId(), currentApplication.getName(), device.getDeviceId());
 
         assertThat(response.getResult(), equalTo(saved));
     }
@@ -246,7 +242,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
 		assertThat(response, isResponseOk());
 
-		Device saved = deviceRepository.findByTenantIdAndDeviceId(currentTenant.getId(), device.getDeviceId());
+		Device saved = deviceRepository.findByTenantIdAndApplicationAndDeviceId(currentTenant.getId(), currentApplication.getName(), device.getDeviceId());
 
 		assertThat(saved.getLogLevel(), equalTo(LogLevel.ALL));
 
@@ -260,7 +256,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 		assertThat(response, isResponseOk());
 		assertThat(response.getResult().getLocation().getName(), is("default"));
 
-		saved = deviceRepository.findByTenantIdAndDeviceId(currentTenant.getId(), device.getDeviceId());
+		saved = deviceRepository.findByTenantIdAndApplicationAndDeviceId(currentTenant.getId(), currentApplication.getName(), device.getDeviceId());
 
 		assertThat(saved.getLogLevel(), equalTo(LogLevel.WARNING));
 
@@ -422,7 +418,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
         ServiceResponse<Device> response = deviceRegisterService.update(currentTenant, currentApplication, THE_DEVICE_GUID, persisted);
 
-        Device updated = deviceRepository.findByTenantIdAndDeviceId(currentTenant.getId(), persisted.getDeviceId());
+        Device updated = deviceRepository.findByTenantIdAndApplicationAndDeviceId(currentTenant.getId(), currentApplication.getName(), persisted.getDeviceId());
 
 //        assertThat(response, notNullValue());
 //        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
