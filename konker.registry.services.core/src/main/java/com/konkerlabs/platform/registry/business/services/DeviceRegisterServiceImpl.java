@@ -1,20 +1,24 @@
 package com.konkerlabs.platform.registry.business.services;
 
-import java.io.ByteArrayOutputStream;
-import java.text.MessageFormat;
-import java.time.Instant;
-import java.util.AbstractMap;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.annotation.PostConstruct;
-
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
+import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
+import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
+import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
+import com.konkerlabs.platform.registry.business.repositories.EventRouteRepository;
+import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
+import com.konkerlabs.platform.registry.business.repositories.events.api.EventRepository;
+import com.konkerlabs.platform.registry.business.services.api.*;
+import com.konkerlabs.platform.registry.config.EventStorageConfig;
+import com.konkerlabs.platform.registry.config.PubServerConfig;
+import com.konkerlabs.platform.registry.type.EventStorageConfigType;
+import com.konkerlabs.platform.security.exceptions.SecurityException;
+import com.konkerlabs.platform.security.managers.PasswordManager;
 import org.apache.commons.codec.binary.Base64OutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,35 +30,12 @@ import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.EncodeHintType;
-import com.google.zxing.client.j2se.MatrixToImageWriter;
-import com.google.zxing.common.BitMatrix;
-import com.google.zxing.qrcode.QRCodeWriter;
-import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.DeviceModel;
-import com.konkerlabs.platform.registry.business.model.EventRoute;
-import com.konkerlabs.platform.registry.business.model.Location;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
-import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
-import com.konkerlabs.platform.registry.business.repositories.EventRouteRepository;
-import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
-import com.konkerlabs.platform.registry.business.repositories.events.api.EventRepository;
-import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.LocationSearchService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
-import com.konkerlabs.platform.registry.config.EventStorageConfig;
-import com.konkerlabs.platform.registry.config.PubServerConfig;
-import com.konkerlabs.platform.registry.type.EventStorageConfigType;
-import com.konkerlabs.platform.security.exceptions.SecurityException;
-import com.konkerlabs.platform.security.managers.PasswordManager;
+import javax.annotation.PostConstruct;
+import java.io.ByteArrayOutputStream;
+import java.io.Serializable;
+import java.text.MessageFormat;
+import java.time.Instant;
+import java.util.*;
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
@@ -109,7 +90,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
         if (!Optional.ofNullable(tenant).isPresent()) {
             Device noDevice = Device.builder().guid("NULL").tenant(
-			        Tenant.builder().domainName("unknow_domain").build()).build();
+			        Tenant.builder().domainName("unknown_domain").build()).build();
 			LOGGER.debug(CommonValidations.TENANT_NULL.getCode(),
                     noDevice.toURI(),
                     noDevice.getTenant().getLogLevel());
@@ -122,7 +103,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         	Device noDevice = Device.builder()
         			.guid("NULL")
         			.tenant(tenant)
-        			.application(Application.builder().name("unknowapp").tenant(tenant).build())
+        			.application(Application.builder().name("unknown_app").tenant(tenant).build())
         			.build();
         	LOGGER.debug(ApplicationService.Validations.APPLICATION_NULL.getCode(),
         			noDevice.toURI(),
@@ -166,27 +147,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .build();
         }
 
-        if (device.getLocation() == null) {
-            ServiceResponse<Location> locationResponse = locationSearchService.findDefault(tenant, application);
-            if (locationResponse.isOk()) {
-                device.setLocation(locationResponse.getResult());
-            } else {
-                LOGGER.error("error getting default application location",
-                        Device.builder().guid("NULL").tenant(tenant).build().toURI(),
-                        device.getLogLevel());
-            }
-        }
-
-        if (device.getDeviceModel() == null) {
-            ServiceResponse<DeviceModel> response = deviceModelService.findDefault(tenant, application);
-            if (response.isOk()) {
-                device.setDeviceModel(response.getResult());
-            } else {
-                LOGGER.error("error getting default application device model",
-                        Device.builder().guid("NULL").tenant(tenant).build().toURI(),
-                        device.getLogLevel());
-            }
-        }
+        setDefaultModelAndLocation(tenant, application, device);
 
         device.onRegistration();
         device.setGuid(UUID.randomUUID().toString());
@@ -231,12 +192,38 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         return ServiceResponseBuilder.<Device>ok().withResult(saved).build();
     }
 
+    private void setDefaultModelAndLocation(Tenant tenant, Application application, Device device) {
+        
+        if (device.getLocation() == null) {
+            ServiceResponse<Location> locationResponse = locationSearchService.findDefault(tenant, application);
+            if (locationResponse.isOk()) {
+                device.setLocation(locationResponse.getResult());
+            } else {
+                LOGGER.error("error getting default application location",
+                        Device.builder().guid("NULL").tenant(tenant).build().toURI(),
+                        device.getLogLevel());
+            }
+        }
+
+        if (device.getDeviceModel() == null) {
+            ServiceResponse<DeviceModel> response = deviceModelService.findDefault(tenant, application);
+            if (response.isOk()) {
+                device.setDeviceModel(response.getResult());
+            } else {
+                LOGGER.error("error getting default application device model",
+                        Device.builder().guid("NULL").tenant(tenant).build().toURI(),
+                        device.getLogLevel());
+            }
+        }
+        
+    }
+
     @Override
     public ServiceResponse<List<Device>> findAll(Tenant tenant, Application application) {
 
         if (!Optional.ofNullable(tenant).isPresent()) {
             Device noDevice = Device.builder().guid("NULL").tenant(
-                    Tenant.builder().domainName("unknow_domain").build()).build();
+                    Tenant.builder().domainName("unknown_domain").build()).build();
             LOGGER.debug(CommonValidations.TENANT_NULL.getCode(),
                     noDevice.toURI(),
                     noDevice.getTenant().getLogLevel());
@@ -249,7 +236,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
             Device noDevice = Device.builder()
                     .guid("NULL")
                     .tenant(tenant)
-                    .application(Application.builder().name("unknowapp").tenant(tenant).build())
+                    .application(Application.builder().name("unknown_app").tenant(tenant).build())
                     .build();
             LOGGER.debug(ApplicationService.Validations.APPLICATION_NULL.getCode(),
                     noDevice.toURI(),
@@ -269,7 +256,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
         if (!Optional.ofNullable(tenant).isPresent()) {
             Device noDevice = Device.builder().guid("NULL").tenant(
-                    Tenant.builder().domainName("unknow_domain").build()).build();
+                    Tenant.builder().domainName("unknown_domain").build()).build();
             LOGGER.debug(CommonValidations.TENANT_NULL.getCode(),
                     noDevice.toURI(),
                     noDevice.getTenant().getLogLevel());
@@ -282,7 +269,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
             Device noDevice = Device.builder()
                     .guid("NULL")
                     .tenant(tenant)
-                    .application(Application.builder().name("unknowapp").tenant(tenant).build())
+                    .application(Application.builder().name("unknown_app").tenant(tenant).build())
                     .build();
             LOGGER.debug(ApplicationService.Validations.APPLICATION_NULL.getCode(),
                     noDevice.toURI(),
@@ -391,27 +378,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .build();
         }
 
-        if (updatingDevice.getLocation() == null) {
-            ServiceResponse<Location> locationResponse = locationSearchService.findDefault(tenant, application);
-            if (locationResponse.isOk()) {
-                updatingDevice.setLocation(locationResponse.getResult());
-            } else {
-                LOGGER.error("error getting default application location",
-                        Device.builder().guid("NULL").tenant(tenant).build().toURI(),
-                        updatingDevice.getLogLevel());
-            }
-        }
-
-        if (updatingDevice.getDeviceModel() == null) {
-            ServiceResponse<DeviceModel> modelResponse = deviceModelService.findDefault(tenant, application);
-            if (modelResponse.isOk()) {
-                updatingDevice.setDeviceModel(modelResponse.getResult());
-            } else {
-                LOGGER.error("error getting default application device model",
-                        Device.builder().guid("NULL").tenant(tenant).build().toURI(),
-                        updatingDevice.getLogLevel());
-            }
-        }
+        setDefaultModelAndLocation(tenant, application, updatingDevice);
 
         // modify "modifiable" fields
         deviceFromDB.setDescription(updatingDevice.getDescription());
@@ -518,7 +485,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
 		Tenant existingTenant = tenantRepository.findByName(tenant.getName());
 
-		if (!Optional.ofNullable(tenant).isPresent())
+		if (!Optional.ofNullable(existingTenant).isPresent())
 			return ServiceResponseBuilder.<Device> error()
 					.withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();
 
@@ -552,37 +519,41 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             Base64OutputStream encoded = new Base64OutputStream(baos);
             StringBuilder content = new StringBuilder();
-            content.append("{\"user\":\"" + credentials.getDevice().getUsername());
-            content.append("\",\"pass\":\"" + credentials.getPassword());
+            content.append("{\"user\":\"").append(credentials.getDevice().getUsername());
+            content.append("\",\"pass\":\"").append(credentials.getPassword());
             if (!StringUtils.isEmpty(pubServerConfig.getHttpHostname())
                     && !pubServerConfig.getHttpHostname().equals("localhost")) {
-                content.append("\",\"host\":\"" + pubServerConfig.getHttpHostname());
+                content.append("\",\"host\":\"").append(pubServerConfig.getHttpHostname());
             } else {
                 content.append("\",\"host\":\"" + "<IP>");
             }
-            content.append("\",\"ctx\":\"" + pubServerConfig.getHttpCtx());
+            content.append("\",\"ctx\":\"").append(pubServerConfig.getHttpCtx());
             if (!StringUtils.isEmpty(pubServerConfig.getMqttHostName())
                     && !pubServerConfig.getMqttHostName().equals("localhost")) {
-                content.append("\",\"host-mqtt\":\"" + pubServerConfig.getMqttHostName());
+                content.append("\",\"host-mqtt\":\"").append(pubServerConfig.getMqttHostName());
             } else {
                 content.append("\",\"host-mqtt\":\"" + "<IP>");
             }
-            content.append("\",\"http\":\"" + pubServerConfig.getHttpPort());
-            content.append("\",\"https\":\"" + pubServerConfig.getHttpsPort());
-            content.append("\",\"mqtt\":\"" + pubServerConfig.getMqttPort());
-            content.append("\",\"mqtt-tls\":\"" + pubServerConfig.getMqttTlsPort());
-            content.append("\",\"pub\":\"pub/"+ credentials.getDevice().getUsername());
-            content.append("\",\"sub\":\"sub/"+ credentials.getDevice().getUsername() +"\"}");
+            content.append("\",\"http\":\"").append(pubServerConfig.getHttpPort());
+            content.append("\",\"https\":\"").append(pubServerConfig.getHttpsPort());
+            content.append("\",\"mqtt\":\"").append(pubServerConfig.getMqttPort());
+            content.append("\",\"mqtt-tls\":\"").append(pubServerConfig.getMqttTlsPort());
+            content.append("\",\"pub\":\"pub/").append(credentials.getDevice().getUsername());
+            content.append("\",\"sub\":\"sub/").append(credentials.getDevice().getUsername()).append("\"}");
 
+            Map<EncodeHintType, Serializable> map = new HashMap<>();
+            for (AbstractMap.SimpleEntry<EncodeHintType, ? extends Serializable> item : Arrays.<AbstractMap.SimpleEntry<EncodeHintType, ? extends Serializable>>asList(
+                    new AbstractMap.SimpleEntry<>(EncodeHintType.MARGIN, 0),
+                    new AbstractMap.SimpleEntry<>(EncodeHintType.CHARACTER_SET, "UTF-8")
+            )) {
+                if (map.put(item.getKey(), item.getValue()) != null) {
+                    throw new IllegalStateException("Duplicate key");
+                }
+            }
             BitMatrix bitMatrix = new QRCodeWriter().encode(
                     content.toString(),
                     BarcodeFormat.QR_CODE, width, height,
-                    Collections.unmodifiableMap(
-                            Stream.of(
-                                    new AbstractMap.SimpleEntry<>(EncodeHintType.MARGIN, 0),
-                                    new AbstractMap.SimpleEntry<>(EncodeHintType.CHARACTER_SET, "UTF-8")
-                            ).collect(Collectors.toMap((item) ->item.getKey(), (item) -> item.getValue()))));
-
+                    Collections.unmodifiableMap(map));
             MatrixToImageWriter.writeToStream(bitMatrix, "png", encoded);
             String result = "data:image/png;base64," + new String(baos.toByteArray(), 0, baos.size(), "UTF-8");
             return ServiceResponseBuilder.<String> ok().withResult(result).build();
