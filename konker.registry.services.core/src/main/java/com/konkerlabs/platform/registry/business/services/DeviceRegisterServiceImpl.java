@@ -526,13 +526,13 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
         Device device = deviceRepository.findByTenantAndApplicationAndGuid(tenant.getId(), originApplication.getName(), guid);
 
-        setDefaultModelAndLocation(tenant, destApplication, device);
-
         if (!Optional.ofNullable(device).isPresent()) {
             return ServiceResponseBuilder.<Device>error()
                     .withMessage(Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode())
                     .build();
         }
+
+        setDefaultModelAndLocation(tenant, destApplication, device);
 
         ServiceResponse<Device> dependenciesResponse = findDeviceDependencies(device);
         if (!dependenciesResponse.isOk()) {

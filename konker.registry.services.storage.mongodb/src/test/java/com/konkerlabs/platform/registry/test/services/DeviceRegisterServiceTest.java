@@ -638,4 +638,121 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     	assertThat(credentials.getStatus(), equalTo(ServiceResponse.Status.ERROR));
     }
 
+    // ************************* getDeviceDataURLs *************************
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
+    public void shouldGetDeviceDataURLs() {
+        Device device = deviceRegisterService
+                .findByTenantDomainNameAndDeviceGuid(currentTenant.getDomainName(), THE_DEVICE_GUID);
+
+        ServiceResponse<DeviceRegisterService.DeviceDataURLs> response = deviceRegisterService
+                .getDeviceDataURLs(currentTenant, currentApplication, device, Locale.ENGLISH);
+
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
+        assertThat(response.getResult().getHttpURLPub(), is("http://dev-server:8080/pub/e4399b2ed998/<Channel>"));
+        assertThat(response.getResult().getHttpURLSub(), is("http://dev-server:8080/sub/e4399b2ed998/<Channel>"));
+        assertThat(response.getResult().getHttpsURLPub(), is("https://dev-server:443/pub/e4399b2ed998/<Channel>"));
+        assertThat(response.getResult().getHttpsURLSub(), is("https://dev-server:443/sub/e4399b2ed998/<Channel>"));
+
+        assertThat(response.getResult().getMqttPubTopic(), is("data/e4399b2ed998/pub/<Channel>"));
+        assertThat(response.getResult().getMqttSubTopic(), is("data/e4399b2ed998/sub/<Channel>"));
+        assertThat(response.getResult().getMqttURL(), is("mqtt://dev-server:1883"));
+        assertThat(response.getResult().getMqttsURL(), is("mqtts://dev-server:1883"));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
+    public void shouldGetDeviceDataURLsWithDataDomain() {
+        Device device = deviceRegisterService
+                .findByTenantDomainNameAndDeviceGuid(currentTenant.getDomainName(), THE_DEVICE_GUID);
+
+        currentTenant.setDataApiDomain("domain.io");
+
+        ServiceResponse<DeviceRegisterService.DeviceDataURLs> response = deviceRegisterService
+                .getDeviceDataURLs(currentTenant, currentApplication, device, Locale.ENGLISH);
+
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
+        assertThat(response.getResult().getHttpURLPub(), is("http://domain.io:8080/pub/e4399b2ed998/<Channel>"));
+        assertThat(response.getResult().getHttpURLSub(), is("http://domain.io:8080/sub/e4399b2ed998/<Channel>"));
+        assertThat(response.getResult().getHttpsURLPub(), is("https://domain.io:443/pub/e4399b2ed998/<Channel>"));
+        assertThat(response.getResult().getHttpsURLSub(), is("https://domain.io:443/sub/e4399b2ed998/<Channel>"));
+
+        assertThat(response.getResult().getMqttPubTopic(), is("data/e4399b2ed998/pub/<Channel>"));
+        assertThat(response.getResult().getMqttSubTopic(), is("data/e4399b2ed998/sub/<Channel>"));
+        assertThat(response.getResult().getMqttURL(), is("mqtt://domain.io:1883"));
+        assertThat(response.getResult().getMqttsURL(), is("mqtts://domain.io:1883"));
+
+    }
+
+    // ************************* move *************************
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
+    public void shouldMove() {
+
+        ServiceResponse<Device> response = deviceRegisterService
+                .move(currentTenant, currentApplication, THE_DEVICE_GUID, currentApplication);
+
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
+
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
+    public void shouldReturnErrorMoveWithGuidNull() {
+
+        ServiceResponse<Device> serviceResponse = deviceRegisterService
+                .move(currentTenant, currentApplication, null, currentApplication);
+
+        assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+        assertThat(serviceResponse.getResponseMessages(),
+                hasEntry(DeviceRegisterService.Validations.DEVICE_GUID_NULL.getCode(), null));
+        assertThat(serviceResponse.getResult(), nullValue());
+
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
+    public void shouldReturnErrorMoveWithDestinationNull() {
+
+        ServiceResponse<Device> serviceResponse = deviceRegisterService
+                .move(currentTenant, currentApplication, THE_DEVICE_GUID, null);
+
+        assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+        assertThat(serviceResponse.getResponseMessages(),
+                hasEntry(ApplicationService.Validations.APPLICATION_NULL.getCode(), null));
+        assertThat(serviceResponse.getResult(), nullValue());
+
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
+    public void shouldReturnErrorMoveWithInvalidGuid() {
+
+        ServiceResponse<Device> serviceResponse = deviceRegisterService
+                .move(currentTenant, currentApplication, "0000-aaaa", currentApplication);
+
+        assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+        assertThat(serviceResponse.getResponseMessages(),
+                hasEntry(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode(), null));
+        assertThat(serviceResponse.getResult(), nullValue());
+
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
+    public void shouldReturnErrorMoveWithInvalidDestination() {
+
+        ServiceResponse<Device> serviceResponse = deviceRegisterService
+                .move(currentTenant, currentApplication, THE_DEVICE_GUID, Application.builder().name("NOT").build());
+
+        assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+        assertThat(serviceResponse.getResponseMessages(),
+                hasEntry(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode(), null));
+        assertThat(serviceResponse.getResult(), nullValue());
+
+    }
+
+
 }
