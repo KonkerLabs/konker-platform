@@ -27,6 +27,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -96,7 +97,7 @@ public class UserSubscriptionController implements ApplicationContextAware {
         if (serviceResponse.isOk()) {        	
         	return new ModelAndView("subscription/success")
                     .addObject("user", userForm);
-        }else {
+        } else {
         	List<String> messages = serviceResponse.getResponseMessages()
                     .entrySet().stream()
                     .map(message -> applicationContext.getMessage(message.getKey(), message.getValue(), locale))
@@ -128,13 +129,10 @@ public class UserSubscriptionController implements ApplicationContextAware {
             		.addObject("errors", applicationContext.getMessage(TokenService.Validations.INVALID_EXPIRED_TOKEN.getCode(), null, locale));
         }
 
-
         if (serviceResponse.getResult().getIsExpired() || !validToken.getResult()) {
-            
             return form(UserForm.builder().build())
             		.addObject("errors", applicationContext.getMessage(TokenService.Validations.INVALID_EXPIRED_TOKEN.getCode(), null, locale));
         }
-
 
         ServiceResponse<User> responseUser = userService.findByEmail(serviceResponse.getResult().getUserEmail());
         
@@ -145,11 +143,16 @@ public class UserSubscriptionController implements ApplicationContextAware {
         
         if (saveResponse.isOk()) {
         	tokenService.invalidateToken(serviceResponse.getResult().getToken());
+            redirectAttributes.addFlashAttribute("message",
+                    applicationContext.getMessage(UserService.Messages.USER_ACTIVATED_SUCCESSFULLY.getCode(), null, locale));
+
+        } else {
+            for (Map.Entry<String, Object[]> entry : saveResponse.getResponseMessages().entrySet()) {
+                redirectAttributes.addFlashAttribute("message",
+                        applicationContext.getMessage(entry.getKey(), entry.getValue(), locale));
+            }
         }
 
-        redirectAttributes.addFlashAttribute("message", 
-        		applicationContext.getMessage(UserService.Messages.USER_ACTIVATED_SUCCESSFULLY.getCode(), null, locale));
-        
         return new ModelAndView("redirect:/login");
     }
 
