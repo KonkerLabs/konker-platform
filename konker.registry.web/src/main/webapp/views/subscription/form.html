@@ -28,7 +28,7 @@
         </div>
         <div id="navbar" class="navbar-collapse collapse">
             <div class="nav navbar-nav navbar-right">
-                <a href="http://www.konkerlabs.com" class="btn-menu">IR PARA O SITE</a>
+                <a href="http://www.konkerlabs.com" class="btn-menu"><span data-th-text="#{users.form.subscription.go_to_site}"></span></a>
             </div>
         </div>
         <!--/.nav-collapse -->
@@ -37,22 +37,17 @@
 <div class="wrapper">
     <div class="infos">
         <div class="row">
-
-
             <div class="col-md-6 titles">
                 <div class="titles-text">
-
-                    <h1>Começe a utilizar a Plataforma Konker</h1>
-                    <h2>Otimizada para você construir suas soluções IoT de forma ágil e simples</h2>
-                    <p>Já tem uma conta? <a href="https://demo.konkerlabs.net/registry/login">Faça o login</a></p>
+                    <h1 data-th-text="#{users.form.subscription.phrase_start_using}"></h1>
+                    <h2 data-th-text="#{users.form.subscription.phrase_optimized}"></h2>
+                    <p><span data-th-text="#{users.form.subscription.account_exists}"></span><a href="https://demo.konkerlabs.net/registry/login"><span>&nbsp;</span><span data-th-text="#{users.form.subscription.login_action}"></span></a></p>
                 </div>
                 <div>
-
                 </div>
-
             </div>
             <div class="col-md-6 create">
-                <h3>Cria sua conta</h3>
+                <h3 data-th-text="#{users.form.subscription.create_account}"></h3>
                 <p></p>
                 <form
                         data-th-action="@{__${action}__}"
@@ -69,7 +64,7 @@
                         </ul>
                     </div>
                     <div class="form-group">
-                        <label for="createName" data-th-text="#{users.subscription.name}"></label>
+                        <label for="createName" data-th-text="#{users.form.subscription.name}"></label>
                         <input name="name" data-th-value="*{name}"
                                type="text"
                                class="form-control"
@@ -79,7 +74,7 @@
                                required>
                     </div>
                     <div class="form-group">
-                        <label for="createEmail" data-th-text="#{users.subscription.email}"></label>
+                        <label for="createEmail" data-th-text="#{users.form.subscription.email}"></label>
                         <input name="email" data-th-value="*{email}"
                                type="email"
                                class="form-control"
@@ -90,7 +85,7 @@
                         <small id="email" class="form-text text-muted">exemple@yourcompany.com</small>
                     </div>
                     <div class="form-group">
-                        <label for="createPass" data-th-text="#{users.subscription.password}"></label>
+                        <label for="createPass" data-th-text="#{users.form.subscription.password}"></label>
                         <input name="newPassword" data-th-value="*{newPassword}"
                                type="password"
                                class="form-control"
@@ -99,16 +94,16 @@
                                required>
                     </div>
                     <div class="form-group">
-                        <label for="createConfPass" data-th-text="#{users.subscription.confirm.password}"></label>
+                        <label for="createConfPass" data-th-text="#{users.form.subscription.confirm.password}"></label>
                         <input name="newPasswordConfirmation" data-th-value="*{newPasswordConfirmation}"
                                type="password"
                                class="form-control"
                                id="createConfPass"
-                               placeholder=" Confirm Password"
+                               placeholder="Confirm Password"
                                required>
                     </div>
                     <div class="form-group">
-                        <label for="createCompany" data-th-text="#{users.subscription.company}"></label>
+                        <label for="createCompany" data-th-text="#{users.form.subscription.company}"></label>
                         <input name="tenantName" data-th-value="*{tenantName}"
                                type="text"
                                class="form-control"
@@ -117,7 +112,7 @@
                                required>
                     </div>
                     <div class="form-group">
-                        <label for="createJob" data-th-text="#{users.subscription.jobtitle}"></label>
+                        <label for="createJob" data-th-text="#{users.form.subscription.jobtitle}"></label>
                         <select data-th-field="*{job}"
                                 class="form-control"
                                 id="createJob"
@@ -128,7 +123,7 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="createPhone" data-th-text="#{users.subscription.phone}"></label>
+                        <label for="createPhone" data-th-text="#{users.form.subscription.phone}"></label>
                         <input name="phone" data-th-value="*{phone}"
                                type="tel"
                                class="form-control"
@@ -136,7 +131,7 @@
                                placeholder="Your Phone"
                                required>
                     </div>
-                    <button type="submit">Create account</button>
+                    <button type="submit" data-th-text="#{users.form.subscription.create_account_button}"></button>
                 </form>
 
             </div>

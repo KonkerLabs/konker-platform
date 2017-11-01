@@ -28,7 +28,7 @@
         </div>
         <div id="navbar" class="navbar-collapse collapse">
             <div class="nav navbar-nav navbar-right">
-                <a href="http://www.konkerlabs.com" class="btn-menu">IR PARA O SITE</a>
+                <a href="http://www.konkerlabs.com" class="btn-menu"><span data-th-text="#{users.form.subscription.go_to_site}"></span></a>
             </div>
         </div>
         <!--/.nav-collapse -->
@@ -41,13 +41,12 @@
                 <div class="titles-text-check">
                     <img data-th-attr="src=@{/resources/konker/images/email.svg}" class="img-responsive" />
 
-                    <h1>Check your email!</h1>
-                    <p>Please verify your email address. We’ve sent a confirmation to:</p>
+                    <h1 data-th-text="#{users.form.subscription.check_your_email}"></h1>
+                    <p  data-th-text="#{users.form.subscription.verify_your_email}"></p>
                     <p class="mail-people"><span data-th-text="${user.email}"></span></p>
-                    <p>Click the confirmation link in that email to begin using Konker Platform</a>
-                    </p>
-                    <p>Didn’t receive the email? Check your Spam folder, it may have been caught by a filter. If you still don’t see it, you can resend the confirmation email.</p>
-                    <a class="btn btn-theme" data-th-href="@{/}">Ir para Login</a>
+                    <p data-th-text="#{users.form.subscription.phrase_confirmation_link}"></p>
+                    <p data-th-text="#{users.form.subscription.phrase_receive_email}"></p>
+                    <a class="btn btn-theme" data-th-href="@{/}" data-th-text="#{users.form.subscription.go_to_login}"></a>
                 </div>
             </div>
         </div>
