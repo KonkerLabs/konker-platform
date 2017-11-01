@@ -1,7 +1,5 @@
 package com.konkerlabs.platform.registry.api.model;
 
-import com.konkerlabs.platform.registry.api.model.core.SerializableVO;
-import com.konkerlabs.platform.registry.business.model.User;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -27,7 +25,7 @@ public class UserSubscriptionVO  {
     private String password;
     @ApiModelProperty(value = "password type", example = "PASSWORD", allowableValues = "PASSWORD,BCRYPT_HASH,PBKDF2_HASH", required = true, position = 4)
     private String passwordType;
-    @ApiModelProperty(value = "job title", example = "Information Technology (IT)", required = false, position = 5)
+    @ApiModelProperty(value = "job title", example = "OTHER", allowableValues = "CEO,CIO,MARKETING,SALES,STARTUP,OTHER", required = false, position = 5)
     private String jobTitle;
     @ApiModelProperty(value = "phone number", example = "+55-11-3303-3206", required = false, position = 6)
     private String phoneNumber;
