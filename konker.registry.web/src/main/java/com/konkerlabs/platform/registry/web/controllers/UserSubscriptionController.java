@@ -125,17 +125,15 @@ public class UserSubscriptionController implements ApplicationContextAware {
                     .map(message -> applicationContext.getMessage(message.getKey(), message.getValue(), locale))
                     .collect(Collectors.toList());
 
-            return new ModelAndView("subscription/success")
-                    .addObject("errors", messages);
+            return form(UserForm.builder().build())
+            		.addObject("errors", applicationContext.getMessage(TokenService.Validations.INVALID_EXPIRED_TOKEN.getCode(), null, locale));
         }
 
 
         if (serviceResponse.getResult().getIsExpired() || !validToken.getResult()) {
-            List<String> messages = new ArrayList<>();
-            messages.add(applicationContext.getMessage(TokenService.Validations.EXPIRED_TOKEN.getCode(), null, locale));
-
-            return new ModelAndView("subscription/success")
-                    .addObject("errors", messages);
+            
+            return form(UserForm.builder().build())
+            		.addObject("errors", applicationContext.getMessage(TokenService.Validations.INVALID_EXPIRED_TOKEN.getCode(), null, locale));
         }
 
 

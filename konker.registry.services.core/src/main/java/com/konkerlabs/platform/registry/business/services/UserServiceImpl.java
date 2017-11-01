@@ -325,8 +325,10 @@ public class UserServiceImpl implements UserService {
 
         User fromStorage = userRepository.findByEmail(user.getEmail());
 		
-		if (Optional.ofNullable(fromStorage).isPresent()) {
+		if (Optional.ofNullable(fromStorage).isPresent() && fromStorage.isActive()) {
             return sendAccountExistsEmail(fromStorage);
+		} else if (Optional.ofNullable(fromStorage).isPresent()) {
+			sendValidateTokenEmail(fromStorage);
 		}
 		
 		if (user.getName() == null || user.getName().isEmpty()) {

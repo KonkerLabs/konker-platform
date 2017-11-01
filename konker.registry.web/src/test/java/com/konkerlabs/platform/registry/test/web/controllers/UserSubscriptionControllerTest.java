@@ -169,12 +169,9 @@ public class UserSubscriptionControllerTest extends WebLayerTestContext {
 			.thenReturn(ServiceResponseBuilder.<Token>ok()
 			.withResult(invalidToken).build());
     	
-    	List<String> errors = new ArrayList<>();
-    	errors.add(applicationContext.getMessage(TokenService.Validations.EXPIRED_TOKEN.getCode(), null, Locale.ENGLISH));
-    	
     	getMockMvc().perform(get("/subscription/8a4fd7bd-503e-4e4a-b85e-5501305c7a99"))
     		.andDo(print())
-			.andExpect(model().attribute("errors", equalTo(errors)));
+			.andExpect(model().attribute("errors", equalTo(applicationContext.getMessage(TokenService.Validations.INVALID_EXPIRED_TOKEN.getCode(), null, Locale.ENGLISH))));
     }
     
     @Test
@@ -184,12 +181,9 @@ public class UserSubscriptionControllerTest extends WebLayerTestContext {
 			.withMessage(TokenService.Validations.INVALID_TOKEN.getCode())		
 			.withResult(null).build());
     	
-    	List<String> errors = new ArrayList<>();
-    	errors.add(applicationContext.getMessage(TokenService.Validations.INVALID_TOKEN.getCode(), null, Locale.ENGLISH));
-    	
     	getMockMvc().perform(get("/subscription/8a4fd7bd-503e-4e4a-b85e-5501305c7a99"))
     		.andDo(print())
-			.andExpect(model().attribute("errors", equalTo(errors)));
+			.andExpect(model().attribute("errors", equalTo(applicationContext.getMessage(TokenService.Validations.INVALID_EXPIRED_TOKEN.getCode(), null, Locale.ENGLISH))));
     }
     
     @Test
@@ -202,12 +196,9 @@ public class UserSubscriptionControllerTest extends WebLayerTestContext {
 			.thenReturn(ServiceResponseBuilder.<Boolean>ok()
 			.withResult(false).build());
     	
-    	List<String> errors = new ArrayList<>();
-    	errors.add(applicationContext.getMessage(TokenService.Validations.EXPIRED_TOKEN.getCode(), null, Locale.ENGLISH));
-    	
     	getMockMvc().perform(get("/subscription/8a4fd7bd-503e-4e4a-b85e-5501305c7a98"))
     		.andDo(print())
-			.andExpect(model().attribute("errors", equalTo(errors)));
+			.andExpect(model().attribute("errors", equalTo(applicationContext.getMessage(TokenService.Validations.INVALID_EXPIRED_TOKEN.getCode(), null, Locale.ENGLISH))));
     }
     
     @Test
