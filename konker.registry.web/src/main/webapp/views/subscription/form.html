@@ -70,7 +70,7 @@
                                class="form-control"
                                id="createName"
                                aria-describedby="name"
-                               placeholder="Enter name"
+                               data-th-placeholder="#{users.form.subscription.placeholder.name}"
                                required>
                     </div>
                     <div class="form-group">
@@ -80,7 +80,7 @@
                                class="form-control"
                                id="createEmail"
                                aria-describedby="emailHelp"
-                               placeholder="Enter email"
+                               data-th-placeholder="#{users.form.subscription.placeholder.email}"
                                required>
                         <small id="email" class="form-text text-muted">exemple@yourcompany.com</small>
                     </div>
@@ -90,6 +90,7 @@
                                type="password"
                                class="form-control"
                                id="createPass"
+                               data-th-placeholder="#{users.form.subscription.placeholder.password}"
                                placeholder="Password"
                                required>
                     </div>
@@ -99,7 +100,7 @@
                                type="password"
                                class="form-control"
                                id="createConfPass"
-                               placeholder="Confirm Password"
+                               data-th-placeholder="#{users.form.subscription.placeholder.confirm_password}"
                                required>
                     </div>
                     <div class="form-group">
@@ -108,7 +109,7 @@
                                type="text"
                                class="form-control"
                                id="createCompany"
-                               placeholder="Your Company"
+                               data-th-placeholder="#{users.form.subscription.placeholder.company}"
                                required>
                     </div>
                     <div class="form-group">
@@ -128,7 +129,7 @@
                                type="tel"
                                class="form-control"
                                id="createPhone"
-                               placeholder="Your Phone"
+                               data-th-placeholder="#{users.form.subscription.placeholder.phone}"
                                required>
                     </div>
                     <button type="submit" data-th-text="#{users.form.subscription.create_account_button}"></button>
