@@ -1,12 +1,15 @@
 package com.konkerlabs.platform.registry.web.controllers;
 
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.Token;
+import com.konkerlabs.platform.registry.business.model.User;
+import com.konkerlabs.platform.registry.business.model.User.JobEnum;
+import com.konkerlabs.platform.registry.business.model.enumerations.Language;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.TokenService;
+import com.konkerlabs.platform.registry.business.services.api.UserService;
+import com.konkerlabs.platform.registry.web.forms.UserForm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -22,15 +25,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.Token;
-import com.konkerlabs.platform.registry.business.model.User;
-import com.konkerlabs.platform.registry.business.model.User.JobEnum;
-import com.konkerlabs.platform.registry.business.model.enumerations.Language;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.TokenService;
-import com.konkerlabs.platform.registry.business.services.api.UserService;
-import com.konkerlabs.platform.registry.web.forms.UserForm;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @Controller()
@@ -74,13 +73,13 @@ public class UserSubscriptionController implements ApplicationContextAware {
     			.addObject("allJobs", JobEnum.values())
     			.addObject("action", "/subscription");
     }
-    
+
     @RequestMapping(value = "/successpage", method = RequestMethod.GET)
     public ModelAndView showSuccessPage() {
-    	
-    	return new ModelAndView("subscription/success");
+        UserForm userForm = new UserForm();
+    	return new ModelAndView("subscription/success").addObject("user", userForm);
     }
-    
+
     @RequestMapping(method = RequestMethod.POST)
     public  ModelAndView save(UserForm userForm, RedirectAttributes redirectAttributes, Locale locale) {
     	User user = userForm.toModel();
@@ -89,18 +88,15 @@ public class UserSubscriptionController implements ApplicationContextAware {
     			Optional.ofNullable(locale.toString())
     				.filter(l -> l.startsWith("pt"))
     				.orElse(locale.getLanguage()).toUpperCase()));
-    	
-    	    	
+
         ServiceResponse<User> serviceResponse = userService.createAccount(
         		user, 
         		userForm.getNewPassword(),
         		userForm.getNewPasswordConfirmation());
-       
-        
+
         if (serviceResponse.isOk()) {        	
-        	redirectAttributes.addFlashAttribute("message", 
-        			applicationContext.getMessage(UserService.Messages.USER_REGISTERED_SUCCESSFULLY.getCode(), null, locale));
-        	return new ModelAndView("redirect:/subscription/successpage");
+        	return new ModelAndView("subscription/successpage")
+                    .addObject("user", userForm);
         }else {
         	List<String> messages = serviceResponse.getResponseMessages()
                     .entrySet().stream()
@@ -115,9 +111,6 @@ public class UserSubscriptionController implements ApplicationContextAware {
         }
 
     }
-
- 
-    
 
     @RequestMapping(value = "/{token}", method = RequestMethod.GET)
     public ModelAndView showEmailValidationPage(@PathVariable("token") String token, RedirectAttributes redirectAttributes, Locale locale) {

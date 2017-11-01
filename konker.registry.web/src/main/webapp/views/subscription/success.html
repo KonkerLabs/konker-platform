@@ -43,11 +43,11 @@
 
                     <h1>Check your email!</h1>
                     <p>Please verify your email address. We’ve sent a confirmation to:</p>
-                    <p class="mail-people">name@yourcompany.com</p>
+                    <p class="mail-people"><span data-th-text="${user.email}"></span></p>
                     <p>Click the confirmation link in that email to begin using Konker Platform</a>
                     </p>
                     <p>Didn’t receive the email? Check your Spam folder, it may have been caught by a filter. If you still don’t see it, you can resend the confirmation email.</p>
-                    <a class="btn btn-theme" href="create-account.html">Ir para Login</a>
+                    <a class="btn btn-theme" data-th-href="@{/}">Ir para Login</a>
                 </div>
             </div>
         </div>
@@ -58,12 +58,12 @@
         <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
         <script data-th-attr="src=@{/resources/konker/scripts/jquery-1.11.1.min.js}" type="text/javascript"></script>
         <!-- Include all compiled plugins (below), or include individual files as needed -->
-        <script src="js/bootstrap.min.js "></script>
+        <script data-th-attr="src=@{/resources/bootstrap/js/bootstrap.min.js}" type="text/javascript"></script>
 
         <script>
             $.backstretch("[[@{/resources/konker/images/login-bg.jpg}]]");
         </script>
-        <div class="backstretch" style="left: 0px; top: 0px; overflow: hidden; margin: 0px; padding: 0px; height: 637px; width: 1349px; z-index: -999999; position: fixed;"><img src="C:\Users\Inmetrics\Documents\Plataforma\Layouts\create account\create-account\images\login-bg.jpg" style="position: absolute; margin: 0px; padding: 0px; border: none; width: 1349px; height: 760.129px; max-height: none; max-width: none; z-index: -999999; left: 0px; top: -61.5643px;"></div>
+        <div class="backstretch" style="left: 0px; top: 0px; overflow: hidden; margin: 0px; padding: 0px; height: 637px; width: 1349px; z-index: -999999; position: fixed;"><img data-th-attr="src=@{/resources/konker/images/login-bg.jpg}" style="position: absolute; margin: 0px; padding: 0px; border: none; width: 1349px; height: 760.129px; max-height: none; max-width: none; z-index: -999999; left: 0px; top: -61.5643px;"></div>
     </div>
 </div>
 </body>
