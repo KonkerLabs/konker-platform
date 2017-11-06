@@ -714,13 +714,59 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
                 .name("dxpobdi1yx")
                 .defaultLocation(false)
                 .build();
+        location = locationRepository.save(location);
 
-        locationRepository.save(location);
+        Device device = deviceRepository.findByTenantAndApplicationAndGuid(
+                currentTenant.getId(),
+                currentApplication.getName(),
+                THE_DEVICE_GUID);
+        device.setLocation(location);
+        deviceRepository.save(device);
 
         ServiceResponse<Device> response = deviceRegisterService
                 .move(currentTenant, currentApplication, THE_DEVICE_GUID, otherApplication);
 
         assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
+        assertThat(response.getResult().getLocation().getName(), equalTo("default"));
+
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
+    public void shouldMoveExistingLocationAndDeviceModel() {
+
+        Application otherApplication = applicationRepository.findByTenantAndName(currentTenant.getId(), "konker");
+
+        Location location = Location
+                .builder()
+                .tenant(currentTenant)
+                .application(currentApplication)
+                .name("dxpobdi1yx")
+                .defaultLocation(false)
+                .build();
+        location = locationRepository.save(location);
+
+        Location locationOther = Location
+                .builder()
+                .tenant(currentTenant)
+                .application(otherApplication)
+                .name("dxpobdi1yx")
+                .defaultLocation(false)
+                .build();
+        locationRepository.save(locationOther);
+
+        Device device = deviceRepository.findByTenantAndApplicationAndGuid(
+                currentTenant.getId(),
+                currentApplication.getName(),
+                THE_DEVICE_GUID);
+        device.setLocation(location);
+        deviceRepository.save(device);
+
+        ServiceResponse<Device> response = deviceRegisterService
+                .move(currentTenant, currentApplication, THE_DEVICE_GUID, otherApplication);
+
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
+        assertThat(response.getResult().getLocation().getName(), equalTo("dxpobdi1yx"));
 
     }
 
@@ -811,6 +857,5 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         assertThat(serviceResponse.getResult(), nullValue());
 
     }
-
 
 }

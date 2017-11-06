@@ -559,7 +559,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .build();
         }
 
-        return ServiceResponseBuilder.<Device>ok().build();
+        return ServiceResponseBuilder.<Device>ok().withResult(cloneResponse.getResult()).build();
 
     }
 
@@ -598,7 +598,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         device.setGuid(UUID.randomUUID().toString());
         device.setApplication(destApplication);
 
-        return ServiceResponseBuilder.<Device>ok().build();
+        return ServiceResponseBuilder.<Device>ok().withResult(device).build();
 
     }
 
