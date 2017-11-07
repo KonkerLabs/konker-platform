@@ -787,6 +787,29 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json", "/fixtures/event-routes.json"})
+    public void shouldReturnErrorMoveDeviceWithExistingId() {
+
+        Application otherApplication = applicationRepository.findByTenantAndName(currentTenant.getId(), "konker");
+
+        Device sameNameDevice = Device.builder()
+                                      .tenant(currentTenant)
+                                      .application(otherApplication)
+                                      .deviceId("SN1234567890")
+                                      .build();
+        deviceRepository.save(sameNameDevice);
+
+        ServiceResponse<Device> serviceResponse = deviceRegisterService
+                .move(currentTenant, currentApplication, THE_DEVICE_GUID, otherApplication);
+
+        assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+        assertThat(serviceResponse.getResponseMessages(),
+                hasEntry(DeviceRegisterService.Validations.DEVICE_ID_ALREADY_REGISTERED.getCode(), null));
+        assertThat(serviceResponse.getResult(), nullValue());
+
+    }
+
+    @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
     public void shouldReturnErrorMoveSameDestination() {
 

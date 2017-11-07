@@ -1,42 +1,27 @@
 package com.konkerlabs.platform.registry.api.web.controller;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.commons.lang3.StringUtils;
+import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
+import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
+import com.konkerlabs.platform.registry.api.model.ApplicationDestinationVO;
+import com.konkerlabs.platform.registry.api.model.DeviceInputVO;
+import com.konkerlabs.platform.registry.api.model.DeviceVO;
+import com.konkerlabs.platform.registry.api.model.RestResponse;
+import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.Validations;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
-import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
-import com.konkerlabs.platform.registry.api.model.DeviceInputVO;
-import com.konkerlabs.platform.registry.api.model.DeviceVO;
-import com.konkerlabs.platform.registry.api.model.RestResponse;
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.DeviceModel;
-import com.konkerlabs.platform.registry.business.model.Location;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.Validations;
-import com.konkerlabs.platform.registry.business.services.api.LocationSearchService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @RestController
 @Scope("request")
@@ -140,7 +125,7 @@ public class DeviceRestController extends AbstractRestController implements Init
         Location location = getLocation(tenant, application, deviceForm.getLocationName());
         DeviceModel deviceModel = getDeviceModel(tenant, application, deviceForm.getDeviceModelName());
 
-        Device deviceFromDB = null;
+        Device deviceFromDB;
         ServiceResponse<Device> deviceResponse = deviceRegisterService.getByDeviceGuid(tenant, application, deviceGuid);
 
         if (!deviceResponse.isOk()) {
@@ -161,6 +146,28 @@ public class DeviceRestController extends AbstractRestController implements Init
         if (!updateResponse.isOk()) {
             throw new BadServiceResponseException(user, updateResponse, validationsCode);
 
+        }
+
+    }
+
+    @PutMapping(path = "/{deviceGuid}/application")
+    @ApiOperation(value = "Move device to another application")
+    @PreAuthorize("hasAuthority('EDIT_DEVICE')")
+    public void move(
+            @PathVariable("application") String applicationId,
+            @PathVariable("deviceGuid") String deviceGuid,
+            @ApiParam(name = "body", required = true)
+            @RequestBody ApplicationDestinationVO applicationDestinationVO)
+            throws BadServiceResponseException, NotFoundResponseException {
+
+        Tenant tenant = user.getTenant();
+        Application application = getApplication(applicationId);
+        Application destApplication = getApplication(applicationDestinationVO.getDestinationApplicationName());
+
+        ServiceResponse<Device> deviceResponse = deviceRegisterService.move(tenant, application, deviceGuid, destApplication);
+
+        if (!deviceResponse.isOk()) {
+            throw new BadServiceResponseException(user, deviceResponse, validationsCode);
         }
 
     }

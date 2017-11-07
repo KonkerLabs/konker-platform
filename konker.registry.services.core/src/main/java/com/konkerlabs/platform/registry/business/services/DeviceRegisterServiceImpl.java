@@ -538,6 +538,15 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .build();
         }
 
+        if (deviceRepository.findByTenantIdAndApplicationAndDeviceId(tenant.getId(), destApplication.getName(), device.getDeviceId()) != null) {
+            LOGGER.debug("error saving device",
+                    Device.builder().guid("NULL").tenant(tenant).build().toURI(),
+                    device.getLogLevel());
+            return ServiceResponseBuilder.<Device>error()
+                    .withMessage(Validations.DEVICE_ID_ALREADY_REGISTERED.getCode())
+                    .build();
+        }
+
         setDefaultModelAndLocation(tenant, destApplication, device);
 
         ServiceResponse<Device> dependenciesResponse = findDeviceDependencies(device);
@@ -549,14 +558,6 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         ServiceResponse<Device> cloneResponse = clone(tenant, destApplication, device);
         if (!cloneResponse.isOk()) {
             return cloneResponse;
-        }
-
-        // remove the old device
-        ServiceResponse<Device> removeResponse = remove(tenant, originApplication, guid);
-        if (!removeResponse.isOk()) {
-            return ServiceResponseBuilder.<Device>error()
-                    .withMessages(removeResponse.getResponseMessages())
-                    .build();
         }
 
         return ServiceResponseBuilder.<Device>ok().withResult(cloneResponse.getResult()).build();
@@ -598,7 +599,11 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         device.setGuid(UUID.randomUUID().toString());
         device.setApplication(destApplication);
 
-        return ServiceResponseBuilder.<Device>ok().withResult(device).build();
+        LOGGER.info("Device created. Id: {}", device.getDeviceId(), tenant.toURI(), tenant.getLogLevel());
+
+        Device saved = deviceRepository.save(device);
+
+        return ServiceResponseBuilder.<Device>ok().withResult(saved).build();
 
     }
 
