@@ -1,25 +1,5 @@
 package com.konkerlabs.platform.registry.test.business.services;
 
-import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
-import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.isResponseOk;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.notNullValue;
-
-import java.time.Instant;
-import java.util.List;
-
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.HealthAlert;
 import com.konkerlabs.platform.registry.business.model.HealthAlert.Description;
@@ -40,13 +20,24 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.config.EmailConfig;
 import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
-import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
-import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.MessageSouceTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.MongoBillingTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.SpringMailTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.*;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import java.time.Instant;
+import java.util.List;
+
+import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
+import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.isResponseOk;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
@@ -651,7 +642,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json"})
     public void shouldReturnTenantNullGetLastHightSeverity() throws Exception {
-    	ServiceResponse<HealthAlert> response = healthAlertService.getLastHightServerityByDeviceGuid(
+    	ServiceResponse<HealthAlert> response = healthAlertService.getLastHightSeverityByDeviceGuid(
     			null,
     			application,
     			healthAlert.getDeviceGuid());
@@ -662,7 +653,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json"})
     public void shouldReturnAppNullGetLastHightSeverity() throws Exception {
-    	ServiceResponse<HealthAlert> response = healthAlertService.getLastHightServerityByDeviceGuid(
+    	ServiceResponse<HealthAlert> response = healthAlertService.getLastHightSeverityByDeviceGuid(
     			currentTenant,
     			null,
     			healthAlert.getDeviceGuid());
@@ -673,7 +664,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json"})
     public void shouldReturnDeviceNullGetLastHightSeverity() throws Exception {
-    	ServiceResponse<HealthAlert> response = healthAlertService.getLastHightServerityByDeviceGuid(
+    	ServiceResponse<HealthAlert> response = healthAlertService.getLastHightSeverityByDeviceGuid(
     			currentTenant,
     			application,
     			null);
@@ -684,7 +675,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json", "/fixtures/devices.json"})
     public void shouldGetLastHightSeverity() throws Exception {
-    	ServiceResponse<HealthAlert> response = healthAlertService.getLastHightServerityByDeviceGuid(
+    	ServiceResponse<HealthAlert> response = healthAlertService.getLastHightSeverityByDeviceGuid(
     			currentTenant,
     			application,
     			healthAlert.getDeviceGuid());
