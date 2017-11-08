@@ -1,7 +1,10 @@
 package com.konkerlabs.platform.registry.test.business.services;
 
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -141,7 +144,8 @@ public class TenantServiceTest extends BusinessLayerTestSupport {
 		tenantService.updateLogLevel(tenant, LogLevel.INFO);
 
 		String deviceId = "Q3UuYLFN67";
-		Device device = Device.builder().logLevel(LogLevel.INFO).description(deviceId).deviceId(deviceId).tenant(tenant)
+		Set<String> tags =new HashSet<>(Arrays.asList("tag1", "tag2"));
+		Device device = Device.builder().logLevel(LogLevel.INFO).description(deviceId).tags(tags).deviceId(deviceId).tenant(tenant)
 				.build();
 		deviceRepository.save(device);
 

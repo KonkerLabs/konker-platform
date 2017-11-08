@@ -10,8 +10,11 @@ import static org.hamcrest.Matchers.sameInstance;
 import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
@@ -26,6 +29,7 @@ import com.konkerlabs.platform.registry.business.model.validation.CommonValidati
 public class DeviceTest {
 
 	private Device device;
+	private Set<String> tags =new HashSet<>(Arrays.asList("tag1", "tag2"));
 
 	@Before
 	public void setUp() {
@@ -41,6 +45,7 @@ public class DeviceTest {
 				.guid("22821842-7438-4c46-8bb2-5a2f56cd8923")
 				.name("Device name")
 				.description("Description")
+				.tags(tags)
 				.tenant(tenant).build();
 	}
 
