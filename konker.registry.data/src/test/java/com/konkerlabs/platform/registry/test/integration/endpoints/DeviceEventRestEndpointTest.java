@@ -7,6 +7,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.Executor;
 
 import org.junit.After;
@@ -96,6 +99,7 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
     private String INVALID_CHANNEL_CHAR = "dataç";
     private Long OFFSET = 1475765814662l;
     private Long waitTime = 30000l;
+    private Set<String> tags =new HashSet<>(Arrays.asList("tag1", "tag2"));
 
     @Before
     public void setUp() throws Exception {
@@ -127,6 +131,7 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
                 .apiKey("e4399b2ed998")
                 .guid("7d51c242-81db-11e6-a8c2-0746f010e945")
                 .description("test")
+                .tags(tags)
                 .deviceId("device_id")
                 .guid("67014de6-81db-11e6-a5bc-3f99b38315c6").build();
 
@@ -158,6 +163,7 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
                 .apiKey("e4399b2ed998")
                 .guid("7d51c242-81db-11e6-a8c2-0746f010e945")
                 .description("test")
+                .tags(tags)
                 .deviceId("device_id")
                 .guid("67014de6-81db-11e6-a5bc-3f99b38315c6").build();
 
@@ -187,6 +193,7 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
                 .apiKey("e4399b2ed998")
                 .guid("7d51c242-81db-11e6-a8c2-0746f010e945")
                 .description("test")
+                .tags(tags)
                 .deviceId("device_id")
                 .guid("67014de6-81db-11e6-a5bc-3f99b38315c6").build();
 
@@ -210,6 +217,7 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
                 .apiKey("e4399b2ed998")
                 .guid("7d51c242-81db-11e6-a8c2-0746f010e945")
                 .description("test")
+                .tags(tags)
                 .deviceId("device_id")
                 .guid("67014de6-81db-11e6-a5bc-3f99b38315c6").build();
 
@@ -233,6 +241,7 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
                 .apiKey("e4399b2ed998")
                 .guid("7d51c242-81db-11e6-a8c2-0746f010e945")
                 .description("test")
+                .tags(tags)
                 .deviceId("device_id")
                 .guid("67014de6-81db-11e6-a5bc-3f99b38315c6")
                 .tenant(Tenant.builder().domainName("konker").name("Konker").build())
@@ -267,6 +276,7 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
                 .apiKey("e4399b2ed998")
                 .guid("7d51c242-81db-11e6-a8c2-0746f010e945")
                 .description("test")
+                .tags(tags)
                 .deviceId("device_id")
                 .guid("67014de6-81db-11e6-a5bc-3f99b38315c6")
                 .tenant(Tenant.builder().domainName("konker").name("Konker").build())

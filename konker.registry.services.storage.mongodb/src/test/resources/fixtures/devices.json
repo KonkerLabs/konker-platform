@@ -16,6 +16,7 @@
       "apiKey" : "e4399b2ed998",
       "name" : "Test name",
       "description" : "Description",
+      "tags" : ["anotherTag1","anotherTag2"],
       "registrationDate" : 1453320973747,
       "active" : false
     },

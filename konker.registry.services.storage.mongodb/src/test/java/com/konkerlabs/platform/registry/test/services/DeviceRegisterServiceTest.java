@@ -35,11 +35,14 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -72,6 +75,8 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     private static final String ANOTHER_DEVICE_NAME = "Another Device Name";
     private static final String ANOTHER_DEVICE_DESCRIPTION = "Another Device Description";
     private static final Instant THE_REGISTRATION_TIME = Instant.now().minus(Duration.ofDays(2));
+    private static final Set<String> DEVICE_TAGS =new HashSet<>(Arrays.asList("tag1", "tag2"));
+    private static final Set<String> ANOTHER_DEVICE_TAGS =new HashSet<>(Arrays.asList("anotherTag1", "anotherTag2"));
     private static final String THE_DEVICE_PASSWORD = "vKyCY2VXjHWC";
 
 
@@ -114,7 +119,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 				.build();
 
         rawDevice = Device.builder().deviceId("94c32b36cd2b43f1").name("Device name")
-                .description("Description").active(true)
+                .description("Description").tags(DEVICE_TAGS).active(true)
 //                .events(Arrays.asList(new Event[]{Event.builder()
 //                        .payload("Payload one").timestamp(Instant.ofEpochMilli(1453320973747L)).build()}))
                 .build();
@@ -418,6 +423,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         persisted.setName(ANOTHER_DEVICE_NAME);
         persisted.setDescription(ANOTHER_DEVICE_DESCRIPTION);
         persisted.setRegistrationDate(THE_REGISTRATION_TIME);
+        persisted.setTags(ANOTHER_DEVICE_TAGS);
         persisted.setActive(false);
 
         ServiceResponse<Device> response = deviceRegisterService.update(currentTenant, currentApplication, THE_DEVICE_GUID, persisted);
@@ -435,6 +441,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         Device foundDevice = deviceRegisterService.getByDeviceGuid(currentTenant, currentApplication, THE_DEVICE_GUID).getResult();
         assertThat(foundDevice.getName(), equalTo(ANOTHER_DEVICE_NAME));
         assertThat(foundDevice.getDescription(), equalTo(ANOTHER_DEVICE_DESCRIPTION));
+        assertThat(foundDevice.getTags(), equalTo(ANOTHER_DEVICE_TAGS));        
         assertThat(foundDevice.isActive(), equalTo(false));
 
         // ensure that data should not be changed didn't change
@@ -450,6 +457,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         persisted.setName(ANOTHER_DEVICE_NAME);
         persisted.setDescription(ANOTHER_DEVICE_DESCRIPTION);
         persisted.setRegistrationDate(THE_REGISTRATION_TIME);
+        persisted.setTags(ANOTHER_DEVICE_TAGS);
         persisted.setApiKey("changed_api_key");
         persisted.setActive(false);
 

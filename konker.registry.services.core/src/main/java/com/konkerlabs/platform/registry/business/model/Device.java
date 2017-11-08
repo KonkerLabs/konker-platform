@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
+import java.util.Set;
 
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -76,6 +77,7 @@ public class Device implements URIDealer, Validatable, UserDetails {
 	private String name;
 	private String guid;
 	private String description;
+	private Set<String> tags;
 	private Instant registrationDate;
 	private Instant lastModificationDate;
     private LogLevel logLevel;
@@ -84,6 +86,7 @@ public class Device implements URIDealer, Validatable, UserDetails {
     @DBRef
     private Location location;
 	private boolean active;
+	
 
 	public Optional<Map<String, Object[]>> applyValidations() {
 

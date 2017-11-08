@@ -32,6 +32,7 @@ public class DeviceVO extends DeviceInputVO
         vo.setDeviceModelName(t.getDeviceModel() != null ? t.getDeviceModel().getName() : null);
         vo.setActive(t.isActive());
         vo.setId(t.getDeviceId());
+        vo.setTags(t.getTags());
         return vo;
     }
 
@@ -42,6 +43,7 @@ public class DeviceVO extends DeviceInputVO
         t.setDescription(this.getDescription());
         t.setId(this.getId());
         t.setGuid(this.getGuid());
+        t.setTags(this.getTags());
         return t;
     }
 }
