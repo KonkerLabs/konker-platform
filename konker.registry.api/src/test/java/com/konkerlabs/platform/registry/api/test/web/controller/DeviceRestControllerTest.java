@@ -1,7 +1,6 @@
 package com.konkerlabs.platform.registry.api.test.web.controller;
 
 import com.konkerlabs.platform.registry.api.config.WebMvcConfig;
-import com.konkerlabs.platform.registry.api.model.ApplicationDestinationVO;
 import com.konkerlabs.platform.registry.api.model.DeviceVO;
 import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
 import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
@@ -625,36 +624,5 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 
     }
 
-    @Test
-    public void shouldMoveDevice() throws Exception {
-
-        when(deviceRegisterService.getByDeviceGuid(tenant, application, device1.getGuid()))
-                .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device1).build());
-
-        when(deviceRegisterService.move(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(Application.class), org.mockito.Matchers.anyString(), org.mockito.Matchers.any(Application.class)))
-                .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device1).build());
-
-        when(applicationService.getByApplicationName(tenant, application.getName()))
-                .thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
-
-        ApplicationDestinationVO destinationVO = new ApplicationDestinationVO();
-        destinationVO.setDestinationApplicationName(application.getName());
-
-        getMockMvc().perform(MockMvcRequestBuilders.put(MessageFormat.format("/{0}/devices/{1}/application", application.getName(), device1.getGuid()))
-                .content(getJson(destinationVO))
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is2xxSuccessful())
-                .andExpect(jsonPath("$.code", is(HttpStatus.OK.value())))
-                .andExpect(jsonPath("$.status", is("success")))
-                .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
-                .andExpect(jsonPath("$.result").isMap())
-                .andExpect(jsonPath("$.result.id", is("id1")))
-                .andExpect(jsonPath("$.result.name", is("name1")))
-                .andExpect(jsonPath("$.result.guid", is("guid1")))
-                .andExpect(jsonPath("$.result.locationName", is("br")))
-                .andExpect(jsonPath("$.result.active", is(true)));
-
-    }
 
 }

@@ -1,13 +1,12 @@
 package com.konkerlabs.platform.registry.business.services;
 
-import java.text.MessageFormat;
-import java.time.Instant;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-
+import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.model.HealthAlert.Description;
+import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertSeverity;
+import com.konkerlabs.platform.registry.business.model.HealthAlert.Solution;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.repositories.*;
+import com.konkerlabs.platform.registry.business.services.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,29 +15,9 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
-import com.konkerlabs.platform.registry.business.model.AlertTrigger;
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.HealthAlert;
-import com.konkerlabs.platform.registry.business.model.HealthAlert.Description;
-import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertSeverity;
-import com.konkerlabs.platform.registry.business.model.HealthAlert.Solution;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.User;
-import com.konkerlabs.platform.registry.business.model.UserNotification;
-import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.registry.business.repositories.AlertTriggerRepository;
-import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
-import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
-import com.konkerlabs.platform.registry.business.repositories.HealthAlertRepository;
-import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
-import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.HealthAlertService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
-import com.konkerlabs.platform.registry.business.services.api.UserNotificationService;
-import com.konkerlabs.platform.registry.business.services.api.UserService;
+import java.text.MessageFormat;
+import java.time.Instant;
+import java.util.*;
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
@@ -233,7 +212,7 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 		healthAlert.setLastChange(now);
 		HealthAlert save = healthAlertRepository.save(healthAlert);
 
-		ServiceResponse<HealthAlert> serviceResponse = getLastHightServerityByDeviceGuid(tenant, application, healthAlert.getDeviceGuid());
+		ServiceResponse<HealthAlert> serviceResponse = getLastHightSeverityByDeviceGuid(tenant, application, healthAlert.getDeviceGuid());
 		sendNotification(tenant, serviceResponse.getResult());
 
 		LOGGER.info("HealthAlert created. Guid: {}", save.getGuid(), tenant.toURI(), tenant.getLogLevel());
@@ -337,7 +316,7 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 		healthAlertFromDB.setSolution(solution);
 		HealthAlert updated = healthAlertRepository.save(healthAlertFromDB);
 
-		ServiceResponse<HealthAlert> serviceResponse = getLastHightServerityByDeviceGuid(tenant, application, healthAlertFromDB.getDeviceGuid());
+		ServiceResponse<HealthAlert> serviceResponse = getLastHightSeverityByDeviceGuid(tenant, application, healthAlertFromDB.getDeviceGuid());
 		if (serviceResponse.isOk()) {
 		    sendNotification(tenant, serviceResponse.getResult());
 		} else {
@@ -468,7 +447,7 @@ public class HealthAlertServiceImpl implements HealthAlertService {
             healthAlertFromDB.setSolution(Solution.TRIGGER_DELETED);
             healthAlertRepository.save(healthAlertFromDB);
 
-            ServiceResponse<HealthAlert> serviceResponse = getLastHightServerityByDeviceGuid(tenant, application, healthAlertFromDB.getDeviceGuid());
+            ServiceResponse<HealthAlert> serviceResponse = getLastHightSeverityByDeviceGuid(tenant, application, healthAlertFromDB.getDeviceGuid());
             if (serviceResponse.isOk()) {
                 sendNotification(tenant, serviceResponse.getResult());
             }
@@ -482,7 +461,7 @@ public class HealthAlertServiceImpl implements HealthAlertService {
     }
 
 	@Override
-	public ServiceResponse<HealthAlert> getLastHightServerityByDeviceGuid(Tenant tenant, Application application,
+	public ServiceResponse<HealthAlert> getLastHightSeverityByDeviceGuid(Tenant tenant, Application application,
 			String deviceGuid) {
 
 		ServiceResponse<List<HealthAlert>> serviceResponse = findAllByTenantApplicationAndDeviceGuid(tenant, application, deviceGuid);

@@ -1,108 +1,69 @@
 <!DOCTYPE html>
-<html lang="en-US">
+<html>
 <head>
-    <script data-th-inline="javascript" data-th-if="${hotjarEnable}">
-        /*<![CDATA[*/
-        (function(h,o,t,j,a,r){
-            h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
-            h._hjSettings={hjid:/*[[${hotjarId}]]*/,hjsv:5};
-            a=o.getElementsByTagName('head')[0];
-            r=o.createElement('script');r.async=1;
-            r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
-            a.appendChild(r);
-        })(window,document,'//static.hotjar.com/c/hotjar-','.js?sv=');
-        /*]]>*/
-    </script>
-    
-    <meta http-equiv="Content-type" content="text/html;charset=UTF-8"/>
+    <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Konker Cloud Platform</title>
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Create Account Konker Platform</title>
+
     <!-- CSS -->
-    <link rel="stylesheet" type="text/css" data-th-href="@{/resources/konker/css/roboto.css}">
     <link rel="stylesheet" type="text/css" data-th-href="@{/resources/bootstrap/css/bootstrap.min.css}">
-    <link rel="stylesheet" type="text/css" data-th-href="@{/resources/font-awesome/css/font-awesome.min.css}">
-    <link rel="stylesheet" type="text/css" data-th-href="@{/resources/konker/css/form-elements.css}">
-    <link rel="stylesheet" type="text/css" data-th-href="@{/resources/konker/css/style.css}">
+    <link rel="stylesheet" type="text/css" data-th-href="@{/resources/konker/css/create-account.css}">
 
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
-
-    <link rel="shortcut icon" data-th-href="@{/resources/konker/images/favicon.png}" href="../resources/konker/images/favicon.png" sizes="16x16 32x32 48x48 56x56" type="image/vnd.microsoft.icon" />
-    <link rel="apple-touch-icon-precomposed" data-th-href="@{/resources/konker/images/apple-touch-icon-144-precomposed.png}" href="../resources/konker/images/apple-touch-icon-144-precomposed.png" sizes="144x144" >
-    <link rel="apple-touch-icon-precomposed" data-th-href="@{/resources/konker/images/apple-touch-icon-114-precomposed.png}" href="../resources/konker/images/apple-touch-icon-114-precomposed.png" sizes="114x114" >
-    <link rel="apple-touch-icon-precomposed" data-th-href="@{/resources/konker/images/apple-touch-icon-72-precomposed.png}" href="../resources/konker/images/apple-touch-icon-72-precomposed.png" sizes="72x72" >
-    <link rel="apple-touch-icon-precomposed" data-th-href="@{/resources/konker/images/apple-touch-icon-57-precomposed.png}" href="../resources/konker/images/apple-touch-icon-57-precomposed.png">
-	
-	<style>
-		.input-div-error {
-			border: 3px solid red;
-		}
-	</style>
+    <!-- font -->
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet">
 </head>
 <body>
-<!-- Top content -->
-<div class="top-content">
-    <div class="inner-bg">
-        <div class="container">
-            <div class="row">
-                <div class="col-sm-6 col-sm-offset-3 form-box">
-                	<div class="alert alert-danger" role="alert" data-th-if="${errors != null and !errors.empty}">
-		                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-		                    <span aria-hidden="true">&times;</span>
-		                </button>
-		                <ul>
-		                <li data-th-each="error : ${errors}" data-th-text="${error}"></li>
-		                </ul>
-		            </div>
-		            
-                    <div class="alert alert-success" role="alert" data-th-if="${message != null}">
-			            <span data-th-text="${message}"></span>
-			            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-			                <span aria-hidden="true">&times;</span>
-			            </button>
-			        </div>
+<nav class="navbar navbar-default navbar-static-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#"><img data-th-attr="src=@{/resources/konker/images/konker-principal.png}"  class="logo"></a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+            <div class="nav navbar-nav navbar-right">
+                <a href="http://www.konkerlabs.com" class="btn-menu"><span data-th-text="#{users.form.subscription.go_to_site}"></span></a>
+            </div>
+        </div>
+        <!--/.nav-collapse -->
+    </div>
+</nav>
+<div class="wrapper">
+    <div class="infos-check">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="titles-text-check">
+                    <img data-th-attr="src=@{/resources/konker/images/email.svg}" class="img-responsive" />
+
+                    <h1 data-th-text="#{users.form.subscription.check_your_email}"></h1>
+                    <p  data-th-text="#{users.form.subscription.verify_your_email}"></p>
+                    <p class="mail-people"><span data-th-text="${user.email}"></span></p>
+                    <p data-th-text="#{users.form.subscription.phrase_confirmation_link}"></p>
+                    <p data-th-text="#{users.form.subscription.phrase_receive_email}"></p>
+                    <a class="btn btn-theme" data-th-href="@{/}" data-th-text="#{users.form.subscription.go_to_login}"></a>
                 </div>
             </div>
         </div>
+
+        <div>
+        </div>
+
+        <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+        <script data-th-attr="src=@{/resources/konker/scripts/jquery-1.11.1.min.js}" type="text/javascript"></script>
+        <!-- Include all compiled plugins (below), or include individual files as needed -->
+        <script data-th-attr="src=@{/resources/bootstrap/js/bootstrap.min.js}" type="text/javascript"></script>
+
+        <script>
+            $.backstretch("[[@{/resources/konker/images/login-bg.jpg}]]");
+        </script>
+        <div class="backstretch" style="left: 0px; top: 0px; overflow: hidden; margin: 0px; padding: 0px; height: 637px; width: 1349px; z-index: -999999; position: fixed;"><img data-th-attr="src=@{/resources/konker/images/login-bg.jpg}" style="position: absolute; margin: 0px; padding: 0px; border: none; width: 1349px; height: 760.129px; max-height: none; max-width: none; z-index: -999999; left: 0px; top: -61.5643px;"></div>
     </div>
 </div>
-
-<div id="div-user-dialog">
-    <data-th-block data-th-include="users/userdialog :: dialogs">
-    </data-th-block>
-</div>
-
-<!-- Javascript -->
-<script data-th-attr="src=@{/resources/konker/scripts/jquery-1.11.1.min.js}" type="text/javascript"></script>
-<script data-th-inline="javascript">
-    /*<![CDATA[*/
-    window.jQuery || document.write('<script src="/resources/bootstrap/js/vendor/jquery.min.js"/>')
-
-    function contextPath() {
-        var context = /*[[@{/}]]*/ '/';
-        return context;
-    }
-
-    function urlTo(path) {
-        var url = (contextPath() + path).replace(/\/\//, '/'); /* avoids double slashs */
-        return url;
-    }
-    /*]]>*/
-</script>
-<script data-th-attr="src=@{/resources/bootstrap/js/bootstrap.min.js}" type="text/javascript"></script>
-<script data-th-attr="src=@{/resources/konker/scripts/jquery.backstretch.min.js}" type="text/javascript"></script>
-<script data-th-attr="src=@{/resources/konker/scripts/scripts.js}" type="text/javascript"></script>
-<script>
-    $.backstretch("[[@{/resources/konker/images/login-background.jpg}]]");  
-</script>
-
-<!--[if lt IE 10]>
-<script src="assets/js/placeholder.js"></script>
-<![endif]-->
 </body>
 </html>

@@ -182,7 +182,7 @@ public class UserServiceImpl implements UserService {
             }
         });
 
-        if (Optional.ofNullable(user.getPassword()).isPresent() && !user.getPassword().startsWith(PasswordManager.QUALIFIER_PBKDF2)) {
+        if (Optional.ofNullable(user.getPassword()).isPresent() && !passwordManager.validateHash(user.getPassword())) {
             LOG.debug(Errors.ERROR_SAVE_USER.getCode(), fromStorage.getTenant().toURI(), fromStorage.getTenant().getLogLevel(), fromStorage);
 
             return ServiceResponseBuilder.<User>error()
@@ -325,8 +325,10 @@ public class UserServiceImpl implements UserService {
 
         User fromStorage = userRepository.findByEmail(user.getEmail());
 		
-		if (Optional.ofNullable(fromStorage).isPresent()) {
+		if (Optional.ofNullable(fromStorage).isPresent() && fromStorage.isActive()) {
             return sendAccountExistsEmail(fromStorage);
+		} else if (Optional.ofNullable(fromStorage).isPresent()) {
+			sendValidateTokenEmail(fromStorage);
 		}
 		
 		if (user.getName() == null || user.getName().isEmpty()) {

@@ -1,10 +1,18 @@
 package com.konkerlabs.platform.registry.api.web.controller;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-
+import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
+import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
+import com.konkerlabs.platform.registry.api.model.DeviceHealthAlertVO;
+import com.konkerlabs.platform.registry.api.model.DeviceHealthVO;
+import com.konkerlabs.platform.registry.api.model.DeviceStatsVO;
+import com.konkerlabs.platform.registry.api.model.RestResponse;
+import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.HealthAlertService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -15,24 +23,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
-import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
-import com.konkerlabs.platform.registry.api.model.DeviceHealthAlertVO;
-import com.konkerlabs.platform.registry.api.model.DeviceHealthVO;
-import com.konkerlabs.platform.registry.api.model.DeviceStatsVO;
-import com.konkerlabs.platform.registry.api.model.RestResponse;
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.HealthAlert;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.HealthAlertService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 @RestController
 @Scope("request")
@@ -69,7 +63,7 @@ public class DeviceStatusRestController extends AbstractRestController implement
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
 
-        ServiceResponse<HealthAlert> deviceResponse = healthAlertService.getLastHightServerityByDeviceGuid(
+        ServiceResponse<HealthAlert> deviceResponse = healthAlertService.getLastHightSeverityByDeviceGuid(
                 tenant,
                 application,
                 deviceGuid);
