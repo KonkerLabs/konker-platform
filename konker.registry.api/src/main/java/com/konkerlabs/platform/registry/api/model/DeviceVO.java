@@ -1,5 +1,7 @@
 package com.konkerlabs.platform.registry.api.model;
 
+import java.util.Collections;
+
 import com.konkerlabs.platform.registry.api.model.core.SerializableVO;
 import com.konkerlabs.platform.registry.business.model.Device;
 
