@@ -317,6 +317,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
         // modify "modifiable" fields
         deviceFromDB.setDescription(updatingDevice.getDescription());
+        deviceFromDB.setTags(updatingDevice.getTags());
         deviceFromDB.setName(updatingDevice.getName());
         deviceFromDB.setLocation(updatingDevice.getLocation());
         deviceFromDB.setDeviceModel(updatingDevice.getDeviceModel());

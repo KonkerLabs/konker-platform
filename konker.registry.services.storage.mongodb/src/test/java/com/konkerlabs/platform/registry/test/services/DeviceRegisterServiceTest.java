@@ -30,7 +30,15 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Arrays;
+import java.util.Set;
 
 import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -63,6 +71,8 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     private static final String ANOTHER_DEVICE_NAME = "Another Device Name";
     private static final String ANOTHER_DEVICE_DESCRIPTION = "Another Device Description";
     private static final Instant THE_REGISTRATION_TIME = Instant.now().minus(Duration.ofDays(2));
+    private static final Set<String> DEVICE_TAGS =new HashSet<>(Arrays.asList("tag1", "tag2"));
+    private static final Set<String> ANOTHER_DEVICE_TAGS =new HashSet<>(Arrays.asList("anotherTag1", "anotherTag2"));
     private static final String THE_DEVICE_PASSWORD = "vKyCY2VXjHWC";
 
 
@@ -447,6 +457,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         persisted.setName(ANOTHER_DEVICE_NAME);
         persisted.setDescription(ANOTHER_DEVICE_DESCRIPTION);
         persisted.setRegistrationDate(THE_REGISTRATION_TIME);
+        persisted.setTags(ANOTHER_DEVICE_TAGS);
         persisted.setApiKey("changed_api_key");
         persisted.setActive(false);
 

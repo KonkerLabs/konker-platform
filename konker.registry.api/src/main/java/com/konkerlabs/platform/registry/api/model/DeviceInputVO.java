@@ -1,5 +1,7 @@
 package com.konkerlabs.platform.registry.api.model;
 
+import java.util.Set;
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -24,5 +26,9 @@ public class DeviceInputVO {
     protected String deviceModelName;
     @ApiModelProperty(example = "true", position = 6)
     protected boolean active = true;
+    //LIST example = ["repair", "test1"] IS NOT SUPPORTED YET IN SWAGGER (08/11/2017)
+    //@ApiModelProperty(value = "the tags of  the device", example = ["repair", "test1"], position = 7)
+    @ApiModelProperty(value = "the tags of  the device", position = 7)
+    protected Set<String> tags;
 
 }

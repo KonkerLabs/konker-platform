@@ -56,6 +56,7 @@ import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
 import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
 
+
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
 @ContextConfiguration(classes = {
