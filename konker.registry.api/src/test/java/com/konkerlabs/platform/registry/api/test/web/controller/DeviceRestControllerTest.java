@@ -271,7 +271,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldShowDeviceHealth() throws Exception {
 
-        when(healthAlertService.getLastHightServerityByDeviceGuid(tenant, application, device1.getGuid()))
+        when(healthAlertService.getLastHightSeverityByDeviceGuid(tenant, application, device1.getGuid()))
 				.thenReturn(ServiceResponseBuilder.<HealthAlert>ok().withResult(health1).build());
 
         when(applicationService.getByApplicationName(tenant, application.getName()))
@@ -294,7 +294,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldShowDeviceHealthWithDeviceHealthEmpty() throws Exception {
 
-    	when(healthAlertService.getLastHightServerityByDeviceGuid(tenant, application, device1.getGuid()))
+    	when(healthAlertService.getLastHightSeverityByDeviceGuid(tenant, application, device1.getGuid()))
 				.thenReturn(ServiceResponseBuilder.<HealthAlert>error().withMessage(Validations.HEALTH_ALERT_DOES_NOT_EXIST.getCode()).build());
 
 		when(applicationService.getByApplicationName(tenant, application.getName()))
