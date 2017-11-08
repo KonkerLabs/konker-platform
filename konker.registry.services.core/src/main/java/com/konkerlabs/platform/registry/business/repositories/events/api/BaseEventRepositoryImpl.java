@@ -2,11 +2,13 @@ package com.konkerlabs.platform.registry.business.repositories.events.api;
 
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,6 +42,33 @@ public abstract class BaseEventRepositoryImpl implements EventRepository {
             doRemoveByCommon(tenant, application, deviceGuid, Type.OUTGOING);
         } catch (Exception e){
             throw new BusinessException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void copy(Tenant tenant, Device originDevice, Device destDevice) throws BusinessException {
+
+        Instant startInstant = ZonedDateTime.now().minusYears(100).toInstant();
+        Instant endInstant = ZonedDateTime.now().plusYears(100).toInstant();
+
+        // incoming
+        List<Event> incomingEvents = findIncomingBy(tenant, originDevice.getApplication(), originDevice.getGuid(), null, startInstant, endInstant, false, null);
+        for (Event event : incomingEvents) {
+            event.getIncoming().setApplicationName(destDevice.getApplication().getName());
+            event.getIncoming().setDeviceGuid(destDevice.getGuid());
+            event.getIncoming().setDeviceId(destDevice.getDeviceId());
+
+            saveIncoming(tenant, destDevice.getApplication(), event);
+        }
+
+        // outgoing
+        List<Event> outgoingEvents = findOutgoingBy(tenant, originDevice.getApplication(), originDevice.getGuid(), null, startInstant, endInstant, false, null);
+        for (Event event : outgoingEvents) {
+            event.getOutgoing().setApplicationName(destDevice.getApplication().getName());
+            event.getOutgoing().setDeviceGuid(destDevice.getGuid());
+            event.getOutgoing().setDeviceId(destDevice.getDeviceId());
+
+            saveOutgoing(tenant, destDevice.getApplication(), event);
         }
     }
 
@@ -106,7 +135,7 @@ public abstract class BaseEventRepositoryImpl implements EventRepository {
 
     }
 
-    private void doRemoveByCommon(Tenant tenant, Application application, String deviceGuid, Type incoming) throws Exception {
+    private void doRemoveByCommon(Tenant tenant, Application application, String deviceGuid, Type type) throws Exception {
 
         Optional.ofNullable(tenant)
                 .filter(tenant1 -> Optional.ofNullable(tenant1.getDomainName()).filter(s -> !s.isEmpty()).isPresent())
@@ -114,7 +143,7 @@ public abstract class BaseEventRepositoryImpl implements EventRepository {
         Optional.ofNullable(deviceGuid).filter(s -> !s.isEmpty())
                 .orElseThrow(() -> new IllegalArgumentException("Device ID cannot be null or empty"));
 
-        doRemoveBy(tenant, application, deviceGuid, incoming);
+        doRemoveBy(tenant, application, deviceGuid, type);
 
     }
 

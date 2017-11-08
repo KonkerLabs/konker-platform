@@ -560,6 +560,25 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
             return cloneResponse;
         }
 
+        Device newDevice = cloneResponse.getResult();
+
+        try {
+            eventRepository.copy(tenant, device, newDevice);
+        } catch (BusinessException e) {
+            return ServiceResponseBuilder.<Device>error()
+                    .withMessage(Messages.DEVICE_REMOVED_UNSUCCESSFULLY.getCode())
+                    .withResult(device)
+                    .build();
+        }
+
+        // remove the old device
+        ServiceResponse<Device> removeResponse = remove(tenant, originApplication, guid);
+        if (!removeResponse.isOk()) {
+            return ServiceResponseBuilder.<Device>error()
+                    .withMessages(removeResponse.getResponseMessages())
+                    .build();
+        }
+
         return ServiceResponseBuilder.<Device>ok().withResult(cloneResponse.getResult()).build();
 
     }
@@ -596,6 +615,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
             }
         }
 
+        device.setId(null);
         device.setGuid(UUID.randomUUID().toString());
         device.setApplication(destApplication);
 

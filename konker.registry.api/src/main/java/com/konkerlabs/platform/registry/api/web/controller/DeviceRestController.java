@@ -153,7 +153,7 @@ public class DeviceRestController extends AbstractRestController implements Init
     @PutMapping(path = "/{deviceGuid}/application")
     @ApiOperation(value = "Move device to another application")
     @PreAuthorize("hasAuthority('EDIT_DEVICE')")
-    public void move(
+    public DeviceVO move(
             @PathVariable("application") String applicationId,
             @PathVariable("deviceGuid") String deviceGuid,
             @ApiParam(name = "body", required = true)
@@ -169,6 +169,8 @@ public class DeviceRestController extends AbstractRestController implements Init
         if (!deviceResponse.isOk()) {
             throw new BadServiceResponseException(user, deviceResponse, validationsCode);
         }
+
+        return new DeviceVO().apply(deviceResponse.getResult());
 
     }
 

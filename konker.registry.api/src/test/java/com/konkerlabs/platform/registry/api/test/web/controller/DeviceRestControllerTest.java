@@ -648,7 +648,12 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .andExpect(jsonPath("$.code", is(HttpStatus.OK.value())))
                 .andExpect(jsonPath("$.status", is("success")))
                 .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
-                .andExpect(jsonPath("$.result").doesNotExist());
+                .andExpect(jsonPath("$.result").isMap())
+                .andExpect(jsonPath("$.result.id", is("id1")))
+                .andExpect(jsonPath("$.result.name", is("name1")))
+                .andExpect(jsonPath("$.result.guid", is("guid1")))
+                .andExpect(jsonPath("$.result.locationName", is("br")))
+                .andExpect(jsonPath("$.result.active", is(true)));
 
     }
 
