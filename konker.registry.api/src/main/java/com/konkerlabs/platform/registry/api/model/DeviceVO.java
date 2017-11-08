@@ -1,7 +1,6 @@
 package com.konkerlabs.platform.registry.api.model;
 
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.Collections;
 
 import com.konkerlabs.platform.registry.api.model.core.SerializableVO;
 import com.konkerlabs.platform.registry.business.model.Device;
@@ -35,7 +34,7 @@ public class DeviceVO extends DeviceInputVO
         vo.setDeviceModelName(t.getDeviceModel() != null ? t.getDeviceModel().getName() : null);
         vo.setActive(t.isActive());
         vo.setId(t.getDeviceId());
-        vo.setTags(t.getTags()!=null ? t.getTags() : new HashSet<>(Arrays.asList()));
+        vo.setTags(t.getTags()!=null ? t.getTags() : Collections.emptySet());
         return vo;
     }
 
