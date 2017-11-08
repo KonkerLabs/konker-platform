@@ -33,7 +33,9 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.when;
@@ -73,6 +75,8 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Autowired
     private Application application;
 
+    private Set<String> tags;
+    
     private Device device1;
 
     private Device device2;
@@ -93,6 +97,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     public void setUp() {
         final Location locationBR = Location.builder().name("br").build();
 
+        tags =new HashSet<>(Arrays.asList("tag1", "tag2"));
         device1 = Device.builder()
         		.deviceId("id1")
         		.name("name1")
@@ -102,6 +107,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
         		.active(true)
         		.registrationDate(registrationDate)
         		.lastModificationDate(registrationDate)
+        		.tags(tags)
         		.build();
         device2 = Device.builder().deviceId("id2").name("name2").guid("guid2").location(locationBR).application(application).active(false).build();
 
@@ -333,13 +339,13 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.result", hasSize(2)))
                     .andExpect(jsonPath("$.result[0].guid", is(health1.getGuid())))
                     .andExpect(jsonPath("$.result[0].severity", is(health1.getSeverity().toString())))
-                    .andExpect(jsonPath("$.result[0].description", is("No message received from the device since a long time.")))
+                    .andExpect(jsonPath("$.result[0].description", is("No message received from the device for a long time.")))
                     .andExpect(jsonPath("$.result[0].occurenceDate", is(health1.getLastChange().toString())))
                     .andExpect(jsonPath("$.result[0].type", is(health1.getType().toString())))
                     .andExpect(jsonPath("$.result[0].triggerGuid", is(health1.getTriggerGuid())))
                     .andExpect(jsonPath("$.result[1].guid", is(health2.getGuid())))
                     .andExpect(jsonPath("$.result[1].severity", is(health2.getSeverity().toString())))
-                    .andExpect(jsonPath("$.result[1].description", is("No message received from the device since a long time.")))
+                    .andExpect(jsonPath("$.result[1].description", is("No message received from the device for a long time.")))
                     .andExpect(jsonPath("$.result[1].occurenceDate", is(health2.getLastChange().toString())))
                     .andExpect(jsonPath("$.result[1].type", is(health2.getType().toString())))
                     .andExpect(jsonPath("$.result[1].triggerGuid", is(health2.getTriggerGuid())));
@@ -440,7 +446,27 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .andExpect(jsonPath("$.status", is("success")))
                 .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
                 .andExpect(jsonPath("$.result").doesNotExist());
+        
+        
 
+   
+        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH, device1.getGuid()))
+                .contentType("application/json")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/json;charset=UTF-8"))
+                .andExpect(jsonPath("$.code", is(HttpStatus.OK.value())))
+                .andExpect(jsonPath("$.status", is("success")))
+                .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                .andExpect(jsonPath("$.result").isMap())
+                .andExpect(jsonPath("$.result.id", is("id1")))
+                .andExpect(jsonPath("$.result.name", is("name1")))
+                .andExpect(jsonPath("$.result.guid", is("guid1")))
+                .andExpect(jsonPath("$.result.tags", is(Arrays.asList("tag1", "tag2"))))
+                .andExpect(jsonPath("$.result.active", is(true)));
+        
+        
+        
     }
 
     @Test

@@ -4,7 +4,10 @@ import static com.konkerlabs.platform.registry.test.base.matchers.ServiceRespons
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.After;
 import org.junit.Assert;
