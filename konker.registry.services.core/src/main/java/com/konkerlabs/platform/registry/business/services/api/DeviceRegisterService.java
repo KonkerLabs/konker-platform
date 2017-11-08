@@ -1,17 +1,12 @@
 package com.konkerlabs.platform.registry.business.services.api;
 
-import java.util.List;
-import java.util.Locale;
-
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import lombok.*;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+import java.util.Locale;
 
 public interface DeviceRegisterService {
 
@@ -22,7 +17,8 @@ public interface DeviceRegisterService {
 		DEVICE_ID_DOES_NOT_EXIST("service.device.id.does_not_exist"),
 		DEVICE_GUID_DOES_NOT_EXIST("service.device.guid.does_not_exist"),
 		DEVICE_HAVE_EVENTROUTES("service.device.have_eventroutes"),
-		DEVICE_TENANT_LIMIT("service.device.tenant.limit");
+		DEVICE_TENANT_LIMIT("service.device.tenant.limit"),
+		EQUALS_ORIGIN_DESTINATION_APPLICATIONS("service.device.equals_origin_destination_applications");
 
 		public String getCode() {
 			return code;
@@ -35,7 +31,7 @@ public interface DeviceRegisterService {
 		}
 	}
 
-    public enum Messages {
+    enum Messages {
         DEVICE_REGISTERED_SUCCESSFULLY("controller.device.registered.success"),
         DEVICE_REMOVED_SUCCESSFULLY("controller.device.removed.succesfully"),
         DEVICE_REMOVED_UNSUCCESSFULLY("controller.device.removed.unsuccesfully"),
@@ -191,4 +187,16 @@ public interface DeviceRegisterService {
 	 * @return A random password used to create the token
 	 */
 	ServiceResponse<String> generateQrCodeAccess(DeviceSecurityCredentials credentials, int width, int height);
+
+	/**
+	 * Copies the device to another application from the same tenant and removes it from the previous application
+	 *
+	 * @param tenant
+	 * @param originApplication
+	 * @param guid
+	 * @param destApplication
+	 * @return The new device created
+	 */
+	ServiceResponse<Device> move(Tenant tenant, Application originApplication, String guid, Application destApplication);
+
 }

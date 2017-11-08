@@ -2,9 +2,11 @@ package com.konkerlabs.platform.registry.test.business.repositories;
 
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.events.EventRepositoryMongoImpl;
 import com.konkerlabs.platform.registry.business.repositories.events.api.EventRepository;
@@ -48,6 +50,8 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
 
     @Autowired
     private TenantRepository tenantRepository;
+    @Autowired
+    private DeviceRepository deviceRepository;
 
     @Autowired
     @Qualifier("mongoEvents")
@@ -240,6 +244,53 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
 
         assertThat(events.get(0).getTimestamp().toEpochMilli(),equalTo(thirdEventTimestamp.toEpochMilli()));
         assertThat(events.get(1).getTimestamp().toEpochMilli(),equalTo(secondEventTimestamp.toEpochMilli()));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json"})
+    public void shouldRemoveEvents() throws Exception {
+        List<Event> events = eventRepository.findIncomingBy(tenant, application, deviceGuid, "command",
+                firstEventTimestamp.plus(1,ChronoUnit.SECONDS),
+                null,false,2);
+
+        assertThat(events,notNullValue());
+        assertThat(events,hasSize(2));
+
+        eventRepository.removeBy(tenant, application, deviceGuid);
+
+        events = eventRepository.findIncomingBy(tenant, application, deviceGuid, "command",
+                firstEventTimestamp.plus(1,ChronoUnit.SECONDS),
+                null,false,2);
+
+        assertThat(events,notNullValue());
+        assertThat(events,hasSize(0));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/applications.json","/fixtures/devices.json","/fixtures/deviceEvents.json"})
+    public void shouldCopyEvents() throws Exception {
+        String destinationGuid = "8363c556-84ea-11e6-92a2-4b01fea7e243";
+
+        List<Event> events = eventRepository.findIncomingBy(tenant, application, destinationGuid, "command",
+                firstEventTimestamp.plus(1,ChronoUnit.SECONDS),
+                null,false,2);
+
+        assertThat(events,notNullValue());
+        assertThat(events,hasSize(0));
+
+        Device originDevice = deviceRepository.findByTenantAndApplicationAndGuid(tenant.getId(), "smartffkonker", deviceGuid);
+        Device destDevice = deviceRepository.findByTenantAndApplicationAndGuid(tenant.getId(), "smartffkonker", destinationGuid);
+
+        eventRepository.copy(tenant, originDevice, destDevice);
+
+        // checks if events were copied
+        events = eventRepository.findIncomingBy(tenant, application, destinationGuid, "command",
+                firstEventTimestamp.plus(1,ChronoUnit.SECONDS),
+                null,false,2);
+
+        assertThat(events,notNullValue());
+        assertThat(events,hasSize(2));
+
     }
 
     @Test

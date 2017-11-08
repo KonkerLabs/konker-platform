@@ -1,12 +1,7 @@
 package com.konkerlabs.platform.registry.business.repositories.events;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -377,15 +372,66 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
 
         List<Event> keys = doFindBy(tenant, application, deviceGuid, null, null, null, false, null, type, false);
 
+        Set<String> channels = new HashSet<>();
+
         for (Event key: keys) {
             if (type == Type.INCOMING) {
-                removeByKey(key, type);
+                channels.add(key.getIncoming().getChannel());
+                removeFromTableByKey(key, type);
                 saveEvent(tenant, application, key, type, INCOMING_EVENTS_DELETED, false);
             } else if (type == Type.OUTGOING) {
-                removeByKey(key, type);
+                channels.add(key.getOutgoing().getChannel());
+                removeFromTableByKey(key, type);
                 saveEvent(tenant, application, key, type, OUTGOING_EVENTS_DELETED, false);
             }
         }
+
+        removeFromGuidTable(tenant, application, deviceGuid, type);
+        removeFromGuidChannelTable(tenant, application, deviceGuid, type, channels);
+
+    }
+
+    private void removeFromGuidChannelTable(Tenant tenant, Application application, String deviceGuid, Type type, Set<String> channels) {
+
+        for (String channel: channels) {
+
+            String tenantDomain = tenant.getDomainName();
+            String applicationName = application.getName();
+
+            // INCOMING_EVENTS_DEVICE_GUID
+
+            StringBuilder query = new StringBuilder();
+            List<Object> filters = new ArrayList<>();
+
+            query.append("DELETE FROM ");
+            query.append(config.getKeyspace());
+            query.append(".");
+            if (type == Type.INCOMING) {
+                query.append(INCOMING_EVENTS_DEVICE_GUID_CHANNEL);
+            } else if (type == Type.OUTGOING) {
+                query.append(OUTGOING_EVENTS_DEVICE_GUID_CHANNEL);
+            }
+            query.append(" WHERE ");
+
+            query.append(" tenant_domain = ?");
+            filters.add(tenantDomain);
+
+            query.append(" AND application_name = ?");
+            filters.add(applicationName);
+
+            query.append(" AND device_guid = ?");
+            filters.add(deviceGuid);
+
+            query.append(" AND channel = ?");
+            filters.add(channel);
+
+            session.execute(query.toString(), filters.toArray(new Object[filters.size()]));
+
+        }
+
+    }
+
+    private void removeFromGuidTable(Tenant tenant, Application application, String deviceGuid, Type type) {
 
         String tenantDomain = tenant.getDomainName();
         String applicationName = application.getName();
@@ -418,15 +464,14 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
 
     }
 
-    private void removeByKey(Event key, Type type) {
+    private void removeFromTableByKey(Event key, Type type) {
 
         String tenantDomain = key.getIncoming().getTenantDomain();
         String applicationName = key.getIncoming().getApplicationName();
-        String deviceGuid = key.getIncoming().getDeviceGuid();
         String channel = key.getIncoming().getChannel();
         Long epochTs = key.getEpochTime();
 
-        // INCOMING_EVENTS
+        // remove from tables: INCOMING_EVENTS or OUTGOING_EVENTS
 
         StringBuilder query = new StringBuilder();
         List<Object> filters = new ArrayList<>();
@@ -452,7 +497,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
 
         session.executeAsync(query.toString(), filters.toArray(new Object[filters.size()]));
 
-        // INCOMING_EVENTS_CHANNEL
+        // remove from tables: INCOMING_EVENTS_CHANNEL or OUTGOING_EVENTS_CHANNEL
 
         query = new StringBuilder();
         filters = new ArrayList<>();
@@ -472,38 +517,6 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
 
         query.append(" AND application_name = ?");
         filters.add(applicationName);
-
-        query.append(" AND channel = ?");
-        filters.add(channel);
-
-        query.append(" AND timestamp = ?");
-        filters.add(epochTs);
-
-        session.executeAsync(query.toString(), filters.toArray(new Object[filters.size()]));
-
-        // INCOMING_EVENTS_DEVICE_GUID_CHANNEL
-
-        query = new StringBuilder();
-        filters = new ArrayList<>();
-
-        query.append("DELETE FROM ");
-        query.append(config.getKeyspace());
-        query.append(".");
-        if (type == Type.INCOMING) {
-            query.append(INCOMING_EVENTS_DEVICE_GUID_CHANNEL);
-        } else if (type == Type.OUTGOING) {
-            query.append(OUTGOING_EVENTS_DEVICE_GUID_CHANNEL);
-        }
-        query.append(" WHERE ");
-
-        query.append(" tenant_domain = ?");
-        filters.add(tenantDomain);
-
-        query.append(" AND application_name = ?");
-        filters.add(applicationName);
-
-        query.append(" AND device_guid = ?");
-        filters.add(deviceGuid);
 
         query.append(" AND channel = ?");
         filters.add(channel);
