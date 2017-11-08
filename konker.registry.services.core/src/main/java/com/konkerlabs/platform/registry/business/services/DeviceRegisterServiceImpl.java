@@ -530,48 +530,53 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .build();
         }
 
-        Device device = deviceRepository.findByTenantAndApplicationAndGuid(tenant.getId(), originApplication.getName(), guid);
+        Device originDevice = deviceRepository.findByTenantAndApplicationAndGuid(tenant.getId(), originApplication.getName(), guid);
 
-        if (!Optional.ofNullable(device).isPresent()) {
+        if (!Optional.ofNullable(originDevice).isPresent()) {
             return ServiceResponseBuilder.<Device>error()
                     .withMessage(Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode())
                     .build();
         }
 
-        if (deviceRepository.findByTenantIdAndApplicationAndDeviceId(tenant.getId(), destApplication.getName(), device.getDeviceId()) != null) {
+        if (deviceRepository.findByTenantIdAndApplicationAndDeviceId(tenant.getId(), destApplication.getName(), originDevice.getDeviceId()) != null) {
             LOGGER.debug("error saving device",
                     Device.builder().guid("NULL").tenant(tenant).build().toURI(),
-                    device.getLogLevel());
+                    originDevice.getLogLevel());
             return ServiceResponseBuilder.<Device>error()
                     .withMessage(Validations.DEVICE_ID_ALREADY_REGISTERED.getCode())
                     .build();
         }
 
-        setDefaultModelAndLocation(tenant, destApplication, device);
+        setDefaultModelAndLocation(tenant, destApplication, originDevice);
 
-        ServiceResponse<Device> dependenciesResponse = findDeviceDependencies(device);
+        ServiceResponse<Device> dependenciesResponse = findDeviceDependencies(originDevice);
         if (!dependenciesResponse.isOk()) {
             return dependenciesResponse;
         }
 
         // create the new devices
-        ServiceResponse<Device> cloneResponse = clone(tenant, destApplication, device);
+        ServiceResponse<Device> cloneResponse = clone(tenant, destApplication, originDevice);
         if (!cloneResponse.isOk()) {
             return cloneResponse;
         }
 
-        Device newDevice = cloneResponse.getResult();
+        // changes the origin key to stop receiving messages from the old device
+        originDevice = deviceRepository.findByTenantAndApplicationAndGuid(tenant.getId(), originApplication.getName(), guid);
+        originDevice.setApiKey(String.format("%s-TOBEDELETED", originDevice.getApiKey()));
+        deviceRepository.save(originDevice);
 
+        // copy the events to the new device
+        Device newDevice = cloneResponse.getResult();
         try {
-            eventRepository.copy(tenant, device, newDevice);
+            eventRepository.copy(tenant, originDevice, newDevice);
         } catch (BusinessException e) {
             return ServiceResponseBuilder.<Device>error()
                     .withMessage(Messages.DEVICE_REMOVED_UNSUCCESSFULLY.getCode())
-                    .withResult(device)
+                    .withResult(originDevice)
                     .build();
         }
 
-        // remove the old device
+        // finally remove the old device
         ServiceResponse<Device> removeResponse = remove(tenant, originApplication, guid);
         if (!removeResponse.isOk()) {
             return ServiceResponseBuilder.<Device>error()
@@ -615,7 +620,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
             }
         }
 
-        device.setId(null);
+        device.setId(null); // force to save new device instead of updating
         device.setGuid(UUID.randomUUID().toString());
         device.setApplication(destApplication);
 
