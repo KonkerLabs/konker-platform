@@ -425,6 +425,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         persisted.setName(ANOTHER_DEVICE_NAME);
         persisted.setDescription(ANOTHER_DEVICE_DESCRIPTION);
         persisted.setRegistrationDate(THE_REGISTRATION_TIME);
+        persisted.setTags(ANOTHER_DEVICE_TAGS);
         persisted.setActive(false);
 
         ServiceResponse<Device> response = deviceRegisterService.update(currentTenant, currentApplication, THE_DEVICE_GUID, persisted);
@@ -442,6 +443,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         Device foundDevice = deviceRegisterService.getByDeviceGuid(currentTenant, currentApplication, THE_DEVICE_GUID).getResult();
         assertThat(foundDevice.getName(), equalTo(ANOTHER_DEVICE_NAME));
         assertThat(foundDevice.getDescription(), equalTo(ANOTHER_DEVICE_DESCRIPTION));
+        assertThat(foundDevice.getTags(), equalTo(ANOTHER_DEVICE_TAGS));  
         assertThat(foundDevice.isActive(), equalTo(false));
 
         // ensure that data should not be changed didn't change
