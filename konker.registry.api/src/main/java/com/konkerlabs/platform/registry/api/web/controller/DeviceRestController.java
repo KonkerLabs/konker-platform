@@ -137,6 +137,7 @@ public class DeviceRestController extends AbstractRestController implements Init
         // update fields
         deviceFromDB.setName(deviceForm.getName());
         deviceFromDB.setDescription(deviceForm.getDescription());
+        deviceFromDB.setTags(deviceForm.getTags());
         deviceFromDB.setLocation(location);
         deviceFromDB.setDeviceModel(deviceModel);
         deviceFromDB.setActive(deviceForm.isActive());
