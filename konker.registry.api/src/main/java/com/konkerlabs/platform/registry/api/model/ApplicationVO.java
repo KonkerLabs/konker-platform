@@ -31,10 +31,20 @@ public class ApplicationVO extends ApplicationInputVO
 		this.description = application.getDescription();
 	}
 
+	private String getAlias(String inputName, String baseName, String alias) {
+		String returnAlias;
+		if(inputName.equals(baseName)){
+			returnAlias=alias ;
+		}else {
+			returnAlias=inputName;
+		}
+		return returnAlias;
+	}
+	
 	@Override
 	public ApplicationVO apply(Application model) {
 		ApplicationVO vo = new ApplicationVO();
-		vo.setName(model.getName());
+		vo.setName(getAlias(model.getName(),model.getContext(),"default"));
 		vo.setFriendlyName(model.getFriendlyName());
 		vo.setDescription(model.getDescription());
 		return vo;

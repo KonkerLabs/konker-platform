@@ -107,6 +107,12 @@ public class ApplicationServiceImpl implements ApplicationService {
 
 	@Override
 	public ServiceResponse<Application> register(Tenant tenant, Application application) {
+		if(application.getName().equals("default")) {
+			application.setName(tenant.getDomainName());
+		}
+
+		
+		
 		ServiceResponse<Application> response = basicValidate(tenant, application);
 
 		if (Optional.ofNullable(response).isPresent())
@@ -192,6 +198,8 @@ public class ApplicationServiceImpl implements ApplicationService {
 
 	@Override
 	public ServiceResponse<Application> remove(Tenant tenant, String name) {
+		name=name.equals("default")?tenant.getDomainName():name;
+		
 		if (!Optional.ofNullable(tenant).isPresent()) {
 			return ServiceResponseBuilder.<Application>error()
 					.withMessage(CommonValidations.TENANT_NULL.getCode())
@@ -254,6 +262,8 @@ public class ApplicationServiceImpl implements ApplicationService {
 
 	@Override
 	public ServiceResponse<Application> getByApplicationName(Tenant tenant, String name) {
+		name=name.equals("default")?tenant.getDomainName():name;
+		
 		if (!Optional.ofNullable(tenant).isPresent()) {
 			return ServiceResponseBuilder.<Application>error()
 					.withMessage(CommonValidations.TENANT_NULL.getCode())
