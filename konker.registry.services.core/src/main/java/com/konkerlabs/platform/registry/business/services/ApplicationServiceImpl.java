@@ -105,13 +105,36 @@ public class ApplicationServiceImpl implements ApplicationService {
 		return null;
 	}
 
+    public boolean isDefaultApplication(Application application,Tenant tenant) {
+    	if(!Optional.ofNullable(application).isPresent() || !Optional.ofNullable(tenant).isPresent()) {
+    		return false;
+    	}
+    	
+    	if(!Optional.ofNullable(application.getName()).isPresent() || !Optional.ofNullable(tenant.getDomainName()).isPresent()) {
+    		return false;
+    	}
+    	
+		if(application.getName().equals(tenant.getDomainName()) || 
+				DEFAULT_APPLICATION_ALIAS.equals(application.getName())) {
+			return true;
+		}
+
+		return false;
+    }
+    
 	@Override
-	public ServiceResponse<Application> register(Tenant tenant, Application application) {
+	public ServiceResponse<Application> register(Tenant tenant, Application application) {	
+		if(Optional.ofNullable(application).isPresent()&& Optional.ofNullable(tenant).isPresent()) {
+			if(isDefaultApplication(application, tenant)) {
+				application.setName(tenant.getDomainName());
+			}
+		}
+		
 		ServiceResponse<Application> response = basicValidate(tenant, application);
 
 		if (Optional.ofNullable(response).isPresent())
 			return response;
-
+	
 		Optional<Map<String,Object[]>> validations = application.applyValidations();
 
 		if (validations.isPresent()) {
@@ -149,13 +172,20 @@ public class ApplicationServiceImpl implements ApplicationService {
                 .application(application)
                 .guid(UUID.randomUUID().toString())
                 .defaultLocation(true)
-                .name("default")
+                .name(DEFAULT_APPLICATION_ALIAS)
                 .build();
 		locationService.save(tenant, application, location );
 	}
 
 	@Override
 	public ServiceResponse<Application> update(Tenant tenant, String name, Application updatingApplication) {
+		name = DEFAULT_APPLICATION_ALIAS.equals(name) ? tenant.getDomainName() : name;
+		if(Optional.ofNullable(updatingApplication).isPresent()) {
+			if(isDefaultApplication(updatingApplication, tenant)) {
+				updatingApplication.setName(tenant.getDomainName());
+			}
+		}
+		
 		ServiceResponse<Application> response = basicValidate(tenant, updatingApplication);
 
 		if (Optional.ofNullable(response).isPresent())
@@ -167,6 +197,12 @@ public class ApplicationServiceImpl implements ApplicationService {
                     .build();
 
 		Application appFromDB = getByApplicationName(tenant, name).getResult();
+		if(Optional.ofNullable(appFromDB).isPresent()) {
+			if(isDefaultApplication(appFromDB, tenant)) {
+				appFromDB.setName(tenant.getDomainName());
+			}
+		}
+		
 		if (!Optional.ofNullable(appFromDB).isPresent()) {
 			return ServiceResponseBuilder.<Application>error()
                     .withMessage(Validations.APPLICATION_DOES_NOT_EXIST.getCode())
@@ -183,6 +219,9 @@ public class ApplicationServiceImpl implements ApplicationService {
 					.build();
 		}
 
+		
+
+		
 		Application updated = applicationRepository.save(appFromDB);
 
 		LOGGER.info("Application updated. Name: {}", appFromDB.getName(), tenant.toURI(), tenant.getLogLevel());
@@ -204,6 +243,8 @@ public class ApplicationServiceImpl implements ApplicationService {
                     .build();
 		}
 
+		name = DEFAULT_APPLICATION_ALIAS.equals(name) ? tenant.getDomainName() : name;
+		
 		Application application = applicationRepository.findByTenantAndName(tenant.getId(), name);
 
 		if (!Optional.ofNullable(application).isPresent()) {
@@ -248,7 +289,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
 	@Override
 	public ServiceResponse<List<Application>> findAll(Tenant tenant) {
-		List<Application> all = applicationRepository.findAllByTenant(tenant.getId());
+		List<Application> all = applicationRepository.findAllByTenant(tenant.getId());	
 		return ServiceResponseBuilder.<List<Application>>ok().withResult(all).build();
 	}
 
@@ -264,6 +305,8 @@ public class ApplicationServiceImpl implements ApplicationService {
 					.withMessage(Validations.APPLICATION_NAME_IS_NULL.getCode())
 					.build();
 		}
+		
+		name = DEFAULT_APPLICATION_ALIAS.equals(name) ? tenant.getDomainName() : name;
 
 		Tenant tenantFromDB = tenantRepository.findByName(tenant.getName());
 
