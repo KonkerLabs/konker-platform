@@ -69,6 +69,13 @@ public class ApplicationRestController extends AbstractRestController implements
         if (!applicationResponse.isOk()) {
             throw new BadServiceResponseException(user, applicationResponse, validationsCode);
         } else {
+    		for (Application applic : applicationResponse.getResult()) {
+    			if(applicationService.isDefaultApplication(applic,tenant)) {
+    				applic.setName(ApplicationService.DEFAULT_APPLICATION_ALIAS);
+    				break;
+    			}
+    		}
+        	
             return new ApplicationVO().apply(applicationResponse.getResult());
         }
 
@@ -89,6 +96,9 @@ public class ApplicationRestController extends AbstractRestController implements
         if (!applicationResponse.isOk()) {
             throw new NotFoundResponseException(user, applicationResponse);
         } else {
+			if(applicationService.isDefaultApplication(applicationResponse.getResult(),tenant)) {
+				applicationResponse.getResult().setName(ApplicationService.DEFAULT_APPLICATION_ALIAS);
+   			}
             return new ApplicationVO().apply(applicationResponse.getResult());
         }
 
