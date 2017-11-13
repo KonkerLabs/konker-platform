@@ -174,7 +174,7 @@ public class EventRouteController implements ApplicationContextAware {
         Application application = applicationService.getByApplicationName(tenant, applicationName).getResult();
 
         EventRouteForm route = new EventRouteForm();
-        ModelAndView model = null;
+        ModelAndView model;
 
         switch (incomingScheme) {
             case Device.URI_SCHEME:
@@ -196,7 +196,7 @@ public class EventRouteController implements ApplicationContextAware {
         Application application = applicationService.getByApplicationName(tenant, applicationName).getResult();
 
         EventRouteForm route = new EventRouteForm();
-        ModelAndView model = null;
+        ModelAndView model;
 
         switch (outgoingScheme) {
             case Device.URI_SCHEME:
@@ -207,6 +207,9 @@ public class EventRouteController implements ApplicationContextAware {
                 break;
             case RestDestination.URI_SCHEME:
                 model = new ModelAndView("routes/rest-outgoing", "route", route);
+                break;
+            case AmazonKinesis.URI_SCHEME:
+                model = new ModelAndView("routes/amazon-kinesis-outgoing", "route", route);
                 break;
             default:
                 return new ModelAndView("common/empty");
