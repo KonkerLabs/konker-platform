@@ -25,6 +25,9 @@ public class Event {
 
     @JsonView(EventJsonView.class)
     private EventActor outgoing;
+    
+    @JsonView(EventJsonView.class)
+    private EventGeolocation geolocation;
 
     @JsonView(EventJsonView.class)
     private String payload;
@@ -76,5 +79,18 @@ public class Event {
         private Long timestamp;
         private EventActor incoming;
         private String payload;
+    }
+    
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class EventGeolocation  {
+
+        private Double lat;
+        private Double lon;
+        private Long hdop;
+        private Double elev;
+
     }
 }

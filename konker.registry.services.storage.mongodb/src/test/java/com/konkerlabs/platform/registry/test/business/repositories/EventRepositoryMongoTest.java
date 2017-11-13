@@ -5,6 +5,7 @@ import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.Event.EventGeolocation;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
@@ -103,6 +104,13 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
                                 .deviceGuid(deviceGuid)
                                 .tenantDomain(tenant.getDomainName())
                                 .build())
+                .geolocation(
+                		EventGeolocation.builder()
+                			.lat(new Double(-23.5746571))
+                			.lon(new Double(-46.6910183))
+                			.hdop(new Long(1))
+                			.elev(new Double(3.66))
+                			.build())
                 .timestamp(firstEventTimestamp)
                 .payload(incomingPayload).build();
 
@@ -116,6 +124,14 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
             incoming.put("applicationName",incomingEvent.getIncoming().getApplicationName());
             incoming.put("channel",incomingEvent.getIncoming().getChannel());
             return incoming;
+        }).get());
+        persisted.put("geolocation", ((Supplier<DBObject>) () -> {
+        	DBObject geolocation = new BasicDBObject();
+        	geolocation.put("lat", incomingEvent.getGeolocation().getLat());
+        	geolocation.put("lon", incomingEvent.getGeolocation().getLon());
+        	geolocation.put("hdop", incomingEvent.getGeolocation().getHdop());
+        	geolocation.put("elev", incomingEvent.getGeolocation().getElev());
+        	return geolocation;
         }).get());
         persisted.put("payload", incomingEvent.getPayload());
     }
