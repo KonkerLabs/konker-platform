@@ -270,10 +270,14 @@ public class EventRouteServiceImpl implements EventRouteService {
                     return validations;
                 }
                 if (!StringUtils.hasText(kinesisProperties.getStreamName())) {
-                    validations.put(AmazonKinesis.Validations.AMAZON_KINESIS_NAME_IS_STREAM_NAME.getCode(), null);
+                    validations.put(AmazonKinesis.Validations.AMAZON_KINESIS_INVALID_STREAM_NAME.getCode(), null);
                     return validations;
                 }
                 if (!StringUtils.hasText(kinesisProperties.getRegion())) {
+                    validations.put(AmazonKinesis.Validations.AMAZON_KINESIS_INVALID_REGION.getCode(), null);
+                    return validations;
+                }
+                if (!kinesisProperties.getRegion().matches("[a-z]{2}-[a-z]{4,20}-[0-9]")) {
                     validations.put(AmazonKinesis.Validations.AMAZON_KINESIS_INVALID_REGION.getCode(), null);
                     return validations;
                 }

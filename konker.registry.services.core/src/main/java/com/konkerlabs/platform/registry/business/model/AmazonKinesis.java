@@ -1,21 +1,30 @@
 package com.konkerlabs.platform.registry.business.model;
 
 import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
+import com.konkerlabs.platform.registry.business.services.DeviceModelServiceImpl;
 import lombok.Builder;
 import lombok.Data;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.text.MessageFormat;
+import java.util.HashMap;
 import java.util.Map;
 
 @Data
 @Builder
 public class AmazonKinesis implements URIDealer {
 
-	public enum Validations {
+    private Logger LOGGER = LoggerFactory.getLogger(this.getClass());
+
+    public final static String SECRET_KEY = "secret";
+
+    public enum Validations {
 		AMAZON_KINESIS_INVALID_KEY("service.event_route.amazonkinesis.invalid_key"),
         AMAZON_KINESIS_INVALID_SECRET("service.event_route.amazonkinesis.invalid_secret"),
         AMAZON_KINESIS_INVALID_REGION("service.event_route.amazonkinesis.invalid_region"),
-		AMAZON_KINESIS_NAME_IS_STREAM_NAME("service.event_route.amazonkinesis.invalid_stream_name");
+		AMAZON_KINESIS_INVALID_STREAM_NAME("service.event_route.amazonkinesis.invalid_stream_name"),
+        AMAZON_KINESIS_INVALID_SHARD_COUNT("service.event_route.amazonkinesis.invalid_shard_count");
 
 		public String getCode() {
 			return code;
@@ -30,10 +39,11 @@ public class AmazonKinesis implements URIDealer {
 	
 	private Tenant tenant;
     private Application application;
-    private String region;
-    private String streamName;
+
     private String key;
     private String secret;
+    private String region;
+    private String streamName;
 
 	public static final String URI_SCHEME = "amazonKinesis";
 
@@ -54,9 +64,19 @@ public class AmazonKinesis implements URIDealer {
 
 	public void setValues(Map<String, String> values) {
         this.key = values.get("key");
-        this.secret = values.get("secret");
+        this.secret = values.get(SECRET_KEY);
         this.streamName = values.get("streamName");
 	    this.region = values.get("region");
-	}
+    }
+
+    public Map<String,String> getValues() {
+        Map<String, String> values = new HashMap<>();
+        values.put("key", this.getKey());
+        values.put(SECRET_KEY, this.getSecret());
+        values.put("streamName", this.getStreamName());
+        values.put("region", this.getRegion());
+
+        return values;
+    }
 
 }
