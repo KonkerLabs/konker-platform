@@ -85,7 +85,7 @@
                                data-th-text="#{routes.form.outgoing.type.model_location}"
                                value="modelLocation" data-th-checked="*{outgoingScheme == 'modelLocation'}"></input>
                     </label>
-                    <label class="radio-inline">
+                    <label class="radio-inline" th:if="${kinesisRouteEnabled}">
                         <input type="radio" name="outgoingScheme"
                                data-th-text="#{routes.form.outgoing.type.amazon_kinesis}"
                                value="amazonKinesis" data-th-checked="*{outgoingScheme == 'amazonKinesis'}"></input>
