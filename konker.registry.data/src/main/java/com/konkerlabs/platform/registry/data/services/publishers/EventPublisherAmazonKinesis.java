@@ -64,7 +64,10 @@ public class EventPublisherAmazonKinesis implements EventPublisher {
 
             PutRecordRequest putRecordRequest = new PutRecordRequest();
             putRecordRequest.setData(ByteBuffer.wrap(outgoingEvent.getPayload().getBytes()));
-            putRecordRequest.setPartitionKey(String.format("%s-%s", outgoingEvent.getIncoming().getChannel(), outgoingEvent.getTimestamp().toEpochMilli()));
+            putRecordRequest.setPartitionKey(String.format("%s-%s-%s",
+                    outgoingEvent.getIncoming().getChannel(),
+                    outgoingEvent.getIncoming().getDeviceGuid(),
+                    outgoingEvent.getTimestamp().toEpochMilli()));
             putRecordRequest.setStreamName(kinesisProperties.getStreamName());
 
             PutRecordResult result = kinesisClient.putRecord(putRecordRequest);
