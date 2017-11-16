@@ -4,6 +4,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 
+import com.konkerlabs.platform.registry.idm.domain.service.MongoTokenStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,9 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 	private static final Logger LOGGER = LoggerFactory.getLogger(OAuth2Config.class);
 
 	@Autowired
+	private MongoTokenStore mongoTokenStore;
+
+	@Autowired
 	private AuthenticationManager authenticationManager;
 	
 	@Autowired
@@ -57,7 +61,7 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 		
 		
 		endpoints.authenticationManager(authenticationManager)
-				.tokenStore(tokenStore())
+				.tokenStore(mongoTokenStore)
 				.tokenEnhancer(tokenEnhancerChain)
 				.allowedTokenEndpointRequestMethods(HttpMethod.GET, HttpMethod.POST);
 	}
@@ -104,15 +108,10 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 	}
 
 	@Bean
-	public TokenStore tokenStore() {
-		return new JwtTokenStore(accessTokenConverter());
-	}
-	
-	@Bean
 	@Primary
 	public DefaultTokenServices tokenServices() {
 		DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
-		defaultTokenServices.setTokenStore(tokenStore());
+		defaultTokenServices.setTokenStore(mongoTokenStore);
 		defaultTokenServices.setSupportRefreshToken(true);
 		return defaultTokenServices;
 	}

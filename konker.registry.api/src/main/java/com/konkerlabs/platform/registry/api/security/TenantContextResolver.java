@@ -1,19 +1,20 @@
 package com.konkerlabs.platform.registry.api.security;
 
+import com.konkerlabs.platform.registry.business.model.OauthClientDetails;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.User;
 import org.springframework.beans.factory.SmartFactoryBean;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component("tenant")
 public class TenantContextResolver implements SmartFactoryBean<Tenant> {
 
+    @Autowired
+    private OauthClientDetails oauthClientDetails;
+
     @Override
     public Tenant getObject() throws Exception {
-        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return User.class.cast(userDetails).getTenant();
+        return oauthClientDetails.getTenant();
     }
 
     @Override
@@ -35,4 +36,5 @@ public class TenantContextResolver implements SmartFactoryBean<Tenant> {
     public boolean isEagerInit() {
         return false;
     }
+
 }

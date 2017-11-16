@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import com.konkerlabs.platform.registry.business.model.OauthClientDetails;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -56,7 +57,7 @@ public class UserRestController implements InitializingBean {
     private RoleService roleService;
 
     @Autowired
-    private User user;
+    private OauthClientDetails user;
 
     private Set<String> validationsCode = new HashSet<>();
 

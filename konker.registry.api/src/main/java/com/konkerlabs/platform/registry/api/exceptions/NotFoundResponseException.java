@@ -3,6 +3,7 @@ package com.konkerlabs.platform.registry.api.exceptions;
 import java.util.Locale;
 import java.util.Map;
 
+import com.konkerlabs.platform.registry.business.model.OauthClientDetails;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 
@@ -14,7 +15,7 @@ public class NotFoundResponseException extends Exception {
 
     private Locale locale;
 
-    public NotFoundResponseException(User user, ServiceResponse<?> serviceResponse) {
+    public NotFoundResponseException(OauthClientDetails user, ServiceResponse<?> serviceResponse) {
         this.responseMessages = serviceResponse != null ? serviceResponse.getResponseMessages() : null;
         this.locale = user.getLanguage().getLocale();
     }

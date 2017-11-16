@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.api.test.config;
 
+import com.konkerlabs.platform.registry.business.model.OauthClientDetails;
 import com.konkerlabs.platform.registry.business.services.api.*;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
@@ -26,14 +27,16 @@ public class WebTestConfiguration {
     }
 
     @Bean
-    public User user() {
-        return User.builder()
+    public OauthClientDetails user() {
+        User user = User.builder()
                 .email("user@domain.com")
                 .zoneId(TimeZone.AMERICA_SAO_PAULO)
                 .language(Language.EN)
                 .avatar("default.jpg")
                 .dateFormat(DateFormat.YYYYMMDD)
                 .tenant(tenant()).build();
+
+        return OauthClientDetails.builder().build().setUserProperties(user);
     }
 
     @Bean

@@ -23,7 +23,7 @@ public abstract class AbstractRestController {
     private DeviceModelService deviceModelService;
 
     @Autowired
-    protected User user;
+    protected OauthClientDetails user;
 
     protected Application getApplication(String applicationId) throws BadServiceResponseException, NotFoundResponseException {
 
