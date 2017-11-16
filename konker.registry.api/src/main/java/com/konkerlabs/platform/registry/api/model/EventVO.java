@@ -28,8 +28,11 @@ public class EventVO implements SerializableVO<Event, EventVO> {
 
     @ApiModelProperty(value = "outgoing", position = 2)
     private EventActorVO outgoing;
-
-    @ApiModelProperty(value = "payload", position = 3, example = "{\"temperature\": 18, \"unit\": \"celsius\"}")
+    
+    @ApiModelProperty(value = "geolocation", position = 3)
+    private EventGeolocationVO geolocation;
+    
+    @ApiModelProperty(value = "payload", position = 4, example = "{\"temperature\": 18, \"unit\": \"celsius\"}")
     private Object payload;
 
     @Override
@@ -39,6 +42,7 @@ public class EventVO implements SerializableVO<Event, EventVO> {
         vo.setTimestamp(t.getTimestamp().toString());
         vo.setIncoming(new EventActorVO().apply(t.getIncoming()));
         vo.setOutgoing(new EventActorVO().apply(t.getOutgoing()));
+        vo.setGeolocation(new EventGeolocationVO().apply(t.getGeolocation()));
         vo.setPayload(JSON.parse(t.getPayload()));
 
         return vo;

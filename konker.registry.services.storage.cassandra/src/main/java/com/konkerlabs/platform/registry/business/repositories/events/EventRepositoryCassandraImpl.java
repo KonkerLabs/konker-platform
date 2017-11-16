@@ -25,6 +25,7 @@ import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Event.EventActor;
+import com.konkerlabs.platform.registry.business.model.Event.EventGeolocation;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.repositories.config.CassandraRegistryConfig;
 import com.konkerlabs.platform.registry.business.repositories.events.api.BaseEventRepositoryImpl;
@@ -312,6 +313,12 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
                                .timestamp(Instant.ofEpochMilli(row.getLong("timestamp") / 1000000))
                                .incoming(incomingActor)
                                .outgoing(outgoingActor)
+                               .geolocation(EventGeolocation.builder()
+                            		   .lat(row.getDouble("geo_lat"))
+                            		   .lon(row.getDouble("geo_lon"))
+                            		   .hdop(row.getLong("geo_hdop"))
+                            		   .elev(row.getDouble("geo_elev"))
+                            		   .build())
                                .payload(row.getString("payload"))
                                .build();
 
