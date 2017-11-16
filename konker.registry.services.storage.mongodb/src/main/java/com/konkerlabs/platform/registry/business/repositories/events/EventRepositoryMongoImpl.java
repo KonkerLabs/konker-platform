@@ -77,6 +77,7 @@ public class EventRepositoryMongoImpl extends BaseEventRepositoryImpl {
 
         toSave.removeField("ts");
         toSave.put("ts", event.getTimestamp().toEpochMilli());
+        toSave.put("ingestedTimestamp", event.getIngestedTimestamp());
         toSave.put(Type.INCOMING.getActorFieldName(), incoming);
         toSave.put("payload", event.getPayload());
         
@@ -195,6 +196,7 @@ public class EventRepositoryMongoImpl extends BaseEventRepositoryImpl {
                 		}).get())
                 .payload(dbObject.get("payload").toString())
                 .timestamp(Instant.ofEpochMilli((Long) dbObject.get("ts")))
+                .ingestedTimestamp(Instant.ofEpochMilli((Long) dbObject.get("ingestedTimestamp")))
                 .build())
         .collect(Collectors.toList());
 

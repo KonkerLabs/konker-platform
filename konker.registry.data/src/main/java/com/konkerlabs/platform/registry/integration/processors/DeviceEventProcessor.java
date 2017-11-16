@@ -85,6 +85,7 @@ public class DeviceEventProcessor {
                                 .build()
                 )
                 .timestamp(timestamp)
+                .ingestedTimestamp(timestamp)
                 .payload(payload)
                 .build();
         if (device.isActive()) {

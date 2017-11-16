@@ -19,6 +19,8 @@ public class Event {
     private Long epochTime;
 
     private Instant timestamp;
+    
+    private Instant ingestedTimestamp;
 
     @JsonView(EventJsonView.class)
     private EventActor incoming;

@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry.data.services;
 
 import java.text.MessageFormat;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
@@ -56,7 +57,10 @@ public class DeviceLogEventServiceImpl implements DeviceLogEventService {
     private JsonParsingService jsonParsingService;
     
     private Pattern geoPattern = Pattern.compile("^([-+]?\\d{1,3}[.]\\d+)");
+    private Pattern integerPattern = Pattern.compile("^[0-9]*$") ;
+    private Pattern decimalPattern = Pattern.compile("^[-+]?[0-9]*[.][0-9]*$") ;
     private static final String EVENT_GEO_INVALID = "Incoming event has invalid geolocation data: [Field: {0}] - [Value: {1}]";
+    private static final String EVENT_TIME_INVALID = "Incoming event has invalid timestamp data: [Field: {0}] - [Value: {1}]";
 
     @PostConstruct
     public void init() {
@@ -81,6 +85,7 @@ public class DeviceLogEventServiceImpl implements DeviceLogEventService {
 
                 jedisTaskService.registerLastEventTimestamp(event);
                 appendEventGeolocation(event, device);
+                appendCreationTimestamp(event, device);
 
                 if (schemaResponse.isOk()) {
                     return ServiceResponseBuilder.<Event>ok()
@@ -119,59 +124,95 @@ public class DeviceLogEventServiceImpl implements DeviceLogEventService {
     	
 	}
 
+	private void appendCreationTimestamp(Event event, Device device) {
+		try {
+			Map<String, JsonPathData> data = jsonParsingService.toFlatMap(event.getPayload());
+			
+			Instant tomorrow = Instant.now().plus(Duration.ofDays(1));
+			Instant aYearAgo = Instant.now().minus(Duration.ofDays(365));
+			Instant creationTime = data.containsKey("_ts") && integerPattern.matcher(data.get("_ts").getValue().toString()).matches() 
+									? Instant.ofEpochMilli(new Long(data.get("_ts").getValue().toString())) 
+									: null;
+			
+			if (Optional.ofNullable(creationTime).isPresent() 
+					&& creationTime.isAfter(aYearAgo) 
+					&& creationTime.isBefore(tomorrow)) {
+				
+				event.setTimestamp(creationTime);
+			} else {
+				event.setTimestamp(event.getIngestedTimestamp());
+				LOGGER.warn(MessageFormat.format(EVENT_TIME_INVALID, "_ts", data.get("_ts").getValue().toString()),
+						device.toURI(),
+						device.getLogLevel());
+			}
+			
+		} catch (JsonProcessingException e) {
+			LOGGER.error("Error to append event creation time", e);
+		}
+	}
+
 	private Double parseLat(Map<String, JsonPathData> data) {
-		return (Double) data.get("_lat").getValue();
+		return new Double(data.get("_lat").getValue().toString());
 	}
 	
 	private Double parseLon(Map<String, JsonPathData> data) {
-		return (Double) data.get("_lon").getValue();
+		return new Double(data.get("_lon").getValue().toString());
 	}
 	
 	private Long parseHdop(Map<String, JsonPathData> data, Device device) {
-		Object hdopObj = data.containsKey("_hdop") ? data.get("_hdop").getValue() : null;
-		
-		if (hdopObj instanceof String) {
-			LOGGER.warn(MessageFormat.format(EVENT_GEO_INVALID, "_hdop", hdopObj.toString()),
+		if (!data.containsKey("_hdop")) {
+			
+			return null;
+		} else if (data.containsKey("_hdop") 
+				&& integerPattern.matcher(data.get("_hdop").getValue().toString()).matches()) {
+			
+			return new Long(data.get("_hdop").getValue().toString());
+		} else {
+			LOGGER.warn(MessageFormat.format(EVENT_GEO_INVALID, "_hdop", data.get("_hdop").getValue()),
 					device.toURI(),
-            		device.getLogLevel());
+					device.getLogLevel());
+			
 			return null;
 		}
 		
-		return (Long) Optional.ofNullable(hdopObj).orElse(null);
 	}
 	
 	private Double parseElev(Map<String, JsonPathData> data, Device device) {
-		Object elevObj = data.containsKey("_elev") ? data.get("_elev").getValue() : null;
-		
-		if (elevObj instanceof String) {
-			LOGGER.warn(MessageFormat.format(EVENT_GEO_INVALID, "_elev", elevObj.toString()),
+		if (!data.containsKey("_elev")) {
+			
+			return null;
+		} else if (data.containsKey("_elev") 
+				&& decimalPattern.matcher(data.get("_elev").getValue().toString()).matches()) {
+			
+			return new Double(data.get("_elev").getValue().toString());
+		} else {
+			LOGGER.warn(MessageFormat.format(EVENT_GEO_INVALID, "_elev", data.get("_elev").getValue()),
 					device.toURI(),
-            		device.getLogLevel());
+					device.getLogLevel());
+			
 			return null;
 		}
-		
-		return (Double) Optional.ofNullable(elevObj).orElse(null);
 	}
 
 	private boolean isValidGeolocation(Map<String, JsonParsingService.JsonPathData> data, Device device) {
-		Object latObj = data.containsKey("_lat") ? data.get("_lat").getValue() : null;
-		Object lonObj = data.containsKey("_lon") ? data.get("_lon").getValue() : null;
+		if (!data.containsKey("_lat") || !data.containsKey("_lon")) {
+			return false;
+		}
 		
-		if (latObj instanceof String) {
+		Object latObj = data.get("_lat").getValue();
+		Object lonObj = data.get("_lon").getValue();
+		
+		if (!decimalPattern.matcher(latObj.toString()).matches()) {
 			LOGGER.warn(MessageFormat.format(EVENT_GEO_INVALID, "_lat", latObj.toString()),
 					device.toURI(),
             		device.getLogLevel());
 			return false;
 		} 
 		
-		if (lonObj instanceof String) {
+		if (!decimalPattern.matcher(lonObj.toString()).matches()) {
 			LOGGER.warn(MessageFormat.format(EVENT_GEO_INVALID, "_lon", lonObj.toString()),
 					device.toURI(),
             		device.getLogLevel());
-			return false;
-		}
-		
-		if (latObj == null || lonObj == null) {
 			return false;
 		}
 		
