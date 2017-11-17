@@ -90,6 +90,28 @@ public class EventRouteRestController extends AbstractRestController implements 
             "        \"transformationGuid\": null,\n" +
             "        \"active\": true\n" +
             "}\n" +
+            "```\n\n" +
+            "### Device to Amazon Kinesis\n\n" +
+            "```\n" +
+            "{\n" +
+            "        \"name\": \"route\",\n" +
+            "        \"description\": \"\",\n" +
+            "        \"incoming\": {\n" +
+            "          \"type\": \"DEVICE\",\n" +
+            "          \"guid\": \"818599ad-3502-4e70-a852-fc7af8e0a9f3\",\n" +
+            "          \"channel\": \"temperature\"\n" +
+            "        },\n" +
+            "        \"outgoing\": {\n" +
+            "          \"type\": \"AMAZON_KINESIS\",\n" +
+            "          \"key\": \"key\",\n" +
+            "          \"secret\": \"secret\",\n" +
+            "          \"region\": \"us-west-1\",\n" +
+            "          \"StreamName\": \"stream\"\n" +
+            "        },\n" +
+            "        \"filteringExpression\": \"\",\n" +
+            "        \"transformationGuid\": null,\n" +
+            "        \"active\": true\n" +
+            "}\n" +
             "```\n\n" ;
 
     @GetMapping(path = "/")
@@ -281,6 +303,20 @@ public class EventRouteRestController extends AbstractRestController implements 
             routeActor.setDisplayName(MessageFormat.format("{0} @ {1}", deviceModel.getName(), location.getName()));
             routeActor.setUri(DeviceModelLocation.builder().tenant(tenant).deviceModel(deviceModel).location(location).build().toURI());
             routeActor.setData(new HashMap<String, String>() {{ put(EventRoute.DEVICE_MQTT_CHANNEL, modelLocationActorForm.getChannel()); }} );
+
+            return routeActor;
+        } else if (RouteActorType.AMAZON_KINESIS.name().equalsIgnoreCase(actorVO.getType())) {
+            RouteAmazonKinesisActorVO amazonKinesisActorForm = (RouteAmazonKinesisActorVO) actorVO;
+            AmazonKinesis kinesisProperties = AmazonKinesis.builder().tenant(tenant)
+                    .key(amazonKinesisActorForm.getKey())
+                    .secret(amazonKinesisActorForm.getSecret())
+                    .region(amazonKinesisActorForm.getRegion())
+                    .streamName(amazonKinesisActorForm.getStreamName())
+                    .build();
+
+            routeActor.setDisplayName(MessageFormat.format("{0} @ {1}", amazonKinesisActorForm.getStreamName(), amazonKinesisActorForm.getRegion()));
+            routeActor.setUri(kinesisProperties.toURI());
+            routeActor.setData(kinesisProperties.getValues());
 
             return routeActor;
         }

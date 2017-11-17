@@ -13,6 +13,7 @@ import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertSe
 import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertType;
 import com.konkerlabs.platform.registry.business.model.HealthAlert.Solution;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.services.ApplicationServiceImpl;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.HealthAlertService;
 import com.konkerlabs.platform.registry.business.services.api.HealthAlertService.Validations;
@@ -61,6 +62,10 @@ public class ApplicationRestControllerTest extends WebLayerTestContext {
     @Autowired
     private Tenant tenant;
 
+    private Application defaultApplication;
+    
+    private Application application0;
+
     private Application application1;
 
     private Application application2;
@@ -71,6 +76,22 @@ public class ApplicationRestControllerTest extends WebLayerTestContext {
 
     @Before
     public void setUp() {
+        defaultApplication = Application.builder()
+        		.name(ApplicationServiceImpl.DEFAULT_APPLICATION_ALIAS)
+        		.friendlyName("Smart Frig")
+        		.description("Description of smartff")
+        		.qualifier(tenant.getName())
+        		.registrationDate(Instant.now())
+        		.build();
+    	
+        application0 = Application.builder()
+        		.name(tenant.getDomainName())
+        		.friendlyName("Smart Frig")
+        		.description("Description of smartff")
+        		.qualifier(tenant.getName())
+        		.registrationDate(Instant.now())
+        		.build();
+    	
         application1 = Application.builder()
         		.name("smartff")
         		.friendlyName("Smart Frig")
@@ -121,6 +142,7 @@ public class ApplicationRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldListApplications() throws Exception {
         List<Application> applications = new ArrayList<>();
+        applications.add(application0);
         applications.add(application1);
         applications.add(application2);
 
@@ -130,6 +152,9 @@ public class ApplicationRestControllerTest extends WebLayerTestContext {
         				.<List<Application>>ok()
                 		.withResult(applications)
                 		.build());
+        
+        when(applicationService.isDefaultApplication(application0, tenant))
+    	.thenReturn(true);
 
         getMockMvc()
         .perform(MockMvcRequestBuilders
@@ -141,13 +166,17 @@ public class ApplicationRestControllerTest extends WebLayerTestContext {
         .andExpect(jsonPath("$.code", is(HttpStatus.OK.value())))
         .andExpect(jsonPath("$.status", is("success")))
         .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
-        .andExpect(jsonPath("$.result", hasSize(2)))
-        .andExpect(jsonPath("$.result[0].name", is("smartff")))
+        .andExpect(jsonPath("$.result", hasSize(3)))
+        .andExpect(jsonPath("$.result[0].name", is(ApplicationServiceImpl.DEFAULT_APPLICATION_ALIAS)))
         .andExpect(jsonPath("$.result[0].friendlyName", is("Smart Frig")))
         .andExpect(jsonPath("$.result[0].description", is("Description of smartff")))
-        .andExpect(jsonPath("$.result[1].name", is("konkerff")))
-        .andExpect(jsonPath("$.result[1].friendlyName", is("Konker Frig")))
-        .andExpect(jsonPath("$.result[1].description", is("Description of konkerff")));
+        .andExpect(jsonPath("$.result[1].name", is("smartff")))
+        .andExpect(jsonPath("$.result[1].friendlyName", is("Smart Frig")))
+        .andExpect(jsonPath("$.result[1].description", is("Description of smartff")))
+        .andExpect(jsonPath("$.result[2].name", is("konkerff")))
+        .andExpect(jsonPath("$.result[2].friendlyName", is("Konker Frig")))
+        .andExpect(jsonPath("$.result[2].description", is("Description of konkerff")));
+        
     }
 
     @Test
@@ -189,6 +218,31 @@ public class ApplicationRestControllerTest extends WebLayerTestContext {
         .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
         .andExpect(jsonPath("$.result").isMap())
         .andExpect(jsonPath("$.result.name", is("smartff")))
+        .andExpect(jsonPath("$.result.friendlyName", is("Smart Frig")))
+        .andExpect(jsonPath("$.result.description", is("Description of smartff")));
+    }
+
+    @Test
+    public void shouldReadDefaultApplicationByName() throws Exception {
+        when(applicationService.getByApplicationName(tenant, defaultApplication.getName()))
+        	.thenReturn(
+        			ServiceResponseBuilder
+        				.<Application>ok()
+        				.withResult(defaultApplication)
+        				.build());
+
+        getMockMvc()
+        .perform(MockMvcRequestBuilders
+        		.get("/applications/" + defaultApplication.getName())
+        		.contentType("application/json")
+        		.accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType("application/json;charset=UTF-8"))
+        .andExpect(jsonPath("$.code", is(HttpStatus.OK.value())))
+        .andExpect(jsonPath("$.status", is("success")))
+        .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+        .andExpect(jsonPath("$.result").isMap())
+        .andExpect(jsonPath("$.result.name", is(ApplicationServiceImpl.DEFAULT_APPLICATION_ALIAS)))
         .andExpect(jsonPath("$.result.friendlyName", is("Smart Frig")))
         .andExpect(jsonPath("$.result.description", is("Description of smartff")));
     }

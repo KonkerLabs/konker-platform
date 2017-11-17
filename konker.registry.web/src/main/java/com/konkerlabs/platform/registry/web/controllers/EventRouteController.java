@@ -2,6 +2,7 @@ package com.konkerlabs.platform.registry.web.controllers;
 
 import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.services.api.*;
+import com.konkerlabs.platform.registry.config.AmazonConfig;
 import com.konkerlabs.platform.registry.web.forms.EventRouteForm;
 
 import org.springframework.beans.BeansException;
@@ -58,6 +59,8 @@ public class EventRouteController implements ApplicationContextAware {
     @Autowired
     private LocationSearchService locationSearchService;
     @Autowired
+    private AmazonConfig amazonConfig;
+    @Autowired
     private ApplicationService applicationService;
     @Autowired
     private Tenant tenant;
@@ -84,6 +87,7 @@ public class EventRouteController implements ApplicationContextAware {
 
         ModelAndView model = new ModelAndView("routes/form")
             .addObject("route", routeForm)
+            .addObject("kinesisRouteEnabled", amazonConfig.isKinesisRouteEnabled())
             .addObject("action", MessageFormat.format("/routes/{0}/save", application.getName()));
 
         return addCombos(tenant, application, model);
@@ -117,7 +121,8 @@ public class EventRouteController implements ApplicationContextAware {
         ModelAndView model = new ModelAndView(
                         "routes/show",
                         "route", new EventRouteForm().fillFrom(eventRouteService.getByGUID(tenant, application, routeGUID).getResult())
-                    );
+                    )
+                .addObject("kinesisRouteEnabled", amazonConfig.isKinesisRouteEnabled());
 
         return addCombos(tenant, application, model);
     }
@@ -141,6 +146,7 @@ public class EventRouteController implements ApplicationContextAware {
 
         ModelAndView model = new ModelAndView("routes/form")
             .addObject("route",new EventRouteForm().fillFrom(eventRouteService.getByGUID(tenant, application, routeGUID).getResult()))
+            .addObject("kinesisRouteEnabled", amazonConfig.isKinesisRouteEnabled())
             .addObject("action", MessageFormat.format("/routes/{0}/{1}", applicationName, routeGUID))
             .addObject("method", "put");
 
@@ -174,7 +180,7 @@ public class EventRouteController implements ApplicationContextAware {
         Application application = applicationService.getByApplicationName(tenant, applicationName).getResult();
 
         EventRouteForm route = new EventRouteForm();
-        ModelAndView model = null;
+        ModelAndView model;
 
         switch (incomingScheme) {
             case Device.URI_SCHEME:
@@ -196,7 +202,7 @@ public class EventRouteController implements ApplicationContextAware {
         Application application = applicationService.getByApplicationName(tenant, applicationName).getResult();
 
         EventRouteForm route = new EventRouteForm();
-        ModelAndView model = null;
+        ModelAndView model;
 
         switch (outgoingScheme) {
             case Device.URI_SCHEME:
@@ -207,6 +213,9 @@ public class EventRouteController implements ApplicationContextAware {
                 break;
             case RestDestination.URI_SCHEME:
                 model = new ModelAndView("routes/rest-outgoing", "route", route);
+                break;
+            case AmazonKinesis.URI_SCHEME:
+                model = new ModelAndView("routes/amazon-kinesis-outgoing", "route", route);
                 break;
             default:
                 return new ModelAndView("common/empty");
@@ -273,4 +282,5 @@ public class EventRouteController implements ApplicationContextAware {
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
+
 }

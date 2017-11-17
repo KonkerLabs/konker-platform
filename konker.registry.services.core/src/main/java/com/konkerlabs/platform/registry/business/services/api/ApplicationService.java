@@ -7,6 +7,9 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 
 public interface ApplicationService {
 
+	public static final String DEFAULT_APPLICATION_ALIAS = "default";
+	
+	
 	enum Validations {
 		APPLICATION_NULL("service.application.null"),
 		APPLICATION_ALREADY_REGISTERED("service.application.already.registered"),
@@ -43,6 +46,8 @@ public interface ApplicationService {
 		}
 	}
 
+	public boolean isDefaultApplication(Application application,Tenant tenant);
+	
    	/**
 	 * Persists a new Application.
 	 *
