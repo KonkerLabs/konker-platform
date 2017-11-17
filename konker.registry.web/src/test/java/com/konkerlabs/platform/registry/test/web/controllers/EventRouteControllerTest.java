@@ -341,6 +341,13 @@ public class EventRouteControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    public void shouldRenderAmazonKinesisViewFragment() throws Exception {
+        getMockMvc().perform(get("/routes/{0}/outgoing/{1}", application.getName(), "amazonKinesis"))
+                .andExpect(view().name("routes/amazon-kinesis-outgoing"))
+                .andExpect(model().attribute("route", new EventRouteForm()));
+    }
+
+    @Test
     public void shouldRenderEmptyBodyWhenSchemeIsUnknown() throws Exception {
         getMockMvc().perform(get("/routes/{0}/outgoing/{1}", application.getName(), "unknown_scheme"))
                 .andExpect(view().name("common/empty"));

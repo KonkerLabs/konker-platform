@@ -21,8 +21,6 @@ import com.konkerlabs.platform.registry.test.data.base.*;
 import com.konkerlabs.platform.utilities.config.UtilitiesConfig;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 
-import ch.lambdaj.function.matcher.Predicate;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;

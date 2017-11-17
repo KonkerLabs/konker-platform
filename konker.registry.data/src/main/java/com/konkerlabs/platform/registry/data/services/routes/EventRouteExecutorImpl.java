@@ -60,24 +60,24 @@ public class EventRouteExecutorImpl implements EventRouteExecutor {
     @Override
     public Future<List<Event>> execute(Event event, Device device) {
 
-        List<Event> outEvents = new ArrayList<Event>();
+        List<Event> outEvents = new ArrayList<>();
 
         ServiceResponse<List<EventRoute>> serviceRoutes = eventRouteService.getAll(device.getTenant(), device.getApplication());
         if (!serviceRoutes.isOk()) {
             LOGGER.error("Error listing application events routes", device.toURI(), device.getTenant().getLogLevel());
-            return new AsyncResult<List<Event>>(outEvents);
+            return new AsyncResult<>(outEvents);
         }
 
         List<EventRoute> eventRoutes = serviceRoutes.getResult();
         if (eventRoutes.isEmpty()) {
-            return new AsyncResult<List<Event>>(outEvents);
+            return new AsyncResult<>(outEvents);
         }
 
-        eventRoutes.parallelStream().forEach((eventRoute) -> {
-            processEventRoute(event, device, outEvents, eventRoute);
-        });
+        eventRoutes.parallelStream().forEach((eventRoute) ->
+            processEventRoute(event, device, outEvents, eventRoute)
+        );
 
-        return new AsyncResult<List<Event>>(outEvents);
+        return new AsyncResult<>(outEvents);
     }
 
     private void processEventRoute(Event event, Device device, List<Event> outEvents, EventRoute eventRoute) {
