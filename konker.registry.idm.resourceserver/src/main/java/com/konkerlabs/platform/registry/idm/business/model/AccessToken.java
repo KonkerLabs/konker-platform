@@ -1,4 +1,4 @@
-package com.konkerlabs.platform.registry.business.model;
+package com.konkerlabs.platform.registry.idm.business.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,14 +1,9 @@
 package com.konkerlabs.platform.registry.test.base;
 
-import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.idm.business.model.Tenant;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.annotation.web.servlet.configuration.EnableWebMvcSecurity;
 
 @Configuration
 public class SecurityTestConfiguration {

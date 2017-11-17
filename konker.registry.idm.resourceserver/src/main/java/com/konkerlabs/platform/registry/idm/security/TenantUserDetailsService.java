@@ -1,8 +1,8 @@
 package com.konkerlabs.platform.registry.idm.security;
 
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.User;
-import com.konkerlabs.platform.registry.business.repositories.UserRepository;
+import com.konkerlabs.platform.registry.idm.business.model.Tenant;
+import com.konkerlabs.platform.registry.idm.business.model.User;
+import com.konkerlabs.platform.registry.idm.business.repositories.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

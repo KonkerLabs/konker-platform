@@ -1,6 +1,6 @@
-package com.konkerlabs.platform.registry.business.model;
+package com.konkerlabs.platform.registry.idm.business.model;
 
-import com.konkerlabs.platform.registry.business.model.enumerations.Language;
+import com.konkerlabs.platform.registry.idm.business.model.enumerations.Language;
 import lombok.Builder;
 import lombok.experimental.Tolerate;
 import org.springframework.data.annotation.CreatedDate;
@@ -12,7 +12,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.provider.ClientDetails;
 import org.springframework.security.oauth2.provider.client.BaseClientDetails;
-import sun.reflect.generics.scope.Scope;
 
 import java.io.Serializable;
 import java.time.Instant;

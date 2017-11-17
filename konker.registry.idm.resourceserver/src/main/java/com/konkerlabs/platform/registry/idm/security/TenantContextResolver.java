@@ -1,7 +1,7 @@
 package com.konkerlabs.platform.registry.idm.security;
 
-import com.konkerlabs.platform.registry.business.model.OauthClientDetails;
-import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.idm.business.model.OauthClientDetails;
+import com.konkerlabs.platform.registry.idm.business.model.Tenant;
 import org.springframework.beans.factory.SmartFactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

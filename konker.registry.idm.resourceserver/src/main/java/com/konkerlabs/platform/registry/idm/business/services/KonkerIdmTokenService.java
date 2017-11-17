@@ -1,4 +1,4 @@
-package com.konkerlabs.platform.registry.idm.domain.service;
+package com.konkerlabs.platform.registry.idm.business.services;
 
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;

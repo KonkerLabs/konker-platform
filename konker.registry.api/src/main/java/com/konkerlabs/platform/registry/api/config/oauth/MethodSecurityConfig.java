@@ -1,4 +1,4 @@
-package com.konkerlabs.platform.registry.idm.config;
+package com.konkerlabs.platform.registry.api.config.oauth;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;

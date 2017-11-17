@@ -1,4 +1,4 @@
-package com.konkerlabs.platform.registry.idm.domain.service;
+package com.konkerlabs.platform.registry.idm.business.services;
 
 public interface ExtractTokenKeyDigester {
 

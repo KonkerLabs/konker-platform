@@ -1,17 +1,13 @@
-package com.konkerlabs.platform.registry.idm.config;
+package com.konkerlabs.platform.registry.idm.business.services;
 
-import com.konkerlabs.platform.registry.business.model.*;
-import com.konkerlabs.platform.registry.business.repositories.*;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.idm.business.model.*;
+import com.konkerlabs.platform.registry.idm.business.repositories.*;
+import com.konkerlabs.platform.registry.idm.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.idm.business.services.api.ServiceResponseBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.*;
-import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -86,8 +82,6 @@ public class OAuthClientDetailsService implements ClientDetailsService {
     private RoleRepository roleRepository;
     @Autowired
     private UserRepository userRepository;
-    @Autowired
-    private DefaultTokenServices defaultTokenServices;
 
     public boolean validatePassword(String raw, String encoded) {
         return slowEquals(raw.getBytes(), encoded.getBytes());
@@ -427,68 +421,6 @@ public class OAuthClientDetailsService implements ClientDetailsService {
         return ServiceResponseBuilder.<OauthClientDetails>ok()
                 .withResult(clientDetails)
                 .build();
-    }
-
-    public ServiceResponse<OAuth2AccessToken> getGatewayAccessToken(Tenant tenant, Application application, Gateway gateway) {
-
-        // get gateway oauth client
-        ServiceResponse<OauthClientDetails> clientDetailsResponse = getGatewayClient(tenant, application, gateway);
-        if (!clientDetailsResponse.isOk()) {
-            return ServiceResponseBuilder.<OAuth2AccessToken>error()
-                    .withMessages(clientDetailsResponse.getResponseMessages())
-                    .build();
-        }
-
-        OauthClientDetails clientDetails = clientDetailsResponse.getResult();
-
-        Role gatewayRole = roleRepository.findByName("ROLE_IOT_USER");
-        Set<GrantedAuthority> authorities = new HashSet<>();
-        for (Privilege privilege : gatewayRole.getPrivileges()) {
-            authorities.add(new SimpleGrantedAuthority(privilege.getName()));
-        }
-
-        Set<String> scopes = new HashSet<>();
-        scopes.add("read");
-        scopes.add("write");
-
-        OAuth2Request authorizationRequest = new OAuth2Request(
-                null, clientDetails.getClientId(),
-                authorities, true, scopes, null, "",
-                null, null);
-
-        OAuth2Authentication authenticationRequest = new OAuth2Authentication(
-                authorizationRequest, null);
-        authenticationRequest.setAuthenticated(true);
-
-        OAuth2AccessToken accessToken = defaultTokenServices.createAccessToken(authenticationRequest);
-
-        return ServiceResponseBuilder.<OAuth2AccessToken>ok()
-                .withResult(accessToken)
-                .build();
-
-    }
-
-    private ServiceResponse<OauthClientDetails> getGatewayClient(Tenant tenant, Application application, Gateway gateway) {
-        OauthClientDetails clientDetails;
-
-        ServiceResponse<OauthClientDetails> oauthClientResponse = loadClientByIdAsRoot(gateway.getRoutUriTemplate());
-
-        if (!oauthClientResponse.isOk()) {
-            // check if the response is of 'not found'
-            if (oauthClientResponse.getResponseMessages().containsKey(OAuthClientDetailsService.Messages.CLIENT_CREDENTIALS_INVALID.getCode())) {
-                // if not exists, creoauthClientDetailRepositoryate a new one
-                clientDetails = OauthClientDetails.builder()
-                        .build()
-                        .setGatewayProperties(gateway);
-
-                return this.saveClient(tenant, application, clientDetails);
-            } else {
-                return oauthClientResponse;
-            }
-        } else {
-            return oauthClientResponse;
-        }
-
     }
 
 }

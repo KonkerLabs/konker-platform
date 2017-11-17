@@ -1,6 +1,6 @@
-package com.konkerlabs.platform.registry.idm.config;
+package com.konkerlabs.platform.registry.api.config.oauth;
 
-import com.konkerlabs.platform.registry.idm.domain.service.MongoTokenStore;
+import com.konkerlabs.platform.registry.idm.business.services.MongoTokenStore;
 import com.konkerlabs.platform.security.exceptions.SecurityException;
 import com.konkerlabs.platform.security.managers.PasswordManager;
 import org.slf4j.Logger;

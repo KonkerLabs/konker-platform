@@ -1,8 +1,8 @@
-package com.konkerlabs.platform.registry.idm.domain.service;
+package com.konkerlabs.platform.registry.idm.business.services;
 
-import com.konkerlabs.platform.registry.business.model.AuthorizationCode;
-import com.konkerlabs.platform.registry.business.repositories.AuthorizationCodeRepository;
-import com.konkerlabs.platform.registry.business.repositories.OauthClientDetailRepository;
+import com.konkerlabs.platform.registry.idm.business.model.AuthorizationCode;
+import com.konkerlabs.platform.registry.idm.business.repositories.AuthorizationCodeRepository;
+import com.konkerlabs.platform.registry.idm.business.repositories.OauthClientDetailRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
