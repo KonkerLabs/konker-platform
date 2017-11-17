@@ -1,25 +1,25 @@
-package com.konkerlabs.platform.registry.api.security;
+package com.konkerlabs.platform.registry.idm.security;
 
 import com.konkerlabs.platform.registry.business.model.OauthClientDetails;
-import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.User;
 import org.springframework.beans.factory.SmartFactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-@Component("tenant")
-public class TenantContextResolver implements SmartFactoryBean<Tenant> {
+@Component("user")
+public class UserContextResolver implements SmartFactoryBean<User> {
 
     @Autowired
     private OauthClientDetails oauthClientDetails;
 
     @Override
-    public Tenant getObject() throws Exception {
-        return oauthClientDetails.getTenant();
+    public User getObject(){
+        return oauthClientDetails.getParentUser();
     }
 
     @Override
     public Class<?> getObjectType() {
-        return Tenant.class;
+        return User.class;
     }
 
     @Override

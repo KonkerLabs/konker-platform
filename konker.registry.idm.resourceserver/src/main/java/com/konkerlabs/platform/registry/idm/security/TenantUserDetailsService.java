@@ -1,4 +1,4 @@
-package com.konkerlabs.platform.registry.api.security;
+package com.konkerlabs.platform.registry.idm.security;
 
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;

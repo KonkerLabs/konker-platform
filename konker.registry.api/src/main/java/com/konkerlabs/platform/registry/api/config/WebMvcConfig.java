@@ -65,13 +65,13 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
     }
         
     @Bean
-    public RequestResponseInterceptor resquestResponseInterceptor() {
+    public RequestResponseInterceptor requestResponseInterceptor() {
     	return new RequestResponseInterceptor();
     }
     
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-    	registry.addInterceptor(resquestResponseInterceptor()).addPathPatterns("/applications/*", "/users/*");
+    	registry.addInterceptor(requestResponseInterceptor()).addPathPatterns("/applications/*", "/users/*");
     }
 
 }
