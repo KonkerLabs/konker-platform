@@ -21,8 +21,6 @@ import com.konkerlabs.platform.registry.test.data.base.*;
 import com.konkerlabs.platform.utilities.config.UtilitiesConfig;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 
-import ch.lambdaj.function.matcher.Predicate;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -111,7 +109,7 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
                         Event.EventActor.builder()
                                 .channel("data")
                                 .deviceGuid(matchingRouteDeviceGuid).build()
-                ).timestamp(Instant.now()).payload(payload).build());
+                ).creationTimestamp(Instant.now()).payload(payload).build());
 
         tenant = tenantRepository.findByDomainName(REGISTERED_TENANT_DOMAIN);
         application = applicationRepository.findByTenantAndName(tenant.getId(), "konker");

@@ -18,13 +18,18 @@ public class Event {
 
     private Long epochTime;
 
-    private Instant timestamp;
+    private Instant creationTimestamp;
+    
+    private Instant ingestedTimestamp;
 
     @JsonView(EventJsonView.class)
     private EventActor incoming;
 
     @JsonView(EventJsonView.class)
     private EventActor outgoing;
+    
+    @JsonView(EventJsonView.class)
+    private EventGeolocation geolocation;
 
     @JsonView(EventJsonView.class)
     private String payload;
@@ -64,7 +69,7 @@ public class Event {
     }
 
     public ZonedDateTime getZonedTimestamp(String zoneId) {
-        return timestamp.atZone(ZoneId.of(zoneId));
+        return creationTimestamp.atZone(ZoneId.of(zoneId));
     }
 
     @Data
@@ -76,5 +81,18 @@ public class Event {
         private Long timestamp;
         private EventActor incoming;
         private String payload;
+    }
+    
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class EventGeolocation  {
+
+        private Double lat;
+        private Double lon;
+        private Long hdop;
+        private Double elev;
+
     }
 }

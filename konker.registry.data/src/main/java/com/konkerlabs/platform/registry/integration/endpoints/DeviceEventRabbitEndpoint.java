@@ -42,7 +42,7 @@ public class DeviceEventRabbitEndpoint {
         String apiKey = (String) properties.getHeaders().get(RabbitMQConfig.MSG_HEADER_APIKEY);
         String channel = (String) properties.getHeaders().get(RabbitMQConfig.MSG_HEADER_CHANNEL);
         Long epochMilli = (Long) properties.getHeaders().get(RabbitMQConfig.MSG_HEADER_TIMESTAMP);
-        Instant timestamp = null;
+        Instant ingestedTimestamp = null;
 
         String payload = new String(message.getBody());
 
@@ -55,11 +55,11 @@ public class DeviceEventRabbitEndpoint {
             return;
         }
         if (epochMilli != null) {
-            timestamp = Instant.ofEpochMilli(epochMilli);
+            ingestedTimestamp = Instant.ofEpochMilli(epochMilli);
         }
 
         try {
-            deviceEventProcessor.process(apiKey, channel, payload, timestamp);
+            deviceEventProcessor.process(apiKey, channel, payload, ingestedTimestamp);
         } catch (BusinessException be) {
             LOGGER.error("BusinessException processing message", be);
         }

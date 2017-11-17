@@ -136,7 +136,7 @@ public class DeviceEventProcessorTest {
                                 .deviceGuid("device_guid").build()
                 )
                 .payload(originalPayload)
-                .timestamp(firstEventTimestamp)
+                .creationTimestamp(firstEventTimestamp)
                 .build();
 
         eventNewTimestamp = Event.builder()
@@ -146,7 +146,7 @@ public class DeviceEventProcessorTest {
                                 .deviceGuid("device_guid").build()
                 )
                 .payload(originalPayload)
-                .timestamp(secondEventTimestamp)
+                .creationTimestamp(secondEventTimestamp)
                 .build();
 
         eventResponse = spy(ServiceResponseBuilder.<List<Event>>ok()
@@ -196,7 +196,8 @@ public class DeviceEventProcessorTest {
     @Test
     public void shouldFireRouteExecution() throws Exception {
         Instant timestamp = Instant.now();
-        event.setTimestamp(timestamp);
+        event.setCreationTimestamp(timestamp);
+        event.setIngestedTimestamp(timestamp);
 
         when(deviceRegisterService.findByApiKey(sourceApiKey)).thenReturn(device);
 

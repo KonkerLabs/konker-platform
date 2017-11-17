@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.doNothing;
 
 import java.text.MessageFormat;
@@ -95,6 +96,71 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
             "    },\n" +
             "    \"time\" : 123\n" +
             "  }";
+    private String payloadLatLonInvalid = "{\n" +
+            "    \"ts\" : \"2016-03-03T18:15:00Z\",\n" +
+            "    \"value\" : 31.0,\n" +
+            "    \"command\" : {\n" +
+            "      \"type\" : \"ButtonPressed\"\n" +
+            "      },\n" +
+            "    \"data\" : {\n" +
+            "      \"channels\" : [\n" +
+            "        { \"name\" : \"channel_0\" }\n" +
+            "      ]\n" +
+            "    },\n" +
+            "    \"time\" : 123,\n" +
+            "	 \"_lat\" : 1234.56757777,\n" +
+            "	 \"_lon\" : -46.6910183\n" +
+            "  }";
+    private String payloadHdopInvalid = "{\n" +
+            "    \"ts\" : \"2016-03-03T18:15:00Z\",\n" +
+            "    \"value\" : 31.0,\n" +
+            "    \"command\" : {\n" +
+            "      \"type\" : \"ButtonPressed\"\n" +
+            "      },\n" +
+            "    \"data\" : {\n" +
+            "      \"channels\" : [\n" +
+            "        { \"name\" : \"channel_0\" }\n" +
+            "      ]\n" +
+            "    },\n" +
+            "    \"time\" : 123,\n" +
+            "	 \"_lat\" : -23.5746571,\n" +
+            "	 \"_lon\" : -46.6910183,\n" +
+            "	 \"_hdop\" : \"abc\"\n" +
+            "  }";
+    private String payloadElevInvalid = "{\n" +
+            "    \"ts\" : \"2016-03-03T18:15:00Z\",\n" +
+            "    \"value\" : 31.0,\n" +
+            "    \"command\" : {\n" +
+            "      \"type\" : \"ButtonPressed\"\n" +
+            "      },\n" +
+            "    \"data\" : {\n" +
+            "      \"channels\" : [\n" +
+            "        { \"name\" : \"channel_0\" }\n" +
+            "      ]\n" +
+            "    },\n" +
+            "    \"time\" : 123,\n" +
+            "	 \"_lat\" : -23.5746571,\n" +
+            "	 \"_lon\" : -46.6910183,\n" +
+            "	 \"_hdop\" : 10,\n" +
+            "	 \"_elev\" : \"abc\"\n" +
+            "  }";
+    private String payloadValidGeo = "{\n" +
+            "    \"ts\" : \"2016-03-03T18:15:00Z\",\n" +
+            "    \"value\" : 31.0,\n" +
+            "    \"command\" : {\n" +
+            "      \"type\" : \"ButtonPressed\"\n" +
+            "      },\n" +
+            "    \"data\" : {\n" +
+            "      \"channels\" : [\n" +
+            "        { \"name\" : \"channel_0\" }\n" +
+            "      ]\n" +
+            "    },\n" +
+            "    \"time\" : 123,\n" +
+            "	 \"_lat\" : -23.5746571,\n" +
+            "	 \"_lon\" : -46.6910183,\n" +
+            "	 \"_hdop\" : 10,\n" +
+            "	 \"_elev\" : 3.66\n" +
+            "  }";
     private String channel = "data";
     private String topic = MessageFormat.format("iot/{0}/{1}", apiKey, channel);
     private Event event;
@@ -120,7 +186,9 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
                                 .tenantDomain(tenant.getDomainName())
                                 .applicationName(application.getName())
                                 .build()
-                ).payload(payload).build();
+                )
+                .ingestedTimestamp(Instant.now())
+                .payload(payload).build();
     }
 
     @Test
@@ -162,12 +230,80 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
 
         deviceEventService.logIncomingEvent(device, event);
 
-        Event last = eventRepository.findIncomingBy(tenant,application,device.getGuid(),channel,event.getTimestamp().minusSeconds(1l), null, false, 1).get(0);
+        Event last = eventRepository.findIncomingBy(tenant,application,device.getGuid(),channel,event.getCreationTimestamp().minusSeconds(1l), null, false, 1).get(0);
 
         assertThat(last, notNullValue());
 
-        long gap = Duration.between(last.getTimestamp(), Instant.now()).abs().getSeconds();
+        long gap = Duration.between(last.getCreationTimestamp(), Instant.now()).abs().getSeconds();
 
+        assertThat(gap, not(greaterThan(60L)));
+
+    }
+    
+    @Test
+    public void shouldLogDeviceEventWithInvalidLatLon() throws Exception {
+    	event.setPayload(payloadLatLonInvalid);
+    	
+        doNothing().when(jedisTaskService).registerLastEventTimestamp(event);
+        deviceEventService.logIncomingEvent(device, event);
+        Event last = eventRepository.findIncomingBy(tenant,application,device.getGuid(),channel,event.getCreationTimestamp().minusSeconds(1l), null, false, 1).get(0);
+
+        assertThat(last, notNullValue());
+        assertThat(last.getGeolocation(), nullValue());
+       
+        long gap = Duration.between(last.getCreationTimestamp(), Instant.now()).abs().getSeconds();
+        assertThat(gap, not(greaterThan(60L)));
+
+    }
+    
+    @Test
+    public void shouldLogDeviceEventWithInvalidHdop() throws Exception {
+    	event.setPayload(payloadHdopInvalid);
+    	
+        doNothing().when(jedisTaskService).registerLastEventTimestamp(event);
+        deviceEventService.logIncomingEvent(device, event);
+        Event last = eventRepository.findIncomingBy(tenant,application,device.getGuid(),channel,event.getCreationTimestamp().minusSeconds(1l), null, false, 1).get(0);
+
+        assertThat(last, notNullValue());
+        assertThat(last.getGeolocation().getHdop(), nullValue());
+       
+        long gap = Duration.between(last.getCreationTimestamp(), Instant.now()).abs().getSeconds();
+        assertThat(gap, not(greaterThan(60L)));
+
+    }
+    
+    @Test
+    public void shouldLogDeviceEventWithInvalidElev() throws Exception {
+    	event.setPayload(payloadElevInvalid);
+    	
+        doNothing().when(jedisTaskService).registerLastEventTimestamp(event);
+        deviceEventService.logIncomingEvent(device, event);
+        Event last = eventRepository.findIncomingBy(tenant,application,device.getGuid(),channel,event.getCreationTimestamp().minusSeconds(1l), null, false, 1).get(0);
+
+        assertThat(last, notNullValue());
+        assertThat(last.getGeolocation().getElev(), nullValue());
+       
+        long gap = Duration.between(last.getCreationTimestamp(), Instant.now()).abs().getSeconds();
+        assertThat(gap, not(greaterThan(60L)));
+
+    }
+    
+    @Test
+    public void shouldLogDeviceEventWithValidGeo() throws Exception {
+    	event.setPayload(payloadValidGeo);
+    	
+        doNothing().when(jedisTaskService).registerLastEventTimestamp(event);
+        deviceEventService.logIncomingEvent(device, event);
+        Event last = eventRepository.findIncomingBy(tenant,application,device.getGuid(),channel,event.getCreationTimestamp().minusSeconds(1l), null, false, 1).get(0);
+
+        assertThat(last, notNullValue());
+        assertThat(last.getGeolocation(), notNullValue());
+        assertThat(last.getGeolocation().getLat(), notNullValue());
+        assertThat(last.getGeolocation().getLon(), notNullValue());
+        assertThat(last.getGeolocation().getHdop(), notNullValue());
+        assertThat(last.getGeolocation().getElev(), notNullValue());
+       
+        long gap = Duration.between(last.getCreationTimestamp(), Instant.now()).abs().getSeconds();
         assertThat(gap, not(greaterThan(60L)));
 
     }
@@ -176,7 +312,6 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
     static class DeviceLogEventServiceTestConfig {
 
         @Bean
-        @SuppressWarnings("unchecked")
         public JedisTaskService jedisTaskService() {
             return Mockito.mock(JedisTaskService.class);
         }

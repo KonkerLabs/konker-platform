@@ -2,6 +2,6 @@ package com.konkerlabs.platform.registry.api.model;
 
 public enum RouteActorType {
 
-    DEVICE, REST, MODEL_LOCATION;
+    DEVICE, REST, MODEL_LOCATION, AMAZON_KINESIS;
 
 }

@@ -1,21 +1,15 @@
 package com.konkerlabs.platform.registry.test.business.repositories;
 
-import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
-import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
-import com.konkerlabs.platform.registry.business.repositories.events.EventRepositoryMongoImpl;
-import com.konkerlabs.platform.registry.business.repositories.events.api.EventRepository;
-import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
-import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
-import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.notNullValue;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.function.Supplier;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,13 +23,23 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.function.Supplier;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
+import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.Event.EventGeolocation;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
+import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
+import com.konkerlabs.platform.registry.business.repositories.events.EventRepositoryMongoImpl;
+import com.konkerlabs.platform.registry.business.repositories.events.api.EventRepository;
+import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
+import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
+import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
@@ -103,11 +107,20 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
                                 .deviceGuid(deviceGuid)
                                 .tenantDomain(tenant.getDomainName())
                                 .build())
-                .timestamp(firstEventTimestamp)
+                .geolocation(
+                		EventGeolocation.builder()
+                			.lat(new Double(-23.5746571))
+                			.lon(new Double(-46.6910183))
+                			.hdop(new Long(1))
+                			.elev(new Double(3.66))
+                			.build())
+                .creationTimestamp(firstEventTimestamp)
+                .ingestedTimestamp(secondEventTimestamp)
                 .payload(incomingPayload).build();
 
         persisted = new BasicDBObject();
-        persisted.put("ts", incomingEvent.getTimestamp().toEpochMilli());
+        persisted.put("ts", incomingEvent.getCreationTimestamp().toEpochMilli());
+        persisted.put("ingestedTimestamp", incomingEvent.getIngestedTimestamp().toEpochMilli());
         persisted.put("incoming", ((Supplier<DBObject>) () -> {
             DBObject incoming = new BasicDBObject();
             incoming.put("deviceGuid",incomingEvent.getIncoming().getDeviceGuid());
@@ -116,6 +129,14 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
             incoming.put("applicationName",incomingEvent.getIncoming().getApplicationName());
             incoming.put("channel",incomingEvent.getIncoming().getChannel());
             return incoming;
+        }).get());
+        persisted.put("geolocation", ((Supplier<DBObject>) () -> {
+        	DBObject geolocation = new BasicDBObject();
+        	geolocation.put("lat", incomingEvent.getGeolocation().getLat());
+        	geolocation.put("lon", incomingEvent.getGeolocation().getLon());
+        	geolocation.put("hdop", incomingEvent.getGeolocation().getHdop());
+        	geolocation.put("elev", incomingEvent.getGeolocation().getElev());
+        	return geolocation;
         }).get());
         persisted.put("payload", incomingEvent.getPayload());
     }
@@ -208,7 +229,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldRaiseAnExceptionIfEventTimestampIsNullWhenSavingAnIncomingEvent() throws Exception {
-        incomingEvent.setTimestamp(null);
+        incomingEvent.setCreationTimestamp(null);
 
         thrown.expect(BusinessException.class);
         thrown.expectMessage(EventRepository.Validations.EVENT_TIMESTAMP_NULL.getCode());
@@ -229,7 +250,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         saved.removeField("_id");
         saved.removeField("_class");
 
-        assertThat(saved,equalTo(persisted));
+        assertThat(saved, equalTo(persisted));
     }
 
     @Test
@@ -242,8 +263,8 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         assertThat(events,notNullValue());
         assertThat(events,hasSize(2));
 
-        assertThat(events.get(0).getTimestamp().toEpochMilli(),equalTo(thirdEventTimestamp.toEpochMilli()));
-        assertThat(events.get(1).getTimestamp().toEpochMilli(),equalTo(secondEventTimestamp.toEpochMilli()));
+        assertThat(events.get(0).getCreationTimestamp().toEpochMilli(),equalTo(thirdEventTimestamp.toEpochMilli()));
+        assertThat(events.get(1).getCreationTimestamp().toEpochMilli(),equalTo(secondEventTimestamp.toEpochMilli()));
     }
 
     @Test
@@ -322,7 +343,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         assertThat(events,notNullValue());
         assertThat(events,hasSize(1));
 
-        assertThat(events.get(0).getTimestamp().toEpochMilli(),equalTo(firstEventTimestamp.toEpochMilli() + 1));
+        assertThat(events.get(0).getCreationTimestamp().toEpochMilli(),equalTo(firstEventTimestamp.toEpochMilli() + 1));
     }
 
     @Test
@@ -337,6 +358,6 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         assertThat(events,notNullValue());
         assertThat(events,hasSize(1));
 
-        assertThat(events.get(0).getTimestamp().toEpochMilli(),equalTo(thirdEventTimestamp.toEpochMilli()));
+        assertThat(events.get(0).getCreationTimestamp().toEpochMilli(),equalTo(thirdEventTimestamp.toEpochMilli()));
     }
 }

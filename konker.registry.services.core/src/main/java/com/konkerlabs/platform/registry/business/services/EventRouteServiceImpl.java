@@ -36,6 +36,7 @@ import com.konkerlabs.platform.registry.business.repositories.LocationRepository
 import com.konkerlabs.platform.registry.business.repositories.RestDestinationRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import org.springframework.util.StringUtils;
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
@@ -185,7 +186,6 @@ public class EventRouteServiceImpl implements EventRouteService {
 
     }
 
-
     private Map<String,Object[]> applyRouteActorValidations(Application application, RouteActor actor) {
 
         Map<String,Object[]> validations = new HashMap<>();
@@ -254,6 +254,36 @@ public class EventRouteServiceImpl implements EventRouteService {
                 }
 
                 actor.setDisplayName(MessageFormat.format("{0} @ {1}", deviceModel.getName(), location.getName()));
+                break;
+
+            case AmazonKinesis.URI_SCHEME:
+
+                AmazonKinesis kinesisProperties = AmazonKinesis.builder().build();
+                kinesisProperties.setValues(actor.getData());
+
+                if (!StringUtils.hasText(kinesisProperties.getKey())) {
+                    validations.put(AmazonKinesis.Validations.AMAZON_KINESIS_INVALID_KEY.getCode(), null);
+                    return validations;
+                }
+                if (!StringUtils.hasText(kinesisProperties.getSecret())) {
+                    validations.put(AmazonKinesis.Validations.AMAZON_KINESIS_INVALID_SECRET.getCode(), null);
+                    return validations;
+                }
+                if (!StringUtils.hasText(kinesisProperties.getStreamName())) {
+                    validations.put(AmazonKinesis.Validations.AMAZON_KINESIS_INVALID_STREAM_NAME.getCode(), null);
+                    return validations;
+                }
+                if (!StringUtils.hasText(kinesisProperties.getRegion())) {
+                    validations.put(AmazonKinesis.Validations.AMAZON_KINESIS_INVALID_REGION.getCode(), null);
+                    return validations;
+                }
+                if (!kinesisProperties.getRegion().matches("[a-z]{2}-[a-z]{4,20}-[0-9]")) {
+                    validations.put(AmazonKinesis.Validations.AMAZON_KINESIS_INVALID_REGION.getCode(), null);
+                    return validations;
+                }
+
+                actor.setDisplayName(MessageFormat.format("{0} @ {1}", kinesisProperties.getStreamName(), kinesisProperties.getRegion()));
+
                 break;
 
             default:

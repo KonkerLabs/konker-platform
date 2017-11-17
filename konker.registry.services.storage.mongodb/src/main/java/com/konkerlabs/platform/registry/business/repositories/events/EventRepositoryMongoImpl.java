@@ -3,6 +3,7 @@ package com.konkerlabs.platform.registry.business.repositories.events;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.Event.EventGeolocation;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
@@ -47,7 +48,7 @@ public class EventRepositoryMongoImpl extends BaseEventRepositoryImpl {
                 deviceRepository.findByTenantAndGuid(existingTenant.getId(), event.getIncoming().getDeviceGuid())
         ).orElseThrow(() -> new BusinessException(Validations.INCOMING_DEVICE_ID_DOES_NOT_EXIST.getCode()));
 
-        Optional.ofNullable(event.getTimestamp())
+        Optional.ofNullable(event.getCreationTimestamp())
                 .orElseThrow(() -> new BusinessException(Validations.EVENT_TIMESTAMP_NULL.getCode()));
 
         if (type.equals(Type.OUTGOING)) {
@@ -71,13 +72,24 @@ public class EventRepositoryMongoImpl extends BaseEventRepositoryImpl {
         incoming.put("applicationName",event.getIncoming().getApplicationName());
         incoming.put("channel",event.getIncoming().getChannel());
         incoming.put("deviceId", event.getIncoming().getDeviceId());
-
+        
         DBObject toSave = new BasicDBObject();
 
         toSave.removeField("ts");
-        toSave.put("ts", event.getTimestamp().toEpochMilli());
+        toSave.put("ts", event.getCreationTimestamp().toEpochMilli());
+        toSave.put("ingestedTimestamp", event.getIngestedTimestamp());
         toSave.put(Type.INCOMING.getActorFieldName(), incoming);
         toSave.put("payload", event.getPayload());
+        
+        if (Optional.ofNullable(event.getGeolocation()).isPresent()) {
+        	DBObject geolocation = new BasicDBObject();
+        	geolocation.put("lat", event.getGeolocation().getLat());
+        	geolocation.put("lon", event.getGeolocation().getLon());
+        	geolocation.put("hdop", event.getGeolocation().getHdop());
+        	geolocation.put("elev", event.getGeolocation().getElev());
+        	
+        	toSave.put("geolocation", geolocation);
+        }
 
         if (type.equals(Type.OUTGOING)) {
             DBObject outgoing = new BasicDBObject();
@@ -169,8 +181,22 @@ public class EventRepositoryMongoImpl extends BaseEventRepositoryImpl {
                             .orElse(null);
                     }).get()
                 )
+                .geolocation(
+                		((Supplier<EventGeolocation>) () -> {
+                			return Optional.ofNullable((DBObject) dbObject.get("geolocation"))
+                					.map(dbObject1 -> {
+                						return EventGeolocation.builder()
+                							.lat(new Double(dbObject1.get("lat").toString()))
+                							.lon(new Double(dbObject1.get("lon").toString()))
+                							.hdop(Optional.ofNullable(dbObject1.get("hdop")).isPresent() ? new Long(dbObject1.get("hdop").toString()) : null)
+                							.elev(Optional.ofNullable(dbObject1.get("elev")).isPresent() ? new Double(dbObject1.get("elev").toString()) : null)
+                							.build();
+                					})
+                					.orElse(null);
+                		}).get())
                 .payload(dbObject.get("payload").toString())
-                .timestamp(Instant.ofEpochMilli((Long) dbObject.get("ts")))
+                .creationTimestamp(Instant.ofEpochMilli((Long) dbObject.get("ts")))
+                .ingestedTimestamp(dbObject.get("ingestedTimestamp") != null ? Instant.ofEpochMilli((Long) dbObject.get("ingestedTimestamp")) : null)
                 .build())
         .collect(Collectors.toList());
 

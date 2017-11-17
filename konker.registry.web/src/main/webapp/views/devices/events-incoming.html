@@ -18,7 +18,7 @@
             </thead>
             <tbody>
                 <tr data-th-each="event : ${recentIncomingEvents}">
-                    <td data-th-text="${{event.timestamp}}"></td>
+                    <td data-th-text="${{event.creationTimestamp}}"></td>
                     <td data-th-text="${event.incoming.channel}"></td>
                     <td data-th-text="${event.payload}" class="json-data"></td>
                 </tr>
