@@ -113,7 +113,7 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
 
     	eventsList = new ArrayList<>();
 
-		Event event = Event.builder().timestamp(Instant.ofEpochSecond(1475603097l))
+		Event event = Event.builder().creationTimestamp(Instant.ofEpochSecond(1475603097l))
     			.incoming(EventActor.builder().tenantDomain(TENANT_DOMAIN).deviceGuid(DEVICE_GUID).channel(CHANNEL).build())
     			.outgoing(EventActor.builder().tenantDomain(TENANT_DOMAIN).deviceGuid(DEVICE_GUID).channel(CHANNEL).build())
     			.payload("{\"a\": 109, \"b\": 111}").build();

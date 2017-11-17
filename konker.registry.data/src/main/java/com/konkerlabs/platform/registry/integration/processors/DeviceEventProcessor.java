@@ -84,7 +84,7 @@ public class DeviceEventProcessor {
                                         ? device.getApplication().getName(): null)
                                 .build()
                 )
-                .timestamp(timestamp)
+                .creationTimestamp(timestamp)
                 .ingestedTimestamp(timestamp)
                 .payload(payload)
                 .build();

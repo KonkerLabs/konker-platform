@@ -49,7 +49,7 @@ public class EventTransformationServiceImpl implements EventTransformationServic
             Event.builder()
                 .incoming(original.getIncoming())
                 .payload(original.getPayload())
-                .timestamp(original.getTimestamp())
+                .creationTimestamp(original.getCreationTimestamp())
                 .build()
         );
 
@@ -97,7 +97,7 @@ public class EventTransformationServiceImpl implements EventTransformationServic
             if (isValidResponse(stepResponse))
                 return Event.builder()
                         .incoming(event.getIncoming())
-                        .timestamp(event.getTimestamp())
+                        .creationTimestamp(event.getCreationTimestamp())
                         .payload(stepResponse).build();
             else
                 return null;

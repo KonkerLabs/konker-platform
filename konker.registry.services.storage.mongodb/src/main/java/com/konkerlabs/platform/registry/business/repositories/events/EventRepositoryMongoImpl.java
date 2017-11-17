@@ -48,7 +48,7 @@ public class EventRepositoryMongoImpl extends BaseEventRepositoryImpl {
                 deviceRepository.findByTenantAndGuid(existingTenant.getId(), event.getIncoming().getDeviceGuid())
         ).orElseThrow(() -> new BusinessException(Validations.INCOMING_DEVICE_ID_DOES_NOT_EXIST.getCode()));
 
-        Optional.ofNullable(event.getTimestamp())
+        Optional.ofNullable(event.getCreationTimestamp())
                 .orElseThrow(() -> new BusinessException(Validations.EVENT_TIMESTAMP_NULL.getCode()));
 
         if (type.equals(Type.OUTGOING)) {
@@ -76,7 +76,7 @@ public class EventRepositoryMongoImpl extends BaseEventRepositoryImpl {
         DBObject toSave = new BasicDBObject();
 
         toSave.removeField("ts");
-        toSave.put("ts", event.getTimestamp().toEpochMilli());
+        toSave.put("ts", event.getCreationTimestamp().toEpochMilli());
         toSave.put("ingestedTimestamp", event.getIngestedTimestamp());
         toSave.put(Type.INCOMING.getActorFieldName(), incoming);
         toSave.put("payload", event.getPayload());
@@ -195,8 +195,8 @@ public class EventRepositoryMongoImpl extends BaseEventRepositoryImpl {
                 					.orElse(null);
                 		}).get())
                 .payload(dbObject.get("payload").toString())
-                .timestamp(Instant.ofEpochMilli((Long) dbObject.get("ts")))
-                .ingestedTimestamp(Instant.ofEpochMilli((Long) dbObject.get("ingestedTimestamp")))
+                .creationTimestamp(Instant.ofEpochMilli((Long) dbObject.get("ts")))
+                .ingestedTimestamp(dbObject.get("ingestedTimestamp") != null ? Instant.ofEpochMilli((Long) dbObject.get("ingestedTimestamp")) : null)
                 .build())
         .collect(Collectors.toList());
 

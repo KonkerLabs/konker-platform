@@ -56,7 +56,6 @@ public class DeviceLogEventServiceImpl implements DeviceLogEventService {
     @Autowired
     private JsonParsingService jsonParsingService;
     
-    private Pattern geoPattern = Pattern.compile("^([-+]?\\d{1,3}[.]\\d+)");
     private Pattern integerPattern = Pattern.compile("^[0-9]*$") ;
     private Pattern decimalPattern = Pattern.compile("^[-+]?[0-9]*[.][0-9]*$") ;
     private static final String EVENT_GEO_INVALID = "Incoming event has invalid geolocation data: [Field: {0}] - [Value: {1}]";
@@ -138,10 +137,10 @@ public class DeviceLogEventServiceImpl implements DeviceLogEventService {
 					&& creationTime.isAfter(aYearAgo) 
 					&& creationTime.isBefore(tomorrow)) {
 				
-				event.setTimestamp(creationTime);
+				event.setCreationTimestamp(creationTime);
 			} else {
-				event.setTimestamp(event.getIngestedTimestamp());
-				LOGGER.warn(MessageFormat.format(EVENT_TIME_INVALID, "_ts", data.get("_ts").getValue().toString()),
+				event.setCreationTimestamp(event.getIngestedTimestamp());
+				LOGGER.warn(MessageFormat.format(EVENT_TIME_INVALID, "_ts", creationTime != null ? data.get("_ts").getValue().toString() : null),
 						device.toURI(),
 						device.getLogLevel());
 			}
@@ -216,12 +215,23 @@ public class DeviceLogEventServiceImpl implements DeviceLogEventService {
 			return false;
 		}
 		
-		if (geoPattern.matcher(latObj.toString()).matches() 
-				&& geoPattern.matcher(lonObj.toString()).matches()) {
-			return true;
+		Double lat = new Double(latObj.toString());
+		Double lon = new Double(lonObj.toString());
+		
+		if (lat < -90 ||  lat > 90 ) {
+			LOGGER.warn(MessageFormat.format(EVENT_GEO_INVALID, "_lat", lat),
+					device.toURI(),
+            		device.getLogLevel());
+			return false;
+		}
+		if (lon < -180 || lon > 180) {
+			LOGGER.warn(MessageFormat.format(EVENT_GEO_INVALID, "_lon", lon),
+					device.toURI(),
+            		device.getLogLevel());
+			return false;
 		}
 		
-		return false;
+		return true;
 	}
 
 	@Override
@@ -256,8 +266,8 @@ public class DeviceLogEventServiceImpl implements DeviceLogEventService {
             return ServiceResponseBuilder.<Event>error()
                     .withMessage(Validations.EVENT_PAYLOAD_NULL.getCode()).build();
 
-        if (!Optional.ofNullable(event.getTimestamp()).isPresent())
-            event.setTimestamp(Instant.now());
+        if (!Optional.ofNullable(event.getCreationTimestamp()).isPresent())
+            event.setCreationTimestamp(Instant.now());
 
         return callable.get();
     }

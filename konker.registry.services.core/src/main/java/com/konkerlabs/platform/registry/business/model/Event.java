@@ -18,7 +18,7 @@ public class Event {
 
     private Long epochTime;
 
-    private Instant timestamp;
+    private Instant creationTimestamp;
     
     private Instant ingestedTimestamp;
 
@@ -69,7 +69,7 @@ public class Event {
     }
 
     public ZonedDateTime getZonedTimestamp(String zoneId) {
-        return timestamp.atZone(ZoneId.of(zoneId));
+        return creationTimestamp.atZone(ZoneId.of(zoneId));
     }
 
     @Data

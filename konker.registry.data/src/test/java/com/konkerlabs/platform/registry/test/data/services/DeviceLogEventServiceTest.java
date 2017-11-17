@@ -186,7 +186,9 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
                                 .tenantDomain(tenant.getDomainName())
                                 .applicationName(application.getName())
                                 .build()
-                ).payload(payload).build();
+                )
+                .ingestedTimestamp(Instant.now())
+                .payload(payload).build();
     }
 
     @Test
@@ -228,11 +230,11 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
 
         deviceEventService.logIncomingEvent(device, event);
 
-        Event last = eventRepository.findIncomingBy(tenant,application,device.getGuid(),channel,event.getTimestamp().minusSeconds(1l), null, false, 1).get(0);
+        Event last = eventRepository.findIncomingBy(tenant,application,device.getGuid(),channel,event.getCreationTimestamp().minusSeconds(1l), null, false, 1).get(0);
 
         assertThat(last, notNullValue());
 
-        long gap = Duration.between(last.getTimestamp(), Instant.now()).abs().getSeconds();
+        long gap = Duration.between(last.getCreationTimestamp(), Instant.now()).abs().getSeconds();
 
         assertThat(gap, not(greaterThan(60L)));
 
@@ -244,12 +246,12 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
     	
         doNothing().when(jedisTaskService).registerLastEventTimestamp(event);
         deviceEventService.logIncomingEvent(device, event);
-        Event last = eventRepository.findIncomingBy(tenant,application,device.getGuid(),channel,event.getTimestamp().minusSeconds(1l), null, false, 1).get(0);
+        Event last = eventRepository.findIncomingBy(tenant,application,device.getGuid(),channel,event.getCreationTimestamp().minusSeconds(1l), null, false, 1).get(0);
 
         assertThat(last, notNullValue());
         assertThat(last.getGeolocation(), nullValue());
        
-        long gap = Duration.between(last.getTimestamp(), Instant.now()).abs().getSeconds();
+        long gap = Duration.between(last.getCreationTimestamp(), Instant.now()).abs().getSeconds();
         assertThat(gap, not(greaterThan(60L)));
 
     }
@@ -260,12 +262,12 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
     	
         doNothing().when(jedisTaskService).registerLastEventTimestamp(event);
         deviceEventService.logIncomingEvent(device, event);
-        Event last = eventRepository.findIncomingBy(tenant,application,device.getGuid(),channel,event.getTimestamp().minusSeconds(1l), null, false, 1).get(0);
+        Event last = eventRepository.findIncomingBy(tenant,application,device.getGuid(),channel,event.getCreationTimestamp().minusSeconds(1l), null, false, 1).get(0);
 
         assertThat(last, notNullValue());
         assertThat(last.getGeolocation().getHdop(), nullValue());
        
-        long gap = Duration.between(last.getTimestamp(), Instant.now()).abs().getSeconds();
+        long gap = Duration.between(last.getCreationTimestamp(), Instant.now()).abs().getSeconds();
         assertThat(gap, not(greaterThan(60L)));
 
     }
@@ -276,12 +278,12 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
     	
         doNothing().when(jedisTaskService).registerLastEventTimestamp(event);
         deviceEventService.logIncomingEvent(device, event);
-        Event last = eventRepository.findIncomingBy(tenant,application,device.getGuid(),channel,event.getTimestamp().minusSeconds(1l), null, false, 1).get(0);
+        Event last = eventRepository.findIncomingBy(tenant,application,device.getGuid(),channel,event.getCreationTimestamp().minusSeconds(1l), null, false, 1).get(0);
 
         assertThat(last, notNullValue());
         assertThat(last.getGeolocation().getElev(), nullValue());
        
-        long gap = Duration.between(last.getTimestamp(), Instant.now()).abs().getSeconds();
+        long gap = Duration.between(last.getCreationTimestamp(), Instant.now()).abs().getSeconds();
         assertThat(gap, not(greaterThan(60L)));
 
     }
@@ -292,7 +294,7 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
     	
         doNothing().when(jedisTaskService).registerLastEventTimestamp(event);
         deviceEventService.logIncomingEvent(device, event);
-        Event last = eventRepository.findIncomingBy(tenant,application,device.getGuid(),channel,event.getTimestamp().minusSeconds(1l), null, false, 1).get(0);
+        Event last = eventRepository.findIncomingBy(tenant,application,device.getGuid(),channel,event.getCreationTimestamp().minusSeconds(1l), null, false, 1).get(0);
 
         assertThat(last, notNullValue());
         assertThat(last.getGeolocation(), notNullValue());
@@ -301,7 +303,7 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
         assertThat(last.getGeolocation().getHdop(), notNullValue());
         assertThat(last.getGeolocation().getElev(), notNullValue());
        
-        long gap = Duration.between(last.getTimestamp(), Instant.now()).abs().getSeconds();
+        long gap = Duration.between(last.getCreationTimestamp(), Instant.now()).abs().getSeconds();
         assertThat(gap, not(greaterThan(60L)));
 
     }

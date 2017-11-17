@@ -133,7 +133,7 @@ public class DeviceStatusRestController extends AbstractRestController implement
             String lastDataReceivedDate = "";
             if (incomingResponse.isOk()) {
                 List<Event> result = incomingResponse.getResult();
-                lastDataReceivedDate = result.isEmpty() ? "" : result.get(0).getTimestamp().toString();
+                lastDataReceivedDate = result.isEmpty() ? "" : result.get(0).getCreationTimestamp().toString();
             }
 
             DeviceStatsVO vo = new DeviceStatsVO().apply(deviceResponse.getResult());

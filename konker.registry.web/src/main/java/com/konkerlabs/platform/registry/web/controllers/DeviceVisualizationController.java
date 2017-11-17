@@ -158,8 +158,8 @@ public class DeviceVisualizationController implements ApplicationContextAware {
 	private List<EventDecorator> decorateEventResult(ServiceResponse<List<Event>> response) {
 		List<EventDecorator> eventsResult = new ArrayList<>();
 		response.getResult().forEach(r -> eventsResult.add(EventDecorator.builder()
-				.timestampFormated(instantToStringConverter.convert(r.getTimestamp()))
-				.timestamp(r.getTimestamp().toEpochMilli())
+				.timestampFormated(instantToStringConverter.convert(r.getCreationTimestamp()))
+				.timestamp(r.getCreationTimestamp().toEpochMilli())
 				.incoming(r.getIncoming())
 				.payload(r.getPayload())
 				.build()));
