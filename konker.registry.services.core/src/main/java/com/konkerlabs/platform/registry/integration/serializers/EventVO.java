@@ -1,15 +1,17 @@
 package com.konkerlabs.platform.registry.integration.serializers;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.konkerlabs.platform.registry.business.model.Event;
+
 import lombok.Builder;
 import lombok.Data;
-import lombok.experimental.Tolerate;
-
-import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Data
 @Builder
@@ -49,7 +51,7 @@ public class EventVO {
                                 .meta(EventMeta.builder()
                                         .incoming(item.getIncoming())
                                         .outgoing(item.getOutgoing())
-                                        .timestamp(Optional.ofNullable(item.getTimestamp()).isPresent() ? item.getTimestamp().toEpochMilli() : null)
+                                        .timestamp(Optional.ofNullable(item.getCreationTimestamp()).isPresent() ? item.getCreationTimestamp().toEpochMilli() : null)
                                         .build()
                                 )
                                 .data(mapper.readValue(item.getPayload(), HashMap.class))

@@ -149,7 +149,7 @@ public class EventPublisherModelLocationTest extends BusinessLayerTestSupport {
                     .deviceGuid("device_guid").build()
             )
             .payload(eventPayload)
-            .timestamp(Instant.now()).build();
+            .creationTimestamp(Instant.now()).build();
 
         destinationUri = new URIDealer() {
             @Override

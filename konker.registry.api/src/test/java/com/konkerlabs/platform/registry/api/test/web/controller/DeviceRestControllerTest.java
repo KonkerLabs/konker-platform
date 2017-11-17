@@ -138,7 +138,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 
 		Event event = Event.builder()
 					.incoming(EventActor.builder().channel("out").deviceGuid(device1.getGuid()).build())
-					.timestamp(registrationDate)
+					.creationTimestamp(registrationDate)
 					.build();
 		events = Collections.singletonList(event);
 

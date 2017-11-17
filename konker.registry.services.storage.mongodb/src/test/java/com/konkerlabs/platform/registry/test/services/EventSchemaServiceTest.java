@@ -126,7 +126,7 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
 
         incomingEvent = Event.builder()
                 .payload(firstJson)
-                .timestamp(Instant.now())
+                .creationTimestamp(Instant.now())
                 .incoming(
                         Event.EventActor.builder()
                                 .deviceGuid(deviceGuid)
@@ -145,7 +145,7 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
 
         incomingEvent.setPayload(secondJson);
         incomingEvent.getIncoming().setChannel(secondChannel);
-        incomingEvent.setTimestamp(Instant.now().plus(2,ChronoUnit.MINUTES));
+        incomingEvent.setCreationTimestamp(Instant.now().plus(2,ChronoUnit.MINUTES));
 
         schema = eventSchemaService.appendIncomingSchema(incomingEvent);
 
@@ -191,7 +191,7 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
         // Non numeric event
         Event incomingEvent = Event.builder()
                 .payload("{\"city\": \"RJ\"}")
-                .timestamp(Instant.now())
+                .creationTimestamp(Instant.now())
                 .incoming(
                         Event.EventActor.builder()
                                 .deviceGuid(deviceGuid)
@@ -205,7 +205,7 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
         // Numeric event
         Event incomingEventSnd = Event.builder()
                 .payload(secondJson)
-                .timestamp(Instant.now().minusSeconds(10))
+                .creationTimestamp(Instant.now().minusSeconds(10))
                 .incoming(
                         Event.EventActor.builder()
                                 .deviceGuid(deviceGuid)

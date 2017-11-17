@@ -123,7 +123,7 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
                     .deviceGuid(device.getGuid()).build()
             )
             .payload(eventPayload)
-            .timestamp(Instant.now()).build();
+            .creationTimestamp(Instant.now()).build();
 
         destinationUri = new URIDealer() {
             @Override
