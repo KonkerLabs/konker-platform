@@ -23,8 +23,6 @@ public class MongoAuthorizationCodeServices extends RandomValueAuthorizationCode
     @Autowired
     private AuthorizationCodeRepository authorizationCodeRepository;
 
-    public MongoAuthorizationCodeServices() {}
-
     @Override
     protected void store(String code, OAuth2Authentication authentication) {
         AuthorizationCode authorizationCode =

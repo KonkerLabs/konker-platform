@@ -69,12 +69,6 @@ public class AccessToken implements Serializable {
         return this;
     }
 
-    @Tolerate
-    public AccessToken username(String username) {
-        this.username = username;
-        return this;
-    }
-
     @Override
     public String toString() {
         return new StringBuilder().append("{")

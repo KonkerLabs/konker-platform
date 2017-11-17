@@ -12,6 +12,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.provider.ClientDetails;
 import org.springframework.security.oauth2.provider.client.BaseClientDetails;
+import sun.reflect.generics.scope.Scope;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -269,12 +270,14 @@ public class OauthClientDetails implements Serializable, ClientDetails {
 
     public String getScopeAsString() {
         StringBuffer str = new StringBuffer();
-        for(String item : getScope()){
-            str.append(item);
-            str.append(",");
+        List<String> scopeList = new ArrayList<>(getScope());
+        for (int i = 0; i < getScope().size(); i++) {
+            if (i > 0) {
+                str.append(",");
+            }
+            str.append(scopeList.get(i));
         }
-        return "trust,read,write";
-        //return str.toString();
+        return str.toString();
     }
 
     public String getAuthorizedGrantTypesAsString(){
@@ -365,6 +368,17 @@ public class OauthClientDetails implements Serializable, ClientDetails {
         this.setRoles(user.getRoles());
         this.setResourceIds(Collections.emptySet());
         this.setClientSecret(user.getPassword());
+        this.setAdditionalInformation(Collections.emptyMap());
+
+        return this;
+    }
+
+    public OauthClientDetails setGatewayProperties(Gateway gateway) {
+        this.setParentUser(null);
+        this.setTenant(gateway.getTenant());
+        this.setClientId(gateway.getRoutUriTemplate());
+        this.setRoles(roles);
+        this.setResourceIds(Collections.emptySet());
         this.setAdditionalInformation(Collections.emptyMap());
 
         return this;

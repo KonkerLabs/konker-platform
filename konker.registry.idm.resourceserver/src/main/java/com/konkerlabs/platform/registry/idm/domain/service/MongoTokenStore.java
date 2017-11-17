@@ -79,14 +79,6 @@ public class MongoTokenStore implements TokenStore, InitializingBean {
             accessToken.authentication(authentication);
             accessToken.setRefreshToken(extractTokenKey(refreshToken));
         } else {
-            OauthClientDetails clientDetails =
-                    oauthClientDetailRepository.findOne((String) authentication.getPrincipal());
-
-            OAuth2Authentication auth2Auth =
-                    new OAuth2Authentication(
-                            authentication.getOAuth2Request(),
-                            authentication.getUserAuthentication()
-                    );
             accessToken = AccessToken.builder()
                     .tokenId(extractTokenKey(token.getValue()))
                     .authenticationId(authenticationKeyGenerator.extractKey(authentication))
@@ -130,7 +122,6 @@ public class MongoTokenStore implements TokenStore, InitializingBean {
     public void removeAccessToken(OAuth2AccessToken token) {
         removeAccessToken(token.getValue());
     }
-
 
     @Override
     public OAuth2Authentication readAuthentication(OAuth2AccessToken token) {

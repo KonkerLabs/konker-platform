@@ -7,9 +7,11 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBui
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.oauth2.provider.ClientDetails;
-import org.springframework.security.oauth2.provider.ClientDetailsService;
-import org.springframework.security.oauth2.provider.ClientRegistrationException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.security.oauth2.provider.*;
+import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -21,7 +23,7 @@ public class OAuthClientDetailsService implements ClientDetailsService {
     private static final Logger LOG = LoggerFactory.getLogger(OAuthClientDetailsService.class);
 
     enum Validations {
-        INVALID_TENTANT("service.oauth.validation.tenant.invalid"),
+        INVALID_TENANT("service.oauth.validation.tenant.invalid"),
         INVALID_ID("service.oauth.validation.id.invalid"),
         INVALID_DETAILS("service.oauth.validation.details.invalid");
 
@@ -55,7 +57,7 @@ public class OAuthClientDetailsService implements ClientDetailsService {
         }
     }
 
-    static enum Errors {
+    enum Errors {
         ERROR_SAVE_USER("service.oauth.error.saveClient");
 
         private String code;
@@ -84,15 +86,16 @@ public class OAuthClientDetailsService implements ClientDetailsService {
     private RoleRepository roleRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private DefaultTokenServices defaultTokenServices;
 
-    public boolean validatePassword(String raw, String encoded){
+    public boolean validatePassword(String raw, String encoded) {
         return slowEquals(raw.getBytes(), encoded.getBytes());
     }
 
-    private boolean slowEquals(byte[] a, byte[] b)
-    {
+    private boolean slowEquals(byte[] a, byte[] b) {
         int diff = a.length ^ b.length;
-        for(int i = 0; i < a.length && i < b.length; i++)
+        for (int i = 0; i < a.length && i < b.length; i++)
             diff |= a[i] ^ b[i];
         return diff == 0;
     }
@@ -103,7 +106,7 @@ public class OAuthClientDetailsService implements ClientDetailsService {
             throw new ClientRegistrationException(Validations.INVALID_ID.getCode());
         }
         ServiceResponse<OauthClientDetails> response = loadClientByIdAsRoot(clientId);
-        if(!Optional.ofNullable(response).isPresent() || !response.isOk()){
+        if (!Optional.ofNullable(response).isPresent() || !response.isOk()) {
             throw new ClientRegistrationException("Invalid credentials");
         }
 
@@ -116,17 +119,17 @@ public class OAuthClientDetailsService implements ClientDetailsService {
             throw new ClientRegistrationException(Validations.INVALID_ID.getCode());
         }
         OauthClientDetails details = oauthClientDetailRepository.findOne(clientId);
-        if(details != null){
-            if(!details.getTenant().getId().equals(tenant.getId())){
-                return ServiceResponseBuilder.<OauthClientDetails> error()
+        if (details != null) {
+            if (!details.getTenant().getId().equals(tenant.getId())) {
+                return ServiceResponseBuilder.<OauthClientDetails>error()
                         .withMessage(Messages.CLIENT_CREDENTIALS_INVALID.getCode())
                         .build();
             }
-            return ServiceResponseBuilder.<OauthClientDetails> ok()
+            return ServiceResponseBuilder.<OauthClientDetails>ok()
                     .withResult(details)
                     .build();
         } else {
-            return ServiceResponseBuilder.<OauthClientDetails> error()
+            return ServiceResponseBuilder.<OauthClientDetails>error()
                     .withMessage(Messages.CLIENT_CREDENTIALS_INVALID.getCode())
                     .build();
         }
@@ -138,19 +141,19 @@ public class OAuthClientDetailsService implements ClientDetailsService {
             throw new ClientRegistrationException(Validations.INVALID_ID.getCode());
         }
         OauthClientDetails details = oauthClientDetailRepository.findOne(clientId);
-        if(details != null){
-            return ServiceResponseBuilder.<OauthClientDetails> ok()
+        if (details != null) {
+            return ServiceResponseBuilder.<OauthClientDetails>ok()
                     .withResult(details)
                     .build();
         } else {
             User user = userRepository.findByEmail(clientId);
             if (user != null) {
-                return ServiceResponseBuilder.<OauthClientDetails> ok()
+                return ServiceResponseBuilder.<OauthClientDetails>ok()
                         .withResult(OauthClientDetails.builder().build().setUserProperties(user))
                         .build();
             }
 
-            return ServiceResponseBuilder.<OauthClientDetails> error()
+            return ServiceResponseBuilder.<OauthClientDetails>error()
                     .withMessage(Messages.CLIENT_CREDENTIALS_INVALID.getCode())
                     .build();
         }
@@ -159,12 +162,12 @@ public class OAuthClientDetailsService implements ClientDetailsService {
     public ServiceResponse<AccessToken> loadTokenByIdAsRoot(String tokenId) {
 
         AccessToken details = accessTokenRepository.findOne(tokenId);
-        if(details != null){
-            return ServiceResponseBuilder.<AccessToken> ok()
+        if (details != null) {
+            return ServiceResponseBuilder.<AccessToken>ok()
                     .withResult(details)
                     .build();
         } else {
-            return ServiceResponseBuilder.<AccessToken> error()
+            return ServiceResponseBuilder.<AccessToken>error()
                     .withMessage(Messages.CLIENT_CREDENTIALS_INVALID.getCode())
                     .build();
         }
@@ -174,7 +177,7 @@ public class OAuthClientDetailsService implements ClientDetailsService {
 
         if (!Optional.ofNullable(tenant).isPresent()) {
             return ServiceResponseBuilder.<AccessToken>error()
-                    .withMessage(Validations.INVALID_TENTANT.getCode()).build();
+                    .withMessage(Validations.INVALID_TENANT.getCode()).build();
         }
 
         if (!Optional.ofNullable(tokenId).isPresent()) {
@@ -183,78 +186,78 @@ public class OAuthClientDetailsService implements ClientDetailsService {
         }
 
         AccessToken details = accessTokenRepository.findOne(tokenId);
-        if(details != null){
+        if (details != null) {
             ServiceResponse<OauthClientDetails> clientDetails =
                     loadClientById(tenant, tokenId);
 
-            if(Optional.ofNullable(clientDetails).isPresent()
-                    || Optional.of(clientDetails.getResult()).isPresent()){
-                return ServiceResponseBuilder.<AccessToken> error()
+            if (Optional.ofNullable(clientDetails).isPresent()
+                    || Optional.of(clientDetails.getResult()).isPresent()) {
+                return ServiceResponseBuilder.<AccessToken>error()
                         .withMessage(Messages.CLIENT_CREDENTIALS_INVALID.getCode())
                         .build();
             }
 
-            return ServiceResponseBuilder.<AccessToken> ok()
+            return ServiceResponseBuilder.<AccessToken>ok()
                     .withResult(details)
                     .build();
         } else {
-            return ServiceResponseBuilder.<AccessToken> error()
+            return ServiceResponseBuilder.<AccessToken>error()
                     .withMessage(Messages.CLIENT_CREDENTIALS_INVALID.getCode())
                     .build();
         }
     }
 
-    public ServiceResponse<AccessToken> deleteTokenAsRoot(String id){
+    public ServiceResponse<AccessToken> deleteTokenAsRoot(String id) {
 
-        if(StringUtils.isEmpty(id)){
+        if (StringUtils.isEmpty(id)) {
             return ServiceResponseBuilder.<AccessToken>error()
                     .withMessage(Validations.INVALID_DETAILS.getCode()).build();
         }
         AccessToken fromDB = accessTokenRepository.findOne(id);
 
-        if(!Optional.ofNullable(fromDB).isPresent()){
+        if (!Optional.ofNullable(fromDB).isPresent()) {
             return ServiceResponseBuilder.<AccessToken>error()
                     .withMessage(Validations.INVALID_DETAILS.getCode()).build();
         }
 
         accessTokenRepository.delete(id);
 
-        return ServiceResponseBuilder.<AccessToken> ok().build();
+        return ServiceResponseBuilder.<AccessToken>ok().build();
     }
 
-    public ServiceResponse<AccessToken> deleteToken(Tenant tenant, String id){
+    public ServiceResponse<AccessToken> deleteToken(Tenant tenant, String id) {
 
         if (!Optional.ofNullable(tenant).isPresent()) {
             return ServiceResponseBuilder.<AccessToken>error()
-                    .withMessage(Validations.INVALID_TENTANT.getCode()).build();
+                    .withMessage(Validations.INVALID_TENANT.getCode()).build();
         }
 
-        if(StringUtils.isEmpty(id)){
+        if (StringUtils.isEmpty(id)) {
             return ServiceResponseBuilder.<AccessToken>error()
                     .withMessage(Validations.INVALID_DETAILS.getCode()).build();
         }
         AccessToken fromDB = accessTokenRepository.findOne(id);
 
-        if(!Optional.ofNullable(fromDB).isPresent()){
+        if (!Optional.ofNullable(fromDB).isPresent()) {
             return ServiceResponseBuilder.<AccessToken>error()
                     .withMessage(Validations.INVALID_DETAILS.getCode()).build();
         }
         OauthClientDetails oauthClientDetails =
                 oauthClientDetailRepository.findOne(fromDB.getClientId());
 
-        if(!Optional.ofNullable(oauthClientDetails).isPresent()){
+        if (!Optional.ofNullable(oauthClientDetails).isPresent()) {
             return ServiceResponseBuilder.<AccessToken>error()
                     .withMessage(Validations.INVALID_DETAILS.getCode()).build();
         }
 
-        if(oauthClientDetails.getTenant().getId() != tenant.getId()){
+        if (oauthClientDetails.getTenant().getId() != tenant.getId()) {
             return ServiceResponseBuilder.<AccessToken>error()
                     .withMessage(Validations.INVALID_DETAILS.getCode()).build();
         }
 
         accessTokenRepository.delete(id);
 
-        return ServiceResponseBuilder.<AccessToken> ok().build();
+        return ServiceResponseBuilder.<AccessToken>ok().build();
     }
 
     public ServiceResponse<List<AccessToken>> loadAllTokens(
@@ -269,7 +272,7 @@ public class OAuthClientDetailsService implements ClientDetailsService {
                 loadAllClients(application);
 
         List<AccessToken> tokens = new ArrayList<>();
-        if(clientsByApplication.isOk()){
+        if (clientsByApplication.isOk()) {
             clientsByApplication.getResult().stream().forEach(client -> {
                 tokens.addAll(accessTokenRepository.findAccessTokensByClientId(
                         client.getClientId()
@@ -291,14 +294,14 @@ public class OAuthClientDetailsService implements ClientDetailsService {
 
         if (!Optional.ofNullable(tenant).isPresent()) {
             return ServiceResponseBuilder.<List<AccessToken>>error()
-                    .withMessage(Validations.INVALID_TENTANT.getCode()).build();
+                    .withMessage(Validations.INVALID_TENANT.getCode()).build();
         }
 
         ServiceResponse<List<OauthClientDetails>> clientsByApplicationAndTenant =
                 loadClientsByTenant(tenant, application);
 
         List<AccessToken> tokens = new ArrayList<>();
-        if(clientsByApplicationAndTenant.isOk()){
+        if (clientsByApplicationAndTenant.isOk()) {
             clientsByApplicationAndTenant.getResult().stream().forEach(client -> {
                 tokens.addAll(accessTokenRepository.findAccessTokensByClientId(
                         client.getClientId()
@@ -329,7 +332,7 @@ public class OAuthClientDetailsService implements ClientDetailsService {
 
         if (!Optional.ofNullable(tenant).isPresent()) {
             return ServiceResponseBuilder.<List<OauthClientDetails>>error()
-                    .withMessage(Validations.INVALID_TENTANT.getCode()).build();
+                    .withMessage(Validations.INVALID_TENANT.getCode()).build();
         }
         return ServiceResponseBuilder.<List<OauthClientDetails>>ok()
                 .withResult(
@@ -357,7 +360,7 @@ public class OAuthClientDetailsService implements ClientDetailsService {
         }
         if (!Optional.ofNullable(tenant).isPresent()) {
             return ServiceResponseBuilder.<OauthClientDetails>error()
-                    .withMessage(Validations.INVALID_TENTANT.getCode()).build();
+                    .withMessage(Validations.INVALID_TENANT.getCode()).build();
         }
         oauthClientDetailRepository.delete(
                 OauthClientDetails.builder()
@@ -368,43 +371,43 @@ public class OAuthClientDetailsService implements ClientDetailsService {
     }
 
     public ServiceResponse<OauthClientDetails> saveClientAsRoot(
-            User user, String tenantDomainName, Application application, OauthClientDetails clientDetails){
+            String tenantDomainName, Application application, OauthClientDetails clientDetails) {
         Tenant tenant = tenantRepository.findByDomainName(tenantDomainName);
-        if(!Optional.ofNullable(tenant).isPresent()){
-            if(!Optional.ofNullable(clientDetails).isPresent()){
+        if (!Optional.ofNullable(tenant).isPresent()) {
+            if (!Optional.ofNullable(clientDetails).isPresent()) {
                 return ServiceResponseBuilder.<OauthClientDetails>error()
                         .withMessage(Validations.INVALID_DETAILS.getCode()).build();
             }
         }
 
-        return saveClient(user, tenant, application, clientDetails);
+        return saveClient(tenant, application, clientDetails);
     }
 
-    private List<Role> getClientRoles(){
+    private List<Role> getClientRoles() {
         return Collections.singletonList(roleRepository.findByName("ROLE_IOT_USER"));
     }
 
-    public ServiceResponse<OauthClientDetails> saveClient(User user, Tenant tenant, Application application, OauthClientDetails clientDetails) {
+    public ServiceResponse<OauthClientDetails> saveClient(Tenant tenant, Application application, OauthClientDetails clientDetails) {
         if (!Optional.ofNullable(tenant).isPresent()) {
             return ServiceResponseBuilder.<OauthClientDetails>error()
-                    .withMessage(Validations.INVALID_TENTANT.getCode()).build();
+                    .withMessage(Validations.INVALID_TENANT.getCode()).build();
         }
 
-        if(!Optional.ofNullable(clientDetails).isPresent()){
+        if (!Optional.ofNullable(clientDetails).isPresent()) {
             return ServiceResponseBuilder.<OauthClientDetails>error()
                     .withMessage(Validations.INVALID_DETAILS.getCode()).build();
         }
 
-        if(!Optional.ofNullable(clientDetails.getClientId()).isPresent()){
+        if (!Optional.ofNullable(clientDetails.getClientId()).isPresent()) {
             return ServiceResponseBuilder.<OauthClientDetails>error()
                     .withMessage(Validations.INVALID_DETAILS.getCode()).build();
         }
 
-        if(!Optional.ofNullable(clientDetails.getClientId()).isPresent()){
+        if (!Optional.ofNullable(clientDetails.getClientId()).isPresent()) {
             return ServiceResponseBuilder.<OauthClientDetails>error()
                     .withMessage(Validations.INVALID_DETAILS.getCode()).build();
         }
-        if(!Optional.ofNullable(clientDetails.getClientSecret()).isPresent()){
+        if (!Optional.ofNullable(clientDetails.getClientSecret()).isPresent()) {
             clientDetails.setClientSecret(UUID.randomUUID().toString());
         }
 
@@ -424,6 +427,68 @@ public class OAuthClientDetailsService implements ClientDetailsService {
         return ServiceResponseBuilder.<OauthClientDetails>ok()
                 .withResult(clientDetails)
                 .build();
+    }
+
+    public ServiceResponse<OAuth2AccessToken> getGatewayAccessToken(Tenant tenant, Application application, Gateway gateway) {
+
+        // get gateway oauth client
+        ServiceResponse<OauthClientDetails> clientDetailsResponse = getGatewayClient(tenant, application, gateway);
+        if (!clientDetailsResponse.isOk()) {
+            return ServiceResponseBuilder.<OAuth2AccessToken>error()
+                    .withMessages(clientDetailsResponse.getResponseMessages())
+                    .build();
+        }
+
+        OauthClientDetails clientDetails = clientDetailsResponse.getResult();
+
+        Role gatewayRole = roleRepository.findByName("ROLE_IOT_USER");
+        Set<GrantedAuthority> authorities = new HashSet<>();
+        for (Privilege privilege : gatewayRole.getPrivileges()) {
+            authorities.add(new SimpleGrantedAuthority(privilege.getName()));
+        }
+
+        Set<String> scopes = new HashSet<>();
+        scopes.add("read");
+        scopes.add("write");
+
+        OAuth2Request authorizationRequest = new OAuth2Request(
+                null, clientDetails.getClientId(),
+                authorities, true, scopes, null, "",
+                null, null);
+
+        OAuth2Authentication authenticationRequest = new OAuth2Authentication(
+                authorizationRequest, null);
+        authenticationRequest.setAuthenticated(true);
+
+        OAuth2AccessToken accessToken = defaultTokenServices.createAccessToken(authenticationRequest);
+
+        return ServiceResponseBuilder.<OAuth2AccessToken>ok()
+                .withResult(accessToken)
+                .build();
+
+    }
+
+    private ServiceResponse<OauthClientDetails> getGatewayClient(Tenant tenant, Application application, Gateway gateway) {
+        OauthClientDetails clientDetails;
+
+        ServiceResponse<OauthClientDetails> oauthClientResponse = loadClientByIdAsRoot(gateway.getRoutUriTemplate());
+
+        if (!oauthClientResponse.isOk()) {
+            // check if the response is of 'not found'
+            if (oauthClientResponse.getResponseMessages().containsKey(OAuthClientDetailsService.Messages.CLIENT_CREDENTIALS_INVALID.getCode())) {
+                // if not exists, creoauthClientDetailRepositoryate a new one
+                clientDetails = OauthClientDetails.builder()
+                        .build()
+                        .setGatewayProperties(gateway);
+
+                return this.saveClient(tenant, application, clientDetails);
+            } else {
+                return oauthClientResponse;
+            }
+        } else {
+            return oauthClientResponse;
+        }
+
     }
 
 }

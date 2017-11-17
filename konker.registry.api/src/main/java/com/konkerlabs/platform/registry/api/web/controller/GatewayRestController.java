@@ -9,8 +9,11 @@ import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Gateway;
 import com.konkerlabs.platform.registry.business.model.Location;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.services.api.*;
+import com.konkerlabs.platform.registry.business.services.api.GatewayService;
 import com.konkerlabs.platform.registry.business.services.api.GatewayService.Validations;
+import com.konkerlabs.platform.registry.business.services.api.LocationService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.idm.config.OAuthClientDetailsService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -18,6 +21,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -33,6 +37,9 @@ public class GatewayRestController extends AbstractRestController implements Ini
 
     @Autowired
     private GatewayService gatewayService;
+
+    @Autowired
+    private OAuthClientDetailsService oAuthClientDetailsService;
 
     private Set<String> validationsCode = new HashSet<>();
 
@@ -78,6 +85,36 @@ public class GatewayRestController extends AbstractRestController implements Ini
             throw new NotFoundResponseException(user, gatewayResponse);
         } else {
             return new GatewayVO().apply(gatewayResponse.getResult());
+        }
+
+    }
+
+    @GetMapping(path = "/{gatewayGuid}/token")
+    @PreAuthorize("hasAuthority('EDIT_GATEWAY')")
+    @ApiOperation(
+            value = "Get a gateway by guid",
+            response = RestResponse.class
+    )
+    public OAuth2AccessToken token(@PathVariable("application") String applicationId,
+                                   @PathVariable("gatewayGuid") String gatewayGuid) throws BadServiceResponseException, NotFoundResponseException {
+
+        Tenant tenant = user.getTenant();
+        Application application = getApplication(applicationId);
+
+        ServiceResponse<Gateway> gatewayResponse = gatewayService.getByGUID(tenant, application, gatewayGuid);
+        Gateway gateway;
+
+        if (!gatewayResponse.isOk()) {
+            throw new NotFoundResponseException(user, gatewayResponse);
+        } else {
+            gateway = gatewayResponse.getResult();
+        }
+
+        ServiceResponse<OAuth2AccessToken> accessTokenServiceResponse = oAuthClientDetailsService.getGatewayAccessToken(tenant, application, gateway);
+        if (accessTokenServiceResponse.isOk()) {
+            return accessTokenServiceResponse.getResult();
+        } else {
+            throw new BadServiceResponseException(user, accessTokenServiceResponse, validationsCode);
         }
 
     }
