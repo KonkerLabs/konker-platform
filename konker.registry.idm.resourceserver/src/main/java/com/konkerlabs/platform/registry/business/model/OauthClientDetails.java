@@ -1,6 +1,6 @@
-package com.konkerlabs.platform.registry.idm.business.model;
+package com.konkerlabs.platform.registry.business.model;
 
-import com.konkerlabs.platform.registry.idm.business.model.enumerations.Language;
+import com.konkerlabs.platform.registry.business.model.enumerations.Language;
 import lombok.Builder;
 import lombok.experimental.Tolerate;
 import org.springframework.data.annotation.CreatedDate;

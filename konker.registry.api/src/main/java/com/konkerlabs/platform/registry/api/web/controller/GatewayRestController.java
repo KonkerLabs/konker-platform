@@ -13,7 +13,7 @@ import com.konkerlabs.platform.registry.business.services.api.GatewayService;
 import com.konkerlabs.platform.registry.business.services.api.GatewayService.Validations;
 import com.konkerlabs.platform.registry.business.services.api.LocationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.idm.config.OAuthClientDetailsService;
+import com.konkerlabs.platform.registry.idm.services.OAuth2AccessTokenService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -39,7 +39,7 @@ public class GatewayRestController extends AbstractRestController implements Ini
     private GatewayService gatewayService;
 
     @Autowired
-    private OAuthClientDetailsService oAuthClientDetailsService;
+    private OAuth2AccessTokenService oAuth2AccessTokenService;
 
     private Set<String> validationsCode = new HashSet<>();
 
@@ -110,7 +110,7 @@ public class GatewayRestController extends AbstractRestController implements Ini
             gateway = gatewayResponse.getResult();
         }
 
-        ServiceResponse<OAuth2AccessToken> accessTokenServiceResponse = oAuthClientDetailsService.getGatewayAccessToken(tenant, application, gateway);
+        ServiceResponse<OAuth2AccessToken> accessTokenServiceResponse = oAuth2AccessTokenService.getGatewayAccessToken(tenant, application, gateway);
         if (accessTokenServiceResponse.isOk()) {
             return accessTokenServiceResponse.getResult();
         } else {

@@ -1,19 +1,17 @@
 package com.konkerlabs.platform.registry.api.test.config;
 
-import com.konkerlabs.platform.registry.business.model.OauthClientDetails;
-import com.konkerlabs.platform.registry.business.services.api.*;
-import com.konkerlabs.platform.registry.idm.config.OAuthClientDetailsService;
-import org.mockito.Mockito;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
 import com.konkerlabs.platform.registry.business.model.enumerations.Language;
 import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
-import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
+import com.konkerlabs.platform.registry.business.services.api.*;
+import com.konkerlabs.platform.registry.business.model.OauthClientDetails;
+import com.konkerlabs.platform.registry.idm.services.OAuth2AccessTokenService;
+import org.mockito.Mockito;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class WebTestConfiguration {
@@ -127,13 +125,8 @@ public class WebTestConfiguration {
     }
 
     @Bean
-    public OAuthClientDetailsService oauthClientDetailsService() {
-        return Mockito.mock(OAuthClientDetailsService.class);
-    }
-
-    @Bean
-    public DefaultTokenServices defaultTokenServices() {
-        return Mockito.mock(DefaultTokenServices.class);
+    public OAuth2AccessTokenService oAuth2AccessTokenService() {
+        return Mockito.mock(OAuth2AccessTokenService.class);
     }
 
     @Bean

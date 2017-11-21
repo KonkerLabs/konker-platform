@@ -3,9 +3,8 @@ package com.konkerlabs.platform.registry.api.exceptions;
 import java.util.Locale;
 import java.util.Map;
 
-import com.konkerlabs.platform.registry.business.model.OauthClientDetails;
-import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.model.OauthClientDetails;
 
 public class NotFoundResponseException extends Exception {
 

@@ -1,7 +1,7 @@
 package com.konkerlabs.platform.registry.idm.security;
 
-import com.konkerlabs.platform.registry.idm.business.model.OauthClientDetails;
-import com.konkerlabs.platform.registry.idm.business.services.OAuthClientDetailsService;
+import com.konkerlabs.platform.registry.business.model.OauthClientDetails;
+import com.konkerlabs.platform.registry.idm.services.OAuthClientDetailsService;
 import org.springframework.beans.factory.SmartFactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;

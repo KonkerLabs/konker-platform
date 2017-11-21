@@ -1,7 +1,7 @@
 package com.konkerlabs.platform.registry.test.base.matchers;;
 
-import com.konkerlabs.platform.registry.idm.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.idm.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;

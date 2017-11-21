@@ -1,10 +1,9 @@
 package com.konkerlabs.platform.registry.idm.services;
 
-import com.konkerlabs.platform.registry.idm.business.model.*;
-import com.konkerlabs.platform.registry.idm.business.repositories.RoleRepository;
-import com.konkerlabs.platform.registry.idm.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.idm.business.services.api.ServiceResponseBuilder;
-import com.konkerlabs.platform.registry.idm.business.services.OAuthClientDetailsService;
+import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.repositories.RoleRepository;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

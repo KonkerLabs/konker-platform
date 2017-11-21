@@ -1,9 +1,14 @@
-package com.konkerlabs.platform.registry.idm.business.services;
+package com.konkerlabs.platform.registry.idm.services;
 
-import com.konkerlabs.platform.registry.idm.business.model.*;
-import com.konkerlabs.platform.registry.idm.business.repositories.*;
-import com.konkerlabs.platform.registry.idm.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.idm.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.repositories.*;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.business.model.AccessToken;
+import com.konkerlabs.platform.registry.business.model.OauthClientDetails;
+import com.konkerlabs.platform.registry.business.repositories.AccessTokenRepository;
+import com.konkerlabs.platform.registry.business.repositories.AuthorizationCodeRepository;
+import com.konkerlabs.platform.registry.business.repositories.OauthClientDetailRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +23,7 @@ public class OAuthClientDetailsService implements ClientDetailsService {
 
     private static final Logger LOG = LoggerFactory.getLogger(OAuthClientDetailsService.class);
 
-    enum Validations {
+    public enum Validations {
         INVALID_TENANT("service.oauth.validation.tenant.invalid"),
         INVALID_ID("service.oauth.validation.id.invalid"),
         INVALID_DETAILS("service.oauth.validation.details.invalid");
@@ -397,10 +402,6 @@ public class OAuthClientDetailsService implements ClientDetailsService {
                     .withMessage(Validations.INVALID_DETAILS.getCode()).build();
         }
 
-        if (!Optional.ofNullable(clientDetails.getClientId()).isPresent()) {
-            return ServiceResponseBuilder.<OauthClientDetails>error()
-                    .withMessage(Validations.INVALID_DETAILS.getCode()).build();
-        }
         if (!Optional.ofNullable(clientDetails.getClientSecret()).isPresent()) {
             clientDetails.setClientSecret(UUID.randomUUID().toString());
         }

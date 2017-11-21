@@ -1,6 +1,6 @@
 package com.konkerlabs.platform.registry.test.base;
 
-import com.konkerlabs.platform.registry.idm.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.Tenant;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

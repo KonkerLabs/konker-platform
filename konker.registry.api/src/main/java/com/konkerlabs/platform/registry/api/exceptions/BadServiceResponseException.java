@@ -4,10 +4,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import com.konkerlabs.platform.registry.business.model.OauthClientDetails;
-import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.model.enumerations.Language;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.model.OauthClientDetails;
 
 public class BadServiceResponseException extends Exception {
 

@@ -1,4 +1,4 @@
-package com.konkerlabs.platform.registry.idm.business.services;
+package com.konkerlabs.platform.registry.idm.services;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;

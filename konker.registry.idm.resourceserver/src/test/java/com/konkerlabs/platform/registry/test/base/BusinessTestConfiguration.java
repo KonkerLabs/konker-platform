@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ComponentScan(basePackages = {
 	"com.konkerlabs.platform.registry.idm",
-        "com.konkerlabs.platform.registry.idm.business",
     "com.konkerlabs.platform.utilities",
 	"com.konkerlabs.platform.registry.audit.repositories",
 	"com.konkerlabs.platform.registry.billing.repositories"

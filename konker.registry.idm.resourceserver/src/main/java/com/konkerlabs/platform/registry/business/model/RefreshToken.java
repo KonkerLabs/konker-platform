@@ -1,4 +1,4 @@
-package com.konkerlabs.platform.registry.idm.business.model;
+package com.konkerlabs.platform.registry.business.model;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
