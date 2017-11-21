@@ -36,8 +36,6 @@ import java.util.*;
 @Api(tags = "user subscription")
 public class UserSubscriptionRestController implements InitializingBean {
 
-    private static final String ROLE_IOT_USER = "ROLE_IOT_USER";
-
 	@Autowired
     private UserService userService;
 
@@ -54,7 +52,7 @@ public class UserSubscriptionRestController implements InitializingBean {
             @ApiParam(name = "body", value = "JSON filled with the fields described in Model and Example Value beside", required = true)
             @RequestBody UserSubscriptionVO userForm) throws BadServiceResponseException {
 
-        Role role = roleService.findByName(ROLE_IOT_USER).getResult();
+        Role role = roleService.findByName(RoleService.ROLE_IOT_USER).getResult();
 
         PasswordType passwordType = getPasswordType(userForm.getPasswordType());
         if (passwordType == null) {

@@ -48,7 +48,6 @@ import io.swagger.annotations.ApiParam;
 @Api(tags = "users")
 public class UserRestController implements InitializingBean {
 
-    private static final String ROLE_IOT_USER = "ROLE_IOT_USER";
 
 	@Autowired
     private UserService userService;
@@ -108,7 +107,7 @@ public class UserRestController implements InitializingBean {
             @RequestBody UserVO userForm) throws BadServiceResponseException {
 
         Tenant tenant = user.getTenant();
-        Role role = roleService.findByName(ROLE_IOT_USER).getResult();
+        Role role = roleService.findByName(RoleService.ROLE_IOT_USER).getResult();
 
         User userFromForm = User.builder()
         		.email(userForm.getEmail())

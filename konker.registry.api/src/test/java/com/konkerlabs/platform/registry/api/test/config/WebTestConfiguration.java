@@ -9,9 +9,11 @@ import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
 import com.konkerlabs.platform.registry.business.services.api.*;
 import com.konkerlabs.platform.registry.business.model.OauthClientDetails;
 import com.konkerlabs.platform.registry.idm.services.OAuth2AccessTokenService;
+import com.konkerlabs.platform.registry.idm.services.OAuthClientDetailsService;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 
 @Configuration
 public class WebTestConfiguration {
@@ -127,6 +129,16 @@ public class WebTestConfiguration {
     @Bean
     public OAuth2AccessTokenService oAuth2AccessTokenService() {
         return Mockito.mock(OAuth2AccessTokenService.class);
+    }
+
+    @Bean
+    public DefaultTokenServices defaultTokenServices() {
+        return Mockito.mock(DefaultTokenServices.class);
+    }
+
+    @Bean
+    public OAuthClientDetailsService oAuthClientDetailsService() {
+        return Mockito.mock(OAuthClientDetailsService.class);
     }
 
     @Bean

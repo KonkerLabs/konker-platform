@@ -2,6 +2,7 @@ package com.konkerlabs.platform.registry.idm.services;
 
 import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.repositories.RoleRepository;
+import com.konkerlabs.platform.registry.business.services.api.RoleService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +41,7 @@ public class OAuth2AccessTokenService {
 
         OauthClientDetails clientDetails = clientDetailsResponse.getResult();
 
-        Role gatewayRole = roleRepository.findByName("ROLE_IOT_USER");
+        Role gatewayRole = roleRepository.findByName(RoleService.ROLE_IOT_GATEWAY);
         Set<GrantedAuthority> authorities = new HashSet<>();
         for (Privilege privilege : gatewayRole.getPrivileges()) {
             authorities.add(new SimpleGrantedAuthority(privilege.getName()));

@@ -2,6 +2,7 @@ package com.konkerlabs.platform.registry.idm.services;
 
 import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.repositories.*;
+import com.konkerlabs.platform.registry.business.services.api.RoleService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.model.AccessToken;
@@ -383,7 +384,7 @@ public class OAuthClientDetailsService implements ClientDetailsService {
     }
 
     private List<Role> getClientRoles() {
-        return Collections.singletonList(roleRepository.findByName("ROLE_IOT_USER"));
+        return Collections.singletonList(roleRepository.findByName(RoleService.ROLE_IOT_USER));
     }
 
     public ServiceResponse<OauthClientDetails> saveClient(Tenant tenant, Application application, OauthClientDetails clientDetails) {
