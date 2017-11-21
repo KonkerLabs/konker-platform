@@ -1,9 +1,8 @@
 package com.konkerlabs.platform.registry.api.config.oauth;
 
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-import java.util.Arrays;
-
+import com.konkerlabs.platform.registry.idm.services.MongoTokenStore;
+import com.konkerlabs.platform.security.exceptions.SecurityException;
+import com.konkerlabs.platform.security.managers.PasswordManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,12 +23,11 @@ import org.springframework.security.oauth2.provider.ClientDetailsService;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
-import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
-import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 
-import com.konkerlabs.platform.security.exceptions.SecurityException;
-import com.konkerlabs.platform.security.managers.PasswordManager;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.util.Arrays;
 
 @Configuration
 @EnableAuthorizationServer
@@ -37,6 +35,9 @@ import com.konkerlabs.platform.security.managers.PasswordManager;
 public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(OAuth2Config.class);
+
+	@Autowired
+	private MongoTokenStore mongoTokenStore;
 
 	@Autowired
 	private AuthenticationManager authenticationManager;
@@ -57,7 +58,7 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 		
 		
 		endpoints.authenticationManager(authenticationManager)
-				.tokenStore(tokenStore())
+				.tokenStore(mongoTokenStore)
 				.tokenEnhancer(tokenEnhancerChain)
 				.allowedTokenEndpointRequestMethods(HttpMethod.GET, HttpMethod.POST);
 	}
@@ -104,15 +105,10 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 	}
 
 	@Bean
-	public TokenStore tokenStore() {
-		return new JwtTokenStore(accessTokenConverter());
-	}
-	
-	@Bean
 	@Primary
 	public DefaultTokenServices tokenServices() {
 		DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
-		defaultTokenServices.setTokenStore(tokenStore());
+		defaultTokenServices.setTokenStore(mongoTokenStore);
 		defaultTokenServices.setSupportRefreshToken(true);
 		return defaultTokenServices;
 	}

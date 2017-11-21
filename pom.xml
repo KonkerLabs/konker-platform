@@ -13,6 +13,7 @@
         <module>konker.registry.services.core</module>
         <module>konker.registry.services.storage.cassandra</module>
         <module>konker.registry.services.storage.mongodb</module>
+        <module>konker.registry.idm.resourceserver</module>
         <module>konker.registry.web</module>
         <module>konker.registry.api</module>
         <module>konker.registry.data</module>

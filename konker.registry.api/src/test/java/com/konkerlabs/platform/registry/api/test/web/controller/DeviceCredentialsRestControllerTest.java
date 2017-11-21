@@ -9,6 +9,7 @@ import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
+import com.konkerlabs.platform.registry.business.model.enumerations.Language;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.DeviceDataURLs;
@@ -57,9 +58,6 @@ public class DeviceCredentialsRestControllerTest extends WebLayerTestContext {
     @Autowired
     private Application application;
 
-    @Autowired
-    private User user;
-
     private Device device1;
 
     private String BASEPATH = "deviceCredentials";
@@ -96,7 +94,7 @@ public class DeviceCredentialsRestControllerTest extends WebLayerTestContext {
         when(deviceRegisterService.getByDeviceGuid(tenant, application, device1.getGuid()))
                 .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device1).build());
 
-        when(deviceRegisterService.getDeviceDataURLs(tenant, application, device1, user.getLanguage().getLocale()))
+        when(deviceRegisterService.getDeviceDataURLs(tenant, application, device1, Language.EN.getLocale()))
                 .thenReturn(ServiceResponseBuilder.<DeviceDataURLs>ok().withResult(deviceDataURLs).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH, device1.getGuid()))
@@ -159,7 +157,7 @@ public class DeviceCredentialsRestControllerTest extends WebLayerTestContext {
         when(deviceRegisterService.generateSecurityPassword(tenant, application, device1.getGuid()))
                  .thenReturn(ServiceResponseBuilder.<DeviceRegisterService.DeviceSecurityCredentials>ok().withResult(credentials).build());
 
-        when(deviceRegisterService.getDeviceDataURLs(tenant, application, device1, user.getLanguage().getLocale()))
+        when(deviceRegisterService.getDeviceDataURLs(tenant, application, device1, Language.EN.getLocale()))
                 .thenReturn(ServiceResponseBuilder.<DeviceDataURLs>ok().withResult(deviceDataURLs).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.post(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH, device1.getGuid()))

@@ -12,7 +12,10 @@ public class ResourceServer extends ResourceServerConfigurerAdapter {
 
 	public static final String RESOURCE_ID = "registryapi";
 	private static final String[] PUBLIC_RESOURCES = new String[]{
+			// OAuth2
 			"/oauth/token",
+
+			// Swagger
 			"/configuration/ui",
 			"/swagger-ui.html",
 			"/swagger-resources",
@@ -22,7 +25,7 @@ public class ResourceServer extends ResourceServerConfigurerAdapter {
 			"/static/**",
 			"/v2/api-docs",
 
-            // endpoints with no authentication
+            // Endpoints with no authentication
             "/userSubscription"
 	};
 
