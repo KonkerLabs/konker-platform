@@ -32,6 +32,7 @@ public class DeviceEventProcessor {
         APIKEY_MISSING("integration.event_processor.api_key.missing"),
         CHANNEL_MISSING("integration.event_processor.channel.missing"),
         DEVICE_NOT_FOUND("integration.event_processor.channel.not_found"),
+        INVALID_GATEWAY_LOCATION("integration.event_processor.gateway.location.invalid"),
         INVALID_PAYLOAD("integration.event_processor.payload.invalid");
 
         private String code;
@@ -102,7 +103,9 @@ public class DeviceEventProcessor {
     						map.get("channel").toString(), 
     						jsonParsingService.toJsonString((Map<String, Object>) map.get("payload")), 
     						Instant.now());
-    			}
+    			} else {
+    			    throw new BusinessException(Messages.INVALID_GATEWAY_LOCATION.getCode());
+                }
     		}
     		
 		}
