@@ -1,6 +1,5 @@
 package com.konkerlabs.platform.registry.business.model;
 
-
 import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
 import com.konkerlabs.platform.registry.business.model.enumerations.Language;
@@ -15,7 +14,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.oauth2.provider.ClientDetails;
 
 import java.time.Instant;
 import java.util.*;
@@ -24,7 +22,7 @@ import java.util.*;
 @Document(collection = "users")
 @Data
 @Builder
-public class User implements URIDealer, UserDetails, ClientDetails {
+public class User implements URIDealer, UserDetails {
 
 	private static final long serialVersionUID = 1L;
 
@@ -128,75 +126,6 @@ public class User implements URIDealer, UserDetails, ClientDetails {
     	return name;
     }
 
-    //methods of ClientDetails OAuth2
-	@Override
-	public String getClientId() {
-		return getEmail();
-	}
-
-	@Override
-	public Set<String> getResourceIds() {
-		return Collections.emptySet();
-	}
-
-	@Override
-	public boolean isSecretRequired() {
-		return true;
-	}
-
-	@Override
-	public String getClientSecret() {
-		return getPassword();
-	}
-
-	@Override
-	public boolean isScoped() {
-		return true;
-	}
-
-	@Override
-	public Set<String> getScope() {
-		Set<String> scopes = new HashSet<>();
-		scopes.add("trust");
-		scopes.add("read");
-		scopes.add("write");
-		return scopes;
-	}
-
-	@Override
-	public Set<String> getAuthorizedGrantTypes() {
-		Set<String> grantTypes = new HashSet<>();
-		grantTypes.add("client_credentials");
-		grantTypes.add("password");
-		return grantTypes;
-	}
-
-	@Override
-	public Set<String> getRegisteredRedirectUri() {
-		return Collections.singleton("/");
-	}
-
-	@Override
-	public Integer getAccessTokenValiditySeconds() {
-		return 0;
-	}
-
-	@Override
-	public Integer getRefreshTokenValiditySeconds() {
-		return 0;
-	}
-
-	@Override
-	public boolean isAutoApprove(String scope) {
-		return true;
-	}
-
-	@Override
-	public Map<String, Object> getAdditionalInformation() {
-		return Collections.emptyMap();
-	}
-	//methods of ClientDetails OAuth2
-	
 	public enum JobEnum {
 		CEO("model.user.job.ceo"),
 		CIO("model.user.job.cio"),

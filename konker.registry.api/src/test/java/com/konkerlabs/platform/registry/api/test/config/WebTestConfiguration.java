@@ -1,16 +1,19 @@
 package com.konkerlabs.platform.registry.api.test.config;
 
-import com.konkerlabs.platform.registry.business.services.api.*;
-import org.mockito.Mockito;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
 import com.konkerlabs.platform.registry.business.model.enumerations.Language;
 import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
+import com.konkerlabs.platform.registry.business.services.api.*;
+import com.konkerlabs.platform.registry.business.model.OauthClientDetails;
+import com.konkerlabs.platform.registry.idm.services.OAuth2AccessTokenService;
+import com.konkerlabs.platform.registry.idm.services.OAuthClientDetailsService;
+import org.mockito.Mockito;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 
 @Configuration
 public class WebTestConfiguration {
@@ -26,14 +29,16 @@ public class WebTestConfiguration {
     }
 
     @Bean
-    public User user() {
-        return User.builder()
+    public OauthClientDetails user() {
+        User user = User.builder()
                 .email("user@domain.com")
                 .zoneId(TimeZone.AMERICA_SAO_PAULO)
                 .language(Language.EN)
                 .avatar("default.jpg")
                 .dateFormat(DateFormat.YYYYMMDD)
                 .tenant(tenant()).build();
+
+        return OauthClientDetails.builder().build().setUserProperties(user);
     }
 
     @Bean
@@ -119,6 +124,21 @@ public class WebTestConfiguration {
     @Bean
     public GatewayService gatewayService() {
         return Mockito.mock(GatewayService.class);
+    }
+
+    @Bean
+    public OAuth2AccessTokenService oAuth2AccessTokenService() {
+        return Mockito.mock(OAuth2AccessTokenService.class);
+    }
+
+    @Bean
+    public DefaultTokenServices defaultTokenServices() {
+        return Mockito.mock(DefaultTokenServices.class);
+    }
+
+    @Bean
+    public OAuthClientDetailsService oAuthClientDetailsService() {
+        return Mockito.mock(OAuthClientDetailsService.class);
     }
 
     @Bean

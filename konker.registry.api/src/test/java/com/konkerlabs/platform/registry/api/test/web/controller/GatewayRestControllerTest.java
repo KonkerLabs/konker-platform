@@ -8,6 +8,7 @@ import com.konkerlabs.platform.registry.api.web.controller.GatewayRestController
 import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
 import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.services.api.*;
+import com.konkerlabs.platform.registry.idm.services.OAuth2AccessTokenService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,6 +19,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
+import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -60,6 +63,9 @@ public class GatewayRestControllerTest extends WebLayerTestContext {
 
     @Autowired
     private LocationSearchService locationSearchService;
+
+    @Autowired
+    private OAuth2AccessTokenService oAuth2AccessTokenService;
 
     private Location location;
 
@@ -104,8 +110,8 @@ public class GatewayRestControllerTest extends WebLayerTestContext {
     @After
     public void tearDown() {
         Mockito.reset(applicationService);
+        Mockito.reset(oAuth2AccessTokenService);
     }
-
 
     @Test
     public void shouldListGateways() throws Exception {
@@ -372,6 +378,29 @@ public class GatewayRestControllerTest extends WebLayerTestContext {
             	.andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
             	.andExpect(jsonPath("$.messages").exists())
             	.andExpect(jsonPath("$.result").doesNotExist());
+
+    }
+
+    @Test
+    public void shouldCreateToken() throws Exception {
+
+        OAuth2AccessToken oAuth2AccessToken = new DefaultOAuth2AccessToken("ab66tfz3mw");
+
+        when(oAuth2AccessTokenService.getGatewayAccessToken(tenant, application, gateway))
+                .thenReturn(ServiceResponseBuilder.<OAuth2AccessToken> ok().withResult(oAuth2AccessToken).build());
+
+        getMockMvc().perform(MockMvcRequestBuilders
+                .get(MessageFormat.format("/{0}/{1}/{2}/token", application.getName(), BASEPATH, gateway.getGuid()))
+                .contentType("application/json")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/json;charset=UTF-8"))
+                .andExpect(jsonPath("$.code", is(HttpStatus.OK.value())))
+                .andExpect(jsonPath("$.status", is("success")))
+                .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                .andExpect(jsonPath("$.result").isMap())
+                .andExpect(jsonPath("$.result.access_token", is("ab66tfz3mw")))
+        ;
 
     }
 

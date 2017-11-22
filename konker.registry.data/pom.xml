@@ -110,6 +110,12 @@
             <artifactId>konker.registry.services.storage.cassandra</artifactId>
             <version>0.0.1</version>
         </dependency>
+        <!-- Konker IDM -->
+        <dependency>
+            <artifactId>konker.registry.idm.resourceserver</artifactId>
+            <groupId>com.konkerlabs.platform</groupId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
         <!-- HTTP -->
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>

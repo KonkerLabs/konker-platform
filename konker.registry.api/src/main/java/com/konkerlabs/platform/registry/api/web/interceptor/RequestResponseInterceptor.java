@@ -15,9 +15,9 @@ import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.UserService;
 
-public class ResquestResponseInterceptor extends HandlerInterceptorAdapter {
+public class RequestResponseInterceptor extends HandlerInterceptorAdapter {
 
-	private Logger LOGGER = LoggerFactory.getLogger(ResquestResponseInterceptor.class);
+	private Logger LOGGER = LoggerFactory.getLogger(RequestResponseInterceptor.class);
 
 	@Autowired
 	private UserService userService;
