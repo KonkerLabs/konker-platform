@@ -719,4 +719,15 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
     }
 
+	@Override
+	public ServiceResponse<Device> findByDeviceId(Tenant tenant, Application application, String deviceId) {
+		ServiceResponse<Device> validationResponse = validate(tenant, application);
+        if (!validationResponse.isOk()) {
+            return validationResponse;
+        }
+
+        Device device = deviceRepository.findAllByTenantIdApplicationNameDeviceId(tenant.getId(), application.getName(), deviceId);
+        return ServiceResponseBuilder.<Device>ok().withResult(device).build();
+	}
+
 }
