@@ -6,10 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.json.JSONArray;
 import org.junit.After;
@@ -32,11 +29,13 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Gateway;
 import com.konkerlabs.platform.registry.business.model.Location;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.data.config.WebMvcConfig;
+import com.konkerlabs.platform.registry.idm.services.OAuthClientDetailsService;
 import com.konkerlabs.platform.registry.integration.endpoints.GatewayEventRestEndpoint;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
 import com.konkerlabs.platform.registry.test.data.base.BusinessTestConfiguration;
@@ -74,6 +73,9 @@ public class GatewayEventRestEndpointTest extends WebLayerTestContext {
 
     @Autowired
     private DeviceRegisterService deviceRegisterService;
+    
+    @Autowired
+    private OAuthClientDetailsService oAuthClientDetailsService;
 
     private Gateway gateway;
     private String json;
@@ -85,11 +87,12 @@ public class GatewayEventRestEndpointTest extends WebLayerTestContext {
                 applicationContext,
                 deviceEventProcessor,
                 jsonParsingService,
-                deviceRegisterService);
+                deviceRegisterService,
+                oAuthClientDetailsService);
         
         gateway = Gateway.builder()
         		.active(true)
-        		.application(null)
+        		.application(Application.builder().name("default").build())
         		.description("GW smart")
         		.guid("7d51c242-81db-11e6-a8c2-0746f010e945")
         		.id("gateway1")
@@ -186,6 +189,11 @@ public class GatewayEventRestEndpointTest extends WebLayerTestContext {
         @Bean
         public JsonParsingService jsonParsingService() {
             return Mockito.mock(JsonParsingService.class);
+        }
+        
+        @Bean
+        public OAuthClientDetailsService oAuthClientDetailsService() {
+            return Mockito.mock(OAuthClientDetailsService.class);
         }
 
     }
