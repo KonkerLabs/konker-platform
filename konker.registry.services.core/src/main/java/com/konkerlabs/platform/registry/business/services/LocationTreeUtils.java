@@ -1,19 +1,10 @@
 package com.konkerlabs.platform.registry.business.services;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-
+import com.konkerlabs.platform.registry.business.model.Location;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.konkerlabs.platform.registry.business.model.Location;
+import java.util.*;
 
 public class LocationTreeUtils {
 
@@ -154,7 +145,7 @@ public class LocationTreeUtils {
 
     }
 
-    public static List<Location> listExistingLocations(Location currentTree, Location newTree) {
+        public static List<Location> listExistingLocations(Location currentTree, Location newTree) {
 
         List<Location> existingLocations = new ArrayList<>();
 
@@ -182,4 +173,12 @@ public class LocationTreeUtils {
 
     }
 
+    public static Boolean isSublocationOf(Location root, Location childCandidate) {
+        return getNodesListBreadthFirstOrder(root)
+                .stream()
+                .filter(item -> item != null && childCandidate != null
+                        && childCandidate.getName() != null &&
+                        childCandidate.getName().equals(item.getName()))
+                .count() > 0;
+    }
 }

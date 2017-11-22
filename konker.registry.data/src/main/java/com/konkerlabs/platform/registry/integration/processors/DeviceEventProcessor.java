@@ -1,9 +1,14 @@
 package com.konkerlabs.platform.registry.integration.processors;
 
-import java.text.MessageFormat;
-import java.time.Instant;
-import java.util.Optional;
-
+import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
+import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.Gateway;
+import com.konkerlabs.platform.registry.business.services.LocationTreeUtils;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.data.services.api.DeviceLogEventService;
+import com.konkerlabs.platform.registry.data.services.routes.api.EventRouteExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,13 +16,9 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.data.services.api.DeviceLogEventService;
-import com.konkerlabs.platform.registry.data.services.routes.api.EventRouteExecutor;
+import java.text.MessageFormat;
+import java.time.Instant;
+import java.util.Optional;
 
 @Component
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
@@ -48,6 +49,7 @@ public class DeviceEventProcessor {
     private DeviceRegisterService deviceRegisterService;
     private DeviceLogEventService deviceLogEventService;
 
+
     @Autowired
     public DeviceEventProcessor(DeviceLogEventService deviceLogEventService,
                                 EventRouteExecutor eventRouteExecutor,
@@ -59,6 +61,10 @@ public class DeviceEventProcessor {
 
     public void process(String apiKey, String channel, String payload) throws BusinessException {
         process(apiKey, channel,  payload, Instant.now());
+    }
+
+    private Boolean isValidAuthority(Gateway gateway, Device device) throws BusinessException {
+        return LocationTreeUtils.isSublocationOf(gateway.getLocation(), device.getLocation());
     }
 
     public void process(String apiKey, String channel, String payload, Instant timestamp) throws BusinessException {
