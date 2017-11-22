@@ -5,7 +5,6 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.mockito.Mockito.spy;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -13,7 +12,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.json.JSONArray;
-import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -26,7 +24,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -34,7 +32,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
-import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.Gateway;
+import com.konkerlabs.platform.registry.business.model.Location;
+import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.data.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.integration.endpoints.GatewayEventRestEndpoint;
@@ -75,12 +75,7 @@ public class GatewayEventRestEndpointTest extends WebLayerTestContext {
     @Autowired
     private DeviceRegisterService deviceRegisterService;
 
-    private Device device;
-    private String DEVICE_USER = "tug6g6essh4m";
-    private String VALID_CHANNEL = "data";
-    private String INVALID_CHANNEL_SIZE = "abcabcabcabcabcabcabcabcabcabcabc";
-    private String INVALID_CHANNEL_CHAR = "dataç";
-    private Set<String> tags =new HashSet<>(Arrays.asList("tag1", "tag2"));
+    private Gateway gateway;
     private String json;
 
     @Before
@@ -92,14 +87,16 @@ public class GatewayEventRestEndpointTest extends WebLayerTestContext {
                 jsonParsingService,
                 deviceRegisterService);
         
-        device = Device.builder().deviceId("tug6g6essh4m")
-                .active(true)
-                .apiKey("e4399b2ed998")
-                .guid("7d51c242-81db-11e6-a8c2-0746f010e945")
-                .description("test")
-                .tags(tags)
-                .deviceId("device_id")
-                .guid("67014de6-81db-11e6-a5bc-3f99b38315c6").build();
+        gateway = Gateway.builder()
+        		.active(true)
+        		.application(null)
+        		.description("GW smart")
+        		.guid("7d51c242-81db-11e6-a8c2-0746f010e945")
+        		.id("gateway1")
+        		.location(Location.builder().defaultLocation(true).id("BR").build())
+        		.name("Gateway 1")
+        		.tenant(Tenant.builder().id("commonTenant").domainName("common").build())
+        		.build();
         
         json = "[ "+
         	"{ "+
@@ -138,14 +135,14 @@ public class GatewayEventRestEndpointTest extends WebLayerTestContext {
     @Test
     public void shouldRefuseRequestFromKonkerPlataform() throws Exception {
         SecurityContext context = SecurityContextHolder.getContext();
-        Authentication auth = new UsernamePasswordAuthenticationToken(device, null);
+        Authentication auth = new TestingAuthenticationToken(gateway, null);
         context.setAuthentication(auth);
 
         when(jsonParsingService.isValid(json)).thenReturn(true);
 
 		getMockMvc().perform(
-                post("/gw/pub")
-                	.flashAttr("principal", device)
+                post("/gateway/pub")
+                	.flashAttr("principal", gateway)
                 	.header("X-Konker-Version", "0.1")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(json))
@@ -157,7 +154,7 @@ public class GatewayEventRestEndpointTest extends WebLayerTestContext {
     @Test
     public void shouldPubToKonkerPlataform() throws Exception {
         SecurityContext context = SecurityContextHolder.getContext();
-        Authentication auth = new UsernamePasswordAuthenticationToken(device, null);
+        Authentication auth = new TestingAuthenticationToken(gateway, null);
         context.setAuthentication(auth);
         
         Map<String, JsonPathData> flatMap = new JsonParsingServiceImpl().toFlatMap(json);
@@ -165,12 +162,12 @@ public class GatewayEventRestEndpointTest extends WebLayerTestContext {
         when(jsonParsingService.isValid(json)).thenReturn(true);
 
 		getMockMvc().perform(
-                post("/gw/pub")
-                	.flashAttr("principal", device)
+                post("/gateway/pub")
+                	.flashAttr("principal", gateway)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(json))
-                	.andExpect(status().isForbidden())
-                	.andExpect(content().string(org.hamcrest.Matchers.containsString("origin")));
+                	.andExpect(status().isOk())
+                	.andExpect(content().string(org.hamcrest.Matchers.containsString("{\"code\":\"200\",\"message\":\"OK\"}")));
 
     }
 
