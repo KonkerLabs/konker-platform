@@ -48,6 +48,8 @@ public class OauthClientDetails implements Serializable, ClientDetails {
     private List<Role> roles;
     @DBRef
     private User parentUser;
+    @DBRef
+    private Gateway parentGateway;
 
     public String getName(){
         return clientId;
@@ -183,6 +185,14 @@ public class OauthClientDetails implements Serializable, ClientDetails {
 
     public void setParentUser(User parentUser) {
         this.parentUser = parentUser;
+    }
+
+    public Gateway getParentGateway() {
+        return parentGateway;
+    }
+
+    public void setParentGateway(Gateway parentGateway) {
+        this.parentGateway = parentGateway;
     }
 
     @Override
@@ -374,6 +384,7 @@ public class OauthClientDetails implements Serializable, ClientDetails {
 
     public OauthClientDetails setGatewayProperties(Gateway gateway) {
         this.setParentUser(null);
+        this.setParentGateway(gateway);
         this.setTenant(gateway.getTenant());
         this.setClientId(gateway.getRoutUriTemplate());
         this.setRoles(roles);

@@ -412,6 +412,8 @@ public class OAuthClientDetailsService implements ClientDetailsService {
         oauthClientDetailRepository.save(
                 OauthClientDetails.builder()
                         .clientId(clientDetails.getClientId())
+                        .parentUser(clientDetails.getParentUser())
+                        .parentGateway(clientDetails.getParentGateway())
                         .tenant(tenant)
                         .clientSecret(clientDetails.getClientSecret())
                         .accessTokenValidity(TOKEN_VALIDITY)

@@ -56,6 +56,7 @@ public class OAuthClientDetailsServiceTest extends BusinessLayerTestSupport {
     @Test
     public void saveAndLoadGatewayClient() {
         Gateway gateway = new Gateway();
+        gateway.setId("gateway-id");
         gateway.setGuid("gateway-guid");
         gateway.setTenant(tenant);
 
