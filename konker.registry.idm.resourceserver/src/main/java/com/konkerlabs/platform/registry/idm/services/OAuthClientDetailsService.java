@@ -74,12 +74,8 @@ public class OAuthClientDetailsService implements ClientDetailsService {
 
     }
 
-    public static final Integer TOKEN_VALIDITY = 3600 * 365;
-
     @Autowired
     private OauthClientDetailRepository oauthClientDetailRepository;
-    @Autowired
-    private AuthorizationCodeRepository authorizationCodeRepository;
     @Autowired
     private AccessTokenRepository accessTokenRepository;
     @Autowired
@@ -416,7 +412,7 @@ public class OAuthClientDetailsService implements ClientDetailsService {
                         .parentGateway(clientDetails.getParentGateway())
                         .tenant(tenant)
                         .clientSecret(clientDetails.getClientSecret())
-                        .accessTokenValidity(TOKEN_VALIDITY)
+                        .accessTokenValidity(clientDetails.getAccessTokenValidity())
                         .application(application)
                         .webServerRedirectUri(clientDetails.getWebServerRedirectUri())
                         .roles(clientDetails.getRoles())
