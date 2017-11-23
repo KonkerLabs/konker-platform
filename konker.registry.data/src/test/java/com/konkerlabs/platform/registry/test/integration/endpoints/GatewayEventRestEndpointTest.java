@@ -6,9 +6,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.Map;
-
-import org.json.JSONArray;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -32,8 +29,10 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Gateway;
 import com.konkerlabs.platform.registry.business.model.Location;
+import com.konkerlabs.platform.registry.business.model.OauthClientDetails;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.data.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.idm.services.OAuthClientDetailsService;
 import com.konkerlabs.platform.registry.integration.endpoints.GatewayEventRestEndpoint;
@@ -43,8 +42,6 @@ import com.konkerlabs.platform.registry.test.data.base.SecurityTestConfiguration
 import com.konkerlabs.platform.registry.test.data.base.WebLayerTestContext;
 import com.konkerlabs.platform.registry.test.data.base.WebTestConfiguration;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
-import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService.JsonPathData;
-import com.konkerlabs.platform.utilities.parsers.json.JsonParsingServiceImpl;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
@@ -133,14 +130,17 @@ public class GatewayEventRestEndpointTest extends WebLayerTestContext {
 	public void tearDown() {
 		Mockito.reset(jsonParsingService);
 		Mockito.reset(deviceRegisterService);
-	}
+		Mockito.reset(oAuthClientDetailsService);}
          
     @Test
     public void shouldRefuseRequestFromKonkerPlataform() throws Exception {
         SecurityContext context = SecurityContextHolder.getContext();
-        Authentication auth = new TestingAuthenticationToken(gateway, null);
+        Authentication auth = new TestingAuthenticationToken("gateway://i3k9jfe5/1c6e7df7-fe10-4c53-acae-913e0ceec883", null);
         context.setAuthentication(auth);
 
+        when(oAuthClientDetailsService.loadClientByIdAsRoot("gateway://i3k9jfe5/1c6e7df7-fe10-4c53-acae-913e0ceec883"))
+        	.thenReturn(ServiceResponseBuilder.<OauthClientDetails>ok()
+        			.withResult(OauthClientDetails.builder().parentGateway(gateway).build()).build());
         when(jsonParsingService.isValid(json)).thenReturn(true);
 
 		getMockMvc().perform(
@@ -155,13 +155,35 @@ public class GatewayEventRestEndpointTest extends WebLayerTestContext {
     }
     
     @Test
-    public void shouldPubToKonkerPlataform() throws Exception {
+    public void shouldRaiseExceptionInvalidJsonPub() throws Exception {
         SecurityContext context = SecurityContextHolder.getContext();
-        Authentication auth = new TestingAuthenticationToken(gateway, null);
+        Authentication auth = new TestingAuthenticationToken("gateway://i3k9jfe5/1c6e7df7-fe10-4c53-acae-913e0ceec883", null);
         context.setAuthentication(auth);
-        
-        Map<String, JsonPathData> flatMap = new JsonParsingServiceImpl().toFlatMap(json);
-        JSONArray jsonObject = new JSONArray(json);
+
+        when(oAuthClientDetailsService.loadClientByIdAsRoot("gateway://i3k9jfe5/1c6e7df7-fe10-4c53-acae-913e0ceec883"))
+        	.thenReturn(ServiceResponseBuilder.<OauthClientDetails>ok()
+        			.withResult(OauthClientDetails.builder().parentGateway(gateway).build()).build());
+        when(jsonParsingService.isValid("[{'a': 10}")).thenReturn(false);
+
+		getMockMvc().perform(
+                post("/gateway/pub")
+                	.flashAttr("principal", gateway)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("[{'a': 10}"))
+                	.andExpect(status().isBadRequest())
+                	.andExpect(content().string(org.hamcrest.Matchers.containsString("{\"code\":\"integration.rest.invalid.body\",\"message\":\"Event content is in invalid format. Expected to be a valid JSON string\"}")));
+
+    }
+    
+    @Test
+    public void shouldPubToKonkerPlataform() throws Exception {
+    	SecurityContext context = SecurityContextHolder.getContext();
+        Authentication auth = new TestingAuthenticationToken("gateway://i3k9jfe5/1c6e7df7-fe10-4c53-acae-913e0ceec883", null);
+        context.setAuthentication(auth);
+
+        when(oAuthClientDetailsService.loadClientByIdAsRoot("gateway://i3k9jfe5/1c6e7df7-fe10-4c53-acae-913e0ceec883"))
+        	.thenReturn(ServiceResponseBuilder.<OauthClientDetails>ok()
+        			.withResult(OauthClientDetails.builder().parentGateway(gateway).build()).build());
         when(jsonParsingService.isValid(json)).thenReturn(true);
 
 		getMockMvc().perform(

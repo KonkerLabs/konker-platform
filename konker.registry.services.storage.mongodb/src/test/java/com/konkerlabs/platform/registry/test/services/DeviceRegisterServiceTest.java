@@ -893,5 +893,35 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         assertThat(serviceResponse.getResult(), nullValue());
 
     }
+    
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
+    public void shouldReturnErrorTenantNullFindByDeviceId() {
+    	ServiceResponse<Device> serviceResponse = deviceRegisterService.findByDeviceId(null, currentApplication, device.getDeviceId());
+    	
+    	assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+    	assertThat(serviceResponse.getResponseMessages(), hasEntry(CommonValidations.TENANT_NULL.getCode(), null));
+    	assertThat(serviceResponse.getResult(), nullValue());
+    }
+    
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
+    public void shouldReturnErrorApplicationNullFindByDeviceId() {
+    	ServiceResponse<Device> serviceResponse = deviceRegisterService.findByDeviceId(currentTenant, null, device.getDeviceId());
+    	
+    	assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+    	assertThat(serviceResponse.getResponseMessages(), hasEntry(ApplicationService.Validations.APPLICATION_NULL.getCode(), null));
+    	assertThat(serviceResponse.getResult(), nullValue());
+    }
+    
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
+    public void shouldReturnDeviceFindByDeviceId() {
+    	ServiceResponse<Device> serviceResponse = deviceRegisterService.findByDeviceId(currentTenant, currentApplication, THE_USER_DEFINED_DEVICE_ID);
+    	
+    	assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.OK));
+    	assertThat(serviceResponse.getResult(), notNullValue());
+    	assertThat(serviceResponse.getResult().getApiKey(), equalTo(THE_DEVICE_API_KEY));
+    }
 
 }

@@ -221,7 +221,7 @@ public class DeviceEventProcessorTest {
         		.description("GW smart")
         		.guid("7d51c242-81db-11e6-a8c2-0746f010e945")
         		.id("gateway1")
-        		.location(Location.builder().defaultLocation(true).id("BR").build())
+        		.location(Location.builder().defaultLocation(true).id("BR").name("default").build())
         		.name("Gateway 1")
         		.tenant(Tenant.builder().id("commonTenant").domainName("common").build())
         		.build();
@@ -286,9 +286,46 @@ public class DeviceEventProcessorTest {
         verify(deviceLogEventService, times(1)).logIncomingEvent(any(Device.class), any(Event.class));
     }
     
+	@Test
+    public void shouldRaiseAnExceptionNoDeviceProcessGateway() throws Exception {
+    	
+    	when(jsonParsingService.toListMap(listJson)).thenReturn(devicesEvent);
+    	when(deviceRegisterService.findByDeviceId(gateway.getTenant(), gateway.getApplication(), "CurrentSensor"))
+    		.thenReturn(ServiceResponseBuilder.<Device>error().build());
+    	when(deviceRegisterService.findByDeviceId(gateway.getTenant(), gateway.getApplication(), "TempSensor"))
+    		.thenReturn(ServiceResponseBuilder.<Device>error().build());
+    	when(deviceLogEventService.logIncomingEvent(eq(device), any()))
+    		.thenReturn(ServiceResponseBuilder.<Event>ok().withResult(event).build());
+    	
+    	subject.proccess(gateway, listJson);
+    	
+    	verify(eventRouteExecutor, times(0)).execute(any(Event.class), any(Device.class));
+        verify(deviceLogEventService, times(0)).logIncomingEvent(any(Device.class), any(Event.class));
+    }
+	
+	@Test
+    public void shouldRaiseAnExceptionDiferentLocationProcessGateway() throws Exception {
+		thrown.expect(BusinessException.class);
+        thrown.expectMessage(DeviceEventProcessor.Messages.INVALID_GATEWAY_LOCATION.getCode());
+    	
+    	when(jsonParsingService.toListMap(listJson)).thenReturn(devicesEvent);
+    	when(deviceRegisterService.findByDeviceId(gateway.getTenant(), gateway.getApplication(), "CurrentSensor"))
+    		.thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device).build());
+    	when(deviceRegisterService.findByDeviceId(gateway.getTenant(), gateway.getApplication(), "TempSensor"))
+    		.thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device).build());
+    	when(deviceLogEventService.logIncomingEvent(eq(device), any()))
+    		.thenReturn(ServiceResponseBuilder.<Event>ok().withResult(event).build());
+    	
+    	subject.proccess(gateway, listJson);
+    	
+    	verify(eventRouteExecutor, times(0)).execute(any(Event.class), any(Device.class));
+        verify(deviceLogEventService, times(0)).logIncomingEvent(any(Device.class), any(Event.class));
+    }
+    
     @SuppressWarnings("unchecked")
 	@Test
     public void shouldProcessGatewayEvent() throws Exception {
+    	device.setLocation(gateway.getLocation());
     	
     	when(jsonParsingService.toListMap(listJson)).thenReturn(devicesEvent);
     	when(jsonParsingService.toJsonString((Map<String, Object>) devicesEvent.get(0).get("payload"))).thenReturn("{ "+
@@ -318,6 +355,53 @@ public class DeviceEventProcessorTest {
     	
     	verify(eventRouteExecutor, times(2)).execute(any(Event.class), any(Device.class));
         verify(deviceLogEventService, times(2)).logIncomingEvent(any(Device.class), any(Event.class));
+    }
+    
+    @Test
+    public void shouldRaiseAnExceptionNoChannelProcessDevice() throws Exception {
+        thrown.expect(BusinessException.class);
+        thrown.expectMessage(DeviceEventProcessor.Messages.CHANNEL_MISSING.getCode());
+        
+        when(deviceRegisterService.findByApiKey(sourceApiKey)).thenReturn(device);
+
+        subject.process(device, null, originalPayload, Instant.now());
+    }
+    
+    @Test
+    public void shouldProcessDevice() throws Exception {
+    	when(deviceLogEventService.logIncomingEvent(eq(device), any()))
+    		.thenReturn(ServiceResponseBuilder.<Event>ok().withResult(event).build());
+    	
+    	subject.process(device, incomingChannel, originalPayload, Instant.now());
+    	
+    	verify(eventRouteExecutor, times(1)).execute(any(Event.class), any(Device.class));
+        verify(deviceLogEventService, times(1)).logIncomingEvent(any(Device.class), any(Event.class));
+    }
+    
+    @Test
+    public void shouldProcessDeviceDeactivated() throws Exception {
+    	when(deviceLogEventService.logIncomingEvent(eq(device), any()))
+    		.thenReturn(ServiceResponseBuilder.<Event>ok().withResult(event).build());
+    	
+    	device.setActive(false);
+    	subject.process(device, incomingChannel, originalPayload, Instant.now());
+    	
+    	verify(eventRouteExecutor, times(0)).execute(any(Event.class), any(Device.class));
+        verify(deviceLogEventService, times(0)).logIncomingEvent(any(Device.class), any(Event.class));
+    }
+    
+    @Test
+    public void shouldRaiseExcetionInvalidJsonProcessDevice() throws Exception {
+    	thrown.expect(BusinessException.class);
+        thrown.expectMessage(DeviceEventProcessor.Messages.INVALID_PAYLOAD.getCode());
+        
+    	when(deviceLogEventService.logIncomingEvent(eq(device), any()))
+    		.thenReturn(ServiceResponseBuilder.<Event>error().build());
+    	
+    	subject.process(device, incomingChannel, originalPayload, Instant.now());
+    	
+    	verify(eventRouteExecutor, times(0)).execute(any(Event.class), any(Device.class));
+        verify(deviceLogEventService, times(1)).logIncomingEvent(any(Device.class), any(Event.class));
     }
 
     @Configuration

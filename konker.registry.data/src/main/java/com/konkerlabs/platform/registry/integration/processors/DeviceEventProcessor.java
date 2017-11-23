@@ -47,6 +47,7 @@ public class DeviceEventProcessor {
     }
 
     private static final String EVENT_DROPPED = "Incoming event has been dropped: [Device: {0}] - [Payload: {1}]";
+    private static final String GATEWAY_EVENT_DROPPED = "Incoming event has been dropped: [Gateway: {0}] - [Payload: {1}]";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DeviceEventProcessor.class);
 
@@ -85,28 +86,37 @@ public class DeviceEventProcessor {
     }
     
     @SuppressWarnings("unchecked")
-	public void proccess(Gateway gateway, String payload) throws BusinessException, JsonProcessingException {
-    	List<Map<String, Object>> devicesEvent = jsonParsingService.toListMap(payload);
+	public void proccess(Gateway gateway, String payloadList) throws BusinessException, JsonProcessingException {
+    	List<Map<String, Object>> payloadsGateway = jsonParsingService.toListMap(payloadList);
     	
-    	for (Map<String, Object> map : devicesEvent) {
+    	for (Map<String, Object> payloadGateway : payloadsGateway) {
     		ServiceResponse<Device> result = deviceRegisterService.findByDeviceId(
     				gateway.getTenant(), 
     				gateway.getApplication(), 
-    				map.get("deviceId").toString());
+    				payloadGateway.get("deviceId").toString());
     		
     		if (result.isOk() && Optional.ofNullable(result.getResult()).isPresent()) {
     			Device device = result.getResult();
     			
     			if (isValidAuthority(gateway, device)) {
+    				Map<String, Object> devicePayload = (Map<String, Object>) payloadGateway.get("payload");
+    				devicePayload.putIfAbsent("_ts", payloadGateway.get("ts"));
+    				
     				process(
     						device, 
-    						map.get("channel").toString(), 
-    						jsonParsingService.toJsonString((Map<String, Object>) map.get("payload")), 
+    						payloadGateway.get("channel").toString(), 
+    						jsonParsingService.toJsonString(devicePayload), 
     						Instant.now());
     			} else {
     			    throw new BusinessException(Messages.INVALID_GATEWAY_LOCATION.getCode());
                 }
-    		}
+    		} else {
+                LOGGER.debug(MessageFormat.format(GATEWAY_EVENT_DROPPED,
+                        gateway.toURI(),
+                        payloadList),
+                		gateway.toURI(),
+                		gateway.getTenant().getLogLevel());
+            }
     		
 		}
     	
