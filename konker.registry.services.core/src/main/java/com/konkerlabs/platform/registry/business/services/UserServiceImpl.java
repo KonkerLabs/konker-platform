@@ -480,7 +480,10 @@ public class UserServiceImpl implements UserService {
         storage.setName(form.getName());
         storage.setPhone(form.getPhone());
         storage.setNotificationViaEmail(form.isNotificationViaEmail());
-        storage.setActive(form.isActive());
+        
+        if (!storage.isActive()) {
+        	storage.setActive(form.isActive());
+        }
     }
 
     /**
