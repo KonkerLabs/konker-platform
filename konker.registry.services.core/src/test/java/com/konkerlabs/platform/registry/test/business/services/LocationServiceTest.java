@@ -1,15 +1,16 @@
 package com.konkerlabs.platform.registry.test.business.services;
 
-import static com.konkerlabs.platform.registry.business.model.validation.CommonValidations.TENANT_NULL;
-import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
-import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.isResponseOk;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.junit.rules.ExpectedException.none;
-
-import java.util.ArrayList;
-import java.util.List;
-
+import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.repositories.*;
+import com.konkerlabs.platform.registry.business.services.LocationTreeUtils;
+import com.konkerlabs.platform.registry.business.services.api.*;
+import com.konkerlabs.platform.registry.business.services.api.LocationService.Validations;
+import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
+import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
+import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -19,28 +20,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.DeviceConfig;
-import com.konkerlabs.platform.registry.business.model.DeviceModel;
-import com.konkerlabs.platform.registry.business.model.Location;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
-import com.konkerlabs.platform.registry.business.repositories.DeviceModelRepository;
-import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
-import com.konkerlabs.platform.registry.business.repositories.LocationRepository;
-import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
-import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceConfigSetupService;
-import com.konkerlabs.platform.registry.business.services.api.LocationSearchService;
-import com.konkerlabs.platform.registry.business.services.api.LocationService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.LocationService.Validations;
-import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
-import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
-import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.konkerlabs.platform.registry.business.model.validation.CommonValidations.TENANT_NULL;
+import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
+import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.isResponseOk;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.rules.ExpectedException.none;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { MongoTestConfiguration.class, BusinessTestConfiguration.class})
@@ -827,6 +815,50 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
         locationSala101 = locationRepository.findByTenantAndApplicationAndName(tenant.getId(), application.getName(), "sala-101");
         assertThat(locationSala101, nullValue());
 
+    }
+
+    @Test
+    public void shouldReturnTrueForSubLocation() {
+        Location locationRJ = locationSearchService.findByName(tenant, application, "rj", false).getResult();
+        Location locationSala101 = locationSearchService.findByName(tenant, application, "sala-101", false).getResult();
+
+
+        Location locationSala101Teto = Location.builder()
+                .tenant(tenant)
+                .application(application)
+                .parent(locationSala101)
+                .name("sala-101-teto")
+                .guid("f06d9d2d-f5ce-4cc6-8637-348743e8acad")
+                .build();
+
+        locationRJ.setChildren(new ArrayList<>());
+        locationSala101.setChildren(new ArrayList<>());
+        locationSala101.getChildren().add(locationSala101Teto);
+        locationRJ.getChildren().add(locationSala101);
+
+        Assert.assertTrue(LocationTreeUtils.isSublocationOf(locationRJ, locationSala101));
+        Assert.assertTrue(LocationTreeUtils.isSublocationOf(locationRJ, locationSala101Teto));
+    }
+
+    @Test
+    public void shouldReturnFalseForSubLocation() {
+        Location locationRJ = locationSearchService.findByName(tenant, application, "rj", false).getResult();
+        Location locationSala101 = locationSearchService.findByName(tenant, application, "sala-101", false).getResult();
+
+
+        Location locationSala101Teto = Location.builder()
+                .tenant(tenant)
+                .application(application)
+                .parent(locationSala101)
+                .name("sala-101-teto")
+                .guid("f06d9d2d-f5ce-4cc6-8637-348743e8acad")
+                .build();
+
+        locationRJ.setChildren(new ArrayList<>());
+        locationSala101.setChildren(new ArrayList<>());
+
+        Assert.assertFalse(LocationTreeUtils.isSublocationOf(locationRJ, locationSala101));
+        Assert.assertFalse(LocationTreeUtils.isSublocationOf(locationRJ, locationSala101Teto));
     }
 
 }

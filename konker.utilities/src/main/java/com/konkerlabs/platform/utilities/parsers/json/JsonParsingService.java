@@ -13,6 +13,8 @@ public interface JsonParsingService {
     Map<String,JsonPathData> toFlatMap(String json) throws JsonProcessingException;
 
     Map<String,Object> toMap(String json) throws JsonProcessingException;
+    
+    List<Map<String,Object>> toListMap(String json) throws JsonProcessingException;
 
     String toJsonString(Map<String, Object> map) throws JsonProcessingException;
 

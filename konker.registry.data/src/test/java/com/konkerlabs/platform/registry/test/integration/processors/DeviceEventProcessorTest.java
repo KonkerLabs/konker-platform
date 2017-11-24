@@ -4,18 +4,19 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.net.URI;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
-import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -34,11 +35,14 @@ import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.Gateway;
+import com.konkerlabs.platform.registry.business.model.Location;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import com.konkerlabs.platform.registry.data.config.RedisConfig;
 import com.konkerlabs.platform.registry.data.services.api.DeviceLogEventService;
 import com.konkerlabs.platform.registry.data.services.routes.api.EventRouteExecutor;
@@ -46,6 +50,7 @@ import com.konkerlabs.platform.registry.integration.processors.DeviceEventProces
 import com.konkerlabs.platform.registry.test.data.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.data.base.IntegrationTestConfiguration;
 import com.konkerlabs.platform.registry.test.data.base.MongoTestConfiguration;
+import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
@@ -64,6 +69,7 @@ public class DeviceEventProcessorTest {
     private String sourceApiKey = "84399b2e-d99e-11e5-86bc-34238775bac9";
     private String originalPayload = "LEDSwitch";
     private String incomingChannel = "command";
+    private String listJson;
 
     private Event event;
     private Event eventNewTimestamp;
@@ -82,11 +88,15 @@ public class DeviceEventProcessorTest {
     private EventRouteExecutor eventRouteExecutor;
     @Autowired
     private DeviceRegisterService deviceRegisterService;
+    @Autowired
+    private JsonParsingService jsonParsingService;
 
     private Instant firstEventTimestamp;
     private Instant secondEventTimestamp;
+    private List<Map<String, Object>> devicesEvent;
+    private Gateway gateway;
 
-    @Before
+	@Before
     public void setUp() throws Exception {
         firstEventTimestamp = Instant.ofEpochMilli(1474562670340L);
         secondEventTimestamp = Instant.ofEpochMilli(1474562672395L);
@@ -152,6 +162,69 @@ public class DeviceEventProcessorTest {
         eventResponse = spy(ServiceResponseBuilder.<List<Event>>ok()
                 .withResult(Arrays.asList(eventNewTimestamp, eventOldTimestamp))
                 .build());
+        
+        listJson = "[ "+
+            	"{ "+
+    			" \"deviceId\": \"CurrentSensor\", "+
+    			" \"channel\": \"in\", "+
+    			" \"payload\": { "+
+    			" 	\"_lon\": -46.6910183, "+ 
+    			"	\"_lat\": -23.5746571,  "+
+    			"	\"_hdop\": 10,  "+
+    			"	\"_elev\": 3.66,  "+
+    			"	\"_ts\": \"1510847419000\", "+ 
+    			"	\"volts\": 12  "+
+    			"	} "+
+    			"}"+
+    			", { "+
+    			" \"deviceId\": \"TempSensor\", "+
+    			" \"channel\": \"temp\", "+
+    			" \"payload\": { "+
+    			"	\"_lon\": -46.6910183, "+ 
+    			"	\"_lat\": -23.5746571,  "+
+    			"	\"_hdop\": 10,  "+
+    			"	\"_elev\": 3.66,  "+
+    			"	\"_ts\": \"1510847419000\", "+ 
+    			"	\"temperature\": 27  "+
+    			"	} "+
+    			"} "+
+    			"]";
+        
+        devicesEvent = new ArrayList<>();
+        Map<String, Object> map1 = new LinkedHashMap<String, Object>();
+        map1.put("deviceId", "CurrentSensor");
+        map1.put("channel", "in");
+        Map<String, Object> payloadMap1 = new LinkedHashMap<>();
+        payloadMap1.put("_lon", -46.6910183);
+        payloadMap1.put("_lat", -23.5746571);
+        payloadMap1.put("_hdop", 10);
+        payloadMap1.put("_elev", 3.66);
+        payloadMap1.put("volts", 12);
+        map1.put("payload", payloadMap1);
+        
+        Map<String, Object> map2 = new LinkedHashMap<String, Object>();
+        map2.put("deviceId", "TempSensor");
+        map2.put("channel", "temp");
+        Map<String, Object> payloadMap2 = new LinkedHashMap<>();
+        payloadMap2.put("_lon", -46.6910183);
+        payloadMap2.put("_lat", -23.5746571);
+        payloadMap2.put("_hdop", 10);
+        payloadMap2.put("_elev", 3.66);
+        payloadMap2.put("temperature", 27);
+        map2.put("payload", payloadMap2);
+		devicesEvent.add(map1);
+        devicesEvent.add(map2);
+        
+        gateway = Gateway.builder()
+        		.active(true)
+        		.application(Application.builder().name("default").build())
+        		.description("GW smart")
+        		.guid("7d51c242-81db-11e6-a8c2-0746f010e945")
+        		.id("gateway1")
+        		.location(Location.builder().defaultLocation(true).id("BR").name("default").build())
+        		.name("Gateway 1")
+        		.tenant(Tenant.builder().id("commonTenant").domainName("common").build())
+        		.build();
     }
 
     @After
@@ -179,6 +252,8 @@ public class DeviceEventProcessorTest {
     public void shouldRaiseAnExceptionIfEventChannelIsUnknown() throws Exception {
         thrown.expect(BusinessException.class);
         thrown.expectMessage(DeviceEventProcessor.Messages.CHANNEL_MISSING.getCode());
+        
+        when(deviceRegisterService.findByApiKey(sourceApiKey)).thenReturn(device);
 
         subject.process(sourceApiKey, null, originalPayload);
     }
@@ -210,6 +285,124 @@ public class DeviceEventProcessorTest {
         verify(eventRouteExecutor, times(1)).execute(any(Event.class), any(Device.class));
         verify(deviceLogEventService, times(1)).logIncomingEvent(any(Device.class), any(Event.class));
     }
+    
+	@Test
+    public void shouldRaiseAnExceptionNoDeviceProcessGateway() throws Exception {
+    	
+    	when(jsonParsingService.toListMap(listJson)).thenReturn(devicesEvent);
+    	when(deviceRegisterService.findByDeviceId(gateway.getTenant(), gateway.getApplication(), "CurrentSensor"))
+    		.thenReturn(ServiceResponseBuilder.<Device>error().build());
+    	when(deviceRegisterService.findByDeviceId(gateway.getTenant(), gateway.getApplication(), "TempSensor"))
+    		.thenReturn(ServiceResponseBuilder.<Device>error().build());
+    	when(deviceLogEventService.logIncomingEvent(eq(device), any()))
+    		.thenReturn(ServiceResponseBuilder.<Event>ok().withResult(event).build());
+    	
+    	subject.proccess(gateway, listJson);
+    	
+    	verify(eventRouteExecutor, times(0)).execute(any(Event.class), any(Device.class));
+        verify(deviceLogEventService, times(0)).logIncomingEvent(any(Device.class), any(Event.class));
+    }
+	
+	@Test
+    public void shouldRaiseAnExceptionDiferentLocationProcessGateway() throws Exception {
+		thrown.expect(BusinessException.class);
+        thrown.expectMessage(DeviceEventProcessor.Messages.INVALID_GATEWAY_LOCATION.getCode());
+    	
+    	when(jsonParsingService.toListMap(listJson)).thenReturn(devicesEvent);
+    	when(deviceRegisterService.findByDeviceId(gateway.getTenant(), gateway.getApplication(), "CurrentSensor"))
+    		.thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device).build());
+    	when(deviceRegisterService.findByDeviceId(gateway.getTenant(), gateway.getApplication(), "TempSensor"))
+    		.thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device).build());
+    	when(deviceLogEventService.logIncomingEvent(eq(device), any()))
+    		.thenReturn(ServiceResponseBuilder.<Event>ok().withResult(event).build());
+    	
+    	subject.proccess(gateway, listJson);
+    	
+    	verify(eventRouteExecutor, times(0)).execute(any(Event.class), any(Device.class));
+        verify(deviceLogEventService, times(0)).logIncomingEvent(any(Device.class), any(Event.class));
+    }
+    
+    @SuppressWarnings("unchecked")
+	@Test
+    public void shouldProcessGatewayEvent() throws Exception {
+    	device.setLocation(gateway.getLocation());
+    	
+    	when(jsonParsingService.toListMap(listJson)).thenReturn(devicesEvent);
+    	when(jsonParsingService.toJsonString((Map<String, Object>) devicesEvent.get(0).get("payload"))).thenReturn("{ "+
+    			" 	\"_lon\": -46.6910183, "+ 
+    			"	\"_lat\": -23.5746571,  "+
+    			"	\"_hdop\": 10,  "+
+    			"	\"_elev\": 3.66,  "+
+    			"	\"_ts\": \"1510847419000\", "+ 
+    			"	\"volts\": 12  "+
+    			"	}");
+    	when(jsonParsingService.toJsonString((Map<String, Object>) devicesEvent.get(1).get("payload"))).thenReturn(" { "+
+    			"	\"_lon\": -46.6910183, "+ 
+    			"	\"_lat\": -23.5746571,  "+
+    			"	\"_hdop\": 10,  "+
+    			"	\"_elev\": 3.66,  "+
+    			"	\"_ts\": \"1510847419000\", "+ 
+    			"	\"temperature\": 27  "+
+    			"	}");
+    	when(deviceRegisterService.findByDeviceId(gateway.getTenant(), gateway.getApplication(), "CurrentSensor"))
+    		.thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device).build());
+    	when(deviceRegisterService.findByDeviceId(gateway.getTenant(), gateway.getApplication(), "TempSensor"))
+			.thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device).build());
+    	when(deviceLogEventService.logIncomingEvent(eq(device), any()))
+    		.thenReturn(ServiceResponseBuilder.<Event>ok().withResult(event).build());
+    	
+    	subject.proccess(gateway, listJson);
+    	
+    	verify(eventRouteExecutor, times(2)).execute(any(Event.class), any(Device.class));
+        verify(deviceLogEventService, times(2)).logIncomingEvent(any(Device.class), any(Event.class));
+    }
+    
+    @Test
+    public void shouldRaiseAnExceptionNoChannelProcessDevice() throws Exception {
+        thrown.expect(BusinessException.class);
+        thrown.expectMessage(DeviceEventProcessor.Messages.CHANNEL_MISSING.getCode());
+        
+        when(deviceRegisterService.findByApiKey(sourceApiKey)).thenReturn(device);
+
+        subject.process(device, null, originalPayload, Instant.now());
+    }
+    
+    @Test
+    public void shouldProcessDevice() throws Exception {
+    	when(deviceLogEventService.logIncomingEvent(eq(device), any()))
+    		.thenReturn(ServiceResponseBuilder.<Event>ok().withResult(event).build());
+    	
+    	subject.process(device, incomingChannel, originalPayload, Instant.now());
+    	
+    	verify(eventRouteExecutor, times(1)).execute(any(Event.class), any(Device.class));
+        verify(deviceLogEventService, times(1)).logIncomingEvent(any(Device.class), any(Event.class));
+    }
+    
+    @Test
+    public void shouldProcessDeviceDeactivated() throws Exception {
+    	when(deviceLogEventService.logIncomingEvent(eq(device), any()))
+    		.thenReturn(ServiceResponseBuilder.<Event>ok().withResult(event).build());
+    	
+    	device.setActive(false);
+    	subject.process(device, incomingChannel, originalPayload, Instant.now());
+    	
+    	verify(eventRouteExecutor, times(0)).execute(any(Event.class), any(Device.class));
+        verify(deviceLogEventService, times(0)).logIncomingEvent(any(Device.class), any(Event.class));
+    }
+    
+    @Test
+    public void shouldRaiseExcetionInvalidJsonProcessDevice() throws Exception {
+    	thrown.expect(BusinessException.class);
+        thrown.expectMessage(DeviceEventProcessor.Messages.INVALID_PAYLOAD.getCode());
+        
+    	when(deviceLogEventService.logIncomingEvent(eq(device), any()))
+    		.thenReturn(ServiceResponseBuilder.<Event>error().build());
+    	
+    	subject.process(device, incomingChannel, originalPayload, Instant.now());
+    	
+    	verify(eventRouteExecutor, times(0)).execute(any(Event.class), any(Device.class));
+        verify(deviceLogEventService, times(1)).logIncomingEvent(any(Device.class), any(Event.class));
+    }
 
     @Configuration
     static class BusinessLayerConfiguration {
@@ -231,6 +424,11 @@ public class DeviceEventProcessorTest {
         @Bean
         public DeviceLogEventService deviceLogEventService() {
             return mock(DeviceLogEventService.class);
+        }
+        
+        @Bean
+        public JsonParsingService jsonParsingService() {
+            return mock(JsonParsingService.class);
         }
     }
 

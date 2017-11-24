@@ -14,7 +14,12 @@ import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
 import com.konkerlabs.platform.registry.business.model.enumerations.Language;
 import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
+import com.konkerlabs.platform.registry.business.repositories.AccessTokenRepository;
+import com.konkerlabs.platform.registry.business.repositories.AuthorizationCodeRepository;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
+import com.konkerlabs.platform.registry.business.repositories.OauthClientDetailRepository;
+import com.konkerlabs.platform.registry.business.repositories.RoleRepository;
+import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.UserRepository;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.LoginAuditService;
@@ -60,7 +65,8 @@ public class WebTestConfiguration {
     public DeviceRepository deviceRepository(){
     	return Mockito.mock(DeviceRepository.class);
     }
-
+    
+    
     @Bean
     public UserRepository userRepository(){
     	return Mockito.mock(UserRepository.class);
@@ -75,5 +81,30 @@ public class WebTestConfiguration {
     public DeviceRegisterService deviceRegistryService() {
     	return Mockito.mock(DeviceRegisterService.class);
     }
+
+    @Bean
+    public OauthClientDetailRepository oauthClientDetailRepository(){
+    	return Mockito.mock(OauthClientDetailRepository.class);
+    }
+    
+    @Bean
+    public AuthorizationCodeRepository authorizationCodeRepository(){
+    	return Mockito.mock(AuthorizationCodeRepository.class);
+    }
+    
+    @Bean
+    public AccessTokenRepository accessTokenRepository(){
+    	return Mockito.mock(AccessTokenRepository.class);
+    }
+    
+    @Bean
+    public TenantRepository tenantRepository(){
+    	return Mockito.mock(TenantRepository.class);
+    }  
+    
+    @Bean
+    public RoleRepository roleRepository(){
+    	return Mockito.mock(RoleRepository.class);
+    }  
 
 }

@@ -198,5 +198,8 @@ public interface DeviceRegisterService {
 	 * @return The new device created
 	 */
 	ServiceResponse<Device> move(Tenant tenant, Application originApplication, String guid, Application destApplication);
+	
+	
+	ServiceResponse<Device> findByDeviceId(Tenant tenant, Application application, String deviceId);
 
 }
