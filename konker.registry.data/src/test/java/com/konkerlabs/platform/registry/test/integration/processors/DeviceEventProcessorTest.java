@@ -271,7 +271,6 @@ public class DeviceEventProcessorTest {
     @Test
     public void shouldFireRouteExecution() throws Exception {
         Instant timestamp = Instant.now();
-        event.setCreationTimestamp(timestamp);
         event.setIngestedTimestamp(timestamp);
 
         when(deviceRegisterService.findByApiKey(sourceApiKey)).thenReturn(device);
