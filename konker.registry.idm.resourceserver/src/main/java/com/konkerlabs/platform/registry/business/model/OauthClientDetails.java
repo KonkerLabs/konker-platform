@@ -35,7 +35,7 @@ public class OauthClientDetails implements Serializable, ClientDetails {
     private String webServerRedirectUri;
     private String authorities;
     private Language language = Language.PT_BR;
-    private Integer accessTokenValidity;
+    private Integer accessTokenValidity = 3600 * 24; // 24 hours
     private Integer refreshTokenValidity;
     private Map<String, Object> additionalInformation = Collections.emptyMap();
     private boolean trusted = false;
@@ -387,6 +387,7 @@ public class OauthClientDetails implements Serializable, ClientDetails {
         this.setParentGateway(gateway);
         this.setTenant(gateway.getTenant());
         this.setClientId(gateway.getRoutUriTemplate());
+        this.setAccessTokenValidity(-1); // no expiration
         this.setRoles(roles);
         this.setResourceIds(Collections.emptySet());
         this.setAdditionalInformation(Collections.emptyMap());

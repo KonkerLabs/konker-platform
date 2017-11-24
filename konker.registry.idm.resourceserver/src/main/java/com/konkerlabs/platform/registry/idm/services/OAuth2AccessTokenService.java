@@ -76,7 +76,7 @@ public class OAuth2AccessTokenService {
         if (!oauthClientResponse.isOk()) {
             // check if the response is of 'not found'
             if (oauthClientResponse.getResponseMessages().containsKey(OAuthClientDetailsService.Messages.CLIENT_CREDENTIALS_INVALID.getCode())) {
-                // if not exists, creoauthClientDetailRepositoryate a new one
+                // if not exists, create a new one
                 clientDetails = OauthClientDetails.builder()
                         .build()
                         .setGatewayProperties(gateway);
