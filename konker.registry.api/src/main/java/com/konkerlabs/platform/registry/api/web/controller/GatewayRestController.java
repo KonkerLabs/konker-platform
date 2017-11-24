@@ -92,7 +92,7 @@ public class GatewayRestController extends AbstractRestController implements Ini
     @GetMapping(path = "/{gatewayGuid}/token")
     @PreAuthorize("hasAuthority('EDIT_GATEWAY')")
     @ApiOperation(
-            value = "Get a gateway by guid",
+            value = "Requests a OAuth token for the gateway",
             response = RestResponse.class
     )
     public OAuth2AccessToken token(@PathVariable("application") String applicationId,
