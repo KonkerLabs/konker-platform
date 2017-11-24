@@ -1,23 +1,35 @@
 package com.konkerlabs.platform.registry.idm.services;
 
-import com.konkerlabs.platform.registry.business.model.*;
-import com.konkerlabs.platform.registry.business.repositories.*;
-import com.konkerlabs.platform.registry.business.services.api.RoleService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
-import com.konkerlabs.platform.registry.business.model.AccessToken;
-import com.konkerlabs.platform.registry.business.model.OauthClientDetails;
-import com.konkerlabs.platform.registry.business.repositories.AccessTokenRepository;
-import com.konkerlabs.platform.registry.business.repositories.AuthorizationCodeRepository;
-import com.konkerlabs.platform.registry.business.repositories.OauthClientDetailRepository;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.oauth2.provider.*;
+import org.springframework.security.oauth2.provider.ClientDetails;
+import org.springframework.security.oauth2.provider.ClientDetailsService;
+import org.springframework.security.oauth2.provider.ClientRegistrationException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.util.*;
+import com.konkerlabs.platform.registry.business.model.AccessToken;
+import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.OauthClientDetails;
+import com.konkerlabs.platform.registry.business.model.Role;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.User;
+import com.konkerlabs.platform.registry.business.repositories.AccessTokenRepository;
+import com.konkerlabs.platform.registry.business.repositories.AuthorizationCodeRepository;
+import com.konkerlabs.platform.registry.business.repositories.OauthClientDetailRepository;
+import com.konkerlabs.platform.registry.business.repositories.RoleRepository;
+import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
+import com.konkerlabs.platform.registry.business.repositories.UserRepository;
+import com.konkerlabs.platform.registry.business.services.api.RoleService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 
 @Service("oauth2ClientDetails")
 public class OAuthClientDetailsService implements ClientDetailsService {
@@ -74,12 +86,8 @@ public class OAuthClientDetailsService implements ClientDetailsService {
 
     }
 
-    public static final Integer TOKEN_VALIDITY = 3600 * 365;
-
     @Autowired
     private OauthClientDetailRepository oauthClientDetailRepository;
-    @Autowired
-    private AuthorizationCodeRepository authorizationCodeRepository;
     @Autowired
     private AccessTokenRepository accessTokenRepository;
     @Autowired
@@ -416,7 +424,7 @@ public class OAuthClientDetailsService implements ClientDetailsService {
                         .parentGateway(clientDetails.getParentGateway())
                         .tenant(tenant)
                         .clientSecret(clientDetails.getClientSecret())
-                        .accessTokenValidity(TOKEN_VALIDITY)
+                        .accessTokenValidity(clientDetails.getAccessTokenValidity())
                         .application(application)
                         .webServerRedirectUri(clientDetails.getWebServerRedirectUri())
                         .roles(clientDetails.getRoles())

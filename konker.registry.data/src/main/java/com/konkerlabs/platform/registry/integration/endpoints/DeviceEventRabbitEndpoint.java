@@ -56,6 +56,9 @@ public class DeviceEventRabbitEndpoint {
         }
         if (epochMilli != null) {
             ingestedTimestamp = Instant.ofEpochMilli(epochMilli);
+        } else {
+        	LOGGER.error("ts rabbit not found.");
+        	ingestedTimestamp = Instant.now();
         }
 
         try {

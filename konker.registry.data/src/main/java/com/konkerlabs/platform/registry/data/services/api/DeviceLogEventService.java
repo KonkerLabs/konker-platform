@@ -6,6 +6,7 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 
 public interface DeviceLogEventService {
 
+
     ServiceResponse<Event> logIncomingEvent(Device device, Event event);
 
     ServiceResponse<Event> logOutgoingEvent(Device device, Event event);
