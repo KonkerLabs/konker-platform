@@ -127,20 +127,24 @@ public class DeviceLogEventServiceImpl implements DeviceLogEventService {
 		try {
 			Map<String, JsonPathData> data = jsonParsingService.toFlatMap(event.getPayload());
 			
+			if (!data.containsKey("_ts")) {
+				return;			
+			}
+			
 			Instant tomorrow = Instant.now().plus(Duration.ofDays(1));
 			Instant aYearAgo = Instant.now().minus(Duration.ofDays(365));
-			Instant creationTime = data.containsKey("_ts") && integerPattern.matcher(data.get("_ts").getValue().toString()).matches() 
+			Instant creationTime = integerPattern.matcher(data.get("_ts").getValue().toString()).matches() 
 									? Instant.ofEpochMilli(new Long(data.get("_ts").getValue().toString())) 
 									: null;
-			
-			if (Optional.ofNullable(creationTime).isPresent() 
-					&& creationTime.isAfter(aYearAgo) 
-					&& creationTime.isBefore(tomorrow)) {
-				
+							
+			if (Optional.ofNullable(creationTime).isPresent() && 
+					creationTime.isAfter(aYearAgo) && 
+					creationTime.isBefore(tomorrow)) {
 				event.setCreationTimestamp(creationTime);
+				
 			} else {
 				event.setCreationTimestamp(event.getIngestedTimestamp());
-				LOGGER.warn(MessageFormat.format(EVENT_TIME_INVALID, "_ts", creationTime != null ? data.get("_ts").getValue().toString() : null),
+				LOGGER.warn(MessageFormat.format(EVENT_TIME_INVALID, "_ts", data.get("_ts").getValue().toString()),
 						device.toURI(),
 						device.getLogLevel());
 			}
