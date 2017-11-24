@@ -46,11 +46,12 @@ public class AuthorizationCode implements Serializable {
 
     @Override
     public String toString() {
-        return "{" +
-                "code='" + code + '\'' +
-                ", createTime=" + createTime +
-                ", version=" + version +
-                ", authenticationBytes=" + authenticationBytes +
-                '}';
+        return new StringBuilder()
+                .append("{")
+                .append("code='").append(code).append('\'')
+                .append(", createTime=").append(createTime)
+                .append(", version=").append(version)
+                .append(", authenticationBytes=").append(authenticationBytes)
+                .append('}').toString();
     }
 }

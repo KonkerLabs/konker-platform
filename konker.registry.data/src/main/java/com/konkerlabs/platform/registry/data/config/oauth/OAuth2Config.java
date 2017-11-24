@@ -64,7 +64,9 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 	public DefaultTokenServices tokenServices() {
 		DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
 		defaultTokenServices.setTokenStore(mongoTokenStore);
+		defaultTokenServices.setClientDetailsService(clientDetailsService);
 		defaultTokenServices.setSupportRefreshToken(true);
+
 		return defaultTokenServices;
 	}
 	
