@@ -56,6 +56,8 @@ public class DeviceEventRabbitEndpoint {
         }
         if (epochMilli != null) {
             ingestedTimestamp = Instant.ofEpochMilli(epochMilli);
+        } else {
+        	ingestedTimestamp = Instant.now();
         }
 
         try {
