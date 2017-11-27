@@ -258,7 +258,7 @@ public class OAuthClientDetailsService implements ClientDetailsService {
                     .withMessage(Validations.INVALID_DETAILS.getCode()).build();
         }
 
-        if (oauthClientDetails.getTenant().getId() != tenant.getId()) {
+        if (!oauthClientDetails.getTenant().getId().equals(tenant.getId())) {
             return ServiceResponseBuilder.<AccessToken>error()
                     .withMessage(Validations.INVALID_DETAILS.getCode()).build();
         }

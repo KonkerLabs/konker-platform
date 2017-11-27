@@ -99,7 +99,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
                                                Optional.ofNullable(event.getGeolocation()).isPresent() ? event.getGeolocation().getHdop() : null,
                                                Optional.ofNullable(event.getGeolocation()).isPresent() ? event.getGeolocation().getLat() : null,
                                                Optional.ofNullable(event.getGeolocation()).isPresent() ? event.getGeolocation().getLon() : null,
-                                               event.getIngestedTimestamp().toEpochMilli(),
+                                               event.getIngestedTimestamp().toEpochMilli() * 1000, // nano milliseconds
                                                event.getPayload());
             if (synchronous) {
                 session.execute(statement);
@@ -123,7 +123,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
                                                event.getIncoming().getChannel(),
                                                event.getIncoming().getDeviceGuid(),
                                                event.getIncoming().getDeviceId(),
-                                               event.getIngestedTimestamp().toEpochMilli(),
+                                               event.getIngestedTimestamp().toEpochMilli()* 1000, // nano milliseconds
                                                event.getPayload());
             if (synchronous) {
                 session.execute(statement);
@@ -152,7 +152,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
             query.append("channel, ");
             query.append("device_guid, ");
             query.append("device_id, ");
-            
+
             query.append("geo_elev, ");
             query.append("geo_hdop, ");
             query.append("geo_lat, ");
@@ -251,8 +251,6 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
                                    Type type,
                                    boolean isDeleted) throws BusinessException {
 
-        String table = null;
-
         List<Object> filters = new ArrayList<>();
 
         String query = getQuery(tenant,
@@ -264,7 +262,6 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
                                 ascending,
                                 limit,
                                 type,
-                                table,
                                 filters);
 
         PreparedStatement ps = selectStatementCache.get(query);
@@ -287,12 +284,12 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
             if (type == Type.INCOMING) {
 
                 incomingActor = EventActor.builder()
-                                          .tenantDomain(row.getString("tenant_domain"))
-                                          .applicationName(row.getString("application_name"))
-                                          .deviceGuid(row.getString("device_guid"))
-                                          .deviceId(row.getString("device_id"))
-                                          .channel(row.getString("channel"))
-                                          .build();
+                        .tenantDomain(row.getString("tenant_domain"))
+                        .applicationName(row.getString("application_name"))
+                        .deviceGuid(row.getString("device_guid"))
+                        .deviceId(row.getString("device_id"))
+                        .channel(row.getString("channel"))
+                        .build();
 
             } else if (type == Type.OUTGOING) {
 
@@ -314,18 +311,27 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
 
             }
 
+            EventGeolocation eventGeolocation = null;
+            if (!row.isNull("geo_lat") && !row.isNull("geo_lon")) {
+                 eventGeolocation = EventGeolocation.builder()
+                        .lat(row.getDouble("geo_lat"))
+                        .lon(row.getDouble("geo_lon"))
+                        .build();
+                 if (!row.isNull("geo_hdop")) {
+                     eventGeolocation.setHdop(row.getLong("geo_hdop"));
+                 }
+                 if (!row.isNull("geo_elev")) {
+                     eventGeolocation.setElev(row.getDouble("geo_elev"));
+                 }
+            }
+
             Event event = Event.builder()
                                .epochTime(row.getLong("timestamp"))
                                .creationTimestamp(Instant.ofEpochMilli(row.getLong("timestamp") / 1000000))
                                .ingestedTimestamp(Instant.ofEpochMilli(row.getLong("ingested_timestamp") / 1000000))
                                .incoming(incomingActor)
                                .outgoing(outgoingActor)
-                               .geolocation(EventGeolocation.builder()
-                            		   .lat(row.getDouble("geo_lat"))
-                            		   .lon(row.getDouble("geo_lon"))
-                            		   .hdop(row.getLong("geo_hdop"))
-                            		   .elev(row.getDouble("geo_elev"))
-                            		   .build())
+                               .geolocation(eventGeolocation)
                                .payload(row.getString("payload"))
                                .build();
 
@@ -338,8 +344,9 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
 
     private String getQuery(Tenant tenant, Application application, String deviceGuid, String channel,
             Instant startInstant, Instant endInstant, boolean ascending, Integer limit, Type type,
-            String table, List<Object> filters) {
+            List<Object> filters) {
 
+        String table = null;
         StringBuilder query = new StringBuilder();
 
         if (type == Type.INCOMING) {
@@ -347,9 +354,9 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
 
             if (deviceGuid != null && channel != null) {
                 table = INCOMING_EVENTS_DEVICE_GUID_CHANNEL;
-            } else if (deviceGuid != null && channel == null) {
+            } else if (deviceGuid != null) {
                 table = INCOMING_EVENTS_DEVICE_GUID;
-            } else if (deviceGuid == null && channel != null) {
+            } else if (channel != null) {
                 table = INCOMING_EVENTS_CHANNEL;
             } else if (deviceGuid == null && channel == null) {
                 table = INCOMING_EVENTS;
@@ -359,9 +366,9 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
 
             if (deviceGuid != null && channel != null) {
                 table = OUTGOING_EVENTS_DEVICE_GUID_CHANNEL;
-            } else if (deviceGuid != null && channel == null) {
+            } else if (deviceGuid != null) {
                 table = OUTGOING_EVENTS_DEVICE_GUID;
-            } else if (deviceGuid == null && channel != null) {
+            } else if (channel != null) {
                 table = OUTGOING_EVENTS_CHANNEL;
             } else if (deviceGuid == null && channel == null) {
                 table = OUTGOING_EVENTS;
