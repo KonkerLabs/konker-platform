@@ -23,6 +23,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 @Component
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
@@ -48,6 +49,7 @@ public class DeviceEventProcessor {
 
     private static final String EVENT_DROPPED = "Incoming event has been dropped: [Device: {0}] - [Payload: {1}]";
     private static final String GATEWAY_EVENT_DROPPED = "Incoming event has been dropped: [Gateway: {0}] - [Payload: {1}]";
+    private Pattern integerPattern = Pattern.compile("^[0-9]*$") ;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DeviceEventProcessor.class);
 
@@ -78,7 +80,7 @@ public class DeviceEventProcessor {
         Device device = Optional.ofNullable(deviceRegisterService.findByApiKey(apiKey))
                 .orElseThrow(() -> new BusinessException(Messages.DEVICE_NOT_FOUND.getCode()));
         
-        process(device, channel, payload, timestamp);
+        process(device, channel, payload, timestamp, timestamp);
     }
     
     private Boolean isValidAuthority(Gateway gateway, Device device) throws BusinessException {
@@ -100,15 +102,25 @@ public class DeviceEventProcessor {
     			
     			if (isValidAuthority(gateway, device)) {
     				Map<String, Object> devicePayload = (Map<String, Object>) payloadGateway.get("payload");
-    				devicePayload.putIfAbsent("_ts", payloadGateway.get("ts"));
+    				
+    				Instant ingestedTimestamp = Instant.now();
+					Instant creationTimestamp = payloadGateway.containsKey("ts") 
+    						&& integerPattern.matcher(payloadGateway.get("ts").toString()).matches() ? 
+    								Instant.ofEpochMilli(new Long(payloadGateway.get("ts").toString())) : 
+    								ingestedTimestamp;
     				
     				process(
     						device, 
     						payloadGateway.get("channel").toString(), 
     						jsonParsingService.toJsonString(devicePayload), 
-    						Instant.now());
+    						ingestedTimestamp,
+    						creationTimestamp);
     			} else {
-    			    throw new BusinessException(Messages.INVALID_GATEWAY_LOCATION.getCode());
+    				LOGGER.debug(MessageFormat.format(Messages.INVALID_GATEWAY_LOCATION.getCode(),
+                            gateway.toURI(),
+                            payloadList),
+                    		gateway.toURI(),
+                    		gateway.getTenant().getLogLevel());
                 }
     		} else {
                 LOGGER.debug(MessageFormat.format(GATEWAY_EVENT_DROPPED,
@@ -122,7 +134,7 @@ public class DeviceEventProcessor {
     	
     }
     
-    public void process(Device device, String channel, String payload, Instant timestamp) throws BusinessException {
+    public void process(Device device, String channel, String payload, Instant ingestedTimestamp, Instant creationTimestamp) throws BusinessException {
         Optional.ofNullable(channel).filter(s -> !s.isEmpty())
                 .orElseThrow(() -> new BusinessException(Messages.CHANNEL_MISSING.getCode()));
 
@@ -138,7 +150,8 @@ public class DeviceEventProcessor {
                                         ? device.getApplication().getName(): null)
                                 .build()
                 )
-                .ingestedTimestamp(timestamp)
+                .creationTimestamp(creationTimestamp)
+                .ingestedTimestamp(ingestedTimestamp)
                 .payload(payload)
                 .build();
         if (device.isActive()) {
