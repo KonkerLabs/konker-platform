@@ -116,9 +116,8 @@ public class DeviceEventProcessor {
     						ingestedTimestamp,
     						creationTimestamp);
     			} else {
-    				LOGGER.debug(MessageFormat.format(Messages.INVALID_GATEWAY_LOCATION.getCode(),
-                            gateway.toURI(),
-                            payloadList),
+    				LOGGER.warn(MessageFormat.format("The gateway does not have authority over the device: {0}",
+                            device.getName()),
                     		gateway.toURI(),
                     		gateway.getTenant().getLogLevel());
                 }

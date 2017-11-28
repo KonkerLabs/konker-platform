@@ -99,7 +99,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
                                                Optional.ofNullable(event.getGeolocation()).isPresent() ? event.getGeolocation().getHdop() : null,
                                                Optional.ofNullable(event.getGeolocation()).isPresent() ? event.getGeolocation().getLat() : null,
                                                Optional.ofNullable(event.getGeolocation()).isPresent() ? event.getGeolocation().getLon() : null,
-                                               event.getIngestedTimestamp().toEpochMilli() * 1000, // nano milliseconds
+                                               event.getIngestedTimestamp().toEpochMilli() * 1000000, // nanoseconds
                                                event.getPayload());
             if (synchronous) {
                 session.execute(statement);
@@ -123,7 +123,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
                                                event.getIncoming().getChannel(),
                                                event.getIncoming().getDeviceGuid(),
                                                event.getIncoming().getDeviceId(),
-                                               event.getIngestedTimestamp().toEpochMilli()* 1000, // nano milliseconds
+                                               event.getIngestedTimestamp().toEpochMilli()* 1000000, // nanoseconds
                                                event.getPayload());
             if (synchronous) {
                 session.execute(statement);
