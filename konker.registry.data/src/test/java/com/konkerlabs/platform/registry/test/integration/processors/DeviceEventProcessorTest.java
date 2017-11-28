@@ -271,6 +271,7 @@ public class DeviceEventProcessorTest {
     @Test
     public void shouldFireRouteExecution() throws Exception {
         Instant timestamp = Instant.now();
+        event.setCreationTimestamp(timestamp);
         event.setIngestedTimestamp(timestamp);
 
         when(deviceRegisterService.findByApiKey(sourceApiKey)).thenReturn(device);
@@ -304,9 +305,6 @@ public class DeviceEventProcessorTest {
 	
 	@Test
     public void shouldRaiseAnExceptionDiferentLocationProcessGateway() throws Exception {
-		thrown.expect(BusinessException.class);
-        thrown.expectMessage(DeviceEventProcessor.Messages.INVALID_GATEWAY_LOCATION.getCode());
-    	
     	when(jsonParsingService.toListMap(listJson)).thenReturn(devicesEvent);
     	when(deviceRegisterService.findByDeviceId(gateway.getTenant(), gateway.getApplication(), "CurrentSensor"))
     		.thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device).build());
@@ -363,7 +361,8 @@ public class DeviceEventProcessorTest {
         
         when(deviceRegisterService.findByApiKey(sourceApiKey)).thenReturn(device);
 
-        subject.process(device, null, originalPayload, Instant.now());
+        Instant ingestedTimestamp = Instant.now();
+		subject.process(device, null, originalPayload, ingestedTimestamp, ingestedTimestamp);
     }
     
     @Test
@@ -371,7 +370,8 @@ public class DeviceEventProcessorTest {
     	when(deviceLogEventService.logIncomingEvent(eq(device), any()))
     		.thenReturn(ServiceResponseBuilder.<Event>ok().withResult(event).build());
     	
-    	subject.process(device, incomingChannel, originalPayload, Instant.now());
+    	Instant ingestedTimestamp = Instant.now();
+    	subject.process(device, incomingChannel, originalPayload, ingestedTimestamp, ingestedTimestamp);
     	
     	verify(eventRouteExecutor, times(1)).execute(any(Event.class), any(Device.class));
         verify(deviceLogEventService, times(1)).logIncomingEvent(any(Device.class), any(Event.class));
@@ -382,8 +382,9 @@ public class DeviceEventProcessorTest {
     	when(deviceLogEventService.logIncomingEvent(eq(device), any()))
     		.thenReturn(ServiceResponseBuilder.<Event>ok().withResult(event).build());
     	
+    	Instant ingestedTimestamp = Instant.now();
     	device.setActive(false);
-    	subject.process(device, incomingChannel, originalPayload, Instant.now());
+    	subject.process(device, incomingChannel, originalPayload, ingestedTimestamp, ingestedTimestamp);
     	
     	verify(eventRouteExecutor, times(0)).execute(any(Event.class), any(Device.class));
         verify(deviceLogEventService, times(0)).logIncomingEvent(any(Device.class), any(Event.class));
@@ -397,7 +398,8 @@ public class DeviceEventProcessorTest {
     	when(deviceLogEventService.logIncomingEvent(eq(device), any()))
     		.thenReturn(ServiceResponseBuilder.<Event>error().build());
     	
-    	subject.process(device, incomingChannel, originalPayload, Instant.now());
+    	Instant ingestedTimestamp = Instant.now();
+    	subject.process(device, incomingChannel, originalPayload, ingestedTimestamp, ingestedTimestamp);
     	
     	verify(eventRouteExecutor, times(0)).execute(any(Event.class), any(Device.class));
         verify(deviceLogEventService, times(1)).logIncomingEvent(any(Device.class), any(Event.class));
