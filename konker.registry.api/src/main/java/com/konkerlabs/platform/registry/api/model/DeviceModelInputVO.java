@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 public class DeviceModelInputVO {
 	
 	@ApiModelProperty(
-			value = "Descritive name to identify the device model", 
+			value = "Descriptive name to identify the device model",
 			example = "PresenceSensor", 
 			required = true, 
 			position = 1)
@@ -24,11 +24,17 @@ public class DeviceModelInputVO {
 			example = "This is a device model to group all the presence sensor", 
 			position = 2)
 	protected String description;
-	
+
+	@ApiModelProperty(
+			value = "The nature and format of the data send by the device",
+			example = "application/json",
+			position = 3)
+	protected String contentType;
+
 	@ApiModelProperty(
 			value = "Property to indicate whether the device model is default or not", 
 			example = "true", 
-			position = 3)
+			position = 4)
 	protected boolean defaultModel;
 
 }

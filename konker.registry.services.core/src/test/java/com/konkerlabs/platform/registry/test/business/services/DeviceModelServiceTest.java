@@ -42,7 +42,6 @@ import static org.hamcrest.Matchers.*;
         EventStorageConfig.class})
 public class DeviceModelServiceTest extends BusinessLayerTestSupport {
 
-
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
@@ -93,6 +92,7 @@ public class DeviceModelServiceTest extends BusinessLayerTestSupport {
 		    			.description("Smart ff model")
     					.application(application)
     					.defaultModel(true)
+                        .contentType(DeviceModel.ContentType.APPLICATION_JSON)
     					.tenant(currentTenant)
     					.build();
 
@@ -102,6 +102,7 @@ public class DeviceModelServiceTest extends BusinessLayerTestSupport {
     			.description("temperature sensor")
 				.application(application)
 				.defaultModel(false)
+                .contentType(DeviceModel.ContentType.APPLICATION_JSON)
 				.tenant(currentTenant)
 				.build();
 
@@ -110,9 +111,9 @@ public class DeviceModelServiceTest extends BusinessLayerTestSupport {
     			.description("Sensor AC model")
 				.application(application)
 				.defaultModel(false)
+                .contentType(DeviceModel.ContentType.APPLICATION_JSON)
 				.tenant(currentTenant)
 				.build();
-
     }
 
     @Test
@@ -176,6 +177,14 @@ public class DeviceModelServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/device-model.json"})
+    public void shouldReturnErrorIfSavingDevModelWithoutContentType() throws Exception {
+        deviceModel.setContentType(null);
+        ServiceResponse<DeviceModel> serviceResponse = deviceModelService.register(currentTenant, application, deviceModel);
+        assertThat(serviceResponse, hasErrorMessage(DeviceModel.Validations.CONTENT_TYPE_IS_NULL_OR_INVALID.getCode()));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/device-model.json"})
     public void shouldSavingNewDevModelDefault() throws Exception {
     	newDeviceModel.setDefaultModel(true);
     	ServiceResponse<DeviceModel> serviceResponse = deviceModelService.register(currentTenant, application, newDeviceModel);
@@ -205,6 +214,18 @@ public class DeviceModelServiceTest extends BusinessLayerTestSupport {
         ServiceResponse<DeviceModel> response = deviceModelService.register(currentTenant, application, newDeviceModel);
 
         assertThat(response, isResponseOk());
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/device-model.json"})
+    public void shouldSaveDevModelWithOtherContentType () throws Exception {
+
+        newDeviceModel.setContentType(DeviceModel.ContentType.APPLICATION_MSGPACK);
+        ServiceResponse<DeviceModel> response = deviceModelService.register(currentTenant, application, newDeviceModel);
+
+        assertThat(response, isResponseOk());
+        assertThat(response.getResult().getContentType(), equalTo(DeviceModel.ContentType.APPLICATION_MSGPACK));
+
     }
 
     @Test
@@ -278,6 +299,28 @@ public class DeviceModelServiceTest extends BusinessLayerTestSupport {
 
         assertThat(serviceResponse, isResponseOk());
         assertThat(serviceResponse.getResult().getDescription(), equalTo(tempDeviceModel.getDescription()));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/device-model.json"})
+    public void shouldUpdateContentType() throws Exception {
+
+        ServiceResponse<DeviceModel> serviceResponse = deviceModelService.getByTenantApplicationAndName(currentTenant, application, "sensor");
+
+        assertThat(serviceResponse, isResponseOk());
+        assertThat(serviceResponse.getResult().getContentType(), equalTo(DeviceModel.ContentType.APPLICATION_JSON));
+
+        // try to update
+        DeviceModel deviceModel = serviceResponse.getResult();
+        deviceModel.setContentType(DeviceModel.ContentType.APPLICATION_MSGPACK);
+        serviceResponse = deviceModelService.update(application.getTenant(), application, deviceModel.getName(), deviceModel);
+        assertThat(serviceResponse, isResponseOk());
+
+        // updated?
+        serviceResponse = deviceModelService.getByTenantApplicationAndName(currentTenant, application, "sensor");
+
+        assertThat(serviceResponse, isResponseOk());
+        assertThat(serviceResponse.getResult().getContentType(), equalTo(DeviceModel.ContentType.APPLICATION_MSGPACK));
     }
 
     @Test

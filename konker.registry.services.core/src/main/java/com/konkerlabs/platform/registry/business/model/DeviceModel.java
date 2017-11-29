@@ -30,6 +30,7 @@ public class DeviceModel implements URIDealer {
 	private String guid;
 	private String name;
 	private String description;
+	private ContentType contentType = ContentType.APPLICATION_JSON;
 	private boolean defaultModel;
 	
 	@DBRef
@@ -57,7 +58,8 @@ public class DeviceModel implements URIDealer {
 
 	public enum Validations {
 		NAME_NULL_EMPTY("model.devicemodel.name.not_null"),
-		NAME_INVALID("model.devicemodel.name.invalid");
+		NAME_INVALID("model.devicemodel.name.invalid"),
+        CONTENT_TYPE_IS_NULL_OR_INVALID("model.devicemodel.content_type.null_or_invalid");
 
 		public String getCode() {
 			return code;
@@ -81,11 +83,37 @@ public class DeviceModel implements URIDealer {
 		if (getName() != null && !regex.matcher(getName()).matches()) {
 			validations.put(Validations.NAME_INVALID.code,null);
 		}
-		
+		if (getContentType() == null) {
+            validations.put(Validations.CONTENT_TYPE_IS_NULL_OR_INVALID.code,null);
+        }
 
 		return Optional.of(validations).filter(map -> !map.isEmpty());
 	}
 
+	public enum ContentType {
 
+		APPLICATION_JSON("application/json"),
+		APPLICATION_MSGPACK("application/msgpack");
+
+		private String value;
+
+		ContentType(String value) {
+			this.value = value;
+		}
+
+		public String getValue() {
+			return value;
+		}
+
+		public static ContentType getByValue(String value) {
+			for (ContentType contentType: ContentType.values()) {
+				if (contentType.getValue().equalsIgnoreCase(value)) {
+					return contentType;
+				}
+			}
+			return null;
+		}
+
+	}
 
 }
