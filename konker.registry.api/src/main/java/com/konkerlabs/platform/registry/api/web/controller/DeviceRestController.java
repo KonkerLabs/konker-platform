@@ -9,6 +9,7 @@ import com.konkerlabs.platform.registry.api.model.RestResponse;
 import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.Validations;
+import com.konkerlabs.platform.registry.business.services.api.GatewayService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @RestController
@@ -33,6 +35,10 @@ public class DeviceRestController extends AbstractRestController implements Init
 
     @Autowired
     private DeviceRegisterService deviceRegisterService;
+    @Autowired
+    private OauthClientDetails oauthClientDetails;
+    @Autowired
+    private GatewayService gatewayService;
 
     private Set<String> validationsCode = new HashSet<>();
 
@@ -63,8 +69,8 @@ public class DeviceRestController extends AbstractRestController implements Init
     )
     @PreAuthorize("hasAuthority('SHOW_DEVICE')")
     public DeviceVO read(
-    		@PathVariable("application") String applicationId,
-    		@PathVariable("deviceGuid") String deviceGuid) throws BadServiceResponseException, NotFoundResponseException {
+            @PathVariable("application") String applicationId,
+            @PathVariable("deviceGuid") String deviceGuid) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
@@ -83,11 +89,22 @@ public class DeviceRestController extends AbstractRestController implements Init
     @ApiOperation(value = "Create a device")
     @PreAuthorize("hasAuthority('ADD_DEVICE')")
     public DeviceVO create(
-    		@PathVariable("application") String applicationId,
+            @PathVariable("application") String applicationId,
             @ApiParam(name = "body", required = true)
             @RequestBody DeviceInputVO deviceForm) throws BadServiceResponseException, NotFoundResponseException {
 
-        Tenant tenant = user.getTenant();
+
+        Tenant tenant = null;
+        Gateway gateway = null;
+        if (oauthClientDetails != null) {
+            tenant = oauthClientDetails.getTenant();
+            if (oauthClientDetails.getParentGateway() != null) {
+                gateway = oauthClientDetails.getParentGateway();
+            }
+        } else if (user != null) {
+            tenant = user.getTenant();
+        }
+
         Application application = getApplication(applicationId);
         Location location = getLocation(tenant, application, deviceForm.getLocationName());
         DeviceModel deviceModel = getDeviceModel(tenant, application, deviceForm.getDeviceModelName());
@@ -101,6 +118,22 @@ public class DeviceRestController extends AbstractRestController implements Init
                 .active(true)
                 .build();
 
+
+        if (Optional.ofNullable(gateway).isPresent()) {
+            ServiceResponse<Boolean> validationResult =
+                    gatewayService.validateGatewayAuthorization(
+                            gateway,
+                            device.getLocation()
+                    );
+
+            if (!validationResult.isOk()) {
+                throw new BadServiceResponseException(
+                        oauthClientDetails,
+                        validationResult,
+                        validationsCode
+                );
+            }
+        }
         ServiceResponse<Device> deviceResponse = deviceRegisterService.register(tenant, application, device);
 
         if (!deviceResponse.isOk()) {
@@ -115,7 +148,7 @@ public class DeviceRestController extends AbstractRestController implements Init
     @ApiOperation(value = "Update a device")
     @PreAuthorize("hasAuthority('EDIT_DEVICE')")
     public void update(
-    		@PathVariable("application") String applicationId,
+            @PathVariable("application") String applicationId,
             @PathVariable("deviceGuid") String deviceGuid,
             @ApiParam(name = "body", required = true)
             @RequestBody DeviceInputVO deviceForm) throws BadServiceResponseException, NotFoundResponseException {
@@ -179,8 +212,8 @@ public class DeviceRestController extends AbstractRestController implements Init
     @ApiOperation(value = "Delete a device")
     @PreAuthorize("hasAuthority('REMOVE_DEVICE')")
     public void delete(
-    		@PathVariable("application") String applicationId,
-    		@PathVariable("deviceGuid") String deviceGuid) throws BadServiceResponseException, NotFoundResponseException {
+            @PathVariable("application") String applicationId,
+            @PathVariable("deviceGuid") String deviceGuid) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
