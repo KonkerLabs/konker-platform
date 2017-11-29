@@ -1,19 +1,18 @@
 package com.konkerlabs.platform.registry.api.test.config;
 
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.User;
+import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
 import com.konkerlabs.platform.registry.business.model.enumerations.Language;
 import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
 import com.konkerlabs.platform.registry.business.services.api.*;
-import com.konkerlabs.platform.registry.business.model.OauthClientDetails;
 import com.konkerlabs.platform.registry.idm.services.OAuth2AccessTokenService;
 import com.konkerlabs.platform.registry.idm.services.OAuthClientDetailsService;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
+
+import java.util.Arrays;
 
 @Configuration
 public class WebTestConfiguration {
@@ -38,7 +37,49 @@ public class WebTestConfiguration {
                 .dateFormat(DateFormat.YYYYMMDD)
                 .tenant(tenant()).build();
 
-        return OauthClientDetails.builder().build().setUserProperties(user);
+        Location br =
+                Location.builder()
+                        .application(application())
+                        .guid("f06d9d2d-f5ce-4cc6-8637-348743e8acad")
+                        .id("br")
+                        .name("br")
+                        .description("br")
+                        .build();
+
+        Location room1 =
+                Location.builder()
+                        .application(application())
+                        .guid("f06d9d2d-f5ce-4cc6-8637-348743e8acae")
+                        .id("rj")
+                        .name("rj")
+                        .description("rj")
+                        .parent(br)
+                        .build();
+
+        Location room101Roof = Location.builder()
+                .tenant(tenant())
+                .application(application())
+                .parent(room1)
+                .name("sala-101-teto")
+                .guid("f06d9d2d-f5ce-4cc6-8637-348743e8acaf")
+                .parent(room1)
+                .build();
+
+        room1.setChildren(Arrays.asList(room101Roof));
+        br.setChildren(Arrays.asList(room1));
+
+        return OauthClientDetails
+                .builder()
+                .parentGateway(
+                        Gateway
+                                .builder()
+                                .name("konker")
+                                .active(true)
+                                .application(application())
+                                .location(br)
+                                .build())
+                .build()
+                .setUserProperties(user);
     }
 
     @Bean
@@ -149,6 +190,19 @@ public class WebTestConfiguration {
     @Bean
     public DeviceFirmwareService deviceFirmwareServiceeviceFirmwareService() {
         return Mockito.mock(DeviceFirmwareService.class);
+    }
+
+    @Bean
+    public Gateway gateway() {
+        return Gateway.builder().location(
+                Location.builder()
+                        .application(application())
+                        .guid("f06d9d2d-f5ce-4cc6-8637-348743e8acad")
+                        .id("br")
+                        .name("br")
+                        .description("br")
+                        .build()
+        ).name("konker").build();
     }
 
 }

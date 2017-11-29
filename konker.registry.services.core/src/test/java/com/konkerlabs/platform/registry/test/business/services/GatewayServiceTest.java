@@ -390,4 +390,50 @@ public class GatewayServiceTest extends BusinessLayerTestSupport {
         assertThat(response.getResult(), equalTo(Boolean.TRUE));
     }
 
+
+    @Test
+    public void shoulntdReturnValidAuthorizationToManageDevice() {
+        Location rj =
+                Location.builder()
+                        .application(application)
+                        .guid("f06d9d2d-f5ce-4cc6-8637-348743e8acad")
+                        .id("rj")
+                        .name("rj")
+                        .description("rj")
+                        .build();
+
+        Location room1 =
+                Location.builder()
+                        .application(application)
+                        .guid("f06d9d2d-f5ce-4cc6-8637-348743e8acae")
+                        .id("sala-101")
+                        .name("sala-101")
+                        .description("sala-101")
+                        .parent(rj)
+                        .build();
+
+        Location room101Roof = Location.builder()
+                .tenant(tenant)
+                .application(application)
+                .parent(room1)
+                .name("sala-101-teto")
+                .guid("f06d9d2d-f5ce-4cc6-8637-348743e8acaf")
+                .parent(room1)
+                .build();
+
+        rj.setChildren(Arrays.asList(room1));
+
+        ServiceResponse<Boolean> response =
+                subject.validateGatewayAuthorization(
+                        Gateway
+                                .builder()
+                                .location(rj)
+                                .build(),
+                        room101Roof
+                );
+
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
+        assertThat(response.getResult(), equalTo(Boolean.FALSE));
+    }
+
 }
