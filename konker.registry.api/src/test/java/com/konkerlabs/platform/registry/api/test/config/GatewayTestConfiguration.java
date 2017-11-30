@@ -12,8 +12,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 
+import java.util.Arrays;
+
 @Configuration
-public class WebTestConfiguration {
+public class GatewayTestConfiguration {
 
     @Bean
     public Tenant tenant() {
@@ -35,8 +37,47 @@ public class WebTestConfiguration {
                 .dateFormat(DateFormat.YYYYMMDD)
                 .tenant(tenant()).build();
 
+        Location br =
+                Location.builder()
+                        .application(application())
+                        .guid("f06d9d2d-f5ce-4cc6-8637-348743e8acad")
+                        .id("br")
+                        .name("br")
+                        .description("br")
+                        .build();
+
+        Location room1 =
+                Location.builder()
+                        .application(application())
+                        .guid("f06d9d2d-f5ce-4cc6-8637-348743e8acae")
+                        .id("rj")
+                        .name("rj")
+                        .description("rj")
+                        .parent(br)
+                        .build();
+
+        Location room101Roof = Location.builder()
+                .tenant(tenant())
+                .application(application())
+                .parent(room1)
+                .name("sala-101-teto")
+                .guid("f06d9d2d-f5ce-4cc6-8637-348743e8acaf")
+                .parent(room1)
+                .build();
+
+        room1.setChildren(Arrays.asList(room101Roof));
+        br.setChildren(Arrays.asList(room1));
+
         return OauthClientDetails
                 .builder()
+                .parentGateway(
+                        Gateway
+                                .builder()
+                                .name("konker")
+                                .active(true)
+                                .application(application())
+                                .location(br)
+                                .build())
                 .build()
                 .setUserProperties(user);
     }

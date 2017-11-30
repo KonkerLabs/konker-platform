@@ -202,6 +202,23 @@ public class GatewayServiceImpl implements GatewayService {
 
     }
 
+    @Override
+    public ServiceResponse<Boolean> validateGatewayAuthorization(
+            Gateway source,
+            Location locationToAuthorize) {
+
+        if(source == null || locationToAuthorize == null || source.getLocation() == null){
+            return ServiceResponseBuilder
+                    .<Boolean> error()
+                    .withMessage(Validations.INVALID_GATEWAY_LOCATION.getCode())
+                    .build();
+        }
+        return ServiceResponseBuilder
+                .<Boolean> ok()
+                .withResult(LocationTreeUtils.isSublocationOf(source.getLocation(), locationToAuthorize))
+                .build();
+    }
+
     private <T> ServiceResponse<T> validate(Tenant tenant, Application application) {
 
         if (!Optional.ofNullable(tenant).isPresent()) {

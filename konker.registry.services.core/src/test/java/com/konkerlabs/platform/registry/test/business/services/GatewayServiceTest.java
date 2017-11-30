@@ -1,18 +1,21 @@
 package com.konkerlabs.platform.registry.test.business.services;
 
-import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.Gateway;
+import com.konkerlabs.platform.registry.business.model.Location;
+import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.registry.business.repositories.*;
+import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
+import com.konkerlabs.platform.registry.business.repositories.GatewayRepository;
+import com.konkerlabs.platform.registry.business.repositories.LocationRepository;
+import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.GatewayService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
-import org.bson.types.Binary;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -22,21 +25,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
 
 import static com.konkerlabs.platform.registry.business.model.validation.CommonValidations.TENANT_NULL;
 import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
 import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.isResponseOk;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.*;
 import static org.junit.rules.ExpectedException.none;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = { MongoTestConfiguration.class, BusinessTestConfiguration.class})
-@UsingDataSet(locations = { "/fixtures/tenants.json", "/fixtures/applications.json" })
+@ContextConfiguration(classes = {MongoTestConfiguration.class, BusinessTestConfiguration.class})
+@UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
 public class GatewayServiceTest extends BusinessLayerTestSupport {
 
     @Rule
@@ -87,19 +88,19 @@ public class GatewayServiceTest extends BusinessLayerTestSupport {
         location = locationRepository.save(location);
 
         gateway = Gateway.builder()
-                                 .tenant(tenant)
-                                 .application(application)
-                                 .location(location)
-                                 .name("air conditioner")
-                                 .guid(guid)
-                                 .build();
+                .tenant(tenant)
+                .application(application)
+                .location(location)
+                .name("air conditioner")
+                .guid(guid)
+                .build();
         gatewayRepository.save(gateway);
 
         Gateway deviceFirmware = Gateway.builder()
-                                                .tenant(tenant)
-                                                .application(application)
-                                                .location(location)
-                                                .build();
+                .tenant(tenant)
+                .application(application)
+                .location(location)
+                .build();
         gatewayRepository.save(deviceFirmware);
 
     }
@@ -112,11 +113,11 @@ public class GatewayServiceTest extends BusinessLayerTestSupport {
         String newName = "ntdxsmztwi";
 
         Gateway newFirmware = Gateway.builder()
-                                       .name(newName)
-                                       .tenant(tenant)
-                                       .application(application)
-                                       .location(location)
-                                       .build();
+                .name(newName)
+                .tenant(tenant)
+                .application(application)
+                .location(location)
+                .build();
 
         ServiceResponse<Gateway> response = subject.save(tenant, application, newFirmware);
         assertThat(response, isResponseOk());
@@ -341,6 +342,98 @@ public class GatewayServiceTest extends BusinessLayerTestSupport {
         ServiceResponse<Gateway> response = subject.remove(tenant, application, "invalid_guid");
         assertThat(response, hasErrorMessage(GatewayService.Validations.GATEWAY_NOT_FOUND.getCode()));
 
+    }
+
+    @Test
+    public void shouldReturnValidAuthorizationToManageDevice() {
+        Location rj =
+                Location.builder()
+                        .application(application)
+                        .guid("f06d9d2d-f5ce-4cc6-8637-348743e8acad")
+                        .id("rj")
+                        .name("rj")
+                        .description("rj")
+                        .build();
+
+        Location room1 =
+                Location.builder()
+                        .application(application)
+                        .guid("f06d9d2d-f5ce-4cc6-8637-348743e8acae")
+                        .id("sala-101")
+                        .name("sala-101")
+                        .description("sala-101")
+                        .parent(rj)
+                        .build();
+
+        Location room101Roof = Location.builder()
+                .tenant(tenant)
+                .application(application)
+                .parent(room1)
+                .name("sala-101-teto")
+                .guid("f06d9d2d-f5ce-4cc6-8637-348743e8acaf")
+                .parent(room1)
+                .build();
+
+        room1.setChildren(Arrays.asList(room101Roof));
+        rj.setChildren(Arrays.asList(room1));
+
+        ServiceResponse<Boolean> response =
+                subject.validateGatewayAuthorization(
+                        Gateway
+                                .builder()
+                                .location(rj)
+                                .build(),
+                        room1
+                );
+
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
+        assertThat(response.getResult(), equalTo(Boolean.TRUE));
+    }
+
+
+    @Test
+    public void shoulntdReturnValidAuthorizationToManageDevice() {
+        Location rj =
+                Location.builder()
+                        .application(application)
+                        .guid("f06d9d2d-f5ce-4cc6-8637-348743e8acad")
+                        .id("rj")
+                        .name("rj")
+                        .description("rj")
+                        .build();
+
+        Location room1 =
+                Location.builder()
+                        .application(application)
+                        .guid("f06d9d2d-f5ce-4cc6-8637-348743e8acae")
+                        .id("sala-101")
+                        .name("sala-101")
+                        .description("sala-101")
+                        .parent(rj)
+                        .build();
+
+        Location room101Roof = Location.builder()
+                .tenant(tenant)
+                .application(application)
+                .parent(room1)
+                .name("sala-101-teto")
+                .guid("f06d9d2d-f5ce-4cc6-8637-348743e8acaf")
+                .parent(room1)
+                .build();
+
+        rj.setChildren(Arrays.asList(room1));
+
+        ServiceResponse<Boolean> response =
+                subject.validateGatewayAuthorization(
+                        Gateway
+                                .builder()
+                                .location(rj)
+                                .build(),
+                        room101Roof
+                );
+
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
+        assertThat(response.getResult(), equalTo(Boolean.FALSE));
     }
 
 }
