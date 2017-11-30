@@ -1,9 +1,9 @@
 package com.konkerlabs.platform.registry.business.services.api;
 
-import java.util.List;
-
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+
+import java.util.List;
 
 public interface ApplicationService {
 
@@ -19,7 +19,8 @@ public interface ApplicationService {
 		APPLICATION_HAS_DEVICE("service.application.has.device"),
 		APPLICATION_HAS_ROUTE("service.application.has.route"),
 		APPLICATION_HAS_TRANSFORMATION("service.application.has.transformation"),
-		APPLICATION_HAS_REST_DESTINATION("service.application.has.rest.destination");
+		APPLICATION_HAS_REST_DESTINATION("service.application.has.rest.destination"),
+		GATEWAY_NULL("service.gateway.null");
 
 		public String getCode() {
 			return code;

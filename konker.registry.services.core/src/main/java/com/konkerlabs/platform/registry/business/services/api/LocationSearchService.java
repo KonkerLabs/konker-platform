@@ -1,11 +1,8 @@
 package com.konkerlabs.platform.registry.business.services.api;
 
-import java.util.List;
+import com.konkerlabs.platform.registry.business.model.*;
 
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.Location;
-import com.konkerlabs.platform.registry.business.model.Tenant;
+import java.util.List;
 
 public interface LocationSearchService {
 
@@ -14,7 +11,7 @@ public interface LocationSearchService {
     ServiceResponse<Location> findByName(Tenant tenant, Application application, String locationName, boolean loadTree);
     ServiceResponse<Location> findByGuid(Tenant tenant, Application application, String locationName);
     ServiceResponse<List<Location>> findAll(Tenant tenant, Application application);
-
+    ServiceResponse<List<Location>> findAll(Gateway gateway, Tenant tenant, Application application);
     ServiceResponse<List<Device>> listDevicesByLocationName(Tenant tenant, Application application, String locationName);
 
 

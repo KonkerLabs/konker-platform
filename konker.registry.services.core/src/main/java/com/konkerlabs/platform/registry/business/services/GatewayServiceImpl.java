@@ -213,6 +213,20 @@ public class GatewayServiceImpl implements GatewayService {
                     .withMessage(Validations.INVALID_GATEWAY_LOCATION.getCode())
                     .build();
         }
+
+        locationToAuthorize = locationRepository.
+                findByTenantAndApplicationAndName(
+                        source.getTenant().getId(),
+                        source.getApplication().getName(),
+                        locationToAuthorize.getName());
+
+        List<Location> sourceChildrens =
+                locationRepository.findChildrensByParentId(
+                        source.getTenant().getId(),
+                        source.getApplication().getName(),
+                        source.getLocation().getId());
+        source.getLocation().setChildren(sourceChildrens);
+
         return ServiceResponseBuilder
                 .<Boolean> ok()
                 .withResult(LocationTreeUtils.isSublocationOf(source.getLocation(), locationToAuthorize))

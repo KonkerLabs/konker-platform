@@ -67,8 +67,13 @@ public class LocationRestController extends AbstractRestController implements In
         }
 
         Application application = getApplication(applicationId);
+        ServiceResponse<List<Location>> locationResponse = null;
 
-        ServiceResponse<List<Location>> locationResponse = locationSearchService.findAll(tenant, application);
+        if(gateway != null){
+            locationResponse = locationSearchService.findAll(gateway, tenant, application);
+        } else {
+            locationResponse = locationSearchService.findAll(tenant, application);
+        }
 
         if (!locationResponse.isOk()) {
             throw new BadServiceResponseException(user, locationResponse, validationsCode);
@@ -99,6 +104,10 @@ public class LocationRestController extends AbstractRestController implements In
             tenant = user.getTenant();
         }
         Application application = getApplication(applicationId);
+
+        if(gateway != null) {
+            authorizeGateway(gateway, Location.builder().name(locationName).build());
+        }
 
         ServiceResponse<Location> locationResponse = locationSearchService.findByName(tenant, application, locationName, true);
 
@@ -131,6 +140,10 @@ public class LocationRestController extends AbstractRestController implements In
             tenant = user.getTenant();
         }
         Application application = getApplication(applicationId);
+
+        if(gateway != null) {
+            authorizeGateway(gateway, Location.builder().name(locationName).build());
+        }
 
         ServiceResponse<List<Device>> locationResponse = locationSearchService.listDevicesByLocationName(tenant, application, locationName);
 
@@ -176,7 +189,9 @@ public class LocationRestController extends AbstractRestController implements In
                 .defaultLocation(locationForm.isDefaultLocation())
                 .build();
 
-        authorizeGateway(gateway, location);
+        if(gateway != null) {
+            authorizeGateway(gateway, location);
+        }
 
         ServiceResponse<Location> locationResponse = locationService.save(tenant, application, location);
 
@@ -224,7 +239,9 @@ public class LocationRestController extends AbstractRestController implements In
             locationFromDB = locationResponse.getResult();
         }
 
-        authorizeGateway(gateway, locationFromDB);
+        if(gateway != null) {
+            authorizeGateway(gateway, Location.builder().name(locationName).build());
+        }
 
         // update fields
         locationFromDB.setParent(parent);
@@ -344,7 +361,9 @@ public class LocationRestController extends AbstractRestController implements In
         }
 
         Location location = locationResponse.getResult();
-        authorizeGateway(gateway, location);
+        if(gateway != null) {
+            authorizeGateway(gateway, Location.builder().name(locationName).build());
+        }
         locationResponse = locationService.remove(tenant, application, location.getGuid());
 
         if (!locationResponse.isOk()) {
@@ -363,7 +382,7 @@ public class LocationRestController extends AbstractRestController implements In
         }
     }
 
-    private void authorizeGateway(Gateway gateway, Location location) throws BadServiceResponseException {
+    private void authorizeGateway(Gateway gateway, Location location) throws NotFoundResponseException {
         if (Optional.ofNullable(gateway).isPresent()) {
             ServiceResponse<Boolean> validationResult =
                     gatewayService.validateGatewayAuthorization(
@@ -371,11 +390,10 @@ public class LocationRestController extends AbstractRestController implements In
                             location
                     );
 
-            if (!validationResult.isOk()) {
-                throw new BadServiceResponseException(
+            if (!validationResult.isOk() || !validationResult.getResult()) {
+                throw new NotFoundResponseException(
                         oauthClientDetails,
-                        validationResult,
-                        validationsCode
+                        validationResult
                 );
             }
         }
