@@ -214,18 +214,25 @@ public class GatewayServiceImpl implements GatewayService {
                     .build();
         }
 
-        locationToAuthorize = locationRepository.
-                findByTenantAndApplicationAndName(
-                        source.getTenant().getId(),
-                        source.getApplication().getName(),
-                        locationToAuthorize.getName());
+        if(locationToAuthorize.getTenant() == null ||
+                locationToAuthorize.getApplication() == null){
+            locationToAuthorize = locationRepository.
+                    findByTenantAndApplicationAndName(
+                            source.getTenant().getId(),
+                            source.getApplication().getName(),
+                            locationToAuthorize.getName());
+        }
 
-        List<Location> sourceChildrens =
-                locationRepository.findChildrensByParentId(
-                        source.getTenant().getId(),
-                        source.getApplication().getName(),
-                        source.getLocation().getId());
-        source.getLocation().setChildren(sourceChildrens);
+        if(source.getLocation().getChildren() == null ||
+                source.getLocation().getChildren().size() == 0){
+            List<Location> sourceChildrens =
+                    locationRepository.findChildrensByParentId(
+                            source.getTenant().getId(),
+                            source.getApplication().getName(),
+                            source.getLocation().getId());
+            source.getLocation().setChildren(sourceChildrens);
+
+        }
 
         return ServiceResponseBuilder
                 .<Boolean> ok()

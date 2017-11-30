@@ -118,6 +118,9 @@ public class LocationByGatewayRestControllerTest extends WebLayerTestContext {
         when(locationSearchService.findAll(tenant, application))
                 .thenReturn(ServiceResponseBuilder.<List<Location>>ok().withResult(locations).build());
 
+        when(locationSearchService.findAll(gateway, tenant, application))
+                .thenReturn(ServiceResponseBuilder.<List<Location>>ok().withResult(locations).build());
+
         getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH))
                 .contentType("application/json")
                 .accept(MediaType.APPLICATION_JSON))
@@ -137,6 +140,9 @@ public class LocationByGatewayRestControllerTest extends WebLayerTestContext {
     public void shouldTryListLocationsWithInternalError() throws Exception {
 
         when(locationSearchService.findAll(tenant, application))
+                .thenReturn(ServiceResponseBuilder.<List<Location>>error().build());
+
+        when(locationSearchService.findAll(gateway, tenant, application))
                 .thenReturn(ServiceResponseBuilder.<List<Location>>error().build());
 
         getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH))
