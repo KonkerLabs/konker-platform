@@ -15,18 +15,16 @@ client = MongoClient("mongodb://localhost:27017")
 db = client.registry
 db.authenticate("", "")
 
-
 def main():
     total = 0
-    for restDest in db.restDestinations.find({
+    for deviceModel in db.devicesModel.find({
             "$and": [
-                {"type" : { "$exists" : False} } ]}):
-        restDest.update({'type': 'FORWARD_MESSAGE' })
-        db.restDestinations.update({"_id": restDest['_id']}, restDest)
+                {"contentType" : { "$exists" : False} } ]}):
+        deviceModel.update({'contentType': 'APPLICATION_MSGPACK' })
+        db.deviceModelinations.update({"_id": deviceModel['_id']}, deviceModel)
         total = total+1
-            
      
-    print "Finish - Total rest destination changed " + str(total)
+    print "Finish - Total devices model changed " + str(total)
 
 if __name__ == '__main__':
     main()
