@@ -21,9 +21,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.thymeleaf.spring4.SpringTemplateEngine;
 
+import com.konkerlabs.platform.registry.billing.repositories.TenantDailyUsageRepository;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
@@ -34,6 +37,7 @@ import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.events.api.EventRepository;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.config.EmailConfig;
 import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
 import com.konkerlabs.platform.registry.data.services.JedisTaskService;
@@ -50,9 +54,9 @@ import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
         MongoTestConfiguration.class,
         RedisTestConfiguration.class,
         BusinessTestConfiguration.class,
-        BusinessTestConfiguration.class,
         PubServerConfig.class,
         EventStorageConfig.class,
+        EmailConfig.class,
         DeviceLogEventServiceTest.DeviceLogEventServiceTestConfig.class
 })
 @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json"})
@@ -316,6 +320,20 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
             return Mockito.mock(JedisTaskService.class);
         }
 
+        @Bean
+    	public TenantDailyUsageRepository tenantDailyUsageRepository() {
+    		return Mockito.mock(TenantDailyUsageRepository.class);
+    	}
+    	
+    	@Bean
+    	public JavaMailSender javaMailSender() {
+    		return Mockito.mock(JavaMailSender.class);
+    	}
+    	
+    	@Bean
+    	public SpringTemplateEngine springTemplateEngine() {
+    		return Mockito.mock(SpringTemplateEngine.class);
+    	}
     }
 
 }

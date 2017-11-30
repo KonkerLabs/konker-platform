@@ -45,6 +45,9 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 
     @Autowired
     private UserNotificationService userNotificationService;
+    
+    @Autowired
+    private DeviceEventService deviceEventService;
 
     @Autowired
     private MessageSource messageSource;
@@ -495,6 +498,48 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 		return ServiceResponseBuilder.<HealthAlert> ok()
 				.withResult(healths.get(0))
 				.build();
+	}
+
+	@Override
+	public ServiceResponse<HealthAlert> getCurrentHealthByGuid(Tenant tenant, Application application,
+			String deviceGuid) {
+		if (!Optional.ofNullable(tenant).isPresent())
+            return ServiceResponseBuilder.<HealthAlert>error()
+                    .withMessage(CommonValidations.TENANT_NULL.getCode())
+                    .build();
+
+        if (!Optional.ofNullable(application).isPresent())
+            return ServiceResponseBuilder.<HealthAlert>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode())
+                    .build();
+
+        if (!Optional.ofNullable(deviceGuid).isPresent()) {
+			return ServiceResponseBuilder.<HealthAlert>error()
+					.withMessage(DeviceRegisterService.Validations.DEVICE_GUID_NULL.getCode())
+					.build();
+		}
+        
+		Device device = deviceRepository.findByTenantAndApplicationAndGuid(tenant.getId(), application.getName(), deviceGuid);
+		if (!Optional.ofNullable(device).isPresent()) {
+			return ServiceResponseBuilder.<HealthAlert>error()
+					.withMessage(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode())
+					.build();
+		}
+		
+		if (!device.isActive()) {
+			return ServiceResponseBuilder.<HealthAlert>ok()
+					.withResult(HealthAlert.builder().severity(HealthAlertSeverity.DISABLED).build())
+					.build();
+		}
+		
+		ServiceResponse<List<Event>> incomingResponse = deviceEventService.findIncomingBy(tenant, application, deviceGuid, null, null, null, false, 1);
+		if (incomingResponse.isOk() && incomingResponse.getResult().isEmpty()) {
+			return ServiceResponseBuilder.<HealthAlert>ok()
+					.withResult(HealthAlert.builder().severity(HealthAlertSeverity.NODATA).build())
+					.build();
+		}
+		   
+		return getLastHightSeverityByDeviceGuid(tenant, application, deviceGuid);
 	}
 
 }

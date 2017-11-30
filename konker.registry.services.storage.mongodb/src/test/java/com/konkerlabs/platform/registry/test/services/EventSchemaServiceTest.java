@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry.test.services;
 
 import com.fasterxml.jackson.databind.node.JsonNodeType;
+import com.konkerlabs.platform.registry.billing.repositories.TenantDailyUsageRepository;
 import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
@@ -8,6 +9,7 @@ import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.events.api.EventRepository;
 import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.config.EmailConfig;
 import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
@@ -18,10 +20,14 @@ import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.thymeleaf.spring4.SpringTemplateEngine;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -37,7 +43,9 @@ import static org.hamcrest.Matchers.equalTo;
     MongoTestConfiguration.class,
     BusinessTestConfiguration.class,
     EventStorageConfig.class,
-    PubServerConfig.class
+    PubServerConfig.class,
+    EmailConfig.class,
+    EventSchemaServiceTest.EventSchemaServiceTestConfig.class
 })
 @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json"})
 public class EventSchemaServiceTest extends BusinessLayerTestSupport {
@@ -242,6 +250,24 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
         ServiceResponse<EventSchema> response = eventSchemaService.findIncomingBy(otherTenant, otherApplication, deviceGuid, "command");
 
         assertThat(response, ServiceResponseMatchers.hasErrorMessage("service.device.guid.does_not_exist"));
+    }
+    
+    static class EventSchemaServiceTestConfig {
+    	
+    	@Bean
+    	public TenantDailyUsageRepository tenantDailyUsageRepository() {
+    		return Mockito.mock(TenantDailyUsageRepository.class);
+    	}
+    	
+    	@Bean
+    	public JavaMailSender javaMailSender() {
+    		return Mockito.mock(JavaMailSender.class);
+    	}
+    	
+    	@Bean
+    	public SpringTemplateEngine springTemplateEngine() {
+    		return Mockito.mock(SpringTemplateEngine.class);
+    	}
     }
 
 }

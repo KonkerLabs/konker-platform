@@ -34,7 +34,7 @@
             <tr>
                 <th class="col-md-1" data-th-text="#{devices.index.id}"></th>
                 <th class="col-md-3" data-th-text="#{devices.index.name}"></th>
-                <th class="col-md-1" data-th-text="#{devices.index.active}"></th>
+                <th class="col-md-1" data-th-text="#{devices.index.status}"></th>
                 <th class="col-md-3 text-center" data-th-text="#{devices.index.actions}"></th>
             </tr>
             </thead>
@@ -43,7 +43,7 @@
                 <td data-th-text="${device.deviceId}"></td>
                 <td data-th-text="${device.name}"></td>
                 <td>
-                    <img data-konker-enabled-img="${device.active}"></img>
+                    <img data-th-attr="src=@{${'/resources/konker/images/' + device.status + '.svg'}}" class="olho"></img>
                 </td>
                 <td class="text-center">
                     <a data-th-href="@{/devices/{applicationName}/{guid}/edit(guid=${device.guid}, applicationName=${device.application.name})}"

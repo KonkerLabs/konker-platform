@@ -23,7 +23,7 @@
       "registrationDate" : 1453320973747,
       "active" : false
     },
-        {
+    {
       "_class" : "com.konkerlabs.platform.registry.model.Device",
       "_id" : "69014da6-81da-13e6-a1bc-3f98b38315c7",
       "guid" : "8363c556-84ea-11e6-92a2-4b01fea7e245",

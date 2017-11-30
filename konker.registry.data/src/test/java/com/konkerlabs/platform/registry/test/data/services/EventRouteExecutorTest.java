@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.test.data.services;
 
+import com.konkerlabs.platform.registry.billing.repositories.TenantDailyUsageRepository;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.DeviceModel;
@@ -10,6 +11,7 @@ import com.konkerlabs.platform.registry.business.repositories.ApplicationReposit
 import com.konkerlabs.platform.registry.business.repositories.DeviceModelRepository;
 import com.konkerlabs.platform.registry.business.repositories.LocationRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
+import com.konkerlabs.platform.registry.config.EmailConfig;
 import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
 import com.konkerlabs.platform.registry.data.services.routes.api.EventRouteExecutor;
@@ -29,11 +31,14 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.thymeleaf.spring4.SpringTemplateEngine;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -56,7 +61,9 @@ import static org.mockito.Mockito.when;
         RedisTestConfiguration.class,
         UtilitiesConfig.class,
         PubServerConfig.class,
-        EventStorageConfig.class
+        EventStorageConfig.class,
+        EmailConfig.class,
+        EventRouteExecutorTest.EventRouteExecutorTestConfig.class
 
 })
 @UsingDataSet(locations = {
@@ -263,6 +270,23 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
         Future<List<Event>> eventFuture = subject.execute(event, device);
         assertThat(eventFuture, notNullValue());
         assertThat(eventFuture.get(), hasSize(0));
+    }
+    
+    static class EventRouteExecutorTestConfig {
+    	@Bean
+    	public TenantDailyUsageRepository tenantDailyUsageRepository() {
+    		return Mockito.mock(TenantDailyUsageRepository.class);
+    	}
+    	
+    	@Bean
+    	public JavaMailSender javaMailSender() {
+    		return Mockito.mock(JavaMailSender.class);
+    	}
+    	
+    	@Bean
+    	public SpringTemplateEngine springTemplateEngine() {
+    		return Mockito.mock(SpringTemplateEngine.class);
+    	}
     }
 
 }
