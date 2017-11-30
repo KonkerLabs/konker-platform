@@ -120,6 +120,8 @@ public class JsonParsingServiceImpl implements JsonParsingService {
             }
         } else if (jsonNode.isValueNode()) {
             ValueNode valueNode = (ValueNode) jsonNode;
+            if (knownTypes == null)
+                knownTypes = new ArrayList<>();
             knownTypes.add(valueNode.getNodeType());
             JsonPathData.JsonPathDataBuilder data = JsonPathData.builder().types(knownTypes);
             switch (valueNode.getNodeType()) {
