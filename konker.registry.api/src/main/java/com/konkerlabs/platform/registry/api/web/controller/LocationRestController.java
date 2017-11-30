@@ -1,44 +1,28 @@
 package com.konkerlabs.platform.registry.api.web.controller;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
 import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
 import com.konkerlabs.platform.registry.api.model.DeviceVO;
 import com.konkerlabs.platform.registry.api.model.LocationInputVO;
 import com.konkerlabs.platform.registry.api.model.LocationVO;
 import com.konkerlabs.platform.registry.api.model.RestResponse;
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.Location;
+import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.Location.Validations;
-import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.services.api.GatewayService;
 import com.konkerlabs.platform.registry.business.services.api.LocationSearchService;
 import com.konkerlabs.platform.registry.business.services.api.LocationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.*;
 
 @RestController
 @Scope("request")
@@ -49,6 +33,12 @@ public class LocationRestController extends AbstractRestController implements In
     private final LocationService locationService;
 
     private final LocationSearchService locationSearchService;
+
+    @Autowired
+    private OauthClientDetails oauthClientDetails;
+
+    @Autowired
+    private GatewayService gatewayService;
 
     private Set<String> validationsCode = new HashSet<>();
 
@@ -135,7 +125,18 @@ public class LocationRestController extends AbstractRestController implements In
             		required = true)
             @RequestBody LocationInputVO locationForm) throws BadServiceResponseException, NotFoundResponseException {
 
-        Tenant tenant = user.getTenant();
+
+        Tenant tenant = null;
+        Gateway gateway = null;
+        if (oauthClientDetails != null) {
+            tenant = oauthClientDetails.getTenant();
+            if (oauthClientDetails.getParentGateway() != null) {
+                gateway = oauthClientDetails.getParentGateway();
+            }
+        } else if (user != null) {
+            tenant = user.getTenant();
+        }
+
         Application application = getApplication(applicationId);
 
         Location parent = getParent(tenant, application, locationForm);
@@ -146,6 +147,8 @@ public class LocationRestController extends AbstractRestController implements In
                 .description(locationForm.getDescription())
                 .defaultLocation(locationForm.isDefaultLocation())
                 .build();
+
+        authorizeGateway(gateway, location);
 
         ServiceResponse<Location> locationResponse = locationService.save(tenant, application, location);
 
@@ -169,7 +172,17 @@ public class LocationRestController extends AbstractRestController implements In
             		required = true)
             @RequestBody LocationInputVO locationForm) throws BadServiceResponseException, NotFoundResponseException {
 
-        Tenant tenant = user.getTenant();
+        Tenant tenant = null;
+        Gateway gateway = null;
+        if (oauthClientDetails != null) {
+            tenant = oauthClientDetails.getTenant();
+            if (oauthClientDetails.getParentGateway() != null) {
+                gateway = oauthClientDetails.getParentGateway();
+            }
+        } else if (user != null) {
+            tenant = user.getTenant();
+        }
+
         Application application = getApplication(applicationId);
 
         Location parent = getParent(tenant, application, locationForm);
@@ -182,6 +195,8 @@ public class LocationRestController extends AbstractRestController implements In
         } else {
             locationFromDB = locationResponse.getResult();
         }
+
+        authorizeGateway(gateway, locationFromDB);
 
         // update fields
         locationFromDB.setParent(parent);
@@ -282,7 +297,16 @@ public class LocationRestController extends AbstractRestController implements In
             @PathVariable("application") String applicationId,
             @PathVariable("locationName") String locationName) throws BadServiceResponseException, NotFoundResponseException {
 
-        Tenant tenant = user.getTenant();
+        Tenant tenant = null;
+        Gateway gateway = null;
+        if (oauthClientDetails != null) {
+            tenant = oauthClientDetails.getTenant();
+            if (oauthClientDetails.getParentGateway() != null) {
+                gateway = oauthClientDetails.getParentGateway();
+            }
+        } else if (user != null) {
+            tenant = user.getTenant();
+        }
         Application application = getApplication(applicationId);
 
         ServiceResponse<Location> locationResponse = locationSearchService.findByName(tenant, application, locationName, false);
@@ -292,6 +316,7 @@ public class LocationRestController extends AbstractRestController implements In
         }
 
         Location location = locationResponse.getResult();
+        authorizeGateway(gateway, location);
         locationResponse = locationService.remove(tenant, application, location.getGuid());
 
         if (!locationResponse.isOk()) {
@@ -307,6 +332,24 @@ public class LocationRestController extends AbstractRestController implements In
 
         for (LocationService.Validations value : LocationService.Validations.values()) {
             validationsCode.add(value.getCode());
+        }
+    }
+
+    private void authorizeGateway(Gateway gateway, Location location) throws BadServiceResponseException {
+        if (Optional.ofNullable(gateway).isPresent()) {
+            ServiceResponse<Boolean> validationResult =
+                    gatewayService.validateGatewayAuthorization(
+                            gateway,
+                            location
+                    );
+
+            if (!validationResult.isOk()) {
+                throw new BadServiceResponseException(
+                        oauthClientDetails,
+                        validationResult,
+                        validationsCode
+                );
+            }
         }
     }
 
