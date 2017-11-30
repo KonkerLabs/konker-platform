@@ -1,7 +1,7 @@
 package com.konkerlabs.platform.registry.api.test.web.controller;
 
 import com.konkerlabs.platform.registry.api.model.DeviceVO;
-import com.konkerlabs.platform.registry.api.test.config.GatewayTestConfiguration;
+import com.konkerlabs.platform.registry.api.test.config.WebGatewayTestConfiguration;
 import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
 import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
 import com.konkerlabs.platform.registry.api.web.controller.DeviceRestController;
@@ -42,7 +42,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ContextConfiguration(classes = {
         WebTestConfiguration.class,
         MongoTestConfig.class,
-        GatewayTestConfiguration.class,
+        WebGatewayTestConfiguration.class,
         CrudResponseAdvice.class
 })
 public class DeviceByGatewayRestControllerTest extends WebLayerTestContext {

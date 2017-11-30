@@ -15,7 +15,7 @@ import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import java.util.Arrays;
 
 @Configuration
-public class GatewayTestConfiguration {
+public class WebGatewayTestConfiguration {
 
     @Bean
     public Tenant tenant() {
@@ -40,16 +40,24 @@ public class GatewayTestConfiguration {
         Location br =
                 Location.builder()
                         .application(application())
-                        .guid("f06d9d2d-f5ce-4cc6-8637-348743e8acad")
+                        .guid("guid-br")
                         .id("br")
                         .name("br")
                         .description("br")
                         .build();
 
+        Location room0  =
+                Location.builder()
+                        .application(application())
+                        .name("sp")
+                        .description("desc-sp")
+                        .guid("guid-sp")
+                        .defaultLocation(false).build();
+
         Location room1 =
                 Location.builder()
                         .application(application())
-                        .guid("f06d9d2d-f5ce-4cc6-8637-348743e8acae")
+                        .guid("guid-rj")
                         .id("rj")
                         .name("rj")
                         .description("rj")
@@ -60,13 +68,14 @@ public class GatewayTestConfiguration {
                 .tenant(tenant())
                 .application(application())
                 .parent(room1)
-                .name("sala-101-teto")
-                .guid("f06d9d2d-f5ce-4cc6-8637-348743e8acaf")
+                .name("room-101-roof")
+                .guid("guid-room-101-roof")
                 .parent(room1)
                 .build();
 
         room1.setChildren(Arrays.asList(room101Roof));
-        br.setChildren(Arrays.asList(room1));
+        br.setChildren(Arrays.asList(room0, room1));
+
 
         return OauthClientDetails
                 .builder()

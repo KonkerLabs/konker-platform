@@ -348,6 +348,7 @@ public class GatewayServiceTest extends BusinessLayerTestSupport {
     public void shouldReturnValidAuthorizationToManageDevice() {
         Location rj =
                 Location.builder()
+                        .tenant(tenant)
                         .application(application)
                         .guid("f06d9d2d-f5ce-4cc6-8637-348743e8acad")
                         .id("rj")
@@ -357,6 +358,7 @@ public class GatewayServiceTest extends BusinessLayerTestSupport {
 
         Location room1 =
                 Location.builder()
+                        .tenant(tenant)
                         .application(application)
                         .guid("f06d9d2d-f5ce-4cc6-8637-348743e8acae")
                         .id("sala-101")
@@ -381,6 +383,8 @@ public class GatewayServiceTest extends BusinessLayerTestSupport {
                 subject.validateGatewayAuthorization(
                         Gateway
                                 .builder()
+                                .tenant(tenant)
+                                .application(application)
                                 .location(rj)
                                 .build(),
                         room1
@@ -395,6 +399,7 @@ public class GatewayServiceTest extends BusinessLayerTestSupport {
     public void shoulntdReturnValidAuthorizationToManageDevice() {
         Location rj =
                 Location.builder()
+                        .tenant(tenant)
                         .application(application)
                         .guid("f06d9d2d-f5ce-4cc6-8637-348743e8acad")
                         .id("rj")
@@ -404,6 +409,7 @@ public class GatewayServiceTest extends BusinessLayerTestSupport {
 
         Location room1 =
                 Location.builder()
+                        .tenant(tenant)
                         .application(application)
                         .guid("f06d9d2d-f5ce-4cc6-8637-348743e8acae")
                         .id("sala-101")
