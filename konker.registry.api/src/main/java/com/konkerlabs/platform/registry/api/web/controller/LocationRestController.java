@@ -55,7 +55,17 @@ public class LocationRestController extends AbstractRestController implements In
             response = LocationVO.class)
     public List<LocationVO> list(@PathVariable("application") String applicationId) throws BadServiceResponseException, NotFoundResponseException {
 
-        Tenant tenant = user.getTenant();
+        Tenant tenant = null;
+        Gateway gateway = null;
+        if (oauthClientDetails != null) {
+            tenant = oauthClientDetails.getTenant();
+            if (oauthClientDetails.getParentGateway() != null) {
+                gateway = oauthClientDetails.getParentGateway();
+            }
+        } else if (user != null) {
+            tenant = user.getTenant();
+        }
+
         Application application = getApplication(applicationId);
 
         ServiceResponse<List<Location>> locationResponse = locationSearchService.findAll(tenant, application);
@@ -78,7 +88,16 @@ public class LocationRestController extends AbstractRestController implements In
             @PathVariable("application") String applicationId,
             @PathVariable("locationName") String locationName) throws BadServiceResponseException, NotFoundResponseException {
 
-        Tenant tenant = user.getTenant();
+        Tenant tenant = null;
+        Gateway gateway = null;
+        if (oauthClientDetails != null) {
+            tenant = oauthClientDetails.getTenant();
+            if (oauthClientDetails.getParentGateway() != null) {
+                gateway = oauthClientDetails.getParentGateway();
+            }
+        } else if (user != null) {
+            tenant = user.getTenant();
+        }
         Application application = getApplication(applicationId);
 
         ServiceResponse<Location> locationResponse = locationSearchService.findByName(tenant, application, locationName, true);
@@ -101,7 +120,16 @@ public class LocationRestController extends AbstractRestController implements In
             @PathVariable("application") String applicationId,
             @PathVariable("locationName") String locationName) throws BadServiceResponseException, NotFoundResponseException {
 
-        Tenant tenant = user.getTenant();
+        Tenant tenant = null;
+        Gateway gateway = null;
+        if (oauthClientDetails != null) {
+            tenant = oauthClientDetails.getTenant();
+            if (oauthClientDetails.getParentGateway() != null) {
+                gateway = oauthClientDetails.getParentGateway();
+            }
+        } else if (user != null) {
+            tenant = user.getTenant();
+        }
         Application application = getApplication(applicationId);
 
         ServiceResponse<List<Device>> locationResponse = locationSearchService.listDevicesByLocationName(tenant, application, locationName);
