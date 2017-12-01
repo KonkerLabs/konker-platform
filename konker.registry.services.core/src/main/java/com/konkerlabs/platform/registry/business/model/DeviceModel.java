@@ -93,7 +93,8 @@ public class DeviceModel implements URIDealer {
 	public enum ContentType {
 
 		APPLICATION_JSON("application/json"),
-		APPLICATION_MSGPACK("application/msgpack");
+		APPLICATION_MSGPACK("application/msgpack"),
+		APPLICATION_CBOR("application/cbor");
 
 		private String value;
 
