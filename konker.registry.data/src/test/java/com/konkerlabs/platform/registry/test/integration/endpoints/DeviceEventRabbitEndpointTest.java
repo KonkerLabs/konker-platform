@@ -56,7 +56,7 @@ public class DeviceEventRabbitEndpointTest {
         Message message = new Message(payload.getBytes("UTF-8"), messageProperties);
         deviceEventRabbitEndpoint.onDataPub(message);
 
-        verify(deviceEventProcessor, times(1)).process(apiKey, channel, payload, timestamp);
+        verify(deviceEventProcessor, times(1)).process(apiKey, channel, payload.getBytes("UTF-8"), timestamp);
 
     }
 

@@ -17,6 +17,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.integration.converters.DefaultJsonConverter;
+import com.konkerlabs.platform.registry.integration.converters.MessagePackJsonConverter;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -32,12 +35,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.Gateway;
-import com.konkerlabs.platform.registry.business.model.Location;
-import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
@@ -90,6 +87,10 @@ public class DeviceEventProcessorTest {
     private DeviceRegisterService deviceRegisterService;
     @Autowired
     private JsonParsingService jsonParsingService;
+    @Autowired
+    private DefaultJsonConverter defaultJsonConverter;
+    @Autowired
+    private MessagePackJsonConverter messagePackJsonConverter;
 
     private Instant firstEventTimestamp;
     private Instant secondEventTimestamp;
@@ -376,7 +377,54 @@ public class DeviceEventProcessorTest {
     	verify(eventRouteExecutor, times(1)).execute(any(Event.class), any(Device.class));
         verify(deviceLogEventService, times(1)).logIncomingEvent(any(Device.class), any(Event.class));
     }
-    
+
+    @Test
+    public void shouldProcessDeviceWithMessagePack() throws Exception {
+	    device.setDeviceModel(
+	            DeviceModel
+                        .builder()
+                        .contentType(DeviceModel.ContentType.APPLICATION_MSGPACK)
+                        .build()
+        );
+
+        byte[] messagePackBytes = {(byte) -109, (byte) 1, (byte) 2, (byte) 3};
+
+        when(deviceRegisterService.findByApiKey(sourceApiKey)).thenReturn(device);
+        when(messagePackJsonConverter.toJson(messagePackBytes)).thenReturn(ServiceResponseBuilder.<String>ok().build());
+        when(deviceLogEventService.logIncomingEvent(eq(device), any()))
+                .thenReturn(ServiceResponseBuilder.<Event>ok().withResult(event).build());
+
+        subject.process(sourceApiKey, incomingChannel, messagePackBytes, Instant.now());
+
+        verify(messagePackJsonConverter, times(1)).toJson(messagePackBytes);
+        verify(deviceLogEventService, times(1)).logIncomingEvent(any(Device.class), any(Event.class));
+
+	}
+
+
+    @Test
+    public void shouldProcessDeviceWithJson() throws Exception {
+        device.setDeviceModel(
+                DeviceModel
+                        .builder()
+                        .contentType(DeviceModel.ContentType.APPLICATION_JSON)
+                        .build()
+        );
+
+        byte[] messagePackBytes = "[1,2]".getBytes();
+
+        when(deviceRegisterService.findByApiKey(sourceApiKey)).thenReturn(device);
+        when(defaultJsonConverter.toJson(messagePackBytes)).thenReturn(ServiceResponseBuilder.<String>ok().build());
+        when(deviceLogEventService.logIncomingEvent(eq(device), any()))
+                .thenReturn(ServiceResponseBuilder.<Event>ok().withResult(event).build());
+
+        subject.process(sourceApiKey, incomingChannel, messagePackBytes, Instant.now());
+
+        verify(defaultJsonConverter, times(1)).toJson(messagePackBytes);
+        verify(deviceLogEventService, times(1)).logIncomingEvent(any(Device.class), any(Event.class));
+
+    }
+
     @Test
     public void shouldProcessDeviceDeactivated() throws Exception {
     	when(deviceLogEventService.logIncomingEvent(eq(device), any()))
@@ -431,6 +479,17 @@ public class DeviceEventProcessorTest {
         public JsonParsingService jsonParsingService() {
             return mock(JsonParsingService.class);
         }
+
+        @Bean
+        public MessagePackJsonConverter messagePackJsonConverter() {
+            return mock(MessagePackJsonConverter.class);
+        }
+
+        @Bean
+        public DefaultJsonConverter defaultJsonConverter() {
+            return mock(DefaultJsonConverter.class);
+        }
+
     }
 
     static class ResultCaptor<T> implements Answer {

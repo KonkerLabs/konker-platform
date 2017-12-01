@@ -18,13 +18,14 @@ import lombok.NoArgsConstructor;
 public class DeviceModelVO extends DeviceModelInputVO
 		implements SerializableVO<DeviceModel, DeviceModelVO>{
 
-	@ApiModelProperty(value = "Kind of unique key generate when the device model is created", position = 0, example = "818599ad-3502-4e70-a852-fc7af8e0a9f3")
+	@ApiModelProperty(value = "Kind of unique key generate when the device model is created", example = "818599ad-3502-4e70-a852-fc7af8e0a9f3")
 	private String guid;
 
 	public DeviceModelVO(DeviceModel deviceModel) {
 		this.guid = deviceModel.getGuid();
 		this.name = deviceModel.getName();
 		this.description = deviceModel.getDescription();
+		this.contentType = deviceModel.getContentType().getValue();
 		this.defaultModel = deviceModel.isDefaultModel();
 	}
 
@@ -34,6 +35,11 @@ public class DeviceModelVO extends DeviceModelInputVO
 		vo.setGuid(model.getGuid());
 		vo.setName(model.getName());
 		vo.setDescription(model.getDescription());
+		if (model.getContentType() != null) {
+			vo.setContentType(model.getContentType().getValue());
+		} else {
+			vo.setContentType(DeviceModel.ContentType.APPLICATION_JSON.getValue());
+		}
 		vo.setDefaultModel(model.isDefaultModel());
 		return vo;
 	}
@@ -43,7 +49,9 @@ public class DeviceModelVO extends DeviceModelInputVO
 		model.setGuid(this.getGuid());
 		model.setName(this.getName());
 		model.setDescription(this.getDescription());
+		model.setContentType(DeviceModel.ContentType.getByValue(this.getContentType()));
 		model.setDefaultModel(this.isDefaultModel());
 		return model;
 	}
+
 }

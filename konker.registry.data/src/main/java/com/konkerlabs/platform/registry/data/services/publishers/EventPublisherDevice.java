@@ -5,17 +5,17 @@ import java.text.MessageFormat;
 import java.util.Map;
 import java.util.Optional;
 
+import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.integration.converters.JsonConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.BeanFactoryAnnotationUtils;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.data.services.api.DeviceLogEventService;
@@ -35,12 +35,15 @@ public class EventPublisherDevice implements EventPublisher {
     private RabbitGateway rabbitGateway;
     private DeviceRegisterService deviceRegisterService;
     private DeviceLogEventService deviceLogEventService;
+    private BeanFactory beans;
 
     @Autowired
     public EventPublisherDevice(RabbitGateway rabbitGateway,
-                                DeviceRegisterService deviceRegisterService) {
+                                DeviceRegisterService deviceRegisterService,
+                                BeanFactory beans) {
         this.rabbitGateway = rabbitGateway;
         this.deviceRegisterService = deviceRegisterService;
+        this.beans = beans;
     }
 
     @Autowired
@@ -98,7 +101,16 @@ public class EventPublisherDevice implements EventPublisher {
                         .build()
         );
 
-        rabbitGateway.sendEvent(outgoingDevice.getApiKey(), data.get(DEVICE_MQTT_CHANNEL), outgoingEvent.getPayload());
+        ServiceResponse<byte[]> converterResponse = getJsonPayload(outgoingDevice, outgoingEvent.getPayload());
+        if (!converterResponse.isOk())
+            LOGGER.error("Failed to convert message to its destination format",
+                    converterResponse.getResponseMessages(),
+                    outgoingDevice.toURI(),
+                    outgoingDevice.getLogLevel());
+
+        byte[] payloadBytes = converterResponse.getResult();
+
+        rabbitGateway.sendEvent(outgoingDevice.getApiKey(), data.get(DEVICE_MQTT_CHANNEL), payloadBytes);
 
         ServiceResponse<Event> response = deviceLogEventService.logOutgoingEvent(outgoingDevice, outgoingEvent);
 
@@ -107,6 +119,21 @@ public class EventPublisherDevice implements EventPublisher {
                     response.getResponseMessages(),
                     outgoingDevice.toURI(),
                     outgoingDevice.getLogLevel());
+
+    }
+
+    private ServiceResponse<byte[]> getJsonPayload(Device device, String payloadJson) {
+
+        DeviceModel.ContentType contentType = DeviceModel.ContentType.APPLICATION_JSON;
+        if (device.getDeviceModel() != null &&
+            device.getDeviceModel().getContentType() != null) {
+            contentType = device.getDeviceModel().getContentType();
+        }
+
+        JsonConverter jsonConverter = BeanFactoryAnnotationUtils.qualifiedBeanOfType(beans, JsonConverter.class, contentType.getValue());
+        ServiceResponse<byte[]> jsonConverterResponse = jsonConverter.fromJson(payloadJson);
+
+        return jsonConverterResponse;
 
     }
 
