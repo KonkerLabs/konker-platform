@@ -14,7 +14,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -28,6 +30,7 @@ import com.konkerlabs.platform.registry.business.repositories.DeviceModelReposit
 import com.konkerlabs.platform.registry.business.repositories.LocationRepository;
 import com.konkerlabs.platform.registry.business.repositories.SilenceTriggerRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
+import com.konkerlabs.platform.registry.business.repositories.events.api.EventRepository;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
 import com.konkerlabs.platform.registry.business.services.api.LocationService;
@@ -56,7 +59,8 @@ import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
         SpringMailTestConfiguration.class,
         EmailConfig.class,
         MongoBillingTestConfiguration.class,
-        MessageSouceTestConfiguration.class})
+        MessageSouceTestConfiguration.class,
+        SilenceTriggerServiceTest.SilenceTriggerServiceTestConfig.class})
 @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/device-model.json", "/fixtures/locations.json"})
 public class SilenceTriggerServiceTest extends BusinessLayerTestSupport {
 
@@ -357,6 +361,13 @@ public class SilenceTriggerServiceTest extends BusinessLayerTestSupport {
         assertThat(serviceResponse.getResult().get(0).getLocation().getName(), is("BR"));
         assertThat(serviceResponse.getResult().get(1).getLocation().getName(), is("CL"));
 
+    }
+    
+    static class SilenceTriggerServiceTestConfig {
+    	@Bean
+        public EventRepository mongoEvents() {
+        	return Mockito.mock(EventRepository.class);
+        }
     }
 
 }

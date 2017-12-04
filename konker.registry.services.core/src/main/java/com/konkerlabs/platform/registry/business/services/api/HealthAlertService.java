@@ -50,5 +50,6 @@ public interface HealthAlertService {
 	ServiceResponse<HealthAlert> getByTenantApplicationAndHealthAlertGuid(Tenant tenant, Application application, String healthAlertGuid);
     ServiceResponse<List<HealthAlert>>  removeAlertsFromTrigger(Tenant tenant, Application application, String guid);
     ServiceResponse<HealthAlert> getLastHightSeverityByDeviceGuid(Tenant tenant, Application application, String deviceGuid);
+    ServiceResponse<HealthAlert> getCurrentHealthByGuid(Tenant tenant, Application application, String deviceGuid);
 
 }

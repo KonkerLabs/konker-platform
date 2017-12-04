@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import com.konkerlabs.platform.registry.config.EmailConfig;
 import com.konkerlabs.platform.registry.config.EventStorageConfig;
 
 import org.junit.After;
@@ -33,9 +34,13 @@ import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.thymeleaf.spring4.SpringTemplateEngine;
 
+import com.konkerlabs.platform.registry.billing.repositories.TenantDailyUsageRepository;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
@@ -62,7 +67,9 @@ import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
         MongoTestConfiguration.class,
         RedisTestConfiguration.class,
         PubServerConfig.class,
-        EventStorageConfig.class
+        EventStorageConfig.class,
+        EmailConfig.class,
+        EventPublisherDeviceTest.EventPublisherDeviceTestConfig.class
 })
 @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json", "/fixtures/applications.json"})
 public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
@@ -293,6 +300,23 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
 
         inOrder.verify(rabbitTemplate).convertAndSend("data.sub", message);
         inOrder.verify(deviceLogEventService).logOutgoingEvent(eq(device), eq(event));
+    }
+    
+    static class EventPublisherDeviceTestConfig {
+    	@Bean
+    	public TenantDailyUsageRepository tenantDailyUsageRepository() {
+    		return Mockito.mock(TenantDailyUsageRepository.class);
+    	}
+    	
+    	@Bean
+    	public JavaMailSender javaMailSender() {
+    		return Mockito.mock(JavaMailSender.class);
+    	}
+    	
+    	@Bean
+    	public SpringTemplateEngine springTemplateEngine() {
+    		return Mockito.mock(SpringTemplateEngine.class);
+    	}
     }
 
 }

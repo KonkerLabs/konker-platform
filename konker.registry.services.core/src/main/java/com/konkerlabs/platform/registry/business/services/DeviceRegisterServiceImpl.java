@@ -69,6 +69,9 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
     @Autowired
     private DeviceModelService deviceModelService;
+    
+    @Autowired
+    private HealthAlertService healthAlertService;
 
     @PostConstruct
     public void init() {
@@ -207,6 +210,9 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         }
 
         List<Device> all = deviceRepository.findAllByTenantIdAndApplicationName(tenant.getId(), application.getName());
+        
+        all.forEach(d -> d.setStatus(healthAlertService.getCurrentHealthByGuid(tenant, application, d.getGuid()).getResult().getSeverity().name()));
+        
         return ServiceResponseBuilder.<List<Device>>ok().withResult(all).build();
     }
 
