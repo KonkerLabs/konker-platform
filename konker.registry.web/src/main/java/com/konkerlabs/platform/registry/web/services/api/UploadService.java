@@ -69,7 +69,7 @@ public interface UploadService {
     ServiceResponse<String> upload(InputStream file, String fileName, String ext, boolean isPublic);
 
     /**
-     * Delete the file from repository
+     * Delete the file from repositories
      * @param path
      * @return ServiceResponse
      */

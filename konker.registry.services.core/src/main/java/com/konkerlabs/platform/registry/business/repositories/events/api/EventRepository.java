@@ -15,14 +15,14 @@ public interface EventRepository {
     String EVENTS_OUTGOING_COLLECTION_NAME = "outgoingEvents";
 
     enum Validations {
-        INCOMING_DEVICE_ID_DOES_NOT_EXIST("repository.events.incoming_device.not_found"),
-        OUTGOING_DEVICE_ID_DOES_NOT_EXIST("repository.events.outgoing_device.not_found"),
-        INCOMING_DEVICE_GUID_NULL("repository.events.incoming_device.guid.not_null"),
-        OUTGOING_DEVICE_GUID_NULL("repository.events.outgoing_device.guid.not_null"),
+        INCOMING_DEVICE_ID_DOES_NOT_EXIST("repositories.events.incoming_device.not_found"),
+        OUTGOING_DEVICE_ID_DOES_NOT_EXIST("repositories.events.outgoing_device.not_found"),
+        INCOMING_DEVICE_GUID_NULL("repositories.events.incoming_device.guid.not_null"),
+        OUTGOING_DEVICE_GUID_NULL("repositories.events.outgoing_device.guid.not_null"),
         EVENT_INCOMING_NULL("repository.events.incoming.not_null"),
         EVENT_INCOMING_CHANNEL_NULL("repository.events.incoming_channel.not_null"),
-        EVENT_OUTGOING_NULL("repository.events.outgoing.not_null"),
-        EVENT_OUTGOING_CHANNEL_NULL("repository.events.outgoing_channel.not_null"),
+        EVENT_OUTGOING_NULL("repositories.events.outgoing.not_null"),
+        EVENT_OUTGOING_CHANNEL_NULL("repositories.events.outgoing_channel.not_null"),
         EVENT_TIMESTAMP_NULL("repository.events.timestamp.not_null");
 
         private String code;

@@ -1,0 +1,16 @@
+package com.konkerlabs.platform.registry.alerts.protobuff;
+
+
+option java_package = "";
+option java_outer_classname = "AlertTriggerProtos";
+
+message AlertTrigger {
+    required string id=1;
+    required string guid=2;
+    optional string description=3;
+    required string tenant=4;
+    required string application=5;
+    required string deviceModel=6;
+    required string location=7;
+    required string type=8;
+}
