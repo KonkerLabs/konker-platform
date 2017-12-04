@@ -90,9 +90,12 @@ public class HealthAlert implements URIDealer {
 	}
 
 	public enum HealthAlertSeverity {
-		OK(3, "model.healthalert.severity.ok"),
+		FAIL(1, "model.healthalert.severity.fail"),
 		WARN(2, "model.healthalert.severity.warn"),
-		FAIL(1, "model.healthalert.severity.fail");
+		OK(3, "model.healthalert.severity.ok"),
+		DISABLED(4, "model.healthalert.severity.disabled"),
+		UNKNOW(5, "model.healthalert.severity.unknow"),
+		NODATA(6, "model.healthalert.severity.nodata");
 
 		private Integer prior;
         private String code;

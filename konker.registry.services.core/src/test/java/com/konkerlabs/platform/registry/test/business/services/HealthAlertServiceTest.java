@@ -1,6 +1,31 @@
 package com.konkerlabs.platform.registry.test.business.services;
 
+import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
+import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.isResponseOk;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.mockito.Mockito.when;
+
+import java.time.Instant;
+import java.util.Collections;
+import java.util.List;
+
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
 import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.HealthAlert;
 import com.konkerlabs.platform.registry.business.model.HealthAlert.Description;
 import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertSeverity;
@@ -12,32 +37,23 @@ import com.konkerlabs.platform.registry.business.model.validation.CommonValidati
 import com.konkerlabs.platform.registry.business.repositories.AlertTriggerRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.HealthAlertService;
 import com.konkerlabs.platform.registry.business.services.api.HealthAlertService.Messages;
 import com.konkerlabs.platform.registry.business.services.api.HealthAlertService.Validations;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.config.EmailConfig;
 import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
-import com.konkerlabs.platform.registry.test.base.*;
+import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
+import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.MessageSouceTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.MongoBillingTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.SpringMailTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import java.time.Instant;
-import java.util.List;
-
-import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
-import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.isResponseOk;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
@@ -48,7 +64,8 @@ import static org.hamcrest.Matchers.*;
         SpringMailTestConfiguration.class,
         EmailConfig.class,
         MongoBillingTestConfiguration.class,
-        MessageSouceTestConfiguration.class})
+        MessageSouceTestConfiguration.class,
+        HealthAlertServiceTest.HealthAlertServiceTestConfig.class})
 public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
 
@@ -67,14 +84,18 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Autowired
     private AlertTriggerRepository alertTriggerRepository;
+    
+    @Autowired
+    private DeviceEventService deviceEventService;
 
     private HealthAlert healthAlert;
     private HealthAlert tempHealthAlert;
     private HealthAlert newHealthAlert;
+    private HealthAlert currentHealthOk;
     private Application application;
     private Application otherApplication;
-    private Tenant currentTenant;
     private Tenant otherTenant;
+    private Tenant currentTenant;
 
     @Before
     public void setUp() {
@@ -139,6 +160,12 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     			.triggerGuid(TRIGGER_GUID)
 				.application(application)
 				.tenant(currentTenant)
+				.build();
+    	
+    	currentHealthOk =  HealthAlert.builder()
+    			.description(Description.HEALTH_OK)
+    			.severity(HealthAlertSeverity.OK)
+    			.deviceGuid("8363c556-84ea-11e6-92a2-4b01fea7e243")
 				.build();
 
     	SilenceTrigger trigger = new SilenceTrigger();
@@ -682,6 +709,107 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     	assertThat(response, isResponseOk());
     	assertThat(response.getResult(), equalTo(tempHealthAlert));
+    }
+    
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json"})
+    public void shouldReturnTenantNullGetCurrentHealth() throws Exception {
+    	ServiceResponse<HealthAlert> response = healthAlertService.getCurrentHealthByGuid(
+    			null,
+    			application,
+    			healthAlert.getDeviceGuid());
+
+    	assertThat(response, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json"})
+    public void shouldReturnAppNullGetCurrentHealth() throws Exception {
+    	ServiceResponse<HealthAlert> response = healthAlertService.getCurrentHealthByGuid(
+    			currentTenant,
+    			null,
+    			healthAlert.getDeviceGuid());
+
+    	assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json"})
+    public void shouldReturnDeviceNullGetCurrentHealth() throws Exception {
+    	ServiceResponse<HealthAlert> response = healthAlertService.getCurrentHealthByGuid(
+    			currentTenant,
+    			application,
+    			null);
+
+    	assertThat(response, hasErrorMessage(DeviceRegisterService.Validations.DEVICE_GUID_NULL.getCode()));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json", "/fixtures/devices.json"})
+    public void shouldReturnDeviceGuidNotExistNullGetCurrentHealth() throws Exception {
+    	ServiceResponse<HealthAlert> response = healthAlertService.getCurrentHealthByGuid(
+    			currentTenant,
+    			application,
+    			"7d51c242-81db-11e6-a8c2-0746f010e000");
+
+    	assertThat(response, hasErrorMessage(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode()));
+    }
+    
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json", "/fixtures/devices.json"})
+    public void shouldReturnDeviceDisabledGetCurrentHealth() throws Exception {
+    	ServiceResponse<HealthAlert> response = healthAlertService.getCurrentHealthByGuid(
+    			currentTenant,
+    			application,
+    			DEVICE_GUID);
+
+    	assertThat(response, isResponseOk());
+    	assertThat(response.getResult(), equalTo(HealthAlert.builder().severity(HealthAlertSeverity.DISABLED).build()));
+    }
+    
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json", "/fixtures/devices.json"})
+    public void shouldReturnDeviceNoDataGetCurrentHealth() throws Exception {
+    	healthAlert.setDeviceGuid("8363c556-84ea-11e6-92a2-4b01fea7e243");
+    	
+    	List<Event> events = Collections.emptyList();
+    	when(deviceEventService.findIncomingBy(currentTenant, application, healthAlert.getDeviceGuid(), null, null, null, false, 1))
+    		.thenReturn(ServiceResponseBuilder.<List<Event>>ok().withResult(events).build());
+    	
+    	ServiceResponse<HealthAlert> response = healthAlertService.getCurrentHealthByGuid(
+    			currentTenant,
+    			application,
+    			healthAlert.getDeviceGuid());
+
+    	assertThat(response, isResponseOk());
+    	assertThat(response.getResult(), equalTo(HealthAlert.builder().severity(HealthAlertSeverity.NODATA).build()));
+    }
+    
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json", "/fixtures/devices.json",
+    		"/fixtures/events-incoming.json"})
+    public void shouldGetCurrentHealth() throws Exception {
+    	healthAlert.setDeviceGuid("8363c556-84ea-11e6-92a2-4b01fea7e243");
+    	
+    	List<Event> events = Collections.singletonList(Event.builder().build());
+    	when(deviceEventService.findIncomingBy(currentTenant, application, healthAlert.getDeviceGuid(), null, null, null, false, 1))
+    		.thenReturn(ServiceResponseBuilder.<List<Event>>ok().withResult(events).build());
+    	
+    	ServiceResponse<HealthAlert> response = healthAlertService.getCurrentHealthByGuid(
+    			currentTenant,
+    			application,
+    			healthAlert.getDeviceGuid());
+
+    	assertThat(response, isResponseOk());
+    	currentHealthOk.setLastChange(response.getResult().getLastChange());
+    	assertThat(response.getResult(), equalTo(currentHealthOk));
+    }
+    
+    static class HealthAlertServiceTestConfig {
+    	@Bean
+    	public DeviceEventService deviceEventService() {
+    		return Mockito.mock(DeviceEventService.class);
+    	}
     }
 
 }
