@@ -12,8 +12,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 
+import java.util.Arrays;
+
 @Configuration
-public class WebTestConfiguration {
+public class WebGatewayTestConfiguration {
 
     @Bean
     public Tenant tenant() {
@@ -35,8 +37,56 @@ public class WebTestConfiguration {
                 .dateFormat(DateFormat.YYYYMMDD)
                 .tenant(tenant()).build();
 
+        Location br =
+                Location.builder()
+                        .application(application())
+                        .guid("guid-br")
+                        .id("br")
+                        .name("br")
+                        .description("br")
+                        .build();
+
+        Location room0  =
+                Location.builder()
+                        .application(application())
+                        .name("sp")
+                        .description("desc-sp")
+                        .guid("guid-sp")
+                        .defaultLocation(false).build();
+
+        Location room1 =
+                Location.builder()
+                        .application(application())
+                        .guid("guid-rj")
+                        .id("rj")
+                        .name("rj")
+                        .description("rj")
+                        .parent(br)
+                        .build();
+
+        Location room101Roof = Location.builder()
+                .tenant(tenant())
+                .application(application())
+                .parent(room1)
+                .name("room-101-roof")
+                .guid("guid-room-101-roof")
+                .parent(room1)
+                .build();
+
+        room1.setChildren(Arrays.asList(room101Roof));
+        br.setChildren(Arrays.asList(room0, room1));
+
+
         return OauthClientDetails
                 .builder()
+                .parentGateway(
+                        Gateway
+                                .builder()
+                                .name("konker")
+                                .active(true)
+                                .application(application())
+                                .location(br)
+                                .build())
                 .build()
                 .setUserProperties(user);
     }

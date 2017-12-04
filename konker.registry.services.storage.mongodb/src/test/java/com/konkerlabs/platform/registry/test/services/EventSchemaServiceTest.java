@@ -37,6 +37,8 @@ import java.util.List;
 import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.isResponseOk;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
@@ -224,7 +226,6 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
         eventSchemaService.appendIncomingSchema(incomingEventSnd);
         eventRepository.saveIncoming(tenant, application, incomingEventSnd);
 
-
         ServiceResponse<EventSchema> response = eventSchemaService.findLastIncomingBy(tenant, application, deviceGuid, JsonNodeType.NUMBER);
 
         assertThat(response, isResponseOk());
@@ -268,6 +269,50 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
     	public SpringTemplateEngine springTemplateEngine() {
     		return Mockito.mock(SpringTemplateEngine.class);
     	}
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/eventSchemas.json"})
+    public void shouldAcceptArrayJson() {
+
+        incomingEvent = Event.builder()
+                .payload("[0, 1, 2]")
+                .creationTimestamp(Instant.now())
+                .incoming(
+                        Event.EventActor.builder()
+                                .deviceGuid(deviceGuid)
+                                .channel(firstChannel)
+                                .tenantDomain(tenant.getDomainName())
+                                .build()).build();
+
+        ServiceResponse<EventSchema> response = eventSchemaService.appendIncomingSchema(incomingEvent);
+        assertThat(response,isResponseOk());
+        assertThat(response.getResult().getChannel(), equalTo("command"));
+        assertThat(response.getResult().getFields().size(), equalTo(4));
+
+        for (EventSchema.SchemaField schemaField: response.getResult().getFields()) {
+            if (schemaField.getPath().equals("field")) {
+                assertTrue(schemaField.getKnownTypes().contains(JsonNodeType.STRING));
+                assertTrue(schemaField.getKnownTypes().contains(JsonNodeType.OBJECT));
+                assertTrue(schemaField.getKnownTypes().contains(JsonNodeType.NUMBER));
+            }
+            else if (schemaField.getPath().equals("root.0")) {
+                assertTrue(schemaField.getKnownTypes().contains(JsonNodeType.ARRAY));
+                assertTrue(schemaField.getKnownTypes().contains(JsonNodeType.NUMBER));
+            }
+            else if (schemaField.getPath().equals("root.1")) {
+                assertTrue(schemaField.getKnownTypes().contains(JsonNodeType.ARRAY));
+                assertTrue(schemaField.getKnownTypes().contains(JsonNodeType.NUMBER));
+            }
+            else if (schemaField.getPath().equals("root.2")) {
+                assertTrue(schemaField.getKnownTypes().contains(JsonNodeType.ARRAY));
+                assertTrue(schemaField.getKnownTypes().contains(JsonNodeType.NUMBER));
+            }
+            else {
+                assertFalse(true);
+            }
+        }
+
     }
 
 }

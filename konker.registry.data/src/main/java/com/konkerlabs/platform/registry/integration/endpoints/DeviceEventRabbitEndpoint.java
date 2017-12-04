@@ -44,7 +44,7 @@ public class DeviceEventRabbitEndpoint {
         Long epochMilli = (Long) properties.getHeaders().get(RabbitMQConfig.MSG_HEADER_TIMESTAMP);
         Instant ingestedTimestamp = null;
 
-        String payload = new String(message.getBody());
+        byte[] bytesPayload = message.getBody();
 
         if (!StringUtils.hasText(apiKey)) {
             LOGGER.error("Apikey not found.");
@@ -62,7 +62,7 @@ public class DeviceEventRabbitEndpoint {
         }
 
         try {
-            deviceEventProcessor.process(apiKey, channel, payload, ingestedTimestamp);
+            deviceEventProcessor.process(apiKey, channel, bytesPayload, ingestedTimestamp);
         } catch (BusinessException be) {
             LOGGER.error("BusinessException processing message", be);
         }
