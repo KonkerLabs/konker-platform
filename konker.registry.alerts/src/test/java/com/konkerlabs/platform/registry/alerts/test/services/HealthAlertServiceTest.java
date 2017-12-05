@@ -1,18 +1,22 @@
-package com.konkerlabs.platform.registry.test.business.services;
+package com.konkerlabs.platform.registry.alerts.test.services;
 
-import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
-import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.isResponseOk;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.mockito.Mockito.when;
-
-import java.time.Instant;
-import java.util.Collections;
-import java.util.List;
-
+import com.konkerlabs.platform.registry.alerts.test.base.BusinessLayerTestSupport;
+import com.konkerlabs.platform.registry.alerts.test.config.*;
+import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.model.HealthAlert.Description;
+import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertSeverity;
+import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertType;
+import com.konkerlabs.platform.registry.business.model.HealthAlert.Solution;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.repositories.AlertTriggerRepository;
+import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
+import com.konkerlabs.platform.registry.business.services.api.*;
+import com.konkerlabs.platform.registry.business.services.api.HealthAlertService.Messages;
+import com.konkerlabs.platform.registry.business.services.api.HealthAlertService.Validations;
+import com.konkerlabs.platform.registry.config.EmailConfig;
+import com.konkerlabs.platform.registry.config.EventStorageConfig;
+import com.konkerlabs.platform.registry.config.PubServerConfig;
+import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -24,40 +28,19 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.HealthAlert;
-import com.konkerlabs.platform.registry.business.model.HealthAlert.Description;
-import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertSeverity;
-import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertType;
-import com.konkerlabs.platform.registry.business.model.HealthAlert.Solution;
-import com.konkerlabs.platform.registry.business.model.SilenceTrigger;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.registry.business.repositories.AlertTriggerRepository;
-import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
-import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.HealthAlertService;
-import com.konkerlabs.platform.registry.business.services.api.HealthAlertService.Messages;
-import com.konkerlabs.platform.registry.business.services.api.HealthAlertService.Validations;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
-import com.konkerlabs.platform.registry.config.EmailConfig;
-import com.konkerlabs.platform.registry.config.EventStorageConfig;
-import com.konkerlabs.platform.registry.config.PubServerConfig;
-import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
-import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.MessageSouceTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.MongoBillingTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.SpringMailTestConfiguration;
-import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.List;
+
+import static com.konkerlabs.platform.registry.alerts.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
+import static com.konkerlabs.platform.registry.alerts.test.base.matchers.ServiceResponseMatchers.isResponseOk;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
-        MongoTestConfiguration.class,
+        MongoTestConfig.class,
         BusinessTestConfiguration.class,
 		PubServerConfig.class,
         EventStorageConfig.class,

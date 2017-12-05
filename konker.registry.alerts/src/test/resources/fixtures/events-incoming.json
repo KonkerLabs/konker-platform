@@ -1,0 +1,52 @@
+{
+  "incomingEvents": [
+    {
+      "_class" : "com.mongodb.DBObject",
+      "payload":"{}",
+      "ts": 1453320973747,
+      "incoming": {
+        "_class": "com.konkerlabs.platform.registry.business.model.EventActor",
+        "deviceGuid": "7d51c242-81db-11e6-a8c2-0746f010e945",
+        "deviceId":"SN1234567890",
+        "tenantDomain":"konker",
+        "channel": "e4399b2ed998.testchannel"
+      }
+    },
+    {
+      "_class" : "com.mongodb.DBObject",
+      "payload":"{}",
+      "ts": 1453320973757,
+      "incoming": {
+        "_class": "com.konkerlabs.platform.registry.business.model.EventActor",
+        "deviceGuid": "7d51c242-81db-11e6-a8c2-0746f010e945",
+        "tenantDomain":"konker",
+        "deviceId":"SN1234567890",
+        "channel": "e4399b2ed998.testchannel"
+      }
+    },
+    {
+      "_class" : "com.mongodb.DBObject",
+      "payload":"{}",
+      "ts": 1453320973757,
+      "incoming": {
+        "_class": "com.konkerlabs.platform.registry.business.model.EventActor",
+        "deviceGuid": "7d51c242-81db-11e6-a8c2-0746f010e946",
+        "tenantDomain":"konker",
+        "deviceId":"SN1234567890",
+        "channel": "e4399b2ed998.testchannel"
+      }
+    },
+    {
+      "_class" : "com.mongodb.DBObject",
+      "payload":"{}",
+      "ts": 1453320973757,
+      "incoming": {
+        "_class": "com.konkerlabs.platform.registry.business.model.EventActor",
+        "deviceGuid": "8363c556-84ea-11e6-92a2-4b01fea7e243",
+        "tenantDomain":"konker",
+        "deviceId":"smartffkonker",
+        "channel": "e4399b2ed998.testchannel"
+      }
+    }
+  ]
+}

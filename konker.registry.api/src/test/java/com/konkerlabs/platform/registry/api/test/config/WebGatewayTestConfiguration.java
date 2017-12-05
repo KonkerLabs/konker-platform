@@ -157,11 +157,6 @@ public class WebGatewayTestConfiguration {
     }
 
     @Bean
-    public AlertTriggerService alertTriggerService() {
-        return Mockito.mock(AlertTriggerService.class);
-    }
-
-    @Bean
     public HealthAlertService healthAlertService() {
         return Mockito.mock(HealthAlertService.class);
     }

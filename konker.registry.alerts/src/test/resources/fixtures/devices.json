@@ -1,0 +1,73 @@
+{
+  "devices": [
+    {
+      "_class" : "com.konkerlabs.platform.registry.model.Device",
+      "_id" : "67014de6-81db-11e6-a5bc-3f99b38315c6",
+      "guid" : "7d51c242-81db-11e6-a8c2-0746f010e945",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
+      },
+      "application" : {
+      	"$id" : "smartffkonker",
+      	"$ref" : "applications"
+      },
+      "deviceModel" : {
+      	"$id" : "67014de6-81db-11e6-a5bc-3f99b78823c9",
+      	"$ref" : "devicesModel"
+      },
+      "deviceId" : "SN1234567890",
+      "apiKey" : "e4399b2ed998",
+      "name" : "Test name",
+      "description" : "Description",
+      "registrationDate" : 1453320973747,
+      "active" : false
+    },
+    {
+      "_class" : "com.konkerlabs.platform.registry.model.Device",
+      "_id" : "69014da6-81da-13e6-a1bc-3f98b38315c7",
+      "guid" : "8363c556-84ea-11e6-92a2-4b01fea7e245",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
+      },
+      "application" : {
+      	"$id" : "konker",
+      	"$ref" : "applications"
+      },
+      "deviceModel" : {
+      	"$id" : "67014de6-81db-11e6-a5bc-3f99b788249c",
+      	"$ref" : "devicesModel"
+      },
+      "deviceId" : "SN1234567891",
+      "apiKey" : "e4399b2ed999",
+      "name" : "Test name 2",
+      "description" : "Description",
+      "registrationDate" : 1453320973747,
+      "active" : true
+    },
+    {
+      "_class" : "com.konkerlabs.platform.registry.model.Device",
+      "_id" : "69014da6-81da-13e6-a1bc-3f98b38315c6",
+      "guid" : "8363c556-84ea-11e6-92a2-4b01fea7e243",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
+      },
+      "application" : {
+      	"$id" : "smartffkonker",
+      	"$ref" : "applications"
+      },
+      "deviceModel" : {
+      	"$id" : "67014de6-81db-11e6-a5bc-3f99b788249c",
+      	"$ref" : "devicesModel"
+      },
+      "deviceId" : "SN1234567891",
+      "apiKey" : "e4399b2ed999",
+      "name" : "Test name 2",
+      "description" : "Description",
+      "registrationDate" : 1453320973747,
+      "active" : true
+    }
+  ]
+}

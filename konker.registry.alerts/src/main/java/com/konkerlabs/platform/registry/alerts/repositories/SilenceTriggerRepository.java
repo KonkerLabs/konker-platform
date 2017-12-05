@@ -1,13 +1,12 @@
-package com.konkerlabs.platform.registry.business.repositories;
+package com.konkerlabs.platform.registry.alerts.repositories;
 
-import java.util.List;
-
+import com.konkerlabs.platform.registry.business.model.SilenceTrigger;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
-import com.konkerlabs.platform.registry.business.model.SilenceTrigger;
+import java.util.List;
 
-public interface SilenceTriggerRepository  extends MongoRepository<SilenceTrigger, String> {
+public interface SilenceTriggerRepository extends MongoRepository<SilenceTrigger, String> {
 
     @Query("{ 'tenant.id' : ?0, 'application.name' : ?1 }")
     List<SilenceTrigger> listByTenantIdAndApplicationName(String tenantId, String applicationName);

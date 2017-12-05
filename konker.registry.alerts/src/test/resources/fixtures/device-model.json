@@ -1,0 +1,38 @@
+{
+  "devicesModel" : [
+    {
+      "_id" : "67014de6-81db-11e6-a5bc-3f99b78823c9",
+      "guid" : "7d51c242-81db-11e6-a8c2-0746f908e887",
+      "name" : "SmartFF",
+      "_class" : "com.konkerlabs.platform.registry.model.DeviceModel",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
+      },
+      "application" : {
+        "$id" : "smartffkonker",
+        "$ref" : "applications"
+      },
+      "description" : "Smart ff model",
+      "contentType" : "APPLICATION_JSON",
+      "defaultModel" : true
+    },
+    {
+      "_id" : "67014de6-81db-11e6-a5bc-3f99b788249c",
+      "guid" : "7d51c242-81db-11e6-a8c2-0746f908e997",
+      "name" : "sensor",
+      "_class" : "com.konkerlabs.platform.registry.model.DeviceModel",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
+      },
+      "application" : {
+        "$id" : "smartffkonker",
+        "$ref" : "applications"
+      },
+      "description" : "temperature sensor",
+      "contentType" : "APPLICATION_JSON",
+      "defaultModel" : false
+    }
+  ]
+}

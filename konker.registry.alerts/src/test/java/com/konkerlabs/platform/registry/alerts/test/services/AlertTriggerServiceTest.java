@@ -1,12 +1,21 @@
-package com.konkerlabs.platform.registry.test.business.services;
+package com.konkerlabs.platform.registry.alerts.test.services;
 
-import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-
-import java.time.Instant;
-import java.util.List;
-
+import com.konkerlabs.platform.registry.alerts.services.api.AlertTriggerService;
+import com.konkerlabs.platform.registry.alerts.test.base.BusinessLayerTestSupport;
+import com.konkerlabs.platform.registry.alerts.test.config.BusinessTestConfiguration;
+import com.konkerlabs.platform.registry.alerts.test.config.MongoTestConfig;
+import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertType;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.repositories.AlertTriggerRepository;
+import com.konkerlabs.platform.registry.business.repositories.DeviceModelRepository;
+import com.konkerlabs.platform.registry.business.repositories.LocationRepository;
+import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.config.EventStorageConfig;
+import com.konkerlabs.platform.registry.config.PubServerConfig;
+import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -16,32 +25,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.konkerlabs.platform.registry.business.model.AlertTrigger;
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.DeviceModel;
-import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertType;
-import com.konkerlabs.platform.registry.business.model.Location;
-import com.konkerlabs.platform.registry.business.model.SilenceTrigger;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.registry.business.repositories.AlertTriggerRepository;
-import com.konkerlabs.platform.registry.business.repositories.DeviceModelRepository;
-import com.konkerlabs.platform.registry.business.repositories.LocationRepository;
-import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
-import com.konkerlabs.platform.registry.business.services.api.AlertTriggerService;
-import com.konkerlabs.platform.registry.business.services.api.AlertTriggerService.Validations;
-import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.config.EventStorageConfig;
-import com.konkerlabs.platform.registry.config.PubServerConfig;
-import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
-import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
-import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
+import java.time.Instant;
+import java.util.List;
+
+import static com.konkerlabs.platform.registry.alerts.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
-        MongoTestConfiguration.class,
+        MongoTestConfig.class,
         BusinessTestConfiguration.class,
 		PubServerConfig.class,
         EventStorageConfig.class})
@@ -181,7 +174,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     public void shouldTryFindByTenantAndApplicationAndGuidNonExistingTrigger() throws Exception {
 
         ServiceResponse<AlertTrigger> serviceResponse = alertTriggerService.findByTenantAndApplicationAndGuid(currentTenant, application, "000-000");
-        assertThat(serviceResponse, hasErrorMessage(Validations.ALERT_TRIGGER_NOT_FOUND.getCode()));
+        assertThat(serviceResponse, hasErrorMessage(AlertTriggerService.Validations.ALERT_TRIGGER_NOT_FOUND.getCode()));
 
     }
 

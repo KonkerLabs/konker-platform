@@ -192,7 +192,7 @@ public class SilenceTriggerRestControllerTest extends WebLayerTestContext {
                 .get(MessageFormat.format(
                         "/{0}/{1}/{2}/{3}/{4}/",
                         tenant.getDomainName(),
-                        application.getName(), 
+                        application.getName(),
                         BASEPATH,
                         deviceModel.getName(),
                         NONEXIST_APPLICATION_NANE)
