@@ -1,7 +1,7 @@
 package com.konkerlabs.platform.registry.alerts.exceptions;
 
+import com.konkerlabs.platform.registry.business.model.enumerations.Language;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.model.OauthClientDetails;
 
 import java.util.Locale;
 import java.util.Map;
@@ -17,7 +17,7 @@ public class NotAuthorizedResponseException extends Exception {
 
     private Locale locale;
 
-    public NotAuthorizedResponseException(OauthClientDetails user, ServiceResponse<?> serviceResponse, Set<String> validationsCode) {
+    public NotAuthorizedResponseException(String user, ServiceResponse<?> serviceResponse, Set<String> validationsCode) {
 
         if (serviceResponse != null &&
                 serviceResponse.getResponseMessages() != null) {
@@ -30,7 +30,7 @@ public class NotAuthorizedResponseException extends Exception {
         }
 
         this.responseMessages = serviceResponse != null ? serviceResponse.getResponseMessages() : null;
-        this.locale = user.getLanguage().getLocale();
+        this.locale = Language.EN.getLocale();
 
     }
 

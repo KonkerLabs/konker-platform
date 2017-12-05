@@ -1,14 +1,5 @@
 package com.konkerlabs.platform.registry.business.services;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.konkerlabs.platform.registry.billing.model.TenantDailyUsage;
 import com.konkerlabs.platform.registry.billing.repositories.TenantDailyUsageRepository;
 import com.konkerlabs.platform.registry.business.model.Application;
@@ -21,6 +12,14 @@ import com.konkerlabs.platform.registry.business.services.api.ApplicationService
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.TenantService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
 
 @Service
 public class TenantServiceImpl implements TenantService {
@@ -118,6 +117,24 @@ public class TenantServiceImpl implements TenantService {
 		
 		return ServiceResponseBuilder.<Tenant>ok()
 				.withResult(fromStorage)
+				.build();
+	}
+
+	@Override
+	public ServiceResponse<Tenant> findByDomainName(String name) {
+		if(!Optional.of(name).isPresent()){
+			return ServiceResponseBuilder.<Tenant>error()
+					.withMessage(Validations.TENANT_NAME_NULL.getCode())
+					.build();
+		}
+		Tenant tenant = tenantRepository.findByDomainName(name);
+		if(!Optional.ofNullable(tenant).isPresent()){
+			return ServiceResponseBuilder.<Tenant>error()
+					.withMessage(Validations.NO_EXIST_TENANT.getCode())
+					.build();
+		}
+		return ServiceResponseBuilder.<Tenant> ok()
+				.withResult(tenant)
 				.build();
 	}
 

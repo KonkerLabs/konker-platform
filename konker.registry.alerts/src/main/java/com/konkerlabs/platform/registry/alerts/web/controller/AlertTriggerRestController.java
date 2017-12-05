@@ -1,14 +1,14 @@
 package com.konkerlabs.platform.registry.alerts.web.controller;
 
-import com.konkerlabs.platform.registry.alerts.model.SilenceTriggerVO;
 import com.konkerlabs.platform.registry.alerts.exceptions.BadServiceResponseException;
 import com.konkerlabs.platform.registry.alerts.exceptions.NotFoundResponseException;
+import com.konkerlabs.platform.registry.alerts.model.SilenceTriggerVO;
+import com.konkerlabs.platform.registry.alerts.services.api.AlertTriggerService;
 import com.konkerlabs.platform.registry.business.model.AlertTrigger;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.RestDestination.Validations;
 import com.konkerlabs.platform.registry.business.model.SilenceTrigger;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.alerts.services.api.AlertTriggerService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,7 +29,7 @@ import java.util.Set;
 
 @RestController
 @Scope("request")
-@RequestMapping(value = "/{application}/triggers")
+@RequestMapping(value = "/{tenantDomain}/{application}/triggers")
 @Api(tags = "alert triggers")
 public class AlertTriggerRestController extends AbstractRestController implements InitializingBean {
 
@@ -42,19 +41,19 @@ public class AlertTriggerRestController extends AbstractRestController implement
     private Set<String> validationsCode = new HashSet<>();
 
     @GetMapping(path = "/")
-    @PreAuthorize("hasAuthority('LIST_ALERT_TRIGGERS')")
     @ApiOperation(
             value = "List all triggers by application",
             response = SilenceTriggerVO.class)
-    public List<Object> list(@PathVariable("application") String applicationId) throws BadServiceResponseException, NotFoundResponseException {
+    public List<Object> list(
+            @PathVariable("tenantDomain") String tenantDomain,
+            @PathVariable("application") String applicationId) throws BadServiceResponseException, NotFoundResponseException {
 
-        Tenant tenant = user.getTenant();
-        Application application = getApplication(applicationId);
-
+        Tenant tenant = getTenant(tenantDomain);
+        Application application = getApplication(tenant, applicationId);
         ServiceResponse<List<AlertTrigger>> restDestinationResponse = alertTriggerService.listByTenantAndApplication(tenant, application);
 
         if (!restDestinationResponse.isOk()) {
-            throw new BadServiceResponseException(user, restDestinationResponse, validationsCode);
+            throw new BadServiceResponseException(tenant.getDomainName(), restDestinationResponse, validationsCode);
         } else {
             List<Object> alertTriggersVO = new ArrayList<>(restDestinationResponse.getResult().size());
 

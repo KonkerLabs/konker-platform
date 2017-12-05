@@ -1,10 +1,10 @@
 package com.konkerlabs.platform.registry.business.services.api;
 
-import java.util.List;
-
 import com.konkerlabs.platform.registry.billing.model.TenantDailyUsage;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
+
+import java.util.List;
 
 public interface TenantService {
 
@@ -44,5 +44,8 @@ public interface TenantService {
 	ServiceResponse<List<TenantDailyUsage>> findTenantDailyUsage(Tenant tenant);
 	
 	ServiceResponse<Tenant> save(Tenant tenant);
+
+	ServiceResponse<Tenant> findByDomainName(String name);
+
 
 }

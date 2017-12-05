@@ -1,6 +1,5 @@
 package com.konkerlabs.platform.registry.alerts.exceptions;
 
-import com.konkerlabs.platform.registry.business.model.OauthClientDetails;
 import com.konkerlabs.platform.registry.business.model.enumerations.Language;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 
@@ -18,11 +17,11 @@ public class BadServiceResponseException extends Exception {
 
     private Locale locale;
 
-    public BadServiceResponseException(OauthClientDetails user, ServiceResponse<?> serviceResponse, Set<String> validationsCode) {
+    public BadServiceResponseException(String user, ServiceResponse<?> serviceResponse, Set<String> validationsCode) {
         this(user, serviceResponse != null ? serviceResponse.getResponseMessages() : null, validationsCode);
     }
 
-    public BadServiceResponseException(OauthClientDetails user, Map<String, Object[]> responseMessages, Set<String> validationsCode) {
+    public BadServiceResponseException(String user, Map<String, Object[]> responseMessages, Set<String> validationsCode) {
 
         if (responseMessages != null && validationsCode != null) {
             for (String key : responseMessages.keySet()) {
@@ -34,11 +33,8 @@ public class BadServiceResponseException extends Exception {
         }
 
         this.responseMessages = responseMessages;
-        if (user != null) {
-            this.locale = user.getLanguage().getLocale();
-        } else {
-            this.locale = Language.PT_BR.getLocale();
-        }
+        this.locale = Language.EN.getLocale();
+
     }
 
     public boolean hasValidationsError() {

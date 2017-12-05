@@ -2,17 +2,12 @@ package com.konkerlabs.platform.registry.alerts.test.config;
 
 import com.konkerlabs.platform.registry.alerts.services.api.AlertTriggerService;
 import com.konkerlabs.platform.registry.alerts.services.api.HealthAlertService;
-import com.konkerlabs.platform.registry.business.model.*;
-import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
-import com.konkerlabs.platform.registry.business.model.enumerations.Language;
-import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
+import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.*;
-import com.konkerlabs.platform.registry.idm.services.OAuth2AccessTokenService;
-import com.konkerlabs.platform.registry.idm.services.OAuthClientDetailsService;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 
 @Configuration
 public class WebTestConfiguration {
@@ -28,23 +23,6 @@ public class WebTestConfiguration {
     }
 
     @Bean
-    public OauthClientDetails user() {
-        User user = User.builder()
-                .email("user@domain.com")
-                .zoneId(TimeZone.AMERICA_SAO_PAULO)
-                .language(Language.EN)
-                .avatar("default.jpg")
-                .dateFormat(DateFormat.YYYYMMDD)
-                .tenant(tenant()).build();
-
-        return OauthClientDetails
-                .builder()
-                .build()
-                .setUserProperties(user);
-    }
-
-
-    @Bean
     public LocationSearchService locationSearchService() {
         return Mockito.mock(LocationSearchService.class);
     }
@@ -52,11 +30,6 @@ public class WebTestConfiguration {
     @Bean
     public ApplicationService applicationService() {
         return Mockito.mock(ApplicationService.class);
-    }
-
-    @Bean
-    public UserService userService() {
-        return Mockito.mock(UserService.class);
     }
 
     @Bean
@@ -80,18 +53,11 @@ public class WebTestConfiguration {
     }
 
     @Bean
-    public OAuth2AccessTokenService oAuth2AccessTokenService() {
-        return Mockito.mock(OAuth2AccessTokenService.class);
+    public TenantService tenantService() {
+        return Mockito.mock(TenantService.class);
     }
 
-    @Bean
-    public DefaultTokenServices defaultTokenServices() {
-        return Mockito.mock(DefaultTokenServices.class);
-    }
 
-    @Bean
-    public OAuthClientDetailsService oAuthClientDetailsService() {
-        return Mockito.mock(OAuthClientDetailsService.class);
-    }
+
 
 }

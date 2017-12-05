@@ -22,15 +22,36 @@ public abstract class AbstractRestController {
     private DeviceModelService deviceModelService;
 
     @Autowired
-    protected OauthClientDetails user;
+    private TenantService tenantService;
 
-    protected Application getApplication(String applicationId) throws BadServiceResponseException, NotFoundResponseException {
+    protected Tenant getTenant(String tenantDomain) throws BadServiceResponseException, NotFoundResponseException {
 
-        Tenant tenant = user.getTenant();
-        ServiceResponse<Application> applicationResponse = applicationService.getByApplicationName(tenant, applicationId);
+        ServiceResponse<Tenant> tenantResponse =
+                tenantService.findByDomainName(tenantDomain);
+        if (!tenantResponse.isOk()) {
+            if (tenantResponse.getResponseMessages().containsKey(TenantService.Validations.NO_EXIST_TENANT.getCode())) {
+                throw new NotFoundResponseException(tenantDomain, tenantResponse);
+
+            } else {
+                Set<String> validationsCode = new HashSet<>();
+                for (TenantService.Validations value : TenantService.Validations.values()) {
+                    validationsCode.add(value.getCode());
+                }
+
+                throw new BadServiceResponseException(tenantDomain, tenantResponse, validationsCode);
+            }
+        }
+
+        return tenantResponse.getResult();
+
+    }
+
+    protected Application getApplication(Tenant tenant, String applicationId) throws BadServiceResponseException, NotFoundResponseException {
+        ServiceResponse<Application> applicationResponse =
+                applicationService.getByApplicationName(tenant, applicationId);
         if (!applicationResponse.isOk()) {
             if (applicationResponse.getResponseMessages().containsKey(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode())) {
-                throw new NotFoundResponseException(user, applicationResponse);
+                throw new NotFoundResponseException(tenant.getDomainName(), applicationResponse);
 
             } else {
                 Set<String> validationsCode = new HashSet<>();
@@ -38,7 +59,7 @@ public abstract class AbstractRestController {
                     validationsCode.add(value.getCode());
                 }
 
-                throw new BadServiceResponseException(user, applicationResponse, validationsCode);
+                throw new BadServiceResponseException(tenant.getDomainName(), applicationResponse, validationsCode);
             }
         }
 
@@ -55,7 +76,7 @@ public abstract class AbstractRestController {
         ServiceResponse<Location> applicationResponse = locationSearchService.findByName(tenant, application, locationName, false);
         if (!applicationResponse.isOk()) {
             if (applicationResponse.getResponseMessages().containsKey(LocationService.Messages.LOCATION_NOT_FOUND.getCode())) {
-                throw new NotFoundResponseException(user, applicationResponse);
+                throw new NotFoundResponseException(tenant.getDomainName(), applicationResponse);
 
             } else {
                 Set<String> validationsCode = new HashSet<>();
@@ -63,7 +84,7 @@ public abstract class AbstractRestController {
                     validationsCode.add(value.getCode());
                 }
 
-                throw new BadServiceResponseException(user, applicationResponse, validationsCode);
+                throw new BadServiceResponseException(tenant.getDomainName(), applicationResponse, validationsCode);
             }
         }
 
@@ -80,7 +101,7 @@ public abstract class AbstractRestController {
         ServiceResponse<DeviceModel> applicationResponse = deviceModelService.getByTenantApplicationAndName(tenant, application, deviceModelName);
         if (!applicationResponse.isOk()) {
             if (applicationResponse.getResponseMessages().containsKey(DeviceModelService.Validations.DEVICE_MODEL_NOT_FOUND.getCode())) {
-                throw new NotFoundResponseException(user, applicationResponse);
+                throw new NotFoundResponseException(tenant.getDomainName(), applicationResponse);
 
             } else {
                 Set<String> validationsCode = new HashSet<>();
@@ -88,7 +109,7 @@ public abstract class AbstractRestController {
                     validationsCode.add(value.getCode());
                 }
 
-                throw new BadServiceResponseException(user, applicationResponse, validationsCode);
+                throw new BadServiceResponseException(tenant.getDomainName(), applicationResponse, validationsCode);
             }
         }
 

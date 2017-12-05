@@ -9,6 +9,7 @@ import com.konkerlabs.platform.registry.alerts.web.wrapper.CrudResponseAdvice;
 import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.business.services.api.TenantService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,6 +56,9 @@ public class AlertTriggerRestControllerTest extends WebLayerTestContext {
     @Autowired
     private AlertTriggerService alertTriggerService;
 
+    @Autowired
+    private TenantService tenantService;
+
     private DeviceModel deviceModel;
 
     private Location location;
@@ -69,9 +73,9 @@ public class AlertTriggerRestControllerTest extends WebLayerTestContext {
         deviceModel = DeviceModel.builder()
                 .tenant(tenant)
                 .application(application)
-        		.guid(UUID.randomUUID().toString())
-        		.name("air conditioner")
-        		.build();
+                .guid(UUID.randomUUID().toString())
+                .name("air conditioner")
+                .build();
 
         location = Location.builder()
                 .tenant(tenant)
@@ -89,8 +93,12 @@ public class AlertTriggerRestControllerTest extends WebLayerTestContext {
         silenceTrigger.setMinutes(200);
 
         when(applicationService.getByApplicationName(tenant, application.getName()))
-            .thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
+                .thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
 
+
+        when(tenantService.findByDomainName(tenant.getDomainName()))
+                .thenReturn(ServiceResponseBuilder.<Tenant>ok()
+                        .withResult(tenant).build());
 
     }
 
@@ -107,19 +115,23 @@ public class AlertTriggerRestControllerTest extends WebLayerTestContext {
         silenceTriggers.add(silenceTrigger);
 
         when(alertTriggerService.listByTenantAndApplication(tenant, application))
-            .thenReturn(ServiceResponseBuilder.<List<AlertTrigger>> ok()
-                    .withResult(silenceTriggers).build());
+                .thenReturn(ServiceResponseBuilder.<List<AlertTrigger>>ok()
+                        .withResult(silenceTriggers).build());
 
         getMockMvc()
                 .perform(MockMvcRequestBuilders
-        		.get(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH))
-        		.contentType("application/json")
-        		.accept(MediaType.APPLICATION_JSON))
+                        .get(MessageFormat.format(
+                                "/{0}/{1}/{2}/",
+                                tenant.getDomainName(),
+                                application.getName(),
+                                BASEPATH)
+                        ).contentType("application/json")
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json;charset=UTF-8"))
                 .andExpect(jsonPath("$.code", is(HttpStatus.OK.value())))
                 .andExpect(jsonPath("$.status", is("success")))
-                .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
                 .andExpect(jsonPath("$.result", hasSize(2)))
                 .andExpect(jsonPath("$.result[0].guid", is(silenceTrigger.getGuid())))
                 .andExpect(jsonPath("$.result[0].deviceModelName", is(deviceModel.getName())))
@@ -131,20 +143,23 @@ public class AlertTriggerRestControllerTest extends WebLayerTestContext {
                 .andExpect(jsonPath("$.result[1].locationName", is(location.getName())))
                 .andExpect(jsonPath("$.result[1].type", is("silence")))
                 .andExpect(jsonPath("$.result[1].minutes", is(200)))
-                ;
+        ;
     }
 
     @Test
     public void shouldReturnInternalErrorWhenListSilenceTriggers() throws Exception {
 
         when(alertTriggerService.listByTenantAndApplication(tenant, application))
-            .thenReturn(ServiceResponseBuilder.<List<AlertTrigger>>error()
-                    .build());
+                .thenReturn(ServiceResponseBuilder.<List<AlertTrigger>>error()
+                        .build());
 
         getMockMvc().perform(MockMvcRequestBuilders
-                .get(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH))
-        		.accept(MediaType.APPLICATION_JSON)
-        		.contentType(MediaType.APPLICATION_JSON))
+                .get(MessageFormat.format(
+                        "/{0}/{1}/{2}/",
+                        tenant.getDomainName(),
+                        application.getName(), BASEPATH)
+                ).accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is5xxServerError())
                 .andExpect(content().contentType("application/json;charset=UTF-8"))
                 .andExpect(jsonPath("$.code", is(HttpStatus.INTERNAL_SERVER_ERROR.value())))
