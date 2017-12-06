@@ -2,6 +2,7 @@ package com.konkerlabs.platform.registry.integration.processors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.DeviceModel;
 import com.konkerlabs.platform.registry.business.model.Event;
@@ -125,7 +126,7 @@ public class DeviceEventProcessor {
     }
     
     @SuppressWarnings("unchecked")
-	public void proccess(Gateway gateway, String payloadList) throws BusinessException, JsonProcessingException {
+	public void process(Gateway gateway, String payloadList) throws BusinessException, JsonProcessingException {
     	List<Map<String, Object>> payloadsGateway = jsonParsingService.toListMap(payloadList);
     	
     	for (Map<String, Object> payloadGateway : payloadsGateway) {
@@ -233,5 +234,20 @@ public class DeviceEventProcessor {
         }
 
     }
+
+	public void process(Application application, String payload) throws BusinessException {
+		Event event = Event.builder()
+                .creationTimestamp(Instant.now())
+                .ingestedTimestamp(Instant.now())
+                .payload(payload)
+                .build();	
+		
+		Device device = Device.builder()
+							.tenant(application.getTenant())
+							.application(application)
+							.build();
+		
+		eventRouteExecutor.execute(event, device);
+	}
 
 }

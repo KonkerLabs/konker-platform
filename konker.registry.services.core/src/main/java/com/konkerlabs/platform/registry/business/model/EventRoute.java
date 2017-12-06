@@ -233,6 +233,10 @@ public class EventRoute implements URIDealer, Validatable {
         public boolean isAmazonKinesis() {
             return AmazonKinesis.URI_SCHEME.equals(Optional.ofNullable(getUri()).map(URI::getScheme).orElse(""));
         }
+        
+        public boolean isApplication() {
+        	return Application.URI_SCHEME.equals(Optional.ofNullable(getUri()).map(URI::getScheme).orElse(""));
+        }
 	}
 
 

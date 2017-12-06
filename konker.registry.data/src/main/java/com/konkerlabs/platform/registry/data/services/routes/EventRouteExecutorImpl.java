@@ -88,7 +88,8 @@ public class EventRouteExecutorImpl implements EventRouteExecutor {
 
             if (!eventRoute.isActive())
                 return;
-            if (!eventRoute.getIncoming().getData().get(DEVICE_MQTT_CHANNEL).equals(event.getIncoming().getChannel())) {
+            if (!eventRoute.getIncoming().isApplication()
+            		&& !eventRoute.getIncoming().getData().get(DEVICE_MQTT_CHANNEL).equals(event.getIncoming().getChannel())) {
                 LOGGER.debug("Non matching channel for incoming event: {}", event, eventRoute.getTenant().toURI(), eventRoute.getTenant().getLogLevel());
                 return;
             }
@@ -176,6 +177,11 @@ public class EventRouteExecutorImpl implements EventRouteExecutor {
                     return true;
                 }
             }
+        }
+        
+        // match application actor
+        if (eventRoute.getIncoming().isApplication()) {
+        	return true;
         }
 
         return false;
