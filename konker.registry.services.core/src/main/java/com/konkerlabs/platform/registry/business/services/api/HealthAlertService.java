@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.business.services.api;
 
+import com.konkerlabs.platform.registry.business.model.AlertTrigger;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.HealthAlert;
 import com.konkerlabs.platform.registry.business.model.HealthAlert.Solution;
@@ -9,8 +10,10 @@ import java.util.List;
 
 public interface HealthAlertService {
 
-	enum Validations {
+
+    enum Validations {
 		HEALTH_ALERT_NULL("service.healthalert.null"),
+        HEALTH_ALERT_NULL_ID("service.healthalert.null_id"),
 		HEALTH_ALERT_DOES_NOT_EXIST("service.healthalert.does.not.exist"),
 		HEALTH_ALERT_GUID_IS_NULL("service.healthalert.guid.null"),
 		HEALTH_ALERT_NOT_FOUND("service.healthalert.not.found"),
@@ -46,9 +49,11 @@ public interface HealthAlertService {
 	ServiceResponse<HealthAlert> update(Tenant tenant, Application application, String healthAlertGuid, HealthAlert healthAlert);
 	ServiceResponse<HealthAlert> remove(Tenant tenant, Application application, String healthAlertGuid, Solution solution);
 	ServiceResponse<List<HealthAlert>> findAllByTenantAndApplication(Tenant tenant, Application application);
+	ServiceResponse<List<HealthAlert>> findAllByTenantApplicationAndTriggerGuid(Tenant tenant, Application application, String triggerGuid);
 	ServiceResponse<List<HealthAlert>> findAllByTenantApplicationAndDeviceGuid(Tenant tenant, Application application, String deviceGuid);
+	ServiceResponse<HealthAlert> findByTenantApplicationTriggerAndAlertId(Tenant tenant, Application application, AlertTrigger alertTrigger, String alertId);
 	ServiceResponse<HealthAlert> getByTenantApplicationAndHealthAlertGuid(Tenant tenant, Application application, String healthAlertGuid);
     ServiceResponse<List<HealthAlert>>  removeAlertsFromTrigger(Tenant tenant, Application application, String guid);
-    ServiceResponse<HealthAlert> getLastHightSeverityByDeviceGuid(Tenant tenant, Application application, String deviceGuid);
+    ServiceResponse<HealthAlert> getLastHighestSeverityByDeviceGuid(Tenant tenant, Application application, String deviceGuid);
 
 }

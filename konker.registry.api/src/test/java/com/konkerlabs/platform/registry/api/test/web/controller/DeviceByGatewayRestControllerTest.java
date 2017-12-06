@@ -9,9 +9,7 @@ import com.konkerlabs.platform.registry.api.web.controller.DeviceStatusRestContr
 import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
 import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.Event.EventActor;
-import com.konkerlabs.platform.registry.business.model.HealthAlert.Description;
 import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertSeverity;
-import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertType;
 import com.konkerlabs.platform.registry.business.services.api.*;
 import org.junit.After;
 import org.junit.Before;
@@ -23,6 +21,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.scheduling.Trigger;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -112,14 +111,12 @@ public class DeviceByGatewayRestControllerTest extends WebLayerTestContext {
                 .build();
         device2 = Device.builder().deviceId("id2").name("name2").guid("guid2").location(locationBR).application(application).active(false).build();
 
-
         health1 = HealthAlert.builder()
                 .guid("7d51c242-81db-11e6-a8c2-0746f976f223")
                 .severity(HealthAlertSeverity.FAIL)
-                .description(Description.NO_MESSAGE_RECEIVED)
+                .description("No message received from the device for a long time.")
                 .registrationDate(registrationDate)
                 .lastChange(Instant.ofEpochMilli(1495716970000l))
-                .type(HealthAlertType.SILENCE)
                 .deviceGuid(device1.getGuid())
                 .triggerGuid("7d51c242-81db-11e6-a8c2-0746f976f666")
                 .build();
@@ -127,10 +124,9 @@ public class DeviceByGatewayRestControllerTest extends WebLayerTestContext {
         health2 = HealthAlert.builder()
                 .guid("7d51c242-81db-11e6-a8c2-0746f976f223")
                 .severity(HealthAlertSeverity.OK)
-                .description(Description.NO_MESSAGE_RECEIVED)
+                .description("No message received from the device for a long time.")
                 .registrationDate(registrationDate)
                 .lastChange(Instant.ofEpochMilli(1495716970000l))
-                .type(HealthAlertType.SILENCE)
                 .deviceGuid(device1.getGuid())
                 .triggerGuid("7d51c242-81db-11e6-a8c2-0746f976f666")
                 .build();

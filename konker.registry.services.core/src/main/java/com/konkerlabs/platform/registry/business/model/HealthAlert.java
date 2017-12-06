@@ -25,24 +25,7 @@ public class HealthAlert implements URIDealer {
 
 	public static final String URI_SCHEME = "healthAlert";
 
-    public static enum Description {
-
-        NO_MESSAGE_RECEIVED("model.healthalert.description.no_message_received"),
-        HEALTH_OK("model.healthalert.description.health_ok");
-
-        private String code;
-
-        public String getCode() {
-            return code;
-        }
-
-        Description(String code) {
-            this.code = code;
-        }
-
-    }
-
-    public static enum Solution {
+    public enum Solution {
 
         MESSAGE_RECEIVED("model.healthalert.solution.message_received"),
         ALERT_DELETED("model.healthalert.solution.alert_deleted"),
@@ -62,12 +45,13 @@ public class HealthAlert implements URIDealer {
 
 	@Id
 	private String id;
+    private String alertId; // used for custom alerts
 	private String guid;
 	private HealthAlertSeverity severity;
-	private Description description;
+	private String description;
 	private Instant registrationDate;
 	private Instant lastChange;
-	private HealthAlertType type;
+	private AlertTrigger.AlertTriggerType type;
 	private String triggerGuid;
 	private String deviceGuid;
 	private Solution solution;
@@ -77,7 +61,10 @@ public class HealthAlert implements URIDealer {
     private Tenant tenant;
     @DBRef
     private Application application;
-
+    @DBRef
+    private AlertTrigger alertTrigger;
+    @DBRef
+    private Device device;
 
 	@Override
 	public String getUriScheme() {
@@ -90,6 +77,7 @@ public class HealthAlert implements URIDealer {
 	}
 
 	public enum HealthAlertSeverity {
+
 		OK(3, "model.healthalert.severity.ok"),
 		WARN(2, "model.healthalert.severity.warn"),
 		FAIL(1, "model.healthalert.severity.fail");
@@ -110,10 +98,6 @@ public class HealthAlert implements URIDealer {
             return code;
         }
 
-	}
-
-	public enum HealthAlertType {
-		SILENCE;
 	}
 
 	public enum Validations {

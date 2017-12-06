@@ -45,9 +45,6 @@ public class DeviceStatusRestController extends AbstractRestController implement
     @Autowired
     private DeviceEventService deviceEventService;
 
-    @Autowired
-    private MessageSource messageSource;
-
     private Set<String> validationsCode = new HashSet<>();
 
     @GetMapping(path = "/{deviceGuid}/health")
@@ -63,7 +60,7 @@ public class DeviceStatusRestController extends AbstractRestController implement
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
 
-        ServiceResponse<HealthAlert> deviceResponse = healthAlertService.getLastHightSeverityByDeviceGuid(
+        ServiceResponse<HealthAlert> deviceResponse = healthAlertService.getLastHighestSeverityByDeviceGuid(
                 tenant,
                 application,
                 deviceGuid);
@@ -100,7 +97,7 @@ public class DeviceStatusRestController extends AbstractRestController implement
             for (HealthAlert healthAlert: deviceResponse.getResult()) {
                 DeviceHealthAlertVO healthAlertVO = new DeviceHealthAlertVO();
                 healthAlertVO = healthAlertVO.apply(healthAlert);
-                healthAlertVO.setDescription(messageSource.getMessage(healthAlert.getDescription().getCode(), null, user.getLanguage().getLocale()));
+                healthAlertVO.setDescription(healthAlert.getDescription());
 
                 healthAlertsVO.add(healthAlertVO);
             }
@@ -145,7 +142,7 @@ public class DeviceStatusRestController extends AbstractRestController implement
 
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
 
         for (com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.Validations value : DeviceRegisterService.Validations.values()) {
             validationsCode.add(value.getCode());

@@ -9,9 +9,7 @@ import com.konkerlabs.platform.registry.api.web.controller.DeviceStatusRestContr
 import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
 import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.Event.EventActor;
-import com.konkerlabs.platform.registry.business.model.HealthAlert.Description;
 import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertSeverity;
-import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertType;
 import com.konkerlabs.platform.registry.business.services.api.*;
 import com.konkerlabs.platform.registry.business.services.api.HealthAlertService.Validations;
 import org.junit.After;
@@ -121,10 +119,10 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
         health1 = HealthAlert.builder()
                 .guid("7d51c242-81db-11e6-a8c2-0746f976f223")
                 .severity(HealthAlertSeverity.FAIL)
-                .description(Description.NO_MESSAGE_RECEIVED)
+                .description("No message received from the device for a long time.")
                 .registrationDate(registrationDate)
                 .lastChange(Instant.ofEpochMilli(1495716970000l))
-                .type(HealthAlertType.SILENCE)
+                .type(AlertTrigger.AlertTriggerType.SILENCE)
                 .deviceGuid(device1.getGuid())
                 .triggerGuid("7d51c242-81db-11e6-a8c2-0746f976f666")
                 .build();
@@ -132,10 +130,10 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
         health2 = HealthAlert.builder()
                 .guid("7d51c242-81db-11e6-a8c2-0746f976f223")
                 .severity(HealthAlertSeverity.OK)
-                .description(Description.NO_MESSAGE_RECEIVED)
+                .description("No message received from the device for a long time.")
                 .registrationDate(registrationDate)
                 .lastChange(Instant.ofEpochMilli(1495716970000l))
-                .type(HealthAlertType.SILENCE)
+                .type(AlertTrigger.AlertTriggerType.SILENCE)
                 .deviceGuid(device1.getGuid())
                 .triggerGuid("7d51c242-81db-11e6-a8c2-0746f976f666")
                 .build();
@@ -283,7 +281,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldShowDeviceHealth() throws Exception {
 
-        when(healthAlertService.getLastHightSeverityByDeviceGuid(tenant, application, device1.getGuid()))
+        when(healthAlertService.getLastHighestSeverityByDeviceGuid(tenant, application, device1.getGuid()))
                 .thenReturn(ServiceResponseBuilder.<HealthAlert>ok().withResult(health1).build());
 
         when(applicationService.getByApplicationName(tenant, application.getName()))
@@ -306,7 +304,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldShowDeviceHealthWithDeviceHealthEmpty() throws Exception {
 
-        when(healthAlertService.getLastHightSeverityByDeviceGuid(tenant, application, device1.getGuid()))
+        when(healthAlertService.getLastHighestSeverityByDeviceGuid(tenant, application, device1.getGuid()))
                 .thenReturn(ServiceResponseBuilder.<HealthAlert>error().withMessage(Validations.HEALTH_ALERT_DOES_NOT_EXIST.getCode()).build());
 
         when(applicationService.getByApplicationName(tenant, application.getName()))

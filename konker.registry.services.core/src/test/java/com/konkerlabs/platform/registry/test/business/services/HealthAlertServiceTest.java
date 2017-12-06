@@ -1,15 +1,11 @@
 package com.konkerlabs.platform.registry.test.business.services;
 
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.HealthAlert;
-import com.konkerlabs.platform.registry.business.model.HealthAlert.Description;
+import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertSeverity;
-import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertType;
 import com.konkerlabs.platform.registry.business.model.HealthAlert.Solution;
-import com.konkerlabs.platform.registry.business.model.SilenceTrigger;
-import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.AlertTriggerRepository;
+import com.konkerlabs.platform.registry.business.repositories.HealthAlertRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
@@ -51,7 +47,6 @@ import static org.hamcrest.Matchers.*;
         MessageSouceTestConfiguration.class})
 public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
-
     private static final String DEVICE_GUID = "7d51c242-81db-11e6-a8c2-0746f010e945";
 
 	private static final String TRIGGER_GUID = "7d51c242-81db-11e6-a8c2-0746f976f666";
@@ -68,6 +63,10 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     @Autowired
     private AlertTriggerRepository alertTriggerRepository;
 
+    @Autowired
+    private HealthAlertRepository healthAlertRepository;
+
+    private AlertTrigger trigger;
     private HealthAlert healthAlert;
     private HealthAlert tempHealthAlert;
     private HealthAlert newHealthAlert;
@@ -103,56 +102,64 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
                 .registrationDate(Instant.ofEpochMilli(1453320973747L))
 				.build();
 
-    	healthAlert = HealthAlert.builder()
+        trigger = AlertTrigger.builder().build();
+        trigger.setGuid(TRIGGER_GUID);
+        trigger.setApplication(application);
+        trigger.setTenant(currentTenant);
+        trigger.setMinutes(1);
+        trigger.setType(AlertTrigger.AlertTriggerType.SILENCE);
+        trigger = alertTriggerRepository.save(trigger);
+
+        healthAlert = HealthAlert.builder()
     			.id("67014de6-81db-11e6-a5bc-3f99b78823c9")
+                .alertId("silence-id")
     			.guid("7d51c242-81db-11e6-a8c2-0746f976f224")
-    			.description(Description.NO_MESSAGE_RECEIVED)
+                .alertTrigger(trigger)
+    			.description("No message received from the device for a long time.")
     			.severity(HealthAlertSeverity.WARN)
-    			.type(HealthAlertType.SILENCE)
-    			.registrationDate(Instant.ofEpochMilli(1453320973747l))
+    			.type(AlertTrigger.AlertTriggerType.SILENCE)
+    			.registrationDate(Instant.ofEpochMilli(1453320973747L))
     			.deviceGuid(DEVICE_GUID)
     			.triggerGuid(TRIGGER_GUID)
     			.application(application)
     			.tenant(currentTenant)
     			.build();
+        healthAlert = healthAlertRepository.save(healthAlert);
 
-    	tempHealthAlert = HealthAlert.builder()
+        tempHealthAlert = HealthAlert.builder()
     			.id("67014de6-81db-11e6-a5bc-3f99b788249c")
+                .alertId("temp-silence-id")
 				.guid("7d51c242-81db-11e6-a8c2-0746f976f223")
-				.description(Description.NO_MESSAGE_RECEIVED)
+                .alertTrigger(trigger)
+				.description("No message received from the device for a long time.")
     			.severity(HealthAlertSeverity.FAIL)
-    			.type(HealthAlertType.SILENCE)
-    			.registrationDate(Instant.ofEpochMilli(1453320973747l))
+                .type(AlertTrigger.AlertTriggerType.SILENCE)
+    			.registrationDate(Instant.ofEpochMilli(1453320973747L))
     			.deviceGuid(DEVICE_GUID)
     			.triggerGuid(TRIGGER_GUID)
     			.application(application)
 				.tenant(currentTenant)
 				.build();
+        tempHealthAlert = healthAlertRepository.save(tempHealthAlert);
 
     	newHealthAlert = HealthAlert.builder()
     			.guid("7d51c242-81db-11e6-a8c2-0746f976f225")
-    			.description(Description.HEALTH_OK)
+                .alertId("newHealthAlert-id")
+                .alertTrigger(trigger)
+    			.description("Health of device is ok.")
     			.severity(HealthAlertSeverity.OK)
-    			.type(HealthAlertType.SILENCE)
-    			.registrationDate(Instant.ofEpochMilli(1453320973747l))
+    			.type(AlertTrigger.AlertTriggerType.SILENCE)
+    			.registrationDate(Instant.ofEpochMilli(1453320973747L))
     			.deviceGuid(DEVICE_GUID)
     			.triggerGuid(TRIGGER_GUID)
 				.application(application)
 				.tenant(currentTenant)
 				.build();
 
-    	SilenceTrigger trigger = new SilenceTrigger();
-    	trigger.setGuid(TRIGGER_GUID);
-    	trigger.setApplication(application);
-    	trigger.setTenant(currentTenant);
-    	trigger.setMinutes(1);
-    	trigger.setType(HealthAlertType.SILENCE);
-    	trigger = alertTriggerRepository.save(trigger);
-
     }
 
     @Test
-    public void shouldReturnErrorIfSavingHealthAlertTenantIsNull() throws Exception {
+    public void shouldReturnErrorIfSavingHealthAlertTenantIsNull() {
         ServiceResponse<HealthAlert> serviceResponse = healthAlertService.register(null, application, healthAlert);
 
         assertThat(serviceResponse, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
@@ -160,7 +167,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = "/fixtures/tenants.json")
-    public void shouldReturnErrorIfSavingHealthAlertTenantNotExists() throws Exception {
+    public void shouldReturnErrorIfSavingHealthAlertTenantNotExists() {
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.register(otherTenant, application, healthAlert);
 
     	assertThat(serviceResponse, hasErrorMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()));
@@ -168,7 +175,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = "/fixtures/tenants.json")
-    public void shouldReturnErrorIfSavingHealthAlertAppIsNull() throws Exception {
+    public void shouldReturnErrorIfSavingHealthAlertAppIsNull() {
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.register(currentTenant, null, healthAlert);
 
     	assertThat(serviceResponse, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
@@ -176,7 +183,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
-    public void shouldReturnErrorIfSavingHealthAlertAppNotExists() throws Exception {
+    public void shouldReturnErrorIfSavingHealthAlertAppNotExists() {
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.register(currentTenant, otherApplication, healthAlert);
 
     	assertThat(serviceResponse, hasErrorMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode()));
@@ -184,7 +191,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
-    public void shouldReturnErrorIfSavingHealthAlertIsNull() throws Exception {
+    public void shouldReturnErrorIfSavingHealthAlertIsNull() {
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.register(currentTenant, application, null);
 
     	assertThat(serviceResponse, hasErrorMessage(Validations.HEALTH_ALERT_NULL.getCode()));
@@ -192,7 +199,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
-    public void shouldReturnErrorIfSavingHealthAlertDeviceGuidNullOrEmpty() throws Exception {
+    public void shouldReturnErrorIfSavingHealthAlertDeviceGuidNullOrEmpty() {
     	healthAlert.setDeviceGuid(null);
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.register(currentTenant, application, healthAlert);
     	assertThat(serviceResponse, hasErrorMessage(DeviceRegisterService.Validations.DEVICE_GUID_NULL.getCode()));
@@ -204,7 +211,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json"})
-    public void shouldReturnErrorIfSavingHealthAlertDeviceNotExists() throws Exception {
+    public void shouldReturnErrorIfSavingHealthAlertDeviceNotExists() {
     	healthAlert.setDeviceGuid("7d51c242-81db-11e6-a8c2-0746f010e911");
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.register(currentTenant, application, healthAlert);
     	assertThat(serviceResponse, hasErrorMessage(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode()));
@@ -212,7 +219,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json"})
-    public void shouldReturnErrorIfSavingHealthAlertTriggerGuidNullOrEmpty() throws Exception {
+    public void shouldReturnErrorIfSavingHealthAlertTriggerGuidNullOrEmpty() {
     	healthAlert.setTriggerGuid(null);
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.register(currentTenant, application, healthAlert);
     	assertThat(serviceResponse, hasErrorMessage(Validations.HEALTH_ALERT_TRIGGER_GUID_NULL.getCode()));
@@ -224,7 +231,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json"})
-    public void shouldReturnErrorIfSavingHealthAlertTriggerNotExists() throws Exception {
+    public void shouldReturnErrorIfSavingHealthAlertTriggerNotExists() {
     	healthAlert.setTriggerGuid("7d51c242-81db-11e6-a8c2-0746f010e911");
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.register(currentTenant, application, healthAlert);
     	assertThat(serviceResponse, hasErrorMessage(Validations.HEALTH_ALERT_TRIGGER_NOT_EXIST.getCode()));
@@ -232,14 +239,16 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json", "/fixtures/health-alert.json"})
-    public void shouldSaveHealthAlert() throws Exception {
+    public void shouldSaveHealthAlert() {
         ServiceResponse<HealthAlert> response = healthAlertService.register(currentTenant, application, newHealthAlert);
 
         assertThat(response, isResponseOk());
     }
 
+    /****************** update ******************/
+
     @Test
-    public void shouldReturnErrorIfUpdatingHealthAlertTenantIsNull() throws Exception {
+    public void shouldReturnErrorIfUpdatingHealthAlertTenantIsNull() {
         ServiceResponse<HealthAlert> serviceResponse = healthAlertService.update(
         		null,
         		application,
@@ -251,7 +260,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = "/fixtures/tenants.json")
-    public void shouldReturnErrorIfUpdatingHealthAlertTenantNotExists() throws Exception {
+    public void shouldReturnErrorIfUpdatingHealthAlertTenantNotExists() {
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.update(
     			otherTenant,
     			application,
@@ -263,7 +272,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = "/fixtures/tenants.json")
-    public void shouldReturnErrorIfUpdatingHealthAlertAppIsNull() throws Exception {
+    public void shouldReturnErrorIfUpdatingHealthAlertAppIsNull() {
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.update(
     			currentTenant,
     			null,
@@ -275,7 +284,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
-    public void shouldReturnErrorIfUpdatingHealthAlertAppNotExists() throws Exception {
+    public void shouldReturnErrorIfUpdatingHealthAlertAppNotExists() {
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.update(
     			currentTenant,
     			otherApplication,
@@ -287,7 +296,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
-    public void shouldReturnErrorIfUpdatingHealthAlertIsNull() throws Exception {
+    public void shouldReturnErrorIfUpdatingHealthAlertIsNull() {
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.update(
     			currentTenant,
     			application,
@@ -299,7 +308,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
-    public void shouldReturnErrorIfUpdatingHealthAlertDeviceGuidNullOrEmpty() throws Exception {
+    public void shouldReturnErrorIfUpdatingHealthAlertDeviceGuidNullOrEmpty() {
     	healthAlert.setDeviceGuid(null);
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.update(
     			currentTenant,
@@ -319,7 +328,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json"})
-    public void shouldReturnErrorIfUpdatingHealthAlertDeviceNotExists() throws Exception {
+    public void shouldReturnErrorIfUpdatingHealthAlertDeviceNotExists() {
     	healthAlert.setDeviceGuid("7d51c242-81db-11e6-a8c2-0746f010e911");
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.update(
     			currentTenant,
@@ -332,7 +341,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json", "/fixtures/health-alert.json"})
-    public void shouldReturnErrorIfUpdatingHealthAlertNotExists() throws Exception {
+    public void shouldReturnErrorIfUpdatingHealthAlertNotExists() {
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.update(
     			currentTenant,
     			application,
@@ -344,8 +353,22 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json", "/fixtures/health-alert.json"})
-    public void shouldUpdateHealthAlert() throws Exception {
-    	tempHealthAlert.setDescription(Description.HEALTH_OK);
+    public void shouldTryUpdateHealthAlertWithNullSeverity() {
+        tempHealthAlert.setSeverity(null);
+
+        ServiceResponse<HealthAlert> serviceResponse = healthAlertService.update(
+                application.getTenant(),
+                application,
+                tempHealthAlert.getGuid(),
+                tempHealthAlert);
+
+        assertThat(serviceResponse, hasErrorMessage(HealthAlert.Validations.SEVERITY_NULL.getCode()));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json", "/fixtures/health-alert.json"})
+    public void shouldUpdateHealthAlert() {
+    	tempHealthAlert.setDescription("Health of device is ok.");
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.update(
     			application.getTenant(),
     			application,
@@ -356,8 +379,10 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
         assertThat(serviceResponse.getResult().getDescription(), equalTo(tempHealthAlert.getDescription()));
     }
 
+    /****************** remove ******************/
+
     @Test
-    public void shouldReturnErrorIfRemovingHealthAlertTenantIsNull() throws Exception {
+    public void shouldReturnErrorIfRemovingHealthAlertTenantIsNull() {
         ServiceResponse<HealthAlert> serviceResponse = healthAlertService.remove(
         		null,
         		application,
@@ -370,7 +395,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = "/fixtures/tenants.json")
-    public void shouldReturnErrorIfRemovingHealthAlertAppIsNull() throws Exception {
+    public void shouldReturnErrorIfRemovingHealthAlertAppIsNull() {
         ServiceResponse<HealthAlert> serviceResponse = healthAlertService.remove(
         		currentTenant,
         		null,
@@ -382,7 +407,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = "/fixtures/tenants.json")
-    public void shouldReturnErrorIfRemovingHealthAlertGuidNull() throws Exception {
+    public void shouldReturnErrorIfRemovingHealthAlertGuidNull() {
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.remove(
     			currentTenant,
     			application,
@@ -394,7 +419,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json"})
-    public void shouldReturnErrorIfRemovingHealthAlertNotExists() throws Exception {
+    public void shouldReturnErrorIfRemovingHealthAlertNotExists() {
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.remove(
     	        currentTenant,
     	        application,
@@ -407,7 +432,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json", "/fixtures/devices.json"})
-    public void shouldRemoveHealthAlert() throws Exception {
+    public void shouldRemoveHealthAlert() {
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.remove(
     			currentTenant,
     			application,
@@ -421,7 +446,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json"})
-    public void shouldReturnAllHealthAlert() throws Exception {
+    public void shouldReturnAllHealthAlert() {
     	ServiceResponse<List<HealthAlert>> response = healthAlertService.findAllByTenantAndApplication(currentTenant, application);
 
     	assertThat(response, isResponseOk());
@@ -431,7 +456,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json"})
-    public void shouldReturnErrorFindAllHealthAlertByTenantNullAppDeviceGuid() throws Exception {
+    public void shouldReturnErrorFindAllHealthAlertByTenantNullAppDeviceGuid() {
     	ServiceResponse<List<HealthAlert>> response = healthAlertService.findAllByTenantApplicationAndDeviceGuid(
     			null,
     			application,
@@ -442,7 +467,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json"})
-    public void shouldReturnErrorFindAllHealthAlertByTenantAppNullDeviceGuid() throws Exception {
+    public void shouldReturnErrorFindAllHealthAlertByTenantAppNullDeviceGuid() {
     	ServiceResponse<List<HealthAlert>> response = healthAlertService.findAllByTenantApplicationAndDeviceGuid(
     			currentTenant,
     			null,
@@ -453,7 +478,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json"})
-    public void shouldReturnErrorFindAllHealthAlertByTenantAppDeviceGuidNull() throws Exception {
+    public void shouldReturnErrorFindAllHealthAlertByTenantAppDeviceGuidNull() {
     	ServiceResponse<List<HealthAlert>> response = healthAlertService.findAllByTenantApplicationAndDeviceGuid(
     			currentTenant,
     			application,
@@ -464,7 +489,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json", "/fixtures/devices.json"})
-    public void shouldReturnHealthNotExistFindAllHealthAlertByTenantAppDeviceGuid() throws Exception {
+    public void shouldReturnHealthNotExistFindAllHealthAlertByTenantAppDeviceGuid() {
     	ServiceResponse<List<HealthAlert>> response = healthAlertService.findAllByTenantApplicationAndDeviceGuid(
     			currentTenant,
     			application,
@@ -475,7 +500,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json"})
-    public void shouldReturnHealthNotExistGuidFindAllHealthAlertByTenantAppDeviceGuid() throws Exception {
+    public void shouldReturnHealthNotExistGuidFindAllHealthAlertByTenantAppDeviceGuid() {
         ServiceResponse<List<HealthAlert>> response = healthAlertService.findAllByTenantApplicationAndDeviceGuid(
                 currentTenant,
                 application,
@@ -486,7 +511,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json", "/fixtures/devices.json"})
-    public void shouldFindAllHealthAlertByTenantAppDeviceGuid() throws Exception {
+    public void shouldFindAllHealthAlertByTenantAppDeviceGuid() {
     	ServiceResponse<List<HealthAlert>> response = healthAlertService.findAllByTenantApplicationAndDeviceGuid(
     			currentTenant,
     			application,
@@ -498,7 +523,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json"})
-    public void shouldReturnErrorGetHealthAlertByGuidTenantNull() throws Exception {
+    public void shouldReturnErrorGetHealthAlertByGuidTenantNull() {
     	ServiceResponse<HealthAlert> response = healthAlertService.getByTenantApplicationAndHealthAlertGuid(
     			null,
     			application,
@@ -509,7 +534,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json"})
-    public void shouldReturnErrorGetHealthAlertByGuidAppNull() throws Exception {
+    public void shouldReturnErrorGetHealthAlertByGuidAppNull() {
     	ServiceResponse<HealthAlert> response = healthAlertService.getByTenantApplicationAndHealthAlertGuid(
     			currentTenant,
     			null,
@@ -520,7 +545,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
-    public void shouldReturnErrorGetHealthAlertByGuidNull() throws Exception {
+    public void shouldReturnErrorGetHealthAlertByGuidNull() {
     	ServiceResponse<HealthAlert> response = healthAlertService.getByTenantApplicationAndHealthAlertGuid(
     			currentTenant,
     			application,
@@ -531,7 +556,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
-    public void shouldReturnErrorGetHealthAlertByGuidTenantNotExists() throws Exception {
+    public void shouldReturnErrorGetHealthAlertByGuidTenantNotExists() {
     	ServiceResponse<HealthAlert> response = healthAlertService.getByTenantApplicationAndHealthAlertGuid(
     			otherTenant,
     			application,
@@ -542,7 +567,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
-    public void shouldReturnErrorGetHealthAlertByGuidAppNotExists() throws Exception {
+    public void shouldReturnErrorGetHealthAlertByGuidAppNotExists() {
     	ServiceResponse<HealthAlert> response = healthAlertService.getByTenantApplicationAndHealthAlertGuid(
     			currentTenant,
     			otherApplication,
@@ -553,7 +578,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json"})
-    public void shouldReturnErrorGetHealthAlertByGuidHealthAlertNotExists() throws Exception {
+    public void shouldReturnErrorGetHealthAlertByGuidHealthAlertNotExists() {
     	ServiceResponse<HealthAlert> response = healthAlertService.getByTenantApplicationAndHealthAlertGuid(
     			currentTenant,
     			application,
@@ -564,7 +589,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json"})
-    public void shouldGetHealthAlertByGuid() throws Exception {
+    public void shouldGetHealthAlertByGuid() {
     	ServiceResponse<HealthAlert> response = healthAlertService.getByTenantApplicationAndHealthAlertGuid(
     			currentTenant,
     			application,
@@ -577,7 +602,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     ////////////////// removeAlertsFromTrigger //////////////////
 
     @Test
-    public void shouldReturnErrorIfRemovingHealthAlertByTriggerGuidTenantIsNull() throws Exception {
+    public void shouldReturnErrorIfRemovingHealthAlertByTriggerGuidTenantIsNull() {
         ServiceResponse<List<HealthAlert>> serviceResponse = healthAlertService.removeAlertsFromTrigger(
                 null,
                 application,
@@ -588,7 +613,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = "/fixtures/tenants.json")
-    public void shouldReturnErrorIfRemovingHealthAlertByTriggerGuidAppIsNull() throws Exception {
+    public void shouldReturnErrorIfRemovingHealthAlertByTriggerGuidAppIsNull() {
         ServiceResponse<List<HealthAlert>> serviceResponse = healthAlertService.removeAlertsFromTrigger(
                 currentTenant,
                 null,
@@ -599,7 +624,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = "/fixtures/tenants.json")
-    public void shouldReturnErrorIfRemovingHealthAlertByTriggerGuidGuidNull() throws Exception {
+    public void shouldReturnErrorIfRemovingHealthAlertByTriggerGuidGuidNull() {
         ServiceResponse<List<HealthAlert>> serviceResponse = healthAlertService.removeAlertsFromTrigger(
                 currentTenant,
                 application,
@@ -610,9 +635,9 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json"})
-    public void shouldRemovingHealthAlertByTriggerGuidGuidNull() throws Exception {
+    public void shouldRemovingHealthAlertByTriggerGuidGuidNull() {
 
-        SilenceTrigger alertTrigger = new SilenceTrigger();
+        AlertTrigger alertTrigger = AlertTrigger.builder().build();
         alertTrigger.setTenant(currentTenant);
         alertTrigger.setApplication(application);
         alertTrigger.setGuid("37b8de6c-9f12-40f1-9689-4aded8867f82");
@@ -641,8 +666,8 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json"})
-    public void shouldReturnTenantNullGetLastHightSeverity() throws Exception {
-    	ServiceResponse<HealthAlert> response = healthAlertService.getLastHightSeverityByDeviceGuid(
+    public void shouldReturnTenantNullGetLastHightSeverity() {
+    	ServiceResponse<HealthAlert> response = healthAlertService.getLastHighestSeverityByDeviceGuid(
     			null,
     			application,
     			healthAlert.getDeviceGuid());
@@ -652,8 +677,8 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json"})
-    public void shouldReturnAppNullGetLastHightSeverity() throws Exception {
-    	ServiceResponse<HealthAlert> response = healthAlertService.getLastHightSeverityByDeviceGuid(
+    public void shouldReturnAppNullGetLastHightSeverity() {
+    	ServiceResponse<HealthAlert> response = healthAlertService.getLastHighestSeverityByDeviceGuid(
     			currentTenant,
     			null,
     			healthAlert.getDeviceGuid());
@@ -663,8 +688,8 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json"})
-    public void shouldReturnDeviceNullGetLastHightSeverity() throws Exception {
-    	ServiceResponse<HealthAlert> response = healthAlertService.getLastHightSeverityByDeviceGuid(
+    public void shouldReturnDeviceNullGetLastHightSeverity() {
+    	ServiceResponse<HealthAlert> response = healthAlertService.getLastHighestSeverityByDeviceGuid(
     			currentTenant,
     			application,
     			null);
@@ -674,14 +699,91 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json", "/fixtures/devices.json"})
-    public void shouldGetLastHightSeverity() throws Exception {
-    	ServiceResponse<HealthAlert> response = healthAlertService.getLastHightSeverityByDeviceGuid(
+    public void shouldGetLastHightSeverity() {
+    	ServiceResponse<HealthAlert> response = healthAlertService.getLastHighestSeverityByDeviceGuid(
     			currentTenant,
     			application,
     			healthAlert.getDeviceGuid());
 
     	assertThat(response, isResponseOk());
     	assertThat(response.getResult(), equalTo(tempHealthAlert));
+    }
+
+    /****************** findAllByTenantApplicationAndTriggerGuid ******************/
+
+	@Test
+	@UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json", "/fixtures/devices.json"})
+	public void shouldGetFindAllByTenantApplicationAndTriggerGuid() {
+		ServiceResponse<List<HealthAlert>> response = healthAlertService.findAllByTenantApplicationAndTriggerGuid(
+				currentTenant,
+				application,
+				trigger.getGuid());
+
+		assertThat(response, isResponseOk());
+        assertThat(response.getResult().size(), is(2));
+		assertThat(response.getResult().get(0), equalTo(healthAlert));
+	}
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json", "/fixtures/devices.json"})
+    public void shouldTryGetFindAllByTenantApplicationAndNullTriggerGuid() {
+        ServiceResponse<List<HealthAlert>> response = healthAlertService.findAllByTenantApplicationAndTriggerGuid(
+                currentTenant,
+                application,
+                null);
+
+        assertThat(response, hasErrorMessage(DeviceRegisterService.Validations.DEVICE_GUID_NULL.getCode()));
+    }
+
+    /****************** findByTenantApplicationTriggerAndAlertId ******************/
+
+	@Test
+	@UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json", "/fixtures/devices.json"})
+	public void shouldTryFindByTenantApplicationTriggerAndNullAlertId() {
+		ServiceResponse<HealthAlert> response = healthAlertService.findByTenantApplicationTriggerAndAlertId(
+				currentTenant,
+				application,
+                trigger,
+                null);
+
+        assertThat(response, hasErrorMessage(Validations.HEALTH_ALERT_NULL_ID.getCode()));
+	}
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json", "/fixtures/devices.json"})
+    public void shouldTryFindByTenantApplicationNullTriggerAndAlertId() {
+        ServiceResponse<HealthAlert> response = healthAlertService.findByTenantApplicationTriggerAndAlertId(
+                currentTenant,
+                application,
+                null,
+                null);
+
+        assertThat(response, hasErrorMessage(Validations.HEALTH_ALERT_NULL.getCode()));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json"})
+    public void shouldFindByTenantApplicationTriggerAndAlertId() {
+        ServiceResponse<HealthAlert> response = healthAlertService.findByTenantApplicationTriggerAndAlertId(
+                currentTenant,
+                application,
+                trigger,
+                healthAlert.getAlertId());
+
+        assertThat(response, isResponseOk());
+        assertThat(response.getResult(), equalTo(healthAlert));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json"})
+    public void shouldTryFindByTenantApplicationTriggerAndNonExistingAlertId() {
+        ServiceResponse<HealthAlert> response = healthAlertService.findByTenantApplicationTriggerAndAlertId(
+                currentTenant,
+                application,
+                trigger,
+                "non-existing-alert-id");
+
+        assertThat(response, hasErrorMessage(Validations.HEALTH_ALERT_DOES_NOT_EXIST.getCode()));
     }
 
 }

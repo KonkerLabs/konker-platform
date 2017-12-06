@@ -1,7 +1,6 @@
 package com.konkerlabs.platform.registry.business.services;
 
 import com.konkerlabs.platform.registry.business.model.*;
-import com.konkerlabs.platform.registry.business.model.HealthAlert.Description;
 import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertSeverity;
 import com.konkerlabs.platform.registry.business.model.HealthAlert.Solution;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
@@ -212,7 +211,7 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 		healthAlert.setLastChange(now);
 		HealthAlert save = healthAlertRepository.save(healthAlert);
 
-		ServiceResponse<HealthAlert> serviceResponse = getLastHightSeverityByDeviceGuid(tenant, application, healthAlert.getDeviceGuid());
+		ServiceResponse<HealthAlert> serviceResponse = getLastHighestSeverityByDeviceGuid(tenant, application, healthAlert.getDeviceGuid());
 		sendNotification(tenant, serviceResponse.getResult());
 
 		LOGGER.info("HealthAlert created. Guid: {}", save.getGuid(), tenant.toURI(), tenant.getLogLevel());
@@ -225,7 +224,7 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 
 		if (serviceResponse.isOk() && !serviceResponse.getResult().isEmpty()) {
 			serviceResponse.getResult().forEach(u -> {
-				String body = MessageFormat.format("{0} - {1}", healthAlert.getSeverity().name(), messageSource.getMessage(healthAlert.getDescription().getCode(), null, u.getLanguage().getLocale()));
+				String body = MessageFormat.format("{0} - {1}", healthAlert.getSeverity().name(), healthAlert.getDescription(), null, u.getLanguage().getLocale());
 				String severity = messageSource.getMessage(healthAlert.getSeverity().getCode(), null, u.getLanguage().getLocale());
 
 				userNotificationService.postNotification(u, UserNotification.buildFresh(u.getEmail(),
@@ -244,7 +243,8 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 
 	@Override
 	public ServiceResponse<HealthAlert> update(Tenant tenant, Application application, String healthAlertGuid, HealthAlert updatingHealthAlert) {
-		ServiceResponse<HealthAlert> response = basicValidate(tenant, application, updatingHealthAlert);
+
+        ServiceResponse<HealthAlert> response = basicValidate(tenant, application, updatingHealthAlert);
 
 		if (Optional.ofNullable(response).isPresent())
 			return response;
@@ -267,7 +267,6 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 
 		healthAlertFromDB.setDescription(updatingHealthAlert.getDescription());
 		healthAlertFromDB.setSeverity(updatingHealthAlert.getSeverity());
-		healthAlertFromDB.setType(updatingHealthAlert.getType());
 		healthAlertFromDB.setLastChange(Instant.now());
 
 		Optional<Map<String, Object[]>> validations = healthAlertFromDB.applyValidations();
@@ -285,17 +284,11 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 
 	@Override
 	public ServiceResponse<HealthAlert> remove(Tenant tenant, Application application, String healthAlertGuid, Solution solution) {
-		if (!Optional.ofNullable(tenant).isPresent()) {
-			return ServiceResponseBuilder.<HealthAlert>error()
-					.withMessage(CommonValidations.TENANT_NULL.getCode())
-					.build();
-		}
 
-		if (!Optional.ofNullable(application).isPresent()) {
-			return ServiceResponseBuilder.<HealthAlert>error()
-					.withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode())
-					.build();
-		}
+        ServiceResponse<HealthAlert> validationsResponse = validate(tenant, application);
+        if (validationsResponse != null && !validationsResponse.isOk()) {
+            return validationsResponse;
+        }
 
 		if (!Optional.ofNullable(healthAlertGuid).isPresent()) {
 			return ServiceResponseBuilder.<HealthAlert>error()
@@ -316,7 +309,7 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 		healthAlertFromDB.setSolution(solution);
 		HealthAlert updated = healthAlertRepository.save(healthAlertFromDB);
 
-		ServiceResponse<HealthAlert> serviceResponse = getLastHightSeverityByDeviceGuid(tenant, application, healthAlertFromDB.getDeviceGuid());
+		ServiceResponse<HealthAlert> serviceResponse = getLastHighestSeverityByDeviceGuid(tenant, application, healthAlertFromDB.getDeviceGuid());
 		if (serviceResponse.isOk()) {
 		    sendNotification(tenant, serviceResponse.getResult());
 		} else {
@@ -339,19 +332,36 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 	}
 
 	@Override
+	public ServiceResponse<List<HealthAlert>> findAllByTenantApplicationAndTriggerGuid(Tenant tenant, Application application, String triggerGuid) {
+
+		ServiceResponse<List<HealthAlert>> validationsResponse = validate(tenant, application);
+		if (validationsResponse != null && !validationsResponse.isOk()) {
+			return validationsResponse;
+		}
+
+		if (!Optional.ofNullable(triggerGuid).isPresent()) {
+			return ServiceResponseBuilder.<List<HealthAlert>>error()
+					.withMessage(DeviceRegisterService.Validations.DEVICE_GUID_NULL.getCode())
+					.build();
+		}
+
+		List<HealthAlert> healthAlerts = healthAlertRepository.findAllByTenantIdApplicationNameAndTriggerGuid(tenant.getId(), application.getName(), triggerGuid);
+
+		return ServiceResponseBuilder.<List<HealthAlert>>ok()
+				.withResult(healthAlerts)
+				.build();
+
+	}
+
+	@Override
 	public ServiceResponse<List<HealthAlert>> findAllByTenantApplicationAndDeviceGuid(Tenant tenant,
 			Application application,
 			String deviceGuid) {
 
-		if (!Optional.ofNullable(tenant).isPresent())
-            return ServiceResponseBuilder.<List<HealthAlert>>error()
-                    .withMessage(CommonValidations.TENANT_NULL.getCode())
-                    .build();
-
-        if (!Optional.ofNullable(application).isPresent())
-            return ServiceResponseBuilder.<List<HealthAlert>>error()
-                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode())
-                    .build();
+		ServiceResponse<List<HealthAlert>> validationsResponse = validate(tenant, application);
+		if (validationsResponse != null && !validationsResponse.isOk()) {
+			return validationsResponse;
+		}
 
         if (!Optional.ofNullable(deviceGuid).isPresent()) {
 			return ServiceResponseBuilder.<List<HealthAlert>>error()
@@ -382,16 +392,12 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 
 	@Override
 	public ServiceResponse<HealthAlert> getByTenantApplicationAndHealthAlertGuid(Tenant tenant, Application application, String healthAlertGuid) {
-		if (!Optional.ofNullable(tenant).isPresent()) {
-			return ServiceResponseBuilder.<HealthAlert>error()
-					.withMessage(CommonValidations.TENANT_NULL.getCode())
-					.build();
-		}
-		if (!Optional.ofNullable(application).isPresent()) {
-			return ServiceResponseBuilder.<HealthAlert>error()
-					.withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode())
-					.build();
-		}
+
+        ServiceResponse<HealthAlert> validationsResponse = validate(tenant, application);
+        if (validationsResponse != null && !validationsResponse.isOk()) {
+            return validationsResponse;
+        }
+
 		if (!Optional.ofNullable(healthAlertGuid).isPresent()) {
 			return ServiceResponseBuilder.<HealthAlert>error()
 					.withMessage(Validations.HEALTH_ALERT_GUID_IS_NULL.getCode())
@@ -419,20 +425,56 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 		return ServiceResponseBuilder.<HealthAlert>ok().withResult(healthAlert).build();
 	}
 
+
+	@Override
+	public ServiceResponse<HealthAlert> findByTenantApplicationTriggerAndAlertId(Tenant tenant, Application application, AlertTrigger alertTrigger, String alertId) {
+
+        ServiceResponse<HealthAlert> validationsResponse = validate(tenant, application);
+        if (validationsResponse != null && !validationsResponse.isOk()) {
+            return validationsResponse;
+        }
+
+		if (!Optional.ofNullable(alertTrigger).isPresent()) {
+			return ServiceResponseBuilder.<HealthAlert>error()
+					.withMessage(Validations.HEALTH_ALERT_NULL.getCode())
+					.build();
+		}
+		if (!Optional.ofNullable(alertId).isPresent()) {
+			return ServiceResponseBuilder.<HealthAlert>error()
+					.withMessage(Validations.HEALTH_ALERT_NULL_ID.getCode())
+					.build();
+		}
+
+		Tenant tenantFromDB = tenantRepository.findByName(tenant.getName());
+		if (!Optional.ofNullable(tenantFromDB).isPresent())
+			return ServiceResponseBuilder.<HealthAlert> error()
+					.withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();
+
+		Application appFromDB = applicationRepository.findByTenantAndName(tenantFromDB.getId(), application.getName());
+		if (!Optional.ofNullable(appFromDB).isPresent())
+			return ServiceResponseBuilder.<HealthAlert> error()
+					.withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode()).build();
+
+		HealthAlert healthAlert = healthAlertRepository
+				.findByTenantIdApplicationNameTriggerAndAlertId(tenantFromDB.getId(), appFromDB.getName(), alertTrigger.getId(), alertId);
+
+		if (!Optional.ofNullable(healthAlert).isPresent()) {
+			return ServiceResponseBuilder.<HealthAlert> error()
+					.withMessage(Validations.HEALTH_ALERT_DOES_NOT_EXIST.getCode()).build();
+		}
+
+		return ServiceResponseBuilder.<HealthAlert>ok().withResult(healthAlert).build();
+	}
+
     @Override
     public ServiceResponse<List<HealthAlert>> removeAlertsFromTrigger(Tenant tenant, Application application,
             String triggerGuid) {
 
-        if (!Optional.ofNullable(tenant).isPresent()) {
-            return ServiceResponseBuilder.<List<HealthAlert>>error()
-                    .withMessage(CommonValidations.TENANT_NULL.getCode())
-                    .build();
-        }
-        if (!Optional.ofNullable(application).isPresent()) {
-            return ServiceResponseBuilder.<List<HealthAlert>>error()
-                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode())
-                    .build();
-        }
+		ServiceResponse<List<HealthAlert>> validationsResponse = validate(tenant, application);
+		if (validationsResponse != null && !validationsResponse.isOk()) {
+			return validationsResponse;
+		}
+
         if (!Optional.ofNullable(triggerGuid).isPresent()) {
             return ServiceResponseBuilder.<List<HealthAlert>>error()
                     .withMessage(Validations.HEALTH_ALERT_GUID_IS_NULL.getCode())
@@ -447,7 +489,7 @@ public class HealthAlertServiceImpl implements HealthAlertService {
             healthAlertFromDB.setSolution(Solution.TRIGGER_DELETED);
             healthAlertRepository.save(healthAlertFromDB);
 
-            ServiceResponse<HealthAlert> serviceResponse = getLastHightSeverityByDeviceGuid(tenant, application, healthAlertFromDB.getDeviceGuid());
+            ServiceResponse<HealthAlert> serviceResponse = getLastHighestSeverityByDeviceGuid(tenant, application, healthAlertFromDB.getDeviceGuid());
             if (serviceResponse.isOk()) {
                 sendNotification(tenant, serviceResponse.getResult());
             }
@@ -461,7 +503,7 @@ public class HealthAlertServiceImpl implements HealthAlertService {
     }
 
 	@Override
-	public ServiceResponse<HealthAlert> getLastHightSeverityByDeviceGuid(Tenant tenant, Application application,
+	public ServiceResponse<HealthAlert> getLastHighestSeverityByDeviceGuid(Tenant tenant, Application application,
 			String deviceGuid) {
 
 		ServiceResponse<List<HealthAlert>> serviceResponse = findAllByTenantApplicationAndDeviceGuid(tenant, application, deviceGuid);
@@ -471,7 +513,6 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 				return ServiceResponseBuilder.<HealthAlert> ok()
 							.withResult(HealthAlert.builder()
 									.severity(HealthAlertSeverity.OK)
-									.description(Description.HEALTH_OK)
 									.deviceGuid(deviceGuid)
 									.lastChange(Instant.now())
 									.build())
@@ -489,12 +530,29 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 				Comparator
 				.comparing((HealthAlert health) -> health.getSeverity().getPrior())
 				.thenComparing(
-						Comparator.comparing(health -> health.getLastChange())
-						));
+						Comparator.comparing(HealthAlert::getLastChange)
+                ));
 
 		return ServiceResponseBuilder.<HealthAlert> ok()
 				.withResult(healths.get(0))
 				.build();
+	}
+
+
+	private <T> ServiceResponse<T> validate(Tenant tenant, Application application) {
+
+		if (!Optional.ofNullable(tenant).isPresent()) {
+			return ServiceResponseBuilder.<T>error()
+					.withMessage(CommonValidations.TENANT_NULL.getCode()).build();
+		}
+
+		if (!Optional.ofNullable(application).isPresent()) {
+			return ServiceResponseBuilder.<T>error()
+					.withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()).build();
+		}
+
+		return null;
+
 	}
 
 }

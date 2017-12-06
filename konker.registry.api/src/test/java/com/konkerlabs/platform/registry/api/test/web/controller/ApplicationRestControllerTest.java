@@ -6,11 +6,10 @@ import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
 import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
 import com.konkerlabs.platform.registry.api.web.controller.ApplicationRestController;
 import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
+import com.konkerlabs.platform.registry.business.model.AlertTrigger;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.HealthAlert;
-import com.konkerlabs.platform.registry.business.model.HealthAlert.Description;
 import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertSeverity;
-import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertType;
 import com.konkerlabs.platform.registry.business.model.HealthAlert.Solution;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.ApplicationServiceImpl;
@@ -112,10 +111,10 @@ public class ApplicationRestControllerTest extends WebLayerTestContext {
         health1 = HealthAlert.builder()
 				.guid("7d51c242-81db-11e6-a8c2-0746f976f223")
 				.severity(HealthAlertSeverity.FAIL)
-				.description(Description.NO_MESSAGE_RECEIVED)
+				.description("No message received from the device for a long time.")
 				.registrationDate(registrationDate)
 				.lastChange(Instant.ofEpochMilli(1495716970000l))
-        		.type(HealthAlertType.SILENCE)
+        		.type(AlertTrigger.AlertTriggerType.SILENCE)
         		.deviceGuid("guid1")
         		.triggerGuid("7d51c242-81db-11e6-a8c2-0746f976f666")
         		.build();
@@ -123,10 +122,10 @@ public class ApplicationRestControllerTest extends WebLayerTestContext {
 		health2 = HealthAlert.builder()
 				.guid("7d51c242-81db-11e6-a8c2-0746f976f223")
 				.severity(HealthAlertSeverity.OK)
-				.description(Description.NO_MESSAGE_RECEIVED)
+				.description("No message received from the device for a long time.")
 				.registrationDate(registrationDate)
 				.lastChange(Instant.ofEpochMilli(1495716970000l))
-        		.type(HealthAlertType.SILENCE)
+        		.type(AlertTrigger.AlertTriggerType.SILENCE)
         		.deviceGuid("guid1")
         		.triggerGuid("7d51c242-81db-11e6-a8c2-0746f976f666")
         		.build();

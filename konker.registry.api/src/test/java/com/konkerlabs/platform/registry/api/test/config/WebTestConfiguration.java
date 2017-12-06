@@ -102,11 +102,6 @@ public class WebTestConfiguration {
     }
 
     @Bean
-    public SilenceTriggerService silenceTriggerService() {
-        return Mockito.mock(SilenceTriggerService.class);
-    }
-
-    @Bean
     public AlertTriggerService alertTriggerService() {
         return Mockito.mock(AlertTriggerService.class);
     }

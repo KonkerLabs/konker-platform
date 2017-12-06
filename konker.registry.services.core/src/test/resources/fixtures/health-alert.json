@@ -13,6 +13,7 @@
         "$ref" : "applications"
       },
       "description" : "NO_MESSAGE_RECEIVED",
+      "alertId" : "silence-id",
       "severity" : "WARN",
       "type" : "SILENCE",
       "registrationDate" : 1453320973747,
@@ -33,6 +34,7 @@
         "$ref" : "applications"
       },
       "description" : "NO_MESSAGE_RECEIVED",
+      "alertId" : "silence-id",
       "severity" : "FAIL",
       "type" : "SILENCE",
       "registrationDate" : 1453320973747,

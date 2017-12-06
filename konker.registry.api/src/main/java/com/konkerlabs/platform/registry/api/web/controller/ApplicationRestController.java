@@ -50,9 +50,6 @@ public class ApplicationRestController extends AbstractRestController implements
     @Autowired
     private HealthAlertService healthAlertService;
 
-    @Autowired
-    private MessageSource messageSource;
-
     private Set<String> validationsCode = new HashSet<>();
 
     @GetMapping(path = "/")
@@ -87,7 +84,7 @@ public class ApplicationRestController extends AbstractRestController implements
             response = RestResponse.class
     )
     @PreAuthorize("hasAuthority('SHOW_APPLICATION')")
-    public ApplicationVO read(@PathVariable("applicationName") String applicationName) throws BadServiceResponseException, NotFoundResponseException {
+    public ApplicationVO read(@PathVariable("applicationName") String applicationName) throws NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
 
@@ -145,7 +142,7 @@ public class ApplicationRestController extends AbstractRestController implements
 
         Tenant tenant = user.getTenant();
 
-        Application applicationFromDB = null;
+        Application applicationFromDB;
         ServiceResponse<Application> applicationResponse = applicationService.getByApplicationName(tenant, applicationName);
 
         if (!applicationResponse.isOk()) {
@@ -207,7 +204,7 @@ public class ApplicationRestController extends AbstractRestController implements
             for (HealthAlert healthAlert: serviceResponse.getResult()) {
                 DeviceHealthAlertVO healthAlertVO = new DeviceHealthAlertVO();
                 healthAlertVO = healthAlertVO.apply(healthAlert);
-                healthAlertVO.setDescription(messageSource.getMessage(healthAlert.getDescription().getCode(), null, user.getLanguage().getLocale()));
+                healthAlertVO.setDescription(healthAlert.getDescription());
 
                 healthAlertsVO.add(healthAlertVO);
             }
@@ -238,7 +235,7 @@ public class ApplicationRestController extends AbstractRestController implements
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         for (Validations value : Validations.values()) {
             validationsCode.add(value.getCode());
         }
