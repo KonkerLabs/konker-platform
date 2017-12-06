@@ -6,14 +6,11 @@ import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException
 import com.konkerlabs.platform.registry.api.model.AlertTriggerInputVO;
 import com.konkerlabs.platform.registry.api.model.AlertTriggerVO;
 import com.konkerlabs.platform.registry.business.model.*;
-import com.konkerlabs.platform.registry.business.model.RestDestination.Validations;
 import com.konkerlabs.platform.registry.business.services.api.AlertTriggerService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -31,12 +28,32 @@ import java.util.Set;
 @Api(tags = "alert triggers")
 public class AlertTriggerRestController extends AbstractRestController implements InitializingBean {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AlertTriggerRestController.class);
-
     @Autowired
     private AlertTriggerService alertTriggerService;
 
     private Set<String> validationsCode = new HashSet<>();
+
+    public static final String SEARCH_NOTES =
+            "## Examples\n\n" +
+                    "### Silence Trigger\n\n" +
+                    "```\n" +
+                    "{\n" +
+                    "        \"name\": \"silence\",\n" +
+                    "        \"type\": \"SILENCE\",\n" +
+                    "        \"description\": \"silence trigger\",\n" +
+                    "        \"deviceModelName\": \"\",\n" +
+                    "        \"locationName\": \"\",\n" +
+                    "        \"minutes\": 200\n" +
+                    "}\n" +
+                    "```\n\n" +
+                    "### Custom Trigger\n\n" +
+                    "```\n" +
+                    "{\n" +
+                    "        \"name\": \"custom\",\n" +
+                    "        \"type\": \"CUSTOM\",\n" +
+                    "        \"description\": \"custom trigger\"\n" +
+                    "}\n" +
+                    "```\n\n" ;
 
     @GetMapping(path = "/")
     @PreAuthorize("hasAuthority('LIST_ALERT_TRIGGERS')")
@@ -48,15 +65,15 @@ public class AlertTriggerRestController extends AbstractRestController implement
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
 
-        ServiceResponse<List<AlertTrigger>> restDestinationResponse = alertTriggerService.listByTenantAndApplication(tenant, application);
+        ServiceResponse<List<AlertTrigger>> alertTriggerResponse = alertTriggerService.listByTenantAndApplication(tenant, application);
 
-        if (!restDestinationResponse.isOk()) {
-            throw new BadServiceResponseException(user, restDestinationResponse, validationsCode);
+        if (!alertTriggerResponse.isOk()) {
+            throw new BadServiceResponseException(user, alertTriggerResponse, validationsCode);
         }
 
-        List<AlertTriggerVO> alertTriggersVO = new ArrayList<>(restDestinationResponse.getResult().size());
+        List<AlertTriggerVO> alertTriggersVO = new ArrayList<>(alertTriggerResponse.getResult().size());
 
-        for (AlertTrigger alertTrigger: restDestinationResponse.getResult()) {
+        for (AlertTrigger alertTrigger: alertTriggerResponse.getResult()) {
             alertTriggersVO.add(new AlertTriggerVO(alertTrigger));
         }
 
@@ -66,7 +83,8 @@ public class AlertTriggerRestController extends AbstractRestController implement
 
     @PostMapping
     @ApiOperation(value = "Create a trigger",
-                  response = AlertTriggerVO.class)
+                  response = AlertTriggerVO.class,
+                  notes = SEARCH_NOTES)
     @PreAuthorize("hasAuthority('CREATE_ALERT_TRIGGER')")
     public AlertTriggerVO create(
         @PathVariable("application") String applicationId,
@@ -93,6 +111,30 @@ public class AlertTriggerRestController extends AbstractRestController implement
             return new AlertTriggerVO(response.getResult());
         }
 
+    }
+
+    private AlertTrigger getAlertTriggerFromForm(Tenant tenant, Application application, AlertTriggerInputVO form) throws NotFoundResponseException, BadServiceResponseException {
+
+        AlertTrigger trigger = new AlertTrigger();
+        trigger.setType(AlertTrigger.AlertTriggerType.getByName(form.getType()));
+        trigger.setTenant(tenant);
+        trigger.setApplication(application);
+        trigger.setName(form.getName());
+        trigger.setDescription(form.getDescription());
+
+        if (AlertTrigger.AlertTriggerType.SILENCE.equals(trigger.getType())) {
+            String deviceModelName = form.getDeviceModelName();
+            String locationName = form.getLocationName();
+
+            DeviceModel deviceModel = getDeviceModel(tenant, application, deviceModelName);
+            Location location = getLocation(tenant, application, locationName);
+
+            trigger.setDeviceModel(deviceModel);
+            trigger.setLocation(location);
+            trigger.setMinutes(form.getMinutes());
+        }
+
+        return trigger;
 
     }
 
@@ -101,7 +143,7 @@ public class AlertTriggerRestController extends AbstractRestController implement
     @ApiOperation(
             value = "Get trigger by name",
             response = AlertTriggerVO.class)
-    public List<AlertTriggerVO> readTrigger(
+    public AlertTriggerVO readTrigger(
             @PathVariable("application") String applicationId,
             @PathVariable("triggerName") String triggerName)
             throws BadServiceResponseException, NotFoundResponseException {
@@ -109,18 +151,12 @@ public class AlertTriggerRestController extends AbstractRestController implement
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
 
-        ServiceResponse<List<AlertTrigger>> restDestinationResponse = alertTriggerService.listByTenantAndApplication(tenant, application);
+        ServiceResponse<AlertTrigger> alertTriggerResponse = alertTriggerService.findByTenantAndApplicationAndName(tenant, application, triggerName);
 
-        if (!restDestinationResponse.isOk()) {
-            throw new BadServiceResponseException(user, restDestinationResponse, validationsCode);
+        if (!alertTriggerResponse.isOk()) {
+            throw new BadServiceResponseException(user, alertTriggerResponse, validationsCode);
         } else {
-            List<AlertTriggerVO> alertTriggersVO = new ArrayList<>(restDestinationResponse.getResult().size());
-
-            for (AlertTrigger alertTrigger: restDestinationResponse.getResult()) {
-                alertTriggersVO.add(new AlertTriggerVO(alertTrigger));
-            }
-
-            return alertTriggersVO;
+            return new AlertTriggerVO(alertTriggerResponse.getResult());
         }
 
     }
@@ -139,10 +175,10 @@ public class AlertTriggerRestController extends AbstractRestController implement
         Application application = getApplication(applicationId);
         AlertTrigger alertTrigger = getAlertTrigger(tenant, application, triggerName);
 
-        ServiceResponse<AlertTrigger> restDestinationResponse = alertTriggerService.remove(tenant, application, alertTrigger.getGuid());
+        ServiceResponse<AlertTrigger> alertTriggerResponse = alertTriggerService.remove(tenant, application, alertTrigger.getGuid());
 
-        if (!restDestinationResponse.isOk()) {
-            throw new BadServiceResponseException(user, restDestinationResponse, validationsCode);
+        if (!alertTriggerResponse.isOk()) {
+            throw new BadServiceResponseException(user, alertTriggerResponse, validationsCode);
         }
 
     }
@@ -152,7 +188,7 @@ public class AlertTriggerRestController extends AbstractRestController implement
     @ApiOperation(
             value = "Update trigger by name",
             response = AlertTriggerVO.class)
-    public void updateTrigger(
+    public AlertTriggerVO updateTrigger(
             @PathVariable("application") String applicationId,
             @PathVariable("triggerName") String triggerName,
             @ApiParam(
@@ -167,68 +203,13 @@ public class AlertTriggerRestController extends AbstractRestController implement
         AlertTrigger alertTrigger = getAlertTrigger(tenant, application, triggerName);
         AlertTrigger triggerForm = getAlertTriggerFromForm(tenant, application, form);
 
-        ServiceResponse<AlertTrigger> restDestinationResponse = alertTriggerService.update(tenant, application, alertTrigger.getGuid(), triggerForm);
+        ServiceResponse<AlertTrigger> alertTriggerResponse = alertTriggerService.update(tenant, application, alertTrigger.getGuid(), triggerForm);
 
-        if (!restDestinationResponse.isOk()) {
-            throw new BadServiceResponseException(user, restDestinationResponse, validationsCode);
+        if (!alertTriggerResponse.isOk()) {
+            throw new BadServiceResponseException(user, alertTriggerResponse, validationsCode);
+        } else {
+            return new AlertTriggerVO(alertTriggerResponse.getResult());
         }
-
-    }
-
-    private AlertTrigger getAlertTriggerFromForm(
-                Tenant tenant,
-                Application application,
-                AlertTriggerInputVO form)
-                    throws NotFoundResponseException, BadServiceResponseException, BadRequestResponseException {
-
-        AlertTrigger trigger;
-        switch (form.getType().toUpperCase()) {
-            case "SILENCE":
-                trigger = createSilenceAlertTriggerService(tenant, application, form);
-                break;
-            case "CUSTOM":
-                trigger = createCustomAlertTrigger(tenant, application, form);
-                break;
-            default:
-                throw new BadRequestResponseException("Invalid trigger type");
-        }
-
-        return trigger;
-    }
-
-    private AlertTrigger createCustomAlertTrigger(Tenant tenant, Application application, AlertTriggerInputVO form) throws BadServiceResponseException {
-
-        AlertTrigger trigger = new AlertTrigger();
-        trigger.setType(AlertTrigger.AlertTriggerType.CUSTOM);
-        trigger.setTenant(tenant);
-        trigger.setApplication(application);
-        trigger.setName(form.getName());
-        trigger.setDescription(form.getDescription());
-
-        return trigger;
-
-    }
-
-    private AlertTrigger createSilenceAlertTriggerService(Tenant tenant, Application application, AlertTriggerInputVO form) throws NotFoundResponseException, BadServiceResponseException {
-
-        String deviceModelName = form.getDeviceModelName();
-        String locationName = form.getLocationName();
-
-        DeviceModel deviceModel = getDeviceModel(tenant, application, deviceModelName);
-        Location location = getLocation(tenant, application, locationName);
-
-        AlertTrigger trigger = new AlertTrigger();
-        trigger.setType(AlertTrigger.AlertTriggerType.SILENCE);
-        trigger.setTenant(tenant);
-        trigger.setApplication(application);
-        trigger.setName(form.getName());
-        trigger.setDescription(form.getDescription());
-
-        trigger.setDeviceModel(deviceModel);
-        trigger.setLocation(location);
-        trigger.setMinutes(form.getMinutes());
-
-        return trigger;
 
     }
 
@@ -243,7 +224,10 @@ public class AlertTriggerRestController extends AbstractRestController implement
 
     @Override
     public void afterPropertiesSet(){
-        for (Validations value : Validations.values()) {
+        for (AlertTriggerService.Validations value : AlertTriggerService.Validations.values()) {
+            validationsCode.add(value.getCode());
+        }
+        for (AlertTrigger.Validations value : AlertTrigger.Validations.values()) {
             validationsCode.add(value.getCode());
         }
     }

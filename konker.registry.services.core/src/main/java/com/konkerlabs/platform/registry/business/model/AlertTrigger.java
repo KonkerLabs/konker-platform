@@ -36,7 +36,8 @@ public class AlertTrigger implements URIDealer {
     public enum Validations {
 
         NAME_INVALID("model.alert_trigger.invalid_name"),
-        INVALID_MINUTES_VALUE("model.silence_trigger.invalid_minutes_value");
+        INVALID_TYPE("model.alert_trigger.invalid_type"),
+        INVALID_MINUTES_VALUE("model.alert_trigger.invalid_minutes_value");
 
         public String getCode() {
             return code;
@@ -52,6 +53,16 @@ public class AlertTrigger implements URIDealer {
     public enum AlertTriggerType {
 
         SILENCE, CUSTOM;
+
+        public static AlertTriggerType getByName(String name) {
+            for (AlertTriggerType type: AlertTriggerType.values()) {
+                if (type.name().equalsIgnoreCase(name)) {
+                    return type;
+                }
+            }
+
+            return null;
+        }
 
     }
 
@@ -95,9 +106,12 @@ public class AlertTrigger implements URIDealer {
         Pattern regex = Pattern.compile("[a-zA-Z0-9\u00C0-\u00FF .\\-+_]{2,100}");
 
         if (StringUtils.isBlank(getName()) || !regex.matcher(getName()).matches()) {
-            validations.put(Validations.NAME_INVALID.code,null);
+            validations.put(Validations.NAME_INVALID.code, null);
         }
-
+        if (type == null) {
+            validations.put(Validations.INVALID_TYPE.code, null);
+            return validations;
+        }
         if (AlertTriggerType.SILENCE.equals(type)) {
             HealthAlertsConfig healthAlertsConfig = new HealthAlertsConfig();
             if (this.getMinutes() < healthAlertsConfig.getSilenceMinimumMinutes()) {

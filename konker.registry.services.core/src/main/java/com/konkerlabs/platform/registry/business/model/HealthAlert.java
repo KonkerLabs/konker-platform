@@ -52,8 +52,6 @@ public class HealthAlert implements URIDealer {
 	private Instant registrationDate;
 	private Instant lastChange;
 	private AlertTrigger.AlertTriggerType type;
-	private String triggerGuid;
-	private String deviceGuid;
 	private Solution solution;
 	private boolean solved;
 

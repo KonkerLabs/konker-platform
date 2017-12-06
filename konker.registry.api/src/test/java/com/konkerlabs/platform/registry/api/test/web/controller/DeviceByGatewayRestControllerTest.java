@@ -79,16 +79,6 @@ public class DeviceByGatewayRestControllerTest extends WebLayerTestContext {
 
     private Device device1;
 
-    private Device device2;
-
-    private HealthAlert health1;
-
-    private HealthAlert health2;
-
-    private List<HealthAlert> healths;
-
-    private List<Event> events;
-
     private String BASEPATH = "devices";
 
     private Instant registrationDate = Instant.ofEpochMilli(1495716970000l).minusSeconds(3600l);
@@ -109,35 +99,6 @@ public class DeviceByGatewayRestControllerTest extends WebLayerTestContext {
                 .lastModificationDate(registrationDate)
                 .tags(tags)
                 .build();
-        device2 = Device.builder().deviceId("id2").name("name2").guid("guid2").location(locationBR).application(application).active(false).build();
-
-        health1 = HealthAlert.builder()
-                .guid("7d51c242-81db-11e6-a8c2-0746f976f223")
-                .severity(HealthAlertSeverity.FAIL)
-                .description("No message received from the device for a long time.")
-                .registrationDate(registrationDate)
-                .lastChange(Instant.ofEpochMilli(1495716970000l))
-                .deviceGuid(device1.getGuid())
-                .triggerGuid("7d51c242-81db-11e6-a8c2-0746f976f666")
-                .build();
-
-        health2 = HealthAlert.builder()
-                .guid("7d51c242-81db-11e6-a8c2-0746f976f223")
-                .severity(HealthAlertSeverity.OK)
-                .description("No message received from the device for a long time.")
-                .registrationDate(registrationDate)
-                .lastChange(Instant.ofEpochMilli(1495716970000l))
-                .deviceGuid(device1.getGuid())
-                .triggerGuid("7d51c242-81db-11e6-a8c2-0746f976f666")
-                .build();
-
-        healths = Arrays.asList(health1, health2);
-
-        Event event = Event.builder()
-                .incoming(EventActor.builder().channel("out").deviceGuid(device1.getGuid()).build())
-                .creationTimestamp(registrationDate)
-                .build();
-        events = Collections.singletonList(event);
 
         when(locationSearchService.findByName(tenant, application, "br", false))
                 .thenReturn(ServiceResponseBuilder.<Location>ok().withResult(locationBR).build());

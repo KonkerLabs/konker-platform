@@ -7,7 +7,6 @@ import java.util.Set;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,7 +22,7 @@ import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseExcepti
 import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
 import com.konkerlabs.platform.registry.api.model.ApplicationInputVO;
 import com.konkerlabs.platform.registry.api.model.ApplicationVO;
-import com.konkerlabs.platform.registry.api.model.DeviceHealthAlertVO;
+import com.konkerlabs.platform.registry.api.model.HealthAlertVO;
 import com.konkerlabs.platform.registry.api.model.RestResponse;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Application.Validations;
@@ -189,7 +188,7 @@ public class ApplicationRestController extends AbstractRestController implements
             response = RestResponse.class
     )
     @PreAuthorize("hasAuthority('SHOW_APPLICATION')")
-    public List<DeviceHealthAlertVO> alerts(@PathVariable("applicationName") String applicationName) throws BadServiceResponseException, NotFoundResponseException {
+    public List<HealthAlertVO> alerts(@PathVariable("applicationName") String applicationName) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationName);
@@ -199,10 +198,10 @@ public class ApplicationRestController extends AbstractRestController implements
         if (!serviceResponse.isOk()) {
             throw new NotFoundResponseException(user, serviceResponse);
         } else {
-            List<DeviceHealthAlertVO> healthAlertsVO = new LinkedList<>();
+            List<HealthAlertVO> healthAlertsVO = new LinkedList<>();
 
             for (HealthAlert healthAlert: serviceResponse.getResult()) {
-                DeviceHealthAlertVO healthAlertVO = new DeviceHealthAlertVO();
+                HealthAlertVO healthAlertVO = new HealthAlertVO();
                 healthAlertVO = healthAlertVO.apply(healthAlert);
                 healthAlertVO.setDescription(healthAlert.getDescription());
 

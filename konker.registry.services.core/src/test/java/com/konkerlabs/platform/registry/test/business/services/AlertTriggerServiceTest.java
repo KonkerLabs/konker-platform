@@ -144,7 +144,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldListByTenantAndApplication() throws Exception {
+    public void shouldListByTenantAndApplication()  {
 
         ServiceResponse<List<AlertTrigger>> serviceResponse = alertTriggerService.listByTenantAndApplication(currentTenant, application);
         assertThat(serviceResponse.isOk(), is(true));
@@ -158,7 +158,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldTryListByTenantAndApplicationWithNullTenant() throws Exception {
+    public void shouldTryListByTenantAndApplicationWithNullTenant()  {
 
         ServiceResponse<List<AlertTrigger>> serviceResponse = alertTriggerService.listByTenantAndApplication(null, application);
         assertThat(serviceResponse, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
@@ -166,7 +166,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldTryListByTenantAndApplicationWithNullApplication() throws Exception {
+    public void shouldTryListByTenantAndApplicationWithNullApplication()  {
 
         ServiceResponse<List<AlertTrigger>> serviceResponse = alertTriggerService.listByTenantAndApplication(currentTenant, null);
         assertThat(serviceResponse, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
@@ -174,7 +174,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldFindByTenantAndApplicationAndGuid() throws Exception {
+    public void shouldFindByTenantAndApplicationAndGuid()  {
 
         ServiceResponse<AlertTrigger> serviceResponse = alertTriggerService.findByTenantAndApplicationAndGuid(currentTenant, application, triggerA.getGuid());
         assertThat(serviceResponse.isOk(), is(true));
@@ -183,7 +183,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldTryFindByTenantAndApplicationAndGuidNonExistingTrigger() throws Exception {
+    public void shouldTryFindByTenantAndApplicationAndGuidNonExistingTrigger()  {
 
         ServiceResponse<AlertTrigger> serviceResponse = alertTriggerService.findByTenantAndApplicationAndGuid(currentTenant, application, "000-000");
         assertThat(serviceResponse, hasErrorMessage(Validations.ALERT_TRIGGER_NOT_FOUND.getCode()));
@@ -193,7 +193,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     /***************************** findByTenantAndApplicationAndName *****************************/
 
     @Test
-    public void shouldTryFindByTenantAndApplicationAndNameNullApplication() throws Exception {
+    public void shouldTryFindByTenantAndApplicationAndNameNullApplication()  {
 
         AlertTrigger alertTrigger = AlertTrigger
                 .builder()
@@ -213,7 +213,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldFindByTenantAndApplicationAndName() throws Exception {
+    public void shouldFindByTenantAndApplicationAndName()  {
 
         ServiceResponse<AlertTrigger> serviceResponse = alertTriggerService.findByTenantAndApplicationAndName(
                 currentTenant,
@@ -227,7 +227,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldTryFindNonExistingByTenantAndApplicationAndName() throws Exception {
+    public void shouldTryFindNonExistingByTenantAndApplicationAndName()  {
 
         ServiceResponse<AlertTrigger> serviceResponse = alertTriggerService.findByTenantAndApplicationAndName(
                 currentTenant,
@@ -242,7 +242,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     /***************************** remove *****************************/
 
     @Test
-    public void shouldTryRemoveWithNullGuid() throws Exception {
+    public void shouldTryRemoveWithNullGuid()  {
 
         ServiceResponse<AlertTrigger> serviceResponse = alertTriggerService.remove(
                 currentTenant,
@@ -255,7 +255,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldTryRemoveWithInvalidGuid() throws Exception {
+    public void shouldTryRemoveWithInvalidGuid()  {
 
         ServiceResponse<AlertTrigger> serviceResponse = alertTriggerService.remove(
                 currentTenant,
@@ -269,7 +269,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
 
 
     @Test
-    public void shouldRemove() throws Exception {
+    public void shouldRemove()  {
 
         ServiceResponse<AlertTrigger> serviceResponse = alertTriggerService.remove(
                 currentTenant,
@@ -284,7 +284,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     /***************************** update *****************************/
 
     @Test
-    public void shouldTryUpdateWithoutTenant() throws Exception {
+    public void shouldTryUpdateWithoutTenant()  {
 
         AlertTrigger alertTrigger = AlertTrigger
                 .builder()
@@ -304,7 +304,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldTryUpdateWithNullGuid() throws Exception {
+    public void shouldTryUpdateWithNullGuid()  {
 
         AlertTrigger alertTrigger = AlertTrigger.
                 builder().
@@ -321,11 +321,31 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldTryUpdateWithInvalidGuid() throws Exception {
+    public void shouldTryUpdateWithoutType()  {
 
         AlertTrigger alertTrigger = AlertTrigger
                 .builder()
                 .name("silence")
+                .build();
+
+        ServiceResponse<AlertTrigger> serviceResponse = alertTriggerService.update(
+                currentTenant,
+                application,
+                "invalid-guid",
+                alertTrigger
+        );
+
+        assertThat(serviceResponse, hasErrorMessage(AlertTrigger.Validations.INVALID_TYPE.getCode()));
+
+    }
+
+    @Test
+    public void shouldTryUpdateWithInvalidGuid()  {
+
+        AlertTrigger alertTrigger = AlertTrigger
+                .builder()
+                .name("silence")
+                .type(AlertTrigger.AlertTriggerType.CUSTOM)
                 .build();
 
         ServiceResponse<AlertTrigger> serviceResponse = alertTriggerService.update(
@@ -340,7 +360,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldTryUpdateWithInvalidName() throws Exception {
+    public void shouldTryUpdateWithInvalidName()  {
 
         AlertTrigger alertTrigger = AlertTrigger.
                 builder().
@@ -358,7 +378,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldUpdateWithInvalidMinutes() throws Exception {
+    public void shouldUpdateWithInvalidMinutes()  {
 
         AlertTrigger alertTrigger = AlertTrigger
                 .builder()
@@ -378,13 +398,39 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldUpdate() throws Exception {
+    public void shouldUpdateCustom()  {
+
+        AlertTrigger alertTrigger = AlertTrigger
+                .builder()
+                .name("silence 42")
+                .description("forty two")
+                .type(AlertTrigger.AlertTriggerType.CUSTOM)
+                .minutes(42)
+                .build();
+
+        ServiceResponse<AlertTrigger> serviceResponse = alertTriggerService.update(
+                currentTenant,
+                application,
+                triggerA.getGuid(),
+                alertTrigger
+        );
+
+        assertThat(serviceResponse.isOk(), is(true));
+        assertThat(serviceResponse.getResult().getDescription(), is("forty two"));
+        assertThat(serviceResponse.getResult().getMinutes(), is(100));
+
+    }
+
+    @Test
+    public void shouldUpdateSilence()  {
 
         AlertTrigger alertTrigger = AlertTrigger
                 .builder()
                 .name("silence 42")
                 .description("forty two")
                 .type(AlertTrigger.AlertTriggerType.SILENCE)
+                .deviceModel(deviceModel)
+                .location(locationA)
                 .minutes(42)
                 .build();
 
@@ -404,7 +450,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     /***************************** save *****************************/
 
     @Test
-    public void shouldTrySaveWithoutTenant() throws Exception {
+    public void shouldTrySaveWithoutTenant()  {
 
         AlertTrigger alertTrigger = AlertTrigger
                 .builder()
@@ -423,7 +469,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldTrySaveSilenceWithInvalidMinutes() throws Exception {
+    public void shouldTrySaveSilenceWithInvalidMinutes()  {
 
         AlertTrigger alertTrigger = AlertTrigger
                 .builder()
@@ -442,12 +488,12 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldTrySaveWithExistingName() throws Exception {
+    public void shouldTrySaveWithExistingName()  {
 
         AlertTrigger alertTrigger = AlertTrigger
                 .builder()
                 .name(triggerA.getName())
-                .type(AlertTrigger.AlertTriggerType.SILENCE)
+                .type(AlertTrigger.AlertTriggerType.CUSTOM)
                 .minutes(200)
                 .build();
 
@@ -462,12 +508,12 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldSave() throws Exception {
+    public void shouldSaveCustom()  {
 
         AlertTrigger alertTrigger = AlertTrigger
                 .builder()
                 .name("silence")
-                .type(AlertTrigger.AlertTriggerType.SILENCE)
+                .type(AlertTrigger.AlertTriggerType.CUSTOM)
                 .minutes(200)
                 .build();
 
@@ -481,5 +527,29 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
         assertThat(serviceResponse.getResult().getGuid(), Matchers.notNullValue());
 
     }
+
+    @Test
+    public void shouldSaveSilenceTrigger()  {
+
+        AlertTrigger alertTrigger = AlertTrigger
+                .builder()
+                .name("silence")
+                .type(AlertTrigger.AlertTriggerType.SILENCE)
+                .deviceModel(deviceModel)
+                .location(locationA)
+                .minutes(200)
+                .build();
+
+        ServiceResponse<AlertTrigger> serviceResponse = alertTriggerService.save(
+                currentTenant,
+                application,
+                alertTrigger
+        );
+
+        assertThat(serviceResponse.isOk(), is(true));
+        assertThat(serviceResponse.getResult().getGuid(), Matchers.notNullValue());
+
+    }
+
 
 }

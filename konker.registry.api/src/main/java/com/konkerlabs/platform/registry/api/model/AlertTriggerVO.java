@@ -16,18 +16,16 @@ import lombok.NoArgsConstructor;
 		discriminator = "com.konkerlabs.platform.registry.api.model")
 public class AlertTriggerVO extends AlertTriggerInputVO {
 
-    @ApiModelProperty(value = "the trigger guid", example = "39a35764-5134-4003-8f1e-400959631618", position = 10)
-    private String guid;
-
     public AlertTriggerVO(AlertTrigger alertTrigger) {
 
-        this.guid = alertTrigger.getGuid();
         this.name = alertTrigger.getName();
         this.description = alertTrigger.getDescription();
-        this.type = alertTrigger.getType().name().toLowerCase();
-        this.deviceModelName  = alertTrigger.getDeviceModel().getName();
-        this.locationName = alertTrigger.getLocation().getName();
-        this.minutes = alertTrigger.getMinutes();
+        this.type = alertTrigger.getType().name();
+        if (alertTrigger.getType() == AlertTrigger.AlertTriggerType.SILENCE) {
+            this.deviceModelName = alertTrigger.getDeviceModel().getName();
+            this.locationName = alertTrigger.getLocation().getName();
+            this.minutes = alertTrigger.getMinutes();
+        }
 
     }
 

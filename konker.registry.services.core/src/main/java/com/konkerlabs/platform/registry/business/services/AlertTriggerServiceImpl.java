@@ -86,6 +86,17 @@ public class AlertTriggerServiceImpl implements AlertTriggerService {
                     .build();
         }
 
+        if (trigger.getType() == AlertTrigger.AlertTriggerType.SILENCE) {
+            if (trigger.getDeviceModel() == null) {
+                return ServiceResponseBuilder.<AlertTrigger>error()
+                        .withMessage(Validations.ALERT_TRIGGER_INVALID_DEVICE_MODEL.getCode()).build();
+            }
+            if (trigger.getLocation() == null) {
+                return ServiceResponseBuilder.<AlertTrigger>error()
+                        .withMessage(Validations.ALERT_TRIGGER_INVALID_LOCATION.getCode()).build();
+            }
+        }
+
         AlertTrigger existing = alertTriggerRepository.findByTenantIdAndApplicationNameAndName(
                 tenant.getId(), application.getName(), trigger.getName());
         if (existing != null) {
@@ -126,7 +137,7 @@ public class AlertTriggerServiceImpl implements AlertTriggerService {
                     .withMessage(Validations.ALERT_TRIGGER_NOT_FOUND.getCode()).build();
         }
 
-        healthAlertService.removeAlertsFromTrigger(tenant, application, guid);
+        healthAlertService.removeAlertsFromTrigger(tenant, application, fromDb);
         alertTriggerRepository.delete(fromDb);
 
         return ServiceResponseBuilder.<AlertTrigger>ok().withResult(fromDb).build();
@@ -175,7 +186,20 @@ public class AlertTriggerServiceImpl implements AlertTriggerService {
         }
 
         fromDb.setDescription(trigger.getDescription());
-        fromDb.setMinutes(trigger.getMinutes());
+
+        if (trigger.getType() == AlertTrigger.AlertTriggerType.SILENCE) {
+            if (trigger.getDeviceModel() == null) {
+                return ServiceResponseBuilder.<AlertTrigger>error()
+                        .withMessage(Validations.ALERT_TRIGGER_INVALID_DEVICE_MODEL.getCode()).build();
+            }
+            if (trigger.getLocation() == null) {
+                return ServiceResponseBuilder.<AlertTrigger>error()
+                        .withMessage(Validations.ALERT_TRIGGER_INVALID_LOCATION.getCode()).build();
+            }
+            fromDb.setDeviceModel(trigger.getDeviceModel());
+            fromDb.setLocation(trigger.getLocation());
+            fromDb.setMinutes(trigger.getMinutes());
+        }
 
         AlertTrigger saved = alertTriggerRepository.save(fromDb);
 

@@ -2,7 +2,7 @@ package com.konkerlabs.platform.registry.api.web.controller;
 
 import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
 import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
-import com.konkerlabs.platform.registry.api.model.DeviceHealthAlertVO;
+import com.konkerlabs.platform.registry.api.model.HealthAlertVO;
 import com.konkerlabs.platform.registry.api.model.DeviceHealthVO;
 import com.konkerlabs.platform.registry.api.model.DeviceStatsVO;
 import com.konkerlabs.platform.registry.api.model.RestResponse;
@@ -15,7 +15,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -79,7 +78,7 @@ public class DeviceStatusRestController extends AbstractRestController implement
             response = RestResponse.class
     )
     @PreAuthorize("hasAuthority('SHOW_DEVICE')")
-    public List<DeviceHealthAlertVO> alerts(
+    public List<HealthAlertVO> alerts(
             @PathVariable("application") String applicationId,
             @PathVariable("deviceGuid") String deviceGuid) throws BadServiceResponseException, NotFoundResponseException {
 
@@ -92,10 +91,10 @@ public class DeviceStatusRestController extends AbstractRestController implement
                 deviceGuid);
 
         if (deviceResponse.isOk()) {
-            List<DeviceHealthAlertVO> healthAlertsVO = new LinkedList<>();
+            List<HealthAlertVO> healthAlertsVO = new LinkedList<>();
 
             for (HealthAlert healthAlert: deviceResponse.getResult()) {
-                DeviceHealthAlertVO healthAlertVO = new DeviceHealthAlertVO();
+                HealthAlertVO healthAlertVO = new HealthAlertVO();
                 healthAlertVO = healthAlertVO.apply(healthAlert);
                 healthAlertVO.setDescription(healthAlert.getDescription());
 

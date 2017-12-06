@@ -49,6 +49,23 @@ public class HealthAlertServiceImpl implements HealthAlertService {
     private MessageSource messageSource;
 
     private ServiceResponse<HealthAlert> basicValidate(Tenant tenant, Application application, HealthAlert healthAlert) {
+        if (healthAlert == null) {
+            HealthAlert alert = HealthAlert.builder()
+                    .guid("NULL")
+                    .tenant(Tenant.builder().domainName("unknow_domain").build())
+                    .build();
+
+            if(LOGGER.isDebugEnabled()){
+                LOGGER.debug(Validations.HEALTH_ALERT_NULL.getCode(),
+                        alert.toURI(),
+                        alert.getTenant().getLogLevel());
+            }
+
+            return ServiceResponseBuilder.<HealthAlert>error()
+                    .withMessage(Validations.HEALTH_ALERT_NULL.getCode())
+                    .build();
+        }
+
 		if (!Optional.ofNullable(tenant).isPresent()) {
 			HealthAlert alert = HealthAlert.builder()
 					.guid("NULL")
@@ -67,7 +84,7 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 		}
 
 		if (!tenantRepository.exists(tenant.getId())) {
-			LOGGER.debug("HealthAlert cannot exists",
+			LOGGER.debug("HealthAlert do not exists",
 					HealthAlert.builder()
 					.guid("NULL")
 					.tenant(tenant)
@@ -76,6 +93,8 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 			return ServiceResponseBuilder.<HealthAlert>error()
 					.withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode())
 					.build();
+		} else {
+			healthAlert.setTenant(tenant);
 		}
 
 		if (!Optional.ofNullable(application).isPresent()) {
@@ -92,7 +111,7 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 			return ServiceResponseBuilder.<HealthAlert>error()
 					.withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode())
 					.build();
-		}
+        }
 
 		if (!applicationRepository.exists(application.getName())) {
 			HealthAlert alert = HealthAlert.builder()
@@ -108,6 +127,8 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 			return ServiceResponseBuilder.<HealthAlert>error()
 					.withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode())
 					.build();
+		} else {
+			healthAlert.setApplication(application);
 		}
 
 		if (!Optional.ofNullable(healthAlert).isPresent()) {
@@ -126,8 +147,21 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 					.build();
 		}
 
-		if (!Optional.ofNullable(healthAlert.getDeviceGuid()).isPresent()
-				|| healthAlert.getDeviceGuid().isEmpty()) {
+        if (healthAlert.getDevice() == null) {
+            if(LOGGER.isDebugEnabled()){
+                healthAlert.setGuid("NULL");
+                LOGGER.debug(DeviceEventService.Validations.DEVICE_NULL.getCode(),
+                        healthAlert.toURI(),
+                        healthAlert.getTenant().getLogLevel());
+            }
+
+            return ServiceResponseBuilder.<HealthAlert>error()
+                    .withMessage(DeviceEventService.Validations.DEVICE_NULL.getCode())
+                    .build();
+        }
+
+        if (!Optional.ofNullable(healthAlert.getDevice().getGuid()).isPresent()
+				|| healthAlert.getDevice().getGuid().isEmpty()) {
 			if(LOGGER.isDebugEnabled()){
 				healthAlert.setGuid("NULL");
 				LOGGER.debug(DeviceRegisterService.Validations.DEVICE_GUID_NULL.getCode(),
@@ -140,7 +174,7 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 					.build();
 		}
 
-		Device device = deviceRepository.findByTenantAndApplicationAndGuid(tenant.getId(), application.getName(), healthAlert.getDeviceGuid());
+		Device device = deviceRepository.findByTenantAndApplicationAndGuid(tenant.getId(), application.getName(), healthAlert.getDevice().getGuid());
 		if (!Optional.ofNullable(device).isPresent()) {
 			if(LOGGER.isDebugEnabled()){
 				LOGGER.debug(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode(),
@@ -153,8 +187,21 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 					.build();
 		}
 
-		if (!Optional.ofNullable(healthAlert.getTriggerGuid()).isPresent()
-				|| healthAlert.getTriggerGuid().isEmpty()) {
+        if (healthAlert.getAlertTrigger() == null) {
+            if(LOGGER.isDebugEnabled()){
+                healthAlert.setGuid("NULL");
+                LOGGER.debug(Validations.HEALTH_ALERT_TRIGGER_NULL.getCode(),
+                        healthAlert.toURI(),
+                        healthAlert.getTenant().getLogLevel());
+            }
+
+            return ServiceResponseBuilder.<HealthAlert>error()
+                    .withMessage(Validations.HEALTH_ALERT_TRIGGER_NULL.getCode())
+                    .build();
+        }
+
+		if (!Optional.ofNullable(healthAlert.getAlertTrigger().getGuid()).isPresent()
+				|| healthAlert.getAlertTrigger().getGuid().isEmpty()) {
 			if(LOGGER.isDebugEnabled()){
 				healthAlert.setGuid("NULL");
 				LOGGER.debug(Validations.HEALTH_ALERT_TRIGGER_GUID_NULL.getCode(),
@@ -167,7 +214,7 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 					.build();
 		}
 
-		AlertTrigger trigger = alertTriggerRepository.findByTenantIdAndApplicationNameAndGuid(tenant.getId(), application.getName(), healthAlert.getTriggerGuid());
+		AlertTrigger trigger = alertTriggerRepository.findByTenantIdAndApplicationNameAndGuid(tenant.getId(), application.getName(), healthAlert.getAlertTrigger().getGuid());
 		if (!Optional.ofNullable(trigger).isPresent()) {
 			if(LOGGER.isDebugEnabled()){
 				LOGGER.debug(Validations.HEALTH_ALERT_TRIGGER_NOT_EXIST.getCode(),
@@ -187,7 +234,6 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 	@Override
 	public ServiceResponse<HealthAlert> register(Tenant tenant, Application application, HealthAlert healthAlert) {
 		ServiceResponse<HealthAlert> response = basicValidate(tenant, application, healthAlert);
-
 		if (Optional.ofNullable(response).isPresent())
 			return response;
 
@@ -211,7 +257,7 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 		healthAlert.setLastChange(now);
 		HealthAlert save = healthAlertRepository.save(healthAlert);
 
-		ServiceResponse<HealthAlert> serviceResponse = getLastHighestSeverityByDeviceGuid(tenant, application, healthAlert.getDeviceGuid());
+		ServiceResponse<HealthAlert> serviceResponse = getLastHighestSeverityByDeviceGuid(tenant, application, healthAlert.getDevice().getGuid());
 		sendNotification(tenant, serviceResponse.getResult());
 
 		LOGGER.info("HealthAlert created. Guid: {}", save.getGuid(), tenant.toURI(), tenant.getLogLevel());
@@ -220,7 +266,6 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 
 	private void sendNotification(Tenant tenant, HealthAlert healthAlert) {
 		ServiceResponse<List<User>> serviceResponse = userService.findAll(tenant);
-		Device device = deviceRepository.findByTenantAndGuid(tenant.getId(), healthAlert.getDeviceGuid());
 
 		if (serviceResponse.isOk() && !serviceResponse.getResult().isEmpty()) {
 			serviceResponse.getResult().forEach(u -> {
@@ -229,7 +274,7 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 
 				userNotificationService.postNotification(u, UserNotification.buildFresh(u.getEmail(),
 						messageSource.getMessage("controller.healthalert.email.subject",
-						        new Object[] {device.getDeviceId(), severity},
+						        new Object[] {healthAlert.getDevice().getDeviceId(), severity},
 						        u.getLanguage().getLocale()),
 						u.getLanguage().getLanguage(),
 						"text/plain",
@@ -309,7 +354,7 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 		healthAlertFromDB.setSolution(solution);
 		HealthAlert updated = healthAlertRepository.save(healthAlertFromDB);
 
-		ServiceResponse<HealthAlert> serviceResponse = getLastHighestSeverityByDeviceGuid(tenant, application, healthAlertFromDB.getDeviceGuid());
+		ServiceResponse<HealthAlert> serviceResponse = getLastHighestSeverityByDeviceGuid(tenant, application, healthAlertFromDB.getDevice().getGuid());
 		if (serviceResponse.isOk()) {
 		    sendNotification(tenant, serviceResponse.getResult());
 		} else {
@@ -332,20 +377,20 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 	}
 
 	@Override
-	public ServiceResponse<List<HealthAlert>> findAllByTenantApplicationAndTriggerGuid(Tenant tenant, Application application, String triggerGuid) {
+	public ServiceResponse<List<HealthAlert>> findAllByTenantApplicationAndTrigger(Tenant tenant, Application application, AlertTrigger alertTrigger) {
 
 		ServiceResponse<List<HealthAlert>> validationsResponse = validate(tenant, application);
 		if (validationsResponse != null && !validationsResponse.isOk()) {
 			return validationsResponse;
 		}
 
-		if (!Optional.ofNullable(triggerGuid).isPresent()) {
+		if (!Optional.ofNullable(alertTrigger).isPresent()) {
 			return ServiceResponseBuilder.<List<HealthAlert>>error()
-					.withMessage(DeviceRegisterService.Validations.DEVICE_GUID_NULL.getCode())
+					.withMessage(Validations.HEALTH_ALERT_TRIGGER_NULL.getCode())
 					.build();
 		}
 
-		List<HealthAlert> healthAlerts = healthAlertRepository.findAllByTenantIdApplicationNameAndTriggerGuid(tenant.getId(), application.getName(), triggerGuid);
+		List<HealthAlert> healthAlerts = healthAlertRepository.findAllByTenantIdApplicationNameAndTriggerId(tenant.getId(), application.getName(), alertTrigger.getId());
 
 		return ServiceResponseBuilder.<List<HealthAlert>>ok()
 				.withResult(healthAlerts)
@@ -377,7 +422,7 @@ public class HealthAlertServiceImpl implements HealthAlertService {
         }
 
         List<HealthAlert> healthAlerts = healthAlertRepository
-        		.findAllByTenantIdApplicationNameAndDeviceGuid(tenant.getId(), application.getName(), deviceGuid);
+        		.findAllByTenantIdApplicationNameAndDeviceId(tenant.getId(), application.getName(), device.getId());
 
         if (healthAlerts.isEmpty()) {
         	return ServiceResponseBuilder.<List<HealthAlert>>error()
@@ -468,20 +513,20 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 
     @Override
     public ServiceResponse<List<HealthAlert>> removeAlertsFromTrigger(Tenant tenant, Application application,
-            String triggerGuid) {
+            AlertTrigger alertTrigger) {
 
 		ServiceResponse<List<HealthAlert>> validationsResponse = validate(tenant, application);
 		if (validationsResponse != null && !validationsResponse.isOk()) {
 			return validationsResponse;
 		}
 
-        if (!Optional.ofNullable(triggerGuid).isPresent()) {
+        if (!Optional.ofNullable(alertTrigger).isPresent()) {
             return ServiceResponseBuilder.<List<HealthAlert>>error()
-                    .withMessage(Validations.HEALTH_ALERT_GUID_IS_NULL.getCode())
+                    .withMessage(Validations.HEALTH_ALERT_TRIGGER_NULL.getCode())
                     .build();
         }
 
-        List<HealthAlert> alerts = healthAlertRepository.findAllByTenantIdApplicationNameAndTriggerGuid(tenant.getId(), application.getName(), triggerGuid);
+        List<HealthAlert> alerts = healthAlertRepository.findAllByTenantIdApplicationNameAndTriggerId(tenant.getId(), application.getName(), alertTrigger.getId());
 
         for (HealthAlert healthAlertFromDB : alerts) {
             healthAlertFromDB.setSolved(true);
@@ -489,7 +534,7 @@ public class HealthAlertServiceImpl implements HealthAlertService {
             healthAlertFromDB.setSolution(Solution.TRIGGER_DELETED);
             healthAlertRepository.save(healthAlertFromDB);
 
-            ServiceResponse<HealthAlert> serviceResponse = getLastHighestSeverityByDeviceGuid(tenant, application, healthAlertFromDB.getDeviceGuid());
+            ServiceResponse<HealthAlert> serviceResponse = getLastHighestSeverityByDeviceGuid(tenant, application, healthAlertFromDB.getDevice().getGuid());
             if (serviceResponse.isOk()) {
                 sendNotification(tenant, serviceResponse.getResult());
             }
@@ -513,7 +558,6 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 				return ServiceResponseBuilder.<HealthAlert> ok()
 							.withResult(HealthAlert.builder()
 									.severity(HealthAlertSeverity.OK)
-									.deviceGuid(deviceGuid)
 									.lastChange(Instant.now())
 									.build())
 							.build();

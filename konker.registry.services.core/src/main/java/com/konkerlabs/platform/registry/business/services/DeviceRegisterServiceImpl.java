@@ -727,7 +727,12 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         }
 
         Device device = deviceRepository.findAllByTenantIdApplicationNameDeviceId(tenant.getId(), application.getName(), deviceId);
-        return ServiceResponseBuilder.<Device>ok().withResult(device).build();
+        if (device == null) {
+            return ServiceResponseBuilder.<Device>error()
+                    .withMessage(Validations.DEVICE_ID_DOES_NOT_EXIST.getCode()).build();
+        } else {
+            return ServiceResponseBuilder.<Device>ok().withResult(device).build();
+        }
 	}
 
 }

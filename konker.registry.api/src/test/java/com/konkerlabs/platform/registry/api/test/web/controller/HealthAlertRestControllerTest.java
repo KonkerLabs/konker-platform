@@ -1,7 +1,8 @@
 package com.konkerlabs.platform.registry.api.test.web.controller;
 
 import com.konkerlabs.platform.registry.api.config.WebMvcConfig;
-import com.konkerlabs.platform.registry.api.model.DeviceHealthAlertInputVO;
+import com.konkerlabs.platform.registry.api.model.HealthAlertInputVO;
+import com.konkerlabs.platform.registry.api.model.HealthAlertInputVO;
 import com.konkerlabs.platform.registry.api.model.UserVO;
 import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
 import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
@@ -60,11 +61,16 @@ public class HealthAlertRestControllerTest extends WebLayerTestContext {
     @Autowired
     private HealthAlertService healthAlertService;
 
+    @Autowired
+    private DeviceRegisterService deviceRegisterService;
+
     private AlertTrigger silenceAlertTrigger;
 
     private HealthAlert healthAlertA;
 
     private HealthAlert healthAlertB;
+
+    private Device device;
 
     private String BASEPATH = "triggers";
 
@@ -78,21 +84,33 @@ public class HealthAlertRestControllerTest extends WebLayerTestContext {
         silenceAlertTrigger.setApplication(application);
         silenceAlertTrigger.setType(AlertTrigger.AlertTriggerType.SILENCE);
 
-        Instant lastChange = Instant.parse("2007-12-03T10:15:30.00Z");
+        Instant creationDateTime = Instant.parse("2007-12-03T10:15:30.00Z");
+
+        device = Device.builder()
+                .deviceId("iu9ocqczgw")
+                .build();
 
         healthAlertA = HealthAlert.builder()
+                .device(device)
+                .alertTrigger(silenceAlertTrigger)
                 .alertId("alert-a-id")
+                .description("alert-a-desc")
                 .guid("71c9713e-1bfe-402b-9456-44464c864575")
                 .type(AlertTrigger.AlertTriggerType.SILENCE)
-                .lastChange(lastChange)
+                .lastChange(creationDateTime)
+                .registrationDate(creationDateTime)
                 .severity(HealthAlert.HealthAlertSeverity.FAIL)
                 .build();
 
         healthAlertB = HealthAlert.builder()
+                .device(device)
+                .alertTrigger(silenceAlertTrigger)
                 .alertId("alert-b-id")
+                .description("alert-b-desc")
                 .guid("6d796020-892b-43f5-9694-57bc730bde2b")
                 .type(AlertTrigger.AlertTriggerType.CUSTOM)
-                .lastChange(lastChange)
+                .lastChange(creationDateTime)
+                .registrationDate(creationDateTime)
                 .severity(HealthAlert.HealthAlertSeverity.WARN)
                 .build();
 
@@ -101,6 +119,9 @@ public class HealthAlertRestControllerTest extends WebLayerTestContext {
 
         when(alertTriggerService.findByTenantAndApplicationAndName(tenant, application, silenceAlertTrigger.getName()))
             .thenReturn(ServiceResponseBuilder.<AlertTrigger> ok().withResult(silenceAlertTrigger).build());
+
+        when(deviceRegisterService.findByDeviceId(tenant, application, device.getDeviceId()))
+            .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device).build());
 
         when(healthAlertService.findByTenantApplicationTriggerAndAlertId(
                 tenant,
@@ -124,17 +145,17 @@ public class HealthAlertRestControllerTest extends WebLayerTestContext {
         alertTriggers.add(healthAlertB);
 
         when(healthAlertService
-                        .findAllByTenantApplicationAndTriggerGuid(
+                        .findAllByTenantApplicationAndTrigger(
                                 tenant,
                                 application,
-                                silenceAlertTrigger.getGuid()
+                                silenceAlertTrigger
                         ))
             .thenReturn(ServiceResponseBuilder.<List<HealthAlert>> ok()
                     .withResult(alertTriggers).build());
 
         getMockMvc()
                 .perform(MockMvcRequestBuilders
-        		.get(MessageFormat.format("/{0}/{1}/{2}/alerts", application.getName(), BASEPATH, silenceAlertTrigger.getName()))
+        		.get(MessageFormat.format("/{0}/{1}/{2}/alerts/", application.getName(), BASEPATH, silenceAlertTrigger.getName()))
         		.contentType("application/json")
         		.accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -143,11 +164,12 @@ public class HealthAlertRestControllerTest extends WebLayerTestContext {
                 .andExpect(jsonPath("$.status", is("success")))
                 .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
                 .andExpect(jsonPath("$.result", hasSize(2)))
-                .andExpect(jsonPath("$.result[0].guid", is(healthAlertA.getGuid())))
-                .andExpect(jsonPath("$.result[0].type", is("SILENCE")))
-                .andExpect(jsonPath("$.result[1].guid", is(healthAlertB.getGuid())))
-                .andExpect(jsonPath("$.result[1].type", is("CUSTOM")))
+                .andExpect(jsonPath("$.result[0].alertId", is(healthAlertA.getAlertId())))
+                .andExpect(jsonPath("$.result[0].description", is(healthAlertA.getDescription())))
+                .andExpect(jsonPath("$.result[1].alertId", is(healthAlertB.getAlertId())))
+                .andExpect(jsonPath("$.result[1].description", is(healthAlertB.getDescription())))
                 ;
+
     }
 
     @Test
@@ -161,7 +183,7 @@ public class HealthAlertRestControllerTest extends WebLayerTestContext {
         getMockMvc()
                 .perform(MockMvcRequestBuilders
                         .put(MessageFormat.format("/{0}/{1}/{2}/alerts/{3}", application.getName(), BASEPATH, silenceAlertTrigger.getName(), healthAlertA.getAlertId()))
-                        .content(getJson(new DeviceHealthAlertInputVO().apply(healthAlertA)))
+                        .content(getJson(new HealthAlertInputVO().apply(healthAlertA)))
                         .contentType("application/json")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -169,9 +191,120 @@ public class HealthAlertRestControllerTest extends WebLayerTestContext {
                 .andExpect(jsonPath("$.code", is(HttpStatus.OK.value())))
                 .andExpect(jsonPath("$.status", is("success")))
                 .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
-                .andExpect(jsonPath("$.result.guid", is(healthAlertA.getGuid())))
+                .andExpect(jsonPath("$.result.alertId", is(healthAlertA.getAlertId())))
+                .andExpect(jsonPath("$.result.deviceId", is(device.getDeviceId())))
+                .andExpect(jsonPath("$.result.description", is(healthAlertA.getDescription())))
+                .andExpect(jsonPath("$.result.occurrenceDate", is("2007-12-03T10:15:30Z")))
+                .andExpect(jsonPath("$.result.severity", is("FAIL")))
                 .andExpect(jsonPath("$.result.type", is("SILENCE")))
+                .andExpect(jsonPath("$.result.triggerName", is(silenceAlertTrigger.getName())))
         ;
+
+    }
+
+    @Test
+    public void shouldEditHealthAlert() throws Exception {
+
+        when(healthAlertService.update(Matchers.any(Tenant.class), Matchers.any(Application.class), Matchers.anyString(), Matchers.any(HealthAlert.class)))
+                .thenReturn(ServiceResponseBuilder.<HealthAlert> ok()
+                        .withResult(healthAlertA).build());
+
+        getMockMvc()
+                .perform(MockMvcRequestBuilders
+                        .put(MessageFormat.format("/{0}/{1}/{2}/alerts/{3}", application.getName(), BASEPATH, silenceAlertTrigger.getName(), healthAlertA.getAlertId()))
+                        .contentType("application/json")
+                        .content(getJson(new HealthAlertInputVO().apply(healthAlertA)))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/json;charset=UTF-8"))
+                .andExpect(jsonPath("$.code", is(HttpStatus.OK.value())))
+                .andExpect(jsonPath("$.status", is("success")))
+                .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                .andExpect(jsonPath("$.result.alertId", is(healthAlertA.getAlertId())))
+                .andExpect(jsonPath("$.result.deviceId", is(device.getDeviceId())))
+                .andExpect(jsonPath("$.result.description", is(healthAlertA.getDescription())))
+                .andExpect(jsonPath("$.result.occurrenceDate", is("2007-12-03T10:15:30Z")))
+                .andExpect(jsonPath("$.result.severity", is("FAIL")))
+                .andExpect(jsonPath("$.result.type", is("SILENCE")))
+                .andExpect(jsonPath("$.result.triggerName", is(silenceAlertTrigger.getName())))
+
+                ;
+    }
+
+    @Test
+    public void shouldCreateHealthAlert() throws Exception {
+
+        when(healthAlertService.register(Matchers.any(Tenant.class), Matchers.any(Application.class), Matchers.any(HealthAlert.class)))
+                .thenReturn(ServiceResponseBuilder.<HealthAlert> ok()
+                        .withResult(healthAlertA).build());
+
+        getMockMvc()
+                .perform(MockMvcRequestBuilders
+                        .post(MessageFormat.format("/{0}/{1}/{2}/alerts", application.getName(), BASEPATH, silenceAlertTrigger.getName()))
+                        .contentType("application/json")
+                        .content(getJson(new HealthAlertInputVO().apply(healthAlertA)))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().is2xxSuccessful())
+                .andExpect(content().contentType("application/json;charset=UTF-8"))
+                .andExpect(jsonPath("$.code", is(HttpStatus.CREATED.value())))
+                .andExpect(jsonPath("$.status", is("success")))
+                .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                .andExpect(jsonPath("$.result.alertId", is(healthAlertA.getAlertId())))
+                .andExpect(jsonPath("$.result.deviceId", is(device.getDeviceId())))
+                .andExpect(jsonPath("$.result.description", is(healthAlertA.getDescription())))
+                .andExpect(jsonPath("$.result.occurrenceDate", is("2007-12-03T10:15:30Z")))
+                .andExpect(jsonPath("$.result.severity", is("FAIL")))
+                .andExpect(jsonPath("$.result.type", is("SILENCE")))
+                .andExpect(jsonPath("$.result.triggerName", is(silenceAlertTrigger.getName())))
+        ;
+
+    }
+
+    @Test
+    public void shouldRemoveHealthAlert() throws Exception {
+
+        when(healthAlertService.remove(Matchers.any(Tenant.class), Matchers.any(Application.class), Matchers.anyString(), Matchers.any(HealthAlert.Solution.class)))
+                .thenReturn(ServiceResponseBuilder.<HealthAlert> ok()
+                        .withResult(healthAlertA).build());
+
+        getMockMvc()
+                .perform(MockMvcRequestBuilders
+                        .delete(MessageFormat.format("/{0}/{1}/{2}/alerts/{3}", application.getName(), BASEPATH, silenceAlertTrigger.getName(), healthAlertA.getAlertId()))
+                        .contentType("application/json")
+                        .content(getJson(new HealthAlertInputVO().apply(healthAlertA)))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().is2xxSuccessful())
+                .andExpect(content().contentType("application/json;charset=UTF-8"))
+                .andExpect(jsonPath("$.code", is(HttpStatus.NO_CONTENT.value())))
+                .andExpect(jsonPath("$.status", is("success")))
+                .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                .andExpect(jsonPath("$.result").doesNotExist());
+
+    }
+
+
+    @Test
+    public void shouldReadHealthAlert() throws Exception {
+
+        getMockMvc()
+                .perform(MockMvcRequestBuilders
+                        .get(MessageFormat.format("/{0}/{1}/{2}/alerts/{3}", application.getName(), BASEPATH, silenceAlertTrigger.getName(), healthAlertA.getAlertId()))
+                        .contentType("application/json")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().is2xxSuccessful())
+                .andExpect(content().contentType("application/json;charset=UTF-8"))
+                .andExpect(jsonPath("$.code", is(HttpStatus.OK.value())))
+                .andExpect(jsonPath("$.status", is("success")))
+                .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                .andExpect(jsonPath("$.result.alertId", is(healthAlertA.getAlertId())))
+                .andExpect(jsonPath("$.result.deviceId", is(device.getDeviceId())))
+                .andExpect(jsonPath("$.result.description", is(healthAlertA.getDescription())))
+                .andExpect(jsonPath("$.result.occurrenceDate", is("2007-12-03T10:15:30Z")))
+                .andExpect(jsonPath("$.result.severity", is("FAIL")))
+                .andExpect(jsonPath("$.result.type", is("SILENCE")))
+                .andExpect(jsonPath("$.result.triggerName", is(silenceAlertTrigger.getName())))
+        ;
+
     }
 
 }
