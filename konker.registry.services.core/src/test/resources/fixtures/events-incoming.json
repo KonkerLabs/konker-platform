@@ -35,6 +35,18 @@
         "deviceId":"SN1234567890",
         "channel": "e4399b2ed998.testchannel"
       }
+    },
+    {
+      "_class" : "com.mongodb.DBObject",
+      "payload":"{}",
+      "ts": 1453320973757,
+      "incoming": {
+        "_class": "com.konkerlabs.platform.registry.business.model.EventActor",
+        "deviceGuid": "8363c556-84ea-11e6-92a2-4b01fea7e243",
+        "tenantDomain":"konker",
+        "deviceId":"smartffkonker",
+        "channel": "e4399b2ed998.testchannel"
+      }
     }
   ]
 }
