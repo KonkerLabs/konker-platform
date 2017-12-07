@@ -6,6 +6,7 @@ import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.DeviceModel;
 import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.Event.EventActor;
 import com.konkerlabs.platform.registry.business.model.Gateway;
 import com.konkerlabs.platform.registry.business.services.LocationTreeUtils;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
@@ -237,12 +238,20 @@ public class DeviceEventProcessor {
 
 	public void process(Application application, String payload) throws BusinessException {
 		Event event = Event.builder()
+				.incoming(EventActor.builder()
+						.tenantDomain(application.getTenant().getDomainName())
+						.applicationName(application.getName())
+						.deviceGuid("no-guid")
+						.channel("no-channel")
+						.deviceId("no-deviceId")
+						.build())
                 .creationTimestamp(Instant.now())
                 .ingestedTimestamp(Instant.now())
                 .payload(payload)
                 .build();	
 		
 		Device device = Device.builder()
+							.guid("no-guid")
 							.tenant(application.getTenant())
 							.application(application)
 							.build();
