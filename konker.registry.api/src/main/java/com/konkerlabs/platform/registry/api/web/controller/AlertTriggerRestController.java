@@ -116,7 +116,7 @@ public class AlertTriggerRestController extends AbstractRestController implement
     private AlertTrigger getAlertTriggerFromForm(Tenant tenant, Application application, AlertTriggerInputVO form) throws NotFoundResponseException, BadServiceResponseException {
 
         AlertTrigger trigger = new AlertTrigger();
-        trigger.setType(AlertTrigger.AlertTriggerType.getByName(form.getType()));
+        trigger.setType(AlertTrigger.AlertTriggerType.fromString(form.getType()));
         trigger.setTenant(tenant);
         trigger.setApplication(application);
         trigger.setName(form.getName());

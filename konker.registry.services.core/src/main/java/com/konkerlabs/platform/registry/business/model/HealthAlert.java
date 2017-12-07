@@ -4,7 +4,9 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -51,7 +53,6 @@ public class HealthAlert implements URIDealer {
 	private String description;
 	private Instant registrationDate;
 	private Instant lastChange;
-	private AlertTrigger.AlertTriggerType type;
 	private Solution solution;
 	private boolean solved;
 
@@ -76,9 +77,12 @@ public class HealthAlert implements URIDealer {
 
 	public enum HealthAlertSeverity {
 
-		OK(3, "model.healthalert.severity.ok"),
-		WARN(2, "model.healthalert.severity.warn"),
-		FAIL(1, "model.healthalert.severity.fail");
+        FAIL(1, "model.healthalert.severity.fail"),
+        WARN(2, "model.healthalert.severity.warn"),
+        OK(3, "model.healthalert.severity.ok"),
+        DISABLED(4, "model.healthalert.severity.disabled"),
+        UNKNOWN(5, "model.healthalert.severity.unknown"),
+        NODATA(6, "model.healthalert.severity.no_data");
 
 		private Integer prior;
         private String code;
@@ -96,12 +100,23 @@ public class HealthAlert implements URIDealer {
             return code;
         }
 
+        public static HealthAlertSeverity fromString(String name) {
+            for (HealthAlertSeverity type: HealthAlertSeverity.values()) {
+                if (type.name().equalsIgnoreCase(name)) {
+                    return type;
+                }
+            }
+
+            return null;
+        }
+
 	}
 
 	public enum Validations {
 		DESCRIPTION_NULL_EMPTY("model.healthalert.description.not_null"),
 		SEVERITY_NULL("model.healthalert.severity.not_null"),
-		TYPE_NULL("model.healthalert.type.not_null");
+		TYPE_NULL("model.healthalert.type.not_null"),
+        ALERT_ID_NULL("model.healthalert.alert_id.not_null");
 
 		public String getCode() {
 			return code;
@@ -117,12 +132,14 @@ public class HealthAlert implements URIDealer {
 	public Optional<Map<String, Object[]>> applyValidations() {
 		Map<String, Object[]> validations = new HashMap<>();
 
-		if (getDescription() == null)
-			validations.put(Validations.DESCRIPTION_NULL_EMPTY.code,null);
-		if (getSeverity() == null)
-			validations.put(Validations.SEVERITY_NULL.code,null);
-		if (getType() == null)
-			validations.put(Validations.TYPE_NULL.code,null);
+        Pattern regex = Pattern.compile("[a-zA-Z0-9\u00C0-\u00FF .\\-+_]{2,100}");
+
+        if (StringUtils.isBlank(getAlertId()) || !regex.matcher(getAlertId()).matches()) {
+            validations.put(Validations.ALERT_ID_NULL.code, null);
+        }
+		if (getSeverity() == null) {
+            validations.put(Validations.SEVERITY_NULL.code, null);
+        }
 
 		return Optional.of(validations).filter(map -> !map.isEmpty());
 	}

@@ -143,7 +143,6 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
                 .alertTrigger(trigger)
     			.description("No message received from the device for a long time.")
     			.severity(HealthAlertSeverity.WARN)
-    			.type(AlertTrigger.AlertTriggerType.SILENCE)
     			.registrationDate(Instant.ofEpochMilli(1453320973747L))
     			.device(device)
     			.alertTrigger(trigger)
@@ -159,7 +158,6 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
                 .alertTrigger(trigger)
 				.description("No message received from the device for a long time.")
     			.severity(HealthAlertSeverity.FAIL)
-                .type(AlertTrigger.AlertTriggerType.SILENCE)
     			.registrationDate(Instant.ofEpochMilli(1453320973747L))
                 .device(device)
                 .alertTrigger(trigger)
@@ -174,7 +172,6 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
                 .alertTrigger(trigger)
     			.description("Health of device is ok.")
     			.severity(HealthAlertSeverity.OK)
-    			.type(AlertTrigger.AlertTriggerType.SILENCE)
     			.registrationDate(Instant.ofEpochMilli(1453320973747L))
                 .device(device)
                 .alertTrigger(trigger)
@@ -745,7 +742,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
                 trigger,
                 null);
 
-        assertThat(response, hasErrorMessage(Validations.HEALTH_ALERT_NULL_ID.getCode()));
+        assertThat(response, hasErrorMessage(Validations.HEALTH_ALERT_NULL_ALERT_ID.getCode()));
 	}
 
     @Test

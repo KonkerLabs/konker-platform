@@ -54,7 +54,7 @@ public class AlertTrigger implements URIDealer {
 
         SILENCE, CUSTOM;
 
-        public static AlertTriggerType getByName(String name) {
+        public static AlertTriggerType fromString(String name) {
             for (AlertTriggerType type: AlertTriggerType.values()) {
                 if (type.name().equalsIgnoreCase(name)) {
                     return type;

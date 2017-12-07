@@ -124,7 +124,6 @@ public class ApplicationRestControllerTest extends WebLayerTestContext {
 				.description("No message received from the device for a long time.")
 				.registrationDate(registrationDate)
 				.lastChange(Instant.ofEpochMilli(1495716970000l))
-        		.type(AlertTrigger.AlertTriggerType.SILENCE)
         		.device(device)
         		.alertTrigger(alertTrigger)
         		.build();
@@ -135,7 +134,6 @@ public class ApplicationRestControllerTest extends WebLayerTestContext {
 				.description("No message received from the device for a long time.")
 				.registrationDate(registrationDate)
 				.lastChange(Instant.ofEpochMilli(1495716970000l))
-        		.type(AlertTrigger.AlertTriggerType.SILENCE)
         		.device(device)
         		.alertTrigger(alertTrigger)
         		.build();
@@ -458,12 +456,12 @@ public class ApplicationRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.result[0].severity", is(health1.getSeverity().toString())))
                     .andExpect(jsonPath("$.result[0].description", is("No message received from the device for a long time.")))
                     .andExpect(jsonPath("$.result[0].occurrenceDate", is(health1.getRegistrationDate().toString())))
-                    .andExpect(jsonPath("$.result[0].type", is(health1.getType().toString())))
+                    .andExpect(jsonPath("$.result[0].type", is(health1.getAlertTrigger().getType().name())))
                     .andExpect(jsonPath("$.result[0].triggerName", is(health1.getAlertTrigger().getName())))
                     .andExpect(jsonPath("$.result[1].severity", is(health2.getSeverity().toString())))
                     .andExpect(jsonPath("$.result[1].description", is("No message received from the device for a long time.")))
                     .andExpect(jsonPath("$.result[1].occurrenceDate", is(health2.getRegistrationDate().toString())))
-                    .andExpect(jsonPath("$.result[1].type", is(health2.getType().toString())))
+                    .andExpect(jsonPath("$.result[1].type", is(health2.getAlertTrigger().getType().name())))
                     .andExpect(jsonPath("$.result[1].triggerName", is(health2.getAlertTrigger().getName())))
         ;
     }

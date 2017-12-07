@@ -16,11 +16,11 @@ import lombok.NoArgsConstructor;
         discriminator = "com.konkerlabs.platform.registry.api.model")
 public class HealthAlertInputVO  {
 
-    @ApiModelProperty(value = "the device id", position = 1, example = "SN4940c22a9a", required = true)
-    private String deviceId;
-
-    @ApiModelProperty(value = "the alert id", position = 2, example = "SN4940c22a9a", required = false)
+    @ApiModelProperty(value = "the alert id", position = 1, example = "SN4940c22a9a", required = false)
     private String alertId;
+
+    @ApiModelProperty(value = "the device id", position = 2, example = "SN4940c22a9a", required = true)
+    private String deviceId;
 
     @ApiModelProperty(value = "the severity status", position = 3, example = "FAIL", allowableValues = "OK,WARN,FAIL", required = true)
     private String severity;

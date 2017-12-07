@@ -16,7 +16,7 @@ public class AlertTriggerInputVO {
 
     @ApiModelProperty(value = "the trigger name", example = "silence trigger", position = 1)
     protected String name;
-    @ApiModelProperty(value = "alert type", example = "silence", allowableValues = "SILENCE,CUSTOM", position = 2)
+    @ApiModelProperty(value = "alert type", example = "SILENCE", allowableValues = "SILENCE,CUSTOM", position = 2)
     protected String type;
     @ApiModelProperty(value = "a brief description of the trigger", example = "inactivity alert", position = 3)
     protected String description;

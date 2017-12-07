@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -51,11 +52,7 @@ public class HealthAlertRestController extends AbstractRestController implements
         AlertTrigger alertTrigger = getAlertTrigger(tenant, application, triggerName);
         Device device = getDevice(tenant, application, form.getDeviceId());
 
-        HealthAlert healthAlert = HealthAlert
-                .builder()
-                .alertTrigger(alertTrigger)
-                .device(device)
-                .build();
+        HealthAlert healthAlert = getHealthAlertFromVO(form, alertTrigger, device);
 
         ServiceResponse<HealthAlert> registerResponse = healthAlertService
                 .register(tenant, application, healthAlert);
@@ -66,6 +63,18 @@ public class HealthAlertRestController extends AbstractRestController implements
             return new HealthAlertVO().apply(registerResponse.getResult());
         }
 
+    }
+
+    private HealthAlert getHealthAlertFromVO(@RequestBody HealthAlertInputVO form, AlertTrigger alertTrigger, Device device) {
+        return HealthAlert
+                    .builder()
+                    .alertTrigger(alertTrigger)
+                    .device(device)
+                    .alertId(form.getAlertId())
+                    .severity(HealthAlert.HealthAlertSeverity.fromString(form.getSeverity()))
+                    .registrationDate(Instant.now())
+                    .description(form.getDescription())
+                    .build();
     }
 
     @GetMapping(path = "/{triggerName}/alerts/{alertId}")
@@ -122,14 +131,11 @@ public class HealthAlertRestController extends AbstractRestController implements
             throw new BadServiceResponseException(user, alertResponse, validationsCode);
         }
 
-        HealthAlert healthAlert = HealthAlert
-                .builder()
-                .severity(HealthAlert.HealthAlertSeverity.valueOf(form.getSeverity()))
-                .description(form.getDescription())
-                .build();
+        HealthAlert healthAlert = getHealthAlertFromVO(form, alertTrigger, null);
+        HealthAlert healthAlertFromDB = alertResponse.getResult();
 
         ServiceResponse<HealthAlert> registerResponse = healthAlertService
-                .update(tenant, application, healthAlert.getGuid(), healthAlert);
+                .update(tenant, application, healthAlertFromDB.getGuid(), healthAlert);
 
         if (!registerResponse.isOk()) {
             throw new BadServiceResponseException(user, registerResponse, validationsCode);
