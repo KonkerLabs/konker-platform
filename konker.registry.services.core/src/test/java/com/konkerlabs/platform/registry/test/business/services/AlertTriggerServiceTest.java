@@ -1,14 +1,20 @@
 package com.konkerlabs.platform.registry.test.business.services;
 
-import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-
-import java.time.Instant;
-import java.util.List;
-
+import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.repositories.AlertTriggerRepository;
+import com.konkerlabs.platform.registry.business.repositories.DeviceModelRepository;
+import com.konkerlabs.platform.registry.business.repositories.LocationRepository;
+import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
+import com.konkerlabs.platform.registry.business.services.api.AlertTriggerService;
+import com.konkerlabs.platform.registry.business.services.api.AlertTriggerService.Validations;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.config.EmailConfig;
+import com.konkerlabs.platform.registry.config.EventStorageConfig;
+import com.konkerlabs.platform.registry.config.PubServerConfig;
 import com.konkerlabs.platform.registry.test.base.*;
+import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
@@ -19,27 +25,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.konkerlabs.platform.registry.business.model.AlertTrigger;
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.DeviceModel;
-import com.konkerlabs.platform.registry.business.model.Location;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.registry.business.repositories.AlertTriggerRepository;
-import com.konkerlabs.platform.registry.business.repositories.DeviceModelRepository;
-import com.konkerlabs.platform.registry.business.repositories.LocationRepository;
-import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
-import com.konkerlabs.platform.registry.business.services.api.AlertTriggerService;
-import com.konkerlabs.platform.registry.business.services.api.AlertTriggerService.Validations;
-import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.config.EventStorageConfig;
-import com.konkerlabs.platform.registry.config.PubServerConfig;
-import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
+import java.time.Instant;
+import java.util.List;
+
+import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
         MongoTestConfiguration.class,
+        EventRepositoryTestConfiguration.class,
         MongoBillingTestConfiguration.class,
         EmailConfig.class,
         SpringMailTestConfiguration.class,
@@ -78,55 +74,55 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
 
     @Before
     public void setUp() {
-    	currentTenant = tenantRepository.findByName("Konker");
+        currentTenant = tenantRepository.findByName("Konker");
 
-    	application = Application.builder()
-    					.name("smartffkonker")
-    					.friendlyName("Konker Smart Frig")
-    					.description("Konker Smart Frig - take pic, tells temperatue")
-    					.tenant(currentTenant)
-                        .qualifier("konker")
-                        .registrationDate(Instant.ofEpochMilli(1453320973747L))
-                        .build();
+        application = Application.builder()
+                .name("smartffkonker")
+                .friendlyName("Konker Smart Frig")
+                .description("Konker Smart Frig - take pic, tells temperatue")
+                .tenant(currentTenant)
+                .qualifier("konker")
+                .registrationDate(Instant.ofEpochMilli(1453320973747L))
+                .build();
 
-    	deviceModel = DeviceModel.builder()
-    					.guid("7d51c242-81db-11e6-a8c2-0746f908e887")
-		    			.name("SmartFF")
-		    			.description("Smart ff model")
-    					.application(application)
-    					.defaultModel(true)
-    					.tenant(currentTenant)
-    					.build();
-    	deviceModel = deviceModelRepository.save(deviceModel);
+        deviceModel = DeviceModel.builder()
+                .guid("7d51c242-81db-11e6-a8c2-0746f908e887")
+                .name("SmartFF")
+                .description("Smart ff model")
+                .application(application)
+                .defaultModel(true)
+                .tenant(currentTenant)
+                .build();
+        deviceModel = deviceModelRepository.save(deviceModel);
 
-    	locationA = Location.builder()
-                        .guid("3bc07c9e-eb48-4c92-97a8-d9c662d1bfcd")
-                        .name("BR")
-                        .description("Brazil")
-                        .application(application)
-                        .defaultLocation(true)
-                        .tenant(currentTenant)
-                        .build();
-    	locationA = locationRepository.save(locationA);
+        locationA = Location.builder()
+                .guid("3bc07c9e-eb48-4c92-97a8-d9c662d1bfcd")
+                .name("BR")
+                .description("Brazil")
+                .application(application)
+                .defaultLocation(true)
+                .tenant(currentTenant)
+                .build();
+        locationA = locationRepository.save(locationA);
 
         locationB = Location.builder()
-                        .guid("b9cc9543-9230-4c63-a3bf-aaa1e47ffcf4")
-                        .name("CL")
-                        .description("Chile")
-                        .application(application)
-                        .defaultLocation(false)
-                        .tenant(currentTenant)
-                        .build();
+                .guid("b9cc9543-9230-4c63-a3bf-aaa1e47ffcf4")
+                .name("CL")
+                .description("Chile")
+                .application(application)
+                .defaultLocation(false)
+                .tenant(currentTenant)
+                .build();
         locationB = locationRepository.save(locationB);
 
-    	triggerA = AlertTrigger.builder().build();
-    	triggerA.setGuid("95a79b96-6193-4d13-a85e-8bafc3a44837");
+        triggerA = AlertTrigger.builder().build();
+        triggerA.setGuid("95a79b96-6193-4d13-a85e-8bafc3a44837");
         triggerA.setName("silence a");
-    	triggerA.setTenant(currentTenant);
-    	triggerA.setApplication(application);
-    	triggerA.setDeviceModel(deviceModel);
-    	triggerA.setLocation(locationA);
-    	triggerA.setType(AlertTrigger.AlertTriggerType.SILENCE);
+        triggerA.setTenant(currentTenant);
+        triggerA.setApplication(application);
+        triggerA.setDeviceModel(deviceModel);
+        triggerA.setLocation(locationA);
+        triggerA.setType(AlertTrigger.AlertTriggerType.SILENCE);
         triggerA.setMinutes(100);
         triggerA = alertTriggerRepository.save(triggerA);
 
@@ -144,7 +140,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldListByTenantAndApplication()  {
+    public void shouldListByTenantAndApplication() {
 
         ServiceResponse<List<AlertTrigger>> serviceResponse = alertTriggerService.listByTenantAndApplication(currentTenant, application);
         assertThat(serviceResponse.isOk(), is(true));
@@ -158,7 +154,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldTryListByTenantAndApplicationWithNullTenant()  {
+    public void shouldTryListByTenantAndApplicationWithNullTenant() {
 
         ServiceResponse<List<AlertTrigger>> serviceResponse = alertTriggerService.listByTenantAndApplication(null, application);
         assertThat(serviceResponse, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
@@ -166,7 +162,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldTryListByTenantAndApplicationWithNullApplication()  {
+    public void shouldTryListByTenantAndApplicationWithNullApplication() {
 
         ServiceResponse<List<AlertTrigger>> serviceResponse = alertTriggerService.listByTenantAndApplication(currentTenant, null);
         assertThat(serviceResponse, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
@@ -174,7 +170,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldFindByTenantAndApplicationAndGuid()  {
+    public void shouldFindByTenantAndApplicationAndGuid() {
 
         ServiceResponse<AlertTrigger> serviceResponse = alertTriggerService.findByTenantAndApplicationAndGuid(currentTenant, application, triggerA.getGuid());
         assertThat(serviceResponse.isOk(), is(true));
@@ -183,7 +179,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldTryFindByTenantAndApplicationAndGuidNonExistingTrigger()  {
+    public void shouldTryFindByTenantAndApplicationAndGuidNonExistingTrigger() {
 
         ServiceResponse<AlertTrigger> serviceResponse = alertTriggerService.findByTenantAndApplicationAndGuid(currentTenant, application, "000-000");
         assertThat(serviceResponse, hasErrorMessage(Validations.ALERT_TRIGGER_NOT_FOUND.getCode()));
@@ -193,7 +189,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     /***************************** findByTenantAndApplicationAndName *****************************/
 
     @Test
-    public void shouldTryFindByTenantAndApplicationAndNameNullApplication()  {
+    public void shouldTryFindByTenantAndApplicationAndNameNullApplication() {
 
         AlertTrigger alertTrigger = AlertTrigger
                 .builder()
@@ -213,7 +209,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldFindByTenantAndApplicationAndName()  {
+    public void shouldFindByTenantAndApplicationAndName() {
 
         ServiceResponse<AlertTrigger> serviceResponse = alertTriggerService.findByTenantAndApplicationAndName(
                 currentTenant,
@@ -227,7 +223,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldTryFindNonExistingByTenantAndApplicationAndName()  {
+    public void shouldTryFindNonExistingByTenantAndApplicationAndName() {
 
         ServiceResponse<AlertTrigger> serviceResponse = alertTriggerService.findByTenantAndApplicationAndName(
                 currentTenant,
@@ -242,7 +238,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     /***************************** remove *****************************/
 
     @Test
-    public void shouldTryRemoveWithNullGuid()  {
+    public void shouldTryRemoveWithNullGuid() {
 
         ServiceResponse<AlertTrigger> serviceResponse = alertTriggerService.remove(
                 currentTenant,
@@ -255,7 +251,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldTryRemoveWithInvalidGuid()  {
+    public void shouldTryRemoveWithInvalidGuid() {
 
         ServiceResponse<AlertTrigger> serviceResponse = alertTriggerService.remove(
                 currentTenant,
@@ -269,7 +265,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
 
 
     @Test
-    public void shouldRemove()  {
+    public void shouldRemove() {
 
         ServiceResponse<AlertTrigger> serviceResponse = alertTriggerService.remove(
                 currentTenant,
@@ -284,7 +280,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     /***************************** update *****************************/
 
     @Test
-    public void shouldTryUpdateWithoutTenant()  {
+    public void shouldTryUpdateWithoutTenant() {
 
         AlertTrigger alertTrigger = AlertTrigger
                 .builder()
@@ -304,7 +300,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldTryUpdateWithNullGuid()  {
+    public void shouldTryUpdateWithNullGuid() {
 
         AlertTrigger alertTrigger = AlertTrigger.
                 builder().
@@ -321,7 +317,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldTryUpdateWithoutType()  {
+    public void shouldTryUpdateWithoutType() {
 
         AlertTrigger alertTrigger = AlertTrigger
                 .builder()
@@ -340,7 +336,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldTryUpdateWithInvalidGuid()  {
+    public void shouldTryUpdateWithInvalidGuid() {
 
         AlertTrigger alertTrigger = AlertTrigger
                 .builder()
@@ -360,7 +356,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldTryUpdateWithInvalidName()  {
+    public void shouldTryUpdateWithInvalidName() {
 
         AlertTrigger alertTrigger = AlertTrigger.
                 builder().
@@ -378,7 +374,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldUpdateWithInvalidMinutes()  {
+    public void shouldUpdateWithInvalidMinutes() {
 
         AlertTrigger alertTrigger = AlertTrigger
                 .builder()
@@ -398,7 +394,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldUpdateCustom()  {
+    public void shouldUpdateCustom() {
 
         AlertTrigger alertTrigger = AlertTrigger
                 .builder()
@@ -422,7 +418,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldUpdateSilence()  {
+    public void shouldUpdateSilence() {
 
         AlertTrigger alertTrigger = AlertTrigger
                 .builder()
@@ -450,7 +446,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     /***************************** save *****************************/
 
     @Test
-    public void shouldTrySaveWithoutTenant()  {
+    public void shouldTrySaveWithoutTenant() {
 
         AlertTrigger alertTrigger = AlertTrigger
                 .builder()
@@ -469,7 +465,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldTrySaveSilenceWithInvalidMinutes()  {
+    public void shouldTrySaveSilenceWithInvalidMinutes() {
 
         AlertTrigger alertTrigger = AlertTrigger
                 .builder()
@@ -481,14 +477,14 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
                 currentTenant,
                 application,
                 alertTrigger
-                );
+        );
 
         assertThat(serviceResponse, hasErrorMessage(AlertTrigger.Validations.INVALID_MINUTES_VALUE.getCode()));
 
     }
 
     @Test
-    public void shouldTrySaveWithExistingName()  {
+    public void shouldTrySaveWithExistingName() {
 
         AlertTrigger alertTrigger = AlertTrigger
                 .builder()
@@ -508,7 +504,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldSaveCustom()  {
+    public void shouldSaveCustom() {
 
         AlertTrigger alertTrigger = AlertTrigger
                 .builder()
@@ -529,7 +525,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldSaveSilenceTrigger()  {
+    public void shouldSaveSilenceTrigger() {
 
         AlertTrigger alertTrigger = AlertTrigger
                 .builder()
@@ -550,6 +546,5 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
         assertThat(serviceResponse.getResult().getGuid(), Matchers.notNullValue());
 
     }
-
 
 }

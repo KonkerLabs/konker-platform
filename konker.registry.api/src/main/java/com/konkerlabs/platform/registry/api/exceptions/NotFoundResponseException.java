@@ -12,19 +12,12 @@ public class NotFoundResponseException extends Exception {
 
     private Map<String, Object[]> responseMessages;
 
-    private Locale locale;
-
-    public NotFoundResponseException(OauthClientDetails user, ServiceResponse<?> serviceResponse) {
+    public NotFoundResponseException(ServiceResponse<?> serviceResponse) {
         this.responseMessages = serviceResponse != null ? serviceResponse.getResponseMessages() : null;
-        this.locale = user.getLanguage().getLocale();
     }
 
     public Map<String, Object[]> getResponseMessages() {
         return responseMessages;
-    }
-
-    public Locale getLocale() {
-        return locale;
     }
 
 }

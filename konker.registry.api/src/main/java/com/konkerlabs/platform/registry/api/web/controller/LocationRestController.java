@@ -76,7 +76,7 @@ public class LocationRestController extends AbstractRestController implements In
         }
 
         if (!locationResponse.isOk()) {
-            throw new BadServiceResponseException(user, locationResponse, validationsCode);
+            throw new BadServiceResponseException( locationResponse, validationsCode);
         } else {
             return new LocationVO().apply(locationResponse.getResult());
         }
@@ -112,7 +112,7 @@ public class LocationRestController extends AbstractRestController implements In
         ServiceResponse<Location> locationResponse = locationSearchService.findByName(tenant, application, locationName, true);
 
         if (!locationResponse.isOk()) {
-            throw new NotFoundResponseException(user, locationResponse);
+            throw new NotFoundResponseException(locationResponse);
         } else {
             return new LocationVO().apply(locationResponse.getResult());
         }
@@ -148,7 +148,7 @@ public class LocationRestController extends AbstractRestController implements In
         ServiceResponse<List<Device>> locationResponse = locationSearchService.listDevicesByLocationName(tenant, application, locationName);
 
         if (!locationResponse.isOk()) {
-            throw new BadServiceResponseException(user, locationResponse, validationsCode);
+            throw new BadServiceResponseException( locationResponse, validationsCode);
         } else {
             return new DeviceVO().apply(locationResponse.getResult());
         }
@@ -196,7 +196,7 @@ public class LocationRestController extends AbstractRestController implements In
         ServiceResponse<Location> locationResponse = locationService.save(tenant, application, location);
 
         if (!locationResponse.isOk()) {
-            throw new BadServiceResponseException(user, locationResponse, validationsCode);
+            throw new BadServiceResponseException( locationResponse, validationsCode);
         } else {
             return new LocationVO().apply(locationResponse.getResult());
         }
@@ -234,7 +234,7 @@ public class LocationRestController extends AbstractRestController implements In
         ServiceResponse<Location> locationResponse = locationSearchService.findByName(tenant, application, locationName, false);
 
         if (!locationResponse.isOk()) {
-            throw new BadServiceResponseException(user, locationResponse, validationsCode);
+            throw new BadServiceResponseException( locationResponse, validationsCode);
         } else {
             locationFromDB = locationResponse.getResult();
         }
@@ -252,7 +252,7 @@ public class LocationRestController extends AbstractRestController implements In
         ServiceResponse<Location> updateResponse = locationService.update(tenant, application, locationFromDB.getGuid(), locationFromDB);
 
         if (!updateResponse.isOk()) {
-            throw new BadServiceResponseException(user, locationResponse, validationsCode);
+            throw new BadServiceResponseException( locationResponse, validationsCode);
         }
 
         // update childrens (subtree)
@@ -262,7 +262,7 @@ public class LocationRestController extends AbstractRestController implements In
             updateResponse = locationService.updateSubtree(tenant, application, locationFromDB.getGuid(), sublocations);
 
             if (!updateResponse.isOk()) {
-                throw new BadServiceResponseException(user, updateResponse, validationsCode);
+                throw new BadServiceResponseException( updateResponse, validationsCode);
             }
         }
 
@@ -323,9 +323,9 @@ public class LocationRestController extends AbstractRestController implements In
                 Map<String, Object[]> responseMessages = new HashMap<>();
                 responseMessages.put(LocationService.Validations.LOCATION_PARENT_NOT_FOUND.getCode(), null);
 
-                throw new BadServiceResponseException(user, responseMessages, validationsCode);
+                throw new BadServiceResponseException( responseMessages, validationsCode);
             } else {
-                throw new BadServiceResponseException(user, parentResponse, validationsCode);
+                throw new BadServiceResponseException( parentResponse, validationsCode);
             }
         } else {
             parent = parentResponse.getResult();
@@ -357,7 +357,7 @@ public class LocationRestController extends AbstractRestController implements In
         ServiceResponse<Location> locationResponse = locationSearchService.findByName(tenant, application, locationName, false);
 
         if (!locationResponse.isOk()) {
-            throw new NotFoundResponseException(user, locationResponse);
+            throw new NotFoundResponseException(locationResponse);
         }
 
         Location location = locationResponse.getResult();
@@ -367,7 +367,7 @@ public class LocationRestController extends AbstractRestController implements In
         locationResponse = locationService.remove(tenant, application, location.getGuid());
 
         if (!locationResponse.isOk()) {
-            throw new BadServiceResponseException(user, locationResponse, validationsCode);
+            throw new BadServiceResponseException( locationResponse, validationsCode);
         }
     }
 
@@ -392,7 +392,6 @@ public class LocationRestController extends AbstractRestController implements In
 
             if (!validationResult.isOk() || !validationResult.getResult()) {
                 throw new NotFoundResponseException(
-                        oauthClientDetails,
                         validationResult
                 );
             }

@@ -68,7 +68,7 @@ public class AlertTriggerRestController extends AbstractRestController implement
         ServiceResponse<List<AlertTrigger>> alertTriggerResponse = alertTriggerService.listByTenantAndApplication(tenant, application);
 
         if (!alertTriggerResponse.isOk()) {
-            throw new BadServiceResponseException(user, alertTriggerResponse, validationsCode);
+            throw new BadServiceResponseException( alertTriggerResponse, validationsCode);
         }
 
         List<AlertTriggerVO> alertTriggersVO = new ArrayList<>(alertTriggerResponse.getResult().size());
@@ -106,7 +106,7 @@ public class AlertTriggerRestController extends AbstractRestController implement
         ServiceResponse<AlertTrigger> response = alertTriggerService.save(tenant, application, triggerForm);
 
         if (!response.isOk()) {
-            throw new BadServiceResponseException(user, response, validationsCode);
+            throw new BadServiceResponseException( response, validationsCode);
         } else {
             return new AlertTriggerVO(response.getResult());
         }
@@ -154,7 +154,7 @@ public class AlertTriggerRestController extends AbstractRestController implement
         ServiceResponse<AlertTrigger> alertTriggerResponse = alertTriggerService.findByTenantAndApplicationAndName(tenant, application, triggerName);
 
         if (!alertTriggerResponse.isOk()) {
-            throw new BadServiceResponseException(user, alertTriggerResponse, validationsCode);
+            throw new BadServiceResponseException( alertTriggerResponse, validationsCode);
         } else {
             return new AlertTriggerVO(alertTriggerResponse.getResult());
         }
@@ -178,7 +178,7 @@ public class AlertTriggerRestController extends AbstractRestController implement
         ServiceResponse<AlertTrigger> alertTriggerResponse = alertTriggerService.remove(tenant, application, alertTrigger.getGuid());
 
         if (!alertTriggerResponse.isOk()) {
-            throw new BadServiceResponseException(user, alertTriggerResponse, validationsCode);
+            throw new BadServiceResponseException( alertTriggerResponse, validationsCode);
         }
 
     }
@@ -206,7 +206,7 @@ public class AlertTriggerRestController extends AbstractRestController implement
         ServiceResponse<AlertTrigger> alertTriggerResponse = alertTriggerService.update(tenant, application, alertTrigger.getGuid(), triggerForm);
 
         if (!alertTriggerResponse.isOk()) {
-            throw new BadServiceResponseException(user, alertTriggerResponse, validationsCode);
+            throw new BadServiceResponseException( alertTriggerResponse, validationsCode);
         } else {
             return new AlertTriggerVO(alertTriggerResponse.getResult());
         }
@@ -216,7 +216,7 @@ public class AlertTriggerRestController extends AbstractRestController implement
     private AlertTrigger getAlertTrigger(Tenant tenant, Application application, String triggerName) throws BadServiceResponseException {
         ServiceResponse<AlertTrigger> serviceResponse = alertTriggerService.findByTenantAndApplicationAndName(tenant, application, triggerName);
         if (!serviceResponse.isOk()) {
-            throw new BadServiceResponseException(user, serviceResponse, validationsCode);
+            throw new BadServiceResponseException( serviceResponse, validationsCode);
         }
 
         return serviceResponse.getResult();

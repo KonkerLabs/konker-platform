@@ -67,7 +67,7 @@ public class DeviceStatusRestController extends AbstractRestController implement
         if (deviceResponse.isOk()) {
             return new DeviceHealthVO().apply(deviceResponse.getResult());
         } else {
-            throw new NotFoundResponseException(user, deviceResponse);
+            throw new NotFoundResponseException(deviceResponse);
         }
 
     }
@@ -102,7 +102,7 @@ public class DeviceStatusRestController extends AbstractRestController implement
             }
             return healthAlertsVO;
         } else {
-            throw new NotFoundResponseException(user, deviceResponse);
+            throw new NotFoundResponseException(deviceResponse);
         }
 
     }
@@ -124,7 +124,7 @@ public class DeviceStatusRestController extends AbstractRestController implement
         ServiceResponse<List<Event>> incomingResponse = deviceEventService.findIncomingBy(tenant, application, deviceGuid, null, null, null, false, 1);
 
         if (!deviceResponse.isOk()) {
-            throw new NotFoundResponseException(user, deviceResponse);
+            throw new NotFoundResponseException(deviceResponse);
         } else {
             String lastDataReceivedDate = "";
             if (incomingResponse.isOk()) {

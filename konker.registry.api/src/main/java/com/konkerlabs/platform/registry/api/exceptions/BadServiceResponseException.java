@@ -16,13 +16,11 @@ public class BadServiceResponseException extends Exception {
 
     private Map<String, Object[]> responseMessages;
 
-    private Locale locale;
-
-    public BadServiceResponseException(OauthClientDetails user, ServiceResponse<?> serviceResponse, Set<String> validationsCode) {
-        this(user, serviceResponse != null ? serviceResponse.getResponseMessages() : null, validationsCode);
+    public BadServiceResponseException(ServiceResponse<?> serviceResponse, Set<String> validationsCode) {
+        this(serviceResponse != null ? serviceResponse.getResponseMessages() : null, validationsCode);
     }
 
-    public BadServiceResponseException(OauthClientDetails user, Map<String, Object[]> responseMessages, Set<String> validationsCode) {
+    public BadServiceResponseException(Map<String, Object[]> responseMessages, Set<String> validationsCode) {
 
         if (responseMessages != null && validationsCode != null) {
             for (String key : responseMessages.keySet()) {
@@ -34,11 +32,6 @@ public class BadServiceResponseException extends Exception {
         }
 
         this.responseMessages = responseMessages;
-        if (user != null) {
-            this.locale = user.getLanguage().getLocale();
-        } else {
-            this.locale = Language.PT_BR.getLocale();
-        }
     }
 
     public boolean hasValidationsError() {
@@ -47,10 +40,6 @@ public class BadServiceResponseException extends Exception {
 
     public Map<String, Object[]> getResponseMessages() {
         return responseMessages;
-    }
-
-    public Locale getLocale() {
-        return locale;
     }
 
 }

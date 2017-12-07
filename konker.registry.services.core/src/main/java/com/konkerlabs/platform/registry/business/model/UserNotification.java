@@ -18,14 +18,12 @@ import lombok.experimental.NonFinal;
 
 @Document(collection = "userNotifications")
 @CompoundIndexes({
-        @CompoundIndex(name = "user_notications_ts", def = "{'destination': 1, 'date': -1}", unique = false) })
+        @CompoundIndex(name = "user_notifications_ts", def = "{'destination': 1, 'date': -1}", unique = false) })
 @EqualsAndHashCode(of = { "uuid", "subject", "date", "destination", "unread" })
 @Value
 @Builder
 public class UserNotification implements Serializable {
-    /**
-     * 
-     */
+
     private static final long serialVersionUID = 641917038573358275L;
 
     @Id

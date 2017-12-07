@@ -58,7 +58,7 @@ public class HealthAlertRestController extends AbstractRestController implements
                 .register(tenant, application, healthAlert);
 
         if (!registerResponse.isOk()) {
-            throw new BadServiceResponseException(user, registerResponse, validationsCode);
+            throw new BadServiceResponseException( registerResponse, validationsCode);
         } else {
             return new HealthAlertVO().apply(registerResponse.getResult());
         }
@@ -99,7 +99,7 @@ public class HealthAlertRestController extends AbstractRestController implements
         );
 
         if (!alertResponse.isOk()) {
-            throw new BadServiceResponseException(user, alertResponse, validationsCode);
+            throw new BadServiceResponseException( alertResponse, validationsCode);
         } else {
             return new HealthAlertVO().apply(alertResponse.getResult());
         }
@@ -128,7 +128,7 @@ public class HealthAlertRestController extends AbstractRestController implements
                 alertId
         );
         if (!alertResponse.isOk()) {
-            throw new BadServiceResponseException(user, alertResponse, validationsCode);
+            throw new BadServiceResponseException( alertResponse, validationsCode);
         }
 
         HealthAlert healthAlert = getHealthAlertFromVO(form, alertTrigger, null);
@@ -138,7 +138,7 @@ public class HealthAlertRestController extends AbstractRestController implements
                 .update(tenant, application, healthAlertFromDB.getGuid(), healthAlert);
 
         if (!registerResponse.isOk()) {
-            throw new BadServiceResponseException(user, registerResponse, validationsCode);
+            throw new BadServiceResponseException( registerResponse, validationsCode);
         } else {
             return new HealthAlertVO().apply(registerResponse.getResult());
         }
@@ -164,7 +164,7 @@ public class HealthAlertRestController extends AbstractRestController implements
                 .remove(tenant, application, healthAlert.getGuid(), HealthAlert.Solution.TRIGGER_DELETED);
 
         if (!registerResponse.isOk()) {
-            throw new BadServiceResponseException(user, registerResponse, validationsCode);
+            throw new BadServiceResponseException( registerResponse, validationsCode);
         }
 
     }
@@ -190,7 +190,7 @@ public class HealthAlertRestController extends AbstractRestController implements
                 );
 
         if (!registerResponse.isOk()) {
-            throw new BadServiceResponseException(user, registerResponse, validationsCode);
+            throw new BadServiceResponseException( registerResponse, validationsCode);
         } else {
             return new HealthAlertVO().apply(registerResponse.getResult());
         }
@@ -200,7 +200,7 @@ public class HealthAlertRestController extends AbstractRestController implements
     private AlertTrigger getAlertTrigger(Tenant tenant, Application application, String triggerName) throws BadServiceResponseException {
         ServiceResponse<AlertTrigger> serviceResponse = alertTriggerService.findByTenantAndApplicationAndName(tenant, application, triggerName);
         if (!serviceResponse.isOk()) {
-            throw new BadServiceResponseException(user, serviceResponse, validationsCode);
+            throw new BadServiceResponseException( serviceResponse, validationsCode);
         }
 
         return serviceResponse.getResult();
@@ -214,7 +214,7 @@ public class HealthAlertRestController extends AbstractRestController implements
                 alertId
         );
         if (!alertResponse.isOk()) {
-            throw new BadServiceResponseException(user, alertResponse, validationsCode);
+            throw new BadServiceResponseException( alertResponse, validationsCode);
         }
 
         return alertResponse.getResult();
@@ -228,7 +228,7 @@ public class HealthAlertRestController extends AbstractRestController implements
         );
 
         if (!deviceResponse.isOk()) {
-            throw new BadServiceResponseException(user, deviceResponse, validationsCode);
+            throw new BadServiceResponseException( deviceResponse, validationsCode);
         }
 
         return deviceResponse.getResult();

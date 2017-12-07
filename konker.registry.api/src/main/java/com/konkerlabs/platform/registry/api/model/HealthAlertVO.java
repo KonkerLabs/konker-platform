@@ -35,7 +35,7 @@ public class HealthAlertVO extends HealthAlertInputVO implements SerializableVO<
         vo.setDescription(t.getDescription());
         vo.setOccurrenceDate(t.getRegistrationDate().toString());
         vo.setSeverity(t.getSeverity().name());
-        vo.setType(t.getAlertTrigger().getType().name());
+        vo.setType(t.getAlertTrigger() != null ? t.getAlertTrigger().getType().name() : null);
         vo.setTriggerName(t.getAlertTrigger().getName());
         return vo;
     }

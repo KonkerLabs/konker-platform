@@ -119,6 +119,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 
         alertTrigger = AlertTrigger.builder()
                 .guid("7d51c242-81db-11e6-a8c2-0746f976f666")
+                .type(AlertTrigger.AlertTriggerType.SILENCE)
                 .build();
 
         health1 = HealthAlert.builder()

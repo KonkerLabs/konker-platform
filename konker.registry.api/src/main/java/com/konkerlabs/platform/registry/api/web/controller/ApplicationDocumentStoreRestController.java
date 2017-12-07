@@ -66,7 +66,7 @@ public class ApplicationDocumentStoreRestController extends AbstractRestControll
         ServiceResponse<ApplicationDocumentStore> deviceResponse = applicationDocumentStoreService.findUniqueByTenantApplication(tenant, application, collection, key);
 
         if (!deviceResponse.isOk()) {
-            throw new NotFoundResponseException(user, deviceResponse);
+            throw new NotFoundResponseException(deviceResponse);
         } else {
             return JSON.parse(deviceResponse.getResult().getJson());
         }
@@ -89,7 +89,7 @@ public class ApplicationDocumentStoreRestController extends AbstractRestControll
         ServiceResponse<ApplicationDocumentStore> deviceResponse = applicationDocumentStoreService.save(tenant, application, collection, key, jsonCustomData);
 
         if (!deviceResponse.isOk()) {
-            throw new BadServiceResponseException(user, deviceResponse, validationsCode);
+            throw new BadServiceResponseException( deviceResponse, validationsCode);
         } else {
             return JSON.parse(deviceResponse.getResult().getJson());
         }
@@ -112,7 +112,7 @@ public class ApplicationDocumentStoreRestController extends AbstractRestControll
         ServiceResponse<ApplicationDocumentStore> updateResponse = applicationDocumentStoreService.update(tenant, application, collection, key, jsonCustomData);
 
         if (!updateResponse.isOk()) {
-            throw new BadServiceResponseException(user, updateResponse, validationsCode);
+            throw new BadServiceResponseException( updateResponse, validationsCode);
 
         }
 
@@ -133,9 +133,9 @@ public class ApplicationDocumentStoreRestController extends AbstractRestControll
 
         if (!deviceResponse.isOk()) {
             if (deviceResponse.getResponseMessages().containsKey(ApplicationDocumentStoreService.Validations.APP_DOCUMENT_DOES_NOT_EXIST.getCode())) {
-                throw new NotFoundResponseException(user, deviceResponse);
+                throw new NotFoundResponseException(deviceResponse);
             } else {
-                throw new BadServiceResponseException(user, deviceResponse, validationsCode);
+                throw new BadServiceResponseException( deviceResponse, validationsCode);
             }
         }
 

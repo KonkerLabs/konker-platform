@@ -63,7 +63,7 @@ public class ApplicationRestController extends AbstractRestController implements
         ServiceResponse<List<Application>> applicationResponse = applicationService.findAll(tenant);
 
         if (!applicationResponse.isOk()) {
-            throw new BadServiceResponseException(user, applicationResponse, validationsCode);
+            throw new BadServiceResponseException( applicationResponse, validationsCode);
         } else {
     		for (Application applic : applicationResponse.getResult()) {
     			if(applicationService.isDefaultApplication(applic,tenant)) {
@@ -90,7 +90,7 @@ public class ApplicationRestController extends AbstractRestController implements
         ServiceResponse<Application> applicationResponse = applicationService.getByApplicationName(tenant, applicationName);
 
         if (!applicationResponse.isOk()) {
-            throw new NotFoundResponseException(user, applicationResponse);
+            throw new NotFoundResponseException(applicationResponse);
         } else {
 			if(applicationService.isDefaultApplication(applicationResponse.getResult(),tenant)) {
 				applicationResponse.getResult().setName(ApplicationService.DEFAULT_APPLICATION_ALIAS);
@@ -121,7 +121,7 @@ public class ApplicationRestController extends AbstractRestController implements
         ServiceResponse<Application> applicationResponse = applicationService.register(tenant, application);
 
         if (!applicationResponse.isOk()) {
-            throw new BadServiceResponseException(user, applicationResponse, validationsCode);
+            throw new BadServiceResponseException( applicationResponse, validationsCode);
         } else {
             return new ApplicationVO().apply(applicationResponse.getResult());
         }
@@ -145,7 +145,7 @@ public class ApplicationRestController extends AbstractRestController implements
         ServiceResponse<Application> applicationResponse = applicationService.getByApplicationName(tenant, applicationName);
 
         if (!applicationResponse.isOk()) {
-            throw new BadServiceResponseException(user, applicationResponse, validationsCode);
+            throw new BadServiceResponseException( applicationResponse, validationsCode);
         } else {
             applicationFromDB = applicationResponse.getResult();
         }
@@ -157,7 +157,7 @@ public class ApplicationRestController extends AbstractRestController implements
         ServiceResponse<Application> updateResponse = applicationService.update(tenant, applicationName, applicationFromDB);
 
         if (!updateResponse.isOk()) {
-            throw new BadServiceResponseException(user, updateResponse, validationsCode);
+            throw new BadServiceResponseException( updateResponse, validationsCode);
 
         }
 
@@ -174,9 +174,9 @@ public class ApplicationRestController extends AbstractRestController implements
 
         if (!applicationResponse.isOk()) {
             if (applicationResponse.getResponseMessages().containsKey(ApplicationService.Validations.APPLICATION_NOT_FOUND.getCode())) {
-                throw new NotFoundResponseException(user, applicationResponse);
+                throw new NotFoundResponseException(applicationResponse);
             } else {
-                throw new BadServiceResponseException(user, applicationResponse, validationsCode);
+                throw new BadServiceResponseException( applicationResponse, validationsCode);
             }
         }
 
@@ -196,7 +196,7 @@ public class ApplicationRestController extends AbstractRestController implements
         ServiceResponse<List<HealthAlert>> serviceResponse = healthAlertService.findAllByTenantAndApplication(tenant, application);
 
         if (!serviceResponse.isOk()) {
-            throw new NotFoundResponseException(user, serviceResponse);
+            throw new NotFoundResponseException(serviceResponse);
         } else {
             List<HealthAlertVO> healthAlertsVO = new LinkedList<>();
 
@@ -228,7 +228,7 @@ public class ApplicationRestController extends AbstractRestController implements
         ServiceResponse<HealthAlert> serviceResponse = healthAlertService.remove(tenant, application, alertGuid, Solution.ALERT_DELETED);
 
         if (!serviceResponse.isOk()) {
-            throw new NotFoundResponseException(user, serviceResponse);
+            throw new NotFoundResponseException(serviceResponse);
         }
 
     }

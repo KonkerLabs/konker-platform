@@ -97,23 +97,23 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 		HealthAlert save = healthAlertRepository.save(healthAlert);
 
 		ServiceResponse<HealthAlert> serviceResponse = getLastHighestSeverityByDeviceGuid(tenant, application, healthAlert.getDevice().getGuid());
-		sendNotification(tenant, serviceResponse.getResult());
+		sendNotification(tenant, serviceResponse.getResult(), healthAlert.getDevice());
 
 		LOGGER.info("HealthAlert created. Guid: {}", save.getGuid(), tenant.toURI(), tenant.getLogLevel());
 		return ServiceResponseBuilder.<HealthAlert>ok().withResult(save).build();
 	}
 
-	private void sendNotification(Tenant tenant, HealthAlert healthAlert) {
+	private void sendNotification(Tenant tenant, HealthAlert healthAlert, final Device device) {
 		ServiceResponse<List<User>> serviceResponse = userService.findAll(tenant);
 
 		if (serviceResponse.isOk() && !serviceResponse.getResult().isEmpty()) {
 			serviceResponse.getResult().forEach(u -> {
-				String body = MessageFormat.format("{0} - {1}", healthAlert.getSeverity().name(), healthAlert.getDescription(), null, u.getLanguage().getLocale());
+                String body = getBody(healthAlert, u);
 				String severity = messageSource.getMessage(healthAlert.getSeverity().getCode(), null, u.getLanguage().getLocale());
 
 				userNotificationService.postNotification(u, UserNotification.buildFresh(u.getEmail(),
 						messageSource.getMessage("controller.healthalert.email.subject",
-						        new Object[] {healthAlert.getDevice().getDeviceId(), severity},
+						        new Object[] {device.getDeviceId(), severity},
 						        u.getLanguage().getLocale()),
 						u.getLanguage().getLanguage(),
 						"text/plain",
@@ -125,7 +125,26 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 		}
 	}
 
-	@Override
+    private String getBody(HealthAlert healthAlert, User u) {
+
+        String body;
+        String severityName = healthAlert.getSeverity().name();
+
+        if (StringUtils.isBlank(healthAlert.getDescription())) {
+            body = MessageFormat.format("{0}", severityName);
+        } else {
+            if (HealthAlert.Description.fromCode(healthAlert.getDescription()) == null) {
+                body = MessageFormat.format("{0} - {1}", severityName, healthAlert.getDescription());
+            } else {
+                String i18Description = messageSource.getMessage(healthAlert.getDescription(), null, u.getLanguage().getLocale());
+                body = MessageFormat.format("{0} - {1}", severityName, i18Description);
+            }
+        }
+
+        return body;
+    }
+
+    @Override
 	public ServiceResponse<HealthAlert> update(Tenant tenant, Application application, String healthAlertGuid, HealthAlert updatingHealthAlert) {
 
         ServiceResponse<HealthAlert> response = validate(tenant, application);
@@ -133,12 +152,19 @@ public class HealthAlertServiceImpl implements HealthAlertService {
             return response;
         }
 
-		if (!Optional.ofNullable(healthAlertGuid).isPresent())
+		if (!Optional.ofNullable(updatingHealthAlert).isPresent()) {
+            return ServiceResponseBuilder.<HealthAlert>error()
+                    .withMessage(Validations.HEALTH_ALERT_NULL.getCode())
+                    .build();
+        }
+
+        if (!Optional.ofNullable(healthAlertGuid).isPresent()) {
             return ServiceResponseBuilder.<HealthAlert>error()
                     .withMessage(Validations.HEALTH_ALERT_GUID_IS_NULL.getCode())
                     .build();
+        }
 
-		HealthAlert healthAlertFromDB = healthAlertRepository.findByTenantIdApplicationNameAndGuid(
+        HealthAlert healthAlertFromDB = healthAlertRepository.findByTenantIdApplicationNameAndGuid(
 				tenant.getId(),
 				application.getName(),
 				healthAlertGuid);
@@ -195,7 +221,7 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 
 		ServiceResponse<HealthAlert> serviceResponse = getLastHighestSeverityByDeviceGuid(tenant, application, healthAlertFromDB.getDevice().getGuid());
 		if (serviceResponse.isOk()) {
-		    sendNotification(tenant, serviceResponse.getResult());
+		    sendNotification(tenant, serviceResponse.getResult(), updated.getDevice());
 		} else {
 	        return ServiceResponseBuilder.<HealthAlert>error()
 	                .withMessages(serviceResponse.getResponseMessages())
@@ -375,7 +401,7 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 
             ServiceResponse<HealthAlert> serviceResponse = getLastHighestSeverityByDeviceGuid(tenant, application, healthAlertFromDB.getDevice().getGuid());
             if (serviceResponse.isOk()) {
-                sendNotification(tenant, serviceResponse.getResult());
+                sendNotification(tenant, serviceResponse.getResult(), healthAlertFromDB.getDevice());
             }
         }
 
@@ -414,11 +440,12 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 
 		List<HealthAlert> healths = serviceResponse.getResult();
 
+		// sort by severity (descending)
 		healths.sort(
 				Comparator
 				.comparing((HealthAlert health) -> health.getSeverity().getPrior())
 				.thenComparing(
-						Comparator.comparing(HealthAlert::getLastChange)
+						Comparator.comparing((HealthAlert health) -> health.getLastChange() == null ? health.getRegistrationDate() : health.getLastChange())
                 ));
 
 		return ServiceResponseBuilder.<HealthAlert> ok()
