@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @RestController
@@ -61,6 +62,24 @@ public class EventRouteRestController extends AbstractRestController implements 
             "          \"type\": \"DEVICE\",\n" +
             "          \"guid\": \"818599ad-3502-4e70-a852-fc7af8e0a9f3\",\n" +
             "          \"channel\": \"temperature\"\n" +
+            "        },\n" +
+            "        \"outgoing\": {\n" +
+            "          \"type\": \"DEVICE\",\n" +
+            "          \"guid\": \"6be96783-334f-48ad-9180-6fb0a412e562\",\n" +
+            "          \"channel\": \"temp\"\n" +
+            "        },\n" +
+            "        \"filteringExpression\": \"\",\n" +
+            "        \"transformationGuid\": null,\n" +
+            "        \"active\": true\n" +
+            "}\n" +
+            "```\n\n" +
+            "### Application to Device\n\n" +
+            "```\n" +
+            "{\n" +
+            "        \"name\": \"route\",\n" +
+            "        \"description\": \"\",\n" +
+            "        \"incoming\": {\n" +
+            "          \"type\": \"APPLICATION\"\n" +
             "        },\n" +
             "        \"outgoing\": {\n" +
             "          \"type\": \"DEVICE\",\n" +
@@ -172,7 +191,7 @@ public class EventRouteRestController extends AbstractRestController implements 
 
     private RouteActorVO patchRoute(Tenant tenant, Application application, RouteActorVO actorVO) {
 
-        if (actorVO.getType().equals(RouteActorVO.TYPE_MODEL_LOCATION)) {
+        if (Optional.ofNullable(actorVO).isPresent() && actorVO.getType().equals(RouteActorVO.TYPE_MODEL_LOCATION)) {
             RouteModelLocationActorVO deviceActorVO = (RouteModelLocationActorVO) actorVO;
 
             ServiceResponse<DeviceModel> deviceModelResponse = deviceModelService.getByTenantApplicationAndGuid(tenant, application, deviceActorVO.getDeviceModelGuid());
@@ -319,6 +338,10 @@ public class EventRouteRestController extends AbstractRestController implements 
             routeActor.setData(kinesisProperties.getValues());
 
             return routeActor;
+        } else if (RouteActorType.APPLICATION.name().equalsIgnoreCase(actorVO.getType())) {
+        	routeActor.setDisplayName(application.getName());
+            routeActor.setUri(application.toURI());
+        	return routeActor;
         }
 
         return null;

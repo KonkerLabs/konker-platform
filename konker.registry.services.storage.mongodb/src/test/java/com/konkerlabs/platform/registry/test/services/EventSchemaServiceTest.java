@@ -188,7 +188,7 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/eventSchemas.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/eventSchemas.json", "/fixtures/applications.json"})
     public void shouldFindLastIncomingBy() throws Exception {
 
         Tenant tenant = tenantRepository.findByDomainName("konker");

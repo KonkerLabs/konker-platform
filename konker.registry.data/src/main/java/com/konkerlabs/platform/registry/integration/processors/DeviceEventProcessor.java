@@ -241,9 +241,9 @@ public class DeviceEventProcessor {
 				.incoming(EventActor.builder()
 						.tenantDomain(application.getTenant().getDomainName())
 						.applicationName(application.getName())
-						.deviceGuid("no-guid")
-						.channel("no-channel")
-						.deviceId("no-deviceId")
+						.deviceGuid(application.getName())
+						.channel(application.getName())
+						.deviceId(application.getName())
 						.build())
                 .creationTimestamp(Instant.now())
                 .ingestedTimestamp(Instant.now())
@@ -251,7 +251,7 @@ public class DeviceEventProcessor {
                 .build();	
 		
 		Device device = Device.builder()
-							.guid("no-guid")
+							.guid(application.getName())
 							.tenant(application.getTenant())
 							.application(application)
 							.build();

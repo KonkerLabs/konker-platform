@@ -49,9 +49,9 @@ public class EventRepositoryMongoImpl extends BaseEventRepositoryImpl {
 
         Tenant existingTenant = tenantRepository.findByDomainName(tenant.getDomainName());
 
-        if (!Optional.ofNullable(
-                deviceRepository.findByTenantAndGuid(existingTenant.getId(), event.getIncoming().getDeviceGuid())).isPresent()) {
-        	LOGGER.error(Validations.INCOMING_DEVICE_ID_DOES_NOT_EXIST.getCode());
+        if (!application.getName().equals(event.getIncoming().getDeviceGuid())) {
+        	Optional.ofNullable(deviceRepository.findByTenantAndGuid(existingTenant.getId(), event.getIncoming().getDeviceGuid()))
+        		.orElseThrow(() -> new BusinessException(Validations.INCOMING_DEVICE_ID_DOES_NOT_EXIST.getCode()));
         }
 
         Optional.ofNullable(event.getCreationTimestamp())

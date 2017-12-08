@@ -455,7 +455,10 @@ public class DeviceEventProcessorTest {
     
     @Test
     public void shouldFireApplicationRouteExecution() throws Exception {
-    	Application application = Application.builder().build();
+    	Application application = Application.builder()
+    			.name("fake")
+    			.tenant(Tenant.builder().domainName("fakedomain").build())
+    			.build();
         subject.process(application, originalPayload);
 
         verify(eventRouteExecutor, times(1)).execute(any(Event.class), any(Device.class));

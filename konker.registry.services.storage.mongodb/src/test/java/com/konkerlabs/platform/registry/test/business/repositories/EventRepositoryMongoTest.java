@@ -220,6 +220,8 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
     @Test
     public void shouldRaiseAnExceptionIfDeviceDoesNotExistsWhenSavingAnIncomingEvent() throws Exception {
         incomingEvent.getIncoming().setDeviceGuid("unknown_device");
+        
+        application = Application.builder().name("fake").build();
 
         thrown.expect(BusinessException.class);
         thrown.expectMessage(EventRepository.Validations.INCOMING_DEVICE_ID_DOES_NOT_EXIST.getCode());
@@ -230,6 +232,8 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
     @Test
     public void shouldRaiseAnExceptionIfEventTimestampIsNullWhenSavingAnIncomingEvent() throws Exception {
         incomingEvent.setCreationTimestamp(null);
+        
+        application = Application.builder().name("fake").build();
 
         thrown.expect(BusinessException.class);
         thrown.expectMessage(EventRepository.Validations.EVENT_TIMESTAMP_NULL.getCode());
@@ -239,7 +243,9 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldSaveTheIncomingEvent() throws Exception {
+    	application = Application.builder().name("fake").build();
         eventRepository.saveIncoming(tenant, application, incomingEvent);
+        
 
         DBObject saved = mongoTemplate.findOne(
                 Query.query(Criteria.where("incoming.deviceGuid").is(deviceGuid)
