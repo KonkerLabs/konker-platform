@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry.api.web.controller;
 
 import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
+import com.konkerlabs.platform.registry.api.exceptions.NotAuthorizedResponseException;
 import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
 import com.konkerlabs.platform.registry.api.model.ApplicationDestinationVO;
 import com.konkerlabs.platform.registry.api.model.DeviceInputVO;
@@ -91,7 +92,8 @@ public class DeviceRestController extends AbstractRestController implements Init
     public DeviceVO create(
             @PathVariable("application") String applicationId,
             @ApiParam(name = "body", required = true)
-            @RequestBody DeviceInputVO deviceForm) throws BadServiceResponseException, NotFoundResponseException {
+            @RequestBody DeviceInputVO deviceForm)
+            throws BadServiceResponseException, NotFoundResponseException, NotAuthorizedResponseException {
 
 
         Tenant tenant = null;
@@ -127,7 +129,7 @@ public class DeviceRestController extends AbstractRestController implements Init
                     );
 
             if (!validationResult.isOk()) {
-                throw new BadServiceResponseException(
+                throw new NotAuthorizedResponseException(
                         validationResult,
                         validationsCode
                 );

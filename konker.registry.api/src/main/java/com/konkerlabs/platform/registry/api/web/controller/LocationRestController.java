@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry.api.web.controller;
 
 import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
+import com.konkerlabs.platform.registry.api.exceptions.NotAuthorizedResponseException;
 import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
 import com.konkerlabs.platform.registry.api.model.DeviceVO;
 import com.konkerlabs.platform.registry.api.model.LocationInputVO;
@@ -53,7 +54,8 @@ public class LocationRestController extends AbstractRestController implements In
     @ApiOperation(
             value = "List all locations by application",
             response = LocationVO.class)
-    public List<LocationVO> list(@PathVariable("application") String applicationId) throws BadServiceResponseException, NotFoundResponseException {
+    public List<LocationVO> list(@PathVariable("application") String applicationId)
+            throws BadServiceResponseException, NotFoundResponseException, NotAuthorizedResponseException {
 
         Tenant tenant = null;
         Gateway gateway = null;
@@ -91,7 +93,8 @@ public class LocationRestController extends AbstractRestController implements In
     @PreAuthorize("hasAuthority('SHOW_LOCATION')")
     public LocationVO read(
             @PathVariable("application") String applicationId,
-            @PathVariable("locationName") String locationName) throws BadServiceResponseException, NotFoundResponseException {
+            @PathVariable("locationName") String locationName)
+            throws BadServiceResponseException, NotFoundResponseException, NotAuthorizedResponseException {
 
         Tenant tenant = null;
         Gateway gateway = null;
@@ -127,7 +130,8 @@ public class LocationRestController extends AbstractRestController implements In
     @PreAuthorize("hasAuthority('SHOW_LOCATION')")
     public List<DeviceVO> devices(
             @PathVariable("application") String applicationId,
-            @PathVariable("locationName") String locationName) throws BadServiceResponseException, NotFoundResponseException {
+            @PathVariable("locationName") String locationName)
+            throws BadServiceResponseException, NotFoundResponseException, NotAuthorizedResponseException {
 
         Tenant tenant = null;
         Gateway gateway = null;
@@ -164,7 +168,8 @@ public class LocationRestController extends AbstractRestController implements In
             		name = "body",
             		value = "JSON filled with the fields described in Model and Example Value beside",
             		required = true)
-            @RequestBody LocationInputVO locationForm) throws BadServiceResponseException, NotFoundResponseException {
+            @RequestBody LocationInputVO locationForm)
+            throws BadServiceResponseException, NotFoundResponseException, NotAuthorizedResponseException {
 
 
         Tenant tenant = null;
@@ -213,7 +218,8 @@ public class LocationRestController extends AbstractRestController implements In
             		name = "body",
             		value = "JSON filled with the fields described in Model and Example Value beside",
             		required = true)
-            @RequestBody LocationInputVO locationForm) throws BadServiceResponseException, NotFoundResponseException {
+            @RequestBody LocationInputVO locationForm)
+            throws BadServiceResponseException, NotFoundResponseException, NotAuthorizedResponseException {
 
         Tenant tenant = null;
         Gateway gateway = null;
@@ -340,7 +346,8 @@ public class LocationRestController extends AbstractRestController implements In
     @PreAuthorize("hasAuthority('REMOVE_LOCATION')")
     public void delete(
             @PathVariable("application") String applicationId,
-            @PathVariable("locationName") String locationName) throws BadServiceResponseException, NotFoundResponseException {
+            @PathVariable("locationName") String locationName)
+            throws BadServiceResponseException, NotFoundResponseException, NotAuthorizedResponseException {
 
         Tenant tenant = null;
         Gateway gateway = null;
@@ -382,7 +389,7 @@ public class LocationRestController extends AbstractRestController implements In
         }
     }
 
-    private void authorizeGateway(Gateway gateway, Location location) throws NotFoundResponseException {
+    private void authorizeGateway(Gateway gateway, Location location) throws NotAuthorizedResponseException {
         if (Optional.ofNullable(gateway).isPresent()) {
             ServiceResponse<Boolean> validationResult =
                     gatewayService.validateGatewayAuthorization(
@@ -391,8 +398,9 @@ public class LocationRestController extends AbstractRestController implements In
                     );
 
             if (!validationResult.isOk() || !validationResult.getResult()) {
-                throw new NotFoundResponseException(
-                        validationResult
+                throw new NotAuthorizedResponseException(
+                        validationResult,
+                        validationsCode
                 );
             }
         }
