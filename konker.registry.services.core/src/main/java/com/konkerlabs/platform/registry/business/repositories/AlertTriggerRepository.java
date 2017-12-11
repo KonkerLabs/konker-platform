@@ -15,4 +15,7 @@ public interface AlertTriggerRepository  extends MongoRepository<AlertTrigger, S
     @Query("{ 'tenant.id' : ?0, 'application.name' : ?1, 'guid' : ?2 }")
     AlertTrigger findByTenantIdAndApplicationNameAndGuid(String tenantId, String applicationName, String guid);
 
+    @Query("{ 'tenant.id' : ?0, 'application.name' : ?1, 'name' : ?2 }")
+    AlertTrigger findByTenantIdAndApplicationNameAndName(String id, String name, String triggerName);
+
 }

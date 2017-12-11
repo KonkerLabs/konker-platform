@@ -72,7 +72,7 @@ public class UserRestController implements InitializingBean {
         ServiceResponse<List<User>> userResponse = userService.findAll(tenant);
 
         if (!userResponse.isOk()) {
-            throw new BadServiceResponseException(user, userResponse, validationsCode);
+            throw new BadServiceResponseException( userResponse, validationsCode);
         } else {
             return new UserVO().apply(userResponse.getResult());
         }
@@ -92,7 +92,7 @@ public class UserRestController implements InitializingBean {
         ServiceResponse<User> userResponse = userService.findByTenantAndEmail(tenant, email);
 
         if (!userResponse.isOk()) {
-            throw new NotFoundResponseException(user, userResponse);
+            throw new NotFoundResponseException(userResponse);
         } else {
             return new UserVO().apply(userResponse.getResult());
         }
@@ -130,7 +130,7 @@ public class UserRestController implements InitializingBean {
         ServiceResponse<User> userResponse = userService.save(userFromForm, password, password);
 
         if (!userResponse.isOk()) {
-            throw new BadServiceResponseException(user, userResponse, validationsCode);
+            throw new BadServiceResponseException( userResponse, validationsCode);
         } else {
             return new UserVO().apply(userResponse.getResult());
         }
@@ -151,7 +151,7 @@ public class UserRestController implements InitializingBean {
         ServiceResponse<User> userResponse = userService.findByTenantAndEmail(tenant, email);
 
         if (!userResponse.isOk()) {
-            throw new BadServiceResponseException(user, userResponse, validationsCode);
+            throw new BadServiceResponseException( userResponse, validationsCode);
         } else {
             userFromDB = userResponse.getResult();
         }
@@ -169,7 +169,7 @@ public class UserRestController implements InitializingBean {
         ServiceResponse<User> updateResponse = userService.save(userFromDB, password, password);
 
         if (!updateResponse.isOk()) {
-            throw new BadServiceResponseException(user, userResponse, validationsCode);
+            throw new BadServiceResponseException( userResponse, validationsCode);
 
         }
 

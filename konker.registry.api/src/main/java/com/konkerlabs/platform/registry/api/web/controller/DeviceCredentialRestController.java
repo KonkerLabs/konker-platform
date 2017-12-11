@@ -51,7 +51,7 @@ public class DeviceCredentialRestController extends AbstractRestController imple
         ServiceResponse<Device> deviceResponse = deviceRegisterService.getByDeviceGuid(tenant, application, deviceGuid);
 
         if (!deviceResponse.isOk()) {
-            throw new NotFoundResponseException(user, deviceResponse);
+            throw new NotFoundResponseException(deviceResponse);
         } else {
 
             Device device = deviceResponse.getResult();
@@ -84,7 +84,7 @@ public class DeviceCredentialRestController extends AbstractRestController imple
                 .generateSecurityPassword(tenant, application, deviceGuid);
 
         if (!deviceResponse.isOk()) {
-            throw new BadServiceResponseException(user, deviceResponse, validationsCode);
+            throw new BadServiceResponseException( deviceResponse, validationsCode);
         } else {
 
             Device device = deviceResponse.getResult().getDevice();

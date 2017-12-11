@@ -63,7 +63,7 @@ public class DeviceConfigRestController extends AbstractRestController implement
         ServiceResponse<List<DeviceConfig>> restDestinationResponse = deviceConfigSetupService.findAll(tenant, application);
 
         if (!restDestinationResponse.isOk()) {
-            throw new BadServiceResponseException(user, restDestinationResponse, validationsCode);
+            throw new BadServiceResponseException( restDestinationResponse, validationsCode);
         } else {
             return new DeviceConfigVO().apply(restDestinationResponse.getResult());
         }
@@ -89,7 +89,7 @@ public class DeviceConfigRestController extends AbstractRestController implement
         ServiceResponse<String> restDestinationResponse = deviceConfigSetupService.findByModelAndLocation(tenant, application, deviceModel, location);
 
         if (!restDestinationResponse.isOk()) {
-            throw new NotFoundResponseException(user, restDestinationResponse);
+            throw new NotFoundResponseException(restDestinationResponse);
         } else {
             return JSON.parse(restDestinationResponse.getResult());
         }
@@ -117,7 +117,7 @@ public class DeviceConfigRestController extends AbstractRestController implement
         ServiceResponse<DeviceConfig> restDestinationResponse = deviceConfigSetupService.save(tenant, application, deviceModel, location, json);
 
         if (!restDestinationResponse.isOk()) {
-            throw new BadServiceResponseException(user, restDestinationResponse, validationsCode);
+            throw new BadServiceResponseException( restDestinationResponse, validationsCode);
         } else {
             return new DeviceConfigVO().apply(restDestinationResponse.getResult());
         }
@@ -145,7 +145,7 @@ public class DeviceConfigRestController extends AbstractRestController implement
         ServiceResponse<DeviceConfig> updateResponse = deviceConfigSetupService.update(tenant, application, deviceModel, location, json);
 
         if (!updateResponse.isOk()) {
-            throw new BadServiceResponseException(user, updateResponse, validationsCode);
+            throw new BadServiceResponseException( updateResponse, validationsCode);
         }
 
     }
@@ -167,9 +167,9 @@ public class DeviceConfigRestController extends AbstractRestController implement
 
         if (!restDestinationResponse.isOk()) {
             if (restDestinationResponse.getResponseMessages().containsKey(DeviceConfigSetupService.Validations.DEVICE_CONFIG_NOT_FOUND.getCode())) {
-                throw new NotFoundResponseException(user, restDestinationResponse);
+                throw new NotFoundResponseException(restDestinationResponse);
             } else {
-                throw new BadServiceResponseException(user, restDestinationResponse, validationsCode);
+                throw new BadServiceResponseException( restDestinationResponse, validationsCode);
             }
         }
 

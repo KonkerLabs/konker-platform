@@ -56,7 +56,7 @@ public class GatewayRestController extends AbstractRestController implements Ini
         ServiceResponse<List<Gateway>> gatewayResponse = gatewayService.getAll(tenant, application);
 
         if (!gatewayResponse.isOk()) {
-            throw new BadServiceResponseException(user, gatewayResponse, validationsCode);
+            throw new BadServiceResponseException( gatewayResponse, validationsCode);
         } else {
             List<GatewayVO> gatewaysVO = new ArrayList<>();
 
@@ -82,7 +82,7 @@ public class GatewayRestController extends AbstractRestController implements Ini
         ServiceResponse<Gateway> gatewayResponse = gatewayService.getByGUID(tenant, application, gatewayGuid);
 
         if (!gatewayResponse.isOk()) {
-            throw new NotFoundResponseException(user, gatewayResponse);
+            throw new NotFoundResponseException(gatewayResponse);
         } else {
             return new GatewayVO().apply(gatewayResponse.getResult());
         }
@@ -105,7 +105,7 @@ public class GatewayRestController extends AbstractRestController implements Ini
         Gateway gateway;
 
         if (!gatewayResponse.isOk()) {
-            throw new NotFoundResponseException(user, gatewayResponse);
+            throw new NotFoundResponseException(gatewayResponse);
         } else {
             gateway = gatewayResponse.getResult();
         }
@@ -114,7 +114,7 @@ public class GatewayRestController extends AbstractRestController implements Ini
         if (accessTokenServiceResponse.isOk()) {
             return accessTokenServiceResponse.getResult();
         } else {
-            throw new BadServiceResponseException(user, accessTokenServiceResponse, validationsCode);
+            throw new BadServiceResponseException( accessTokenServiceResponse, validationsCode);
         }
 
     }
@@ -144,7 +144,7 @@ public class GatewayRestController extends AbstractRestController implements Ini
         ServiceResponse<Gateway> gatewayResponse = gatewayService.save(tenant, application, gateway);
 
         if (!gatewayResponse.isOk()) {
-            throw new BadServiceResponseException(user, gatewayResponse, validationsCode);
+            throw new BadServiceResponseException( gatewayResponse, validationsCode);
         } else {
             return new GatewayVO().apply(gatewayResponse.getResult());
         }
@@ -168,7 +168,7 @@ public class GatewayRestController extends AbstractRestController implements Ini
         ServiceResponse<Gateway> gatewayResponse = gatewayService.getByGUID(tenant, application, gatewayGuid);
 
         if (!gatewayResponse.isOk()) {
-            throw new BadServiceResponseException(user, gatewayResponse, validationsCode);
+            throw new BadServiceResponseException( gatewayResponse, validationsCode);
         } else {
             gatewayFromDB = gatewayResponse.getResult();
         }
@@ -182,7 +182,7 @@ public class GatewayRestController extends AbstractRestController implements Ini
         ServiceResponse<Gateway> updateResponse = gatewayService.update(tenant, application, gatewayGuid, gatewayFromDB);
 
         if (!updateResponse.isOk()) {
-            throw new BadServiceResponseException(user, updateResponse, validationsCode);
+            throw new BadServiceResponseException( updateResponse, validationsCode);
         }
 
     }
@@ -201,9 +201,9 @@ public class GatewayRestController extends AbstractRestController implements Ini
 
         if (!gatewayResponse.isOk()) {
             if (gatewayResponse.getResponseMessages().containsKey(Validations.GATEWAY_NOT_FOUND.getCode())) {
-                throw new NotFoundResponseException(user, gatewayResponse);
+                throw new NotFoundResponseException(gatewayResponse);
             } else {
-                throw new BadServiceResponseException(user, gatewayResponse, validationsCode);
+                throw new BadServiceResponseException( gatewayResponse, validationsCode);
             }
         }
 

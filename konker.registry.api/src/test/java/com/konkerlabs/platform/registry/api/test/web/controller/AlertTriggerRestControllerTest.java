@@ -13,10 +13,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.konkerlabs.platform.registry.api.model.AlertTriggerInputVO;
+import com.konkerlabs.platform.registry.api.web.controller.AlertTriggerRestController;
+import com.konkerlabs.platform.registry.business.services.api.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -30,19 +34,12 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import com.konkerlabs.platform.registry.api.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
 import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
-import com.konkerlabs.platform.registry.api.web.controller.AlertTriggerRestController;
 import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
 import com.konkerlabs.platform.registry.business.model.AlertTrigger;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.DeviceModel;
 import com.konkerlabs.platform.registry.business.model.Location;
-import com.konkerlabs.platform.registry.business.model.SilenceTrigger;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.services.api.AlertTriggerService;
-import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
-import com.konkerlabs.platform.registry.business.services.api.LocationSearchService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = AlertTriggerRestController.class)
@@ -77,7 +74,7 @@ public class AlertTriggerRestControllerTest extends WebLayerTestContext {
 
     private Location location;
 
-    private SilenceTrigger silenceTrigger;
+    private AlertTrigger silenceAlertTrigger;
 
     private String BASEPATH = "triggers";
 
@@ -98,13 +95,16 @@ public class AlertTriggerRestControllerTest extends WebLayerTestContext {
                 .name("13th floor")
                 .build();
 
-        silenceTrigger = new SilenceTrigger();
-        silenceTrigger.setGuid("2cdc391d-6a31-4103-9679-52cb6f2e5df5");
-        silenceTrigger.setTenant(tenant);
-        silenceTrigger.setApplication(application);
-        silenceTrigger.setDeviceModel(deviceModel);
-        silenceTrigger.setLocation(location);
-        silenceTrigger.setMinutes(200);
+        silenceAlertTrigger = new AlertTrigger();
+        silenceAlertTrigger.setGuid("2cdc391d-6a31-4103-9679-52cb6f2e5df5");
+        silenceAlertTrigger.setName("silence");
+        silenceAlertTrigger.setDescription("2cdc391d description");
+        silenceAlertTrigger.setTenant(tenant);
+        silenceAlertTrigger.setApplication(application);
+        silenceAlertTrigger.setDeviceModel(deviceModel);
+        silenceAlertTrigger.setLocation(location);
+        silenceAlertTrigger.setType(AlertTrigger.AlertTriggerType.SILENCE);
+        silenceAlertTrigger.setMinutes(200);
 
         when(applicationService.getByApplicationName(tenant, application.getName()))
             .thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
@@ -115,6 +115,9 @@ public class AlertTriggerRestControllerTest extends WebLayerTestContext {
         when(locationSearchService.findByName(tenant, application, location.getName(), false))
             .thenReturn(ServiceResponseBuilder.<Location> ok().withResult(location).build());
 
+        when(alertTriggerService.findByTenantAndApplicationAndName(tenant, application, silenceAlertTrigger.getName()))
+            .thenReturn(ServiceResponseBuilder.<AlertTrigger> ok().withResult(silenceAlertTrigger).build());
+
     }
 
     @After
@@ -123,15 +126,15 @@ public class AlertTriggerRestControllerTest extends WebLayerTestContext {
     }
 
     @Test
-    public void shouldListSilenceTriggers() throws Exception {
+    public void shouldListAlertTrigger() throws Exception {
 
-        List<AlertTrigger> silenceTriggers = new ArrayList<>();
-        silenceTriggers.add(silenceTrigger);
-        silenceTriggers.add(silenceTrigger);
+        List<AlertTrigger> alertTriggers = new ArrayList<>();
+        alertTriggers.add(silenceAlertTrigger);
+        alertTriggers.add(silenceAlertTrigger);
 
         when(alertTriggerService.listByTenantAndApplication(tenant, application))
             .thenReturn(ServiceResponseBuilder.<List<AlertTrigger>> ok()
-                    .withResult(silenceTriggers).build());
+                    .withResult(alertTriggers).build());
 
         getMockMvc()
                 .perform(MockMvcRequestBuilders
@@ -144,21 +147,19 @@ public class AlertTriggerRestControllerTest extends WebLayerTestContext {
                 .andExpect(jsonPath("$.status", is("success")))
                 .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
                 .andExpect(jsonPath("$.result", hasSize(2)))
-                .andExpect(jsonPath("$.result[0].guid", is(silenceTrigger.getGuid())))
                 .andExpect(jsonPath("$.result[0].deviceModelName", is(deviceModel.getName())))
                 .andExpect(jsonPath("$.result[0].locationName", is(location.getName())))
-                .andExpect(jsonPath("$.result[0].type", is("silence")))
+                .andExpect(jsonPath("$.result[0].type", is("SILENCE")))
                 .andExpect(jsonPath("$.result[0].minutes", is(200)))
-                .andExpect(jsonPath("$.result[1].guid", is(silenceTrigger.getGuid())))
                 .andExpect(jsonPath("$.result[1].deviceModelName", is(deviceModel.getName())))
                 .andExpect(jsonPath("$.result[1].locationName", is(location.getName())))
-                .andExpect(jsonPath("$.result[1].type", is("silence")))
+                .andExpect(jsonPath("$.result[1].type", is("SILENCE")))
                 .andExpect(jsonPath("$.result[1].minutes", is(200)))
                 ;
     }
 
     @Test
-    public void shouldReturnInternalErrorWhenListSilenceTriggers() throws Exception {
+    public void shouldReturnInternalErrorWhenListAlertTrigger() throws Exception {
 
         when(alertTriggerService.listByTenantAndApplication(tenant, application))
             .thenReturn(ServiceResponseBuilder.<List<AlertTrigger>>error()
@@ -175,6 +176,107 @@ public class AlertTriggerRestControllerTest extends WebLayerTestContext {
                 .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
                 .andExpect(jsonPath("$.messages").doesNotExist())
                 .andExpect(jsonPath("$.result").doesNotExist());
+    }
+
+    @Test
+    public void shouldEditAlertTrigger() throws Exception {
+
+        when(alertTriggerService.update(Matchers.any(Tenant.class), Matchers.any(Application.class), Matchers.anyString(), Matchers.any(AlertTrigger.class)))
+                .thenReturn(ServiceResponseBuilder.<AlertTrigger> ok()
+                        .withResult(silenceAlertTrigger).build());
+
+        getMockMvc()
+                .perform(MockMvcRequestBuilders
+                        .put(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH, silenceAlertTrigger.getName()))
+                        .contentType("application/json")
+                        .content(getJson(new AlertTriggerInputVO().apply(silenceAlertTrigger)))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/json;charset=UTF-8"))
+                .andExpect(jsonPath("$.code", is(HttpStatus.OK.value())))
+                .andExpect(jsonPath("$.status", is("success")))
+                .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                .andExpect(jsonPath("$.result.name", is(silenceAlertTrigger.getName())))
+                .andExpect(jsonPath("$.result.description", is(silenceAlertTrigger.getDescription())))
+                .andExpect(jsonPath("$.result.deviceModelName", is(deviceModel.getName())))
+                .andExpect(jsonPath("$.result.locationName", is(location.getName())))
+                .andExpect(jsonPath("$.result.type", is("SILENCE")))
+                .andExpect(jsonPath("$.result.minutes", is(200)))
+                ;
+
+    }
+
+    @Test
+    public void shouldCreateAlertTrigger() throws Exception {
+
+        when(alertTriggerService.save(Matchers.any(Tenant.class), Matchers.any(Application.class), Matchers.any(AlertTrigger.class)))
+            .thenReturn(ServiceResponseBuilder.<AlertTrigger> ok()
+                    .withResult(silenceAlertTrigger).build());
+
+        getMockMvc()
+                .perform(MockMvcRequestBuilders
+                        .post(MessageFormat.format("/{0}/{1}", application.getName(), BASEPATH))
+                        .contentType("application/json")
+                        .content(getJson(new AlertTriggerInputVO().apply(silenceAlertTrigger)))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().is2xxSuccessful())
+                .andExpect(content().contentType("application/json;charset=UTF-8"))
+                .andExpect(jsonPath("$.code", is(HttpStatus.CREATED.value())))
+                .andExpect(jsonPath("$.status", is("success")))
+                .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                .andExpect(jsonPath("$.result.name", is(silenceAlertTrigger.getName())))
+                .andExpect(jsonPath("$.result.description", is(silenceAlertTrigger.getDescription())))
+                .andExpect(jsonPath("$.result.deviceModelName", is(deviceModel.getName())))
+                .andExpect(jsonPath("$.result.locationName", is(location.getName())))
+                .andExpect(jsonPath("$.result.type", is("SILENCE")))
+                .andExpect(jsonPath("$.result.minutes", is(200)))
+        ;
+    }
+
+    @Test
+    public void shouldRemoveAlertTrigger() throws Exception {
+
+        when(alertTriggerService.remove(Matchers.any(Tenant.class), Matchers.any(Application.class), Matchers.anyString()))
+                .thenReturn(ServiceResponseBuilder.<AlertTrigger> ok()
+                        .withResult(silenceAlertTrigger).build());
+
+        getMockMvc()
+                .perform(MockMvcRequestBuilders
+                        .delete(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH, silenceAlertTrigger.getName()))
+                        .contentType("application/json")
+                        .content(getJson(new AlertTriggerInputVO().apply(silenceAlertTrigger)))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().is2xxSuccessful())
+                .andExpect(content().contentType("application/json;charset=UTF-8"))
+                .andExpect(jsonPath("$.code", is(HttpStatus.NO_CONTENT.value())))
+                .andExpect(jsonPath("$.status", is("success")))
+                .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                .andExpect(jsonPath("$.result").doesNotExist());
+
+    }
+
+
+    @Test
+    public void shouldReadAlertTrigger() throws Exception {
+
+        getMockMvc()
+                .perform(MockMvcRequestBuilders
+                        .get(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH, silenceAlertTrigger.getName()))
+                        .contentType("application/json")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().is2xxSuccessful())
+                .andExpect(content().contentType("application/json;charset=UTF-8"))
+                .andExpect(jsonPath("$.code", is(HttpStatus.OK.value())))
+                .andExpect(jsonPath("$.status", is("success")))
+                .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                .andExpect(jsonPath("$.result.name", is(silenceAlertTrigger.getName())))
+                .andExpect(jsonPath("$.result.description", is(silenceAlertTrigger.getDescription())))
+                .andExpect(jsonPath("$.result.deviceModelName", is(deviceModel.getName())))
+                .andExpect(jsonPath("$.result.locationName", is(location.getName())))
+                .andExpect(jsonPath("$.result.type", is("SILENCE")))
+                .andExpect(jsonPath("$.result.minutes", is(200)))
+        ;
+
     }
 
 }
