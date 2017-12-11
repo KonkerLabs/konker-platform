@@ -36,6 +36,7 @@ public class GatewayServiceImpl implements GatewayService {
     private GatewayRepository gatewayRepository;
     @Autowired
     private LocationRepository locationRepository;
+    private static final Integer maxLocationTreeDeep = 50;
 
     @Override
     public ServiceResponse<Gateway> save(Tenant tenant, Application application, Gateway route) {
@@ -225,13 +226,12 @@ public class GatewayServiceImpl implements GatewayService {
 
         if (source.getLocation().getChildren() == null ||
                 source.getLocation().getChildren().size() == 0) {
-            List<Location> sourceChildrens =
-                    locationRepository.findChildrensByParentId(
-                            source.getTenant().getId(),
-                            source.getApplication().getName(),
-                            source.getLocation().getId());
-            source.getLocation().setChildren(sourceChildrens);
-
+            pushAllChilds(
+                    source.getLocation(),
+                    source.getApplication(),
+                    source.getTenant(),
+                    maxLocationTreeDeep,
+                    0);
         }
 
         if (LocationTreeUtils.isSublocationOf(source.getLocation(), locationToAuthorize)) {
@@ -247,6 +247,26 @@ public class GatewayServiceImpl implements GatewayService {
                 .build();
 
     }
+
+    private void pushAllChilds(Location location, Application application,
+                               Tenant tenant, Integer maxDeep, Integer currentDeep) {
+        if (currentDeep > maxDeep) {
+            LOGGER.warn("Too deep structure. Cyclic graph?");
+        } else {
+            pushChilds(location, application, tenant);
+            for(Location child : location.getChildren()) {
+                pushAllChilds(child, application, tenant, maxDeep, currentDeep+1);
+            }
+        }
+    }
+
+    private void pushChilds(Location location, Application application, Tenant tenant) {
+        location.setChildren(locationRepository.findChildrensByParentId(
+                tenant.getId(),
+                application.getName(),
+                location.getId()));
+    }
+
 
     private <T> ServiceResponse<T> validate(Tenant tenant, Application application) {
 
