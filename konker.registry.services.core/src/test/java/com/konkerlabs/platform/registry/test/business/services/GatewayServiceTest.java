@@ -438,7 +438,7 @@ public class GatewayServiceTest extends BusinessLayerTestSupport {
                         room101Roof
                 );
 
-        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
         assertThat(response.getResult(), equalTo(Boolean.FALSE));
     }
 
