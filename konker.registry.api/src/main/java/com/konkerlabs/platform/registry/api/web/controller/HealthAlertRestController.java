@@ -127,12 +127,19 @@ public class HealthAlertRestController extends AbstractRestController implements
                 alertTrigger,
                 alertId
         );
+
+        // if alert not exists, creates a new oen
+        if (alertResponse.getResponseMessages().containsKey(HealthAlertService.Validations.HEALTH_ALERT_DOES_NOT_EXIST.getCode())) {
+            form.setAlertId(alertId);
+            return createAlert(applicationId, triggerName, form);
+        }
+
         if (!alertResponse.isOk()) {
             throw new BadServiceResponseException( alertResponse, validationsCode);
         }
 
-        HealthAlert healthAlert = getHealthAlertFromVO(form, alertTrigger, null);
         HealthAlert healthAlertFromDB = alertResponse.getResult();
+        HealthAlert healthAlert = getHealthAlertFromVO(form, alertTrigger, null);
 
         ServiceResponse<HealthAlert> registerResponse = healthAlertService
                 .update(tenant, application, healthAlertFromDB.getGuid(), healthAlert);

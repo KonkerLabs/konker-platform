@@ -175,6 +175,14 @@ public class HealthAlertServiceImpl implements HealthAlertService {
                     .build();
 		}
 
+        HealthAlertSeverity oldStatus = healthAlertFromDB.getSeverity();
+        HealthAlertSeverity newStatus = updatingHealthAlert.getSeverity();
+
+        // if alert is resolved, remove it
+        if (HealthAlertSeverity.OK.equals(newStatus)) {
+            return remove(tenant, application, healthAlertFromDB.getGuid(), Solution.MARKED_AS_RESOLVED);
+        }
+
 		healthAlertFromDB.setDescription(updatingHealthAlert.getDescription());
 		healthAlertFromDB.setSeverity(updatingHealthAlert.getSeverity());
 		healthAlertFromDB.setLastChange(Instant.now());
@@ -187,6 +195,11 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 		}
 
 		HealthAlert updated = healthAlertRepository.save(healthAlertFromDB);
+
+		// notify new status
+		if (!newStatus.equals(oldStatus)) {
+		    sendNotification(tenant, updated, updated.getDevice());
+        }
 
 		LOGGER.info("HealthAlert updated. Guid: {}", healthAlertFromDB.getGuid(), tenant.toURI(), tenant.getLogLevel());
 		return ServiceResponseBuilder.<HealthAlert>ok().withResult(updated).build();

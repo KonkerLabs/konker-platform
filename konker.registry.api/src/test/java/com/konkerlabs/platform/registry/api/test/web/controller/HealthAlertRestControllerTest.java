@@ -229,6 +229,45 @@ public class HealthAlertRestControllerTest extends WebLayerTestContext {
                 ;
     }
 
+
+    @Test
+    public void shouldEditNonExistingHealthAlert() throws Exception {
+
+        when(healthAlertService.findByTenantApplicationTriggerAndAlertId(
+                tenant,
+                application,
+                silenceAlertTrigger,
+                healthAlertA.getAlertId())
+        ).thenReturn(ServiceResponseBuilder.<HealthAlert> error()
+                .withMessage(HealthAlertService.Validations.HEALTH_ALERT_DOES_NOT_EXIST.getCode()).build());
+
+        when(healthAlertService.register(Matchers.any(Tenant.class), Matchers.any(Application.class), Matchers.any(HealthAlert.class)))
+                .thenReturn(ServiceResponseBuilder.<HealthAlert> ok()
+                        .withResult(healthAlertA).build());
+
+        getMockMvc()
+                .perform(MockMvcRequestBuilders
+                        .put(MessageFormat.format("/{0}/{1}/{2}/alerts/{3}", application.getName(), BASEPATH, silenceAlertTrigger.getName(), healthAlertA.getAlertId()))
+                        .contentType("application/json")
+                        .content(getJson(new HealthAlertInputVO().apply(healthAlertA)))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/json;charset=UTF-8"))
+                .andExpect(jsonPath("$.code", is(HttpStatus.OK.value())))
+                .andExpect(jsonPath("$.status", is("success")))
+                .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                .andExpect(jsonPath("$.result.alertId", is(healthAlertA.getAlertId())))
+                .andExpect(jsonPath("$.result.deviceId", is(device.getDeviceId())))
+                .andExpect(jsonPath("$.result.description", is(healthAlertA.getDescription())))
+                .andExpect(jsonPath("$.result.occurrenceDate", is("2007-12-03T10:15:30Z")))
+                .andExpect(jsonPath("$.result.severity", is("FAIL")))
+                .andExpect(jsonPath("$.result.type", is("SILENCE")))
+                .andExpect(jsonPath("$.result.triggerName", is(silenceAlertTrigger.getName())))
+
+        ;
+    }
+
+
     @Test
     public void shouldCreateHealthAlert() throws Exception {
 

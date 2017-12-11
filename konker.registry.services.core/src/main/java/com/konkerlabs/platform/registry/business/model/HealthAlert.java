@@ -31,6 +31,7 @@ public class HealthAlert implements URIDealer {
 
         MESSAGE_RECEIVED("model.healthalert.solution.message_received"),
         ALERT_DELETED("model.healthalert.solution.alert_deleted"),
+        MARKED_AS_RESOLVED("model.healthalert.solution.marked_as_resolved"),
         TRIGGER_DELETED("model.healthalert.solution.trigger_deleted");
 
         private String code;

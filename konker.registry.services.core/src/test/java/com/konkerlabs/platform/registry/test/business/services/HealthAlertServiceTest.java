@@ -337,6 +337,29 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
+    public void shouldUpdateHealthAlertWithOk() {
+        tempHealthAlert.setDescription("Health of device is ok.");
+        tempHealthAlert.setSeverity(HealthAlertSeverity.OK);
+
+        ServiceResponse<HealthAlert> serviceResponse = healthAlertService.update(
+                application.getTenant(),
+                application,
+                tempHealthAlert.getGuid(),
+                tempHealthAlert);
+
+        assertThat(serviceResponse.isOk(), is(true));
+
+        serviceResponse = healthAlertService.findByTenantApplicationTriggerAndAlertId(
+                currentTenant,
+                application,
+                trigger,
+                tempHealthAlert.getAlertId()
+        );
+        assertThat(serviceResponse, hasErrorMessage(Validations.HEALTH_ALERT_DOES_NOT_EXIST.getCode()));
+    }
+
+
+    @Test
     public void shouldUpdateHealthAlert() {
     	tempHealthAlert.setDescription("Health of device is ok.");
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.update(
