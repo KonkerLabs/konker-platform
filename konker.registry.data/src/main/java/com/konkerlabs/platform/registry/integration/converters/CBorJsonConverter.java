@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
@@ -24,9 +25,9 @@ public class CBorJsonConverter implements JsonConverter {
 		try {
 			CBORFactory factory = new CBORFactory();
 			ObjectMapper mapper = new ObjectMapper(factory);
-			String json = mapper.readValue(bytes, String.class);
+			JsonNode json = mapper.readValue(bytes, JsonNode.class);
 			
-			return ServiceResponseBuilder.<String>ok().withResult(json).build();
+			return ServiceResponseBuilder.<String>ok().withResult(json.toString()).build();
 		} catch (IOException e) {
 			LOGGER.error("Exception converting CBOR to JSON", e);
             return ServiceResponseBuilder.<String>error().build();
