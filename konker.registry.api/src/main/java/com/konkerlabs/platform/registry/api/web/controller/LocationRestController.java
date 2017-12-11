@@ -190,7 +190,7 @@ public class LocationRestController extends AbstractRestController implements In
                 .build();
 
         if(gateway != null) {
-            authorizeGateway(gateway, location);
+            authorizeGateway(gateway, parent);
         }
 
         ServiceResponse<Location> locationResponse = locationService.save(tenant, application, location);
