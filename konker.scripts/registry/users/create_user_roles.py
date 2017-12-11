@@ -43,10 +43,19 @@ def add_privileges(role_name, privilege_name):
     ref = DBRef("privileges", ObjectId(privilege['_id']))
 
     if ref not in role['privileges']:
+        print "Add {} to {}".format(privilege_name, role_name)
         db.roles.update({'_id': role['_id']}, {'$push': {'privileges': ref}})
 
 def main():
     add_privileges('ROLE_IOT_GATEWAY', 'LIST_DEVICES')
+    add_privileges('ROLE_IOT_GATEWAY', 'LIST_LOCATIONS')
+    add_privileges('ROLE_IOT_GATEWAY', 'SHOW_LOCATION')
+    add_privileges('ROLE_IOT_GATEWAY', 'CREATE_LOCATION')
+    add_privileges('ROLE_IOT_GATEWAY', 'EDIT_LOCATION')
+    add_privileges('ROLE_IOT_GATEWAY', 'REMOVE_LOCATION')
+    add_privileges('ROLE_IOT_GATEWAY', 'ADD_DEVICE')
+    add_privileges('ROLE_IOT_GATEWAY', 'REMOVE_DEVICE')
+
 
 if __name__ == "__main__":
     main()
