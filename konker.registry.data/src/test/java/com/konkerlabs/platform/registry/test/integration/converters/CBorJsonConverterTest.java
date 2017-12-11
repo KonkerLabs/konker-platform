@@ -45,10 +45,10 @@ public class CBorJsonConverterTest {
 
     @Test
     public void shouldReturnErrorIfConvertInvalidCBor() {
-        byte cborData[] = {(byte)131, (byte)1, (byte)2, (byte)3};
+        byte cborData[] = {(byte)-129, (byte)1, (byte)2, (byte)3};
 
         ServiceResponse<String> fromJsonResponse = converter.toJson(cborData);
-        assertThat(fromJsonResponse.isOk(), Matchers.is(true));
+        assertThat(fromJsonResponse.isOk(), Matchers.is(false));
 
     }
 
