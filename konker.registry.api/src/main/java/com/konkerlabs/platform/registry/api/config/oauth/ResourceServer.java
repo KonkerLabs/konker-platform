@@ -20,7 +20,10 @@ public class ResourceServer extends ResourceServerConfigurerAdapter {
 			"/swagger-resources/configuration/security",
 			"/api/docs",
 			"/static/**",
-			"/v2/api-docs"
+			"/v2/api-docs",
+
+            // endpoints with no authentication
+            "/userSubscription"
 	};
 
 	@Override

@@ -1,11 +1,11 @@
 package com.konkerlabs.platform.registry.business.services.api;
 
-import java.util.List;
-
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.HealthAlert;
 import com.konkerlabs.platform.registry.business.model.HealthAlert.Solution;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+
+import java.util.List;
 
 public interface HealthAlertService {
 
@@ -28,7 +28,7 @@ public interface HealthAlertService {
 		}
 	}
 
-	public enum Messages {
+	enum Messages {
 		HEALTH_ALERT_REMOVED_SUCCESSFULLY("controller.healthalert.removed.succesfully");
 
 		public String getCode() {
@@ -49,6 +49,6 @@ public interface HealthAlertService {
 	ServiceResponse<List<HealthAlert>> findAllByTenantApplicationAndDeviceGuid(Tenant tenant, Application application, String deviceGuid);
 	ServiceResponse<HealthAlert> getByTenantApplicationAndHealthAlertGuid(Tenant tenant, Application application, String healthAlertGuid);
     ServiceResponse<List<HealthAlert>>  removeAlertsFromTrigger(Tenant tenant, Application application, String guid);
-    ServiceResponse<HealthAlert> getLastHightServerityByDeviceGuid(Tenant tenant, Application application, String deviceGuid);
+    ServiceResponse<HealthAlert> getLastHightSeverityByDeviceGuid(Tenant tenant, Application application, String deviceGuid);
 
 }

@@ -22,6 +22,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
 import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
+import com.konkerlabs.platform.registry.config.EmailConfig;
 import com.konkerlabs.platform.registry.config.WebConfig;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.security.UserContextResolver;
@@ -30,7 +31,7 @@ import com.konkerlabs.platform.registry.web.converters.DateToStringConverter;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
-@ContextConfiguration(classes = { WebMvcConfig.class, WebTestConfiguration.class, WebConfig.class })
+@ContextConfiguration(classes = { WebMvcConfig.class, WebTestConfiguration.class, WebConfig.class, EmailConfig.class })
 public class DateToStringConverterTest {
 
 	@Autowired

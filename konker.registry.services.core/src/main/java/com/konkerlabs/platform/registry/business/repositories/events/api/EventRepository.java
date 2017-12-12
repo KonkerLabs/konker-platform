@@ -2,6 +2,7 @@ package com.konkerlabs.platform.registry.business.repositories.events.api;
 
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 
@@ -59,5 +60,7 @@ public interface EventRepository {
                                Integer limit) throws BusinessException;
 
     void removeBy(Tenant tenant, Application application, String deviceGuid) throws BusinessException;
+
+    void copy(Tenant tenant, Device originDevice, Device destDevice) throws BusinessException;
 
 }

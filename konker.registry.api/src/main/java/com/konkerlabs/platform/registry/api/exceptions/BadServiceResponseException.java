@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.konkerlabs.platform.registry.business.model.User;
+import com.konkerlabs.platform.registry.business.model.enumerations.Language;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 
 public class BadServiceResponseException extends Exception {
@@ -33,8 +34,11 @@ public class BadServiceResponseException extends Exception {
         }
 
         this.responseMessages = responseMessages;
-        this.locale = user.getLanguage().getLocale();
-
+        if (user != null) {
+            this.locale = user.getLanguage().getLocale();
+        } else {
+            this.locale = Language.PT_BR.getLocale();
+        }
     }
 
     public boolean hasValidationsError() {

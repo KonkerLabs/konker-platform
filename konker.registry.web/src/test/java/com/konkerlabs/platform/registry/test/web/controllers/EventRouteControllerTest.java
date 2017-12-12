@@ -68,7 +68,9 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.TransformationService;
 import com.konkerlabs.platform.registry.config.CdnConfig;
+import com.konkerlabs.platform.registry.config.EmailConfig;
 import com.konkerlabs.platform.registry.config.HotjarConfig;
+import com.konkerlabs.platform.registry.config.MessageSourceConfig;
 import com.konkerlabs.platform.registry.config.WebConfig;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
@@ -86,7 +88,9 @@ import com.konkerlabs.platform.registry.web.forms.EventRouteForm;
         EventRouteControllerTest.EventRouteTestContextConfig.class,
         WebConfig.class,
         HotjarConfig.class,
-        CdnConfig.class
+        CdnConfig.class, 
+        EmailConfig.class,
+        MessageSourceConfig.class
 })
 public class EventRouteControllerTest extends WebLayerTestContext {
 
@@ -312,6 +316,13 @@ public class EventRouteControllerTest extends WebLayerTestContext {
     public void shouldRenderModelLocationIncomingViewFragment() throws Exception {
         getMockMvc().perform(get("/routes/{0}/incoming/{1}", application.getName(), "modelLocation"))
                 .andExpect(view().name("routes/model-location-incoming"))
+                .andExpect(model().attribute("route", new EventRouteForm()));
+    }
+
+    @Test
+    public void shouldRenderModelLocationOutgoingViewFragment() throws Exception {
+        getMockMvc().perform(get("/routes/{0}/outgoing/{1}", application.getName(), "modelLocation"))
+                .andExpect(view().name("routes/model-location-outgoing"))
                 .andExpect(model().attribute("route", new EventRouteForm()));
     }
 

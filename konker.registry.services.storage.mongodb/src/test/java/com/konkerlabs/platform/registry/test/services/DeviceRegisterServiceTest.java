@@ -1,14 +1,9 @@
 package com.konkerlabs.platform.registry.test.services;
 
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
-import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
-import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
+import com.konkerlabs.platform.registry.business.repositories.*;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
@@ -37,9 +32,13 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Arrays;
+import java.util.Set;
 
 import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -72,6 +71,8 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     private static final String ANOTHER_DEVICE_NAME = "Another Device Name";
     private static final String ANOTHER_DEVICE_DESCRIPTION = "Another Device Description";
     private static final Instant THE_REGISTRATION_TIME = Instant.now().minus(Duration.ofDays(2));
+    private static final Set<String> DEVICE_TAGS =new HashSet<>(Arrays.asList("tag1", "tag2"));
+    private static final Set<String> ANOTHER_DEVICE_TAGS =new HashSet<>(Arrays.asList("anotherTag1", "anotherTag2"));
     private static final String THE_DEVICE_PASSWORD = "vKyCY2VXjHWC";
 
 
@@ -85,6 +86,10 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     private TenantRepository tenantRepository;
     @Autowired
     private DeviceRepository deviceRepository;
+    @Autowired
+    private LocationRepository locationRepository;
+    @Autowired
+    private DeviceModelRepository deviceModelRepository;
     @Autowired
     private ApplicationRepository applicationRepository;
     @Autowired
@@ -103,6 +108,8 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         currentTenant = tenantRepository.findByName("Konker");
         emptyTenant = tenantRepository.findByName("EmptyTenant");
         currentApplication = applicationRepository.findByTenantAndName(currentTenant.getId(), "smartffkonker");
+
+        applicationRepository.findAllByTenant(currentTenant.getId());
 
         otherApplication = Application.builder()
 				.name("smartffkonkerother")
@@ -232,7 +239,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
         assertThat(response, isResponseOk());
 
-        Device saved = deviceRepository.findByTenantIdAndDeviceId(currentTenant.getId(), device.getDeviceId());
+        Device saved = deviceRepository.findByTenantIdAndApplicationAndDeviceId(currentTenant.getId(), currentApplication.getName(), device.getDeviceId());
 
         assertThat(response.getResult(), equalTo(saved));
     }
@@ -246,7 +253,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
 		assertThat(response, isResponseOk());
 
-		Device saved = deviceRepository.findByTenantIdAndDeviceId(currentTenant.getId(), device.getDeviceId());
+		Device saved = deviceRepository.findByTenantIdAndApplicationAndDeviceId(currentTenant.getId(), currentApplication.getName(), device.getDeviceId());
 
 		assertThat(saved.getLogLevel(), equalTo(LogLevel.ALL));
 
@@ -260,7 +267,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 		assertThat(response, isResponseOk());
 		assertThat(response.getResult().getLocation().getName(), is("default"));
 
-		saved = deviceRepository.findByTenantIdAndDeviceId(currentTenant.getId(), device.getDeviceId());
+		saved = deviceRepository.findByTenantIdAndApplicationAndDeviceId(currentTenant.getId(), currentApplication.getName(), device.getDeviceId());
 
 		assertThat(saved.getLogLevel(), equalTo(LogLevel.WARNING));
 
@@ -418,11 +425,12 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         persisted.setName(ANOTHER_DEVICE_NAME);
         persisted.setDescription(ANOTHER_DEVICE_DESCRIPTION);
         persisted.setRegistrationDate(THE_REGISTRATION_TIME);
+        persisted.setTags(ANOTHER_DEVICE_TAGS);
         persisted.setActive(false);
 
         ServiceResponse<Device> response = deviceRegisterService.update(currentTenant, currentApplication, THE_DEVICE_GUID, persisted);
 
-        Device updated = deviceRepository.findByTenantIdAndDeviceId(currentTenant.getId(), persisted.getDeviceId());
+        Device updated = deviceRepository.findByTenantIdAndApplicationAndDeviceId(currentTenant.getId(), currentApplication.getName(), persisted.getDeviceId());
 
 //        assertThat(response, notNullValue());
 //        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
@@ -435,6 +443,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         Device foundDevice = deviceRegisterService.getByDeviceGuid(currentTenant, currentApplication, THE_DEVICE_GUID).getResult();
         assertThat(foundDevice.getName(), equalTo(ANOTHER_DEVICE_NAME));
         assertThat(foundDevice.getDescription(), equalTo(ANOTHER_DEVICE_DESCRIPTION));
+        assertThat(foundDevice.getTags(), equalTo(ANOTHER_DEVICE_TAGS));  
         assertThat(foundDevice.isActive(), equalTo(false));
 
         // ensure that data should not be changed didn't change
@@ -450,6 +459,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         persisted.setName(ANOTHER_DEVICE_NAME);
         persisted.setDescription(ANOTHER_DEVICE_DESCRIPTION);
         persisted.setRegistrationDate(THE_REGISTRATION_TIME);
+        persisted.setTags(ANOTHER_DEVICE_TAGS);
         persisted.setApiKey("changed_api_key");
         persisted.setActive(false);
 
@@ -640,6 +650,248 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     			.generateSecurityPassword(currentTenant, currentApplication, ANOTHER_DEVICE_GUID);
 
     	assertThat(credentials.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+    }
+
+    // ************************* getDeviceDataURLs *************************
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
+    public void shouldGetDeviceDataURLs() {
+        Device device = deviceRegisterService
+                .findByTenantDomainNameAndDeviceGuid(currentTenant.getDomainName(), THE_DEVICE_GUID);
+
+        ServiceResponse<DeviceRegisterService.DeviceDataURLs> response = deviceRegisterService
+                .getDeviceDataURLs(currentTenant, currentApplication, device, Locale.ENGLISH);
+
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
+        assertThat(response.getResult().getHttpURLPub(), is("http://dev-server:8080/pub/e4399b2ed998/<Channel>"));
+        assertThat(response.getResult().getHttpURLSub(), is("http://dev-server:8080/sub/e4399b2ed998/<Channel>"));
+        assertThat(response.getResult().getHttpsURLPub(), is("https://dev-server:443/pub/e4399b2ed998/<Channel>"));
+        assertThat(response.getResult().getHttpsURLSub(), is("https://dev-server:443/sub/e4399b2ed998/<Channel>"));
+
+        assertThat(response.getResult().getMqttPubTopic(), is("data/e4399b2ed998/pub/<Channel>"));
+        assertThat(response.getResult().getMqttSubTopic(), is("data/e4399b2ed998/sub/<Channel>"));
+        assertThat(response.getResult().getMqttURL(), is("mqtt://dev-server:1883"));
+        assertThat(response.getResult().getMqttsURL(), is("mqtts://dev-server:1883"));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
+    public void shouldGetDeviceDataURLsWithDataDomain() {
+        Device device = deviceRegisterService
+                .findByTenantDomainNameAndDeviceGuid(currentTenant.getDomainName(), THE_DEVICE_GUID);
+
+        currentTenant.setDataApiDomain("domain.io");
+
+        ServiceResponse<DeviceRegisterService.DeviceDataURLs> response = deviceRegisterService
+                .getDeviceDataURLs(currentTenant, currentApplication, device, Locale.ENGLISH);
+
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
+        assertThat(response.getResult().getHttpURLPub(), is("http://domain.io:8080/pub/e4399b2ed998/<Channel>"));
+        assertThat(response.getResult().getHttpURLSub(), is("http://domain.io:8080/sub/e4399b2ed998/<Channel>"));
+        assertThat(response.getResult().getHttpsURLPub(), is("https://domain.io:443/pub/e4399b2ed998/<Channel>"));
+        assertThat(response.getResult().getHttpsURLSub(), is("https://domain.io:443/sub/e4399b2ed998/<Channel>"));
+
+        assertThat(response.getResult().getMqttPubTopic(), is("data/e4399b2ed998/pub/<Channel>"));
+        assertThat(response.getResult().getMqttSubTopic(), is("data/e4399b2ed998/sub/<Channel>"));
+        assertThat(response.getResult().getMqttURL(), is("mqtt://domain.io:1883"));
+        assertThat(response.getResult().getMqttsURL(), is("mqtts://domain.io:1883"));
+
+    }
+
+    // ************************* move *************************
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
+    public void shouldMove() {
+
+        Application otherApplication = applicationRepository.findByTenantAndName(currentTenant.getId(), "konker");
+
+        ServiceResponse<Device> response = deviceRegisterService
+                .move(currentTenant, currentApplication, THE_DEVICE_GUID, otherApplication);
+
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
+
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
+    public void shouldMoveNonExistingLocationAndDeviceModel() {
+
+        Application otherApplication = applicationRepository.findByTenantAndName(currentTenant.getId(), "konker");
+
+        Location location = Location
+                .builder()
+                .tenant(currentTenant)
+                .application(currentApplication)
+                .name("dxpobdi1yx")
+                .defaultLocation(false)
+                .build();
+        location = locationRepository.save(location);
+
+        Device device = deviceRepository.findByTenantAndApplicationAndGuid(
+                currentTenant.getId(),
+                currentApplication.getName(),
+                THE_DEVICE_GUID);
+        device.setLocation(location);
+        deviceRepository.save(device);
+
+        ServiceResponse<Device> response = deviceRegisterService
+                .move(currentTenant, currentApplication, THE_DEVICE_GUID, otherApplication);
+
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
+        assertThat(response.getResult().getLocation().getName(), equalTo("default"));
+
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
+    public void shouldMoveExistingLocationAndDeviceModel() {
+
+        Application otherApplication = applicationRepository.findByTenantAndName(currentTenant.getId(), "konker");
+
+        Location location = Location
+                .builder()
+                .tenant(currentTenant)
+                .application(currentApplication)
+                .name("dxpobdi1yx")
+                .defaultLocation(false)
+                .build();
+        location = locationRepository.save(location);
+
+        Location locationOther = Location
+                .builder()
+                .tenant(currentTenant)
+                .application(otherApplication)
+                .name("dxpobdi1yx")
+                .defaultLocation(false)
+                .build();
+        locationRepository.save(locationOther);
+
+        Device device = deviceRepository.findByTenantAndApplicationAndGuid(
+                currentTenant.getId(),
+                currentApplication.getName(),
+                THE_DEVICE_GUID);
+        device.setLocation(location);
+        deviceRepository.save(device);
+
+        ServiceResponse<Device> response = deviceRegisterService
+                .move(currentTenant, currentApplication, THE_DEVICE_GUID, otherApplication);
+
+        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
+        assertThat(response.getResult().getLocation().getName(), equalTo("dxpobdi1yx"));
+
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json", "/fixtures/event-routes.json"})
+    public void shouldReturnErrorMoveDeviceWithDependencies() {
+
+        Application otherApplication = applicationRepository.findByTenantAndName(currentTenant.getId(), "konker");
+
+        ServiceResponse<Device> serviceResponse = deviceRegisterService
+                .move(currentTenant, currentApplication, THE_DEVICE_GUID, otherApplication);
+
+        assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+        assertThat(serviceResponse.getResponseMessages(),
+                hasEntry(DeviceRegisterService.Validations.DEVICE_HAVE_EVENTROUTES.getCode(), null));
+        assertThat(serviceResponse.getResult(), nullValue());
+
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json", "/fixtures/event-routes.json"})
+    public void shouldReturnErrorMoveDeviceWithExistingId() {
+
+        Application otherApplication = applicationRepository.findByTenantAndName(currentTenant.getId(), "konker");
+
+        Device sameNameDevice = Device.builder()
+                                      .tenant(currentTenant)
+                                      .application(otherApplication)
+                                      .deviceId("SN1234567890")
+                                      .build();
+        deviceRepository.save(sameNameDevice);
+
+        ServiceResponse<Device> serviceResponse = deviceRegisterService
+                .move(currentTenant, currentApplication, THE_DEVICE_GUID, otherApplication);
+
+        assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+        assertThat(serviceResponse.getResponseMessages(),
+                hasEntry(DeviceRegisterService.Validations.DEVICE_ID_ALREADY_REGISTERED.getCode(), null));
+        assertThat(serviceResponse.getResult(), nullValue());
+
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
+    public void shouldReturnErrorMoveSameDestination() {
+
+        ServiceResponse<Device> serviceResponse = deviceRegisterService
+                .move(currentTenant, currentApplication, THE_DEVICE_GUID, currentApplication);
+
+        assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+        assertThat(serviceResponse.getResponseMessages(),
+                hasEntry(DeviceRegisterService.Validations.EQUALS_ORIGIN_DESTINATION_APPLICATIONS.getCode(), null));
+        assertThat(serviceResponse.getResult(), nullValue());
+
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
+    public void shouldReturnErrorMoveWithGuidNull() {
+
+        ServiceResponse<Device> serviceResponse = deviceRegisterService
+                .move(currentTenant, currentApplication, null, currentApplication);
+
+        assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+        assertThat(serviceResponse.getResponseMessages(),
+                hasEntry(DeviceRegisterService.Validations.DEVICE_GUID_NULL.getCode(), null));
+        assertThat(serviceResponse.getResult(), nullValue());
+
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
+    public void shouldReturnErrorMoveWithDestinationNull() {
+
+        ServiceResponse<Device> serviceResponse = deviceRegisterService
+                .move(currentTenant, currentApplication, THE_DEVICE_GUID, null);
+
+        assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+        assertThat(serviceResponse.getResponseMessages(),
+                hasEntry(ApplicationService.Validations.APPLICATION_NULL.getCode(), null));
+        assertThat(serviceResponse.getResult(), nullValue());
+
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
+    public void shouldReturnErrorMoveWithInvalidGuid() {
+
+        Application otherApplication = applicationRepository.findByTenantAndName(currentTenant.getId(), "konker");
+
+        ServiceResponse<Device> serviceResponse = deviceRegisterService
+                .move(currentTenant, currentApplication, "0000-aaaa", otherApplication);
+
+        assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+        assertThat(serviceResponse.getResponseMessages(),
+                hasEntry(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode(), null));
+        assertThat(serviceResponse.getResult(), nullValue());
+
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
+    public void shouldReturnErrorMoveWithInvalidDestination() {
+
+        ServiceResponse<Device> serviceResponse = deviceRegisterService
+                .move(currentTenant, currentApplication, THE_DEVICE_GUID, Application.builder().name("NOT").build());
+
+        assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+        assertThat(serviceResponse.getResponseMessages(),
+                hasEntry(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode(), null));
+        assertThat(serviceResponse.getResult(), nullValue());
+
     }
 
 }

@@ -32,6 +32,15 @@ def user_find(username):
         sys.exit(1)
     return user
 
+def find_user_no_active():
+    db = db_connect()
+    try:
+        users = db.users.find({'active': {'$exists': False}})
+    except Exception as e:
+        print(e)
+        sys.exit(1)
+    return users
+
 
 def domain_generator(size = 8):
     chars = string.ascii_uppercase + string.ascii_lowercase
@@ -336,3 +345,24 @@ def save_outgoing_events(outgoingEvents, host):
     except Exception as e:
         print(e)
         sys.exit(1)
+        
+def update_user_add_active():
+    db = db_connect()
+    users = find_user_no_active()
+    for user in users:
+        try:
+            db.users.update_one(
+                {
+                    '_id': user['_id']
+                },
+                {
+                    '$set':
+                        {
+                            'active': True
+                        }
+                }, upsert=False)
+            print('Konker user [%s] active property added' %(user['_id']))
+        except Exception as e:
+            print(e)
+            sys.exit(1)
+

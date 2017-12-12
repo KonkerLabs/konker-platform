@@ -560,7 +560,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
     public void shouldReturnValidationMessageIfRecordIsNullWhenUpdating() throws Exception {
         ServiceResponse<EventRoute> response = subject.update(tenant, application, existingGuid, null);
 
@@ -833,7 +833,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
     public void shouldReturnValidationMessageGuidIsNullWhenRemoving() throws Exception {
         ServiceResponse<EventRoute> response = subject.remove(tenant, application, null);
 
@@ -841,7 +841,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
     public void shouldReturnValidationMessageGuidIsEmptyWhenRemoving() throws Exception {
         ServiceResponse<EventRoute> response = subject.remove(tenant, application, "");
 

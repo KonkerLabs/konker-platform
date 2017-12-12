@@ -5,13 +5,11 @@ import java.util.Map;
 
 import org.springframework.boot.autoconfigure.web.DefaultErrorAttributes;
 import org.springframework.boot.autoconfigure.web.ErrorAttributes;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.filter.ShallowEtagHeaderFilter;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
@@ -28,12 +26,15 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
         messageSource.addBasenames("classpath:/messages/device-model");
         messageSource.addBasenames("classpath:/messages/devices");
         messageSource.addBasenames("classpath:/messages/devices-config");
+        messageSource.addBasenames("classpath:/messages/gateways");
         messageSource.addBasenames("classpath:/messages/locations");
         messageSource.addBasenames("classpath:/messages/rest-destination");
         messageSource.addBasenames("classpath:/messages/routes");
         messageSource.addBasenames("classpath:/messages/transformations");
         messageSource.addBasenames("classpath:/messages/users");
+        messageSource.addBasenames("classpath:/messages/tenants");
         messageSource.addBasenames("classpath:/messages/health-alert");
+        messageSource.addBasenames("classpath:/mail/MailMessages");
         messageSource.setDefaultEncoding("UTF-8");
 
         return messageSource;
@@ -48,7 +49,7 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
                     boolean includeStackTrace) {
                 Map<String, Object> errorAttributes = super.getErrorAttributes(requestAttributes, includeStackTrace);
                 errorAttributes.remove("path");
-                errorAttributes.remove("exception");
+                errorAttributes.remove("exceptions");
                 errorAttributes.remove("error");
                 errorAttributes.put("code", errorAttributes.get("status"));
                 errorAttributes.put("status", "error");

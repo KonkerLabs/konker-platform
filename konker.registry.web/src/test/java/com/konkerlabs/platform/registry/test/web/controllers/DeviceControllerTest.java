@@ -1,22 +1,28 @@
 package com.konkerlabs.platform.registry.test.web.controllers;
 
-import com.fasterxml.jackson.databind.node.JsonNodeType;
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.EventSchema;
-import com.konkerlabs.platform.registry.business.model.EventSchema.SchemaField;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.registry.business.services.api.*;
-import com.konkerlabs.platform.registry.config.*;
-import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
-import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
-import com.konkerlabs.platform.registry.web.controllers.DeviceController.ChannelVO;
-import com.konkerlabs.platform.registry.web.controllers.DeviceController.MetricVO;
-import com.konkerlabs.platform.registry.web.converters.InstantToStringConverter;
-import com.konkerlabs.platform.registry.web.forms.DeviceRegistrationForm;
+import static org.hamcrest.Matchers.any;
+import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+
+import java.text.MessageFormat;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,25 +40,40 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import java.text.MessageFormat;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-
-import static org.hamcrest.Matchers.any;
-import static org.hamcrest.Matchers.equalTo;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
+import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.EventSchema;
+import com.konkerlabs.platform.registry.business.model.EventSchema.SchemaField;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.config.CdnConfig;
+import com.konkerlabs.platform.registry.config.EmailConfig;
+import com.konkerlabs.platform.registry.config.HotjarConfig;
+import com.konkerlabs.platform.registry.config.MessageSourceConfig;
+import com.konkerlabs.platform.registry.config.PubServerConfig;
+import com.konkerlabs.platform.registry.config.WebConfig;
+import com.konkerlabs.platform.registry.config.WebMvcConfig;
+import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
+import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
+import com.konkerlabs.platform.registry.web.controllers.DeviceController.ChannelVO;
+import com.konkerlabs.platform.registry.web.controllers.DeviceController.MetricVO;
+import com.konkerlabs.platform.registry.web.converters.InstantToStringConverter;
+import com.konkerlabs.platform.registry.web.forms.DeviceRegistrationForm;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
 @ContextConfiguration(classes = { WebMvcConfig.class, WebTestConfiguration.class, SecurityTestConfiguration.class,
 		DeviceControllerTest.DeviceTestContextConfig.class, WebConfig.class, HotjarConfig.class, PubServerConfig.class,
-		CdnConfig.class})
+		CdnConfig.class, EmailConfig.class, MessageSourceConfig.class})
 public class DeviceControllerTest extends WebLayerTestContext {
 
 	private static final String USER_DEFINED_DEVICE_ID = "SN1234567890";

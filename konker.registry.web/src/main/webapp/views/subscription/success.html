@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Create Account Konker Platform</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" data-th-href="@{/resources/bootstrap/css/bootstrap.min.css}">
+    <link rel="stylesheet" type="text/css" data-th-href="@{/resources/konker/css/create-account.css}">
+
+    <!-- font -->
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-default navbar-static-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#"><img data-th-attr="src=@{/resources/konker/images/konker-principal.png}"  class="logo"></a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+            <div class="nav navbar-nav navbar-right">
+                <a href="http://www.konkerlabs.com" class="btn-menu"><span data-th-text="#{users.form.subscription.go_to_site}"></span></a>
+            </div>
+        </div>
+        <!--/.nav-collapse -->
+    </div>
+</nav>
+<div class="wrapper">
+    <div class="infos-check">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="titles-text-check">
+                    <img data-th-attr="src=@{/resources/konker/images/email.svg}" class="img-responsive" />
+
+                    <h1 data-th-text="#{users.form.subscription.check_your_email}"></h1>
+                    <p  data-th-text="#{users.form.subscription.verify_your_email}"></p>
+                    <p class="mail-people"><span data-th-text="${user.email}"></span></p>
+                    <p data-th-text="#{users.form.subscription.phrase_confirmation_link}"></p>
+                    <p data-th-text="#{users.form.subscription.phrase_receive_email}"></p>
+                    <a class="btn btn-theme" data-th-href="@{/}" data-th-text="#{users.form.subscription.go_to_login}"></a>
+                </div>
+            </div>
+        </div>
+
+        <div>
+        </div>
+
+        <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+        <script data-th-attr="src=@{/resources/konker/scripts/jquery-1.11.1.min.js}" type="text/javascript"></script>
+        <!-- Include all compiled plugins (below), or include individual files as needed -->
+        <script data-th-attr="src=@{/resources/bootstrap/js/bootstrap.min.js}" type="text/javascript"></script>
+
+        <script>
+            $.backstretch("[[@{/resources/konker/images/login-bg.jpg}]]");
+        </script>
+        <div class="backstretch" style="left: 0px; top: 0px; overflow: hidden; margin: 0px; padding: 0px; height: 637px; width: 1349px; z-index: -999999; position: fixed;"><img data-th-attr="src=@{/resources/konker/images/login-bg.jpg}" style="position: absolute; margin: 0px; padding: 0px; border: none; width: 1349px; height: 760.129px; max-height: none; max-width: none; z-index: -999999; left: 0px; top: -61.5643px;"></div>
+    </div>
+</div>
+</body>
+</html>

@@ -379,7 +379,7 @@ public class LocationServiceImpl implements LocationService {
         Location currentSubtree = LocationTreeUtils.searchLocationByName(LocationTreeUtils.buildTree(all), parentNode.getName(), 0);
 
         Location newSubtree = parentNode;
-        newSubtree.setChildrens(sublocations);
+        newSubtree.setChildren(sublocations);
 
         List<Location> removedLocations = LocationTreeUtils.listRemovedLocations(currentSubtree, newSubtree);
         List<Location> newLocations = LocationTreeUtils.listNewLocations(currentSubtree, newSubtree);
@@ -456,7 +456,7 @@ public class LocationServiceImpl implements LocationService {
 
         for (Location child : childrens) {
             child.setParent(parent);
-            setLocationParent(child, child.getChildrens());
+            setLocationParent(child, child.getChildren());
         }
 
     }

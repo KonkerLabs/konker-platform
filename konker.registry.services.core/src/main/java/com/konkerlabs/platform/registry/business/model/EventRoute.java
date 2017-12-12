@@ -113,9 +113,12 @@ public class EventRoute implements URIDealer, Validatable {
         if (DeviceModelLocation.URI_SCHEME.equals(Optional.ofNullable(getIncoming()).map(RouteActor::getUri).map(URI::getScheme).orElse(""))) {
             applyModelLocationIncomingValidations(validations);
         }
-
-		if (getIncoming() != null && getIncoming().compareAndCheckIfDevicesChannelsAreEqual(getOutgoing()))
-			validations.put(Validations.INCOMING_OUTGOING_DEVICE_CHANNELS_SAME.getCode(), null);
+        if (DeviceModelLocation.URI_SCHEME.equals(Optional.ofNullable(getOutgoing()).map(RouteActor::getUri).map(URI::getScheme).orElse(""))) {
+            applyModelLocationOutgoingValidations(validations);
+        }
+		if (compareAndCheckChannelsAreEqual(getIncoming(), getOutgoing())) {
+            validations.put(Validations.INCOMING_OUTGOING_DEVICE_CHANNELS_SAME.getCode(), null);
+        }
 
  		return Optional.of(validations).filter(stringMap -> !stringMap.isEmpty());
  	}
@@ -132,6 +135,35 @@ public class EventRoute implements URIDealer, Validatable {
 				validations.put(Validations.INCOMING_ACTOR_CHANNEL_INVALID_NAME.getCode(),null);
 			}
         }
+
+    }
+
+    private boolean compareAndCheckChannelsAreEqual(RouteActor incoming, RouteActor outgoing) {
+
+        // check if are elegible to validate channels
+        if (incoming == null || outgoing == null) {
+            return false;
+        } else {
+            if (!incoming.isDevice() && !incoming.isModelLocation()) {
+                return false;
+            }
+            if (!outgoing.isDevice() && !outgoing.isModelLocation()) {
+                return false;
+            }
+            // both can't have the same pair (device - channel)
+            if (!incoming.getUri().equals(outgoing.getUri())) {
+                return false;
+            }
+        }
+
+        String incomingChannel = incoming.getData().get("channel");
+        String outgoingChannel = outgoing.getData().get("channel");
+
+        if (StringUtils.isBlank(incomingChannel) || StringUtils.isBlank(outgoingChannel)) {
+            return false;
+        }
+
+        return incomingChannel.equals(outgoingChannel);
 
     }
 
@@ -155,7 +187,7 @@ public class EventRoute implements URIDealer, Validatable {
 
     private void applyModelLocationIncomingValidations(Map<String,Object[]> validations) {
         Map<String, String> data = getIncoming().getData();
-        if (DeviceModelLocation.URI_SCHEME.equals(getIncoming().getUri().getScheme())) {
+        if (getIncoming().isModelLocation()) {
             String channelName = data.get(DEVICE_MQTT_CHANNEL);
             if (StringUtils.isBlank(channelName)) {
                 validations.put(Validations.INCOMING_ACTOR_CHANNEL_NULL.getCode(),null);
@@ -166,7 +198,20 @@ public class EventRoute implements URIDealer, Validatable {
 
     }
 
-	@Data
+    private void applyModelLocationOutgoingValidations(Map<String,Object[]> validations) {
+        Map<String, String> data = getOutgoing().getData();
+        if (getOutgoing().isModelLocation()) {
+            String channelName = data.get(DEVICE_MQTT_CHANNEL);
+            if (StringUtils.isBlank(channelName)) {
+                validations.put(Validations.OUTGOING_ACTOR_CHANNEL_NULL.getCode(),null);
+            } else if (!isValidChannelName(channelName)) {
+                validations.put(Validations.OUTGOING_ACTOR_CHANNEL_INVALID_NAME.getCode(),null);
+            }
+        }
+
+    }
+
+    @Data
 	@Builder
 	public static class RouteActor {
 		private URI uri;
@@ -184,30 +229,6 @@ public class EventRoute implements URIDealer, Validatable {
         public boolean isModelLocation() {
             return DeviceModelLocation.URI_SCHEME.equals(Optional.ofNullable(getUri()).map(URI::getScheme).orElse(""));
         }
-
-		public boolean compareAndCheckIfDevicesChannelsAreEqual(RouteActor route) {
-			boolean areEqual = false;
-
-			// check this instance for runtime errors
-			boolean elegibleToValidateDeviceChannel = this.getUri() != null && !this.getUri().toString().isEmpty()
-					&& this.getData().get("channel") != null && !this.getData().get("channel").isEmpty();
-
-			// check parameter for runtime errors
-			elegibleToValidateDeviceChannel = elegibleToValidateDeviceChannel && route != null && route.getUri() != null
-					&& !route.getUri().toString().isEmpty() && route.getData().get("channel") != null
-					&& !route.getData().get("channel").isEmpty();
-
-			// check if both (this instance and incoming parameter) are devices
-			elegibleToValidateDeviceChannel = elegibleToValidateDeviceChannel && (this.isDevice() || this.isModelLocation()) && (route.isDevice() || route.isModelLocation());
-
-			if (elegibleToValidateDeviceChannel) {
-				// both can't have the same pair (device - channel)
-				areEqual = this.getUri().equals(route.getUri())
-						&& this.getData().get("channel").compareTo(route.getData().get("channel")) == 0;
-			}
-
-			return areEqual;
-		}
 	}
 
 

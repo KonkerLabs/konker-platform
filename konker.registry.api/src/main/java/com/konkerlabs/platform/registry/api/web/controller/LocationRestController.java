@@ -46,13 +46,17 @@ import io.swagger.annotations.ApiParam;
 @Api(tags = "locations")
 public class LocationRestController extends AbstractRestController implements InitializingBean {
 
-    @Autowired
-    private LocationService locationService;
+    private final LocationService locationService;
 
-    @Autowired
-    private LocationSearchService locationSearchService;
+    private final LocationSearchService locationSearchService;
 
     private Set<String> validationsCode = new HashSet<>();
+
+    @Autowired
+    public LocationRestController(LocationService locationService, LocationSearchService locationSearchService) {
+        this.locationService = locationService;
+        this.locationSearchService = locationSearchService;
+    }
 
     @GetMapping(path = "/")
     @PreAuthorize("hasAuthority('LIST_LOCATIONS')")
@@ -170,7 +174,7 @@ public class LocationRestController extends AbstractRestController implements In
 
         Location parent = getParent(tenant, application, locationForm);
 
-        Location locationFromDB = null;
+        Location locationFromDB;
         ServiceResponse<Location> locationResponse = locationSearchService.findByName(tenant, application, locationName, false);
 
         if (!locationResponse.isOk()) {
@@ -225,7 +229,7 @@ public class LocationRestController extends AbstractRestController implements In
                        .parent(getParentFromVO(locationVO))
                        .name(locationVO.getName())
                        .description(locationVO.getDescription())
-                       .childrens(getSublocationsFromVO(locationVO.getSublocations()))
+                       .children(getSublocationsFromVO(locationVO.getSublocations()))
                        .defaultLocation(locationVO.isDefaultLocation())
                        .build();
     }
@@ -251,7 +255,7 @@ public class LocationRestController extends AbstractRestController implements In
             return null;
         }
 
-        Location parent = null;
+        Location parent;
 
         ServiceResponse<Location> parentResponse = locationSearchService.findByName(tenant, application, locationForm.getParentName(), false);
         if (!parentResponse.isOk()) {

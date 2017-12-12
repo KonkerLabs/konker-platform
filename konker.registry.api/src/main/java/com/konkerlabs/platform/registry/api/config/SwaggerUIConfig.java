@@ -1,5 +1,9 @@
 package com.konkerlabs.platform.registry.api.config;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Ordering;
+import com.google.common.collect.Sets;
+import com.typesafe.config.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -9,12 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
-
-import com.google.common.collect.Ordering;
-import com.google.common.collect.Sets;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
-
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
@@ -33,6 +31,8 @@ import java.util.List;
 import java.util.Map;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static com.typesafe.config.ConfigFactory.load;
+import static com.typesafe.config.ConfigFactory.parseMap;
 
 @EnableWebMvc
 @Configuration
@@ -72,21 +72,28 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
                 .tags(
                         new Tag("alert triggers", "Operations to manage alert triggers"),
                         new Tag("applications", "Operations to list organization applications"),
+                        new Tag("application document store", "Operations to manage generic documents storage"),
                         new Tag("device configs", "Operations to manage device configurations"),
                         new Tag("device credentials", "Operations to manage device credentials (username, password and URLs)"),
+                        new Tag("device firmwares", "Operations to manage device firmwares"),
                         new Tag("device models", "Operations to manage device models"),
+                        new Tag("device status", "Operations to verify the device status"),
                         new Tag("devices", "Operations to manage devices"),
                         new Tag("devices custom data", "Operations to manage devices custom data"),
                         new Tag("events", "Operations to query incoming and outgoing device events"),
+                        new Tag("gateways", "Operations to manage gateways"),
                         new Tag("locations", "Operations to manage locations"),
                         new Tag("rest destinations", "Operations to list organization REST destinations"),
                         new Tag("rest transformations", "Operations to manage REST transformations"),
                         new Tag("routes", "Operations tomanage routes"),
-                        new Tag("users", "Operations to manage organization users")
+                        new Tag("users", "Operations to manage organization users"),
+                        new Tag("user subscription", "Operations to subscribe new users")
+
                      )
                 .enableUrlTemplating(false);
 
     }
+
 
     @SuppressWarnings("unused")
     private Ordering<Operation> getOperationOrdering() {
@@ -99,11 +106,6 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
                 return 0;
             }
         };
-    }
-
-    @SuppressWarnings("unused")
-    private BasicAuth basicSecuritySchema() {
-        return new BasicAuth("basic");
     }
 
     private OAuth securitySchema() {
@@ -121,8 +123,12 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
     private SecurityContext securityContext() {
         return SecurityContext.builder()
                 .securityReferences(defaultAuth())
-                .forPaths(PathSelectors.any())
+                .forPaths(regex())
                 .build();
+    }
+
+    private Predicate<String> regex() {
+        return input -> !input.equals("/userSubscription");
     }
 
     private List<SecurityReference> defaultAuth() {
@@ -146,20 +152,17 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
 
         try {
             InputStream is = new ClassPathResource("description.md").getInputStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-            String         line = null;
+            String         line;
             StringBuilder  stringBuilder = new StringBuilder();
             String         ls = System.getProperty("line.separator");
 
-            try {
-                while((line = reader.readLine()) != null) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
+                while ((line = reader.readLine()) != null) {
                     stringBuilder.append(line);
                     stringBuilder.append(ls);
                 }
 
                 return stringBuilder.toString().replace("<HOSTNAME>", hostname);
-            } finally {
-                reader.close();
             }
 
         } catch (IOException e) {
@@ -173,10 +176,9 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
         Map<String, Object> defaultMap = new HashMap<>();
         defaultMap.put(SWAGGER_HOSTNAME, "localhost:8080");
         defaultMap.put(SWAGGER_PROTOCOL, "http");
-        Config defaultConf = ConfigFactory.parseMap(defaultMap);
+        Config defaultConf = parseMap(defaultMap);
 
-        Config config = ConfigFactory.load().withFallback(defaultConf);
-        return config;
+        return load().withFallback(defaultConf);
     }
 
 }

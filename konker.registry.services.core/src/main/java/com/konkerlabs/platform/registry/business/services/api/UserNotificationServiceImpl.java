@@ -11,8 +11,6 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import javax.mail.MessagingException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -203,19 +201,15 @@ public class UserNotificationServiceImpl implements UserNotificationService {
 			templateParam.put("name", user.getName());
 			templateParam.put("body", saved.getBody());
 
-			try {
-				emailService.send(emailConfig.getSender(),
-						Collections.singletonList(user),
-						Collections.emptyList(),
-						saved.getSubject(),
-						"text/email-notification",
-						templateParam ,
-						user.getLanguage().getLocale());
+			emailService.send(emailConfig.getSender(),
+					Collections.singletonList(user),
+					Collections.emptyList(),
+					saved.getSubject(),
+					"text/email-notification",
+					templateParam ,
+					user.getLanguage().getLocale());
 
-				LOGGER.info("E-mail sent: {}", saved.getSubject());
-			} catch (MessagingException e) {
-				LOGGER.error("Notification: ", user.getTenant().toURI(), user.getTenant().getLogLevel(), e);
-			}
+			LOGGER.info("E-mail sent: {}", saved.getSubject());
 		}
 	}
 

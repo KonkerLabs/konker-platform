@@ -1,7 +1,14 @@
 package com.konkerlabs.platform.registry.test.business.services;
 
+
+import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
+import static org.hamcrest.MatcherAssert.assertThat;
+
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -16,9 +23,11 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.konkerlabs.platform.registry.billing.model.TenantDailyUsage;
 import com.konkerlabs.platform.registry.billing.repositories.TenantDailyUsageRepository;
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
+import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
@@ -29,10 +38,22 @@ import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoBillingTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
+import org.junit.*;
+import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import java.time.Instant;
+import java.util.List;
+
+import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { MongoTestConfiguration.class, BusinessTestConfiguration.class, MongoBillingTestConfiguration.class })
-@UsingDataSet(locations = { "/fixtures/tenants.json", "/fixtures/users.json", "/fixtures/passwordBlacklist.json", "/fixtures/tenantDailyUsage.json" })
+@UsingDataSet(locations = { "/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/users.json", "/fixtures/passwordBlacklist.json", "/fixtures/tenantDailyUsage.json" })
 public class TenantServiceTest extends BusinessLayerTestSupport {
 
 	@Rule
@@ -44,7 +65,10 @@ public class TenantServiceTest extends BusinessLayerTestSupport {
 	@Autowired
 	private TenantRepository tenantRepository;
 
-	@Autowired
+    @Autowired
+    private ApplicationRepository applicationRepository;
+
+    @Autowired
 	private DeviceRepository deviceRepository;
 	
 	@Autowired
@@ -52,9 +76,12 @@ public class TenantServiceTest extends BusinessLayerTestSupport {
 	
 	private Tenant tenant;
 
-	@Before
+    private Application application;
+
+    @Before
 	public void setUp() throws Exception {
 		tenant = tenantRepository.findByDomainName("konker");
+		application = applicationRepository.findAllByTenant(tenant.getId()).get(0);
 		List<TenantDailyUsage> usages = tenantDailyUsageRepository.findAllByTenantDomain("konker");
 		
 		tenantDailyUsageRepository.save(TenantDailyUsage.builder()
@@ -141,14 +168,19 @@ public class TenantServiceTest extends BusinessLayerTestSupport {
 		tenantService.updateLogLevel(tenant, LogLevel.INFO);
 
 		String deviceId = "Q3UuYLFN67";
-		Device device = Device.builder().logLevel(LogLevel.INFO).description(deviceId).deviceId(deviceId).tenant(tenant)
+		Device device = Device.builder()
+				.logLevel(LogLevel.INFO)
+				.description(deviceId)
+				.deviceId(deviceId)
+				.tenant(tenant)
+				.application(application)
 				.build();
 		deviceRepository.save(device);
 
 		// set to DISABLED
 		tenantService.updateLogLevel(tenant, LogLevel.DISABLED);
 
-		device = deviceRepository.findByTenantIdAndDeviceId(tenant.getId(), deviceId);
+		device = deviceRepository.findByTenantIdAndApplicationAndDeviceId(tenant.getId(), application.getName(), deviceId);
 
 		Assert.assertNotNull(device);
 		Assert.assertEquals(device.getLogLevel(), LogLevel.DISABLED);
@@ -164,4 +196,42 @@ public class TenantServiceTest extends BusinessLayerTestSupport {
 		Assert.assertEquals(responseService.getResult().size(), 1);
 	}
 
+	@Test
+	public void shouldReturnErrorForTenantNull() {
+		ServiceResponse<Tenant> serviceResponse = tenantService.save(null);
+		
+		Assert.assertNotNull(serviceResponse);
+        assertThat(
+                serviceResponse,
+                hasErrorMessage(TenantService.Validations.TENANT_NULL.getCode()));
+	}
+	
+	@Test
+	public void shouldReturnErrorForTenantNameNull() {
+		tenant.setName(null);
+		ServiceResponse<Tenant> serviceResponse = tenantService.save(tenant);
+		
+		Assert.assertNotNull(serviceResponse);
+        assertThat(
+                serviceResponse,
+                hasErrorMessage(TenantService.Validations.TENANT_NAME_NULL.getCode()));
+        
+        tenant.setName("");
+        serviceResponse = tenantService.save(tenant);
+		
+		Assert.assertNotNull(serviceResponse);
+        assertThat(
+                serviceResponse,
+                hasErrorMessage(TenantService.Validations.TENANT_NAME_NULL.getCode()));
+	}
+	
+	@Test
+	public void shouldSaveTenant() {
+		ServiceResponse<Tenant> serviceResponse = tenantService.save(tenant);
+		
+		Assert.assertNotNull(serviceResponse);
+		Assert.assertEquals(serviceResponse.getStatus(), ServiceResponse.Status.OK);
+		Assert.assertEquals(serviceResponse.getResult().getDevicesLimit().longValue(), 5l);
+	}
+	
 }

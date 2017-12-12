@@ -1,14 +1,15 @@
 package com.konkerlabs.platform.registry.business.services.api;
 
 
-import java.util.List;
-
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
+
+import java.util.List;
 
 public interface UserService {
 
     enum Validations {
+    	MISSING_PARAMETERS("service.user.validation.missing.parameters"),
         INVALID_USER_DETAILS("service.user.validation.detail.invalid"),
         INVALID_USER_EMAIL("service.user.validation.email.invalid"),
         INVALID_USER_NAME("service.user.validation.name.invalid"),
@@ -19,9 +20,13 @@ public interface UserService {
         INVALID_PASSWORD_USER_DATA("service.user.validation.password.invalid.userdata"),
         INVALID_PASSWORD_CONFIRMATION("service.user.validation.password.invalid.confirmation"),
         INVALID_PASSWORD_INVALID("service.user.validation.password.invalid"),
+        INVALID_PASSWORD_HASH_INVALID("service.user.validation.password_hash.invalid"),
         INVALID_PASSWORD_BLACKLISTED("service.user.validation.password.invalid.blacklisted"),
+        INVALID_PASSWORD_TYPE("service.user.validation.password.invalid_type"),
         INVALID_AVATAR("service.user.validation.avatar.invalid"),
-        NO_EXIST_USER("service.user.validation.no.exist");
+        INVALID_USER_LIMIT_CREATION("service.user.validation.limit.creation"), 
+        NO_EXIST_USER("service.user.validation.no.exist"), 
+        USER_EXIST("service.user.validation.exist");
 
         private String code;
 
@@ -48,6 +53,24 @@ public interface UserService {
         }
 
     }
+    
+    enum Messages {
+    	USER_REGISTERED_SUCCESSFULLY("controller.user.registered.success"),
+    	USER_ACTIVATED_SUCCESSFULLY("controller.user.activated.success"),
+        USER_SUBJECT_MAIL("user.email.subject.activation"),
+        USER_HAS_ACCOUNT("user.email.subject.has.account");
+
+        private String code;
+
+        Messages(String code) {
+            this.code = code;
+        }
+
+        public String getCode() {
+            return code;
+        }
+
+    }
 
     /**
      * Save user details
@@ -60,8 +83,16 @@ public interface UserService {
                                String newPasswordConfirmation);
     
     ServiceResponse<User> save(User user,
-            String newPassword,
+    		String newPassword,
+    		String newPasswordConfirmation);
+    
+    ServiceResponse<User> createAccount(User user,
+    		String newPassword,
             String newPasswordConfirmation);
+    
+    ServiceResponse<User> createAccountWithPasswordHash(User user,
+    		String passwordHash);
+    
 
     ServiceResponse<User> findByEmail(String email);
     

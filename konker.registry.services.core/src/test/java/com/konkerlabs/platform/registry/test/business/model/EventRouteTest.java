@@ -203,12 +203,4 @@ public class EventRouteTest {
 		assertThat(subjectForSameDeviceChannel.getIncoming().isDevice(), equalTo(expectedResult));
 	}
 
-	@Test
-	public void shouldReturnTrueIfIncomingAndOutgoingDeviceAndChannelAreEquals() throws Exception {
-		boolean expectedResult = Boolean.TRUE;
-		RouteActor incoming = subjectForSameDeviceChannel.getIncoming();
-		RouteActor outgoing = subjectForSameDeviceChannel.getOutgoing();
-
-		assertThat(incoming.compareAndCheckIfDevicesChannelsAreEqual(outgoing), is(expectedResult));
-	}
 }

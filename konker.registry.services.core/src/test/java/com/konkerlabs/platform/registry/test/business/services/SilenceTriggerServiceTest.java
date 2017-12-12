@@ -40,6 +40,8 @@ import com.konkerlabs.platform.registry.config.HealthAlertsConfig;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.MessageSouceTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.MongoBillingTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.SpringMailTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
@@ -52,7 +54,9 @@ import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 		HealthAlertsConfig.class,
         EventStorageConfig.class,
         SpringMailTestConfiguration.class,
-        EmailConfig.class})
+        EmailConfig.class,
+        MongoBillingTestConfiguration.class,
+        MessageSouceTestConfiguration.class})
 @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/device-model.json", "/fixtures/locations.json"})
 public class SilenceTriggerServiceTest extends BusinessLayerTestSupport {
 

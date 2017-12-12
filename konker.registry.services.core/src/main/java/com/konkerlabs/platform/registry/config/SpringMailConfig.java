@@ -9,13 +9,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.EnvironmentAware;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.core.env.Environment;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
-import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.spring4.SpringTemplateEngine;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
@@ -60,20 +59,13 @@ public class SpringMailConfig implements ApplicationContextAware, EnvironmentAwa
 	}
 	
 	@Bean
-	public SpringTemplateEngine emailTemplateEngine() {
+	public SpringTemplateEngine emailTemplateEngine(MessageSource messageSource) {
 		final SpringTemplateEngine templateEngine = new SpringTemplateEngine();
         templateEngine.addTemplateResolver(textTemplateResolver());
         templateEngine.addTemplateResolver(htmlTemplateResolver());
         templateEngine.addTemplateResolver(stringTemplateResolver());
-        templateEngine.setTemplateEngineMessageSource(emailMessageSource());
+        templateEngine.setTemplateEngineMessageSource(messageSource);
         return templateEngine;
-	}
-	
-	@Bean
-	public ResourceBundleMessageSource emailMessageSource() {
-		ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
-		messageSource.setBasename("mail/MailMessages");
-		return messageSource;
 	}
 
 	private ITemplateResolver textTemplateResolver() {

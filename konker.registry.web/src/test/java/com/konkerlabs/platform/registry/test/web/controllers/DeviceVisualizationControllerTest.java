@@ -1,24 +1,21 @@
 package com.konkerlabs.platform.registry.test.web.controllers;
 
-import com.fasterxml.jackson.databind.node.JsonNodeType;
-import com.konkerlabs.platform.registry.business.model.*;
-import com.konkerlabs.platform.registry.business.model.Event.EventActor;
-import com.konkerlabs.platform.registry.business.model.EventSchema.SchemaField;
-import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
-import com.konkerlabs.platform.registry.business.model.enumerations.Language;
-import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
-import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
-import com.konkerlabs.platform.registry.config.EnvironmentConfig;
-import com.konkerlabs.platform.registry.config.HotjarConfig;
-import com.konkerlabs.platform.registry.config.WebConfig;
-import com.konkerlabs.platform.registry.config.WebMvcConfig;
-import com.konkerlabs.platform.registry.security.UserContextResolver;
-import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
-import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
+import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,19 +29,33 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
+import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.Event.EventActor;
+import com.konkerlabs.platform.registry.business.model.EventSchema;
+import com.konkerlabs.platform.registry.business.model.EventSchema.SchemaField;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.User;
+import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
+import com.konkerlabs.platform.registry.business.model.enumerations.Language;
+import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
+import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.config.EmailConfig;
+import com.konkerlabs.platform.registry.config.EnvironmentConfig;
+import com.konkerlabs.platform.registry.config.HotjarConfig;
+import com.konkerlabs.platform.registry.config.MessageSourceConfig;
+import com.konkerlabs.platform.registry.config.WebConfig;
+import com.konkerlabs.platform.registry.config.WebMvcConfig;
+import com.konkerlabs.platform.registry.security.UserContextResolver;
+import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
+import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
@@ -55,7 +66,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         DeviceVisualizationControllerTest.DeviceTestContextConfig.class,
         WebConfig.class,
         HotjarConfig.class,
-        EnvironmentConfig.class
+        EnvironmentConfig.class,
+        EmailConfig.class,
+        MessageSourceConfig.class
 })
 public class DeviceVisualizationControllerTest extends WebLayerTestContext {
 

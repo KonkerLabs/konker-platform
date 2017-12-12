@@ -11,8 +11,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import javax.mail.MessagingException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -122,35 +120,35 @@ public class RecoverPasswordController implements ApplicationContextAware {
         }
 
         if (!requestMap.isEmpty() && isValidCaptcha) {
-            try {
-                String email = (String) requestMap.get("email");
-                if (!Optional.ofNullable(email).isPresent()) {
-                    return Boolean.FALSE;
-                }
+        	String email = (String) requestMap.get("email");
+        	if (!Optional.ofNullable(email).isPresent()) {
+        		return Boolean.FALSE;
+        	}
 
-                ServiceResponse<User> response = userService.findByEmail(email);
-                User user = response.getResult();
-                if (!Optional.ofNullable(user).isPresent()) {
-                    return Boolean.FALSE;
-                }
+        	ServiceResponse<User> response = userService.findByEmail(email);
+        	User user = response.getResult();
+        	if (!Optional.ofNullable(user).isPresent()) {
+        		return Boolean.FALSE;
+        	}
 
-                ServiceResponse<String> responseToken = tokenService.generateToken(TokenService.Purpose.RESET_PASSWORD,
-                        user, Duration.ofMinutes(15));
+        	ServiceResponse<String> responseToken = tokenService.generateToken(TokenService.Purpose.RESET_PASSWORD,
+        			user, Duration.ofMinutes(15));
 
-                Map<String, Object> templateParam = new HashMap<>();
-                templateParam.put("link",
-                        emailConfig.getBaseurl().concat("recoverpassword/").concat(responseToken.getResult()));
-                templateParam.put("name", Optional.ofNullable(user.getName()).orElse(""));
+        	Map<String, Object> templateParam = new HashMap<>();
+        	templateParam.put("link",
+        			emailConfig.getBaseurl().concat("recoverpassword/").concat(responseToken.getResult()));
+        	templateParam.put("name", Optional.ofNullable(user.getName()).orElse(""));
 
-                emailService.send(emailConfig.getSender(), Collections.singletonList(user), Collections.emptyList(),
-                        applicationContext.getMessage(Messages.USER_EMAIL_SUBJECT.getCode(), null,
-                                user.getLanguage().getLocale()),
-                        "html/email-recover-pass", templateParam, user.getLanguage().getLocale());
-                return Boolean.TRUE;
-            } catch (MessagingException e) {
-                LOGGER.warn(e.getLocalizedMessage());
-                return Boolean.FALSE;
-            }
+        	emailService.send(
+        			emailConfig.getSender(), 
+        			Collections.singletonList(user), 
+        			Collections.emptyList(),
+        			applicationContext.getMessage(Messages.USER_EMAIL_SUBJECT.getCode(), null, user.getLanguage().getLocale()),
+        			"html/email-recover-pass", 
+        			templateParam, 
+        			user.getLanguage().getLocale());
+        	
+        	return Boolean.TRUE;
         } else {
             return Boolean.FALSE;
         }
@@ -161,6 +159,7 @@ public class RecoverPasswordController implements ApplicationContextAware {
         ServiceResponse<Token> serviceResponse = tokenService.getToken(token);
         ServiceResponse<Boolean> validToken = tokenService.isValidToken(token);
 
+        //null response
         if (!Optional.ofNullable(serviceResponse).isPresent()
                 || !Optional.ofNullable(serviceResponse.getResult()).isPresent()) {
 
@@ -168,24 +167,32 @@ public class RecoverPasswordController implements ApplicationContextAware {
                     .map(message -> applicationContext.getMessage(message.getKey(), message.getValue(), locale))
                     .collect(Collectors.toList());
 
+            //show model view of error
             return new ModelAndView("reset-password")
             		.addObject("user", User.builder().build())
                     .addObject("errors", messages)
                     .addObject("isExpired", true);
         }
 
+        
+        
+        //expired or invalid token
         if (serviceResponse.getResult().getIsExpired() || !validToken.getResult()) {
             List<String> messages = new ArrayList<>();
             messages.add(applicationContext.getMessage(TokenService.Validations.EXPIRED_TOKEN.getCode(), null, locale));
 
+          //show model view of error
             return new ModelAndView("reset-password")
             		.addObject("user", User.builder().build())
                     .addObject("errors", messages)
                     .addObject("isExpired", true);
         }
 
+        
+        //get user
         ServiceResponse<User> responseUser = userService.findByEmail(serviceResponse.getResult().getUserEmail());
 
+        //show model view of success
         return new ModelAndView("reset-password")
         		.addObject("user", responseUser.getResult())
         		.addObject("token", token);

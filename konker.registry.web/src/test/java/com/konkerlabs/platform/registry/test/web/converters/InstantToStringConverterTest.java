@@ -18,6 +18,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
+import com.konkerlabs.platform.registry.config.EmailConfig;
 import com.konkerlabs.platform.registry.config.WebConfig;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
@@ -28,7 +29,8 @@ import com.konkerlabs.platform.registry.web.converters.utils.ConverterUtils;
 @WebAppConfiguration
 @ContextConfiguration(classes = { WebMvcConfig.class, WebTestConfiguration.class,
 		InstantToStringConverterTest.InstantToStringConverterTestContextConfig.class,
-		WebConfig.class})
+		WebConfig.class, 
+		EmailConfig.class})
 public class InstantToStringConverterTest {
 
 	@Autowired

@@ -10,7 +10,9 @@ import java.time.temporal.TemporalAmount;
  */
 public interface TokenService {
     enum Purpose {
-        RESET_PASSWORD("service.token.purpose.resetPassword");
+        RESET_PASSWORD("service.token.purpose.resetPassword"),
+    	
+    	VALIDATE_EMAIL("service.token.purpose.validateEmail");
 
         private String name;
 
@@ -24,7 +26,8 @@ public interface TokenService {
     }
     enum Validations {
         EXPIRED_TOKEN("service.token.validation.uuid.expired"),
-        INVALID_TOKEN("service.token.validation.uuid.invalid");
+        INVALID_TOKEN("service.token.validation.uuid.invalid"),
+        INVALID_EXPIRED_TOKEN("service.token.validation.uuid.invalid_expired");
 
         private String code;
 

@@ -1,20 +1,19 @@
 package com.konkerlabs.platform.registry.api.test.web.controller;
 
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.text.MessageFormat;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
+import com.konkerlabs.platform.registry.api.config.WebMvcConfig;
+import com.konkerlabs.platform.registry.api.model.DeviceVO;
+import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
+import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
+import com.konkerlabs.platform.registry.api.web.controller.DeviceRestController;
+import com.konkerlabs.platform.registry.api.web.controller.DeviceStatusRestController;
+import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
+import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.model.Event.EventActor;
+import com.konkerlabs.platform.registry.business.model.HealthAlert.Description;
+import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertSeverity;
+import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertType;
+import com.konkerlabs.platform.registry.business.services.api.*;
+import com.konkerlabs.platform.registry.business.services.api.HealthAlertService.Validations;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,32 +28,21 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import com.konkerlabs.platform.registry.api.config.WebMvcConfig;
-import com.konkerlabs.platform.registry.api.model.DeviceVO;
-import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
-import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
-import com.konkerlabs.platform.registry.api.web.controller.DeviceRestController;
-import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.Event.EventActor;
-import com.konkerlabs.platform.registry.business.model.HealthAlert;
-import com.konkerlabs.platform.registry.business.model.HealthAlert.Description;
-import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertSeverity;
-import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertType;
-import com.konkerlabs.platform.registry.business.model.Location;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.HealthAlertService;
-import com.konkerlabs.platform.registry.business.services.api.LocationSearchService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
-import com.konkerlabs.platform.registry.business.services.api.HealthAlertService.Validations;
+import java.text.MessageFormat;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = DeviceRestController.class)
+@SpringBootTest(classes = {DeviceRestController.class, DeviceStatusRestController.class})
 @AutoConfigureMockMvc(secure = false)
 @ContextConfiguration(classes = {
         WebTestConfiguration.class,
@@ -74,7 +62,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 
     @Autowired
     private ApplicationService applicationService;
-    
+
     @Autowired
     private DeviceEventService deviceEventService;
 
@@ -87,6 +75,8 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Autowired
     private Application application;
 
+    private Set<String> tags;
+    
     private Device device1;
 
     private Device device2;
@@ -96,17 +86,18 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     private HealthAlert health2;
 
     private List<HealthAlert> healths;
-    
+
     private List<Event> events;
 
     private String BASEPATH = "devices";
-    
+
     private Instant registrationDate = Instant.ofEpochMilli(1495716970000l).minusSeconds(3600l);
 
     @Before
     public void setUp() {
         final Location locationBR = Location.builder().name("br").build();
 
+        tags =new HashSet<>(Arrays.asList("tag1", "tag2"));
         device1 = Device.builder()
         		.deviceId("id1")
         		.name("name1")
@@ -116,10 +107,11 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
         		.active(true)
         		.registrationDate(registrationDate)
         		.lastModificationDate(registrationDate)
+        		.tags(tags)
         		.build();
         device2 = Device.builder().deviceId("id2").name("name2").guid("guid2").location(locationBR).application(application).active(false).build();
 
-        
+
 		health1 = HealthAlert.builder()
 				.guid("7d51c242-81db-11e6-a8c2-0746f976f223")
 				.severity(HealthAlertSeverity.FAIL)
@@ -143,13 +135,13 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
         		.build();
 
 		healths = Arrays.asList(health1, health2);
-		
+
 		Event event = Event.builder()
 					.incoming(EventActor.builder().channel("out").deviceGuid(device1.getGuid()).build())
 					.timestamp(registrationDate)
 					.build();
 		events = Collections.singletonList(event);
-		
+
         when(locationSearchService.findByName(tenant, application, "br", false))
             .thenReturn(ServiceResponseBuilder.<Location>ok().withResult(locationBR).build());
 
@@ -285,7 +277,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldShowDeviceHealth() throws Exception {
 
-        when(healthAlertService.getLastHightServerityByDeviceGuid(tenant, application, device1.getGuid()))
+        when(healthAlertService.getLastHightSeverityByDeviceGuid(tenant, application, device1.getGuid()))
 				.thenReturn(ServiceResponseBuilder.<HealthAlert>ok().withResult(health1).build());
 
         when(applicationService.getByApplicationName(tenant, application.getName()))
@@ -308,7 +300,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldShowDeviceHealthWithDeviceHealthEmpty() throws Exception {
 
-    	when(healthAlertService.getLastHightServerityByDeviceGuid(tenant, application, device1.getGuid()))
+    	when(healthAlertService.getLastHightSeverityByDeviceGuid(tenant, application, device1.getGuid()))
 				.thenReturn(ServiceResponseBuilder.<HealthAlert>error().withMessage(Validations.HEALTH_ALERT_DOES_NOT_EXIST.getCode()).build());
 
 		when(applicationService.getByApplicationName(tenant, application.getName()))
@@ -347,13 +339,13 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.result", hasSize(2)))
                     .andExpect(jsonPath("$.result[0].guid", is(health1.getGuid())))
                     .andExpect(jsonPath("$.result[0].severity", is(health1.getSeverity().toString())))
-                    .andExpect(jsonPath("$.result[0].description", is("No message received from the device since a long time.")))
+                    .andExpect(jsonPath("$.result[0].description", is("No message received from the device for a long time.")))
                     .andExpect(jsonPath("$.result[0].occurenceDate", is(health1.getLastChange().toString())))
                     .andExpect(jsonPath("$.result[0].type", is(health1.getType().toString())))
                     .andExpect(jsonPath("$.result[0].triggerGuid", is(health1.getTriggerGuid())))
                     .andExpect(jsonPath("$.result[1].guid", is(health2.getGuid())))
                     .andExpect(jsonPath("$.result[1].severity", is(health2.getSeverity().toString())))
-                    .andExpect(jsonPath("$.result[1].description", is("No message received from the device since a long time.")))
+                    .andExpect(jsonPath("$.result[1].description", is("No message received from the device for a long time.")))
                     .andExpect(jsonPath("$.result[1].occurenceDate", is(health2.getLastChange().toString())))
                     .andExpect(jsonPath("$.result[1].type", is(health2.getType().toString())))
                     .andExpect(jsonPath("$.result[1].triggerGuid", is(health2.getTriggerGuid())));
@@ -454,7 +446,27 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .andExpect(jsonPath("$.status", is("success")))
                 .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
                 .andExpect(jsonPath("$.result").doesNotExist());
+        
+        
 
+   
+        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH, device1.getGuid()))
+                .contentType("application/json")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/json;charset=UTF-8"))
+                .andExpect(jsonPath("$.code", is(HttpStatus.OK.value())))
+                .andExpect(jsonPath("$.status", is("success")))
+                .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                .andExpect(jsonPath("$.result").isMap())
+                .andExpect(jsonPath("$.result.id", is("id1")))
+                .andExpect(jsonPath("$.result.name", is("name1")))
+                .andExpect(jsonPath("$.result.guid", is("guid1")))
+                .andExpect(jsonPath("$.result.tags", is(Arrays.asList("tag1", "tag2"))))
+                .andExpect(jsonPath("$.result.active", is(true)));
+        
+        
+        
     }
 
     @Test
@@ -566,7 +578,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.result").doesNotExist());
 
     }
-    
+
     @Test
     public void shouldShowDeviceStats() throws Exception {
 
@@ -575,7 +587,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 
         when(applicationService.getByApplicationName(tenant, application.getName()))
 				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
-        
+
         when(deviceEventService.findIncomingBy(tenant, application, device1.getGuid(), null, null, null, false, 1))
         		.thenReturn(ServiceResponseBuilder.<List<Event>> ok().withResult(events).build());
 
@@ -621,7 +633,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 
         when(applicationService.getByApplicationName(tenant, application.getName()))
 				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
-        
+
         when(deviceEventService.findIncomingBy(tenant, application, device1.getGuid(), null, null, null, false, 1))
 		.thenReturn(ServiceResponseBuilder.<List<Event>> ok().withResult(events).build());
 
