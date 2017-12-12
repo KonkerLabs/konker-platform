@@ -9,9 +9,7 @@ import com.konkerlabs.platform.registry.api.web.controller.DeviceStatusRestContr
 import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
 import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.Event.EventActor;
-import com.konkerlabs.platform.registry.business.model.HealthAlert.Description;
 import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertSeverity;
-import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertType;
 import com.konkerlabs.platform.registry.business.services.api.*;
 import com.konkerlabs.platform.registry.business.services.api.HealthAlertService.Validations;
 import org.junit.After;
@@ -87,6 +85,8 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 
     private Device device2;
 
+    private AlertTrigger alertTrigger;
+
     private HealthAlert health1;
 
     private HealthAlert health2;
@@ -117,27 +117,29 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .build();
         device2 = Device.builder().deviceId("id2").name("name2").guid("guid2").location(locationBR).application(application).active(false).build();
 
+        alertTrigger = AlertTrigger.builder()
+                .guid("7d51c242-81db-11e6-a8c2-0746f976f666")
+                .type(AlertTrigger.AlertTriggerType.SILENCE)
+                .build();
 
         health1 = HealthAlert.builder()
                 .guid("7d51c242-81db-11e6-a8c2-0746f976f223")
                 .severity(HealthAlertSeverity.FAIL)
-                .description(Description.NO_MESSAGE_RECEIVED)
+                .description("No message received from the device for a long time.")
                 .registrationDate(registrationDate)
                 .lastChange(Instant.ofEpochMilli(1495716970000l))
-                .type(HealthAlertType.SILENCE)
-                .deviceGuid(device1.getGuid())
-                .triggerGuid("7d51c242-81db-11e6-a8c2-0746f976f666")
+                .device(device1)
+                .alertTrigger(alertTrigger)
                 .build();
 
         health2 = HealthAlert.builder()
                 .guid("7d51c242-81db-11e6-a8c2-0746f976f223")
                 .severity(HealthAlertSeverity.OK)
-                .description(Description.NO_MESSAGE_RECEIVED)
+                .description("No message received from the device for a long time.")
                 .registrationDate(registrationDate)
                 .lastChange(Instant.ofEpochMilli(1495716970000l))
-                .type(HealthAlertType.SILENCE)
-                .deviceGuid(device1.getGuid())
-                .triggerGuid("7d51c242-81db-11e6-a8c2-0746f976f666")
+                .device(device1)
+                .alertTrigger(alertTrigger)
                 .build();
 
         healths = Arrays.asList(health1, health2);
@@ -283,7 +285,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldShowDeviceHealth() throws Exception {
 
-        when(healthAlertService.getLastHightSeverityByDeviceGuid(tenant, application, device1.getGuid()))
+        when(healthAlertService.getLastHighestSeverityByDeviceGuid(tenant, application, device1.getGuid()))
                 .thenReturn(ServiceResponseBuilder.<HealthAlert>ok().withResult(health1).build());
 
         when(applicationService.getByApplicationName(tenant, application.getName()))
@@ -306,7 +308,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldShowDeviceHealthWithDeviceHealthEmpty() throws Exception {
 
-        when(healthAlertService.getLastHightSeverityByDeviceGuid(tenant, application, device1.getGuid()))
+        when(healthAlertService.getLastHighestSeverityByDeviceGuid(tenant, application, device1.getGuid()))
                 .thenReturn(ServiceResponseBuilder.<HealthAlert>error().withMessage(Validations.HEALTH_ALERT_DOES_NOT_EXIST.getCode()).build());
 
         when(applicationService.getByApplicationName(tenant, application.getName()))
@@ -343,18 +345,16 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .andExpect(jsonPath("$.status", is("success")))
                 .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
                 .andExpect(jsonPath("$.result", hasSize(2)))
-                .andExpect(jsonPath("$.result[0].guid", is(health1.getGuid())))
                 .andExpect(jsonPath("$.result[0].severity", is(health1.getSeverity().toString())))
                 .andExpect(jsonPath("$.result[0].description", is("No message received from the device for a long time.")))
-                .andExpect(jsonPath("$.result[0].occurenceDate", is(health1.getLastChange().toString())))
-                .andExpect(jsonPath("$.result[0].type", is(health1.getType().toString())))
-                .andExpect(jsonPath("$.result[0].triggerGuid", is(health1.getTriggerGuid())))
-                .andExpect(jsonPath("$.result[1].guid", is(health2.getGuid())))
+                .andExpect(jsonPath("$.result[0].occurrenceDate", is(health1.getRegistrationDate().toString())))
+                .andExpect(jsonPath("$.result[0].type", is(health1.getAlertTrigger().getType().name())))
+                .andExpect(jsonPath("$.result[0].triggerName", is(alertTrigger.getName())))
                 .andExpect(jsonPath("$.result[1].severity", is(health2.getSeverity().toString())))
                 .andExpect(jsonPath("$.result[1].description", is("No message received from the device for a long time.")))
-                .andExpect(jsonPath("$.result[1].occurenceDate", is(health2.getLastChange().toString())))
-                .andExpect(jsonPath("$.result[1].type", is(health2.getType().toString())))
-                .andExpect(jsonPath("$.result[1].triggerGuid", is(health2.getTriggerGuid())));
+                .andExpect(jsonPath("$.result[1].occurrenceDate", is(health2.getRegistrationDate().toString())))
+                .andExpect(jsonPath("$.result[1].type", is(health2.getAlertTrigger().getType().name())))
+                .andExpect(jsonPath("$.result[1].triggerName", is(alertTrigger.getName())));
     }
 
     @Test

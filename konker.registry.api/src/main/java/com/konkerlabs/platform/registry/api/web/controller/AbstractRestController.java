@@ -32,7 +32,7 @@ public abstract class AbstractRestController {
         ServiceResponse<Application> applicationResponse = applicationService.getByApplicationName(tenant, applicationId);
         if (!applicationResponse.isOk()) {
             if (applicationResponse.getResponseMessages().containsKey(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode())) {
-                throw new NotFoundResponseException(user, applicationResponse);
+                throw new NotFoundResponseException(applicationResponse);
 
             } else {
                 Set<String> validationsCode = new HashSet<>();
@@ -40,7 +40,7 @@ public abstract class AbstractRestController {
                     validationsCode.add(value.getCode());
                 }
 
-                throw new BadServiceResponseException(user, applicationResponse, validationsCode);
+                throw new BadServiceResponseException( applicationResponse, validationsCode);
             }
         }
 
@@ -57,7 +57,7 @@ public abstract class AbstractRestController {
         ServiceResponse<Location> applicationResponse = locationSearchService.findByName(tenant, application, locationName, false);
         if (!applicationResponse.isOk()) {
             if (applicationResponse.getResponseMessages().containsKey(LocationService.Messages.LOCATION_NOT_FOUND.getCode())) {
-                throw new NotFoundResponseException(user, applicationResponse);
+                throw new NotFoundResponseException(applicationResponse);
 
             } else {
                 Set<String> validationsCode = new HashSet<>();
@@ -65,7 +65,7 @@ public abstract class AbstractRestController {
                     validationsCode.add(value.getCode());
                 }
 
-                throw new BadServiceResponseException(user, applicationResponse, validationsCode);
+                throw new BadServiceResponseException( applicationResponse, validationsCode);
             }
         }
 
@@ -82,7 +82,7 @@ public abstract class AbstractRestController {
         ServiceResponse<DeviceModel> applicationResponse = deviceModelService.getByTenantApplicationAndName(tenant, application, deviceModelName);
         if (!applicationResponse.isOk()) {
             if (applicationResponse.getResponseMessages().containsKey(DeviceModelService.Validations.DEVICE_MODEL_NOT_FOUND.getCode())) {
-                throw new NotFoundResponseException(user, applicationResponse);
+                throw new NotFoundResponseException(applicationResponse);
 
             } else {
                 Set<String> validationsCode = new HashSet<>();
@@ -90,7 +90,7 @@ public abstract class AbstractRestController {
                     validationsCode.add(value.getCode());
                 }
 
-                throw new BadServiceResponseException(user, applicationResponse, validationsCode);
+                throw new BadServiceResponseException( applicationResponse, validationsCode);
             }
         }
 

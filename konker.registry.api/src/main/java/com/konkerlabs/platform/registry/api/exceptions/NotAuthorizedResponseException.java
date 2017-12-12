@@ -15,9 +15,7 @@ public class NotAuthorizedResponseException extends Exception {
 
     private Map<String, Object[]> responseMessages;
 
-    private Locale locale;
-
-    public NotAuthorizedResponseException(OauthClientDetails user, ServiceResponse<?> serviceResponse, Set<String> validationsCode) {
+    public NotAuthorizedResponseException(ServiceResponse<?> serviceResponse, Set<String> validationsCode) {
 
         if (serviceResponse != null &&
                 serviceResponse.getResponseMessages() != null) {
@@ -30,7 +28,6 @@ public class NotAuthorizedResponseException extends Exception {
         }
 
         this.responseMessages = serviceResponse != null ? serviceResponse.getResponseMessages() : null;
-        this.locale = user.getLanguage().getLocale();
 
     }
 
@@ -40,10 +37,6 @@ public class NotAuthorizedResponseException extends Exception {
 
     public Map<String, Object[]> getResponseMessages() {
         return responseMessages;
-    }
-
-    public Locale getLocale() {
-        return locale;
     }
 
 }

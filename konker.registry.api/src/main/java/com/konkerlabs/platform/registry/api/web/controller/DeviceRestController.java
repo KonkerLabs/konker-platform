@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry.api.web.controller;
 
 import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
+import com.konkerlabs.platform.registry.api.exceptions.NotAuthorizedResponseException;
 import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
 import com.konkerlabs.platform.registry.api.model.ApplicationDestinationVO;
 import com.konkerlabs.platform.registry.api.model.DeviceInputVO;
@@ -55,7 +56,7 @@ public class DeviceRestController extends AbstractRestController implements Init
         ServiceResponse<List<Device>> deviceResponse = deviceRegisterService.findAll(tenant, application);
 
         if (!deviceResponse.isOk()) {
-            throw new BadServiceResponseException(user, deviceResponse, validationsCode);
+            throw new BadServiceResponseException( deviceResponse, validationsCode);
         } else {
             return new DeviceVO().apply(deviceResponse.getResult());
         }
@@ -78,7 +79,7 @@ public class DeviceRestController extends AbstractRestController implements Init
         ServiceResponse<Device> deviceResponse = deviceRegisterService.getByDeviceGuid(tenant, application, deviceGuid);
 
         if (!deviceResponse.isOk()) {
-            throw new NotFoundResponseException(user, deviceResponse);
+            throw new NotFoundResponseException(deviceResponse);
         } else {
             return new DeviceVO().apply(deviceResponse.getResult());
         }
@@ -91,7 +92,8 @@ public class DeviceRestController extends AbstractRestController implements Init
     public DeviceVO create(
             @PathVariable("application") String applicationId,
             @ApiParam(name = "body", required = true)
-            @RequestBody DeviceInputVO deviceForm) throws BadServiceResponseException, NotFoundResponseException {
+            @RequestBody DeviceInputVO deviceForm)
+            throws BadServiceResponseException, NotFoundResponseException, NotAuthorizedResponseException {
 
 
         Tenant tenant = null;
@@ -127,8 +129,7 @@ public class DeviceRestController extends AbstractRestController implements Init
                     );
 
             if (!validationResult.isOk()) {
-                throw new BadServiceResponseException(
-                        oauthClientDetails,
+                throw new NotAuthorizedResponseException(
                         validationResult,
                         validationsCode
                 );
@@ -137,7 +138,7 @@ public class DeviceRestController extends AbstractRestController implements Init
         ServiceResponse<Device> deviceResponse = deviceRegisterService.register(tenant, application, device);
 
         if (!deviceResponse.isOk()) {
-            throw new BadServiceResponseException(user, deviceResponse, validationsCode);
+            throw new BadServiceResponseException( deviceResponse, validationsCode);
         } else {
             return new DeviceVO().apply(deviceResponse.getResult());
         }
@@ -162,7 +163,7 @@ public class DeviceRestController extends AbstractRestController implements Init
         ServiceResponse<Device> deviceResponse = deviceRegisterService.getByDeviceGuid(tenant, application, deviceGuid);
 
         if (!deviceResponse.isOk()) {
-            throw new BadServiceResponseException(user, deviceResponse, validationsCode);
+            throw new BadServiceResponseException( deviceResponse, validationsCode);
         } else {
             deviceFromDB = deviceResponse.getResult();
         }
@@ -178,7 +179,7 @@ public class DeviceRestController extends AbstractRestController implements Init
         ServiceResponse<Device> updateResponse = deviceRegisterService.update(tenant, application, deviceGuid, deviceFromDB);
 
         if (!updateResponse.isOk()) {
-            throw new BadServiceResponseException(user, updateResponse, validationsCode);
+            throw new BadServiceResponseException( updateResponse, validationsCode);
 
         }
 
@@ -201,7 +202,7 @@ public class DeviceRestController extends AbstractRestController implements Init
         ServiceResponse<Device> deviceResponse = deviceRegisterService.move(tenant, application, deviceGuid, destApplication);
 
         if (!deviceResponse.isOk()) {
-            throw new BadServiceResponseException(user, deviceResponse, validationsCode);
+            throw new BadServiceResponseException( deviceResponse, validationsCode);
         }
 
         return new DeviceVO().apply(deviceResponse.getResult());
@@ -222,9 +223,9 @@ public class DeviceRestController extends AbstractRestController implements Init
 
         if (!deviceResponse.isOk()) {
             if (deviceResponse.getResponseMessages().containsKey(Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode())) {
-                throw new NotFoundResponseException(user, deviceResponse);
+                throw new NotFoundResponseException(deviceResponse);
             } else {
-                throw new BadServiceResponseException(user, deviceResponse, validationsCode);
+                throw new BadServiceResponseException( deviceResponse, validationsCode);
             }
         }
 

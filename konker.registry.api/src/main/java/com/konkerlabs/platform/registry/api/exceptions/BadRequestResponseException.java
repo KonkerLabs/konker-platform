@@ -17,9 +17,7 @@ public class BadRequestResponseException extends Exception {
 
     private String message;
 
-    private Locale locale;
-
-    public BadRequestResponseException(OauthClientDetails client, ServiceResponse<?> serviceResponse, Set<String> validationsCode) {
+    public BadRequestResponseException(ServiceResponse<?> serviceResponse, Set<String> validationsCode) {
 
         if (serviceResponse != null &&
                 serviceResponse.getResponseMessages() != null) {
@@ -32,7 +30,6 @@ public class BadRequestResponseException extends Exception {
         }
 
         this.responseMessages = serviceResponse != null ? serviceResponse.getResponseMessages() : null;
-        this.locale = client.getLanguage().getLocale();
 
     }
 
@@ -50,10 +47,6 @@ public class BadRequestResponseException extends Exception {
 
     public String getMessage() {
         return message;
-    }
-
-    public Locale getLocale() {
-        return locale;
     }
 
 }

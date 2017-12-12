@@ -43,9 +43,6 @@ public class UserNotificationServiceImpl implements UserNotificationService {
     private EmailService emailService;
 
     @Autowired
-    private Environment environment;
-
-    @Autowired
     private EmailConfig emailConfig;
 
     @Override
@@ -194,9 +191,7 @@ public class UserNotificationServiceImpl implements UserNotificationService {
     }
 
 	private void sendEmailNotification(User user, UserNotification saved) {
-		List<String> profiles = Arrays.stream(environment.getActiveProfiles()).collect(Collectors.toList());
-
-		if (user.isNotificationViaEmail() && profiles.contains("email")) {
+		if (user.isNotificationViaEmail() && emailConfig.isEnabled()) {
 			Map<String, Object> templateParam = new HashMap<>();
 			templateParam.put("name", user.getName());
 			templateParam.put("body", saved.getBody());

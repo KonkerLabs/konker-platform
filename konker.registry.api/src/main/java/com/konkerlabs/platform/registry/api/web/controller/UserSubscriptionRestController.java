@@ -59,7 +59,7 @@ public class UserSubscriptionRestController implements InitializingBean {
             Map<String, Object[]> responseMessages = new HashMap<>();
             responseMessages.put(Validations.INVALID_PASSWORD_TYPE.getCode(), null);
 
-            throw new BadServiceResponseException(null, responseMessages, validationsCode);
+            throw new BadServiceResponseException(responseMessages, validationsCode);
         }
 
         User.JobEnum job = getJob(userForm.getJobTitle());
@@ -107,7 +107,7 @@ public class UserSubscriptionRestController implements InitializingBean {
         }
 
         if (!userResponse.isOk()) {
-            throw new BadServiceResponseException(null, userResponse, validationsCode);
+            throw new BadServiceResponseException(userResponse, validationsCode);
         } else {
             return new UserVO().apply(userResponse.getResult());
         }

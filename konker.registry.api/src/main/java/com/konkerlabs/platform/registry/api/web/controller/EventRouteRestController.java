@@ -146,7 +146,7 @@ public class EventRouteRestController extends AbstractRestController implements 
         ServiceResponse<List<EventRoute>> routeResponse = eventRouteService.getAll(tenant, application);
 
         if (!routeResponse.isOk()) {
-            throw new BadServiceResponseException(user, routeResponse, validationsCode);
+            throw new BadServiceResponseException( routeResponse, validationsCode);
         } else {
             List<EventRouteVO> routesVO = new ArrayList<>();
 
@@ -174,7 +174,7 @@ public class EventRouteRestController extends AbstractRestController implements 
         ServiceResponse<EventRoute> routeResponse = eventRouteService.getByGUID(tenant, application, routeGuid);
 
         if (!routeResponse.isOk()) {
-            throw new NotFoundResponseException(user, routeResponse);
+            throw new NotFoundResponseException(routeResponse);
         } else {
             return patch(tenant, application, new EventRouteVO().apply(routeResponse.getResult()));
         }
@@ -242,7 +242,7 @@ public class EventRouteRestController extends AbstractRestController implements 
         ServiceResponse<EventRoute> routeResponse = eventRouteService.save(tenant, application, route);
 
         if (!routeResponse.isOk()) {
-            throw new BadServiceResponseException(user, routeResponse, validationsCode);
+            throw new BadServiceResponseException( routeResponse, validationsCode);
         } else {
             return patch(tenant, application, new EventRouteVO().apply(routeResponse.getResult()));
         }
@@ -259,7 +259,7 @@ public class EventRouteRestController extends AbstractRestController implements 
                 Transformation transformation = transformationResponse.getResult();
                 return transformation;
             } else {
-                throw new BadServiceResponseException(user, transformationResponse, validationsCode);
+                throw new BadServiceResponseException( transformationResponse, validationsCode);
             }
         }
 
@@ -285,7 +285,7 @@ public class EventRouteRestController extends AbstractRestController implements 
                 routeActor.setData(new HashMap<String, String>() {{ put(EventRoute.DEVICE_MQTT_CHANNEL, deviceActorForm.getChannel()); }} );
                 return routeActor;
             } else {
-                throw new BadServiceResponseException(user, deviceResponse, validationsCode);
+                throw new BadServiceResponseException( deviceResponse, validationsCode);
             }
         } else if (RouteActorType.REST.name().equalsIgnoreCase(actorVO.getType())) {
             RouteRestActorVO restActorForm = (RouteRestActorVO) actorVO;
@@ -296,7 +296,7 @@ public class EventRouteRestController extends AbstractRestController implements 
                 routeActor.setData(new HashMap<String, String>() {} );
                 return routeActor;
             } else {
-                throw new BadServiceResponseException(user, restResponse, validationsCode);
+                throw new BadServiceResponseException( restResponse, validationsCode);
             }
 
         } else if (RouteActorType.MODEL_LOCATION.name().equalsIgnoreCase(actorVO.getType())) {
@@ -309,14 +309,14 @@ public class EventRouteRestController extends AbstractRestController implements 
             if (deviceModelResponse.isOk()) {
                 deviceModel = deviceModelResponse.getResult();
             } else {
-                throw new BadServiceResponseException(user, deviceModelResponse, validationsCode);
+                throw new BadServiceResponseException( deviceModelResponse, validationsCode);
             }
 
             ServiceResponse<Location> locationResponse = locationSearchService.findByName(tenant, application, modelLocationActorForm.getLocationName(), false);
             if (locationResponse.isOk()) {
                 location = locationResponse.getResult();
             } else {
-                throw new BadServiceResponseException(user, locationResponse, validationsCode);
+                throw new BadServiceResponseException( locationResponse, validationsCode);
             }
 
             routeActor.setDisplayName(MessageFormat.format("{0} @ {1}", deviceModel.getName(), location.getName()));
@@ -364,7 +364,7 @@ public class EventRouteRestController extends AbstractRestController implements 
         ServiceResponse<EventRoute> routeResponse = eventRouteService.getByGUID(tenant, application, routeGuid);
 
         if (!routeResponse.isOk()) {
-            throw new BadServiceResponseException(user, routeResponse, validationsCode);
+            throw new BadServiceResponseException( routeResponse, validationsCode);
         } else {
             routeFromDB = routeResponse.getResult();
         }
@@ -385,7 +385,7 @@ public class EventRouteRestController extends AbstractRestController implements 
         ServiceResponse<EventRoute> updateResponse = eventRouteService.update(tenant, application, routeGuid, routeFromDB);
 
         if (!updateResponse.isOk()) {
-            throw new BadServiceResponseException(user, updateResponse, validationsCode);
+            throw new BadServiceResponseException( updateResponse, validationsCode);
         }
 
     }
@@ -404,9 +404,9 @@ public class EventRouteRestController extends AbstractRestController implements 
 
         if (!routeResponse.isOk()) {
             if (routeResponse.getResponseMessages().containsKey(Validations.EVENT_ROUTE_NOT_FOUND.getCode())) {
-                throw new NotFoundResponseException(user, routeResponse);
+                throw new NotFoundResponseException(routeResponse);
             } else {
-                throw new BadServiceResponseException(user, routeResponse, validationsCode);
+                throw new BadServiceResponseException( routeResponse, validationsCode);
             }
         }
 

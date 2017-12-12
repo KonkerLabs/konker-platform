@@ -1,71 +1,54 @@
 package com.konkerlabs.platform.registry.test.business.services;
 
-import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
-import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.isResponseOk;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.mockito.Mockito.when;
-
-import java.time.Instant;
-import java.util.Collections;
-import java.util.List;
-
+import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertSeverity;
+import com.konkerlabs.platform.registry.business.model.HealthAlert.Solution;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.repositories.*;
+import com.konkerlabs.platform.registry.business.services.api.*;
+import com.konkerlabs.platform.registry.business.services.api.HealthAlertService.Messages;
+import com.konkerlabs.platform.registry.business.services.api.HealthAlertService.Validations;
+import com.konkerlabs.platform.registry.config.EmailConfig;
+import com.konkerlabs.platform.registry.config.EventStorageConfig;
+import com.konkerlabs.platform.registry.config.PubServerConfig;
+import com.konkerlabs.platform.registry.test.base.*;
+import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.HealthAlert;
-import com.konkerlabs.platform.registry.business.model.HealthAlert.Description;
-import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertSeverity;
-import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertType;
-import com.konkerlabs.platform.registry.business.model.HealthAlert.Solution;
-import com.konkerlabs.platform.registry.business.model.SilenceTrigger;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.registry.business.repositories.AlertTriggerRepository;
-import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
-import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.HealthAlertService;
-import com.konkerlabs.platform.registry.business.services.api.HealthAlertService.Messages;
-import com.konkerlabs.platform.registry.business.services.api.HealthAlertService.Validations;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
-import com.konkerlabs.platform.registry.config.EmailConfig;
-import com.konkerlabs.platform.registry.config.EventStorageConfig;
-import com.konkerlabs.platform.registry.config.PubServerConfig;
-import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
-import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.MessageSouceTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.MongoBillingTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.SpringMailTestConfiguration;
-import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+
+import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
+import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.isResponseOk;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
         MongoTestConfiguration.class,
         BusinessTestConfiguration.class,
+        //EventRepositoryTestConfiguration.class,
+        HealthAlertServiceTest.HealthAlertServiceTestConfig.class,
 		PubServerConfig.class,
         EventStorageConfig.class,
         SpringMailTestConfiguration.class,
         EmailConfig.class,
         MongoBillingTestConfiguration.class,
-        MessageSouceTestConfiguration.class,
-        HealthAlertServiceTest.HealthAlertServiceTestConfig.class})
+        MessageSouceTestConfiguration.class})
+@UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json"})
 public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
 
@@ -83,19 +66,31 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     private TenantRepository tenantRepository;
 
     @Autowired
+    private ApplicationRepository applicationRepository;
+
+    @Autowired
     private AlertTriggerRepository alertTriggerRepository;
-    
+
     @Autowired
     private DeviceEventService deviceEventService;
 
+    @Autowired
+    private HealthAlertRepository healthAlertRepository;
+
+	@Autowired
+	private DeviceRepository deviceRepository;
+
+    private AlertTrigger trigger;
+    private AlertTrigger triggerNoExists;
     private HealthAlert healthAlert;
     private HealthAlert tempHealthAlert;
     private HealthAlert newHealthAlert;
-    private HealthAlert currentHealthOk;
     private Application application;
     private Application otherApplication;
-    private Tenant otherTenant;
     private Tenant currentTenant;
+    private Tenant otherTenant;
+    private Device device;
+    private Device deviceNoExists;
 
     @Before
     public void setUp() {
@@ -106,167 +101,164 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     			.domainName("MyCompany")
     			.build();
 
-    	application = Application.builder()
-    					.name("smartffkonker")
-    					.friendlyName("Konker Smart Frig")
-    					.description("Konker Smart Frig - take pic, tells temperatue")
-    					.tenant(currentTenant)
-                        .qualifier("konker")
-                        .registrationDate(Instant.ofEpochMilli(1453320973747L))
-                        .build();
+        application = applicationRepository.findByTenantAndName(currentTenant.getId(), "konker");
 
-    	otherApplication = Application.builder()
-				.name("smartffkonkerother")
-				.friendlyName("Konker Smart Frig")
-				.description("Konker Smart Frig - take pic, tells temperatue")
-				.tenant(currentTenant)
+        otherApplication = Application.builder()
+                .name("smartffkonkerother")
+                .friendlyName("Konker Smart Frig")
+                .description("Konker Smart Frig - take pic, tells temperatue")
+                .tenant(currentTenant)
                 .qualifier("konker")
                 .registrationDate(Instant.ofEpochMilli(1453320973747L))
-				.build();
+                .build();
 
-    	healthAlert = HealthAlert.builder()
+    	device = Device
+					.builder()
+					.tenant(currentTenant)
+					.application(application)
+					.guid("1fbbecc7-8566-40c4-8f7b-830287535970")
+					.deviceId("1fbbecc7")
+                    .active(true)
+					.build();
+        device = deviceRepository.save(device);
+
+        deviceNoExists = Device
+                .builder()
+                .guid("794348a3-1b3c-4a33-a518-2eb7e7f4d8ff")
+                .deviceId("794348a3")
+                .build();
+
+        trigger = AlertTrigger.builder().build();
+        trigger.setGuid(TRIGGER_GUID);
+        trigger.setApplication(application);
+        trigger.setTenant(currentTenant);
+        trigger.setMinutes(1);
+        trigger.setType(AlertTrigger.AlertTriggerType.SILENCE);
+        trigger = alertTriggerRepository.save(trigger);
+
+        triggerNoExists = AlertTrigger
+                .builder()
+                .guid("2d3f52c4-0a9e-4d30-ba4e-2048e0867faa")
+                .build();
+
+        healthAlert = HealthAlert.builder()
     			.id("67014de6-81db-11e6-a5bc-3f99b78823c9")
+                .alertId("silence-id")
     			.guid("7d51c242-81db-11e6-a8c2-0746f976f224")
-    			.description(Description.NO_MESSAGE_RECEIVED)
-    			.severity(HealthAlertSeverity.WARN)
-    			.type(HealthAlertType.SILENCE)
-    			.registrationDate(Instant.ofEpochMilli(1453320973747l))
-    			.deviceGuid(DEVICE_GUID)
-    			.triggerGuid(TRIGGER_GUID)
+                .alertTrigger(trigger)
+    			.description("No message received from the device for a long time.")
+    			.severity(HealthAlertSeverity.OK)
+    			.registrationDate(Instant.ofEpochMilli(1453320973747L))
+    			.device(device)
+    			.alertTrigger(trigger)
     			.application(application)
     			.tenant(currentTenant)
     			.build();
+        healthAlert = healthAlertRepository.save(healthAlert);
 
-    	tempHealthAlert = HealthAlert.builder()
+        tempHealthAlert = HealthAlert.builder()
     			.id("67014de6-81db-11e6-a5bc-3f99b788249c")
+                .alertId("temp-silence-id")
 				.guid("7d51c242-81db-11e6-a8c2-0746f976f223")
-				.description(Description.NO_MESSAGE_RECEIVED)
-    			.severity(HealthAlertSeverity.FAIL)
-    			.type(HealthAlertType.SILENCE)
-    			.registrationDate(Instant.ofEpochMilli(1453320973747l))
-    			.deviceGuid(DEVICE_GUID)
-    			.triggerGuid(TRIGGER_GUID)
+                .alertTrigger(trigger)
+				.description("No message received from the device for a long time.")
+    			.severity(HealthAlertSeverity.WARN)
+    			.registrationDate(Instant.ofEpochMilli(1453320973747L))
+                .device(device)
+                .alertTrigger(trigger)
     			.application(application)
 				.tenant(currentTenant)
 				.build();
+        tempHealthAlert = healthAlertRepository.save(tempHealthAlert);
 
     	newHealthAlert = HealthAlert.builder()
     			.guid("7d51c242-81db-11e6-a8c2-0746f976f225")
-    			.description(Description.HEALTH_OK)
+                .alertId("newHealthAlert-id")
+                .alertTrigger(trigger)
+    			.description("Health of device is ok.")
     			.severity(HealthAlertSeverity.OK)
-    			.type(HealthAlertType.SILENCE)
-    			.registrationDate(Instant.ofEpochMilli(1453320973747l))
-    			.deviceGuid(DEVICE_GUID)
-    			.triggerGuid(TRIGGER_GUID)
+    			.registrationDate(Instant.ofEpochMilli(1453320973747L))
+                .device(device)
+                .alertTrigger(trigger)
 				.application(application)
 				.tenant(currentTenant)
 				.build();
-    	
-    	currentHealthOk =  HealthAlert.builder()
-    			.description(Description.HEALTH_OK)
-    			.severity(HealthAlertSeverity.OK)
-    			.deviceGuid("8363c556-84ea-11e6-92a2-4b01fea7e243")
-				.build();
-
-    	SilenceTrigger trigger = new SilenceTrigger();
-    	trigger.setGuid(TRIGGER_GUID);
-    	trigger.setApplication(application);
-    	trigger.setTenant(currentTenant);
-    	trigger.setMinutes(1);
-    	trigger.setType(HealthAlertType.SILENCE);
-    	trigger = alertTriggerRepository.save(trigger);
 
     }
 
     @Test
-    public void shouldReturnErrorIfSavingHealthAlertTenantIsNull() throws Exception {
+    public void shouldReturnErrorIfSavingHealthAlertTenantIsNull() {
         ServiceResponse<HealthAlert> serviceResponse = healthAlertService.register(null, application, healthAlert);
 
         assertThat(serviceResponse, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
     }
 
     @Test
-    @UsingDataSet(locations = "/fixtures/tenants.json")
-    public void shouldReturnErrorIfSavingHealthAlertTenantNotExists() throws Exception {
+    public void shouldReturnErrorIfSavingHealthAlertTenantNotExists() {
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.register(otherTenant, application, healthAlert);
 
     	assertThat(serviceResponse, hasErrorMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()));
     }
 
     @Test
-    @UsingDataSet(locations = "/fixtures/tenants.json")
-    public void shouldReturnErrorIfSavingHealthAlertAppIsNull() throws Exception {
+    public void shouldReturnErrorIfSavingHealthAlertAppIsNull() {
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.register(currentTenant, null, healthAlert);
 
     	assertThat(serviceResponse, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
-    public void shouldReturnErrorIfSavingHealthAlertAppNotExists() throws Exception {
+    public void shouldReturnErrorIfSavingHealthAlertAppNotExists() {
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.register(currentTenant, otherApplication, healthAlert);
 
     	assertThat(serviceResponse, hasErrorMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode()));
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
-    public void shouldReturnErrorIfSavingHealthAlertIsNull() throws Exception {
+    public void shouldReturnErrorIfSavingHealthAlertIsNull() {
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.register(currentTenant, application, null);
-
     	assertThat(serviceResponse, hasErrorMessage(Validations.HEALTH_ALERT_NULL.getCode()));
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
-    public void shouldReturnErrorIfSavingHealthAlertDeviceGuidNullOrEmpty() throws Exception {
-    	healthAlert.setDeviceGuid(null);
+    public void shouldReturnErrorIfSavingHealthAlertDeviceGuidNullOrEmpty() {
+    	healthAlert.setDevice(null);
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.register(currentTenant, application, healthAlert);
-    	assertThat(serviceResponse, hasErrorMessage(DeviceRegisterService.Validations.DEVICE_GUID_NULL.getCode()));
-
-    	healthAlert.setDeviceGuid("");
-    	serviceResponse = healthAlertService.register(currentTenant, application, healthAlert);
-    	assertThat(serviceResponse, hasErrorMessage(DeviceRegisterService.Validations.DEVICE_GUID_NULL.getCode()));
+    	assertThat(serviceResponse, hasErrorMessage(Validations.HEALTH_ALERT_DEVICE_NULL.getCode()));
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json"})
-    public void shouldReturnErrorIfSavingHealthAlertDeviceNotExists() throws Exception {
-    	healthAlert.setDeviceGuid("7d51c242-81db-11e6-a8c2-0746f010e911");
+    public void shouldReturnErrorIfSavingHealthAlertDeviceNotExists() {
+    	healthAlert.setDevice(deviceNoExists);
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.register(currentTenant, application, healthAlert);
     	assertThat(serviceResponse, hasErrorMessage(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode()));
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json"})
-    public void shouldReturnErrorIfSavingHealthAlertTriggerGuidNullOrEmpty() throws Exception {
-    	healthAlert.setTriggerGuid(null);
+    public void shouldReturnErrorIfSavingHealthAlertTriggerGuidNullOrEmpty() {
+    	healthAlert.setAlertTrigger(null);
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.register(currentTenant, application, healthAlert);
-    	assertThat(serviceResponse, hasErrorMessage(Validations.HEALTH_ALERT_TRIGGER_GUID_NULL.getCode()));
-
-    	healthAlert.setTriggerGuid("");
-    	serviceResponse = healthAlertService.register(currentTenant, application, healthAlert);
-    	assertThat(serviceResponse, hasErrorMessage(Validations.HEALTH_ALERT_TRIGGER_GUID_NULL.getCode()));
+    	assertThat(serviceResponse, hasErrorMessage(Validations.HEALTH_ALERT_TRIGGER_NULL.getCode()));
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json"})
-    public void shouldReturnErrorIfSavingHealthAlertTriggerNotExists() throws Exception {
-    	healthAlert.setTriggerGuid("7d51c242-81db-11e6-a8c2-0746f010e911");
+    public void shouldReturnErrorIfSavingHealthAlertTriggerNotExists() {
+    	healthAlert.setAlertTrigger(triggerNoExists);
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.register(currentTenant, application, healthAlert);
     	assertThat(serviceResponse, hasErrorMessage(Validations.HEALTH_ALERT_TRIGGER_NOT_EXIST.getCode()));
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json", "/fixtures/health-alert.json"})
-    public void shouldSaveHealthAlert() throws Exception {
+    public void shouldSaveHealthAlert() {
         ServiceResponse<HealthAlert> response = healthAlertService.register(currentTenant, application, newHealthAlert);
 
         assertThat(response, isResponseOk());
     }
 
+    /****************** update ******************/
+
     @Test
-    public void shouldReturnErrorIfUpdatingHealthAlertTenantIsNull() throws Exception {
+    public void shouldReturnErrorIfUpdatingHealthAlertTenantIsNull() {
         ServiceResponse<HealthAlert> serviceResponse = healthAlertService.update(
         		null,
         		application,
@@ -277,8 +269,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = "/fixtures/tenants.json")
-    public void shouldReturnErrorIfUpdatingHealthAlertTenantNotExists() throws Exception {
+    public void shouldReturnErrorIfUpdatingHealthAlertTenantNotExists() {
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.update(
     			otherTenant,
     			application,
@@ -289,8 +280,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = "/fixtures/tenants.json")
-    public void shouldReturnErrorIfUpdatingHealthAlertAppIsNull() throws Exception {
+    public void shouldReturnErrorIfUpdatingHealthAlertAppIsNull() {
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.update(
     			currentTenant,
     			null,
@@ -301,8 +291,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
-    public void shouldReturnErrorIfUpdatingHealthAlertAppNotExists() throws Exception {
+    public void shouldReturnErrorIfUpdatingHealthAlertAppNotExists() {
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.update(
     			currentTenant,
     			otherApplication,
@@ -313,8 +302,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
-    public void shouldReturnErrorIfUpdatingHealthAlertIsNull() throws Exception {
+    public void shouldReturnErrorIfUpdatingHealthAlertIsNull() {
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.update(
     			currentTenant,
     			application,
@@ -325,41 +313,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
-    public void shouldReturnErrorIfUpdatingHealthAlertDeviceGuidNullOrEmpty() throws Exception {
-    	healthAlert.setDeviceGuid(null);
-    	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.update(
-    			currentTenant,
-    			application,
-    			healthAlert.getGuid(),
-    			healthAlert);
-    	assertThat(serviceResponse, hasErrorMessage(DeviceRegisterService.Validations.DEVICE_GUID_NULL.getCode()));
-
-    	healthAlert.setDeviceGuid("");
-    	serviceResponse = healthAlertService.update(
-    			currentTenant,
-    			application,
-    			healthAlert.getGuid(),
-    			healthAlert);
-    	assertThat(serviceResponse, hasErrorMessage(DeviceRegisterService.Validations.DEVICE_GUID_NULL.getCode()));
-    }
-
-    @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json"})
-    public void shouldReturnErrorIfUpdatingHealthAlertDeviceNotExists() throws Exception {
-    	healthAlert.setDeviceGuid("7d51c242-81db-11e6-a8c2-0746f010e911");
-    	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.update(
-    			currentTenant,
-    			application,
-    			healthAlert.getGuid(),
-    			healthAlert);
-
-    	assertThat(serviceResponse, hasErrorMessage(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode()));
-    }
-
-    @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json", "/fixtures/health-alert.json"})
-    public void shouldReturnErrorIfUpdatingHealthAlertNotExists() throws Exception {
+    public void shouldReturnErrorIfUpdatingHealthAlertNotExists() {
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.update(
     			currentTenant,
     			application,
@@ -370,9 +324,44 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json", "/fixtures/health-alert.json"})
-    public void shouldUpdateHealthAlert() throws Exception {
-    	tempHealthAlert.setDescription(Description.HEALTH_OK);
+    public void shouldTryUpdateHealthAlertWithNullSeverity() {
+        tempHealthAlert.setSeverity(null);
+
+        ServiceResponse<HealthAlert> serviceResponse = healthAlertService.update(
+                application.getTenant(),
+                application,
+                tempHealthAlert.getGuid(),
+                tempHealthAlert);
+
+        assertThat(serviceResponse, hasErrorMessage(HealthAlert.Validations.SEVERITY_NULL.getCode()));
+    }
+
+    @Test
+    public void shouldUpdateHealthAlertWithOk() {
+        tempHealthAlert.setDescription("Health of device is ok.");
+        tempHealthAlert.setSeverity(HealthAlertSeverity.OK);
+
+        ServiceResponse<HealthAlert> serviceResponse = healthAlertService.update(
+                application.getTenant(),
+                application,
+                tempHealthAlert.getGuid(),
+                tempHealthAlert);
+
+        assertThat(serviceResponse.isOk(), is(true));
+
+        serviceResponse = healthAlertService.findByTenantApplicationTriggerAndAlertId(
+                currentTenant,
+                application,
+                trigger,
+                tempHealthAlert.getAlertId()
+        );
+        assertThat(serviceResponse, hasErrorMessage(Validations.HEALTH_ALERT_DOES_NOT_EXIST.getCode()));
+    }
+
+
+    @Test
+    public void shouldUpdateHealthAlert() {
+    	tempHealthAlert.setDescription("Health of device is ok.");
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.update(
     			application.getTenant(),
     			application,
@@ -383,8 +372,10 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
         assertThat(serviceResponse.getResult().getDescription(), equalTo(tempHealthAlert.getDescription()));
     }
 
+    /****************** remove ******************/
+
     @Test
-    public void shouldReturnErrorIfRemovingHealthAlertTenantIsNull() throws Exception {
+    public void shouldReturnErrorIfRemovingHealthAlertTenantIsNull() {
         ServiceResponse<HealthAlert> serviceResponse = healthAlertService.remove(
         		null,
         		application,
@@ -396,8 +387,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = "/fixtures/tenants.json")
-    public void shouldReturnErrorIfRemovingHealthAlertAppIsNull() throws Exception {
+    public void shouldReturnErrorIfRemovingHealthAlertAppIsNull() {
         ServiceResponse<HealthAlert> serviceResponse = healthAlertService.remove(
         		currentTenant,
         		null,
@@ -408,8 +398,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = "/fixtures/tenants.json")
-    public void shouldReturnErrorIfRemovingHealthAlertGuidNull() throws Exception {
+    public void shouldReturnErrorIfRemovingHealthAlertGuidNull() {
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.remove(
     			currentTenant,
     			application,
@@ -420,8 +409,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json"})
-    public void shouldReturnErrorIfRemovingHealthAlertNotExists() throws Exception {
+    public void shouldReturnErrorIfRemovingHealthAlertNotExists() {
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.remove(
     	        currentTenant,
     	        application,
@@ -433,8 +421,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json", "/fixtures/devices.json"})
-    public void shouldRemoveHealthAlert() throws Exception {
+    public void shouldRemoveHealthAlert() {
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.remove(
     			currentTenant,
     			application,
@@ -447,8 +434,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json"})
-    public void shouldReturnAllHealthAlert() throws Exception {
+    public void shouldReturnAllHealthAlert() {
     	ServiceResponse<List<HealthAlert>> response = healthAlertService.findAllByTenantAndApplication(currentTenant, application);
 
     	assertThat(response, isResponseOk());
@@ -456,31 +442,30 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     	assertThat(response.getResult(), hasSize(2));
     }
 
+    /****************** findAllByTenantApplicationAndDeviceGuid ******************/
+
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json"})
-    public void shouldReturnErrorFindAllHealthAlertByTenantNullAppDeviceGuid() throws Exception {
+    public void shouldReturnErrorFindAllHealthAlertByTenantNullAppDeviceGuid() {
     	ServiceResponse<List<HealthAlert>> response = healthAlertService.findAllByTenantApplicationAndDeviceGuid(
     			null,
     			application,
-    			healthAlert.getDeviceGuid());
+    			healthAlert.getDevice().getGuid());
 
     	assertThat(response, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json"})
-    public void shouldReturnErrorFindAllHealthAlertByTenantAppNullDeviceGuid() throws Exception {
+    public void shouldReturnErrorFindAllHealthAlertByTenantAppNullDeviceGuid() {
     	ServiceResponse<List<HealthAlert>> response = healthAlertService.findAllByTenantApplicationAndDeviceGuid(
     			currentTenant,
     			null,
-    			healthAlert.getDeviceGuid());
+    			healthAlert.getDevice().getGuid());
 
     	assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json"})
-    public void shouldReturnErrorFindAllHealthAlertByTenantAppDeviceGuidNull() throws Exception {
+    public void shouldReturnErrorFindAllHealthAlertByTenantAppDeviceGuidNull() {
     	ServiceResponse<List<HealthAlert>> response = healthAlertService.findAllByTenantApplicationAndDeviceGuid(
     			currentTenant,
     			application,
@@ -490,19 +475,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json", "/fixtures/devices.json"})
-    public void shouldReturnHealthNotExistFindAllHealthAlertByTenantAppDeviceGuid() throws Exception {
-    	ServiceResponse<List<HealthAlert>> response = healthAlertService.findAllByTenantApplicationAndDeviceGuid(
-    			currentTenant,
-    			application,
-    			"8363c556-84ea-11e6-92a2-4b01fea7e243");
-
-    	assertThat(response, hasErrorMessage(Validations.HEALTH_ALERT_DOES_NOT_EXIST.getCode()));
-    }
-
-    @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json"})
-    public void shouldReturnHealthNotExistGuidFindAllHealthAlertByTenantAppDeviceGuid() throws Exception {
+    public void shouldReturnHealthNotExistGuidFindAllHealthAlertByTenantAppDeviceGuid() {
         ServiceResponse<List<HealthAlert>> response = healthAlertService.findAllByTenantApplicationAndDeviceGuid(
                 currentTenant,
                 application,
@@ -512,20 +485,20 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json", "/fixtures/devices.json"})
-    public void shouldFindAllHealthAlertByTenantAppDeviceGuid() throws Exception {
+    public void shouldFindAllHealthAlertByTenantAppDeviceGuid() {
     	ServiceResponse<List<HealthAlert>> response = healthAlertService.findAllByTenantApplicationAndDeviceGuid(
     			currentTenant,
     			application,
-    			healthAlert.getDeviceGuid());
+    			healthAlert.getDevice().getGuid());
 
     	assertThat(response, isResponseOk());
     	assertThat(response.getResult(), hasSize(2));
     }
 
+    /****************** getByTenantApplicationAndHealthAlertGuid ******************/
+
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json"})
-    public void shouldReturnErrorGetHealthAlertByGuidTenantNull() throws Exception {
+    public void shouldReturnErrorGetHealthAlertByGuidTenantNull() {
     	ServiceResponse<HealthAlert> response = healthAlertService.getByTenantApplicationAndHealthAlertGuid(
     			null,
     			application,
@@ -535,8 +508,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json"})
-    public void shouldReturnErrorGetHealthAlertByGuidAppNull() throws Exception {
+    public void shouldReturnErrorGetHealthAlertByGuidAppNull() {
     	ServiceResponse<HealthAlert> response = healthAlertService.getByTenantApplicationAndHealthAlertGuid(
     			currentTenant,
     			null,
@@ -546,8 +518,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
-    public void shouldReturnErrorGetHealthAlertByGuidNull() throws Exception {
+    public void shouldReturnErrorGetHealthAlertByGuidNull() {
     	ServiceResponse<HealthAlert> response = healthAlertService.getByTenantApplicationAndHealthAlertGuid(
     			currentTenant,
     			application,
@@ -557,8 +528,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
-    public void shouldReturnErrorGetHealthAlertByGuidTenantNotExists() throws Exception {
+    public void shouldReturnErrorGetHealthAlertByGuidTenantNotExists() {
     	ServiceResponse<HealthAlert> response = healthAlertService.getByTenantApplicationAndHealthAlertGuid(
     			otherTenant,
     			application,
@@ -568,8 +538,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
-    public void shouldReturnErrorGetHealthAlertByGuidAppNotExists() throws Exception {
+    public void shouldReturnErrorGetHealthAlertByGuidAppNotExists() {
     	ServiceResponse<HealthAlert> response = healthAlertService.getByTenantApplicationAndHealthAlertGuid(
     			currentTenant,
     			otherApplication,
@@ -579,8 +548,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json"})
-    public void shouldReturnErrorGetHealthAlertByGuidHealthAlertNotExists() throws Exception {
+    public void shouldReturnErrorGetHealthAlertByGuidHealthAlertNotExists() {
     	ServiceResponse<HealthAlert> response = healthAlertService.getByTenantApplicationAndHealthAlertGuid(
     			currentTenant,
     			application,
@@ -590,8 +558,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json"})
-    public void shouldGetHealthAlertByGuid() throws Exception {
+    public void shouldGetHealthAlertByGuid() {
     	ServiceResponse<HealthAlert> response = healthAlertService.getByTenantApplicationAndHealthAlertGuid(
     			currentTenant,
     			application,
@@ -604,60 +571,47 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     ////////////////// removeAlertsFromTrigger //////////////////
 
     @Test
-    public void shouldReturnErrorIfRemovingHealthAlertByTriggerGuidTenantIsNull() throws Exception {
+    public void shouldReturnErrorIfRemovingHealthAlertByTriggerGuidTenantIsNull() {
         ServiceResponse<List<HealthAlert>> serviceResponse = healthAlertService.removeAlertsFromTrigger(
                 null,
                 application,
-                healthAlert.getGuid());
+                trigger);
 
         assertThat(serviceResponse, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
     }
 
     @Test
-    @UsingDataSet(locations = "/fixtures/tenants.json")
-    public void shouldReturnErrorIfRemovingHealthAlertByTriggerGuidAppIsNull() throws Exception {
+    public void shouldReturnErrorIfRemovingHealthAlertByTriggerGuidAppIsNull() {
         ServiceResponse<List<HealthAlert>> serviceResponse = healthAlertService.removeAlertsFromTrigger(
                 currentTenant,
                 null,
-                healthAlert.getGuid());
+                trigger);
 
         assertThat(serviceResponse, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
     }
 
     @Test
-    @UsingDataSet(locations = "/fixtures/tenants.json")
-    public void shouldReturnErrorIfRemovingHealthAlertByTriggerGuidGuidNull() throws Exception {
+    public void shouldReturnErrorIfRemovingHealthAlertByTriggerGuidGuidNull() {
         ServiceResponse<List<HealthAlert>> serviceResponse = healthAlertService.removeAlertsFromTrigger(
                 currentTenant,
                 application,
                 null);
 
-        assertThat(serviceResponse, hasErrorMessage(Validations.HEALTH_ALERT_GUID_IS_NULL.getCode()));
+        assertThat(serviceResponse, hasErrorMessage(Validations.HEALTH_ALERT_TRIGGER_NULL.getCode()));
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json"})
-    public void shouldRemovingHealthAlertByTriggerGuidGuidNull() throws Exception {
-
-        SilenceTrigger alertTrigger = new SilenceTrigger();
-        alertTrigger.setTenant(currentTenant);
-        alertTrigger.setApplication(application);
-        alertTrigger.setGuid("37b8de6c-9f12-40f1-9689-4aded8867f82");
-        alertTriggerRepository.save(alertTrigger);
-
-        healthAlert.setTriggerGuid(alertTrigger.getGuid());
-        tempHealthAlert.setTriggerGuid(alertTrigger.getGuid());
-
-        healthAlertService.register(currentTenant, application, healthAlert);
-        healthAlertService.register(currentTenant, application, tempHealthAlert);
+    public void shouldRemovingHealthAlertByTriggerGuidGuidNull() {
 
         List<HealthAlert> healthAlerts = healthAlertService.findAllByTenantAndApplication(currentTenant, application).getResult();
         assertThat(healthAlerts.size(), equalTo(2));
+        assertThat(healthAlerts.get(0).getDevice(), equalTo(device));
+        assertThat(healthAlerts.get(1).getDevice(), equalTo(device));
 
         ServiceResponse<List<HealthAlert>> serviceResponse = healthAlertService.removeAlertsFromTrigger(
                 currentTenant,
                 application,
-                alertTrigger.getGuid());
+                trigger);
 
         assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.OK));
         assertThat(serviceResponse.getResponseMessages(), hasEntry(Messages.HEALTH_ALERT_REMOVED_SUCCESSFULLY.getCode(), null));
@@ -667,31 +621,28 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json"})
-    public void shouldReturnTenantNullGetLastHightSeverity() throws Exception {
-    	ServiceResponse<HealthAlert> response = healthAlertService.getLastHightSeverityByDeviceGuid(
+    public void shouldReturnTenantNullGetLastHighestSeverity() {
+    	ServiceResponse<HealthAlert> response = healthAlertService.getLastHighestSeverityByDeviceGuid(
     			null,
     			application,
-    			healthAlert.getDeviceGuid());
+    			healthAlert.getDevice().getGuid());
 
     	assertThat(response, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json"})
-    public void shouldReturnAppNullGetLastHightSeverity() throws Exception {
-    	ServiceResponse<HealthAlert> response = healthAlertService.getLastHightSeverityByDeviceGuid(
+    public void shouldReturnAppNullGetLastHighestSeverity() {
+    	ServiceResponse<HealthAlert> response = healthAlertService.getLastHighestSeverityByDeviceGuid(
     			currentTenant,
     			null,
-    			healthAlert.getDeviceGuid());
+    			healthAlert.getDevice().getGuid());
 
     	assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json"})
-    public void shouldReturnDeviceNullGetLastHightSeverity() throws Exception {
-    	ServiceResponse<HealthAlert> response = healthAlertService.getLastHightSeverityByDeviceGuid(
+    public void shouldReturnDeviceNullGetLastHighestSeverity() {
+    	ServiceResponse<HealthAlert> response = healthAlertService.getLastHighestSeverityByDeviceGuid(
     			currentTenant,
     			application,
     			null);
@@ -700,116 +651,181 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json", "/fixtures/devices.json"})
-    public void shouldGetLastHightSeverity() throws Exception {
-    	ServiceResponse<HealthAlert> response = healthAlertService.getLastHightSeverityByDeviceGuid(
+    public void shouldGetLastHighestSeverity() {
+    	ServiceResponse<HealthAlert> response = healthAlertService.getLastHighestSeverityByDeviceGuid(
     			currentTenant,
     			application,
-    			healthAlert.getDeviceGuid());
+    			healthAlert.getDevice().getGuid());
 
     	assertThat(response, isResponseOk());
     	assertThat(response.getResult(), equalTo(tempHealthAlert));
     }
-    
-    @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json"})
-    public void shouldReturnTenantNullGetCurrentHealth() throws Exception {
-    	ServiceResponse<HealthAlert> response = healthAlertService.getCurrentHealthByGuid(
-    			null,
-    			application,
-    			healthAlert.getDeviceGuid());
 
-    	assertThat(response, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
+    /****************** findAllByTenantApplicationAndTrigger ******************/
+
+	@Test
+	public void shouldGetFindAllByTenantApplicationAndTriggerGuid() {
+		ServiceResponse<List<HealthAlert>> response = healthAlertService.findAllByTenantApplicationAndTrigger(
+				currentTenant,
+				application,
+				trigger);
+
+		assertThat(response, isResponseOk());
+        assertThat(response.getResult().size(), is(2));
+		assertThat(response.getResult().get(0), equalTo(healthAlert));
+	}
+
+    @Test
+    public void shouldTryGetFindAllByTenantApplicationAndNullTriggerGuid() {
+        ServiceResponse<List<HealthAlert>> response = healthAlertService.findAllByTenantApplicationAndTrigger(
+                currentTenant,
+                application,
+                null);
+
+        assertThat(response, hasErrorMessage(Validations.HEALTH_ALERT_TRIGGER_NULL.getCode()));
+    }
+
+    /****************** findByTenantApplicationTriggerAndAlertId ******************/
+
+	@Test
+	public void shouldTryFindByTenantApplicationTriggerAndNullAlertId() {
+		ServiceResponse<HealthAlert> response = healthAlertService.findByTenantApplicationTriggerAndAlertId(
+				currentTenant,
+				application,
+                trigger,
+                null);
+
+        assertThat(response, hasErrorMessage(Validations.HEALTH_ALERT_NULL_ALERT_ID.getCode()));
+	}
+
+    @Test
+    public void shouldTryFindByTenantApplicationNullTriggerAndAlertId() {
+        ServiceResponse<HealthAlert> response = healthAlertService.findByTenantApplicationTriggerAndAlertId(
+                currentTenant,
+                application,
+                null,
+                null);
+
+        assertThat(response, hasErrorMessage(Validations.HEALTH_ALERT_NULL.getCode()));
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json"})
-    public void shouldReturnAppNullGetCurrentHealth() throws Exception {
-    	ServiceResponse<HealthAlert> response = healthAlertService.getCurrentHealthByGuid(
-    			currentTenant,
-    			null,
-    			healthAlert.getDeviceGuid());
+    public void shouldFindByTenantApplicationTriggerAndAlertId() {
+        ServiceResponse<HealthAlert> response = healthAlertService.findByTenantApplicationTriggerAndAlertId(
+                currentTenant,
+                application,
+                trigger,
+                healthAlert.getAlertId());
 
-    	assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
+        assertThat(response, isResponseOk());
+        assertThat(response.getResult(), equalTo(healthAlert));
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json"})
-    public void shouldReturnDeviceNullGetCurrentHealth() throws Exception {
-    	ServiceResponse<HealthAlert> response = healthAlertService.getCurrentHealthByGuid(
-    			currentTenant,
-    			application,
-    			null);
+    public void shouldTryFindByTenantApplicationTriggerAndNonExistingAlertId() {
+        ServiceResponse<HealthAlert> response = healthAlertService.findByTenantApplicationTriggerAndAlertId(
+                currentTenant,
+                application,
+                trigger,
+                "non-existing-alert-id");
 
-    	assertThat(response, hasErrorMessage(DeviceRegisterService.Validations.DEVICE_GUID_NULL.getCode()));
+        assertThat(response, hasErrorMessage(Validations.HEALTH_ALERT_DOES_NOT_EXIST.getCode()));
+    }
+
+    /****************** getCurrentHealthByGuid ******************/
+
+    @Test
+    public void shouldReturnTenantNullGetCurrentHealth() {
+        ServiceResponse<HealthAlert> response = healthAlertService.getCurrentHealthByGuid(
+                null,
+                application,
+                healthAlert.getDevice().getGuid());
+
+        assertThat(response, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json", "/fixtures/devices.json"})
-    public void shouldReturnDeviceGuidNotExistNullGetCurrentHealth() throws Exception {
-    	ServiceResponse<HealthAlert> response = healthAlertService.getCurrentHealthByGuid(
-    			currentTenant,
-    			application,
-    			"7d51c242-81db-11e6-a8c2-0746f010e000");
+    public void shouldReturnAppNullGetCurrentHealth() {
+        ServiceResponse<HealthAlert> response = healthAlertService.getCurrentHealthByGuid(
+                currentTenant,
+                null,
+                healthAlert.getDevice().getGuid());
 
-    	assertThat(response, hasErrorMessage(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode()));
+        assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
     }
-    
+
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json", "/fixtures/devices.json"})
-    public void shouldReturnDeviceDisabledGetCurrentHealth() throws Exception {
-    	ServiceResponse<HealthAlert> response = healthAlertService.getCurrentHealthByGuid(
-    			currentTenant,
-    			application,
-    			DEVICE_GUID);
+    public void shouldReturnDeviceNullGetCurrentHealth() {
+        ServiceResponse<HealthAlert> response = healthAlertService.getCurrentHealthByGuid(
+                currentTenant,
+                application,
+                null);
 
-    	assertThat(response, isResponseOk());
-    	assertThat(response.getResult(), equalTo(HealthAlert.builder().severity(HealthAlertSeverity.DISABLED).build()));
+        assertThat(response, hasErrorMessage(DeviceRegisterService.Validations.DEVICE_GUID_NULL.getCode()));
     }
-    
+
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json", "/fixtures/devices.json"})
-    public void shouldReturnDeviceNoDataGetCurrentHealth() throws Exception {
-    	healthAlert.setDeviceGuid("8363c556-84ea-11e6-92a2-4b01fea7e243");
-    	
-    	List<Event> events = Collections.emptyList();
-    	when(deviceEventService.findIncomingBy(currentTenant, application, healthAlert.getDeviceGuid(), null, null, null, false, 1))
-    		.thenReturn(ServiceResponseBuilder.<List<Event>>ok().withResult(events).build());
-    	
-    	ServiceResponse<HealthAlert> response = healthAlertService.getCurrentHealthByGuid(
-    			currentTenant,
-    			application,
-    			healthAlert.getDeviceGuid());
+    public void shouldReturnDeviceGuidNotExistNullGetCurrentHealth() {
+        ServiceResponse<HealthAlert> response = healthAlertService.getCurrentHealthByGuid(
+                currentTenant,
+                application,
+                "7d51c242-81db-11e6-a8c2-0746f010e000");
 
-    	assertThat(response, isResponseOk());
-    	assertThat(response.getResult(), equalTo(HealthAlert.builder().severity(HealthAlertSeverity.NODATA).build()));
+        assertThat(response, hasErrorMessage(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode()));
     }
-    
+
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/health-alert.json", "/fixtures/devices.json",
-    		"/fixtures/events-incoming.json"})
-    public void shouldGetCurrentHealth() throws Exception {
-    	healthAlert.setDeviceGuid("8363c556-84ea-11e6-92a2-4b01fea7e243");
-    	
-    	List<Event> events = Collections.singletonList(Event.builder().build());
-    	when(deviceEventService.findIncomingBy(currentTenant, application, healthAlert.getDeviceGuid(), null, null, null, false, 1))
-    		.thenReturn(ServiceResponseBuilder.<List<Event>>ok().withResult(events).build());
-    	
-    	ServiceResponse<HealthAlert> response = healthAlertService.getCurrentHealthByGuid(
-    			currentTenant,
-    			application,
-    			healthAlert.getDeviceGuid());
+    public void shouldReturnDeviceDisabledGetCurrentHealth() {
+        device.setActive(false);
+        device = deviceRepository.save(device);
 
-    	assertThat(response, isResponseOk());
-    	currentHealthOk.setLastChange(response.getResult().getLastChange());
-    	assertThat(response.getResult(), equalTo(currentHealthOk));
+        ServiceResponse<HealthAlert> response = healthAlertService.getCurrentHealthByGuid(
+                currentTenant,
+                application,
+                device.getGuid());
+
+        assertThat(response, isResponseOk());
+        assertThat(response.getResult(), equalTo(HealthAlert.builder().severity(HealthAlertSeverity.DISABLED).build()));
     }
-    
+
+    @Test
+    public void shouldReturnDeviceNoDataGetCurrentHealth() {
+        List<Event> events = Collections.emptyList();
+        when(deviceEventService.findIncomingBy(currentTenant, application, healthAlert.getDevice().getGuid(), null, null, null, false, 1))
+                .thenReturn(ServiceResponseBuilder.<List<Event>>ok().withResult(events).build());
+
+        ServiceResponse<HealthAlert> response = healthAlertService.getCurrentHealthByGuid(
+                currentTenant,
+                application,
+                healthAlert.getDevice().getGuid());
+
+        assertThat(response, isResponseOk());
+        assertThat(response.getResult().getSeverity(), equalTo(HealthAlertSeverity.NODATA));
+    }
+
+    @Test
+    public void shouldGetCurrentHealth() {
+        List<Event> events = new LinkedList<>();
+        events.add(Event.builder().build());
+
+        when(deviceEventService.findIncomingBy(currentTenant, application, healthAlert.getDevice().getGuid(), null, null, null, false, 1))
+                .thenReturn(ServiceResponseBuilder.<List<Event>>ok().withResult(events).build());
+
+        ServiceResponse<HealthAlert> response = healthAlertService.getCurrentHealthByGuid(
+                currentTenant,
+                application,
+                healthAlert.getDevice().getGuid());
+
+        assertThat(response, isResponseOk());
+        assertThat(response.getResult().getSeverity(), equalTo(HealthAlertSeverity.WARN));
+
+    }
+
     static class HealthAlertServiceTestConfig {
-    	@Bean
-    	public DeviceEventService deviceEventService() {
-    		return Mockito.mock(DeviceEventService.class);
-    	}
+        @Bean
+        public DeviceEventService deviceEventService() {
+            return Mockito.mock(DeviceEventService.class);
+        }
     }
 
 }
