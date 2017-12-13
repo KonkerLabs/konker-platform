@@ -9,10 +9,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.text.MessageFormat;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,32 +21,37 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.web.client.RestTemplate;
 
+import com.konkerlabs.platform.registry.api.config.PubServerInternalConfig;
 import com.konkerlabs.platform.registry.api.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
 import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
-import com.konkerlabs.platform.registry.api.web.controller.IncomingEventsRestController;
+import com.konkerlabs.platform.registry.api.web.controller.SendEventsRestController;
 import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
 import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = IncomingEventsRestController.class)
+@SpringBootTest(classes = SendEventsRestController.class)
 @AutoConfigureMockMvc(secure = false)
 @ContextConfiguration(classes = {
         WebTestConfiguration.class,
         MongoTestConfig.class,
         WebMvcConfig.class,
-        CrudResponseAdvice.class
+        CrudResponseAdvice.class,
+        PubServerInternalConfig.class,
+        SendEventsRestControllerTest.SendEventsRestControllerTestConfig.class
 })
 public class SendEventsRestControllerTest extends WebLayerTestContext {
 
@@ -57,6 +62,9 @@ public class SendEventsRestControllerTest extends WebLayerTestContext {
 
     @Autowired
     private ApplicationService applicationService;
+    
+    @Autowired
+	private RestTemplate restTemplate;
 
     @Autowired
     private Tenant tenant;
@@ -80,6 +88,7 @@ public class SendEventsRestControllerTest extends WebLayerTestContext {
     @After
     public void tearDown() {
         Mockito.reset(deviceEventService);
+        Mockito.reset(applicationService);
     }
 
     @Test
@@ -95,7 +104,7 @@ public class SendEventsRestControllerTest extends WebLayerTestContext {
         
         .andDo(print())
         .andExpect(status().is4xxClientError())
-        .andExpect(content().contentType("application/text;charset=UTF-8"))
+        .andExpect(content().contentType("application/json;charset=UTF-8"))
         .andExpect(jsonPath("$.code", is(HttpStatus.NOT_FOUND.value())))
         .andExpect(jsonPath("$.status", is("error")))
         .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
@@ -105,33 +114,35 @@ public class SendEventsRestControllerTest extends WebLayerTestContext {
     }
 
     @Test
-    public void shouldListEventsNoParam() throws Exception {
-
-        List<Event> incomingEvents = new ArrayList<>();
-//        incomingEvents.add(event1);
-//        incomingEvents.add(event2);
-
-        when(deviceEventService.findIncomingBy(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(Application.class), org.mockito.Matchers.isNull(String.class), org.mockito.Matchers.isNull(String.class), org.mockito.Matchers.isNull(Instant.class), org.mockito.Matchers.isNull(Instant.class), org.mockito.Matchers.eq(false), org.mockito.Matchers.eq(100)))
-                .thenReturn(ServiceResponseBuilder.<List<Event>>ok().withResult(incomingEvents).build());
-
+    public void shouldSendEvents() throws Exception {
+    	HttpEntity<String> request = new HttpEntity<String>(jsonPayload);
         when(applicationService.getByApplicationName(tenant, application.getName()))
-        		.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
+        	.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
+       
+        when(restTemplate.postForObject(
+        		MessageFormat.format("http://localhost:8082/registry-data/{0}/{1}/pub", tenant.getDomainName(), application.getName()), 
+        		request, 
+        		String.class))
+			.thenReturn("{status: 200}");
+        
+        getMockMvc().perform(MockMvcRequestBuilders.post("/" + application.getName() + "/sendEvents")
+        		.content(jsonPayload)
+        		.contentType("application/json")
+                .accept(MediaType.APPLICATION_JSON))
+        .andDo(print())
+        .andExpect(status().isCreated())
+        .andExpect(content().contentType("application/json;charset=UTF-8"))
+        .andExpect(jsonPath("$.code", is(HttpStatus.CREATED.value())))
+        .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)));
 
-        getMockMvc().perform(MockMvcRequestBuilders.get("/" + application.getName() + "/incomingEvents")
-                                                   .contentType("application/json")
-                                                   .accept(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isOk())
-                    .andExpect(content().contentType("application/json;charset=UTF-8"))
-                    .andExpect(jsonPath("$.code", is(HttpStatus.OK.value())))
-                    .andExpect(jsonPath("$.status", is("success")))
-                    .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
-                    .andExpect(jsonPath("$.result", hasSize(2)))
-//                    .andExpect(jsonPath("$.result[0].timestamp", is(dateIso)))
-//                    .andExpect(jsonPath("$.result[0].payload", is(JSON.parse(PAYLOAD1))))
-//                    .andExpect(jsonPath("$.result[1].timestamp", is(dateIso)))
-//                    .andExpect(jsonPath("$.result[1].payload", is(JSON.parse(PAYLOAD2))))
-                    ;
-
+    }
+    
+    static class SendEventsRestControllerTestConfig {
+    	
+    	@Bean
+    	public RestTemplate restTemplate() {
+    		return Mockito.mock(RestTemplate.class);
+    	}
     }
 
 }

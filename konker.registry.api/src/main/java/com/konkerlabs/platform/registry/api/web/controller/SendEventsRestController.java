@@ -41,6 +41,9 @@ public class SendEventsRestController extends AbstractRestController implements 
 	
 	@Autowired
 	private PubServerInternalConfig pubServerIntenalConfig;
+	
+	@Autowired
+	private RestTemplate restTemplate;
 
     private Set<String> validationsCode = new HashSet<>();
 
@@ -72,7 +75,6 @@ public class SendEventsRestController extends AbstractRestController implements 
 	    				.build());
         
 	    HttpEntity<String> request = new HttpEntity<String>(jsonPayload);
-	    RestTemplate restTemplate = new RestTemplate();
         String response = restTemplate
         		.postForObject(
         				MessageFormat.format(pubServerIntenalConfig.getUrl(), tenant.getDomainName(), application.getName()), 

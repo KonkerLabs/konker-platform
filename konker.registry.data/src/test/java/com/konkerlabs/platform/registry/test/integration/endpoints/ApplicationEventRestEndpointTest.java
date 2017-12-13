@@ -20,6 +20,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -50,6 +51,7 @@ import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
         SecurityTestConfiguration.class,
         ApplicationEventRestEndpointTest.DeviceEventRestEndpointTestContextConfig.class
 })
+@ActiveProfiles("dataInternal")
 public class ApplicationEventRestEndpointTest extends WebLayerTestContext {
 
 

@@ -29,6 +29,7 @@ import lombok.Builder;
 import lombok.Data;
 
 @RestController
+@Profile("dataInternal")
 public class ApplicationEventRestEndpoint {
 
     public enum Messages {
