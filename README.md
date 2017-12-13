@@ -6,7 +6,7 @@
 
 Konker Platform is an Open Source Platform for the Internet of Things (IoT). It is developed by Konker and the community.
 
-The Platform alows easy connection and management of devices using HTTP or MQTT protocols.
+The Platform allows easy connection and management of devices using HTTP or MQTT protocols.
 
 ## Pre-requisites
 Konker Platform runs and compiles on Java 8.
@@ -42,7 +42,7 @@ If you need some help, please contact-us on support@konkerlabs.com
 Konker provides a hosted Konker Platform. Please, contact us at http://www.konkerlabs.com .
 
 #### Deploying ####
-If you built your package with maven, the Konker Platform can be deployed as a web application on your favorit servlet container (we use jetty). You will need to customize the application.conf file to your needs. See application.conf.example on how to do that.
+If you built your package with maven, the Konker Platform can be deployed as a web application on your favorite servlet container (we use jetty). You will need to customize the application.conf file to your needs. See application.conf.example on how to do that.
 
 ## License and Copyright
    Copyright 2017 Konker Labs
