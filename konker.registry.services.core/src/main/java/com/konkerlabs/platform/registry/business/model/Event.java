@@ -68,6 +68,19 @@ public class Event {
         }
     }
 
+    public Event clone() {
+        return Event
+                .builder()
+                .epochTime(this.epochTime)
+                .creationTimestamp(this.creationTimestamp)
+                .ingestedTimestamp(this.ingestedTimestamp)
+                .incoming(this.incoming)
+                .outgoing(this.outgoing)
+                .geolocation(this.geolocation)
+                .payload(this.payload)
+                .build();
+    }
+
     public ZonedDateTime getZonedTimestamp(String zoneId) {
         return creationTimestamp.atZone(ZoneId.of(zoneId));
     }
