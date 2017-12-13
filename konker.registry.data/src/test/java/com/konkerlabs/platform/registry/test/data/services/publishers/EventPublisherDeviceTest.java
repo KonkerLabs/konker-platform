@@ -292,7 +292,7 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
         Message message = new Message(event.getPayload().getBytes("UTF-8"), properties);
 
         inOrder.verify(rabbitTemplate).convertAndSend("data.sub", message);
-        inOrder.verify(deviceLogEventService).logOutgoingEvent(eq(device), eq(event));
+        inOrder.verify(deviceLogEventService).logOutgoingEvent(eq(device), Mockito.any(Event.class));
     }
 
 }

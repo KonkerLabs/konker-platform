@@ -88,15 +88,16 @@ public class EventPublisherDevice implements EventPublisher {
 
     public void sendMessage(Event outgoingEvent, Map<String, String> data, Device outgoingDevice) {
 
+        outgoingEvent = outgoingEvent.clone(); // sets the new outgoing to a new event instance
         outgoingEvent.setOutgoing(
-                Event.EventActor.builder()
-                        .deviceGuid(outgoingDevice.getGuid())
-                        .channel(data.get(DEVICE_MQTT_CHANNEL))
-                        .tenantDomain(outgoingDevice.getTenant().getDomainName())
-                        .applicationName(outgoingDevice.getApplication().getName())
-                        .deviceId(outgoingDevice.getDeviceId())
-                        .build()
-        );
+                        Event.EventActor.builder()
+                                .deviceGuid(outgoingDevice.getGuid())
+                                .channel(data.get(DEVICE_MQTT_CHANNEL))
+                                .tenantDomain(outgoingDevice.getTenant().getDomainName())
+                                .applicationName(outgoingDevice.getApplication().getName())
+                                .deviceId(outgoingDevice.getDeviceId())
+                                .build()
+                        );
 
         rabbitGateway.sendEvent(outgoingDevice.getApiKey(), data.get(DEVICE_MQTT_CHANNEL), outgoingEvent.getPayload());
 
