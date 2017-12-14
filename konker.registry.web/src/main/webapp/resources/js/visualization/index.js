@@ -205,6 +205,32 @@ var chartRefreshService = {
     }
 }
 
+function initMap() {
+	var locations = [];
+	var json = jQuery.parseJSON($('#eventsJson').val());
+	json.events.forEach(function(event) {
+		locations.push({lat: event.geolocation.lat, lng: event.geolocation.lon});
+	});
+	
+	var geo = locations[0];
+	var map = new google.maps.Map(document.getElementById('map'), {
+		zoom: 16,
+		center: geo
+	});
+	
+	var labels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+	var markers = locations.map(function(location, i) {
+		return new google.maps.Marker({
+			position: location,
+			label: labels[i % labels.length]
+		});
+	});
+	
+	var markerCluster = new MarkerClusterer(map, 
+			markers,
+			{imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'});
+}
+
 $(document).ready(function() {
 
     applyEventBindingsToChannel();
@@ -240,6 +266,12 @@ $(document).ready(function() {
     $('#updateChartBtn').click(function() {
         clearChartTableHideCsvButton();
         autoRefreshDataChart();
+    });
+    
+    $('#mapTab').click(function() {
+    	setTimeout(function() {
+    		initMap();
+    	}, 500);
     });
 
     // Remove dirty elements (KRMVP-392)

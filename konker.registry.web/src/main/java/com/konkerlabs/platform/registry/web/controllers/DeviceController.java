@@ -31,10 +31,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.Event.EventGeolocation;
 import com.konkerlabs.platform.registry.business.model.EventSchema;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
@@ -47,6 +49,7 @@ import com.konkerlabs.platform.registry.business.services.api.EventSchemaService
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
 import com.konkerlabs.platform.registry.web.forms.DeviceRegistrationForm;
+import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 
 @Controller
 @Scope("request")
@@ -159,6 +162,7 @@ public class DeviceController implements ApplicationContextAware {
     private DeviceEventService deviceEventService;
     private EventSchemaService eventSchemaService;
     private ApplicationService applicationService;
+    private JsonParsingService jsonParsing;
 
     private Tenant tenant;
     private User user;
@@ -172,7 +176,8 @@ public class DeviceController implements ApplicationContextAware {
     		Tenant tenant,
     		Application application,
     		User user,
-    		ApplicationService applicationService) {
+    		ApplicationService applicationService,
+    		JsonParsingService jsonParsing) {
         this.deviceRegisterService = deviceRegisterService;
         this.deviceEventService = deviceEventService;
         this.eventSchemaService = eventSchemaService;
@@ -180,6 +185,7 @@ public class DeviceController implements ApplicationContextAware {
         this.application = application;
         this.user = user;
         this.applicationService = applicationService;
+        this.jsonParsing = jsonParsing;
     }
 
     @RequestMapping
@@ -244,16 +250,30 @@ public class DeviceController implements ApplicationContextAware {
         List<Event> outgoingEvents = deviceEventService.findOutgoingBy(tenant, application, device.getGuid(), null, null, null, false, 50).getResult();
 
         boolean hasAnyEvent = !incomingEvents.isEmpty() || !outgoingEvents.isEmpty();
-
+        
+        
+        String eventsJson = parseToJson(incomingEvents);
+        
         mv.addObject("userDateFormat", user.getDateFormat().name())
                 .addObject("recentIncomingEvents", incomingEvents)
                 .addObject("recentOutgoingEvents", outgoingEvents)
-                .addObject("hasAnyEvent", hasAnyEvent);
+                .addObject("hasAnyEvent", hasAnyEvent)
+                .addObject("eventsJson", eventsJson);
 
         addChartObjects(device, mv);
 
         return mv;
     }
+
+	private String parseToJson(List<Event> incomingEvents) {
+		String json = null;
+		try {
+			json = jsonParsing.toJsonString(Collections.singletonMap("events", incomingEvents.subList(0, 1)));
+		} catch (JsonProcessingException e) {
+			LOGGER.error(e.getMessage());
+		}
+		return json;
+	}
 
     @RequestMapping("/{applicationName}/{deviceGuid}/events/incoming")
     @PreAuthorize("hasAuthority('VIEW_DEVICE_LOG')")
