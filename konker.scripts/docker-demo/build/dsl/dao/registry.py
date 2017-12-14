@@ -92,6 +92,7 @@ def create_user(args):
 
         new_user = {
             "_id": username,
+            "active": True,
             "language": "PT_BR",
             "dateFormat": "DDMMYYYY",
             "zoneId": "AMERICA_SAO_PAULO",
@@ -126,7 +127,8 @@ def update_user(args):
                 {
                     '$set':
                         {
-                            'password': get_hashed_password(args.password.encode(encoding='UTF-8')).decode()
+                            'password': get_hashed_password(args.password.encode(encoding='UTF-8')).decode(),
+                            'active': True
                         }
                 }, upsert=False)
             print("Konker user password updated")
