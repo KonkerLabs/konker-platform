@@ -11,6 +11,9 @@ import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.events.api.BaseEventRepositoryImpl;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -29,6 +32,8 @@ import java.util.stream.Collectors;
 
 @Repository("mongoEvents")
 public class EventRepositoryMongoImpl extends BaseEventRepositoryImpl {
+	
+	private Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     private MongoTemplate mongoTemplate;
@@ -44,9 +49,10 @@ public class EventRepositoryMongoImpl extends BaseEventRepositoryImpl {
 
         Tenant existingTenant = tenantRepository.findByDomainName(tenant.getDomainName());
 
-        Optional.ofNullable(
-                deviceRepository.findByTenantAndGuid(existingTenant.getId(), event.getIncoming().getDeviceGuid())
-        ).orElseThrow(() -> new BusinessException(Validations.INCOMING_DEVICE_ID_DOES_NOT_EXIST.getCode()));
+        if (!application.getName().equals(event.getIncoming().getDeviceGuid())) {
+        	Optional.ofNullable(deviceRepository.findByTenantAndGuid(existingTenant.getId(), event.getIncoming().getDeviceGuid()))
+        		.orElseThrow(() -> new BusinessException(Validations.INCOMING_DEVICE_ID_DOES_NOT_EXIST.getCode()));
+        }
 
         Optional.ofNullable(event.getCreationTimestamp())
                 .orElseThrow(() -> new BusinessException(Validations.EVENT_TIMESTAMP_NULL.getCode()));

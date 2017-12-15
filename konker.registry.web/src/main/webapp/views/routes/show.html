@@ -49,6 +49,11 @@
                            data-th-text="#{routes.form.incoming.type.model_location}"
                            value="modelLocation" data-th-checked="${route.incomingScheme == 'modelLocation'}"></input>
                 </label>
+                <label class="radio-inline">
+                	<input type="radio" name="incomingScheme"
+                           data-th-text="#{routes.form.incoming.type.application}"
+                           value="application" data-th-checked="${route.incomingScheme == 'application'}"></input>
+                </label>
             </div>
         </div>
         <div id="incomingFragment">
@@ -57,6 +62,9 @@
             </th:block>
             <th:block data-th-include="routes/model-location-incoming :: incoming"
                       data-th-if="${route.incomingScheme == 'modelLocation'}">
+            </th:block>
+            <th:block data-th-include="routes/application-incoming :: incoming"
+                      data-th-if="${route.incomingScheme == 'application'}">
             </th:block>
         </div>
 

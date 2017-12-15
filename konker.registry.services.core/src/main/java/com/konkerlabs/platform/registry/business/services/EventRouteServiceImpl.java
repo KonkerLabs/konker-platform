@@ -285,6 +285,11 @@ public class EventRouteServiceImpl implements EventRouteService {
                 actor.setDisplayName(MessageFormat.format("{0} @ {1}", kinesisProperties.getStreamName(), kinesisProperties.getRegion()));
 
                 break;
+                
+            case Application.URI_SCHEME:
+            	actor.setDisplayName(application.getName());
+            	
+            	break;
 
             default:
                 LOGGER.warn("{} not supported", actor.getUri().getScheme());
