@@ -2,9 +2,11 @@ package com.konkerlabs.platform.registry.integration.processors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.DeviceModel;
 import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.Event.EventActor;
 import com.konkerlabs.platform.registry.business.model.Gateway;
 import com.konkerlabs.platform.registry.business.services.LocationTreeUtils;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
@@ -125,7 +127,7 @@ public class DeviceEventProcessor {
     }
     
     @SuppressWarnings("unchecked")
-	public void proccess(Gateway gateway, String payloadList) throws BusinessException, JsonProcessingException {
+	public void process(Gateway gateway, String payloadList) throws BusinessException, JsonProcessingException {
     	List<Map<String, Object>> payloadsGateway = jsonParsingService.toListMap(payloadList);
     	
     	for (Map<String, Object> payloadGateway : payloadsGateway) {
@@ -233,5 +235,28 @@ public class DeviceEventProcessor {
         }
 
     }
+
+	public void process(Application application, String payload) throws BusinessException {
+		Event event = Event.builder()
+				.incoming(EventActor.builder()
+						.tenantDomain(application.getTenant().getDomainName())
+						.applicationName(application.getName())
+						.deviceGuid(application.getName())
+						.channel(application.getName())
+						.deviceId(application.getName())
+						.build())
+                .creationTimestamp(Instant.now())
+                .ingestedTimestamp(Instant.now())
+                .payload(payload)
+                .build();	
+		
+		Device device = Device.builder()
+							.guid(application.getName())
+							.tenant(application.getTenant())
+							.application(application)
+							.build();
+		
+		eventRouteExecutor.execute(event, device);
+	}
 
 }

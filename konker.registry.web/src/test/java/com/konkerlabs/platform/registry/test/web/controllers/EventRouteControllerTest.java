@@ -307,6 +307,13 @@ public class EventRouteControllerTest extends WebLayerTestContext {
                 .andExpect(view().name("routes/device-incoming"))
                 .andExpect(model().attribute("route", new EventRouteForm()));
     }
+    
+    @Test
+    public void shouldRenderApplicationIncomingViewFragment() throws Exception {
+        getMockMvc().perform(get("/routes/{0}/incoming/{1}", application.getName(), "application"))
+                .andExpect(view().name("routes/application-incoming"))
+                .andExpect(model().attribute("route", new EventRouteForm()));
+    }
 
     @Test
     public void shouldRenderModelLocationIncomingViewFragment() throws Exception {

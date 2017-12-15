@@ -298,7 +298,7 @@ public class DeviceEventProcessorTest {
     	when(deviceLogEventService.logIncomingEvent(eq(device), any()))
     		.thenReturn(ServiceResponseBuilder.<Event>ok().withResult(event).build());
     	
-    	subject.proccess(gateway, listJson);
+    	subject.process(gateway, listJson);
     	
     	verify(eventRouteExecutor, times(0)).execute(any(Event.class), any(Device.class));
         verify(deviceLogEventService, times(0)).logIncomingEvent(any(Device.class), any(Event.class));
@@ -314,7 +314,7 @@ public class DeviceEventProcessorTest {
     	when(deviceLogEventService.logIncomingEvent(eq(device), any()))
     		.thenReturn(ServiceResponseBuilder.<Event>ok().withResult(event).build());
     	
-    	subject.proccess(gateway, listJson);
+    	subject.process(gateway, listJson);
     	
     	verify(eventRouteExecutor, times(0)).execute(any(Event.class), any(Device.class));
         verify(deviceLogEventService, times(0)).logIncomingEvent(any(Device.class), any(Event.class));
@@ -349,7 +349,7 @@ public class DeviceEventProcessorTest {
     	when(deviceLogEventService.logIncomingEvent(eq(device), any()))
     		.thenReturn(ServiceResponseBuilder.<Event>ok().withResult(event).build());
     	
-    	subject.proccess(gateway, listJson);
+    	subject.process(gateway, listJson);
     	
     	verify(eventRouteExecutor, times(2)).execute(any(Event.class), any(Device.class));
         verify(deviceLogEventService, times(2)).logIncomingEvent(any(Device.class), any(Event.class));
@@ -451,6 +451,17 @@ public class DeviceEventProcessorTest {
     	
     	verify(eventRouteExecutor, times(0)).execute(any(Event.class), any(Device.class));
         verify(deviceLogEventService, times(1)).logIncomingEvent(any(Device.class), any(Event.class));
+    }
+    
+    @Test
+    public void shouldFireApplicationRouteExecution() throws Exception {
+    	Application application = Application.builder()
+    			.name("fake")
+    			.tenant(Tenant.builder().domainName("fakedomain").build())
+    			.build();
+        subject.process(application, originalPayload);
+
+        verify(eventRouteExecutor, times(1)).execute(any(Event.class), any(Device.class));
     }
 
     @Configuration

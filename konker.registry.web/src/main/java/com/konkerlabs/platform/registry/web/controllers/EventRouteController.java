@@ -134,6 +134,7 @@ public class EventRouteController implements ApplicationContextAware {
         model.addObject("allDeviceModels", deviceModelService.findAll(tenant, application).getResult());
         model.addObject("allLocations", locationSearchService.findAll(tenant, application).getResult());
         model.addObject("allTransformations", transformationService.getAll(tenant, application).getResult());
+        model.addObject("applicationName", application.getName());
 
         return model;
 
@@ -189,6 +190,9 @@ public class EventRouteController implements ApplicationContextAware {
             case DeviceModelLocation.URI_SCHEME :
                 model = new ModelAndView("routes/model-location-incoming", "route", route);
                 break;
+            case Application.URI_SCHEME:
+            	model = new ModelAndView("routes/application-incoming", "route", route);
+            	break;
             default:
                 return new ModelAndView("common/empty");
         }
