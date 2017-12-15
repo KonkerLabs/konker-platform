@@ -68,7 +68,7 @@
                 <input type="hidden" id="applicationName" name="applicationName" data-th-value="${device.application.name}" />
                 <input type="hidden" id="dataResult">
                 <input type="hidden" id="eventsJson" data-th-value="${eventsJson}" >
-
+	
                 <div id="filter">
 
                     <div class="row form-group">
@@ -145,26 +145,28 @@
                     </button>
                 </div>
                 
-                <ul class="nav nav-tabs nav-justified col-sm-12" >
-					<li class="active">
-						<a id="chartTab" data-toggle="tab" href="#panelChart"
-							data-th-text="#{devices.events.chart}"></a>
-					</li>
-					<li>
-						<a id="mapTab" data-toggle="tab" href="#panelMap"
-							data-th-text="#{devices.events.map}"></a>
-					</li>
-				</ul>
-				<div class="tab-content" style="margin-bottom: 35px;">
-					<div id="panelChart" class="tab-pane fade in active">
-	                    <div id="chart">
-		                    <svg></svg>
-		                </div>
+                <div id="panelTabs">
+	                <ul class="nav nav-tabs nav-justified col-sm-12" >
+						<li class="active">
+							<a id="chartTab" data-toggle="tab" href="#panelChart"
+								data-th-text="#{devices.events.chart}"></a>
+						</li>
+						<li data-th-if="${!#strings.isEmpty(eventsJson)}">
+							<a id="mapTab" data-toggle="tab" href="#panelMap"
+								data-th-text="#{devices.events.map}"></a>
+						</li>
+					</ul>
+					<div class="tab-content" style="margin-bottom: 35px;">
+						<div id="panelChart" class="tab-pane fade in active">
+		                    <div id="chart">
+			                    <svg></svg>
+			                </div>
+						</div>
+						<div id="panelMap" class="tab-pane fade"  data-th-if="${!#strings.isEmpty(eventsJson)}">
+		                    <div id="map"></div>
+						</div>
 					</div>
-					<div id="panelMap" class="tab-pane fade">
-	                    <div id="map"></div>
-					</div>
-				</div>
+                </div>
             </form>
 
             <div class="row col-sm-12">
@@ -223,6 +225,11 @@
 	</div>
     
     <div data-layout-fragment="script">
+    	<script>
+			var titleMapDetail = "[[${titleMapDetail}]]";
+			var lastIngestedTimeLabel = "[[${lastIngestedTimeLabel}]]";
+			var lastDataLabel = "[[${lastDataLabel}]]";
+		</script>
 	    
         <script data-th-attr="src=@{/resources/konker/scripts/underscore-min.js}" type="text/javascript"></script>
         <script data-th-attr="src=@{/resources/konker/scripts/backbone-min.js}" type="text/javascript"></script>
@@ -242,10 +249,13 @@
             graphService.setup('#7777ff',[[#{visualization.graph.label.axisx}]],[[#{devices.visualization.graph.no_data}]]);
         </script>
         <!-- Google Maps -->
-        <script src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js">
+        <script
+        	data-th-if="${!#strings.isEmpty(eventsJson)}" 
+        	src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js">
     	</script>
-        <script async defer
-	        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDFADoktpVOGEJ4QVlYaqAW4jPMeR5rLT0&callback=initMap">
+        <script async defer 
+        	data-th-if="${!#strings.isEmpty(eventsJson)}"
+        	data-th-attr="src=@{${'https://maps.googleapis.com/maps/api/js?key=' + mapApiKey + '&callback=initMap'}}" >
 	    </script>
     </div>
 

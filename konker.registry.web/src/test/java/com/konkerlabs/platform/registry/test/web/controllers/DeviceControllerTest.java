@@ -68,6 +68,7 @@ import com.konkerlabs.platform.registry.web.controllers.DeviceController.Channel
 import com.konkerlabs.platform.registry.web.controllers.DeviceController.MetricVO;
 import com.konkerlabs.platform.registry.web.converters.InstantToStringConverter;
 import com.konkerlabs.platform.registry.web.forms.DeviceRegistrationForm;
+import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
@@ -467,6 +468,11 @@ public class DeviceControllerTest extends WebLayerTestContext {
 		@Bean
 		public ApplicationService applicationService() {
 			return Mockito.mock(ApplicationService.class);
+		}
+		
+		@Bean
+		public JsonParsingService jsonParsingService() {
+			return Mockito.mock(JsonParsingService.class);
 		}
 	}
 

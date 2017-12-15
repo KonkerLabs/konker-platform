@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -36,7 +37,6 @@ import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.Event.EventGeolocation;
 import com.konkerlabs.platform.registry.business.model.EventSchema;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
@@ -47,6 +47,7 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterServ
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.DeviceDataURLs;
 import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.config.MapGeolocationConfig;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
 import com.konkerlabs.platform.registry.web.forms.DeviceRegistrationForm;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
@@ -168,6 +169,7 @@ public class DeviceController implements ApplicationContextAware {
     private User user;
     private Application application;
     private PubServerConfig pubServerConfig = new PubServerConfig();
+    private MapGeolocationConfig mapGeolocationConfig = new MapGeolocationConfig();
 
     @Autowired
     public DeviceController(DeviceRegisterService deviceRegisterService,
@@ -251,24 +253,36 @@ public class DeviceController implements ApplicationContextAware {
 
         boolean hasAnyEvent = !incomingEvents.isEmpty() || !outgoingEvents.isEmpty();
         
-        
-        String eventsJson = parseToJson(incomingEvents);
-        
         mv.addObject("userDateFormat", user.getDateFormat().name())
                 .addObject("recentIncomingEvents", incomingEvents)
                 .addObject("recentOutgoingEvents", outgoingEvents)
-                .addObject("hasAnyEvent", hasAnyEvent)
-                .addObject("eventsJson", eventsJson);
-
+                .addObject("hasAnyEvent", hasAnyEvent);
+        
+        if (mapGeolocationConfig.isEnabled()) {
+        	String eventsJson = parseToJson(incomingEvents);
+        	mv.addObject("eventsJson", eventsJson)
+        		.addObject("mapApiKey", mapGeolocationConfig.getApiKey())
+        		.addObject("titleMapDetail", applicationContext.getMessage(DeviceRegisterService.Messages.DEVICE_TITLE_MAP_DETAIL.getCode(), null, user.getLanguage().getLocale()))
+        		.addObject("lastDataLabel", applicationContext.getMessage(DeviceRegisterService.Messages.DEVICE_LAST_DATA_LABEL.getCode(), null, user.getLanguage().getLocale()))
+        		.addObject("lastIngestedTimeLabel", applicationContext.getMessage(DeviceRegisterService.Messages.DEVICE_LAST_INGESTED_TIME_LABEL.getCode(), null, user.getLanguage().getLocale()));
+        }
+        
         addChartObjects(device, mv);
 
         return mv;
     }
 
 	private String parseToJson(List<Event> incomingEvents) {
-		String json = null;
+		String json = "";
 		try {
-			json = jsonParsing.toJsonString(Collections.singletonMap("events", incomingEvents.subList(0, 1)));
+			Optional<Event> lastEventGeotagged = incomingEvents
+					.stream()
+					.filter(event -> Optional.ofNullable(event.getGeolocation()).isPresent())
+					.findFirst();
+			
+			if (lastEventGeotagged.isPresent()) {
+				json = jsonParsing.toJsonString(Collections.singletonMap("events", Collections.singletonList(lastEventGeotagged.get())));
+			}
 		} catch (JsonProcessingException e) {
 			LOGGER.error(e.getMessage());
 		}

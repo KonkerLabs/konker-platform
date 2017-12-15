@@ -57,6 +57,7 @@ function findAndLoadDataChart() {
 
         		if (result.length != 0) {
         			$('#exportCsv').removeClass('hide');
+        			$('#panelTabs').removeClass('hide');
                     $('#chart').removeClass('hide');
                     $('#onlineRow').removeClass('hide');
                     // Used to identify outliers
@@ -173,6 +174,7 @@ function loadOutgoingEvents() {
 }
 
 function clearChartTableHideCsvButton() {
+	$('#panelTabs').addClass('hide');
     $('#chart').addClass('hide');
 	$('#chart svg').html("");
 	$('#exportCsv').addClass('hide');
@@ -209,7 +211,7 @@ function initMap() {
 	var locations = [];
 	var json = jQuery.parseJSON($('#eventsJson').val());
 	json.events.forEach(function(event) {
-		locations.push({lat: event.geolocation.lat, lng: event.geolocation.lon});
+		locations.push({lat: event.geolocation.lat, lng: event.geolocation.lon, lastData: event.payload, lastTimestamp: event.ingestedTimestamp});
 	});
 	
 	var geo = locations[0];
@@ -220,10 +222,28 @@ function initMap() {
 	
 	var labels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 	var markers = locations.map(function(location, i) {
-		return new google.maps.Marker({
+		var marker = new google.maps.Marker({
 			position: location,
 			label: labels[i % labels.length]
 		});
+		
+		var lastDate = new Date(0);
+		lastDate.setUTCSeconds(location.lastTimestamp.epochSecond);
+		
+		var contentInfo = '<div><h3>' +titleMapDetail+ '</h3><p><b>' +lastIngestedTimeLabel+ ':</b> ' 
+								+lastDate+ 
+						  '</p><p><b>' +lastDataLabel+ ':</b> ' 
+								+location.lastData+ 
+						  '</p></div>';
+		var infoWindow = new google.maps.InfoWindow({
+			content: contentInfo
+	    });
+		
+		marker.addListener('click', function() {
+			infoWindow.open(map, marker);
+		});
+		
+		return marker
 	});
 	
 	var markerCluster = new MarkerClusterer(map, 
@@ -284,4 +304,5 @@ $(document).ready(function() {
         }
     }, 150);
 
+    clearChartTableHideCsvButton();
 });
