@@ -2452,6 +2452,18 @@ label {
     margin: 5px 5px;
 }
 
+.margin-hr {
+	margin-top: 15px;
+}
+
+.login-subscribe {
+	text-align:center;
+}
+
+.logo {
+    width: 80px;
+}
+
 @media only screen and (max-width: 1000px) {
     .icon-badge-local {
         display: none;
