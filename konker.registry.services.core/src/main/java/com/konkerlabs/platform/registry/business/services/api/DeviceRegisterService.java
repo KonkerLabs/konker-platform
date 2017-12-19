@@ -35,7 +35,10 @@ public interface DeviceRegisterService {
         DEVICE_REGISTERED_SUCCESSFULLY("controller.device.registered.success"),
         DEVICE_REMOVED_SUCCESSFULLY("controller.device.removed.succesfully"),
         DEVICE_REMOVED_UNSUCCESSFULLY("controller.device.removed.unsuccesfully"),
-        DEVICE_QRCODE_ERROR("service.device.qrcode.have_errors");
+        DEVICE_QRCODE_ERROR("service.device.qrcode.have_errors"),
+        DEVICE_TITLE_MAP_DETAIL("devices.title.map.detail"),
+        DEVICE_LAST_DATA_LABEL("devices.payload.label"),
+        DEVICE_LAST_INGESTED_TIME_LABEL("devices.ingested.time.label");
 
         public String getCode() {
             return code;
