@@ -24,6 +24,7 @@
 
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" type="text/css" data-th-href="@{/resources/bootstrap/css/bootstrap.min.css}">
+    <link rel="stylesheet" type="text/css" data-th-href="@{/resources/konker/css/create-account.css}">
 
     <!-- Custom styles for this template -->
     <link rel="stylesheet" type="text/css" data-th-href="@{/resources/font-awesome/css/font-awesome.min.css}">
@@ -43,6 +44,25 @@
   </head>
 
   <body>
+  	<nav class="navbar navbar-default navbar-static-top">
+  		<div class="container">
+  			<div class="navbar-header">
+  				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#"><img data-th-attr="src=@{/resources/konker/images/konker-principal.png}" class="logo"></a>
+            </div>
+            <div id="navbar" class="navbar-collapse collapse">
+                <div class="nav navbar-nav navbar-right">
+                    <a href="http://www.konkerlabs.com" class="btn-menu" data-th-text="#{login.gotosite}"></a>
+                </div>
+            </div>
+            <!--/.nav-collapse -->
+        </div>
+    </nav>
 
       <!-- **********************************************************************************************************************************************************
       MAIN CONTENT
@@ -91,6 +111,18 @@
 
                     <label class="small" style="margin-top: 10px;"><span data-th-text="#{login.license.text}"></span><span>&nbsp;</span><a data-th-text="#{login.license.link_description}" th:href="@{/resources/konker/pdf/termos_de_uso_20161014a.pdf}" href="#"></a></label>
 		            <button class="btn btn-theme btn-block" type="submit"><i class="fa fa-lock"></i><span>&nbsp;</span><span data-th-text="#{nav.login}"></span></button>
+
+					<!-- Self subscription -->
+					<hr class="margin-hr" data-th-if="${#lists.contains(@environment.getActiveProfiles(), 'email')}">
+					
+					<div class="login-subscribe" data-th-if="${#lists.contains(@environment.getActiveProfiles(), 'email')}">
+					    <label class="small" data-th-text="#{login.question.account}">
+					    </label>
+					    <label class="small">
+					    	<a data-th-href="@{/subscription/}" data-th-text="#{login.link.subscription}"></a>
+					    </label>
+					</div>
+					<!-- --- -->
 		        </div>
 
 		      </form>
