@@ -3,6 +3,7 @@ package com.konkerlabs.platform.registry.api.test.web.controller;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -14,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.konkerlabs.platform.registry.business.model.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,16 +37,7 @@ import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
 import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
 import com.konkerlabs.platform.registry.api.web.controller.EventRouteRestController;
 import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.DeviceModel;
-import com.konkerlabs.platform.registry.business.model.DeviceModelLocation;
-import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
-import com.konkerlabs.platform.registry.business.model.Location;
-import com.konkerlabs.platform.registry.business.model.RestDestination;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.Transformation;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
@@ -106,6 +99,8 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
 
     private EventRoute route4;
 
+    private EventRoute route5;
+
     private Device device1;
 
     private Device device2;
@@ -136,10 +131,19 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
         Map<String, String> map = new HashMap<>();
         map.put("channel", "SBT");
 
+        AmazonKinesis amazonKinesis = AmazonKinesis.builder()
+                .tenant(tenant)
+                .key("key-test")
+                .secret("secret-test")
+                .region("region-test")
+                .streamName("stream-test")
+                .build();
+
         RouteActor routeActor1 = RouteActor.builder().uri(device1.toURI()).data(map).build();
         RouteActor routeActor2 = RouteActor.builder().uri(device2.toURI()).data(map).build();
         RouteActor routeActor3 = RouteActor.builder().uri(rest1.toURI()).data(map).build();
         RouteActor routeActor4 = RouteActor.builder().uri(deviceModelLocation1.toURI()).data(map).build();
+        RouteActor routeActor5 = RouteActor.builder().uri(amazonKinesis.toURI()).data(amazonKinesis.getValues()).build();
 
         route1 = EventRoute.builder()
                 .name("name1")
@@ -175,6 +179,15 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
                 .active(true)
                 .build();
 
+        // Device to Amazon Kinesis
+        route5 = EventRoute.builder()
+                .name("route5")
+                .guid("guid5")
+                .incoming(routeActor1)
+                .outgoing(routeActor5)
+                .active(true)
+                .build();
+
     }
 
     @After
@@ -193,6 +206,7 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
         routes.add(route1);
         routes.add(route2);
         routes.add(route4);
+        routes.add(route5);
 
         when(eventRouteService.getAll(tenant, application))
             .thenReturn(ServiceResponseBuilder.<List<EventRoute>> ok().withResult(routes).build());
@@ -210,7 +224,7 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.code", is(HttpStatus.OK.value())))
                     .andExpect(jsonPath("$.status", is("success")))
                     .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
-                    .andExpect(jsonPath("$.result", hasSize(3)))
+                    .andExpect(jsonPath("$.result", hasSize(4)))
                     .andExpect(jsonPath("$.result[0].name", is("name1")))
                     .andExpect(jsonPath("$.result[0].guid", is("guid1")))
                     .andExpect(jsonPath("$.result[0].filteringExpression").doesNotExist())
@@ -232,6 +246,16 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.result[2].filteringExpression").doesNotExist())
                     .andExpect(jsonPath("$.result[2].transformationGuid").doesNotExist())
                     .andExpect(jsonPath("$.result[2].active", is(true)))
+                    .andExpect(jsonPath("$.result[3].name", is("route5")))
+                    .andExpect(jsonPath("$.result[3].guid", is("guid5")))
+                    .andExpect(jsonPath("$.result[3].outgoing.type", is("AMAZON_KINESIS")))
+                    .andExpect(jsonPath("$.result[3].outgoing.key", is("key-test")))
+                    .andExpect(jsonPath("$.result[3].outgoing.secret").doesNotExist())
+                    .andExpect(jsonPath("$.result[3].outgoing.region", is("region-test")))
+                    .andExpect(jsonPath("$.result[3].outgoing.streamName", is("stream-test")))
+                    .andExpect(jsonPath("$.result[3].filteringExpression").doesNotExist())
+                    .andExpect(jsonPath("$.result[3].transformationGuid").doesNotExist())
+                    .andExpect(jsonPath("$.result[3].active", is(true)))
                     ;
 
     }
@@ -442,6 +466,44 @@ public class EventRouteRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.result.outgoing.type", is("DEVICE")))
                     .andExpect(jsonPath("$.result.outgoing.guid", is("d_guid1")))
                     .andExpect(jsonPath("$.result.active", is(true)));
+
+    }
+
+
+    @Test
+    public void shouldCreateEventRouteToAmazonKinesis() throws Exception {
+
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+                .thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
+
+        when(deviceRegisterService.getByDeviceGuid(tenant, application, device1.getGuid()))
+                .thenReturn(ServiceResponseBuilder.<Device> ok().withResult(device1).build());
+
+        when(eventRouteService.save(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(Application.class), org.mockito.Matchers.any(EventRoute.class)))
+                .thenReturn(ServiceResponseBuilder.<EventRoute> ok().withResult(route5).build());
+
+        EventRouteVO routeVO5 = new EventRouteVO().apply(route5);
+
+        getMockMvc().perform(MockMvcRequestBuilders.post(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH))
+                .content(getJson(routeVO5))
+                .contentType("application/json")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().is2xxSuccessful())
+                .andExpect(content().contentType("application/json;charset=UTF-8"))
+                .andExpect(jsonPath("$.code", is(HttpStatus.CREATED.value())))
+                .andExpect(jsonPath("$.status", is("success")))
+                .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                .andExpect(jsonPath("$.result").isMap())
+                .andExpect(jsonPath("$.result.name", is("route5")))
+                .andExpect(jsonPath("$.result.guid", is("guid5")))
+                .andExpect(jsonPath("$.result.incoming.type", is("DEVICE")))
+                .andExpect(jsonPath("$.result.incoming.guid", is("d_guid1")))
+                .andExpect(jsonPath("$.result.outgoing.type", is("AMAZON_KINESIS")))
+                .andExpect(jsonPath("$.result.outgoing.key", is("key-test")))
+                .andExpect(jsonPath("$.result.outgoing.secret").doesNotExist())
+                .andExpect(jsonPath("$.result.outgoing.region", is("region-test")))
+                .andExpect(jsonPath("$.result.outgoing.streamName", is("stream-test")))
+                .andExpect(jsonPath("$.result.active", is(true)));
 
     }
 

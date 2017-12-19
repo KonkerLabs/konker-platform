@@ -78,6 +78,7 @@ public class DeviceModelRestControllerTest extends WebLayerTestContext {
         		.guid(UUID.randomUUID().toString())
         		.name("PresenceSensor")
         		.description("Presence sensor")
+				.contentType(DeviceModel.ContentType.APPLICATION_JSON)
         		.defaultModel(true)
         		.build();
 
@@ -85,6 +86,7 @@ public class DeviceModelRestControllerTest extends WebLayerTestContext {
         		.guid(UUID.randomUUID().toString())
         		.name("SmartAC")
         		.description("Smart AC")
+				.contentType(DeviceModel.ContentType.APPLICATION_MSGPACK)
         		.defaultModel(false)
         		.build();
 
@@ -125,10 +127,12 @@ public class DeviceModelRestControllerTest extends WebLayerTestContext {
         .andExpect(jsonPath("$.result[0].guid", is(deviceModel1.getGuid())))
         .andExpect(jsonPath("$.result[0].name", is("PresenceSensor")))
         .andExpect(jsonPath("$.result[0].description", is("Presence sensor")))
-        .andExpect(jsonPath("$.result[0].defaultModel", is(true)))
+		.andExpect(jsonPath("$.result[0].contentType", is("application/json")))
+		.andExpect(jsonPath("$.result[0].defaultModel", is(true)))
         .andExpect(jsonPath("$.result[1].guid", is(deviceModel2.getGuid())))
         .andExpect(jsonPath("$.result[1].name", is("SmartAC")))
         .andExpect(jsonPath("$.result[1].description", is("Smart AC")))
+        .andExpect(jsonPath("$.result[1].contentType", is("application/msgpack")))
         .andExpect(jsonPath("$.result[1].defaultModel", is(false)));
     }
 
@@ -242,6 +246,7 @@ public class DeviceModelRestControllerTest extends WebLayerTestContext {
         .andExpect(jsonPath("$.result.guid", is(deviceModel1.getGuid())))
         .andExpect(jsonPath("$.result.name", is("PresenceSensor")))
         .andExpect(jsonPath("$.result.description", is("Presence sensor")))
+        .andExpect(jsonPath("$.result.contentType", is("application/json")))
         .andExpect(jsonPath("$.result.defaultModel", is(true)));
     }
 

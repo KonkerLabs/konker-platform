@@ -36,7 +36,8 @@ public class GatewayServiceImpl implements GatewayService {
     private GatewayRepository gatewayRepository;
     @Autowired
     private LocationRepository locationRepository;
-    
+    private static final Integer maxLocationTreeDeep = 50;
+
     @Override
     public ServiceResponse<Gateway> save(Tenant tenant, Application application, Gateway route) {
 
@@ -50,16 +51,16 @@ public class GatewayServiceImpl implements GatewayService {
         route.setApplication(application);
         route.setGuid(UUID.randomUUID().toString());
 
-        Optional<Map<String,Object[]>> validations = route.applyValidations();
+        Optional<Map<String, Object[]>> validations = route.applyValidations();
 
         if (validations.isPresent()) {
             return ServiceResponseBuilder.<Gateway>error()
-                .withMessages(validations.get()).build();
+                    .withMessages(validations.get()).build();
         }
 
         if (Optional.ofNullable(gatewayRepository.findByName(tenant.getId(),
-                                                                     application.getName(),
-                                                                     route.getName())).isPresent()) {
+                application.getName(),
+                route.getName())).isPresent()) {
             return ServiceResponseBuilder.<Gateway>error()
                     .withMessage(Validations.NAME_IN_USE.getCode()).build();
         }
@@ -91,9 +92,9 @@ public class GatewayServiceImpl implements GatewayService {
         }
 
         Gateway current = gatewayRepository.findByGuid(
-            tenant.getId(),
-            application.getName(),
-            guid
+                tenant.getId(),
+                application.getName(),
+                guid
         );
 
         if (!Optional.ofNullable(current).isPresent())
@@ -106,7 +107,7 @@ public class GatewayServiceImpl implements GatewayService {
         current.setLocation(updatingGateway.getLocation());
         current.setActive(updatingGateway.isActive());
 
-        Optional<Map<String,Object[]>> validations = current.applyValidations();
+        Optional<Map<String, Object[]>> validations = current.applyValidations();
 
         if (validations.isPresent()) {
             return ServiceResponseBuilder.<Gateway>error()
@@ -115,8 +116,8 @@ public class GatewayServiceImpl implements GatewayService {
         }
 
         if (Optional.ofNullable(gatewayRepository.findByName(tenant.getId(),
-                                                                     application.getName(),
-                                                                     current.getName()))
+                application.getName(),
+                current.getName()))
                 .filter(gateway1 -> !gateway1.getGuid().equals(current.getGuid()))
                 .isPresent()) {
             return ServiceResponseBuilder.<Gateway>error()
@@ -140,8 +141,8 @@ public class GatewayServiceImpl implements GatewayService {
         }
 
         return ServiceResponseBuilder.<List<Gateway>>ok()
-            .withResult(gatewayRepository.findAll(tenant.getId(), application.getName()))
-            .build();
+                .withResult(gatewayRepository.findAll(tenant.getId(), application.getName()))
+                .build();
     }
 
     @Override
@@ -201,6 +202,71 @@ public class GatewayServiceImpl implements GatewayService {
         return ServiceResponseBuilder.<Gateway>ok().withResult(current).build();
 
     }
+
+    @Override
+    public ServiceResponse<Boolean> validateGatewayAuthorization(
+            Gateway source,
+            Location locationToAuthorize) {
+
+        if (source == null || locationToAuthorize == null || source.getLocation() == null) {
+            return ServiceResponseBuilder
+                    .<Boolean>error()
+                    .withMessage(Validations.INVALID_GATEWAY_LOCATION.getCode())
+                    .build();
+        }
+
+        if (locationToAuthorize.getTenant() == null ||
+                locationToAuthorize.getApplication() == null) {
+            locationToAuthorize = locationRepository.
+                    findByTenantAndApplicationAndName(
+                            source.getTenant().getId(),
+                            source.getApplication().getName(),
+                            locationToAuthorize.getName());
+        }
+
+        if (source.getLocation().getChildren() == null ||
+                source.getLocation().getChildren().size() == 0) {
+            pushAllChilds(
+                    source.getLocation(),
+                    source.getApplication(),
+                    source.getTenant(),
+                    maxLocationTreeDeep,
+                    0);
+        }
+
+        if (LocationTreeUtils.isSublocationOf(source.getLocation(), locationToAuthorize)) {
+            return ServiceResponseBuilder
+                    .<Boolean>ok()
+                    .withResult(Boolean.TRUE)
+                    .build();
+        }
+        return ServiceResponseBuilder
+                .<Boolean>error()
+                .withMessage(Validations.INVALID_GATEWAY_LOCATION.getCode())
+                .withResult(Boolean.FALSE)
+                .build();
+
+    }
+
+    private void pushAllChilds(Location location, Application application,
+                               Tenant tenant, Integer maxDeep, Integer currentDeep) {
+        if (currentDeep > maxDeep) {
+            LOGGER.warn("Too deep structure. Cyclic graph?");
+        } else {
+            pushChilds(location, application, tenant);
+            for(Location child : location.getChildren()) {
+                pushAllChilds(child, application, tenant, maxDeep, currentDeep+1);
+            }
+        }
+    }
+
+    private void pushChilds(Location location, Application application, Tenant tenant) {
+        location.setChildren(locationRepository.findChildrensByParentId(
+                tenant.getId(),
+                application.getName(),
+                location.getId()));
+    }
+
 
     private <T> ServiceResponse<T> validate(Tenant tenant, Application application) {
 

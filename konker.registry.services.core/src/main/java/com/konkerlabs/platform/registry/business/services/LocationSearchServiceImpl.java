@@ -1,21 +1,6 @@
 package com.konkerlabs.platform.registry.business.services;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Service;
-
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.Location;
-import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.LocationRepository;
@@ -25,6 +10,17 @@ import com.konkerlabs.platform.registry.business.services.api.LocationService.Me
 import com.konkerlabs.platform.registry.business.services.api.LocationService.Validations;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
@@ -257,6 +253,39 @@ public class LocationSearchServiceImpl implements LocationSearchService {
         }
 
         List<Location> all = locationRepository.findAllByTenantIdAndApplicationName(tenant.getId(), application.getName());
+
+        if (all.isEmpty()) {
+            all.add(getRootDefaultLocation(tenant, application));
+        }
+
+        return ServiceResponseBuilder.<List<Location>>ok().withResult(all).build();
+    }
+
+    @Override
+    public ServiceResponse<List<Location>> findAll(Gateway gateway, Tenant tenant, Application application) {
+        if (!Optional.ofNullable(tenant).isPresent()) {
+            return ServiceResponseBuilder.<List<Location>>error()
+                    .withMessage(CommonValidations.TENANT_NULL.getCode())
+                    .build();
+        }
+
+        if (!Optional.ofNullable(application).isPresent()) {
+            return ServiceResponseBuilder.<List<Location>>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode())
+                    .build();
+        }
+
+        if (!Optional.ofNullable(gateway).isPresent() ||
+                !Optional.ofNullable(gateway.getLocation()).isPresent()) {
+            return ServiceResponseBuilder.<List<Location>>error()
+                    .withMessage(ApplicationService.Validations.GATEWAY_NULL.getCode())
+                    .build();
+        }
+
+        List<Location> all = locationRepository.findChildrensByParentId(
+                tenant.getId(),
+                application.getName(),
+                gateway.getLocation().getId());
 
         if (all.isEmpty()) {
             all.add(getRootDefaultLocation(tenant, application));

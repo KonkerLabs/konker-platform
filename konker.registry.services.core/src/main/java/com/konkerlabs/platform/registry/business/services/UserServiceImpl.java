@@ -344,7 +344,7 @@ public class UserServiceImpl implements UserService {
 		ServiceResponse<Tenant> serviceResponse = tenantService.save(user.getTenant());
 		user.setTenant(serviceResponse.getResult());
 		
-		ServiceResponse<Role> roleResponse = roleService.findByName("ROLE_IOT_USER");
+		ServiceResponse<Role> roleResponse = roleService.findByName(RoleService.ROLE_IOT_USER);
 		user.setRoles(Collections.singletonList(roleResponse.getResult()));
 		user.setZoneId(TimeZone.AMERICA_SAO_PAULO);
 		user.setDateFormat(DateFormat.YYYYMMDD);

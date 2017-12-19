@@ -64,7 +64,7 @@ public class JedisTaskService {
 
 	    try {
             // register last timestamp
-            final String eventTimestamp = Long.toString(event.getTimestamp().getEpochSecond());
+            final String eventTimestamp = Long.toString(event.getCreationTimestamp().getEpochSecond());
             redisTemplate.boundHashOps(LAST_TS_HASHNAME).put(event.getIncoming().getDeviceGuid(), eventTimestamp);
 	    } catch (RedisConnectionFailureException ex) {
 	        LOGGER.error("RedisConnectionFailureException: {}", ex.getMessage());

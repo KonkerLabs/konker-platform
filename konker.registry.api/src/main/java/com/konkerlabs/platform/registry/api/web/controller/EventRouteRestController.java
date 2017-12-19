@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @RestController
@@ -72,6 +73,24 @@ public class EventRouteRestController extends AbstractRestController implements 
             "        \"active\": true\n" +
             "}\n" +
             "```\n\n" +
+            "### Application to Device\n\n" +
+            "```\n" +
+            "{\n" +
+            "        \"name\": \"route\",\n" +
+            "        \"description\": \"\",\n" +
+            "        \"incoming\": {\n" +
+            "          \"type\": \"APPLICATION\"\n" +
+            "        },\n" +
+            "        \"outgoing\": {\n" +
+            "          \"type\": \"DEVICE\",\n" +
+            "          \"guid\": \"6be96783-334f-48ad-9180-6fb0a412e562\",\n" +
+            "          \"channel\": \"temp\"\n" +
+            "        },\n" +
+            "        \"filteringExpression\": \"\",\n" +
+            "        \"transformationGuid\": null,\n" +
+            "        \"active\": true\n" +
+            "}\n" +
+            "```\n\n" +
             "### Model Location to Rest\n\n" +
             "```\n" +
             "{\n" +
@@ -85,6 +104,28 @@ public class EventRouteRestController extends AbstractRestController implements 
             "        \"outgoing\": {\n" +
             "          \"type\": \"REST\",\n" +
             "          \"guid\": \"6be96783-334f-48ad-9180-6fb0a412e562\"\n" +
+            "        },\n" +
+            "        \"filteringExpression\": \"\",\n" +
+            "        \"transformationGuid\": null,\n" +
+            "        \"active\": true\n" +
+            "}\n" +
+            "```\n\n" +
+            "### Device to Amazon Kinesis\n\n" +
+            "```\n" +
+            "{\n" +
+            "        \"name\": \"route\",\n" +
+            "        \"description\": \"\",\n" +
+            "        \"incoming\": {\n" +
+            "          \"type\": \"DEVICE\",\n" +
+            "          \"guid\": \"818599ad-3502-4e70-a852-fc7af8e0a9f3\",\n" +
+            "          \"channel\": \"temperature\"\n" +
+            "        },\n" +
+            "        \"outgoing\": {\n" +
+            "          \"type\": \"AMAZON_KINESIS\",\n" +
+            "          \"key\": \"key\",\n" +
+            "          \"secret\": \"secret\",\n" +
+            "          \"region\": \"us-west-1\",\n" +
+            "          \"StreamName\": \"stream\"\n" +
             "        },\n" +
             "        \"filteringExpression\": \"\",\n" +
             "        \"transformationGuid\": null,\n" +
@@ -105,7 +146,7 @@ public class EventRouteRestController extends AbstractRestController implements 
         ServiceResponse<List<EventRoute>> routeResponse = eventRouteService.getAll(tenant, application);
 
         if (!routeResponse.isOk()) {
-            throw new BadServiceResponseException(user, routeResponse, validationsCode);
+            throw new BadServiceResponseException( routeResponse, validationsCode);
         } else {
             List<EventRouteVO> routesVO = new ArrayList<>();
 
@@ -133,7 +174,7 @@ public class EventRouteRestController extends AbstractRestController implements 
         ServiceResponse<EventRoute> routeResponse = eventRouteService.getByGUID(tenant, application, routeGuid);
 
         if (!routeResponse.isOk()) {
-            throw new NotFoundResponseException(user, routeResponse);
+            throw new NotFoundResponseException(routeResponse);
         } else {
             return patch(tenant, application, new EventRouteVO().apply(routeResponse.getResult()));
         }
@@ -150,7 +191,7 @@ public class EventRouteRestController extends AbstractRestController implements 
 
     private RouteActorVO patchRoute(Tenant tenant, Application application, RouteActorVO actorVO) {
 
-        if (actorVO.getType().equals(RouteActorVO.TYPE_MODEL_LOCATION)) {
+        if (Optional.ofNullable(actorVO).isPresent() && actorVO.getType().equals(RouteActorVO.TYPE_MODEL_LOCATION)) {
             RouteModelLocationActorVO deviceActorVO = (RouteModelLocationActorVO) actorVO;
 
             ServiceResponse<DeviceModel> deviceModelResponse = deviceModelService.getByTenantApplicationAndGuid(tenant, application, deviceActorVO.getDeviceModelGuid());
@@ -201,7 +242,7 @@ public class EventRouteRestController extends AbstractRestController implements 
         ServiceResponse<EventRoute> routeResponse = eventRouteService.save(tenant, application, route);
 
         if (!routeResponse.isOk()) {
-            throw new BadServiceResponseException(user, routeResponse, validationsCode);
+            throw new BadServiceResponseException( routeResponse, validationsCode);
         } else {
             return patch(tenant, application, new EventRouteVO().apply(routeResponse.getResult()));
         }
@@ -218,7 +259,7 @@ public class EventRouteRestController extends AbstractRestController implements 
                 Transformation transformation = transformationResponse.getResult();
                 return transformation;
             } else {
-                throw new BadServiceResponseException(user, transformationResponse, validationsCode);
+                throw new BadServiceResponseException( transformationResponse, validationsCode);
             }
         }
 
@@ -244,7 +285,7 @@ public class EventRouteRestController extends AbstractRestController implements 
                 routeActor.setData(new HashMap<String, String>() {{ put(EventRoute.DEVICE_MQTT_CHANNEL, deviceActorForm.getChannel()); }} );
                 return routeActor;
             } else {
-                throw new BadServiceResponseException(user, deviceResponse, validationsCode);
+                throw new BadServiceResponseException( deviceResponse, validationsCode);
             }
         } else if (RouteActorType.REST.name().equalsIgnoreCase(actorVO.getType())) {
             RouteRestActorVO restActorForm = (RouteRestActorVO) actorVO;
@@ -255,7 +296,7 @@ public class EventRouteRestController extends AbstractRestController implements 
                 routeActor.setData(new HashMap<String, String>() {} );
                 return routeActor;
             } else {
-                throw new BadServiceResponseException(user, restResponse, validationsCode);
+                throw new BadServiceResponseException( restResponse, validationsCode);
             }
 
         } else if (RouteActorType.MODEL_LOCATION.name().equalsIgnoreCase(actorVO.getType())) {
@@ -268,14 +309,14 @@ public class EventRouteRestController extends AbstractRestController implements 
             if (deviceModelResponse.isOk()) {
                 deviceModel = deviceModelResponse.getResult();
             } else {
-                throw new BadServiceResponseException(user, deviceModelResponse, validationsCode);
+                throw new BadServiceResponseException( deviceModelResponse, validationsCode);
             }
 
             ServiceResponse<Location> locationResponse = locationSearchService.findByName(tenant, application, modelLocationActorForm.getLocationName(), false);
             if (locationResponse.isOk()) {
                 location = locationResponse.getResult();
             } else {
-                throw new BadServiceResponseException(user, locationResponse, validationsCode);
+                throw new BadServiceResponseException( locationResponse, validationsCode);
             }
 
             routeActor.setDisplayName(MessageFormat.format("{0} @ {1}", deviceModel.getName(), location.getName()));
@@ -283,6 +324,24 @@ public class EventRouteRestController extends AbstractRestController implements 
             routeActor.setData(new HashMap<String, String>() {{ put(EventRoute.DEVICE_MQTT_CHANNEL, modelLocationActorForm.getChannel()); }} );
 
             return routeActor;
+        } else if (RouteActorType.AMAZON_KINESIS.name().equalsIgnoreCase(actorVO.getType())) {
+            RouteAmazonKinesisActorVO amazonKinesisActorForm = (RouteAmazonKinesisActorVO) actorVO;
+            AmazonKinesis kinesisProperties = AmazonKinesis.builder().tenant(tenant)
+                    .key(amazonKinesisActorForm.getKey())
+                    .secret(amazonKinesisActorForm.getSecret())
+                    .region(amazonKinesisActorForm.getRegion())
+                    .streamName(amazonKinesisActorForm.getStreamName())
+                    .build();
+
+            routeActor.setDisplayName(MessageFormat.format("{0} @ {1}", amazonKinesisActorForm.getStreamName(), amazonKinesisActorForm.getRegion()));
+            routeActor.setUri(kinesisProperties.toURI());
+            routeActor.setData(kinesisProperties.getValues());
+
+            return routeActor;
+        } else if (RouteActorType.APPLICATION.name().equalsIgnoreCase(actorVO.getType())) {
+        	routeActor.setDisplayName(application.getName());
+            routeActor.setUri(application.toURI());
+        	return routeActor;
         }
 
         return null;
@@ -305,7 +364,7 @@ public class EventRouteRestController extends AbstractRestController implements 
         ServiceResponse<EventRoute> routeResponse = eventRouteService.getByGUID(tenant, application, routeGuid);
 
         if (!routeResponse.isOk()) {
-            throw new BadServiceResponseException(user, routeResponse, validationsCode);
+            throw new BadServiceResponseException( routeResponse, validationsCode);
         } else {
             routeFromDB = routeResponse.getResult();
         }
@@ -326,7 +385,7 @@ public class EventRouteRestController extends AbstractRestController implements 
         ServiceResponse<EventRoute> updateResponse = eventRouteService.update(tenant, application, routeGuid, routeFromDB);
 
         if (!updateResponse.isOk()) {
-            throw new BadServiceResponseException(user, updateResponse, validationsCode);
+            throw new BadServiceResponseException( updateResponse, validationsCode);
         }
 
     }
@@ -345,9 +404,9 @@ public class EventRouteRestController extends AbstractRestController implements 
 
         if (!routeResponse.isOk()) {
             if (routeResponse.getResponseMessages().containsKey(Validations.EVENT_ROUTE_NOT_FOUND.getCode())) {
-                throw new NotFoundResponseException(user, routeResponse);
+                throw new NotFoundResponseException(routeResponse);
             } else {
-                throw new BadServiceResponseException(user, routeResponse, validationsCode);
+                throw new BadServiceResponseException( routeResponse, validationsCode);
             }
         }
 

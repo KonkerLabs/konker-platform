@@ -13,7 +13,7 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
-import com.konkerlabs.platform.registry.api.web.interceptor.ResquestResponseInterceptor;
+import com.konkerlabs.platform.registry.api.web.interceptor.RequestResponseInterceptor;
 
 @Configuration
 public class WebMvcConfig extends WebMvcConfigurerAdapter {
@@ -65,13 +65,13 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
     }
         
     @Bean
-    public ResquestResponseInterceptor resquestResponseInterceptor() {
-    	return new ResquestResponseInterceptor();
+    public RequestResponseInterceptor requestResponseInterceptor() {
+    	return new RequestResponseInterceptor();
     }
     
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-    	registry.addInterceptor(resquestResponseInterceptor()).addPathPatterns("/applications/*", "/users/*");
+    	registry.addInterceptor(requestResponseInterceptor()).addPathPatterns("/applications/*", "/users/*");
     }
 
 }

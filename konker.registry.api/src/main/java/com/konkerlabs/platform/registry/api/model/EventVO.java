@@ -22,23 +22,31 @@ public class EventVO implements SerializableVO<Event, EventVO> {
 
     @ApiModelProperty(value = "timestamp (ISO 8601 format)", position = 0, example = "2017-04-05T13:55:20.150Z")
     private String timestamp;
+    
+    @ApiModelProperty(value = "timestamp (ISO 8601 format)", position = 1, example = "2017-04-05T13:55:20.150Z")
+    private String ingestedTimestamp;
 
-    @ApiModelProperty(value = "incoming", position = 1)
+    @ApiModelProperty(value = "incoming", position = 2)
     private EventActorVO incoming;
 
-    @ApiModelProperty(value = "outgoing", position = 2)
+    @ApiModelProperty(value = "outgoing", position = 3)
     private EventActorVO outgoing;
-
-    @ApiModelProperty(value = "payload", position = 3, example = "{\"temperature\": 18, \"unit\": \"celsius\"}")
+    
+    @ApiModelProperty(value = "geolocation", position = 4)
+    private EventGeolocationVO geolocation;
+    
+    @ApiModelProperty(value = "payload", position = 5, example = "{\"temperature\": 18, \"unit\": \"celsius\"}")
     private Object payload;
 
     @Override
     public EventVO apply(Event t) {
         EventVO vo = new EventVO();
 
-        vo.setTimestamp(t.getTimestamp().toString());
+        vo.setTimestamp(t.getCreationTimestamp().toString());
+        vo.setIngestedTimestamp(t.getIngestedTimestamp().toString());
         vo.setIncoming(new EventActorVO().apply(t.getIncoming()));
         vo.setOutgoing(new EventActorVO().apply(t.getOutgoing()));
+        vo.setGeolocation(new EventGeolocationVO().apply(t.getGeolocation()));
         vo.setPayload(JSON.parse(t.getPayload()));
 
         return vo;

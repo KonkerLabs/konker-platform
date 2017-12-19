@@ -69,6 +69,9 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
     @Autowired
     private DeviceModelService deviceModelService;
+    
+    @Autowired
+    private HealthAlertService healthAlertService;
 
     @PostConstruct
     public void init() {
@@ -207,6 +210,9 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         }
 
         List<Device> all = deviceRepository.findAllByTenantIdAndApplicationName(tenant.getId(), application.getName());
+        
+        all.forEach(d -> d.setStatus(healthAlertService.getCurrentHealthByGuid(tenant, application, d.getGuid()).getResult().getSeverity().name()));
+        
         return ServiceResponseBuilder.<List<Device>>ok().withResult(all).build();
     }
 
@@ -718,5 +724,21 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         return ServiceResponseBuilder.<T>ok().build();
 
     }
+
+	@Override
+	public ServiceResponse<Device> findByDeviceId(Tenant tenant, Application application, String deviceId) {
+		ServiceResponse<Device> validationResponse = validate(tenant, application);
+        if (!validationResponse.isOk()) {
+            return validationResponse;
+        }
+
+        Device device = deviceRepository.findAllByTenantIdApplicationNameDeviceId(tenant.getId(), application.getName(), deviceId);
+        if (device == null) {
+            return ServiceResponseBuilder.<Device>error()
+                    .withMessage(Validations.DEVICE_ID_DOES_NOT_EXIST.getCode()).build();
+        } else {
+            return ServiceResponseBuilder.<Device>ok().withResult(device).build();
+        }
+	}
 
 }

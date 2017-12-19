@@ -83,7 +83,7 @@ public class OutgoingEventsRestController extends AbstractRestController impleme
         ServiceResponse<List<Event>> restDestinationResponse = deviceEventService.findOutgoingBy(tenant, application, deviceGuid, channel, startingTimestamp, endTimestamp, ascending, limit);
 
         if (!restDestinationResponse.isOk()) {
-            throw new BadServiceResponseException(user, restDestinationResponse, validationsCode);
+            throw new BadServiceResponseException( restDestinationResponse, validationsCode);
         } else {
             return new EventVO().apply(restDestinationResponse.getResult());
         }

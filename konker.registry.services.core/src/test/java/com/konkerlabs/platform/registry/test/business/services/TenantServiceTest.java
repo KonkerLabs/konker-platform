@@ -5,10 +5,7 @@ import static com.konkerlabs.platform.registry.test.base.matchers.ServiceRespons
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -38,18 +35,6 @@ import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoBillingTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
-import org.junit.*;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import java.time.Instant;
-import java.util.List;
-
-import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { MongoTestConfiguration.class, BusinessTestConfiguration.class, MongoBillingTestConfiguration.class })
@@ -232,6 +217,23 @@ public class TenantServiceTest extends BusinessLayerTestSupport {
 		Assert.assertNotNull(serviceResponse);
 		Assert.assertEquals(serviceResponse.getStatus(), ServiceResponse.Status.OK);
 		Assert.assertEquals(serviceResponse.getResult().getDevicesLimit().longValue(), 5l);
+	}
+	
+	@Test
+	public void shouldReturnErrorForDomainNull() {
+		ServiceResponse<Tenant> serviceResponse = tenantService.findByDomainName(null);
+		
+		Assert.assertNotNull(serviceResponse);
+		assertThat(serviceResponse, hasErrorMessage(TenantService.Validations.TENANT_DOMAIN_NULL.getCode()));
+	}
+	
+	@Test
+	public void shouldFindByDomainName() {
+		ServiceResponse<Tenant> serviceResponse = tenantService.findByDomainName(tenant.getDomainName());
+		
+		Assert.assertNotNull(serviceResponse);
+		Assert.assertEquals(serviceResponse.getStatus(), ServiceResponse.Status.OK);
+		Assert.assertEquals(serviceResponse.getResult(), tenant);
 	}
 	
 }

@@ -34,7 +34,7 @@
             <tr>
                 <th class="col-md-1" data-th-text="#{devices.index.id}"></th>
                 <th class="col-md-3" data-th-text="#{devices.index.name}"></th>
-                <th class="col-md-1" data-th-text="#{devices.index.active}"></th>
+                <th class="col-md-1" data-th-text="#{devices.index.status}"></th>
                 <th class="col-md-3 text-center" data-th-text="#{devices.index.actions}"></th>
             </tr>
             </thead>
@@ -43,7 +43,13 @@
                 <td data-th-text="${device.deviceId}"></td>
                 <td data-th-text="${device.name}"></td>
                 <td>
-                    <img data-konker-enabled-img="${device.active}"></img>
+                	<div th:class="${'badge-health ' + #strings.toLowerCase(device.status)}">
+				        <div th:class="${'icon-badge-local ' + #strings.toLowerCase(device.status) + '-bg-icon'}">
+				            <img data-th-attr="src=@{${'/resources/konker/images/icon-health/' + #strings.toLowerCase(device.status) + '-icon-health.svg'}}" 
+				            		class="icon-health">
+				        </div>
+				        <label class="status-health" data-th-text="${device.status}"></label>
+				    </div>
                 </td>
                 <td class="text-center">
                     <a data-th-href="@{/devices/{applicationName}/{guid}/edit(guid=${device.guid}, applicationName=${device.application.name})}"

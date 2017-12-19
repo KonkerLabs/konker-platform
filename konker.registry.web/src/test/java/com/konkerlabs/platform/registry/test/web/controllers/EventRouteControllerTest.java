@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.Supplier;
 
+import com.konkerlabs.platform.registry.config.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -67,12 +68,6 @@ import com.konkerlabs.platform.registry.business.services.api.RestDestinationSer
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.TransformationService;
-import com.konkerlabs.platform.registry.config.CdnConfig;
-import com.konkerlabs.platform.registry.config.EmailConfig;
-import com.konkerlabs.platform.registry.config.HotjarConfig;
-import com.konkerlabs.platform.registry.config.MessageSourceConfig;
-import com.konkerlabs.platform.registry.config.WebConfig;
-import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.WebLayerTestContext;
 import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
@@ -88,7 +83,8 @@ import com.konkerlabs.platform.registry.web.forms.EventRouteForm;
         EventRouteControllerTest.EventRouteTestContextConfig.class,
         WebConfig.class,
         HotjarConfig.class,
-        CdnConfig.class, 
+        CdnConfig.class,
+        AmazonConfig.class,
         EmailConfig.class,
         MessageSourceConfig.class
 })
@@ -311,6 +307,13 @@ public class EventRouteControllerTest extends WebLayerTestContext {
                 .andExpect(view().name("routes/device-incoming"))
                 .andExpect(model().attribute("route", new EventRouteForm()));
     }
+    
+    @Test
+    public void shouldRenderApplicationIncomingViewFragment() throws Exception {
+        getMockMvc().perform(get("/routes/{0}/incoming/{1}", application.getName(), "application"))
+                .andExpect(view().name("routes/application-incoming"))
+                .andExpect(model().attribute("route", new EventRouteForm()));
+    }
 
     @Test
     public void shouldRenderModelLocationIncomingViewFragment() throws Exception {
@@ -337,6 +340,13 @@ public class EventRouteControllerTest extends WebLayerTestContext {
     public void shouldRenderRestDestinationsViewFragment() throws Exception {
         getMockMvc().perform(get("/routes/{0}/outgoing/{1}", application.getName(), "rest"))
                 .andExpect(view().name("routes/rest-outgoing"))
+                .andExpect(model().attribute("route", new EventRouteForm()));
+    }
+
+    @Test
+    public void shouldRenderAmazonKinesisViewFragment() throws Exception {
+        getMockMvc().perform(get("/routes/{0}/outgoing/{1}", application.getName(), "amazonKinesis"))
+                .andExpect(view().name("routes/amazon-kinesis-outgoing"))
                 .andExpect(model().attribute("route", new EventRouteForm()));
     }
 

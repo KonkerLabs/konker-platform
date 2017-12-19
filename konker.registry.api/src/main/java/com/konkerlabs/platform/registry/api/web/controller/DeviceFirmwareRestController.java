@@ -52,7 +52,7 @@ public class DeviceFirmwareRestController extends AbstractRestController impleme
         ServiceResponse<List<DeviceFirmware>> serviceResponse = deviceFirmwareService.listByDeviceModel(tenant, application, deviceModel);
 
         if (!serviceResponse.isOk()) {
-            throw new BadServiceResponseException(user, serviceResponse, validationsCode);
+            throw new BadServiceResponseException( serviceResponse, validationsCode);
         } else {
             return new DeviceFirmwareVO().apply(serviceResponse.getResult());
         }
@@ -88,7 +88,7 @@ public class DeviceFirmwareRestController extends AbstractRestController impleme
         ServiceResponse<DeviceFirmware> serviceResponse = deviceFirmwareService.save(tenant, application, deviceFirmware);
 
         if (!serviceResponse.isOk()) {
-            throw new BadServiceResponseException(user, serviceResponse, validationsCode);
+            throw new BadServiceResponseException( serviceResponse, validationsCode);
         } else {
             return new DeviceFirmwareVO().apply(serviceResponse.getResult());
         }
@@ -135,7 +135,7 @@ public class DeviceFirmwareRestController extends AbstractRestController impleme
         Map<String, Object[]> responseMessages = new HashMap<>();
         responseMessages.put(DeviceFirmware.Validations.INVALID_CHECKSUM.getCode(), null);
 
-        throw new BadServiceResponseException(user, responseMessages, validationsCode);
+        throw new BadServiceResponseException( responseMessages, validationsCode);
     }
 
     private boolean isValidMD5(byte[] firmware, String checksum) {

@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 public class RestDestinationInputVO {
 	
 	@ApiModelProperty(
-			value = "Descritive name to identify the rest destination", 
+			value = "Descriptive name to identify the rest destination",
 			example = "konker API services", 
 			required = true, 
 			position = 1)
