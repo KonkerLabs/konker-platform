@@ -101,7 +101,7 @@ public class EventPublisherDevice implements EventPublisher {
                                 .deviceId(outgoingDevice.getDeviceId())
                                 .build()
                         );
-
+      
         ServiceResponse<byte[]> converterResponse = getJsonPayload(outgoingDevice, outgoingEvent.getPayload());
         if (!converterResponse.isOk())
             LOGGER.error("Failed to convert message to its destination format",

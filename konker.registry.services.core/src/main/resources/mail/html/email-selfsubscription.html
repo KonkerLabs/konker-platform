@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title th:remove="all">Welcome abord</title>
+    <title th:remove="all">Welcome aboard</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 </head>
 <body>
@@ -11,11 +11,13 @@
 </p>
 <p th:text="#{welcome.textmail}">
 </p>
+<p th:text="#{welcome.textmail2}">
+</p>
 <p th:text="${link}">
 </p>
 
 <p>
-    <span th:text="#{regards}"></span>, <br />
+    <span th:text="#{welcome.thanks}"></span> <br />
     &emsp; <em>The Konkerlabs Team</em>
 </p>
 </body>
