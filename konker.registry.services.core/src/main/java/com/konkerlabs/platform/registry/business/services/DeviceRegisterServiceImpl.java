@@ -668,10 +668,13 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         if (mqttHostName.equalsIgnoreCase("localhost")) {
             mqttHostName = "<ip>";
         }
-        if (StringUtils.hasText(tenant.getDataApiDomain())) {
-            httpHostname = tenant.getDataApiDomain();
-            mqttHostName = tenant.getDataApiDomain();
+        if (StringUtils.hasText(application.getDataApiDomain())) {
+            httpHostname = application.getDataApiDomain();
+        }        
+        if (StringUtils.hasText(application.getDataMqttDomain())) {
+            mqttHostName = application.getDataMqttDomain();
         }
+
 
         DeviceDataURLs deviceDataURLs = DeviceRegisterService.DeviceDataURLs.builder()
                 .httpURLPub(MessageFormat.format("http://{0}:{1}/pub/{2}/<{3}>", httpHostname, pubServerConfig.getHttpPort(), username, channelMsg))

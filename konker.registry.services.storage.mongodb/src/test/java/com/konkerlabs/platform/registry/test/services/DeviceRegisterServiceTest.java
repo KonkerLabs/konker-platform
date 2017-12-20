@@ -681,7 +681,8 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         Device device = deviceRegisterService
                 .findByTenantDomainNameAndDeviceGuid(currentTenant.getDomainName(), THE_DEVICE_GUID);
 
-        currentTenant.setDataApiDomain("domain.io");
+        currentApplication.setDataApiDomain("domain.io");
+        currentApplication.setDataMqttDomain("domain.io.mqtt");
 
         ServiceResponse<DeviceRegisterService.DeviceDataURLs> response = deviceRegisterService
                 .getDeviceDataURLs(currentTenant, currentApplication, device, Locale.ENGLISH);
@@ -694,8 +695,8 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
         assertThat(response.getResult().getMqttPubTopic(), is("data/e4399b2ed998/pub/<Channel>"));
         assertThat(response.getResult().getMqttSubTopic(), is("data/e4399b2ed998/sub/<Channel>"));
-        assertThat(response.getResult().getMqttURL(), is("mqtt://domain.io:1883"));
-        assertThat(response.getResult().getMqttsURL(), is("mqtts://domain.io:1883"));
+        assertThat(response.getResult().getMqttURL(), is("mqtt://domain.io.mqtt:1883"));
+        assertThat(response.getResult().getMqttsURL(), is("mqtts://domain.io.mqtt:1883"));
 
     }
 
