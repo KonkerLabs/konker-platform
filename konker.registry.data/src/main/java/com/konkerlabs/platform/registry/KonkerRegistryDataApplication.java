@@ -18,6 +18,7 @@ public class KonkerRegistryDataApplication {
         
         String profile = System.getenv("DATA_INTERNAL");
 		if (StringUtils.isNotBlank(profile)) {
+			LOG.info("Data Internal is enable!!!");
 			System.setProperty("spring.profiles.active", profile);
 		}
         
