@@ -140,7 +140,7 @@ public class EventRoute implements URIDealer, Validatable {
 
     private boolean compareAndCheckChannelsAreEqual(RouteActor incoming, RouteActor outgoing) {
 
-        // check if are elegible to validate channels
+        // check if are eligible to validate channels
         if (incoming == null || outgoing == null) {
             return false;
         } else {
@@ -171,7 +171,7 @@ public class EventRoute implements URIDealer, Validatable {
     	return channelName.matches("[a-zA-Z0-9_-]+");
 	}
 
-	public void applyDeviceOutgoingValidations(Map<String,Object[]> validations) {
+	private void applyDeviceOutgoingValidations(Map<String, Object[]> validations) {
         Map<String, String> data = getOutgoing().getData();
         if (!Device.URI_SCHEME.equals(getOutgoing().getUri().getScheme())) {
             validations.put(Validations.OUTGOING_ACTOR_URI_MUST_BE_A_DEVICE.getCode(),null);
@@ -228,6 +228,14 @@ public class EventRoute implements URIDealer, Validatable {
 
         public boolean isModelLocation() {
             return DeviceModelLocation.URI_SCHEME.equals(Optional.ofNullable(getUri()).map(URI::getScheme).orElse(""));
+        }
+
+        public boolean isAmazonKinesis() {
+            return AmazonKinesis.URI_SCHEME.equals(Optional.ofNullable(getUri()).map(URI::getScheme).orElse(""));
+        }
+        
+        public boolean isApplication() {
+        	return Application.URI_SCHEME.equals(Optional.ofNullable(getUri()).map(URI::getScheme).orElse(""));
         }
 	}
 

@@ -145,4 +145,19 @@ public class TenantServiceImpl implements TenantService {
 		return domainName.toString();
 	}
 
+	@Override
+	public ServiceResponse<Tenant> findByDomainName(String domainName) {
+		if (!Optional.ofNullable(domainName).isPresent()) {
+			return ServiceResponseBuilder.<Tenant>error()
+					.withMessage(Validations.TENANT_DOMAIN_NULL.getCode())
+					.build();
+		}
+		
+		Tenant tenant = tenantRepository.findByDomainName(domainName);
+		
+		return ServiceResponseBuilder.<Tenant>ok()
+				.withResult(tenant)
+				.build();
+	}
+
 }

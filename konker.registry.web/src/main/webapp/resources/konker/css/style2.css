@@ -2376,3 +2376,100 @@ label {
 .site-min-height {
     min-height: 900px;
 }
+
+.badge-health {
+    display: flex;
+    align-items: center;
+    border-radius: 30px;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 0.8em;
+    width: 70%;
+    height: 30%;
+    margin: 0;
+    padding: 0;
+    max-width: 100px;
+}
+
+.icon-badge-local {
+    border-radius: 100%;
+    height: 25px;
+    width: 25px;
+    margin: 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-health {
+    max-width: 13px;
+    max-height: 15px;
+}
+
+.ok {
+    background-color: #4CAF50;
+}
+
+.ok-bg-icon {
+    background-color: #388E3C;
+}
+
+.warn {
+    background-color: #FFD54F;
+}
+
+.warn-bg-icon {
+    background-color: #FFB300;
+}
+
+.fail {
+    background-color: #F44336;
+}
+
+.fail-bg-icon {
+    background-color: #B71C1C;
+}
+
+.unknow,
+.nodata {
+    background-color: #90A4AE;
+}
+
+.unknow-bg-icon,
+.nodata-bg-icon {
+    background-color: #607D8B;
+}
+
+.disabled {
+    background-color: #BDBDBD;
+}
+
+.disabled-bg-icon {
+    background-color: #9E9E9E;
+}
+
+.status-health {
+    color: #FFFFFF;
+    margin: 5px 5px;
+}
+
+.margin-hr {
+	margin-top: 15px;
+}
+
+.login-subscribe {
+	text-align:center;
+}
+
+.logo {
+    width: 80px;
+}
+
+@media only screen and (max-width: 1000px) {
+    .icon-badge-local {
+        display: none;
+    }
+    .status-health {
+        padding: 0;
+        text-align: center;
+    }
+}

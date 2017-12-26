@@ -7,7 +7,6 @@ import java.util.Set;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,7 +22,7 @@ import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseExcepti
 import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
 import com.konkerlabs.platform.registry.api.model.ApplicationInputVO;
 import com.konkerlabs.platform.registry.api.model.ApplicationVO;
-import com.konkerlabs.platform.registry.api.model.DeviceHealthAlertVO;
+import com.konkerlabs.platform.registry.api.model.HealthAlertVO;
 import com.konkerlabs.platform.registry.api.model.RestResponse;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Application.Validations;
@@ -50,9 +49,6 @@ public class ApplicationRestController extends AbstractRestController implements
     @Autowired
     private HealthAlertService healthAlertService;
 
-    @Autowired
-    private MessageSource messageSource;
-
     private Set<String> validationsCode = new HashSet<>();
 
     @GetMapping(path = "/")
@@ -67,8 +63,15 @@ public class ApplicationRestController extends AbstractRestController implements
         ServiceResponse<List<Application>> applicationResponse = applicationService.findAll(tenant);
 
         if (!applicationResponse.isOk()) {
-            throw new BadServiceResponseException(user, applicationResponse, validationsCode);
+            throw new BadServiceResponseException( applicationResponse, validationsCode);
         } else {
+    		for (Application applic : applicationResponse.getResult()) {
+    			if(applicationService.isDefaultApplication(applic,tenant)) {
+    				applic.setName(ApplicationService.DEFAULT_APPLICATION_ALIAS);
+    				break;
+    			}
+    		}
+        	
             return new ApplicationVO().apply(applicationResponse.getResult());
         }
 
@@ -80,15 +83,18 @@ public class ApplicationRestController extends AbstractRestController implements
             response = RestResponse.class
     )
     @PreAuthorize("hasAuthority('SHOW_APPLICATION')")
-    public ApplicationVO read(@PathVariable("applicationName") String applicationName) throws BadServiceResponseException, NotFoundResponseException {
+    public ApplicationVO read(@PathVariable("applicationName") String applicationName) throws NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
 
         ServiceResponse<Application> applicationResponse = applicationService.getByApplicationName(tenant, applicationName);
 
         if (!applicationResponse.isOk()) {
-            throw new NotFoundResponseException(user, applicationResponse);
+            throw new NotFoundResponseException(applicationResponse);
         } else {
+			if(applicationService.isDefaultApplication(applicationResponse.getResult(),tenant)) {
+				applicationResponse.getResult().setName(ApplicationService.DEFAULT_APPLICATION_ALIAS);
+   			}
             return new ApplicationVO().apply(applicationResponse.getResult());
         }
 
@@ -115,7 +121,7 @@ public class ApplicationRestController extends AbstractRestController implements
         ServiceResponse<Application> applicationResponse = applicationService.register(tenant, application);
 
         if (!applicationResponse.isOk()) {
-            throw new BadServiceResponseException(user, applicationResponse, validationsCode);
+            throw new BadServiceResponseException( applicationResponse, validationsCode);
         } else {
             return new ApplicationVO().apply(applicationResponse.getResult());
         }
@@ -135,11 +141,11 @@ public class ApplicationRestController extends AbstractRestController implements
 
         Tenant tenant = user.getTenant();
 
-        Application applicationFromDB = null;
+        Application applicationFromDB;
         ServiceResponse<Application> applicationResponse = applicationService.getByApplicationName(tenant, applicationName);
 
         if (!applicationResponse.isOk()) {
-            throw new BadServiceResponseException(user, applicationResponse, validationsCode);
+            throw new BadServiceResponseException( applicationResponse, validationsCode);
         } else {
             applicationFromDB = applicationResponse.getResult();
         }
@@ -151,7 +157,7 @@ public class ApplicationRestController extends AbstractRestController implements
         ServiceResponse<Application> updateResponse = applicationService.update(tenant, applicationName, applicationFromDB);
 
         if (!updateResponse.isOk()) {
-            throw new BadServiceResponseException(user, updateResponse, validationsCode);
+            throw new BadServiceResponseException( updateResponse, validationsCode);
 
         }
 
@@ -168,9 +174,9 @@ public class ApplicationRestController extends AbstractRestController implements
 
         if (!applicationResponse.isOk()) {
             if (applicationResponse.getResponseMessages().containsKey(ApplicationService.Validations.APPLICATION_NOT_FOUND.getCode())) {
-                throw new NotFoundResponseException(user, applicationResponse);
+                throw new NotFoundResponseException(applicationResponse);
             } else {
-                throw new BadServiceResponseException(user, applicationResponse, validationsCode);
+                throw new BadServiceResponseException( applicationResponse, validationsCode);
             }
         }
 
@@ -182,7 +188,7 @@ public class ApplicationRestController extends AbstractRestController implements
             response = RestResponse.class
     )
     @PreAuthorize("hasAuthority('SHOW_APPLICATION')")
-    public List<DeviceHealthAlertVO> alerts(@PathVariable("applicationName") String applicationName) throws BadServiceResponseException, NotFoundResponseException {
+    public List<HealthAlertVO> alerts(@PathVariable("applicationName") String applicationName) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationName);
@@ -190,14 +196,14 @@ public class ApplicationRestController extends AbstractRestController implements
         ServiceResponse<List<HealthAlert>> serviceResponse = healthAlertService.findAllByTenantAndApplication(tenant, application);
 
         if (!serviceResponse.isOk()) {
-            throw new NotFoundResponseException(user, serviceResponse);
+            throw new NotFoundResponseException(serviceResponse);
         } else {
-            List<DeviceHealthAlertVO> healthAlertsVO = new LinkedList<>();
+            List<HealthAlertVO> healthAlertsVO = new LinkedList<>();
 
             for (HealthAlert healthAlert: serviceResponse.getResult()) {
-                DeviceHealthAlertVO healthAlertVO = new DeviceHealthAlertVO();
+                HealthAlertVO healthAlertVO = new HealthAlertVO();
                 healthAlertVO = healthAlertVO.apply(healthAlert);
-                healthAlertVO.setDescription(messageSource.getMessage(healthAlert.getDescription().getCode(), null, user.getLanguage().getLocale()));
+                healthAlertVO.setDescription(healthAlert.getDescription());
 
                 healthAlertsVO.add(healthAlertVO);
             }
@@ -222,13 +228,13 @@ public class ApplicationRestController extends AbstractRestController implements
         ServiceResponse<HealthAlert> serviceResponse = healthAlertService.remove(tenant, application, alertGuid, Solution.ALERT_DELETED);
 
         if (!serviceResponse.isOk()) {
-            throw new NotFoundResponseException(user, serviceResponse);
+            throw new NotFoundResponseException(serviceResponse);
         }
 
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         for (Validations value : Validations.values()) {
             validationsCode.add(value.getCode());
         }

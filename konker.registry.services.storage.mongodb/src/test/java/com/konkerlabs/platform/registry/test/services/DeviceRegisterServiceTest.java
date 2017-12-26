@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.test.services;
 
+import com.konkerlabs.platform.registry.billing.repositories.TenantDailyUsageRepository;
 import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
@@ -9,6 +10,7 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceEventService
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.DeviceSecurityCredentials;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.config.EmailConfig;
 import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
@@ -24,9 +26,13 @@ import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.thymeleaf.spring4.SpringTemplateEngine;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -51,7 +57,9 @@ import static org.mockito.Mockito.*;
         MongoTestConfiguration.class,
         BusinessTestConfiguration.class,
 		PubServerConfig.class,
-        EventStorageConfig.class})
+        EventStorageConfig.class,
+        EmailConfig.class,
+        DeviceRegisterServiceTest.DeviceRegisterServiceTestConfig.class})
 @ActiveProfiles("ssl")
 public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
@@ -893,6 +901,55 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
                 hasEntry(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode(), null));
         assertThat(serviceResponse.getResult(), nullValue());
 
+    }
+    
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
+    public void shouldReturnErrorTenantNullFindByDeviceId() {
+    	ServiceResponse<Device> serviceResponse = deviceRegisterService.findByDeviceId(null, currentApplication, device.getDeviceId());
+    	
+    	assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+    	assertThat(serviceResponse.getResponseMessages(), hasEntry(CommonValidations.TENANT_NULL.getCode(), null));
+    	assertThat(serviceResponse.getResult(), nullValue());
+    }
+    
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
+    public void shouldReturnErrorApplicationNullFindByDeviceId() {
+    	ServiceResponse<Device> serviceResponse = deviceRegisterService.findByDeviceId(currentTenant, null, device.getDeviceId());
+    	
+    	assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+    	assertThat(serviceResponse.getResponseMessages(), hasEntry(ApplicationService.Validations.APPLICATION_NULL.getCode(), null));
+    	assertThat(serviceResponse.getResult(), nullValue());
+    }
+    
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
+    public void shouldReturnDeviceFindByDeviceId() {
+    	ServiceResponse<Device> serviceResponse = deviceRegisterService.findByDeviceId(currentTenant, currentApplication, THE_USER_DEFINED_DEVICE_ID);
+    	
+    	assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.OK));
+    	assertThat(serviceResponse.getResult(), notNullValue());
+    	assertThat(serviceResponse.getResult().getApiKey(), equalTo(THE_DEVICE_API_KEY));
+    }
+    
+    @Configuration
+    static class DeviceRegisterServiceTestConfig {
+    	
+    	@Bean
+    	public TenantDailyUsageRepository tenantDailyUsageRepository() {
+    		return Mockito.mock(TenantDailyUsageRepository.class);
+    	}
+    	
+    	@Bean
+    	public JavaMailSender javaMailSender() {
+    		return Mockito.mock(JavaMailSender.class);
+    	}
+    	
+    	@Bean
+    	public SpringTemplateEngine springTemplateEngine() {
+    		return Mockito.mock(SpringTemplateEngine.class);
+    	}
     }
 
 }

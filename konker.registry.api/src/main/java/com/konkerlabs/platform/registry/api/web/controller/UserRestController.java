@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import com.konkerlabs.platform.registry.business.model.OauthClientDetails;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -47,7 +48,6 @@ import io.swagger.annotations.ApiParam;
 @Api(tags = "users")
 public class UserRestController implements InitializingBean {
 
-    private static final String ROLE_IOT_USER = "ROLE_IOT_USER";
 
 	@Autowired
     private UserService userService;
@@ -56,7 +56,7 @@ public class UserRestController implements InitializingBean {
     private RoleService roleService;
 
     @Autowired
-    private User user;
+    private OauthClientDetails user;
 
     private Set<String> validationsCode = new HashSet<>();
 
@@ -72,7 +72,7 @@ public class UserRestController implements InitializingBean {
         ServiceResponse<List<User>> userResponse = userService.findAll(tenant);
 
         if (!userResponse.isOk()) {
-            throw new BadServiceResponseException(user, userResponse, validationsCode);
+            throw new BadServiceResponseException( userResponse, validationsCode);
         } else {
             return new UserVO().apply(userResponse.getResult());
         }
@@ -92,7 +92,7 @@ public class UserRestController implements InitializingBean {
         ServiceResponse<User> userResponse = userService.findByTenantAndEmail(tenant, email);
 
         if (!userResponse.isOk()) {
-            throw new NotFoundResponseException(user, userResponse);
+            throw new NotFoundResponseException(userResponse);
         } else {
             return new UserVO().apply(userResponse.getResult());
         }
@@ -107,7 +107,7 @@ public class UserRestController implements InitializingBean {
             @RequestBody UserVO userForm) throws BadServiceResponseException {
 
         Tenant tenant = user.getTenant();
-        Role role = roleService.findByName(ROLE_IOT_USER).getResult();
+        Role role = roleService.findByName(RoleService.ROLE_IOT_USER).getResult();
 
         User userFromForm = User.builder()
         		.email(userForm.getEmail())
@@ -130,7 +130,7 @@ public class UserRestController implements InitializingBean {
         ServiceResponse<User> userResponse = userService.save(userFromForm, password, password);
 
         if (!userResponse.isOk()) {
-            throw new BadServiceResponseException(user, userResponse, validationsCode);
+            throw new BadServiceResponseException( userResponse, validationsCode);
         } else {
             return new UserVO().apply(userResponse.getResult());
         }
@@ -151,7 +151,7 @@ public class UserRestController implements InitializingBean {
         ServiceResponse<User> userResponse = userService.findByTenantAndEmail(tenant, email);
 
         if (!userResponse.isOk()) {
-            throw new BadServiceResponseException(user, userResponse, validationsCode);
+            throw new BadServiceResponseException( userResponse, validationsCode);
         } else {
             userFromDB = userResponse.getResult();
         }
@@ -169,7 +169,7 @@ public class UserRestController implements InitializingBean {
         ServiceResponse<User> updateResponse = userService.save(userFromDB, password, password);
 
         if (!updateResponse.isOk()) {
-            throw new BadServiceResponseException(user, userResponse, validationsCode);
+            throw new BadServiceResponseException( userResponse, validationsCode);
 
         }
 

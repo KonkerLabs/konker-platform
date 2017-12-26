@@ -125,7 +125,7 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
         event = Event.builder()
 //                .channel(DEVICE_MQTT_CHANNEL)
                 .payload(validEventPayload)
-                .timestamp(Instant.now()).build();
+                .creationTimestamp(Instant.now()).build();
     }
 
     @After

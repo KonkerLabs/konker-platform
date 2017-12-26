@@ -1,15 +1,7 @@
 package com.konkerlabs.platform.registry.test.data.services;
 
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.DeviceModel;
-import com.konkerlabs.platform.registry.business.model.DeviceModelLocation;
-import com.konkerlabs.platform.registry.business.model.EventRoute;
+import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
-import com.konkerlabs.platform.registry.business.model.Location;
-import com.konkerlabs.platform.registry.business.model.RestDestination;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.Transformation;
 import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
@@ -512,6 +504,274 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 //        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.ERROR));
 //        assertThat(response.getResponseMessages(), equalTo(errorMessages));
 //    }
+
+
+    /* ----------------------------- save amazon kinesis ------------------------------ */
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json", "/fixtures/devices.json"})
+    public void shouldSaveAmazonKinesis() throws Exception {
+
+        route.setOutgoing(
+                RouteActor.builder().uri(
+                        new URIDealer() {
+                            @Override
+                            public String getUriScheme() {
+                                return AmazonKinesis.URI_SCHEME;
+                            }
+
+                            @Override
+                            public String getContext() {
+                                return tenant.getDomainName();
+                            }
+
+                            @Override
+                            public String getGuid() {
+                                return "stream/eu-west-1";
+                            }
+                        }.toURI()
+                ).data(new HashMap<String, String>() {{
+                    put(DEVICE_MQTT_CHANNEL, "in");
+                }}).build()
+        );
+
+        AmazonKinesis kinesisProperties = AmazonKinesis.builder()
+                .key("key")
+                .secret("secret")
+                .region("eu-west-1")
+                .streamName("stream")
+                .build();
+
+        Map<String, String> kinesisValues = kinesisProperties.getValues();
+        route.getOutgoing().setData(kinesisValues);
+
+        ServiceResponse<EventRoute> response = subject.save(tenant, application, route);
+
+        assertThat(response, isResponseOk());
+        assertThat(eventRouteRepository.findByIncomingUri(route.getIncoming().getUri()), notNullValue());
+        assertThat(response.getResult().getIncoming().getUri(), equalTo(route.getIncoming().getUri()));
+        assertThat(response.getResult().getIncoming().getDisplayName(), equalTo("SN4434567844"));
+        assertThat(response.getResult().getOutgoing().getUri(), equalTo(route.getOutgoing().getUri()));
+        assertThat(response.getResult().getOutgoing().getDisplayName(), equalTo("stream @ eu-west-1"));
+        assertThat(response.getResult().getOutgoing().getData().get("key"), equalTo("key"));
+        assertThat(response.getResult().getOutgoing().getData().get("secret"), equalTo("secret"));
+        assertThat(response.getResult().getOutgoing().getData().get("streamName"), equalTo("stream"));
+        assertThat(response.getResult().getOutgoing().getData().get("region"), equalTo("eu-west-1"));
+        assertThat(response.getResult().getTransformation(), equalTo(route.getTransformation()));
+        assertThat(response.getResult().getGuid(), notNullValue());
+
+    }
+
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json", "/fixtures/devices.json"})
+    public void shouldReturnValidationMessageSaveAmazonKinesisWithouyKey() throws Exception {
+
+        route.setOutgoing(
+                RouteActor.builder().uri(
+                        new URIDealer() {
+                            @Override
+                            public String getUriScheme() {
+                                return AmazonKinesis.URI_SCHEME;
+                            }
+
+                            @Override
+                            public String getContext() {
+                                return tenant.getDomainName();
+                            }
+
+                            @Override
+                            public String getGuid() {
+                                return "stream/eu-west-1";
+                            }
+                        }.toURI()
+                ).data(new HashMap<String, String>() {{
+                    put(DEVICE_MQTT_CHANNEL, "in");
+                }}).build()
+        );
+
+        AmazonKinesis kinesisProperties = AmazonKinesis.builder()
+                .key("")
+                .secret("secret")
+                .region("eu-west-1")
+                .streamName("stream")
+                .build();
+
+        Map<String, String> kinesisValues = kinesisProperties.getValues();
+        route.getOutgoing().setData(kinesisValues);
+
+        ServiceResponse<EventRoute> response = subject.save(tenant, application, route);
+
+        assertThat(response, hasErrorMessage(AmazonKinesis.Validations.AMAZON_KINESIS_INVALID_KEY.getCode()));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json", "/fixtures/devices.json"})
+    public void shouldReturnValidationMessageSaveAmazonKinesisWithouySecret() throws Exception {
+
+        route.setOutgoing(
+                RouteActor.builder().uri(
+                        new URIDealer() {
+                            @Override
+                            public String getUriScheme() {
+                                return AmazonKinesis.URI_SCHEME;
+                            }
+
+                            @Override
+                            public String getContext() {
+                                return tenant.getDomainName();
+                            }
+
+                            @Override
+                            public String getGuid() {
+                                return "stream/eu-west-1";
+                            }
+                        }.toURI()
+                ).data(new HashMap<String, String>() {{
+                    put(DEVICE_MQTT_CHANNEL, "in");
+                }}).build()
+        );
+
+        AmazonKinesis kinesisProperties = AmazonKinesis.builder()
+                .key("key")
+                .secret("")
+                .region("eu-west-1")
+                .streamName("stream")
+                .build();
+
+        Map<String, String> kinesisValues = kinesisProperties.getValues();
+        route.getOutgoing().setData(kinesisValues);
+
+        ServiceResponse<EventRoute> response = subject.save(tenant, application, route);
+
+        assertThat(response, hasErrorMessage(AmazonKinesis.Validations.AMAZON_KINESIS_INVALID_SECRET.getCode()));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json", "/fixtures/devices.json"})
+    public void shouldReturnValidationMessageSaveAmazonKinesisWithNullRegion() throws Exception {
+
+        route.setOutgoing(
+                RouteActor.builder().uri(
+                        new URIDealer() {
+                            @Override
+                            public String getUriScheme() {
+                                return AmazonKinesis.URI_SCHEME;
+                            }
+
+                            @Override
+                            public String getContext() {
+                                return tenant.getDomainName();
+                            }
+
+                            @Override
+                            public String getGuid() {
+                                return "stream/eu-west-1";
+                            }
+                        }.toURI()
+                ).data(new HashMap<String, String>() {{
+                    put(DEVICE_MQTT_CHANNEL, "in");
+                }}).build()
+        );
+
+        AmazonKinesis kinesisProperties = AmazonKinesis.builder()
+                .key("key")
+                .secret("secret")
+                .region(null)
+                .streamName("stream")
+                .build();
+
+        Map<String, String> kinesisValues = kinesisProperties.getValues();
+        route.getOutgoing().setData(kinesisValues);
+
+        ServiceResponse<EventRoute> response = subject.save(tenant, application, route);
+
+        assertThat(response, hasErrorMessage(AmazonKinesis.Validations.AMAZON_KINESIS_INVALID_REGION.getCode()));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json", "/fixtures/devices.json"})
+    public void shouldReturnValidationMessageSaveAmazonKinesisWithInvalidRegion() throws Exception {
+
+        route.setOutgoing(
+                RouteActor.builder().uri(
+                        new URIDealer() {
+                            @Override
+                            public String getUriScheme() {
+                                return AmazonKinesis.URI_SCHEME;
+                            }
+
+                            @Override
+                            public String getContext() {
+                                return tenant.getDomainName();
+                            }
+
+                            @Override
+                            public String getGuid() {
+                                return "stream/eu-west-1";
+                            }
+                        }.toURI()
+                ).data(new HashMap<String, String>() {{
+                    put(DEVICE_MQTT_CHANNEL, "in");
+                }}).build()
+        );
+
+        AmazonKinesis kinesisProperties = AmazonKinesis.builder()
+                .key("key")
+                .secret("secret")
+                .region("eu-1")
+                .streamName("stream")
+                .build();
+
+        Map<String, String> kinesisValues = kinesisProperties.getValues();
+        route.getOutgoing().setData(kinesisValues);
+
+        ServiceResponse<EventRoute> response = subject.save(tenant, application, route);
+
+        assertThat(response, hasErrorMessage(AmazonKinesis.Validations.AMAZON_KINESIS_INVALID_REGION.getCode()));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json", "/fixtures/devices.json"})
+    public void shouldReturnValidationMessageSaveAmazonKinesisWithoutStreamName() throws Exception {
+
+        route.setOutgoing(
+                RouteActor.builder().uri(
+                        new URIDealer() {
+                            @Override
+                            public String getUriScheme() {
+                                return AmazonKinesis.URI_SCHEME;
+                            }
+
+                            @Override
+                            public String getContext() {
+                                return tenant.getDomainName();
+                            }
+
+                            @Override
+                            public String getGuid() {
+                                return "stream/eu-west-1";
+                            }
+                        }.toURI()
+                ).data(new HashMap<String, String>() {{
+                    put(DEVICE_MQTT_CHANNEL, "in");
+                }}).build()
+        );
+
+        AmazonKinesis kinesisProperties = AmazonKinesis.builder()
+                .key("key")
+                .secret("secret")
+                .region("eu-west-1")
+                .streamName("")
+                .build();
+
+        Map<String, String> kinesisValues = kinesisProperties.getValues();
+        route.getOutgoing().setData(kinesisValues);
+
+        ServiceResponse<EventRoute> response = subject.save(tenant, application, route);
+
+        assertThat(response, hasErrorMessage(AmazonKinesis.Validations.AMAZON_KINESIS_INVALID_STREAM_NAME.getCode()));
+    }
 
     /* ---------------------- update ------------------------- */
 

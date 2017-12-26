@@ -81,8 +81,8 @@ public class IncomingEventsRestControllerTest extends WebLayerTestContext {
         Device device = Device.builder().deviceId("id1").name("name1").guid("guid1").active(true).build();
         EventActor eventActor = EventActor.builder().deviceGuid(device.getGuid()).deviceId(device.getId()).channel("temp").build();;
 
-        event1 = Event.builder().timestamp(instant).incoming(eventActor).payload(PAYLOAD1).build();
-        event2 = Event.builder().timestamp(instant).incoming(eventActor).payload(PAYLOAD2).build();
+        event1 = Event.builder().creationTimestamp(instant).ingestedTimestamp(instant).incoming(eventActor).payload(PAYLOAD1).build();
+        event2 = Event.builder().creationTimestamp(instant).ingestedTimestamp(instant).incoming(eventActor).payload(PAYLOAD2).build();
 
     }
 

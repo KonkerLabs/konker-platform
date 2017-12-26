@@ -85,7 +85,7 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
                         new Tag("locations", "Operations to manage locations"),
                         new Tag("rest destinations", "Operations to list organization REST destinations"),
                         new Tag("rest transformations", "Operations to manage REST transformations"),
-                        new Tag("routes", "Operations tomanage routes"),
+                        new Tag("routes", "Operations to manage routes"),
                         new Tag("users", "Operations to manage organization users"),
                         new Tag("user subscription", "Operations to subscribe new users")
 

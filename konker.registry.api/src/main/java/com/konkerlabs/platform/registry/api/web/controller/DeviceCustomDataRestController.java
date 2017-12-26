@@ -66,7 +66,7 @@ public class DeviceCustomDataRestController extends AbstractRestController imple
         ServiceResponse<DeviceCustomData> deviceResponse = deviceCustomDataService.getByTenantApplicationAndDevice(tenant, application, device);
 
         if (!deviceResponse.isOk()) {
-            throw new NotFoundResponseException(user, deviceResponse);
+            throw new NotFoundResponseException(deviceResponse);
         } else {
             return JSON.parse(deviceResponse.getResult().getJson());
         }
@@ -89,7 +89,7 @@ public class DeviceCustomDataRestController extends AbstractRestController imple
         ServiceResponse<DeviceCustomData> deviceResponse = deviceCustomDataService.save(tenant, application, device, jsonCustomData);
 
         if (!deviceResponse.isOk()) {
-            throw new BadServiceResponseException(user, deviceResponse, validationsCode);
+            throw new BadServiceResponseException( deviceResponse, validationsCode);
         } else {
             return JSON.parse(deviceResponse.getResult().getJson());
         }
@@ -112,7 +112,7 @@ public class DeviceCustomDataRestController extends AbstractRestController imple
         ServiceResponse<DeviceCustomData> updateResponse = deviceCustomDataService.update(tenant, application, device, jsonCustomData);
 
         if (!updateResponse.isOk()) {
-            throw new BadServiceResponseException(user, updateResponse, validationsCode);
+            throw new BadServiceResponseException( updateResponse, validationsCode);
 
         }
 
@@ -133,9 +133,9 @@ public class DeviceCustomDataRestController extends AbstractRestController imple
 
         if (!deviceResponse.isOk()) {
             if (deviceResponse.getResponseMessages().containsKey(DeviceCustomDataService.Validations.DEVICE_CUSTOM_DATA_DOES_NOT_EXIST.getCode())) {
-                throw new NotFoundResponseException(user, deviceResponse);
+                throw new NotFoundResponseException(deviceResponse);
             } else {
-                throw new BadServiceResponseException(user, deviceResponse, validationsCode);
+                throw new BadServiceResponseException( deviceResponse, validationsCode);
             }
         }
 
@@ -146,7 +146,7 @@ public class DeviceCustomDataRestController extends AbstractRestController imple
         ServiceResponse<Device> applicationResponse = deviceRegisterService.getByDeviceGuid(tenant, application, deviceGuid);
         if (!applicationResponse.isOk()) {
             if (applicationResponse.getResponseMessages().containsKey(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode())) {
-                throw new NotFoundResponseException(user, applicationResponse);
+                throw new NotFoundResponseException(applicationResponse);
 
             } else {
                 Set<String> validationsCode = new HashSet<>();
@@ -154,7 +154,7 @@ public class DeviceCustomDataRestController extends AbstractRestController imple
                     validationsCode.add(value.getCode());
                 }
 
-                throw new BadServiceResponseException(user, applicationResponse, validationsCode);
+                throw new BadServiceResponseException( applicationResponse, validationsCode);
             }
         }
 

@@ -3,6 +3,10 @@ package com.konkerlabs.platform.registry.business.services.api;
 import com.konkerlabs.platform.registry.business.model.Role;
 
 public interface RoleService {
+
+    String ROLE_IOT_USER = "ROLE_IOT_USER";
+    String ROLE_IOT_GATEWAY = "ROLE_IOT_GATEWAY";
+
     enum Validations {
         ROLE_NOT_EXIST("service.role.validation.not.exist");
 

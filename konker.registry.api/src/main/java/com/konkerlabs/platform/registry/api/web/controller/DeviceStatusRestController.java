@@ -2,7 +2,7 @@ package com.konkerlabs.platform.registry.api.web.controller;
 
 import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
 import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
-import com.konkerlabs.platform.registry.api.model.DeviceHealthAlertVO;
+import com.konkerlabs.platform.registry.api.model.HealthAlertVO;
 import com.konkerlabs.platform.registry.api.model.DeviceHealthVO;
 import com.konkerlabs.platform.registry.api.model.DeviceStatsVO;
 import com.konkerlabs.platform.registry.api.model.RestResponse;
@@ -15,7 +15,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -45,9 +44,6 @@ public class DeviceStatusRestController extends AbstractRestController implement
     @Autowired
     private DeviceEventService deviceEventService;
 
-    @Autowired
-    private MessageSource messageSource;
-
     private Set<String> validationsCode = new HashSet<>();
 
     @GetMapping(path = "/{deviceGuid}/health")
@@ -63,7 +59,7 @@ public class DeviceStatusRestController extends AbstractRestController implement
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
 
-        ServiceResponse<HealthAlert> deviceResponse = healthAlertService.getLastHightSeverityByDeviceGuid(
+        ServiceResponse<HealthAlert> deviceResponse = healthAlertService.getLastHighestSeverityByDeviceGuid(
                 tenant,
                 application,
                 deviceGuid);
@@ -71,7 +67,7 @@ public class DeviceStatusRestController extends AbstractRestController implement
         if (deviceResponse.isOk()) {
             return new DeviceHealthVO().apply(deviceResponse.getResult());
         } else {
-            throw new NotFoundResponseException(user, deviceResponse);
+            throw new NotFoundResponseException(deviceResponse);
         }
 
     }
@@ -82,7 +78,7 @@ public class DeviceStatusRestController extends AbstractRestController implement
             response = RestResponse.class
     )
     @PreAuthorize("hasAuthority('SHOW_DEVICE')")
-    public List<DeviceHealthAlertVO> alerts(
+    public List<HealthAlertVO> alerts(
             @PathVariable("application") String applicationId,
             @PathVariable("deviceGuid") String deviceGuid) throws BadServiceResponseException, NotFoundResponseException {
 
@@ -95,18 +91,18 @@ public class DeviceStatusRestController extends AbstractRestController implement
                 deviceGuid);
 
         if (deviceResponse.isOk()) {
-            List<DeviceHealthAlertVO> healthAlertsVO = new LinkedList<>();
+            List<HealthAlertVO> healthAlertsVO = new LinkedList<>();
 
             for (HealthAlert healthAlert: deviceResponse.getResult()) {
-                DeviceHealthAlertVO healthAlertVO = new DeviceHealthAlertVO();
+                HealthAlertVO healthAlertVO = new HealthAlertVO();
                 healthAlertVO = healthAlertVO.apply(healthAlert);
-                healthAlertVO.setDescription(messageSource.getMessage(healthAlert.getDescription().getCode(), null, user.getLanguage().getLocale()));
+                healthAlertVO.setDescription(healthAlert.getDescription());
 
                 healthAlertsVO.add(healthAlertVO);
             }
             return healthAlertsVO;
         } else {
-            throw new NotFoundResponseException(user, deviceResponse);
+            throw new NotFoundResponseException(deviceResponse);
         }
 
     }
@@ -128,12 +124,12 @@ public class DeviceStatusRestController extends AbstractRestController implement
         ServiceResponse<List<Event>> incomingResponse = deviceEventService.findIncomingBy(tenant, application, deviceGuid, null, null, null, false, 1);
 
         if (!deviceResponse.isOk()) {
-            throw new NotFoundResponseException(user, deviceResponse);
+            throw new NotFoundResponseException(deviceResponse);
         } else {
             String lastDataReceivedDate = "";
             if (incomingResponse.isOk()) {
                 List<Event> result = incomingResponse.getResult();
-                lastDataReceivedDate = result.isEmpty() ? "" : result.get(0).getTimestamp().toString();
+                lastDataReceivedDate = result.isEmpty() ? "" : result.get(0).getCreationTimestamp().toString();
             }
 
             DeviceStatsVO vo = new DeviceStatsVO().apply(deviceResponse.getResult());
@@ -145,7 +141,7 @@ public class DeviceStatusRestController extends AbstractRestController implement
 
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
 
         for (com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.Validations value : DeviceRegisterService.Validations.values()) {
             validationsCode.add(value.getCode());

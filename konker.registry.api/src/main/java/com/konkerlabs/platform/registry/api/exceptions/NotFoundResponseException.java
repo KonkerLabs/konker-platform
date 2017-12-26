@@ -3,8 +3,8 @@ package com.konkerlabs.platform.registry.api.exceptions;
 import java.util.Locale;
 import java.util.Map;
 
-import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.model.OauthClientDetails;
 
 public class NotFoundResponseException extends Exception {
 
@@ -12,19 +12,12 @@ public class NotFoundResponseException extends Exception {
 
     private Map<String, Object[]> responseMessages;
 
-    private Locale locale;
-
-    public NotFoundResponseException(User user, ServiceResponse<?> serviceResponse) {
+    public NotFoundResponseException(ServiceResponse<?> serviceResponse) {
         this.responseMessages = serviceResponse != null ? serviceResponse.getResponseMessages() : null;
-        this.locale = user.getLanguage().getLocale();
     }
 
     public Map<String, Object[]> getResponseMessages() {
         return responseMessages;
-    }
-
-    public Locale getLocale() {
-        return locale;
     }
 
 }

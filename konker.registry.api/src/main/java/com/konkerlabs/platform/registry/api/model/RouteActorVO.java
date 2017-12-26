@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.konkerlabs.platform.registry.business.model.AmazonKinesis;
 import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
 
@@ -22,16 +23,20 @@ import lombok.NoArgsConstructor;
 @JsonSubTypes( {
         @Type( value = RouteDeviceActorVO.class, name = RouteActorVO.TYPE_DEVICE ),
         @Type( value = RouteRestActorVO.class, name = RouteActorVO.TYPE_REST ),
-        @Type( value = RouteModelLocationActorVO.class, name = RouteActorVO.TYPE_MODEL_LOCATION )
+        @Type( value = RouteModelLocationActorVO.class, name = RouteActorVO.TYPE_MODEL_LOCATION ),
+        @Type( value = RouteAmazonKinesisActorVO.class, name = RouteActorVO.TYPE_AMAZON_KINESIS ),
+        @Type( value = RouteApplicationActorVO.class, name = RouteActorVO.TYPE_APPLICATION )
 } )
 public class RouteActorVO {
 
     public static final String TYPE_DEVICE = "DEVICE";
     public static final String TYPE_REST = "REST";
     public static final String TYPE_MODEL_LOCATION = "MODEL_LOCATION";
+    public static final String TYPE_AMAZON_KINESIS = "AMAZON_KINESIS";
+    public static final String TYPE_APPLICATION = "APPLICATION";
 
     @ApiModelProperty(position = 0, value = "type",
-            allowableValues = TYPE_DEVICE + "," + TYPE_REST + "," + TYPE_MODEL_LOCATION,
+            allowableValues = TYPE_DEVICE + "," + TYPE_REST + "," + TYPE_MODEL_LOCATION + "," + TYPE_AMAZON_KINESIS + "," + TYPE_APPLICATION, 
             example = TYPE_DEVICE)
     private String type;
 
@@ -75,6 +80,28 @@ public class RouteActorVO {
 
             return vo;
 
+        } else if (t.isAmazonKinesis()) {
+
+            AmazonKinesis amazonKinesisProperties = AmazonKinesis.builder().build();
+            amazonKinesisProperties.setValues(t.getData());
+
+            RouteAmazonKinesisActorVO vo = new RouteAmazonKinesisActorVO();
+            vo.setKey(amazonKinesisProperties.getKey());
+            //vo.setSecret(amazonKinesisProperties.getSecret());
+            vo.setRegion(amazonKinesisProperties.getRegion());
+            vo.setStreamName(amazonKinesisProperties.getStreamName());
+
+            return vo;
+
+        } else if (t.isApplication()) {
+        	
+        	String uriPath = t.getUri().getPath();
+
+            RouteApplicationActorVO vo = new RouteApplicationActorVO();
+            vo.setType(RouteActorType.APPLICATION.name());
+            vo.setName(uriPath.startsWith("/") ? uriPath.substring(1) : uriPath);
+
+            return vo;
         }
 
         return null;

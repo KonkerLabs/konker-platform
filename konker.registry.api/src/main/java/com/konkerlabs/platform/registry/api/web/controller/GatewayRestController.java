@@ -9,8 +9,11 @@ import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Gateway;
 import com.konkerlabs.platform.registry.business.model.Location;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.services.api.*;
+import com.konkerlabs.platform.registry.business.services.api.GatewayService;
 import com.konkerlabs.platform.registry.business.services.api.GatewayService.Validations;
+import com.konkerlabs.platform.registry.business.services.api.LocationService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.idm.services.OAuth2AccessTokenService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -18,6 +21,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -34,6 +38,9 @@ public class GatewayRestController extends AbstractRestController implements Ini
     @Autowired
     private GatewayService gatewayService;
 
+    @Autowired
+    private OAuth2AccessTokenService oAuth2AccessTokenService;
+
     private Set<String> validationsCode = new HashSet<>();
 
     @GetMapping(path = "/")
@@ -49,7 +56,7 @@ public class GatewayRestController extends AbstractRestController implements Ini
         ServiceResponse<List<Gateway>> gatewayResponse = gatewayService.getAll(tenant, application);
 
         if (!gatewayResponse.isOk()) {
-            throw new BadServiceResponseException(user, gatewayResponse, validationsCode);
+            throw new BadServiceResponseException( gatewayResponse, validationsCode);
         } else {
             List<GatewayVO> gatewaysVO = new ArrayList<>();
 
@@ -75,9 +82,39 @@ public class GatewayRestController extends AbstractRestController implements Ini
         ServiceResponse<Gateway> gatewayResponse = gatewayService.getByGUID(tenant, application, gatewayGuid);
 
         if (!gatewayResponse.isOk()) {
-            throw new NotFoundResponseException(user, gatewayResponse);
+            throw new NotFoundResponseException(gatewayResponse);
         } else {
             return new GatewayVO().apply(gatewayResponse.getResult());
+        }
+
+    }
+
+    @GetMapping(path = "/{gatewayGuid}/token")
+    @PreAuthorize("hasAuthority('EDIT_GATEWAY')")
+    @ApiOperation(
+            value = "Requests a OAuth token for the gateway",
+            response = RestResponse.class
+    )
+    public OAuth2AccessToken token(@PathVariable("application") String applicationId,
+                                   @PathVariable("gatewayGuid") String gatewayGuid) throws BadServiceResponseException, NotFoundResponseException {
+
+        Tenant tenant = user.getTenant();
+        Application application = getApplication(applicationId);
+
+        ServiceResponse<Gateway> gatewayResponse = gatewayService.getByGUID(tenant, application, gatewayGuid);
+        Gateway gateway;
+
+        if (!gatewayResponse.isOk()) {
+            throw new NotFoundResponseException(gatewayResponse);
+        } else {
+            gateway = gatewayResponse.getResult();
+        }
+
+        ServiceResponse<OAuth2AccessToken> accessTokenServiceResponse = oAuth2AccessTokenService.getGatewayAccessToken(tenant, application, gateway);
+        if (accessTokenServiceResponse.isOk()) {
+            return accessTokenServiceResponse.getResult();
+        } else {
+            throw new BadServiceResponseException( accessTokenServiceResponse, validationsCode);
         }
 
     }
@@ -107,7 +144,7 @@ public class GatewayRestController extends AbstractRestController implements Ini
         ServiceResponse<Gateway> gatewayResponse = gatewayService.save(tenant, application, gateway);
 
         if (!gatewayResponse.isOk()) {
-            throw new BadServiceResponseException(user, gatewayResponse, validationsCode);
+            throw new BadServiceResponseException( gatewayResponse, validationsCode);
         } else {
             return new GatewayVO().apply(gatewayResponse.getResult());
         }
@@ -131,7 +168,7 @@ public class GatewayRestController extends AbstractRestController implements Ini
         ServiceResponse<Gateway> gatewayResponse = gatewayService.getByGUID(tenant, application, gatewayGuid);
 
         if (!gatewayResponse.isOk()) {
-            throw new BadServiceResponseException(user, gatewayResponse, validationsCode);
+            throw new BadServiceResponseException( gatewayResponse, validationsCode);
         } else {
             gatewayFromDB = gatewayResponse.getResult();
         }
@@ -145,7 +182,7 @@ public class GatewayRestController extends AbstractRestController implements Ini
         ServiceResponse<Gateway> updateResponse = gatewayService.update(tenant, application, gatewayGuid, gatewayFromDB);
 
         if (!updateResponse.isOk()) {
-            throw new BadServiceResponseException(user, updateResponse, validationsCode);
+            throw new BadServiceResponseException( updateResponse, validationsCode);
         }
 
     }
@@ -164,9 +201,9 @@ public class GatewayRestController extends AbstractRestController implements Ini
 
         if (!gatewayResponse.isOk()) {
             if (gatewayResponse.getResponseMessages().containsKey(Validations.GATEWAY_NOT_FOUND.getCode())) {
-                throw new NotFoundResponseException(user, gatewayResponse);
+                throw new NotFoundResponseException(gatewayResponse);
             } else {
-                throw new BadServiceResponseException(user, gatewayResponse, validationsCode);
+                throw new BadServiceResponseException( gatewayResponse, validationsCode);
             }
         }
 
