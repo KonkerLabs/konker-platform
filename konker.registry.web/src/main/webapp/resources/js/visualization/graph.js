@@ -14,13 +14,7 @@ function getByPath(o, s) {
 }
 
 function isObject(value) {
-	if (Array.isArray(value)) {
-		return true;
-	}
-	
-	for (key in value) return true;
-	
-	return false;
+	return typeof value == "object";
 }
 
 var insertLinebreaks = function (d) {
