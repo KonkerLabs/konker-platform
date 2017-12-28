@@ -12,11 +12,14 @@ import com.konkerlabs.platform.registry.business.services.api.*;
 import com.konkerlabs.platform.registry.config.EmailConfig;
 import com.konkerlabs.platform.registry.config.PasswordUserConfig;
 import com.konkerlabs.platform.security.managers.PasswordManager;
+
+import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.encoding.ShaPasswordEncoder;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -68,6 +71,7 @@ public class UserServiceImpl implements UserService {
     private PasswordUserConfig passwordUserConfig; 
 
     private PasswordManager passwordManager;
+    
 
     public UserServiceImpl() {
         passwordUserConfig = new PasswordUserConfig(); 
@@ -565,8 +569,13 @@ public class UserServiceImpl implements UserService {
     }
 
     private void validatePasswordBlackList(String password) throws BusinessException {
+        // blacklisted passwords are stored in SHA1 format, because some providers of
+        // leaked passwords publish the database in SHA1 format in order to
+        // protect possible private identifiable information. See haveibeenpwned.com .
+        String hashToBeSearched = DigestUtils.sha1Hex(password).toUpperCase();
+        
         User.PasswordBlacklist matches =
-                passwordBlacklistRepository.findOne(password);
+                passwordBlacklistRepository.findOne(hashToBeSearched);
         if (Optional.ofNullable(matches).isPresent()) {
             throw new BusinessException(Validations.INVALID_PASSWORD_BLACKLISTED.getCode());
         }
