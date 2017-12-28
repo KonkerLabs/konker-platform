@@ -463,19 +463,26 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
             StringBuilder content = new StringBuilder();
             content.append("{\"user\":\"").append(credentials.getDevice().getUsername());
             content.append("\",\"pass\":\"").append(credentials.getPassword());
-            if (!StringUtils.isEmpty(pubServerConfig.getHttpHostname())
+            
+            if (!StringUtils.isEmpty(credentials.getDevice().getApplication().getDataApiDomain())) {
+            	content.append("\",\"host\":\"").append(credentials.getDevice().getApplication().getDataApiDomain());
+            } else if (!StringUtils.isEmpty(pubServerConfig.getHttpHostname())
                     && !pubServerConfig.getHttpHostname().equals("localhost")) {
                 content.append("\",\"host\":\"").append(pubServerConfig.getHttpHostname());
             } else {
                 content.append("\",\"host\":\"" + "<IP>");
             }
             content.append("\",\"ctx\":\"").append(pubServerConfig.getHttpCtx());
-            if (!StringUtils.isEmpty(pubServerConfig.getMqttHostName())
+            
+            if (!StringUtils.isEmpty(credentials.getDevice().getApplication().getDataMqttDomain())) {
+            	content.append("\",\"host\":\"").append(credentials.getDevice().getApplication().getDataMqttDomain());
+            } else if (!StringUtils.isEmpty(pubServerConfig.getMqttHostName())
                     && !pubServerConfig.getMqttHostName().equals("localhost")) {
                 content.append("\",\"host-mqtt\":\"").append(pubServerConfig.getMqttHostName());
             } else {
                 content.append("\",\"host-mqtt\":\"" + "<IP>");
             }
+            
             content.append("\",\"http\":\"").append(pubServerConfig.getHttpPort());
             content.append("\",\"https\":\"").append(pubServerConfig.getHttpsPort());
             content.append("\",\"mqtt\":\"").append(pubServerConfig.getMqttPort());
