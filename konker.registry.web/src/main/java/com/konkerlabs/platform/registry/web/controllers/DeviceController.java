@@ -515,7 +515,7 @@ public class DeviceController implements ApplicationContextAware {
         if (serviceResponse.isOk()) {
             DeviceRegisterService.DeviceSecurityCredentials credentials = serviceResponse.getResult();
             ServiceResponse<String> base64QrCode =
-                    deviceRegisterService.generateQrCodeAccess(credentials, 200, 200);
+                    deviceRegisterService.generateQrCodeAccess(credentials, 200, 200, locale);
 
             Device device = credentials.getDevice();
             ServiceResponse<DeviceDataURLs> serviceURLResponse = deviceRegisterService.getDeviceDataURLs(
