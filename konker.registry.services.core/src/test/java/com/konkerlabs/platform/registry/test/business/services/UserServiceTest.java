@@ -58,7 +58,7 @@ public class UserServiceTest extends BusinessLayerTestSupport {
     private static final String oldPasswordWrong="password";
     private static final String newPassword="123456789abc$$";
     private static final String newPasswordWrong="123456789abc";
-    private static final String newPasswordblackListed="aaaaaaaaaaaa";
+    private static final String newPasswordblackListed="aaaaaaaaaaaa"; // SHA1 = 384FCD160AB3B33174EA279AD26052EEE191508A
     private static final String newPasswordConfirmation="123456789abc$$";
     private static final String newPasswordConfirmationWrong="abc124$$";
 
