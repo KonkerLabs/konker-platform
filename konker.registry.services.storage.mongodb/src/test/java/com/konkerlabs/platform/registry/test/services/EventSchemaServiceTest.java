@@ -22,6 +22,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -48,7 +50,6 @@ import static org.junit.Assert.assertTrue;
     EventStorageConfig.class,
     PubServerConfig.class,
     EmailConfig.class,
-    RabbitMQConfig.class,
     EventSchemaServiceTest.EventSchemaServiceTestConfig.class
 })
 @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json"})
@@ -271,6 +272,16 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
     	public SpringTemplateEngine springTemplateEngine() {
     		return Mockito.mock(SpringTemplateEngine.class);
     	}
+    	
+    	@Bean
+        public ConnectionFactory connectionFactory() {
+            return Mockito.mock(ConnectionFactory.class);
+        }
+
+        @Bean
+        public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
+            return Mockito.mock(RabbitTemplate.class);
+        }
     }
 
     @Test

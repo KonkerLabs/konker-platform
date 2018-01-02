@@ -38,6 +38,8 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -66,12 +68,10 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceEventService
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.DeviceSecurityCredentials;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.Messages;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.Validations;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.config.EmailConfig;
 import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
-import com.konkerlabs.platform.registry.config.RabbitMQConfig;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
@@ -84,7 +84,6 @@ import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 		PubServerConfig.class,
         EventStorageConfig.class,
         EmailConfig.class,
-        RabbitMQConfig.class,
         DeviceRegisterServiceTest.DeviceRegisterServiceTestConfig.class})
 @ActiveProfiles("ssl")
 public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
@@ -973,6 +972,16 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     	public SpringTemplateEngine springTemplateEngine() {
     		return Mockito.mock(SpringTemplateEngine.class);
     	}
+    	
+    	@Bean
+        public ConnectionFactory connectionFactory() {
+            return Mockito.mock(ConnectionFactory.class);
+        }
+
+        @Bean
+        public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
+            return Mockito.mock(RabbitTemplate.class);
+        }
     }
 
 }
