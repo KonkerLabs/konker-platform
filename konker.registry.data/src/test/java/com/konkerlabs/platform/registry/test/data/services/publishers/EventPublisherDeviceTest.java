@@ -51,7 +51,7 @@ import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
-import com.konkerlabs.platform.registry.data.config.RabbitMQConfig;
+import com.konkerlabs.platform.registry.data.config.RabbitMQDataConfig;
 import com.konkerlabs.platform.registry.data.services.api.DeviceLogEventService;
 import com.konkerlabs.platform.registry.data.services.publishers.EventPublisherDevice;
 import com.konkerlabs.platform.registry.data.services.publishers.api.EventPublisher;
@@ -262,8 +262,8 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
         subject.send(event,destinationUri,data,device.getTenant(),device.getApplication());
 
         MessageProperties properties = new MessageProperties();
-        properties.setHeader(RabbitMQConfig.MSG_HEADER_APIKEY, device.getApiKey());
-        properties.setHeader(RabbitMQConfig.MSG_HEADER_CHANNEL, data.get(DEVICE_MQTT_CHANNEL));
+        properties.setHeader(RabbitMQDataConfig.MSG_HEADER_APIKEY, device.getApiKey());
+        properties.setHeader(RabbitMQDataConfig.MSG_HEADER_CHANNEL, data.get(DEVICE_MQTT_CHANNEL));
 
         Message message = new Message(event.getPayload().getBytes("UTF-8"), properties);
 
@@ -293,8 +293,8 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
         InOrder inOrder = inOrder(rabbitTemplate, deviceLogEventService);
 
         MessageProperties properties = new MessageProperties();
-        properties.setHeader(RabbitMQConfig.MSG_HEADER_APIKEY, device.getApiKey());
-        properties.setHeader(RabbitMQConfig.MSG_HEADER_CHANNEL, data.get(DEVICE_MQTT_CHANNEL));
+        properties.setHeader(RabbitMQDataConfig.MSG_HEADER_APIKEY, device.getApiKey());
+        properties.setHeader(RabbitMQDataConfig.MSG_HEADER_CHANNEL, data.get(DEVICE_MQTT_CHANNEL));
 
         Message message = new Message(event.getPayload().getBytes("UTF-8"), properties);
 

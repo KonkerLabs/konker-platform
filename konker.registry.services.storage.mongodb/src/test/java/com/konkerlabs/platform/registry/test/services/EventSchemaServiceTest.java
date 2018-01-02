@@ -12,6 +12,7 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.config.EmailConfig;
 import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
+import com.konkerlabs.platform.registry.config.RabbitMQConfig;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
@@ -47,6 +48,7 @@ import static org.junit.Assert.assertTrue;
     EventStorageConfig.class,
     PubServerConfig.class,
     EmailConfig.class,
+    RabbitMQConfig.class,
     EventSchemaServiceTest.EventSchemaServiceTestConfig.class
 })
 @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json"})

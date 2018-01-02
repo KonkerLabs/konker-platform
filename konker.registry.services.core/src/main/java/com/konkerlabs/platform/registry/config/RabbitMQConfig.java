@@ -1,4 +1,4 @@
-package com.konkerlabs.platform.registry.data.config;
+package com.konkerlabs.platform.registry.config;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -81,24 +81,13 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Queue dataPubQueue() {
+    public Queue deviceRemovedQueue() {
 
        boolean durable = true;
        boolean exclusive = false;
        boolean autoDelete = false;
 
-       return new Queue("data.pub", durable, exclusive, autoDelete);
-
-    }
-
-    @Bean
-    public Queue configPubQueue() {
-
-       boolean durable = true;
-       boolean exclusive = false;
-       boolean autoDelete = false;
-
-       return new Queue("mgmt.config.pub", durable, exclusive, autoDelete);
+       return new Queue("device.removed", durable, exclusive, autoDelete);
 
     }
 
