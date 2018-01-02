@@ -12,7 +12,7 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBui
 import com.konkerlabs.platform.registry.config.EmailConfig;
 import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
-import com.konkerlabs.platform.registry.data.config.RabbitMQConfig;
+import com.konkerlabs.platform.registry.data.config.RabbitMQDataConfig;
 import com.konkerlabs.platform.registry.data.services.api.DeviceLogEventService;
 import com.konkerlabs.platform.registry.data.services.publishers.EventPublisherDevice;
 import com.konkerlabs.platform.registry.data.services.publishers.EventPublisherModelLocation;

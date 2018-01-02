@@ -1,7 +1,7 @@
 package com.konkerlabs.platform.registry.integration.endpoints;
 
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
-import com.konkerlabs.platform.registry.data.config.RabbitMQConfig;
+import com.konkerlabs.platform.registry.data.config.RabbitMQDataConfig;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
 
 import java.time.Instant;
@@ -39,9 +39,9 @@ public class DeviceEventRabbitEndpoint {
             return;
         }
 
-        String apiKey = (String) properties.getHeaders().get(RabbitMQConfig.MSG_HEADER_APIKEY);
-        String channel = (String) properties.getHeaders().get(RabbitMQConfig.MSG_HEADER_CHANNEL);
-        Long epochMilli = (Long) properties.getHeaders().get(RabbitMQConfig.MSG_HEADER_TIMESTAMP);
+        String apiKey = (String) properties.getHeaders().get(RabbitMQDataConfig.MSG_HEADER_APIKEY);
+        String channel = (String) properties.getHeaders().get(RabbitMQDataConfig.MSG_HEADER_CHANNEL);
+        Long epochMilli = (Long) properties.getHeaders().get(RabbitMQDataConfig.MSG_HEADER_TIMESTAMP);
         Instant ingestedTimestamp = null;
 
         byte[] bytesPayload = message.getBody();

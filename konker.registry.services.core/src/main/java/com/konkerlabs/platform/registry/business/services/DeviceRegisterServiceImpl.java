@@ -18,6 +18,7 @@ import javax.annotation.PostConstruct;
 import org.apache.commons.codec.binary.Base64OutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.ApplicationContext;
@@ -87,6 +88,9 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
     
     @Autowired
     private HealthAlertService healthAlertService;
+    
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     @PostConstruct
     public void init() {
@@ -390,15 +394,8 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
             return dependenciesResponse;
         }
 
-        try {
-            eventRepository.removeBy(tenant, application, device.getGuid());
-            deviceRepository.delete(device);
-        } catch (BusinessException e) {
-            return ServiceResponseBuilder.<Device>error()
-                    .withMessage(Messages.DEVICE_REMOVED_UNSUCCESSFULLY.getCode())
-                    .withResult(device)
-                    .build();
-        }
+       	rabbitTemplate.convertAndSend("device.removed", device.getGuid());
+        deviceRepository.delete(device);
 
         LOGGER.info("Device removed. Id: {}", device.getDeviceId(), tenant.toURI(), tenant.getLogLevel());
 

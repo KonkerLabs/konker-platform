@@ -65,10 +65,13 @@ import com.konkerlabs.platform.registry.business.services.api.ApplicationService
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.DeviceSecurityCredentials;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.Messages;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.Validations;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.config.EmailConfig;
 import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
+import com.konkerlabs.platform.registry.config.RabbitMQConfig;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
@@ -81,6 +84,7 @@ import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 		PubServerConfig.class,
         EventStorageConfig.class,
         EmailConfig.class,
+        RabbitMQConfig.class,
         DeviceRegisterServiceTest.DeviceRegisterServiceTestConfig.class})
 @ActiveProfiles("ssl")
 public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
@@ -618,16 +622,10 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         assertThat(incomingEvents.getResult().size(), equalTo(2));
         assertThat(outgoingEvents.getResult().size(), equalTo(2));
 
-        deviceRegisterService
+        ServiceResponse<Device> serviceResponse = deviceRegisterService
                 .remove(currentTenant, currentApplication, device.getGuid());
 
-        incomingEvents = deviceEventService.findIncomingBy(currentTenant, currentApplication, THE_DEVICE_GUID,
-                INCOMING_CHANNEL, null, null, false, 100);
-        outgoingEvents = deviceEventService.findOutgoingBy(currentTenant, currentApplication, THE_DEVICE_GUID,
-                OUTGOING_CHANNEL, null, null, false, 100);
-
-        assertThat(incomingEvents.getResult().size(), equalTo(0));
-        assertThat(outgoingEvents.getResult().size(), equalTo(0));
+        assertThat(serviceResponse.getResponseMessages(), equalTo(Collections.singletonMap(Messages.DEVICE_REMOVED_SUCCESSFULLY.getCode(), null)));
     }
 
     @Test
