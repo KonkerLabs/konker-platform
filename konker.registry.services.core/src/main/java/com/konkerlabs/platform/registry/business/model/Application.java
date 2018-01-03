@@ -28,8 +28,8 @@ public class Application implements URIDealer {
 	private String name;
 	private String friendlyName;
 	private String description;
-    private String dataApiDomain; // subscrive and publish events API domain name
-    private String dataMqttDomain; // subscrive and publish events MQTT domain name
+    private String dataApiDomain; // subscribe and publish events API domain name
+    private String dataMqttDomain; // subscribe and publish events MQTT domain name
 	private String qualifier;
 	private Instant registrationDate;
 
