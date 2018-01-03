@@ -1,7 +1,7 @@
 package com.konkerlabs.platform.registry.integration.endpoints;
 
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
-import com.konkerlabs.platform.registry.data.config.RabbitMQConfig;
+import com.konkerlabs.platform.registry.data.config.RabbitMQDataConfig;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
 
 import java.time.Instant;
@@ -39,12 +39,12 @@ public class DeviceEventRabbitEndpoint {
             return;
         }
 
-        String apiKey = (String) properties.getHeaders().get(RabbitMQConfig.MSG_HEADER_APIKEY);
-        String channel = (String) properties.getHeaders().get(RabbitMQConfig.MSG_HEADER_CHANNEL);
-        Long epochMilli = (Long) properties.getHeaders().get(RabbitMQConfig.MSG_HEADER_TIMESTAMP);
-        Instant timestamp = null;
+        String apiKey = (String) properties.getHeaders().get(RabbitMQDataConfig.MSG_HEADER_APIKEY);
+        String channel = (String) properties.getHeaders().get(RabbitMQDataConfig.MSG_HEADER_CHANNEL);
+        Long epochMilli = (Long) properties.getHeaders().get(RabbitMQDataConfig.MSG_HEADER_TIMESTAMP);
+        Instant ingestedTimestamp = null;
 
-        String payload = new String(message.getBody());
+        byte[] bytesPayload = message.getBody();
 
         if (!StringUtils.hasText(apiKey)) {
             LOGGER.error("Apikey not found.");
@@ -55,11 +55,14 @@ public class DeviceEventRabbitEndpoint {
             return;
         }
         if (epochMilli != null) {
-            timestamp = Instant.ofEpochMilli(epochMilli);
+            ingestedTimestamp = Instant.ofEpochMilli(epochMilli);
+        } else {
+        	LOGGER.error("ts rabbit not found.");
+        	ingestedTimestamp = Instant.now();
         }
 
         try {
-            deviceEventProcessor.process(apiKey, channel, payload, timestamp);
+            deviceEventProcessor.process(apiKey, channel, bytesPayload, ingestedTimestamp);
         } catch (BusinessException be) {
             LOGGER.error("BusinessException processing message", be);
         }

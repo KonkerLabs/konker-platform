@@ -1,41 +1,59 @@
 package com.konkerlabs.platform.registry.business.services;
 
+import java.io.ByteArrayOutputStream;
+import java.io.Serializable;
+import java.time.Instant;
+import java.util.AbstractMap;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.annotation.PostConstruct;
+
+import org.apache.commons.codec.binary.Base64OutputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
+
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
-import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.DeviceModel;
+import com.konkerlabs.platform.registry.business.model.EventRoute;
+import com.konkerlabs.platform.registry.business.model.Location;
+import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.EventRouteRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.events.api.EventRepository;
-import com.konkerlabs.platform.registry.business.services.api.*;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.HealthAlertService;
+import com.konkerlabs.platform.registry.business.services.api.LocationSearchService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.config.EventStorageConfig;
-import com.konkerlabs.platform.registry.config.PubServerConfig;
 import com.konkerlabs.platform.registry.type.EventStorageConfigType;
 import com.konkerlabs.platform.security.exceptions.SecurityException;
 import com.konkerlabs.platform.security.managers.PasswordManager;
-import org.apache.commons.codec.binary.Base64OutputStream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.support.ReloadableResourceBundleMessageSource;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-
-import javax.annotation.PostConstruct;
-import java.io.ByteArrayOutputStream;
-import java.io.Serializable;
-import java.text.MessageFormat;
-import java.time.Instant;
-import java.util.*;
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
@@ -55,8 +73,6 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
     @Autowired
     private EventRouteRepository eventRouteRepository;
 
-    private PubServerConfig pubServerConfig = new PubServerConfig();
-
     @Autowired
     private ApplicationContext applicationContext;
 
@@ -69,6 +85,12 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
     @Autowired
     private DeviceModelService deviceModelService;
+    
+    @Autowired
+    private HealthAlertService healthAlertService;
+    
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     @PostConstruct
     public void init() {
@@ -207,6 +229,9 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         }
 
         List<Device> all = deviceRepository.findAllByTenantIdAndApplicationName(tenant.getId(), application.getName());
+        
+        all.forEach(d -> d.setStatus(healthAlertService.getCurrentHealthByGuid(tenant, application, d.getGuid()).getResult().getSeverity().name()));
+        
         return ServiceResponseBuilder.<List<Device>>ok().withResult(all).build();
     }
 
@@ -369,15 +394,8 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
             return dependenciesResponse;
         }
 
-        try {
-            eventRepository.removeBy(tenant, application, device.getGuid());
-            deviceRepository.delete(device);
-        } catch (BusinessException e) {
-            return ServiceResponseBuilder.<Device>error()
-                    .withMessage(Messages.DEVICE_REMOVED_UNSUCCESSFULLY.getCode())
-                    .withResult(device)
-                    .build();
-        }
+       	rabbitTemplate.convertAndSend("device.removed", device.getGuid());
+        deviceRepository.delete(device);
 
         LOGGER.info("Device removed. Id: {}", device.getDeviceId(), tenant.toURI(), tenant.getLogLevel());
 
@@ -449,7 +467,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
      * @throws Exception
      */
     @Override
-    public ServiceResponse<String> generateQrCodeAccess(DeviceSecurityCredentials credentials, int width, int height) {
+    public ServiceResponse<String> generateQrCodeAccess(DeviceSecurityCredentials credentials, int width, int height, Locale locale) {
         try {
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -457,23 +475,16 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
             StringBuilder content = new StringBuilder();
             content.append("{\"user\":\"").append(credentials.getDevice().getUsername());
             content.append("\",\"pass\":\"").append(credentials.getPassword());
-            if (!StringUtils.isEmpty(pubServerConfig.getHttpHostname())
-                    && !pubServerConfig.getHttpHostname().equals("localhost")) {
-                content.append("\",\"host\":\"").append(pubServerConfig.getHttpHostname());
-            } else {
-                content.append("\",\"host\":\"" + "<IP>");
-            }
-            content.append("\",\"ctx\":\"").append(pubServerConfig.getHttpCtx());
-            if (!StringUtils.isEmpty(pubServerConfig.getMqttHostName())
-                    && !pubServerConfig.getMqttHostName().equals("localhost")) {
-                content.append("\",\"host-mqtt\":\"").append(pubServerConfig.getMqttHostName());
-            } else {
-                content.append("\",\"host-mqtt\":\"" + "<IP>");
-            }
-            content.append("\",\"http\":\"").append(pubServerConfig.getHttpPort());
-            content.append("\",\"https\":\"").append(pubServerConfig.getHttpsPort());
-            content.append("\",\"mqtt\":\"").append(pubServerConfig.getMqttPort());
-            content.append("\",\"mqtt-tls\":\"").append(pubServerConfig.getMqttTlsPort());
+            
+            DeviceDataURLs deviceDataURLs = new DeviceDataURLs(credentials.getDevice(), locale);
+           	content.append("\",\"host\":\"").append(deviceDataURLs.getHttpHostName());
+            content.append("\",\"ctx\":\"").append(deviceDataURLs.getContext());
+            content.append("\",\"host-mqtt\":\"").append(deviceDataURLs.getMqttHostName());
+            
+            content.append("\",\"http\":\"").append(deviceDataURLs.getHttpPort());
+            content.append("\",\"https\":\"").append(deviceDataURLs.getHttpsPort());
+            content.append("\",\"mqtt\":\"").append(deviceDataURLs.getMqttPort());
+            content.append("\",\"mqtt-tls\":\"").append(deviceDataURLs.getMqttTlsPort());
             content.append("\",\"pub\":\"pub/").append(credentials.getDevice().getUsername());
             content.append("\",\"sub\":\"sub/").append(credentials.getDevice().getUsername()).append("\"}");
 
@@ -653,37 +664,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .build();
         }
 
-        ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
-        messageSource.setBasename("classpath:/messages/devices");
-        messageSource.setDefaultEncoding("UTF-8");
-
-        String httpHostname = pubServerConfig.getHttpHostname();
-        String mqttHostName = pubServerConfig.getMqttHostName();
-        String channelMsg = messageSource.getMessage("model.device.channel", null, locale);
-        String username = device.getApiKey();
-
-        if (httpHostname.equalsIgnoreCase("localhost")) {
-            httpHostname = "<ip>";
-        }
-        if (mqttHostName.equalsIgnoreCase("localhost")) {
-            mqttHostName = "<ip>";
-        }
-        if (StringUtils.hasText(tenant.getDataApiDomain())) {
-            httpHostname = tenant.getDataApiDomain();
-            mqttHostName = tenant.getDataApiDomain();
-        }
-
-        DeviceDataURLs deviceDataURLs = DeviceRegisterService.DeviceDataURLs.builder()
-                .httpURLPub(MessageFormat.format("http://{0}:{1}/pub/{2}/<{3}>", httpHostname, pubServerConfig.getHttpPort(), username, channelMsg))
-                .httpURLSub(MessageFormat.format("http://{0}:{1}/sub/{2}/<{3}>", httpHostname, pubServerConfig.getHttpPort(), username, channelMsg))
-                .httpsURLPub(MessageFormat.format("https://{0}:{1}/pub/{2}/<{3}>", httpHostname, pubServerConfig.getHttpsPort(), username, channelMsg))
-                .httpsURLSub(MessageFormat.format("https://{0}:{1}/sub/{2}/<{3}>", httpHostname, pubServerConfig.getHttpsPort(), username, channelMsg))
-                .mqttURL(MessageFormat.format("mqtt://{0}:{1}", mqttHostName, pubServerConfig.getMqttPort()))
-                .mqttsURL(MessageFormat.format("mqtts://{0}:{1}", mqttHostName, pubServerConfig.getMqttTlsPort()))
-                .mqttPubTopic(MessageFormat.format("data/{0}/pub/<{1}>", username, channelMsg))
-                .mqttSubTopic(MessageFormat.format("data/{0}/sub/<{1}>", username, channelMsg))
-                .build();
-
+        DeviceDataURLs deviceDataURLs = new DeviceDataURLs(device, locale);
         return ServiceResponseBuilder.<DeviceDataURLs>ok().withResult(deviceDataURLs).build();
 
     }
@@ -718,5 +699,21 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         return ServiceResponseBuilder.<T>ok().build();
 
     }
+
+	@Override
+	public ServiceResponse<Device> findByDeviceId(Tenant tenant, Application application, String deviceId) {
+		ServiceResponse<Device> validationResponse = validate(tenant, application);
+        if (!validationResponse.isOk()) {
+            return validationResponse;
+        }
+
+        Device device = deviceRepository.findAllByTenantIdApplicationNameDeviceId(tenant.getId(), application.getName(), deviceId);
+        if (device == null) {
+            return ServiceResponseBuilder.<Device>error()
+                    .withMessage(Validations.DEVICE_ID_DOES_NOT_EXIST.getCode()).build();
+        } else {
+            return ServiceResponseBuilder.<Device>ok().withResult(device).build();
+        }
+	}
 
 }

@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import com.konkerlabs.platform.registry.business.model.AmazonKinesis;
 import org.springframework.util.StringUtils;
 
 import com.konkerlabs.platform.registry.business.model.Device;
@@ -128,7 +129,19 @@ public class EventRouteForm
                 .map(t -> t.getId()).orElseGet(() -> null)
         );
         this.setActive(model.isActive());
+
+        applyOutgoingValidations(this);
+
         return this;
+    }
+
+    private void applyOutgoingValidations(EventRouteForm form) {
+
+        // do not show secret at screen
+        if (form.getOutgoingScheme().equals(AmazonKinesis.URI_SCHEME)) {
+            form.getOutgoing().getAuthorityData().remove(AmazonKinesis.SECRET_KEY);
+        }
+
     }
 
     private String[] getAuthorityIds(URI uri) {

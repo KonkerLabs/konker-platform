@@ -157,7 +157,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
         assertThat(serviceResponse.getResult(),notNullValue());
         assertThat(serviceResponse.getResult(),hasSize(3));
 
-        assertThat(serviceResponse.getResult().get(0).getTimestamp().toEpochMilli(),
+        assertThat(serviceResponse.getResult().get(0).getCreationTimestamp().toEpochMilli(),
                 equalTo(lastEventTimestamp.toEpochMilli()));
     }
 

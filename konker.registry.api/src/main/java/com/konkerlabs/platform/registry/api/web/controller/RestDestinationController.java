@@ -57,7 +57,7 @@ public class RestDestinationController extends AbstractRestController implements
         ServiceResponse<List<RestDestination>> restDestinationResponse = restDestinationService.findAll(tenant, application);
 
         if (!restDestinationResponse.isOk()) {
-            throw new BadServiceResponseException(user, restDestinationResponse, validationsCode);
+            throw new BadServiceResponseException( restDestinationResponse, validationsCode);
         } else {
             return new RestDestinationVO().apply(restDestinationResponse.getResult());
         }
@@ -80,7 +80,7 @@ public class RestDestinationController extends AbstractRestController implements
         ServiceResponse<RestDestination> restDestinationResponse = restDestinationService.getByGUID(tenant, application, restDestinationGuid);
 
         if (!restDestinationResponse.isOk()) {
-            throw new NotFoundResponseException(user, restDestinationResponse);
+            throw new NotFoundResponseException(restDestinationResponse);
         } else {
             return new RestDestinationVO().apply(restDestinationResponse.getResult());
         }
@@ -116,7 +116,7 @@ public class RestDestinationController extends AbstractRestController implements
         ServiceResponse<RestDestination> restDestinationResponse = restDestinationService.register(tenant, application, restDestination);
 
         if (!restDestinationResponse.isOk()) {
-            throw new BadServiceResponseException(user, restDestinationResponse, validationsCode);
+            throw new BadServiceResponseException( restDestinationResponse, validationsCode);
         } else {
             return new RestDestinationVO().apply(restDestinationResponse.getResult());
         }
@@ -142,7 +142,7 @@ public class RestDestinationController extends AbstractRestController implements
         ServiceResponse<RestDestination> restDestinationResponse = restDestinationService.getByGUID(tenant, application, restDestinationGuid);
 
         if (!restDestinationResponse.isOk()) {
-            throw new BadServiceResponseException(user, restDestinationResponse, validationsCode);
+            throw new BadServiceResponseException( restDestinationResponse, validationsCode);
         } else {
             restDestinationFromDB = restDestinationResponse.getResult();
         }
@@ -161,7 +161,7 @@ public class RestDestinationController extends AbstractRestController implements
         ServiceResponse<RestDestination> updateResponse = restDestinationService.update(tenant, application, restDestinationGuid, restDestinationFromDB);
 
         if (!updateResponse.isOk()) {
-            throw new BadServiceResponseException(user, updateResponse, validationsCode);
+            throw new BadServiceResponseException( updateResponse, validationsCode);
 
         }
 
@@ -181,9 +181,9 @@ public class RestDestinationController extends AbstractRestController implements
 
         if (!restDestinationResponse.isOk()) {
             if (restDestinationResponse.getResponseMessages().containsKey(RestDestinationService.Validations.DESTINATION_NOT_FOUND.getCode())) {
-                throw new NotFoundResponseException(user, restDestinationResponse);
+                throw new NotFoundResponseException(restDestinationResponse);
             } else {
-                throw new BadServiceResponseException(user, restDestinationResponse, validationsCode);
+                throw new BadServiceResponseException( restDestinationResponse, validationsCode);
             }
         }
 

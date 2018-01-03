@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -14,6 +15,13 @@ public class KonkerRegistryDataApplication {
         if (LOG.isInfoEnabled()) {
             LOG.info("Start the konker registry data...");
         }
+        
+        String profile = System.getenv("DATA_INTERNAL");
+		if (StringUtils.isNotBlank(profile)) {
+			LOG.info("Data Internal is enable!!!");
+			System.setProperty("spring.profiles.active", profile);
+		}
+        
         SpringApplication.run(KonkerRegistryDataApplication.class, args);
     }
 

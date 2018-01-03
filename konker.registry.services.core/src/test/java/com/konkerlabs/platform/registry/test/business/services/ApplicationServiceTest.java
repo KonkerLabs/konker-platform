@@ -4,6 +4,7 @@ import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
+import com.konkerlabs.platform.registry.business.services.ApplicationServiceImpl;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService.Messages;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService.Validations;
@@ -50,6 +51,7 @@ public class ApplicationServiceTest extends BusinessLayerTestSupport {
     private TenantRepository tenantRepository;
 
     private Application application;
+    private Application applicationDefault;
     private Application otherApplication;
     private Tenant currentTenant;
     private Tenant otherTenant;
@@ -71,6 +73,15 @@ public class ApplicationServiceTest extends BusinessLayerTestSupport {
                         .qualifier("konker")
                 .registrationDate(Instant.ofEpochMilli(1453320973747L))
                         .build();
+    	
+    	applicationDefault = Application.builder()
+				.name(ApplicationServiceImpl.DEFAULT_APPLICATION_ALIAS)
+				.friendlyName("Konker Smart Frig")
+				.description("Konker Smart Frig - take pic, tells temperatue")
+				.tenant(currentTenant)
+                .qualifier("konker")
+        .registrationDate(Instant.ofEpochMilli(1453320973747L))
+                .build();
     	
     	otherApplication = Application.builder()
 				.name("smartffkonkerother")
@@ -156,6 +167,13 @@ public class ApplicationServiceTest extends BusinessLayerTestSupport {
     
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
+    public void shouldReturnErrorIfSavingDefaultApp() throws Exception {
+    	ServiceResponse<Application> serviceResponse = applicationService.register(currentTenant, applicationDefault);
+    	assertThat(serviceResponse, hasErrorMessage(Validations.APPLICATION_ALREADY_REGISTERED.getCode()));
+    }
+    
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
     public void shouldSaveApp() throws Exception {
         ServiceResponse<Application> response = applicationService.register(currentTenant, otherApplication);
 
@@ -224,6 +242,18 @@ public class ApplicationServiceTest extends BusinessLayerTestSupport {
         assertThat(serviceResponse.getResult().getFriendlyName(), equalTo(application.getFriendlyName()));
         assertThat(serviceResponse.getResult().getDescription(), equalTo(application.getDescription()));
     }
+  
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
+    public void shouldUpdateDefaultApp() throws Exception {
+    	application.setFriendlyName("Updating default application friendly name");
+    	application.setDescription("Updating default application description");
+    	ServiceResponse<Application> serviceResponse = applicationService.update(applicationDefault.getTenant(), applicationDefault.getName(), applicationDefault);
+
+        assertThat(serviceResponse, isResponseOk());
+        assertThat(serviceResponse.getResult().getFriendlyName(), equalTo(applicationDefault.getFriendlyName()));
+        assertThat(serviceResponse.getResult().getDescription(), equalTo(applicationDefault.getDescription()));
+    }    
     
     @Test
     public void shouldReturnErrorIfRemovingAppTenantIsNull() throws Exception {
@@ -257,10 +287,26 @@ public class ApplicationServiceTest extends BusinessLayerTestSupport {
     }
     
     @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json"})
+    public void shouldReturnErrorIfRemovingDefaultAppHasDevice() throws Exception {
+    	ServiceResponse<Application> serviceResponse = applicationService.remove(applicationDefault.getTenant(), applicationDefault.getName());
+    	
+    	assertThat(serviceResponse, hasErrorMessage(Validations.APPLICATION_HAS_DEVICE.getCode()));
+    }
+    
+    @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/event-routes.json"})
     public void shouldReturnErrorIfRemovingAppHasRoute() throws Exception {
     	application.setName("konker");
     	ServiceResponse<Application> serviceResponse = applicationService.remove(application.getTenant(), application.getName());
+    	
+    	assertThat(serviceResponse, hasErrorMessage(Validations.APPLICATION_HAS_ROUTE.getCode()));
+    }
+    
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/event-routes.json"})
+    public void shouldReturnErrorIfRemovingDefaultAppHasRoute() throws Exception {
+    	ServiceResponse<Application> serviceResponse = applicationService.remove(applicationDefault.getTenant(), applicationDefault.getName());
     	
     	assertThat(serviceResponse, hasErrorMessage(Validations.APPLICATION_HAS_ROUTE.getCode()));
     }
@@ -275,10 +321,28 @@ public class ApplicationServiceTest extends BusinessLayerTestSupport {
     }
     
     @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json"})
+    public void shouldReturnErrorIfRemovingDefaultAppHasTransformation() throws Exception {
+    	application.setName("konker");
+    	ServiceResponse<Application> serviceResponse = applicationService.remove(applicationDefault.getTenant(), applicationDefault.getName());
+    	
+    	assertThat(serviceResponse, hasErrorMessage(Validations.APPLICATION_HAS_TRANSFORMATION.getCode()));
+    }
+    
+    @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/rest-destinations.json"})
     public void shouldReturnErrorIfRemovingAppHasRestDestination() throws Exception {
     	application.setName("konker");
     	ServiceResponse<Application> serviceResponse = applicationService.remove(application.getTenant(), application.getName());
+    	
+    	assertThat(serviceResponse, hasErrorMessage(Validations.APPLICATION_HAS_REST_DESTINATION.getCode()));
+    }
+    
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/rest-destinations.json"})
+    public void shouldReturnErrorIfRemovingDefaultAppHasRestDestination() throws Exception {
+    	application.setName("konker");
+    	ServiceResponse<Application> serviceResponse = applicationService.remove(applicationDefault.getTenant(), applicationDefault.getName());
     	
     	assertThat(serviceResponse, hasErrorMessage(Validations.APPLICATION_HAS_REST_DESTINATION.getCode()));
     }
@@ -341,6 +405,15 @@ public class ApplicationServiceTest extends BusinessLayerTestSupport {
     	
     	assertThat(response, isResponseOk());
     	assertThat(response.getResult(), equalTo(application));
+    }
+    
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
+    public void shouldGetDefaultAppByName() throws Exception {
+    	ServiceResponse<Application> response = applicationService.getByApplicationName(applicationDefault.getTenant(), applicationDefault.getName());
+    	applicationDefault.setName(currentTenant.getDomainName());
+    	assertThat(response, isResponseOk());
+    	assertThat(response.getResult(), equalTo(applicationDefault));
     }
 
 }

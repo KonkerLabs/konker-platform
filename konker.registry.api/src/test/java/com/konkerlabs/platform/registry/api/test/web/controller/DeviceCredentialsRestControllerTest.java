@@ -1,18 +1,14 @@
 package com.konkerlabs.platform.registry.api.test.web.controller;
 
-import com.konkerlabs.platform.registry.api.config.WebMvcConfig;
-import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
-import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
-import com.konkerlabs.platform.registry.api.web.controller.DeviceCredentialRestController;
-import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.User;
-import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.DeviceDataURLs;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.text.MessageFormat;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,12 +23,19 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-import java.text.MessageFormat;
+import com.konkerlabs.platform.registry.api.config.WebMvcConfig;
+import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
+import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
+import com.konkerlabs.platform.registry.api.web.controller.DeviceCredentialRestController;
+import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
+import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.enumerations.Language;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.DeviceDataURLs;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = DeviceCredentialRestController.class)
@@ -57,16 +60,13 @@ public class DeviceCredentialsRestControllerTest extends WebLayerTestContext {
     @Autowired
     private Application application;
 
-    @Autowired
-    private User user;
-
     private Device device1;
 
     private String BASEPATH = "deviceCredentials";
 
     @Before
     public void setUp() {
-        device1 = Device.builder().deviceId("id1").name("name1").guid("guid1").apiKey("apiKey1").active(true).build();
+        device1 = Device.builder().deviceId("id1").name("name1").guid("guid1").apiKey("apiKey1").application(application).active(true).build();
 
         when(applicationService.getByApplicationName(tenant, application.getName()))
             .thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
@@ -81,22 +81,12 @@ public class DeviceCredentialsRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldReadDevice() throws Exception {
 
-        DeviceRegisterService.DeviceDataURLs deviceDataURLs = DeviceDataURLs
-                .builder()
-                .httpsURLPub("httpsURLPub")
-                .httpsURLSub("httpsURLSub")
-                .httpURLPub("httpURLPub")
-                .httpURLSub("httpURLSub")
-                .mqttPubTopic("mqttPubTopic")
-                .mqttSubTopic("mqttSubTopic")
-                .mqttURL("mqttURL")
-                .mqttsURL("mqttsURL")
-                .build();
+        DeviceRegisterService.DeviceDataURLs deviceDataURLs = new DeviceDataURLs(device1, Language.EN.getLocale());
 
         when(deviceRegisterService.getByDeviceGuid(tenant, application, device1.getGuid()))
                 .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device1).build());
 
-        when(deviceRegisterService.getDeviceDataURLs(tenant, application, device1, user.getLanguage().getLocale()))
+        when(deviceRegisterService.getDeviceDataURLs(tenant, application, device1, Language.EN.getLocale()))
                 .thenReturn(ServiceResponseBuilder.<DeviceDataURLs>ok().withResult(deviceDataURLs).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH, device1.getGuid()))
@@ -110,14 +100,14 @@ public class DeviceCredentialsRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.result").isMap())
                     .andExpect(jsonPath("$.result.username", is("apiKey1")))
                     .andExpect(jsonPath("$.result.password").doesNotExist())
-                    .andExpect(jsonPath("$.result.httpsURLPub", is("httpsURLPub")))
-                    .andExpect(jsonPath("$.result.httpsURLSub", is("httpsURLSub")))
-                    .andExpect(jsonPath("$.result.httpURLPub", is("httpURLPub")))
-                    .andExpect(jsonPath("$.result.httpURLSub", is("httpURLSub")))
-                    .andExpect(jsonPath("$.result.mqttPubTopic", is("mqttPubTopic")))
-                    .andExpect(jsonPath("$.result.mqttSubTopic", is("mqttSubTopic")))
-                    .andExpect(jsonPath("$.result.mqttURL", is("mqttURL")))
-                    .andExpect(jsonPath("$.result.mqttsURL", is("mqttsURL")));
+                    .andExpect(jsonPath("$.result.httpsURLPub", is("https://dev-server:443/pub/apiKey1/<Channel>")))
+                    .andExpect(jsonPath("$.result.httpsURLSub", is("https://dev-server:443/sub/apiKey1/<Channel>")))
+                    .andExpect(jsonPath("$.result.httpURLPub", is("http://dev-server:8080/pub/apiKey1/<Channel>")))
+                    .andExpect(jsonPath("$.result.httpURLSub", is("http://dev-server:8080/sub/apiKey1/<Channel>")))
+                    .andExpect(jsonPath("$.result.mqttPubTopic", is("data/apiKey1/pub/<Channel>")))
+                    .andExpect(jsonPath("$.result.mqttSubTopic", is("data/apiKey1/sub/<Channel>")))
+                    .andExpect(jsonPath("$.result.mqttURL", is("mqtt://dev-server:1883")))
+                    .andExpect(jsonPath("$.result.mqttsURL", is("mqtts://dev-server:1883")));
 
     }
 
@@ -143,23 +133,13 @@ public class DeviceCredentialsRestControllerTest extends WebLayerTestContext {
     public void shouldCreateDevice() throws Exception {
 
         DeviceRegisterService.DeviceSecurityCredentials credentials = new DeviceRegisterService.DeviceSecurityCredentials(device1, "7I5ccJHCIE");
-
-        DeviceRegisterService.DeviceDataURLs deviceDataURLs = DeviceDataURLs
-                .builder()
-                .httpsURLPub("httpsURLPub")
-                .httpsURLSub("httpsURLSub")
-                .httpURLPub("httpURLPub")
-                .httpURLSub("httpURLSub")
-                .mqttPubTopic("mqttPubTopic")
-                .mqttSubTopic("mqttSubTopic")
-                .mqttURL("mqttURL")
-                .mqttsURL("mqttsURL")
-                .build();
+        
+        DeviceRegisterService.DeviceDataURLs deviceDataURLs =  new DeviceDataURLs(device1, Language.EN.getLocale());
 
         when(deviceRegisterService.generateSecurityPassword(tenant, application, device1.getGuid()))
                  .thenReturn(ServiceResponseBuilder.<DeviceRegisterService.DeviceSecurityCredentials>ok().withResult(credentials).build());
 
-        when(deviceRegisterService.getDeviceDataURLs(tenant, application, device1, user.getLanguage().getLocale()))
+        when(deviceRegisterService.getDeviceDataURLs(tenant, application, device1, Language.EN.getLocale()))
                 .thenReturn(ServiceResponseBuilder.<DeviceDataURLs>ok().withResult(deviceDataURLs).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.post(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH, device1.getGuid()))
@@ -172,14 +152,14 @@ public class DeviceCredentialsRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.result").isMap())
                     .andExpect(jsonPath("$.result.username", is("apiKey1")))
                     .andExpect(jsonPath("$.result.password", is("7I5ccJHCIE")))
-                    .andExpect(jsonPath("$.result.httpsURLPub", is("httpsURLPub")))
-                    .andExpect(jsonPath("$.result.httpsURLSub", is("httpsURLSub")))
-                    .andExpect(jsonPath("$.result.httpURLPub", is("httpURLPub")))
-                    .andExpect(jsonPath("$.result.httpURLSub", is("httpURLSub")))
-                    .andExpect(jsonPath("$.result.mqttPubTopic", is("mqttPubTopic")))
-                    .andExpect(jsonPath("$.result.mqttSubTopic", is("mqttSubTopic")))
-                    .andExpect(jsonPath("$.result.mqttURL", is("mqttURL")))
-                    .andExpect(jsonPath("$.result.mqttsURL", is("mqttsURL")));
+                    .andExpect(jsonPath("$.result.httpsURLPub", is("https://dev-server:443/pub/apiKey1/<Channel>")))
+                    .andExpect(jsonPath("$.result.httpsURLSub", is("https://dev-server:443/sub/apiKey1/<Channel>")))
+                    .andExpect(jsonPath("$.result.httpURLPub", is("http://dev-server:8080/pub/apiKey1/<Channel>")))
+                    .andExpect(jsonPath("$.result.httpURLSub", is("http://dev-server:8080/sub/apiKey1/<Channel>")))
+                    .andExpect(jsonPath("$.result.mqttPubTopic", is("data/apiKey1/pub/<Channel>")))
+                    .andExpect(jsonPath("$.result.mqttSubTopic", is("data/apiKey1/sub/<Channel>")))
+                    .andExpect(jsonPath("$.result.mqttURL", is("mqtt://dev-server:1883")))
+                    .andExpect(jsonPath("$.result.mqttsURL", is("mqtts://dev-server:1883")));
 
     }
 

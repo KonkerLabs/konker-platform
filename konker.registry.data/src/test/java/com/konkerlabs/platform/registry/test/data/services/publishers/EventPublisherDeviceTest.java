@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import com.konkerlabs.platform.registry.config.EmailConfig;
 import com.konkerlabs.platform.registry.config.EventStorageConfig;
 
 import org.junit.After;
@@ -33,9 +34,13 @@ import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.thymeleaf.spring4.SpringTemplateEngine;
 
+import com.konkerlabs.platform.registry.billing.repositories.TenantDailyUsageRepository;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
@@ -46,7 +51,7 @@ import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
-import com.konkerlabs.platform.registry.data.config.RabbitMQConfig;
+import com.konkerlabs.platform.registry.data.config.RabbitMQDataConfig;
 import com.konkerlabs.platform.registry.data.services.api.DeviceLogEventService;
 import com.konkerlabs.platform.registry.data.services.publishers.EventPublisherDevice;
 import com.konkerlabs.platform.registry.data.services.publishers.api.EventPublisher;
@@ -62,7 +67,9 @@ import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
         MongoTestConfiguration.class,
         RedisTestConfiguration.class,
         PubServerConfig.class,
-        EventStorageConfig.class
+        EventStorageConfig.class,
+        EmailConfig.class,
+        EventPublisherDeviceTest.EventPublisherDeviceTestConfig.class
 })
 @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json", "/fixtures/applications.json"})
 public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
@@ -123,7 +130,7 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
                     .deviceGuid(device.getGuid()).build()
             )
             .payload(eventPayload)
-            .timestamp(Instant.now()).build();
+            .creationTimestamp(Instant.now()).build();
 
         destinationUri = new URIDealer() {
             @Override
@@ -255,8 +262,8 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
         subject.send(event,destinationUri,data,device.getTenant(),device.getApplication());
 
         MessageProperties properties = new MessageProperties();
-        properties.setHeader(RabbitMQConfig.MSG_HEADER_APIKEY, device.getApiKey());
-        properties.setHeader(RabbitMQConfig.MSG_HEADER_CHANNEL, data.get(DEVICE_MQTT_CHANNEL));
+        properties.setHeader(RabbitMQDataConfig.MSG_HEADER_APIKEY, device.getApiKey());
+        properties.setHeader(RabbitMQDataConfig.MSG_HEADER_CHANNEL, data.get(DEVICE_MQTT_CHANNEL));
 
         Message message = new Message(event.getPayload().getBytes("UTF-8"), properties);
 
@@ -286,13 +293,30 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
         InOrder inOrder = inOrder(rabbitTemplate, deviceLogEventService);
 
         MessageProperties properties = new MessageProperties();
-        properties.setHeader(RabbitMQConfig.MSG_HEADER_APIKEY, device.getApiKey());
-        properties.setHeader(RabbitMQConfig.MSG_HEADER_CHANNEL, data.get(DEVICE_MQTT_CHANNEL));
+        properties.setHeader(RabbitMQDataConfig.MSG_HEADER_APIKEY, device.getApiKey());
+        properties.setHeader(RabbitMQDataConfig.MSG_HEADER_CHANNEL, data.get(DEVICE_MQTT_CHANNEL));
 
         Message message = new Message(event.getPayload().getBytes("UTF-8"), properties);
 
         inOrder.verify(rabbitTemplate).convertAndSend("data.sub", message);
         inOrder.verify(deviceLogEventService).logOutgoingEvent(eq(device), Mockito.any(Event.class));
+    }
+    
+    static class EventPublisherDeviceTestConfig {
+    	@Bean
+    	public TenantDailyUsageRepository tenantDailyUsageRepository() {
+    		return Mockito.mock(TenantDailyUsageRepository.class);
+    	}
+    	
+    	@Bean
+    	public JavaMailSender javaMailSender() {
+    		return Mockito.mock(JavaMailSender.class);
+    	}
+    	
+    	@Bean
+    	public SpringTemplateEngine springTemplateEngine() {
+    		return Mockito.mock(SpringTemplateEngine.class);
+    	}
     }
 
 }

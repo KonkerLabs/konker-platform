@@ -1,7 +1,15 @@
 package com.konkerlabs.platform.registry.business.repositories.events;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Random;
+import java.util.Set;
 
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +25,7 @@ import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Event.EventActor;
+import com.konkerlabs.platform.registry.business.model.Event.EventGeolocation;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.repositories.config.CassandraRegistryConfig;
 import com.konkerlabs.platform.registry.business.repositories.events.api.BaseEventRepositoryImpl;
@@ -56,7 +65,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
     @Override
     protected Event doSave(Tenant tenant, Application application, Event event, Type type) {
 
-        event.setEpochTime(event.getTimestamp().toEpochMilli() * 1000000 + rnd.nextInt(1000000));
+        event.setEpochTime(event.getCreationTimestamp().toEpochMilli() * 1000000 + rnd.nextInt(1000000));
 
         if (type == Type.INCOMING) {
             saveEvent(tenant, application, event, type, INCOMING_EVENTS, true);
@@ -86,6 +95,11 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
                                                event.getIncoming().getChannel(),
                                                event.getIncoming().getDeviceGuid(),
                                                event.getIncoming().getDeviceId(),
+                                               Optional.ofNullable(event.getGeolocation()).isPresent() ? event.getGeolocation().getElev() : null,
+                                               Optional.ofNullable(event.getGeolocation()).isPresent() ? event.getGeolocation().getHdop() : null,
+                                               Optional.ofNullable(event.getGeolocation()).isPresent() ? event.getGeolocation().getLat() : null,
+                                               Optional.ofNullable(event.getGeolocation()).isPresent() ? event.getGeolocation().getLon() : null,
+                                               event.getIngestedTimestamp().toEpochMilli() * 1000000, // nanoseconds
                                                event.getPayload());
             if (synchronous) {
                 session.execute(statement);
@@ -102,9 +116,14 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
                                                event.getOutgoing().getChannel(),
                                                event.getOutgoing().getDeviceGuid(),
                                                event.getOutgoing().getDeviceId(),
+                                               Optional.ofNullable(event.getGeolocation()).isPresent() ? event.getGeolocation().getElev() : null,
+                                               Optional.ofNullable(event.getGeolocation()).isPresent() ? event.getGeolocation().getHdop() : null,
+                                               Optional.ofNullable(event.getGeolocation()).isPresent() ? event.getGeolocation().getLat() : null,
+                                               Optional.ofNullable(event.getGeolocation()).isPresent() ? event.getGeolocation().getLon() : null,
                                                event.getIncoming().getChannel(),
                                                event.getIncoming().getDeviceGuid(),
                                                event.getIncoming().getDeviceId(),
+                                               event.getIngestedTimestamp().toEpochMilli()* 1000000, // nanoseconds
                                                event.getPayload());
             if (synchronous) {
                 session.execute(statement);
@@ -132,14 +151,25 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
             query.append("timestamp, ");
             query.append("channel, ");
             query.append("device_guid, ");
+            query.append("device_id, ");
+
+            query.append("geo_elev, ");
+            query.append("geo_hdop, ");
+            query.append("geo_lat, ");
+            query.append("geo_lon, ");
 
             query.append("incoming_channel, ");
             query.append("incoming_device_guid, ");
             query.append("incoming_device_id, ");
+            query.append("ingested_timestamp, ");
 
-            query.append("device_id, ");
             query.append("payload");
             query.append(") VALUES (");
+            query.append("?, ");
+            query.append("?, ");
+            query.append("?, ");
+            query.append("?, ");
+            query.append("?, ");
             query.append("?, ");
             query.append("?, ");
             query.append("?, ");
@@ -179,8 +209,18 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
             query.append("channel, ");
             query.append("device_guid, ");
             query.append("device_id, ");
+            query.append("geo_elev, ");
+            query.append("geo_hdop, ");
+            query.append("geo_lat, ");
+            query.append("geo_lon, ");
+            query.append("ingested_timestamp, ");
             query.append("payload");
             query.append(") VALUES (");
+            query.append("?, ");
+            query.append("?, ");
+            query.append("?, ");
+            query.append("?, ");
+            query.append("?, ");
             query.append("?, ");
             query.append("?, ");
             query.append("?, ");
@@ -211,8 +251,6 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
                                    Type type,
                                    boolean isDeleted) throws BusinessException {
 
-        String table = null;
-
         List<Object> filters = new ArrayList<>();
 
         String query = getQuery(tenant,
@@ -224,7 +262,6 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
                                 ascending,
                                 limit,
                                 type,
-                                table,
                                 filters);
 
         PreparedStatement ps = selectStatementCache.get(query);
@@ -247,12 +284,12 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
             if (type == Type.INCOMING) {
 
                 incomingActor = EventActor.builder()
-                                          .tenantDomain(row.getString("tenant_domain"))
-                                          .applicationName(row.getString("application_name"))
-                                          .deviceGuid(row.getString("device_guid"))
-                                          .deviceId(row.getString("device_id"))
-                                          .channel(row.getString("channel"))
-                                          .build();
+                        .tenantDomain(row.getString("tenant_domain"))
+                        .applicationName(row.getString("application_name"))
+                        .deviceGuid(row.getString("device_guid"))
+                        .deviceId(row.getString("device_id"))
+                        .channel(row.getString("channel"))
+                        .build();
 
             } else if (type == Type.OUTGOING) {
 
@@ -274,11 +311,27 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
 
             }
 
+            EventGeolocation eventGeolocation = null;
+            if (!row.isNull("geo_lat") && !row.isNull("geo_lon")) {
+                 eventGeolocation = EventGeolocation.builder()
+                        .lat(row.getDouble("geo_lat"))
+                        .lon(row.getDouble("geo_lon"))
+                        .build();
+                 if (!row.isNull("geo_hdop")) {
+                     eventGeolocation.setHdop(row.getLong("geo_hdop"));
+                 }
+                 if (!row.isNull("geo_elev")) {
+                     eventGeolocation.setElev(row.getDouble("geo_elev"));
+                 }
+            }
+
             Event event = Event.builder()
                                .epochTime(row.getLong("timestamp"))
-                               .timestamp(Instant.ofEpochMilli(row.getLong("timestamp") / 1000000))
+                               .creationTimestamp(Instant.ofEpochMilli(row.getLong("timestamp") / 1000000))
+                               .ingestedTimestamp(Instant.ofEpochMilli(row.getLong("ingested_timestamp") / 1000000))
                                .incoming(incomingActor)
                                .outgoing(outgoingActor)
+                               .geolocation(eventGeolocation)
                                .payload(row.getString("payload"))
                                .build();
 
@@ -291,30 +344,31 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
 
     private String getQuery(Tenant tenant, Application application, String deviceGuid, String channel,
             Instant startInstant, Instant endInstant, boolean ascending, Integer limit, Type type,
-            String table, List<Object> filters) {
+            List<Object> filters) {
 
+        String table = null;
         StringBuilder query = new StringBuilder();
 
         if (type == Type.INCOMING) {
-            query.append("SELECT tenant_domain, application_name, timestamp, channel, device_guid, device_id, payload FROM ");
+            query.append("SELECT tenant_domain, application_name, timestamp, channel, device_guid, device_id, geo_elev, geo_hdop, geo_lat, geo_lon, ingested_timestamp, payload FROM ");
 
             if (deviceGuid != null && channel != null) {
                 table = INCOMING_EVENTS_DEVICE_GUID_CHANNEL;
-            } else if (deviceGuid != null && channel == null) {
+            } else if (deviceGuid != null) {
                 table = INCOMING_EVENTS_DEVICE_GUID;
-            } else if (deviceGuid == null && channel != null) {
+            } else if (channel != null) {
                 table = INCOMING_EVENTS_CHANNEL;
             } else if (deviceGuid == null && channel == null) {
                 table = INCOMING_EVENTS;
             }
         } else if (type == Type.OUTGOING) {
-            query.append("SELECT tenant_domain, application_name, timestamp, channel, device_guid, incoming_channel, incoming_device_guid, incoming_device_id, device_id, payload FROM ");
+            query.append("SELECT tenant_domain, application_name, timestamp, channel, device_guid, device_id, geo_elev, geo_hdop, geo_lat, geo_lon, incoming_channel, incoming_device_guid, incoming_device_id, ingested_timestamp, payload FROM ");
 
             if (deviceGuid != null && channel != null) {
                 table = OUTGOING_EVENTS_DEVICE_GUID_CHANNEL;
-            } else if (deviceGuid != null && channel == null) {
+            } else if (deviceGuid != null) {
                 table = OUTGOING_EVENTS_DEVICE_GUID;
-            } else if (deviceGuid == null && channel != null) {
+            } else if (channel != null) {
                 table = OUTGOING_EVENTS_CHANNEL;
             } else if (deviceGuid == null && channel == null) {
                 table = OUTGOING_EVENTS;

@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.test.data.services.publishers;
 
+import com.konkerlabs.platform.registry.billing.repositories.TenantDailyUsageRepository;
 import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
@@ -8,9 +9,10 @@ import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.LocationSearchService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.config.EmailConfig;
 import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
-import com.konkerlabs.platform.registry.data.config.RabbitMQConfig;
+import com.konkerlabs.platform.registry.data.config.RabbitMQDataConfig;
 import com.konkerlabs.platform.registry.data.services.api.DeviceLogEventService;
 import com.konkerlabs.platform.registry.data.services.publishers.EventPublisherDevice;
 import com.konkerlabs.platform.registry.data.services.publishers.EventPublisherModelLocation;
@@ -35,8 +37,11 @@ import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.thymeleaf.spring4.SpringTemplateEngine;
 
 import java.net.URI;
 import java.text.MessageFormat;
@@ -55,7 +60,9 @@ import static org.mockito.Mockito.*;
         MongoTestConfiguration.class,
         RedisTestConfiguration.class,
         PubServerConfig.class,
-        EventStorageConfig.class
+        EventStorageConfig.class,
+        EmailConfig.class,
+        EventPublisherModelLocationTest.EventPublisherModelLocationTestConfig.class
 })
 @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json", "/fixtures/applications.json"})
 public class EventPublisherModelLocationTest extends BusinessLayerTestSupport {
@@ -149,7 +156,7 @@ public class EventPublisherModelLocationTest extends BusinessLayerTestSupport {
                     .deviceGuid("device_guid").build()
             )
             .payload(eventPayload)
-            .timestamp(Instant.now()).build();
+            .creationTimestamp(Instant.now()).build();
 
         destinationUri = new URIDealer() {
             @Override
@@ -298,6 +305,23 @@ public class EventPublisherModelLocationTest extends BusinessLayerTestSupport {
         subject.send(event,destinationUri,data,tenant,application);
 
         verify(eventPublisherDevice, Mockito.times(2)).sendMessage(Mockito.any(Event.class), Mockito.any(Map.class), Mockito.any(Device.class));
+    }
+    
+    static class EventPublisherModelLocationTestConfig {
+    	@Bean
+    	public TenantDailyUsageRepository tenantDailyUsageRepository() {
+    		return Mockito.mock(TenantDailyUsageRepository.class);
+    	}
+    	
+    	@Bean
+    	public JavaMailSender javaMailSender() {
+    		return Mockito.mock(JavaMailSender.class);
+    	}
+    	
+    	@Bean
+    	public SpringTemplateEngine springTemplateEngine() {
+    		return Mockito.mock(SpringTemplateEngine.class);
+    	}
     }
 
 }

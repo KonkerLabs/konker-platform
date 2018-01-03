@@ -41,10 +41,14 @@ import io.swagger.annotations.ApiParam;
 @Api(tags = "device models")
 public class DeviceModelRestController extends AbstractRestController implements InitializingBean {
 
-    @Autowired
-    private DeviceModelService deviceModelService;
+    private final DeviceModelService deviceModelService;
 
     private Set<String> validationsCode = new HashSet<>();
+
+    @Autowired
+    public DeviceModelRestController(DeviceModelService deviceModelService) {
+        this.deviceModelService = deviceModelService;
+    }
 
     @GetMapping(path = "/")
     @PreAuthorize("hasAuthority('LIST_DEVICE_MODEL')")
@@ -59,7 +63,7 @@ public class DeviceModelRestController extends AbstractRestController implements
         ServiceResponse<List<DeviceModel>> deviceModelResponse = deviceModelService.findAll(tenant, application);
 
         if (!deviceModelResponse.isOk()) {
-            throw new BadServiceResponseException(user, deviceModelResponse, validationsCode);
+            throw new BadServiceResponseException( deviceModelResponse, validationsCode);
         } else {
             return new DeviceModelVO().apply(deviceModelResponse.getResult());
         }
@@ -82,7 +86,7 @@ public class DeviceModelRestController extends AbstractRestController implements
         ServiceResponse<DeviceModel> deviceModelResponse = deviceModelService.getByTenantApplicationAndName(tenant, application, deviceModelName);
 
         if (!deviceModelResponse.isOk()) {
-            throw new NotFoundResponseException(user, deviceModelResponse);
+            throw new NotFoundResponseException(deviceModelResponse);
         } else {
             return new DeviceModelVO().apply(deviceModelResponse.getResult());
         }
@@ -106,7 +110,7 @@ public class DeviceModelRestController extends AbstractRestController implements
         ServiceResponse<List<Device>> deviceModelResponse = deviceModelService.listDevicesByDeviceModelName(tenant, application, deviceModelName);
 
         if (!deviceModelResponse.isOk()) {
-            throw new BadServiceResponseException(user, deviceModelResponse, validationsCode);
+            throw new BadServiceResponseException( deviceModelResponse, validationsCode);
         } else {
             return new DeviceVO().apply(deviceModelResponse.getResult());
         }
@@ -127,16 +131,18 @@ public class DeviceModelRestController extends AbstractRestController implements
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
 
-        DeviceModel deviceModel = DeviceModel.builder()
+        DeviceModel deviceModel =
+                DeviceModel.builder()
                 .name(deviceModelForm.getName())
                 .description(deviceModelForm.getDescription())
+                .contentType(DeviceModel.ContentType.getByValue(deviceModelForm.getContentType()))
                 .defaultModel(deviceModelForm.isDefaultModel())
                 .build();
 
         ServiceResponse<DeviceModel> deviceModelResponse = deviceModelService.register(tenant, application, deviceModel);
 
         if (!deviceModelResponse.isOk()) {
-            throw new BadServiceResponseException(user, deviceModelResponse, validationsCode);
+            throw new BadServiceResponseException( deviceModelResponse, validationsCode);
         } else {
             return new DeviceModelVO().apply(deviceModelResponse.getResult());
         }
@@ -158,11 +164,11 @@ public class DeviceModelRestController extends AbstractRestController implements
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
 
-        DeviceModel deviceModelFromDB = null;
+        DeviceModel deviceModelFromDB;
         ServiceResponse<DeviceModel> deviceModelResponse = deviceModelService.getByTenantApplicationAndName(tenant, application, deviceModelName);
 
         if (!deviceModelResponse.isOk()) {
-            throw new BadServiceResponseException(user, deviceModelResponse, validationsCode);
+            throw new BadServiceResponseException( deviceModelResponse, validationsCode);
         } else {
             deviceModelFromDB = deviceModelResponse.getResult();
         }
@@ -170,13 +176,13 @@ public class DeviceModelRestController extends AbstractRestController implements
         // update fields
         deviceModelFromDB.setName(deviceModelForm.getName());
         deviceModelFromDB.setDescription(deviceModelForm.getDescription());
+        deviceModelFromDB.setContentType(DeviceModel.ContentType.getByValue(deviceModelForm.getContentType()));
         deviceModelFromDB.setDefaultModel(deviceModelForm.isDefaultModel());
 
         ServiceResponse<DeviceModel> updateResponse = deviceModelService.update(tenant, application, deviceModelName, deviceModelFromDB);
 
         if (!updateResponse.isOk()) {
-            throw new BadServiceResponseException(user, updateResponse, validationsCode);
-
+            throw new BadServiceResponseException( updateResponse, validationsCode);
         }
 
     }
@@ -195,9 +201,9 @@ public class DeviceModelRestController extends AbstractRestController implements
 
         if (!deviceModelResponse.isOk()) {
             if (deviceModelResponse.getResponseMessages().containsKey(DeviceModelService.Validations.DEVICE_MODEL_NOT_FOUND.getCode())) {
-                throw new NotFoundResponseException(user, deviceModelResponse);
+                throw new NotFoundResponseException(deviceModelResponse);
             } else {
-                throw new BadServiceResponseException(user, deviceModelResponse, validationsCode);
+                throw new BadServiceResponseException( deviceModelResponse, validationsCode);
             }
         }
 

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -31,6 +32,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
@@ -45,8 +47,10 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterServ
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.DeviceDataURLs;
 import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.config.MapGeolocationConfig;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
 import com.konkerlabs.platform.registry.web.forms.DeviceRegistrationForm;
+import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 
 @Controller
 @Scope("request")
@@ -159,11 +163,13 @@ public class DeviceController implements ApplicationContextAware {
     private DeviceEventService deviceEventService;
     private EventSchemaService eventSchemaService;
     private ApplicationService applicationService;
+    private JsonParsingService jsonParsing;
 
     private Tenant tenant;
     private User user;
     private Application application;
     private PubServerConfig pubServerConfig = new PubServerConfig();
+    private MapGeolocationConfig mapGeolocationConfig = new MapGeolocationConfig();
 
     @Autowired
     public DeviceController(DeviceRegisterService deviceRegisterService,
@@ -172,7 +178,8 @@ public class DeviceController implements ApplicationContextAware {
     		Tenant tenant,
     		Application application,
     		User user,
-    		ApplicationService applicationService) {
+    		ApplicationService applicationService,
+    		JsonParsingService jsonParsing) {
         this.deviceRegisterService = deviceRegisterService;
         this.deviceEventService = deviceEventService;
         this.eventSchemaService = eventSchemaService;
@@ -180,6 +187,7 @@ public class DeviceController implements ApplicationContextAware {
         this.application = application;
         this.user = user;
         this.applicationService = applicationService;
+        this.jsonParsing = jsonParsing;
     }
 
     @RequestMapping
@@ -244,16 +252,42 @@ public class DeviceController implements ApplicationContextAware {
         List<Event> outgoingEvents = deviceEventService.findOutgoingBy(tenant, application, device.getGuid(), null, null, null, false, 50).getResult();
 
         boolean hasAnyEvent = !incomingEvents.isEmpty() || !outgoingEvents.isEmpty();
-
+        
         mv.addObject("userDateFormat", user.getDateFormat().name())
                 .addObject("recentIncomingEvents", incomingEvents)
                 .addObject("recentOutgoingEvents", outgoingEvents)
                 .addObject("hasAnyEvent", hasAnyEvent);
-
+        
+        if (mapGeolocationConfig.isEnabled()) {
+        	String eventsJson = parseToJson(incomingEvents);
+        	mv.addObject("eventsJson", eventsJson)
+        		.addObject("mapApiKey", mapGeolocationConfig.getApiKey())
+        		.addObject("titleMapDetail", applicationContext.getMessage(DeviceRegisterService.Messages.DEVICE_TITLE_MAP_DETAIL.getCode(), null, user.getLanguage().getLocale()))
+        		.addObject("lastDataLabel", applicationContext.getMessage(DeviceRegisterService.Messages.DEVICE_LAST_DATA_LABEL.getCode(), null, user.getLanguage().getLocale()))
+        		.addObject("lastIngestedTimeLabel", applicationContext.getMessage(DeviceRegisterService.Messages.DEVICE_LAST_INGESTED_TIME_LABEL.getCode(), null, user.getLanguage().getLocale()));
+        }
+        
         addChartObjects(device, mv);
 
         return mv;
     }
+
+	private String parseToJson(List<Event> incomingEvents) {
+		String json = "";
+		try {
+			Optional<Event> lastEventGeotagged = incomingEvents
+					.stream()
+					.filter(event -> Optional.ofNullable(event.getGeolocation()).isPresent())
+					.findFirst();
+			
+			if (lastEventGeotagged.isPresent()) {
+				json = jsonParsing.toJsonString(Collections.singletonMap("events", Collections.singletonList(lastEventGeotagged.get())));
+			}
+		} catch (JsonProcessingException e) {
+			LOGGER.error(e.getMessage());
+		}
+		return json;
+	}
 
     @RequestMapping("/{applicationName}/{deviceGuid}/events/incoming")
     @PreAuthorize("hasAuthority('VIEW_DEVICE_LOG')")
@@ -481,7 +515,7 @@ public class DeviceController implements ApplicationContextAware {
         if (serviceResponse.isOk()) {
             DeviceRegisterService.DeviceSecurityCredentials credentials = serviceResponse.getResult();
             ServiceResponse<String> base64QrCode =
-                    deviceRegisterService.generateQrCodeAccess(credentials, 200, 200);
+                    deviceRegisterService.generateQrCodeAccess(credentials, 200, 200, locale);
 
             Device device = credentials.getDevice();
             ServiceResponse<DeviceDataURLs> serviceURLResponse = deviceRegisterService.getDeviceDataURLs(

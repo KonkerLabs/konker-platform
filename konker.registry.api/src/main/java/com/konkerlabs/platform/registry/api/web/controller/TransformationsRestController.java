@@ -47,10 +47,9 @@ public class TransformationsRestController extends AbstractRestController implem
 
         if (!response.isOk()) {
             if (response.getResponseMessages().containsKey(TransformationService.Validations.TRANSFORMATION_NOT_FOUND)) {
-                throw new NotFoundResponseException(user, response);
+                throw new NotFoundResponseException(response);
             } else {
                 throw new BadServiceResponseException(
-                        user,
                         response,
                         validationsCode);
             }
@@ -75,16 +74,14 @@ public class TransformationsRestController extends AbstractRestController implem
         if (!response.isOk() || response.getResult() == null) {
             if (response.getResponseMessages()
                     .containsKey(TransformationService.Validations.TRANSFORMATION_NOT_FOUND.getCode())) {
-                throw new NotFoundResponseException(user, response);
+                throw new NotFoundResponseException(response);
             } else if (response.getResponseMessages()
                     .containsKey(TransformationService.Validations.TRANSFORMATION_BELONG_ANOTHER_TENANT.getCode())) {
                 throw new NotAuthorizedResponseException(
-                        user,
                         response,
                         validationsCode);
             } else {
                 throw new BadServiceResponseException(
-                        user,
                         response,
                         validationsCode);
             }
@@ -103,7 +100,7 @@ public class TransformationsRestController extends AbstractRestController implem
             @RequestBody RestTransformationVO vo)
             throws BadServiceResponseException, NotFoundResponseException, NotAuthorizedResponseException, BadRequestResponseException {
         if (!guid.equals(vo.getGuid())) {
-            throw new BadRequestResponseException(user, null, validationsCode);
+            throw new BadRequestResponseException(null, validationsCode);
         }
         ServiceResponse<Transformation> fromDB =
                 transformationService.get(
@@ -112,7 +109,7 @@ public class TransformationsRestController extends AbstractRestController implem
                         guid);
 
         if (!fromDB.isOk() || fromDB.getResult() == null) {
-            throw new NotFoundResponseException(user, fromDB);
+            throw new NotFoundResponseException(fromDB);
         }
 
         Transformation toDB = vo.patchDB(fromDB.getResult());
@@ -127,9 +124,9 @@ public class TransformationsRestController extends AbstractRestController implem
             if (response.getResponseMessages()
                     .containsKey(TransformationService.Validations
                             .TRANSFORMATION_BELONG_ANOTHER_TENANT.getCode())) {
-                throw new NotAuthorizedResponseException(user, response, validationsCode);
+                throw new NotAuthorizedResponseException(response, validationsCode);
             } else {
-                throw new NotAuthorizedResponseException(user, response, validationsCode);
+                throw new NotAuthorizedResponseException(response, validationsCode);
             }
 
         }
@@ -151,7 +148,7 @@ public class TransformationsRestController extends AbstractRestController implem
                         toDB);
 
         if (!response.isOk()) {
-            throw new BadServiceResponseException(user, response, validationsCode);
+            throw new BadServiceResponseException( response, validationsCode);
         }
 
         return new RestTransformationVO().apply(response.getResult());
@@ -168,7 +165,7 @@ public class TransformationsRestController extends AbstractRestController implem
             throws BadServiceResponseException, NotAuthorizedResponseException, BadRequestResponseException, NotFoundResponseException {
 
         if (StringUtils.isEmpty(guid)) {
-            throw new BadRequestResponseException(user, null, validationsCode);
+            throw new BadRequestResponseException(null, validationsCode);
         }
         ServiceResponse<Transformation> response = transformationService.remove(
                 user.getTenant(),
@@ -178,9 +175,9 @@ public class TransformationsRestController extends AbstractRestController implem
             if (response.getResponseMessages()
                     .containsKey(TransformationService.Validations
                             .TRANSFORMATION_BELONG_ANOTHER_TENANT.getCode())) {
-                throw new NotAuthorizedResponseException(user, response, validationsCode);
+                throw new NotAuthorizedResponseException(response, validationsCode);
             } else {
-                throw new BadRequestResponseException(user, response, validationsCode);
+                throw new BadRequestResponseException(response, validationsCode);
             }
         }
     }

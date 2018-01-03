@@ -3,10 +3,16 @@ package com.konkerlabs.platform.registry.business.services.api;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.config.PubServerConfig;
+
 import lombok.*;
 
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Locale;
+
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
+import org.springframework.util.StringUtils;
 
 public interface DeviceRegisterService {
 
@@ -35,7 +41,10 @@ public interface DeviceRegisterService {
         DEVICE_REGISTERED_SUCCESSFULLY("controller.device.registered.success"),
         DEVICE_REMOVED_SUCCESSFULLY("controller.device.removed.succesfully"),
         DEVICE_REMOVED_UNSUCCESSFULLY("controller.device.removed.unsuccesfully"),
-        DEVICE_QRCODE_ERROR("service.device.qrcode.have_errors");
+        DEVICE_QRCODE_ERROR("service.device.qrcode.have_errors"),
+        DEVICE_TITLE_MAP_DETAIL("devices.title.map.detail"),
+        DEVICE_LAST_DATA_LABEL("devices.payload.label"),
+        DEVICE_LAST_INGESTED_TIME_LABEL("devices.ingested.time.label");
 
         public String getCode() {
             return code;
@@ -58,16 +67,79 @@ public interface DeviceRegisterService {
     }
 
     @Data
-    @Builder
     class DeviceDataURLs {
-        private String httpURLPub;
-        private String httpURLSub;
-        private String httpsURLPub;
-        private String httpsURLSub;
-        private String mqttURL;
-        private String mqttsURL;
-        private String mqttPubTopic;
-        private String mqttSubTopic;
+    	
+    	private PubServerConfig pubServerConfig = new PubServerConfig();
+    	private String username;
+    	private String httpHostName;
+    	private String mqttHostName;
+    	private String context;
+    	private String httpPort;
+    	private String httpsPort;
+    	private String mqttPort;
+    	private String mqttTlsPort;
+    	private String channel;
+    	
+    	public DeviceDataURLs(Device device, Locale locale) {
+    		ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
+            messageSource.setBasename("classpath:/messages/devices");
+            messageSource.setDefaultEncoding("UTF-8");
+
+            httpHostName = pubServerConfig.getHttpHostname();
+            httpPort = pubServerConfig.getHttpPort();
+            httpsPort = pubServerConfig.getHttpsPort();
+            mqttHostName = pubServerConfig.getMqttHostName();
+            mqttPort = pubServerConfig.getMqttPort();
+            mqttTlsPort = pubServerConfig.getMqttTlsPort();
+            context = pubServerConfig.getHttpCtx();
+            channel = messageSource.getMessage("model.device.channel", null, locale);
+            username = device.getApiKey();
+
+            if (httpHostName.equalsIgnoreCase("localhost")) {
+                this.httpHostName = "<ip>";
+            }
+            if (mqttHostName.equalsIgnoreCase("localhost")) {
+            	mqttHostName = "<ip>";
+            }
+            if (StringUtils.hasText(device.getApplication().getDataApiDomain())) {
+            	httpHostName = device.getApplication().getDataApiDomain();
+            }        
+            if (StringUtils.hasText(device.getApplication().getDataMqttDomain())) {
+            	mqttHostName = device.getApplication().getDataMqttDomain();
+            }
+    	}
+        
+        public String getHttpURLPub() {
+        	return MessageFormat.format("http://{0}:{1}/pub/{2}/<{3}>", httpHostName, httpPort, username, channel);
+        }
+        
+        public String getHttpURLSub() {
+        	return MessageFormat.format("http://{0}:{1}/sub/{2}/<{3}>", httpHostName, httpPort, username, channel);
+        }
+        
+        public String getHttpsURLPub() {
+        	return MessageFormat.format("https://{0}:{1}/pub/{2}/<{3}>", httpHostName, httpsPort, username, channel);
+        }
+        
+        public String getHttpsURLSub() {
+        	return MessageFormat.format("https://{0}:{1}/sub/{2}/<{3}>", httpHostName, httpsPort, username, channel);
+        }
+        
+        public String getMqttURL() {
+        	return MessageFormat.format("mqtt://{0}:{1}", mqttHostName, mqttPort);
+        }
+        
+        public String getMqttsURL() {
+        	return MessageFormat.format("mqtts://{0}:{1}", mqttHostName, mqttTlsPort);
+        }
+        
+        public String getMqttPubTopic() {
+        	return MessageFormat.format("data/{0}/pub/<{1}>", username, channel);
+        }
+        
+        public String getMqttSubTopic() {
+        	return MessageFormat.format("data/{0}/sub/<{1}>", username, channel);
+        }
     }
 
 	/**
@@ -186,7 +258,7 @@ public interface DeviceRegisterService {
 	 * @param height
 	 * @return A random password used to create the token
 	 */
-	ServiceResponse<String> generateQrCodeAccess(DeviceSecurityCredentials credentials, int width, int height);
+	ServiceResponse<String> generateQrCodeAccess(DeviceSecurityCredentials credentials, int width, int height, Locale locale);
 
 	/**
 	 * Copies the device to another application from the same tenant and removes it from the previous application
@@ -198,5 +270,8 @@ public interface DeviceRegisterService {
 	 * @return The new device created
 	 */
 	ServiceResponse<Device> move(Tenant tenant, Application originApplication, String guid, Application destApplication);
+	
+	
+	ServiceResponse<Device> findByDeviceId(Tenant tenant, Application application, String deviceId);
 
 }

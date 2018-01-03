@@ -16,7 +16,8 @@ import static org.mockito.Mockito.mock;
     "com.konkerlabs.platform.registry.data.security",
     "com.konkerlabs.platform.utilities",
 	"com.konkerlabs.platform.registry.audit.repositories",
-    "com.konkerlabs.platform.registry.integration.gateways"
+    "com.konkerlabs.platform.registry.integration.gateways",
+    "com.konkerlabs.platform.registry.integration.converters"
 },lazyInit = true)
 public class BusinessTestConfiguration {
 

@@ -11,7 +11,8 @@ public interface TenantService {
     enum Validations {
     	TENANT_NULL("service.tenant.validation.tenant.not_null"),
         NO_EXIST_TENANT("service.tenant.validation.no_exist"), 
-        TENANT_NAME_NULL("service.tenant.validation.tenant.name.not_null");
+        TENANT_NAME_NULL("service.tenant.validation.tenant.name.not_null"),
+        TENANT_DOMAIN_NULL("service.tenant.validation.tenant.domain.not_null");
 
         private String code;
 
@@ -44,5 +45,7 @@ public interface TenantService {
 	ServiceResponse<List<TenantDailyUsage>> findTenantDailyUsage(Tenant tenant);
 	
 	ServiceResponse<Tenant> save(Tenant tenant);
+	
+	ServiceResponse<Tenant> findByDomainName(String domainName);
 
 }

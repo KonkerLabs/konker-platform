@@ -9,6 +9,8 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.ValueNode;
+import com.fasterxml.jackson.databind.type.TypeFactory;
+
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -52,6 +54,20 @@ public class JsonParsingServiceImpl implements JsonParsingService {
             throw new JsonParseException("Failed to parse json",null,e);
         }
 
+    }
+    
+    @Override
+    public List<Map<String, Object>> toListMap(String json) throws JsonProcessingException {
+    	 Optional.ofNullable(json)
+		         .filter(s -> !s.isEmpty())
+		         .orElseThrow(() -> new IllegalArgumentException("JSON cannot be null or empty"));
+    	     	 
+    	 try {
+    		 TypeFactory typeFactory = OBJECT_MAPPER.getTypeFactory();
+    		 return OBJECT_MAPPER.readValue(json, typeFactory.constructCollectionType(List.class, Map.class));
+		} catch (IOException e) {
+			throw new JsonParseException("Failed to parse json",null,e);
+		}
     }
 
     @Override
@@ -104,6 +120,8 @@ public class JsonParsingServiceImpl implements JsonParsingService {
             }
         } else if (jsonNode.isValueNode()) {
             ValueNode valueNode = (ValueNode) jsonNode;
+            if (knownTypes == null)
+                knownTypes = new ArrayList<>();
             knownTypes.add(valueNode.getNodeType());
             JsonPathData.JsonPathDataBuilder data = JsonPathData.builder().types(knownTypes);
             switch (valueNode.getNodeType()) {

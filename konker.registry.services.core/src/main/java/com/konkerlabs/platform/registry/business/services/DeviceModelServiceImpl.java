@@ -211,6 +211,7 @@ public class DeviceModelServiceImpl implements DeviceModelService {
 
 		devModelFromDB.setName(updatingDeviceModel.getName());
 		devModelFromDB.setDescription(updatingDeviceModel.getDescription());
+		devModelFromDB.setContentType(updatingDeviceModel.getContentType());
 		devModelFromDB.setDefaultModel(updatingDeviceModel.isDefaultModel());
 
 		Optional<Map<String, Object[]>> validations = devModelFromDB.applyValidations();
@@ -416,6 +417,7 @@ public class DeviceModelServiceImpl implements DeviceModelService {
             deviceModelDefault = DeviceModel.builder()
                     .name("default")
                     .description("default model")
+                    .contentType(DeviceModel.ContentType.APPLICATION_JSON)
                     .defaultModel(true)
                     .guid(UUID.randomUUID().toString())
                     .build();

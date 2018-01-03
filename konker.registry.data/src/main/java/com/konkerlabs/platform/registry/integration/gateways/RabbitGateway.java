@@ -11,7 +11,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.konkerlabs.platform.registry.data.config.RabbitMQConfig;
+import com.konkerlabs.platform.registry.data.config.RabbitMQDataConfig;
 
 @Service
 public class RabbitGateway {
@@ -21,17 +21,17 @@ public class RabbitGateway {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RabbitGateway.class);
 
-    public void sendEvent(String apiKey, String channel, String payload) {
+    public void sendEvent(String apiKey, String channel, byte[] payload) {
 
         try {
             MessageProperties properties = new MessageProperties();
-            properties.setHeader(RabbitMQConfig.MSG_HEADER_APIKEY, apiKey);
-            properties.setHeader(RabbitMQConfig.MSG_HEADER_CHANNEL, channel);
+            properties.setHeader(RabbitMQDataConfig.MSG_HEADER_APIKEY, apiKey);
+            properties.setHeader(RabbitMQDataConfig.MSG_HEADER_CHANNEL, channel);
 
-            Message message = new Message(payload.getBytes("UTF-8"), properties);
+            Message message = new Message(payload, properties);
 
             rabbitTemplate.convertAndSend("data.sub", message);
-        } catch (AmqpException | UnsupportedEncodingException ex) {
+        } catch (AmqpException ex) {
             LOGGER.error("AmqpException while sending message to RabbitMQ...", ex);
         }
     }
@@ -40,7 +40,7 @@ public class RabbitGateway {
 
         try {
             MessageProperties properties = new MessageProperties();
-            properties.setHeader(RabbitMQConfig.MSG_HEADER_APIKEY, apiKey);
+            properties.setHeader(RabbitMQDataConfig.MSG_HEADER_APIKEY, apiKey);
 
             Message message = new Message(config.getBytes("UTF-8"), properties);
 
