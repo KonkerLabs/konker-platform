@@ -74,7 +74,7 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
 
     @Before
     public void setUp() {
-        currentTenant = tenantRepository.findByName("Konker");
+        currentTenant = tenantRepository.findByDomainName("konker");
 
         application = Application.builder()
                 .name("smartffkonker")

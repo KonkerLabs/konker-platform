@@ -90,7 +90,7 @@ public class DeviceConfigSetupServiceTest extends BusinessLayerTestSupport {
 
     @Before
     public void setUp() {
-        tenant = tenantRepository.findByName("Konker");
+        tenant = tenantRepository.findByDomainName("konker");
 
         application = applicationRepository.findByTenantAndName(tenant.getId(), "konker");
         otherApplication = applicationRepository.findByTenantAndName(tenant.getId(), "smartffkonker");

@@ -67,7 +67,7 @@ public class DeviceCustomDataServiceTest extends BusinessLayerTestSupport {
 
     @Before
     public void setUp() {
-    	tenant = tenantRepository.findByName("Konker");
+    	tenant = tenantRepository.findByDomainName("konker");
     	application = applicationRepository.findByTenantAndName(tenant.getId(), "smartffkonker");
 
     	deviceA = Device.builder()

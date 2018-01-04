@@ -252,7 +252,7 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldNotSendAnyEventThroughGatewayIfDeviceIsDisabled() throws Exception {
-        Tenant tenant = tenantRepository.findByName("Konker");
+        Tenant tenant = tenantRepository.findByDomainName("konker");
         Application application = applicationRepository.findByTenantAndName(tenant.getId(), "smartffkonker");
 
         Optional.of(deviceRegisterService.findByTenantDomainNameAndDeviceGuid(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_GUID))
@@ -278,7 +278,7 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
                 ServiceResponseBuilder.<Event>ok().build()
         );
 
-        Tenant tenant = tenantRepository.findByName("Konker");
+        Tenant tenant = tenantRepository.findByDomainName("konker");
         Application application = applicationRepository.findByTenantAndName(tenant.getId(), "smartffkonker");
 
         Optional.of(deviceRegisterService.findByTenantDomainNameAndDeviceGuid(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_GUID))

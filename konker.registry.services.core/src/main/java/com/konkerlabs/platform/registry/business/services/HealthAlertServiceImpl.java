@@ -327,7 +327,7 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 					.build();
 		}
 
-		Tenant tenantFromDB = tenantRepository.findByName(tenant.getName());
+		Tenant tenantFromDB = tenantRepository.findByDomainName(tenant.getDomainName());
 		if (!Optional.ofNullable(tenantFromDB).isPresent())
 			return ServiceResponseBuilder.<HealthAlert> error()
 					.withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();
@@ -368,7 +368,7 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 					.build();
 		}
 
-		Tenant tenantFromDB = tenantRepository.findByName(tenant.getName());
+		Tenant tenantFromDB = tenantRepository.findByDomainName(tenant.getDomainName());
 		if (!Optional.ofNullable(tenantFromDB).isPresent())
 			return ServiceResponseBuilder.<HealthAlert> error()
 					.withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();

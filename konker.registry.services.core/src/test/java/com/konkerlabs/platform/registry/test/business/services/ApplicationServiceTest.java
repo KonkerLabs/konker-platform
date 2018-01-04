@@ -58,7 +58,7 @@ public class ApplicationServiceTest extends BusinessLayerTestSupport {
 
     @Before
     public void setUp() {
-    	currentTenant = tenantRepository.findByName("Konker");
+    	currentTenant = tenantRepository.findByDomainName("konker");
     	otherTenant = Tenant.builder()
     			.id("71fb0d48-674b-4f64-a3e5-0256ff3a0000")
     			.name("MyCompany")
