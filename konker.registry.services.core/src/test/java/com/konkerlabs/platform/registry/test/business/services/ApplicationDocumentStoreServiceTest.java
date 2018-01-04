@@ -59,7 +59,7 @@ public class ApplicationDocumentStoreServiceTest extends BusinessLayerTestSuppor
 
     @Before
     public void setUp() {
-    	tenant = tenantRepository.findByName("Konker");
+    	tenant = tenantRepository.findByDomainName("konker");
     	application = applicationRepository.findByTenantAndName(tenant.getId(), "smartffkonker");
 
         customDataB = ApplicationDocumentStore.builder()

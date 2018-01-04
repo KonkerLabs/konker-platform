@@ -42,7 +42,7 @@ public class OAuthClientDetailsServiceTest extends BusinessLayerTestSupport {
 
     @Before
     public void setUp() {
-        tenant = tenantRepository.findByName("Konker");
+        tenant = tenantRepository.findByDomainName("konker");
     }
 
     @Test

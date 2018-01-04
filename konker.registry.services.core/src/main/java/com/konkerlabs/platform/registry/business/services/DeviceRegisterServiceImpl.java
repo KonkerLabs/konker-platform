@@ -436,7 +436,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
             return ServiceResponseBuilder.<Device>error().withMessage(Validations.DEVICE_GUID_NULL.getCode())
                     .build();
 
-        Tenant existingTenant = tenantRepository.findByName(tenant.getName());
+        Tenant existingTenant = tenantRepository.findByDomainName(tenant.getDomainName());
 
         if (!Optional.ofNullable(existingTenant).isPresent())
             return ServiceResponseBuilder.<Device>error()

@@ -85,9 +85,9 @@ public class RestDestinationServiceTest extends BusinessLayerTestSupport {
 
     @Before
     public void setUp() {
-        emptyTenant = tenantRepository.findByName("EmptyTenant");
-        tenant = tenantRepository.findByName("Konker");
-        otherTenant = tenantRepository.findByName("InMetrics");
+        emptyTenant = tenantRepository.findByDomainName("empty");
+        tenant = tenantRepository.findByDomainName("konker");
+        otherTenant = tenantRepository.findByDomainName("inm");
         inexistentTenant = Tenant.builder().domainName("someInexistentDomain")
                 .id("e2bfa8b0-eaf5-11e5-8fd5-a755d49a5c5b").name("someInexistentName").build();
 
