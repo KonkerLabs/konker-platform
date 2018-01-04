@@ -70,7 +70,7 @@ public class GatewayServiceTest extends BusinessLayerTestSupport {
 
     @Before
     public void setUp() {
-        tenant = tenantRepository.findByName("Konker");
+        tenant = tenantRepository.findByDomainName("konker");
 
         guid = "baadad6b-31c7-4827-9d17-61633c0f2efd";
 

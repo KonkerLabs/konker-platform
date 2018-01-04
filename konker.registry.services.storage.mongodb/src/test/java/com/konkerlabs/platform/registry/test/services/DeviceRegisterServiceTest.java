@@ -138,8 +138,8 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     @Before
     public void setUp() {
-        currentTenant = tenantRepository.findByName("Konker");
-        emptyTenant = tenantRepository.findByName("EmptyTenant");
+        currentTenant = tenantRepository.findByDomainName("konker");
+        emptyTenant = tenantRepository.findByDomainName("empty");
         currentApplication = applicationRepository.findByTenantAndName(currentTenant.getId(), "smartffkonker");
 
         applicationRepository.findAllByTenant(currentTenant.getId());
