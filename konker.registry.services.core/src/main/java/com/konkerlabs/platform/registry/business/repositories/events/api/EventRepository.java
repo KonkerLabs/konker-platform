@@ -60,6 +60,9 @@ public interface EventRepository {
                                Integer limit) throws BusinessException;
 
     void removeBy(Tenant tenant, Application application, String deviceGuid) throws BusinessException;
+    
+    void removeIncomingBy(Tenant tenant, Application application, String deviceGuid, List<Event> events) throws BusinessException;
+    void removeOutgoingBy(Tenant tenant, Application application, String deviceGuid, List<Event> events) throws BusinessException;
 
     void copy(Tenant tenant, Device originDevice, Device destDevice) throws BusinessException;
 
