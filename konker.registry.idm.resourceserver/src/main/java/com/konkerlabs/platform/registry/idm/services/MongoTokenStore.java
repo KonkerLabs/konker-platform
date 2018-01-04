@@ -103,7 +103,7 @@ public class MongoTokenStore implements TokenStore, InitializingBean {
 
     @Override
     public OAuth2AccessToken readAccessToken(String tokenValue) {
-        LOG.debug("Call readAccessToken, tokenValue = {}", tokenValue);
+        LOG.trace("Call readAccessToken, tokenValue = {}", tokenValue);
         OAuth2AccessToken token = null;
 
         try {
@@ -131,7 +131,7 @@ public class MongoTokenStore implements TokenStore, InitializingBean {
 
     @Override
     public OAuth2Authentication readAuthentication(String token) {
-        LOG.debug("Call readAuthentication, token = {}", token);
+        LOG.trace("Call readAuthentication, token = {}", token);
         OAuth2Authentication authentication = null;
         try {
             final String tokenId = extractTokenKey(token);
