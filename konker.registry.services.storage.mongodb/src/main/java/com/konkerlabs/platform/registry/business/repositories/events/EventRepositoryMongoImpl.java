@@ -234,4 +234,9 @@ public class EventRepositoryMongoImpl extends BaseEventRepositoryImpl {
         update.set("deleted", true);
         mongoTemplate.updateMulti(query, update, DBObject.class, type.getCollectionName());
     }
+
+	@Override
+	protected void doRemoveBy(Tenant tenant, Application application, String deviceGuid, List<Event> events, Type type) throws Exception {
+		doRemoveBy(tenant, application, deviceGuid, type);
+	}
 }

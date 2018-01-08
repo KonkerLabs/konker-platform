@@ -308,7 +308,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 		
 		name = DEFAULT_APPLICATION_ALIAS.equals(name) ? tenant.getDomainName() : name;
 
-		Tenant tenantFromDB = tenantRepository.findByName(tenant.getName());
+		Tenant tenantFromDB = tenantRepository.findByDomainName(tenant.getDomainName());
 
 		if (!Optional.ofNullable(tenantFromDB).isPresent())
 			return ServiceResponseBuilder.<Application> error()

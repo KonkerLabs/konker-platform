@@ -394,7 +394,11 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
             return dependenciesResponse;
         }
 
-       	rabbitTemplate.convertAndSend("device.removed", device.getGuid());
+        Map<String, String> deviceRemovedMap = new HashMap<>();
+        deviceRemovedMap.put("tenantDomain", device.getTenant().getDomainName());
+        deviceRemovedMap.put("applicationName", device.getApplication().getName());
+        deviceRemovedMap.put("deviceGuid", device.getGuid());
+       	rabbitTemplate.convertAndSend("device.removed", deviceRemovedMap);
         deviceRepository.delete(device);
 
         LOGGER.info("Device removed. Id: {}", device.getDeviceId(), tenant.toURI(), tenant.getLogLevel());
@@ -436,7 +440,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
             return ServiceResponseBuilder.<Device>error().withMessage(Validations.DEVICE_GUID_NULL.getCode())
                     .build();
 
-        Tenant existingTenant = tenantRepository.findByName(tenant.getName());
+        Tenant existingTenant = tenantRepository.findByDomainName(tenant.getDomainName());
 
         if (!Optional.ofNullable(existingTenant).isPresent())
             return ServiceResponseBuilder.<Device>error()

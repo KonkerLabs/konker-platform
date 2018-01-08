@@ -44,6 +44,24 @@ public abstract class BaseEventRepositoryImpl implements EventRepository {
             throw new BusinessException(e.getMessage(), e);
         }
     }
+    
+    @Override
+    public void removeIncomingBy(Tenant tenant, Application application, String deviceGuid, List<Event> events) throws BusinessException {
+    	try {
+            doRemoveByCommon(tenant, application, deviceGuid, events, Type.INCOMING);
+        } catch (Exception e){
+            throw new BusinessException(e.getMessage(), e);
+        }
+    }
+    
+    @Override
+    public void removeOutgoingBy(Tenant tenant, Application application, String deviceGuid, List<Event> events) throws BusinessException {
+    	try {
+            doRemoveByCommon(tenant, application, deviceGuid, events, Type.OUTGOING);
+        } catch (Exception e){
+            throw new BusinessException(e.getMessage(), e);
+        }
+    }
 
     @Override
     public void copy(Tenant tenant, Device originDevice, Device destDevice) throws BusinessException {
@@ -112,6 +130,8 @@ public abstract class BaseEventRepositoryImpl implements EventRepository {
     protected abstract Event doSave(Tenant tenant, Application application, Event event, Type incoming) throws BusinessException;
 
     protected abstract void doRemoveBy(Tenant tenant, Application application, String deviceGuid, Type incoming) throws Exception;
+    
+    protected abstract void doRemoveBy(Tenant tenant, Application application, String deviceGuid, List<Event> events, Type incoming) throws Exception;
 
     protected abstract List<Event> doFindBy(Tenant tenant, Application application, String deviceGuid, String channel,
             Instant startInstant, Instant endInstant, boolean ascending,
@@ -144,6 +164,18 @@ public abstract class BaseEventRepositoryImpl implements EventRepository {
                 .orElseThrow(() -> new IllegalArgumentException("Device ID cannot be null or empty"));
 
         doRemoveBy(tenant, application, deviceGuid, type);
+
+    }
+    
+    private void doRemoveByCommon(Tenant tenant, Application application, String deviceGuid, List<Event> events, Type type) throws Exception {
+
+        Optional.ofNullable(tenant)
+                .filter(tenant1 -> Optional.ofNullable(tenant1.getDomainName()).filter(s -> !s.isEmpty()).isPresent())
+                .orElseThrow(() -> new IllegalArgumentException("Tenant cannot be null"));
+        Optional.ofNullable(deviceGuid).filter(s -> !s.isEmpty())
+        		.orElseThrow(() -> new IllegalArgumentException("Device ID cannot be null or empty"));
+       
+        doRemoveBy(tenant, application, deviceGuid, events, type);
 
     }
 
