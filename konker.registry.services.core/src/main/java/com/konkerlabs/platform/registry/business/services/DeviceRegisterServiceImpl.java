@@ -394,7 +394,11 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
             return dependenciesResponse;
         }
 
-       	rabbitTemplate.convertAndSend("device.removed", device.getGuid());
+        Map<String, String> deviceRemovedMap = new HashMap<>();
+        deviceRemovedMap.put("tenantDomain", device.getTenant().getDomainName());
+        deviceRemovedMap.put("applicationName", device.getApplication().getName());
+        deviceRemovedMap.put("deviceGuid", device.getGuid());
+       	rabbitTemplate.convertAndSend("device.removed", deviceRemovedMap);
         deviceRepository.delete(device);
 
         LOGGER.info("Device removed. Id: {}", device.getDeviceId(), tenant.toURI(), tenant.getLogLevel());
