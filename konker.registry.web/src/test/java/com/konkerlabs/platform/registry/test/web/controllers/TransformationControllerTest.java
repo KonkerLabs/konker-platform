@@ -50,7 +50,6 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBui
 import com.konkerlabs.platform.registry.business.services.api.TransformationService;
 import com.konkerlabs.platform.registry.config.CdnConfig;
 import com.konkerlabs.platform.registry.config.EmailConfig;
-import com.konkerlabs.platform.registry.config.HotjarConfig;
 import com.konkerlabs.platform.registry.config.MessageSourceConfig;
 import com.konkerlabs.platform.registry.config.WebConfig;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
@@ -63,7 +62,7 @@ import com.konkerlabs.platform.registry.web.forms.TransformationForm;
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
 @ContextConfiguration(classes = { WebMvcConfig.class, WebTestConfiguration.class, SecurityTestConfiguration.class,
-        TransformationControllerTest.TransformationTestContextConfig.class, WebConfig.class, HotjarConfig.class,
+        TransformationControllerTest.TransformationTestContextConfig.class, WebConfig.class,
         CdnConfig.class, EmailConfig.class, MessageSourceConfig.class})
 public class TransformationControllerTest extends WebLayerTestContext {
 

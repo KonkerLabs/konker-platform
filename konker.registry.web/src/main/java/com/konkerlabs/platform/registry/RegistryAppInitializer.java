@@ -39,7 +39,6 @@ public class RegistryAppInitializer
             com.konkerlabs.platform.registry.config.WebConfig.class,
             com.konkerlabs.platform.registry.config.CdnConfig.class,
             com.konkerlabs.platform.registry.config.RecaptchaConfig.class,
-            com.konkerlabs.platform.registry.config.HotjarConfig.class,
             com.konkerlabs.platform.registry.config.EmailConfig.class,
             com.konkerlabs.platform.registry.config.AmazonConfig.class,
             com.konkerlabs.platform.registry.config.EnvironmentConfig.class,
