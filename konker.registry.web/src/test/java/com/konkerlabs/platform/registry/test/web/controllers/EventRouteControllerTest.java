@@ -82,7 +82,6 @@ import com.konkerlabs.platform.registry.web.forms.EventRouteForm;
         SecurityTestConfiguration.class,
         EventRouteControllerTest.EventRouteTestContextConfig.class,
         WebConfig.class,
-        HotjarConfig.class,
         CdnConfig.class,
         AmazonConfig.class,
         EmailConfig.class,

@@ -13,6 +13,16 @@
             })(window,document,'//static.hotjar.com/c/hotjar-','.js?sv=');
         /*]]>*/
     </script>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script data-th-if="${googleAnalyticsEnable}" async data-th-src="@{https://www.googletagmanager.com/gtag/js?id=} + ${googleAnalyticsId}"></script>
+    <script data-th-if="${googleAnalyticsEnable}" data-th-inline="javascript" >
+          /*<![CDATA[*/
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', [[${googleAnalyticsId}]]);
+          /*]]>*/
+    </script>
 
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">

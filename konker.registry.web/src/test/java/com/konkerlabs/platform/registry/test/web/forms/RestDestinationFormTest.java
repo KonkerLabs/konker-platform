@@ -62,4 +62,12 @@ public class RestDestinationFormTest {
     public void shouldTranslateFromModelToForm() throws Exception {
         assertThat(new RestDestinationForm().fillFrom(model), equalTo(form));
     }
+
+    @Test
+    public void shouldParseDuplicatedProtocol() throws Exception {
+        form.setServiceURI("http://http://www.domain.com");
+        assertThat(form.getServiceProtocol(), equalTo("http"));
+        assertThat(form.getServiceHost(), equalTo("www.domain.com"));
+    }
+
 }

@@ -249,10 +249,23 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldSaveHealthAlert() {
+    public void shouldSaveHealthAlertWithSeverityOK() {
+        ServiceResponse<HealthAlert> response = healthAlertService.register(currentTenant, application, newHealthAlert);
+        assertThat(response, hasErrorMessage(Validations.HEALTH_ALERT_WITH_STATUS_OK.getCode()));
+    }
+
+    @Test
+    public void shouldSaveHealthAlertWithSeverityWarn() {
+        newHealthAlert.setSeverity(HealthAlertSeverity.WARN);
         ServiceResponse<HealthAlert> response = healthAlertService.register(currentTenant, application, newHealthAlert);
 
         assertThat(response, isResponseOk());
+        assertThat(response.getResult().getSeverity(), is(HealthAlertSeverity.WARN));
+
+        response = healthAlertService.findByTenantApplicationTriggerAndAlertId(currentTenant, application, newHealthAlert.getAlertTrigger(), newHealthAlert.getAlertId());
+        assertThat(response, isResponseOk());
+        assertThat(response.getResult().getSeverity(), is(HealthAlertSeverity.WARN));
+
     }
 
     /****************** update ******************/

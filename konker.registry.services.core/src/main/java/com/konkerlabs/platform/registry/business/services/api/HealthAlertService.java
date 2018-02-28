@@ -20,7 +20,8 @@ public interface HealthAlertService {
         HEALTH_ALERT_DEVICE_NULL("service.healthalert.device.null"),
 		HEALTH_ALERT_TRIGGER_NULL("service.healthalert.trigger.null"),
 		HEALTH_ALERT_TRIGGER_GUID_NULL("service.healthalert.trigger.guid.null"),
-		HEALTH_ALERT_TRIGGER_NOT_EXIST("service.healthalert.trigger.not.exist");
+		HEALTH_ALERT_TRIGGER_NOT_EXIST("service.healthalert.trigger.not.exist"),
+		HEALTH_ALERT_WITH_STATUS_OK("service.healthalert.with_status_ok");
 
 		public String getCode() {
 			return code;

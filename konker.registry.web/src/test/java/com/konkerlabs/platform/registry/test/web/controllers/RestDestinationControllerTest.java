@@ -50,7 +50,6 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.config.CdnConfig;
 import com.konkerlabs.platform.registry.config.EmailConfig;
-import com.konkerlabs.platform.registry.config.HotjarConfig;
 import com.konkerlabs.platform.registry.config.MessageSourceConfig;
 import com.konkerlabs.platform.registry.config.WebConfig;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
@@ -68,7 +67,6 @@ import com.konkerlabs.platform.registry.web.forms.RestDestinationForm;
         SecurityTestConfiguration.class,
         RestDestinationControllerTest.RestDestinationTestContextConfig.class,
         WebConfig.class,
-        HotjarConfig.class,
         CdnConfig.class, 
         EmailConfig.class,
         MessageSourceConfig.class

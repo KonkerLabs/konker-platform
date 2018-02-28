@@ -4,7 +4,6 @@ import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.services.api.*;
 import com.konkerlabs.platform.registry.config.CdnConfig;
 import com.konkerlabs.platform.registry.config.EmailConfig;
-import com.konkerlabs.platform.registry.config.HotjarConfig;
 import com.konkerlabs.platform.registry.config.WebConfig;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.test.base.SecurityTestConfiguration;
@@ -39,7 +38,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         EventRouteControllerTest.EventRouteTestContextConfig.class,
         WebConfig.class,
         CdnConfig.class,
-        HotjarConfig.class, 
         EmailConfig.class
 })
 public class ControlPanelControllerTest extends WebLayerTestContext {
