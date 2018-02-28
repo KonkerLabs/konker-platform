@@ -51,7 +51,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         UserSubscriptionControllerTest.EmailConfirmationTestContextConfig.class,
         WebConfig.class,
         EmailConfig.class,
-        HotjarConfig.class,
         MessageSourceConfig.class
 })
 @ActiveProfiles("email")

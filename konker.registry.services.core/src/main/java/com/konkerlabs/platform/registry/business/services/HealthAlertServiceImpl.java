@@ -75,7 +75,7 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 					.build();
 		}
 
-        HealthAlert healthAlertDB = healthAlertRepository.findByTenantIdApplicationNameTriggerAndAlertId(
+		HealthAlert healthAlertDB = healthAlertRepository.findByTenantIdApplicationNameTriggerAndAlertId(
                 tenant.getId(),
                 application.getName(),
                 healthAlert.getAlertTrigger().getId(),
@@ -87,13 +87,22 @@ public class HealthAlertServiceImpl implements HealthAlertService {
                     .build();
         }
 
-		Instant now = Instant.now();
+        // do not create a alert with severity OK
+        if (HealthAlertSeverity.OK == healthAlert.getSeverity()) {
+            return ServiceResponseBuilder.<HealthAlert>error()
+                    .withMessage(Validations.HEALTH_ALERT_WITH_STATUS_OK.getCode())
+                    .withResult(healthAlert)
+                    .build();
+        }
+
+        Instant now = Instant.now();
 
 		healthAlert.setTenant(tenant);
 		healthAlert.setApplication(application);
 		healthAlert.setGuid(UUID.randomUUID().toString());
 		healthAlert.setRegistrationDate(now);
 		healthAlert.setLastChange(now);
+
 		HealthAlert save = healthAlertRepository.save(healthAlert);
 
 		ServiceResponse<HealthAlert> serviceResponse = getLastHighestSeverityByDeviceGuid(tenant, application, healthAlert.getDevice().getGuid());

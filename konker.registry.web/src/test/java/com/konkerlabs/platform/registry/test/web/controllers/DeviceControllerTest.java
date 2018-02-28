@@ -56,7 +56,6 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.config.CdnConfig;
 import com.konkerlabs.platform.registry.config.EmailConfig;
-import com.konkerlabs.platform.registry.config.HotjarConfig;
 import com.konkerlabs.platform.registry.config.MessageSourceConfig;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
 import com.konkerlabs.platform.registry.config.WebConfig;
@@ -73,7 +72,7 @@ import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
 @ContextConfiguration(classes = { WebMvcConfig.class, WebTestConfiguration.class, SecurityTestConfiguration.class,
-		DeviceControllerTest.DeviceTestContextConfig.class, WebConfig.class, HotjarConfig.class, PubServerConfig.class,
+		DeviceControllerTest.DeviceTestContextConfig.class, WebConfig.class, PubServerConfig.class,
 		CdnConfig.class, EmailConfig.class, MessageSourceConfig.class})
 public class DeviceControllerTest extends WebLayerTestContext {
 
