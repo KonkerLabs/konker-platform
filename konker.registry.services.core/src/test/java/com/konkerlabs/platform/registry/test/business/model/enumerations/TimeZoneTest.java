@@ -1,13 +1,11 @@
 package com.konkerlabs.platform.registry.test.business.model.enumerations;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.notNullValue;
+import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
+import org.junit.Test;
 
 import java.time.zone.ZoneRulesException;
 
-import org.junit.Test;
-
-import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class TimeZoneTest {
 

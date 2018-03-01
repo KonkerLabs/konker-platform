@@ -11,6 +11,7 @@ import com.konkerlabs.platform.registry.business.model.Location;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.GatewayService;
 import com.konkerlabs.platform.registry.business.services.api.GatewayService.Validations;
+import com.konkerlabs.platform.registry.business.services.api.LocationSearchService;
 import com.konkerlabs.platform.registry.business.services.api.LocationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.idm.services.OAuth2AccessTokenService;
@@ -24,10 +25,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @RestController
 @Scope("request")
@@ -37,6 +35,9 @@ public class GatewayRestController extends AbstractRestController implements Ini
 
     @Autowired
     private GatewayService gatewayService;
+
+    @Autowired
+    private LocationSearchService locationSearchService;
 
     @Autowired
     private OAuth2AccessTokenService oAuth2AccessTokenService;
@@ -133,6 +134,10 @@ public class GatewayRestController extends AbstractRestController implements Ini
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
         Location location = getLocation(tenant, application, gatewayForm.getLocationName());
+
+        if (!Optional.ofNullable(gatewayForm.getLocationName()).isPresent()) {
+            location = locationSearchService.findDefault(tenant, application).getResult();
+        }
 
         Gateway gateway = Gateway.builder()
                 .name(gatewayForm.getName())
