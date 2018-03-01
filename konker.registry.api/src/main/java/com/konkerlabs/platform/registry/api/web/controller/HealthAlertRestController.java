@@ -47,15 +47,7 @@ public class HealthAlertRestController extends AbstractRestController implements
                                      @RequestBody HealthAlertInputVO form)
             throws BadServiceResponseException, NotFoundResponseException {
 
-        Tenant tenant = user.getTenant();
-        Application application = getApplication(applicationId);
-        AlertTrigger alertTrigger = getAlertTrigger(tenant, application, triggerName);
-        Device device = getDevice(tenant, application, form.getDeviceId());
-
-        HealthAlert healthAlert = getHealthAlertFromVO(form, alertTrigger, device);
-
-        ServiceResponse<HealthAlert> registerResponse = healthAlertService
-                .register(tenant, application, healthAlert);
+        ServiceResponse<HealthAlert> registerResponse = createAlertService(applicationId, triggerName, form);
 
         if (!registerResponse.isOk()) {
             throw new BadServiceResponseException( registerResponse, validationsCode);
@@ -63,6 +55,20 @@ public class HealthAlertRestController extends AbstractRestController implements
             return new HealthAlertVO().apply(registerResponse.getResult());
         }
 
+    }
+
+    private ServiceResponse<HealthAlert> createAlertService(
+            String applicationId, String triggerName,
+            HealthAlertInputVO form) throws BadServiceResponseException, NotFoundResponseException {
+
+        Tenant tenant = user.getTenant();
+        Application application = getApplication(applicationId);
+        AlertTrigger alertTrigger = getAlertTrigger(tenant, application, triggerName);
+        Device device = getDevice(tenant, application, form.getDeviceId());
+
+        HealthAlert healthAlert = getHealthAlertFromVO(form, alertTrigger, device);
+
+        return healthAlertService.register(tenant, application, healthAlert);
     }
 
     private HealthAlert getHealthAlertFromVO(@RequestBody HealthAlertInputVO form, AlertTrigger alertTrigger, Device device) {
@@ -128,10 +134,10 @@ public class HealthAlertRestController extends AbstractRestController implements
                 alertId
         );
 
-        // if alert not exists, creates a new oen
+        // if alert not exists, creates a new one
         if (alertResponse.getResponseMessages().containsKey(HealthAlertService.Validations.HEALTH_ALERT_DOES_NOT_EXIST.getCode())) {
             form.setAlertId(alertId);
-            return createAlert(applicationId, triggerName, form);
+            return createAlertFromPut(applicationId, triggerName, form);
         }
 
         if (!alertResponse.isOk()) {
@@ -146,6 +152,23 @@ public class HealthAlertRestController extends AbstractRestController implements
 
         if (!registerResponse.isOk()) {
             throw new BadServiceResponseException( registerResponse, validationsCode);
+        } else {
+            return new HealthAlertVO().apply(registerResponse.getResult());
+        }
+
+    }
+
+    private HealthAlertVO createAlertFromPut(String applicationId, String triggerName, HealthAlertInputVO form)
+            throws BadServiceResponseException, NotFoundResponseException {
+
+        ServiceResponse<HealthAlert> registerResponse = createAlertService(applicationId, triggerName, form);
+
+        if (!registerResponse.isOk()) {
+            if (registerResponse.getResponseMessages().containsKey(HealthAlertService.Validations.HEALTH_ALERT_WITH_STATUS_OK.getCode())) {
+                return new HealthAlertVO().apply(registerResponse.getResult());
+            } else {
+                throw new BadServiceResponseException(registerResponse, validationsCode);
+            }
         } else {
             return new HealthAlertVO().apply(registerResponse.getResult());
         }

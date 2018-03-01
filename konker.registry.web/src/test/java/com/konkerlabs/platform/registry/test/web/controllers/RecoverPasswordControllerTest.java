@@ -41,7 +41,6 @@ import com.konkerlabs.platform.registry.business.services.api.TokenService;
 import com.konkerlabs.platform.registry.business.services.api.UserService;
 import com.konkerlabs.platform.registry.business.services.api.UserService.Validations;
 import com.konkerlabs.platform.registry.config.EmailConfig;
-import com.konkerlabs.platform.registry.config.HotjarConfig;
 import com.konkerlabs.platform.registry.config.MessageSourceConfig;
 import com.konkerlabs.platform.registry.config.RecaptchaConfig;
 import com.konkerlabs.platform.registry.config.WebConfig;
@@ -61,8 +60,7 @@ import com.konkerlabs.platform.registry.web.services.api.CaptchaService;
         RecoverPasswordControllerTest.RecoverTestContextConfig.class, 
         WebConfig.class,
         RecaptchaConfig.class,
-        EmailConfig.class, 
-        HotjarConfig.class,
+        EmailConfig.class,
         MessageSourceConfig.class
 })
 @ActiveProfiles("email")

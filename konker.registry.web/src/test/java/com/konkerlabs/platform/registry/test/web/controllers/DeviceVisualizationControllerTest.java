@@ -47,7 +47,6 @@ import com.konkerlabs.platform.registry.business.services.api.EventSchemaService
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.config.EmailConfig;
 import com.konkerlabs.platform.registry.config.EnvironmentConfig;
-import com.konkerlabs.platform.registry.config.HotjarConfig;
 import com.konkerlabs.platform.registry.config.MessageSourceConfig;
 import com.konkerlabs.platform.registry.config.WebConfig;
 import com.konkerlabs.platform.registry.config.WebMvcConfig;
@@ -65,7 +64,6 @@ import com.konkerlabs.platform.registry.test.base.WebTestConfiguration;
         SecurityTestConfiguration.class,
         DeviceVisualizationControllerTest.DeviceTestContextConfig.class,
         WebConfig.class,
-        HotjarConfig.class,
         EnvironmentConfig.class,
         EmailConfig.class,
         MessageSourceConfig.class

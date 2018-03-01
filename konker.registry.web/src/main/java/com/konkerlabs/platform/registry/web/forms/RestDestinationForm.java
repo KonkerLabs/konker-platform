@@ -109,7 +109,7 @@ public class RestDestinationForm implements ModelBuilder<RestDestination, RestDe
 	public List<RestDestinationHeader> getHeaders() {
 
 		if (headers == null || headers.isEmpty()) {
-			headers = new ArrayList<RestDestinationHeader>();
+			headers = new ArrayList<>();
 			headers.add(new RestDestinationHeader());
 		}
 
@@ -128,6 +128,10 @@ public class RestDestinationForm implements ModelBuilder<RestDestination, RestDe
 		if (tokens.length == 2) {
 			serviceProtocol = tokens[0];
 			serviceHost = tokens[1];
+		} else if (tokens.length > 2) {
+			// example: http://http://www.domain.com
+			serviceProtocol = tokens[tokens.length - 2];
+			serviceHost = tokens[tokens.length - 1];
 		} else {
 			serviceProtocol = "http"; // default protocol
 			serviceHost = tokens[0];
