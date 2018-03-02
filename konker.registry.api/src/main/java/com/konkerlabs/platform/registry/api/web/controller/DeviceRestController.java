@@ -111,6 +111,11 @@ public class DeviceRestController extends AbstractRestController implements Init
         Location location = getLocation(tenant, application, deviceForm.getLocationName());
         DeviceModel deviceModel = getDeviceModel(tenant, application, deviceForm.getDeviceModelName());
 
+        if (Optional.ofNullable(gateway).isPresent() &&
+                !Optional.ofNullable(deviceForm.getLocationName()).isPresent()) {
+            location = gateway.getLocation();
+        }
+
         Device device = Device.builder()
                 .name(deviceForm.getName())
                 .deviceId(deviceForm.getId())

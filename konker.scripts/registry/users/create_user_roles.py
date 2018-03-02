@@ -43,7 +43,7 @@ def add_privileges(role_name, privilege_name):
     ref = DBRef("privileges", ObjectId(privilege['_id']))
 
     if ref not in role['privileges']:
-        print "Add {} to {}".format(privilege_name, role_name)
+        print("Add {} to {}".format(privilege_name, role_name))
         db.roles.update({'_id': role['_id']}, {'$push': {'privileges': ref}})
 
 def main():
