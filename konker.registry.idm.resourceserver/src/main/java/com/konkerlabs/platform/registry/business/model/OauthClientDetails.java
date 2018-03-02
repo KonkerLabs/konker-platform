@@ -33,7 +33,6 @@ public class OauthClientDetails implements Serializable, ClientDetails {
     private String scope;
     private String authorizedGrantTypes = "authorization_code,refresh_token,client_credentials";
     private String webServerRedirectUri;
-    private String authorities;
     private Language language = Language.PT_BR;
     private Integer accessTokenValidity = 3600 * 24; // 24 hours
     private Integer refreshTokenValidity;
@@ -113,10 +112,6 @@ public class OauthClientDetails implements Serializable, ClientDetails {
 
     public void setWebServerRedirectUri(String webServerRedirectUri) {
         this.webServerRedirectUri = webServerRedirectUri;
-    }
-
-    public void setAuthorities(String authorities) {
-        this.authorities = authorities;
     }
 
     public Integer getAccessTokenValidity() {
@@ -207,7 +202,6 @@ public class OauthClientDetails implements Serializable, ClientDetails {
         sb.append(", scope='").append(scope).append('\'');
         sb.append(", authorizedGrantTypes='").append(authorizedGrantTypes).append('\'');
         sb.append(", webServerRedirectUri='").append(webServerRedirectUri).append('\'');
-        sb.append(", authorities='").append(authorities).append('\'');
         sb.append(", accessTokenValidity=").append(accessTokenValidity);
         sb.append(", refreshTokenValidity=").append(refreshTokenValidity);
         sb.append(", additionalInformation='").append(additionalInformation).append('\'');

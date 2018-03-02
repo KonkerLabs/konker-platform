@@ -14,3 +14,4 @@ target
 *.pydevproject
 **/*.pyc
 **/*.swp
+venv
