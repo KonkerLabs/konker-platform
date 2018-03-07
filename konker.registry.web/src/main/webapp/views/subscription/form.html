@@ -1,51 +1,49 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
+    <!-- Required meta tags -->
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <title>Create Account Konker Platform</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="keywords" content="IOT, Internet of things, Internet das coisas, Plataforma IoT">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="author" content="Konker">
+    <meta name="description" content="A Plataforma Konker te ajuda a construir soluções IoT de maneira rápida e sem complicações">
+    <title>Konker - A sua solução de IoT de forma ágil e sem complicação!</title>
 
-    <!-- CSS -->
-    <link rel="stylesheet" type="text/css" data-th-href="@{/resources/bootstrap/css/bootstrap.min.css}">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" type="text/css" data-th-href="@{/resources/bootstrap/css/4.0.0/bootstrap.min.css}">
+    <link rel="stylesheet" type="text/css" data-th-href="@{/resources/font-awesome/css/font-awesome.min.css}">
+    <link rel="stylesheet" type="text/css" data-th-href="@{/resources/konker/css/line-icons.css}">
+    <link rel="stylesheet" type="text/css" data-th-href="@{/resources/konker/css/menu_sideslide.css}">
+    <link rel="stylesheet" type="text/css" data-th-href="@{/resources/konker/css/main.css}">
     <link rel="stylesheet" type="text/css" data-th-href="@{/resources/konker/css/create-account.css}">
+    <link rel="favicon" type="image/x-icon" data-th-href="@{/resources/konker/images/favicon.png}" />
 </head>
+
 <body>
-<nav class="navbar navbar-default navbar-static-top">
-    <div class="container">
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-brand" href="#"><img data-th-attr="src=@{/resources/konker/images/konker-principal.png}"  class="logo"></a>
-        </div>
-        <div id="navbar" class="navbar-collapse collapse">
-            <div class="nav navbar-nav navbar-right">
-                <a href="http://www.konkerlabs.com" class="btn-menu"><span data-th-text="#{users.form.subscription.go_to_site}"></span></a>
-            </div>
-        </div>
-        <!--/.nav-collapse -->
-    </div>
-</nav>
-<div class="wrapper">
-    <div class="infos">
-        <div class="row">
+
+<div data-th-include="menu :: menu" class="menu-wrap"></div>
+
+<!-- Header Section Start -->
+<div data-th-include="header :: header" class="fixed-top"></div>
+<!-- Header Section End -->
+
+<!-- Context Section Start -->
+<div id="login-page" class="wrapper">
+    <div class="container infos">
+        <div class="row box-login">
             <div class="col-md-6 titles">
                 <div class="titles-text">
                     <h1 data-th-text="#{users.form.subscription.phrase_start_using}"></h1>
                     <h2 data-th-text="#{users.form.subscription.phrase_optimized}"></h2>
-                    <p><span data-th-text="#{users.form.subscription.account_exists}"></span><a data-th-href="@{/}"><span>&nbsp;</span><span data-th-text="#{users.form.subscription.login_action}"></span></a></p>
+                    <hr>
+                    <p><span data-th-text="#{users.form.subscription.account_exists}"></span><a data-th-href="@{/}" class="btn btn-border"><span data-th-text="#{users.form.subscription.login_action}"></span></a></p>
                 </div>
                 <div>
                 </div>
             </div>
             <div class="col-md-6 create">
                 <h3 data-th-text="#{users.form.subscription.create_account}"></h3>
-                <p></p>
                 <form
                         data-th-action="@{__${action}__}"
                         data-th-object="${user}"
@@ -129,25 +127,61 @@
                                data-th-placeholder="#{users.form.subscription.placeholder.phone}"
                                required>
                     </div>
-                    <button type="submit" data-th-text="#{users.form.subscription.create_account_button}"></button>
+                    <button type="submit" class="btn btn-common" data-th-text="#{users.form.subscription.create_account_button}"></button>
                 </form>
 
             </div>
-
         </div>
-        <div>
-        </div>
-
-        <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-        <script data-th-attr="src=@{/resources/konker/scripts/jquery-1.11.1.min.js}" type="text/javascript"></script>
-        <!-- Include all compiled plugins (below), or include individual files as needed -->
-        <script data-th-attr="src=@{/resources/bootstrap/js/bootstrap.min.js}" type="text/javascript"></script>
-
-        <script>
-            $.backstretch("[[@{/resources/konker/images/login-bg.jpg}]]");
-        </script>
-        <div class="backstretch" style="left: 0px; top: 0px; overflow: hidden; margin: 0px; padding: 0px; height: 637px; width: 1349px; z-index: -999999; position: fixed;"><img data-th-attr="src=@{/resources/konker/images/login-bg.jpg}" style="position: absolute; margin: 0px; padding: 0px; border: none; width: 1349px; height: 760.129px; max-height: none; max-width: none; z-index: -999999; left: 0px; top: -61.5643px;"></div>
     </div>
 </div>
+
+<!-- Footer Section Start -->
+<footer data-th-include="footer :: footer"></footer>
+<!-- Footer Section End -->
+
+<script data-th-attr="src=@{/resources/konker/scripts/jquery-1.11.1.min.js}" type="text/javascript"></script>
+<script data-th-attr="src=@{/resources/bootstrap/js/4.0.0/tether.min.js}" type="text/javascript"></script>
+<script data-th-attr="src=@{/resources/bootstrap/js/4.0.0/bootstrap.min.js}" type="text/javascript"></script>
+<script data-th-attr="src=@{/resources/konker/scripts/scripts.js}" type="text/javascript"></script>
+
+<script data-th-attr="src=@{/resources/konker/scripts/jquery.backstretch.min.js}" type="text/javascript"></script>
+<script>
+    $.backstretch(
+        "[[@{/resources/konker/images/login-bg-min.jpg}]]"
+    );
+</script>
+<div class="backstretch" style="left: 0px; top: 0px; overflow: hidden; margin: 0px; padding: 0px; height: 100%; width: 100%; z-index: -999999; position: fixed;">
+    <img data-th-src="@{/resources/konker/images/login-bg-min.jpg}">
+</div>
+
+<!-- jQuery first, then Tether, then Bootstrap JS. -->
+<script data-th-attr="src=@{/resources/konker/scripts/classie.js}" type="text/javascript"></script>
+<script data-th-attr="src=@{/resources/konker/scripts/owl.carousel.min.js}" type="text/javascript"></script>
+<script data-th-attr="src=@{/resources/konker/scripts/mixitup.min.js}" type="text/javascript"></script>
+<script data-th-attr="src=@{/resources/konker/scripts/jquery.nav.js}" type="text/javascript"></script>
+<script data-th-attr="src=@{/resources/konker/scripts/jquery.counterup.min.js}" type="text/javascript"></script>
+<script data-th-attr="src=@{/resources/konker/scripts/jquery.magnific-popup.min.js}" type="text/javascript"></script>
+<script data-th-attr="src=@{/resources/konker/scripts/wow.js}" type="text/javascript"></script>
+<script data-th-attr="src=@{/resources/konker/scripts/menu.js}" type="text/javascript"></script>
+<script data-th-attr="src=@{/resources/konker/scripts/main.js}" type="text/javascript"></script>
+
+<!-- recovery pass js -->
+<script src="https://www.google.com/recaptcha/api.js" async defer data-th-if="${recaptchaEnabled}"></script>
+<script data-th-inline="javascript">
+    /*<![CDATA[*/
+    function contextPath() {
+        var context = /*[[@{/}]]*/ '/';
+        return context;
+    }
+
+    function urlTo(path) {
+        var url = (contextPath() + path).replace(/\/\//, '/'); /* avoids double slashs */
+        return url;
+    }
+    /*]]>*/
+</script>
+<script data-th-attr="src=@{/resources/js/users/userdialog.js(v2)}"></script>
+
 </body>
+
 </html>
