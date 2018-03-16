@@ -1,6 +1,7 @@
 FROM openjdk:8-jre-alpine
 
 LABEL maintainer="Andre Rocha <andre@konkerlabs.com>"
+LABEL service_name="konker-http-data"
 
 # add our user and group first to make sure their IDs get assigned consistently, regardless of whatever dependencies get added
 RUN addgroup -S nginx && adduser -D -S -H -G nginx nginx && rm -rf /etc/group- /etc/passwd- /etc/shadow-
