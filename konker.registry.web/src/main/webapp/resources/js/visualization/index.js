@@ -1,5 +1,9 @@
 function loadCSV() {
-	$.ajax({
+
+	$('#bufferCsv').attr('href', 'http://' + window.location.host + urlTo('/devices/visualization/csv/download?') + $('#visualizationForm').serialize());
+	$('#bufferCsv')[0].click();
+
+	/*$.ajax({
 		context : this,
         type : "GET",
         url : urlTo('/devices/visualization/csv/download'),
@@ -16,8 +20,9 @@ function loadCSV() {
         		.attr('download', 'Events.csv');
         	$('#bufferCsv')[0].click()
         }
-    });
+    });*/
 }
+
 
 function autoRefreshDataChart() {
     if (!$('#channel').val() === false &&
