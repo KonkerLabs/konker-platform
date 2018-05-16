@@ -18,7 +18,7 @@ public class EnvironmentConfig {
 
 	public EnvironmentConfig() {
 		Map<String, Object> defaultMap = new HashMap<>();
-		defaultMap.put("environment.preferences.csvDownloadRowsLimit", 10000);
+		defaultMap.put("environment.preferences.csvDownloadRowsLimit", 50000);
 		Config defaultConf = ConfigFactory.parseMap(defaultMap);
 		
 		Config config = ConfigFactory.load().withFallback(defaultConf);
