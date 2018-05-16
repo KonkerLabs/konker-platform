@@ -69,7 +69,7 @@ public class IncomingEventsRestController extends AbstractRestController impleme
             @RequestParam(required = false, defaultValue = "", name = "q") String query,
             @ApiParam(value = "The sort order", allowableValues = "newest,oldest")
             @RequestParam(required = false, defaultValue = "newest") String sort,
-            @ApiParam(value = "The number of results returned", allowableValues = "range[1, 10000]")
+            @ApiParam(value = "The number of results returned", allowableValues = "range[1, 50000]")
             @RequestParam(required = false, defaultValue = "100") Integer limit
         ) throws BadServiceResponseException, BadRequestResponseException, NotFoundResponseException {
 
