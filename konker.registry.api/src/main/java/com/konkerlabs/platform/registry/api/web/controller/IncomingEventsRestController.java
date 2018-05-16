@@ -81,7 +81,7 @@ public class IncomingEventsRestController extends AbstractRestController impleme
             ascending = true;
         }
 
-        if (limit > 10000) {
+        if (limit > 50000) {
             throw new BadRequestResponseException("Invalid limit. Max: 10000");
         }
 
