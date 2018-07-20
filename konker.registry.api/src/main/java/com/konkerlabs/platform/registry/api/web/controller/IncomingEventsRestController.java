@@ -43,7 +43,7 @@ public class IncomingEventsRestController extends AbstractRestController impleme
         "* `timestamp`: ISO 8601 format\n\n" +
         "\n\n" +
         "### Query String Syntax\n\n" +
-        "* filter: `[seach term]:[search value]`\n\n" +
+        "* filter: `[search term]:[search value]`\n\n" +
         "* concat filters with space: `[filter1] [filter2] [filter3]`\n\n" +
         "\n\n" +
         "### Query Examples\n\n" +
