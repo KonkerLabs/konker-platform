@@ -90,7 +90,6 @@ public class Device implements URIDealer, Validatable, UserDetails {
 	
 	@Transient
 	private String status;
-	
 
 	public Optional<Map<String, Object[]>> applyValidations() {
 
@@ -98,8 +97,8 @@ public class Device implements URIDealer, Validatable, UserDetails {
 
 		if (getDeviceId() == null || getDeviceId().isEmpty())
 			validations.put(Validations.ID_NULL_EMPTY.code,null);
-		if (getDeviceId() != null && getDeviceId().length() > 16)
-			validations.put(Validations.ID_GREATER_THAN_EXPECTED.code,new Object[]{16});
+		if (getDeviceId() != null && getDeviceId().length() > 36)
+			validations.put(Validations.ID_GREATER_THAN_EXPECTED.code,new Object[]{36});
 		if (getName() == null || getName().isEmpty())
 			validations.put(Validations.NAME_NULL_EMPTY.code,null);
 		if (getTenant() == null)
