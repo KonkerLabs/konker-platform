@@ -220,8 +220,6 @@ public class DeviceControllerTest extends WebLayerTestContext {
                 .andExpect(status().isOk())
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
 				.andExpect(jsonPath("$.status", org.hamcrest.Matchers.is("DISABLED")));
-
-		verify(deviceRegisterService).getByDeviceGuid(tenant, application, savedDevice.getGuid());
 	}
 
 	@Test
