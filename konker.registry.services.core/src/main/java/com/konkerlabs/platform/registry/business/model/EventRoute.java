@@ -168,7 +168,7 @@ public class EventRoute implements URIDealer, Validatable {
     }
 
     private boolean isValidChannelName(String channelName) {
-    	return channelName.matches("[a-zA-Z0-9_-]+");
+    	return channelName.matches("[a-zA-Z0-9 _\\-]+");
 	}
 
 	private void applyDeviceOutgoingValidations(Map<String, Object[]> validations) {

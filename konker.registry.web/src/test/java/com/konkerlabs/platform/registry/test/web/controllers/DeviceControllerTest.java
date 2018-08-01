@@ -11,10 +11,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.text.MessageFormat;
 import java.time.Instant;
@@ -23,6 +20,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
+import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.services.api.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -41,19 +41,8 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import com.fasterxml.jackson.databind.node.JsonNodeType;
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.EventSchema;
 import com.konkerlabs.platform.registry.business.model.EventSchema.SchemaField;
-import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.EventSchemaService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.config.CdnConfig;
 import com.konkerlabs.platform.registry.config.EmailConfig;
 import com.konkerlabs.platform.registry.config.MessageSourceConfig;
@@ -83,6 +72,8 @@ public class DeviceControllerTest extends WebLayerTestContext {
 	ApplicationContext applicationContext;
 	@Autowired
 	DeviceRegisterService deviceRegisterService;
+	@Autowired
+	HealthAlertService healthAlertService;
 	@Autowired
 	DeviceEventService deviceEventService;
 	@Autowired
@@ -210,6 +201,25 @@ public class DeviceControllerTest extends WebLayerTestContext {
 				.andExpect(model().attribute("device", savedDevice)).andExpect(view().name("devices/show"));
 
 		verify(deviceRegisterService).getByDeviceGuid(tenant, application, savedDevice.getGuid());
+	}
+
+	@Test
+	@WithMockUser(authorities={"SHOW_DEVICE"})
+	public void shouldShowDeviceStatus() throws Exception {
+        HealthAlert alert = HealthAlert.builder().severity(HealthAlert.HealthAlertSeverity.DISABLED).build();
+
+		when(healthAlertService.getCurrentHealthByGuid(tenant, application, savedDevice.getGuid()))
+				.thenReturn(ServiceResponseBuilder.<HealthAlert>ok().withResult(alert).build());
+
+		getMockMvc()
+				.perform(
+				        get(MessageFormat.format("/devices/{0}/{1}/status", application.getName(), savedDevice.getGuid()))
+                                .contentType("application/json")
+                                .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+				.andExpect(content().contentType("application/json;charset=UTF-8"))
+				.andExpect(jsonPath("$.status", org.hamcrest.Matchers.is("DISABLED")));
 	}
 
 	@Test
@@ -468,7 +478,12 @@ public class DeviceControllerTest extends WebLayerTestContext {
 		public ApplicationService applicationService() {
 			return Mockito.mock(ApplicationService.class);
 		}
-		
+
+		@Bean
+		public HealthAlertService healthAlertService() {
+			return Mockito.mock(HealthAlertService.class);
+		}
+
 		@Bean
 		public JsonParsingService jsonParsingService() {
 			return Mockito.mock(JsonParsingService.class);

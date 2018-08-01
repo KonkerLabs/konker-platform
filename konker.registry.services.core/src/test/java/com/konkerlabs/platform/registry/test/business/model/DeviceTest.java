@@ -72,14 +72,14 @@ public class DeviceTest {
 	}
 
 	@Test
-	public void shouldReturnAValidationMessageIfDeviceIdIsGreaterThan16Characters() throws Exception {
-		device.setDeviceId("95c14b36ba2b43f1ac537");
+	public void shouldReturnAValidationMessageIfDeviceIdIsGreaterThan36Characters() throws Exception {
+		device.setDeviceId("5dc5de91-8183-47c3-a640-689b8089eebc###");
 
 		String expectedMessage = Device.Validations.ID_GREATER_THAN_EXPECTED.getCode();
 		Optional<Map<String, Object[]>> validations = device.applyValidations();
 
 		assertThat(validations, not(sameInstance(Optional.empty())));
-		assertThat(device.applyValidations().get(), hasEntry(expectedMessage,new Object[] {16}));
+		assertThat(device.applyValidations().get(), hasEntry(expectedMessage,new Object[] {36}));
 	}
 
 	@Test

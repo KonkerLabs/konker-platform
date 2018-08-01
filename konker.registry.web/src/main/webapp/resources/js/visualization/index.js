@@ -23,6 +23,7 @@ function loadCSV() {
     });*/
 }
 
+
 function autoRefreshDataChart() {
     if (!$('#channel').val() === false &&
         !$('#metric').val() === false) {

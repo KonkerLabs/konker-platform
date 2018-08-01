@@ -248,7 +248,7 @@ public class IncomingEventsRestControllerTest extends WebLayerTestContext {
                     .andExpect(jsonPath("$.code", is(HttpStatus.BAD_REQUEST.value())))
                     .andExpect(jsonPath("$.status", is("error")))
                     .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
-                    .andExpect(jsonPath("$.messages[0]", is("Invalid limit. Max: 10000")))
+                    .andExpect(jsonPath("$.messages[0]", is("Invalid limit. Max: 50000")))
                     .andExpect(jsonPath("$.result").doesNotExist())
                     ;
 

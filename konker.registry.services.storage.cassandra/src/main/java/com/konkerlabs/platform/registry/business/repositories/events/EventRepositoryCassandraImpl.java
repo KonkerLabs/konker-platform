@@ -444,6 +444,26 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
         removeFromGuidChannelTable(tenant, application, deviceGuid, type, channels);
 
     }
+    
+    @Override
+    protected void doRemoveBy(Tenant tenant, Application application, String deviceGuid, List<Event> events, Type type) throws Exception {
+    	Set<String> channels = new HashSet<>();
+
+    	for (Event key: events) {
+            if (type == Type.INCOMING) {
+                channels.add(key.getIncoming().getChannel());
+                removeFromTableByKey(key, type);
+                saveEvent(tenant, application, key, type, INCOMING_EVENTS_DELETED, false);
+            } else if (type == Type.OUTGOING) {
+            	channels.add(key.getOutgoing().getChannel());
+                removeFromTableByKey(key, type);
+                saveEvent(tenant, application, key, type, OUTGOING_EVENTS_DELETED, false);
+            }
+        }
+        
+        removeFromGuidTable(tenant, application, deviceGuid, type);
+        removeFromGuidChannelTable(tenant, application, deviceGuid, type, channels);
+    }
 
     private void removeFromGuidChannelTable(Tenant tenant, Application application, String deviceGuid, Type type, Set<String> channels) {
 
@@ -526,7 +546,6 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
         Long epochTs = key.getEpochTime();
 
         // remove from tables: INCOMING_EVENTS or OUTGOING_EVENTS
-
         StringBuilder query = new StringBuilder();
         List<Object> filters = new ArrayList<>();
 
@@ -552,7 +571,6 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
         session.executeAsync(query.toString(), filters.toArray(new Object[filters.size()]));
 
         // remove from tables: INCOMING_EVENTS_CHANNEL or OUTGOING_EVENTS_CHANNEL
-
         query = new StringBuilder();
         filters = new ArrayList<>();
 
