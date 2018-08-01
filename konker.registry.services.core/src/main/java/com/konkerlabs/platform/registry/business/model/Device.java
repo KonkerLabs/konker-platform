@@ -87,9 +87,6 @@ public class Device implements URIDealer, Validatable, UserDetails {
     @DBRef
     private Location location;
 	private boolean active;
-	
-	@Transient
-	private String status;
 
 	public Optional<Map<String, Object[]>> applyValidations() {
 

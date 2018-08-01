@@ -46,14 +46,22 @@
                 <li></li>
                 </ul>
             </div>
-                
+
         	<div class="row form-group">
-				<label class="col-sm-2 control-label" for="deviceId"
+				<label class="col-sm-2 control-label"
 					data-th-text="#{devices.events.id}"></label>
-				<div class="col-sm-5">
-					<input data-th-value="${device.deviceId}" disabled="disabled"></input>
+				<div class="col-sm-3">
+					<input data-th-value="${device.deviceId}" disabled="disabled" class="form-control"></input>
 				</div>
 			</div>
+
+            <div class="row form-group">
+                <label class="col-sm-2 control-label"
+                       data-th-text="#{devices.form.name}"></label>
+                <div class="col-sm-3">
+                    <input data-th-value="${device.name}" disabled="disabled" class="form-control"></input>
+                </div>
+            </div>
 
         </fieldset>
 		
@@ -118,8 +126,7 @@
     
     	            <div class="row form-group">
     	                <label class="col-sm-2 control-label"
-    	                       data-th-text="#{visualization.index.metric}"
-    	                       for="metric"></label>
+    	                       data-th-text="#{visualization.index.metric}"></label>
     	                <div id="div-metric" class="col-sm-4">
     	                    <div data-th-include="devices/visualization/metrics :: metrics">
     						</div>

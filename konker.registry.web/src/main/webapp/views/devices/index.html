@@ -43,13 +43,7 @@
                 <td data-th-text="${device.deviceId}"></td>
                 <td data-th-text="${device.name}"></td>
                 <td>
-                	<div th:class="${'badge-health ' + #strings.toLowerCase(device.status)}">
-				        <div th:class="${'icon-badge-local ' + #strings.toLowerCase(device.status) + '-bg-icon'}">
-				            <img data-th-attr="src=@{${'/resources/konker/images/icon-health/' + #strings.toLowerCase(device.status) + '-icon-health.svg'}}" 
-				            		class="icon-health">
-				        </div>
-				        <label class="status-health" data-th-text="${device.status}"></label>
-				    </div>
+                    <div class="device-status" data-th-guid="${device.guid}" data-th-application="${device.application.name}"></div>
                 </td>
                 <td class="text-center">
                     <a data-th-href="@{/devices/{applicationName}/{guid}/edit(guid=${device.guid}, applicationName=${device.application.name})}"
@@ -75,6 +69,9 @@
             </tbody>
         </table>
     </fieldset>
+</div>
+<div data-layout-fragment="script">
+    <script data-th-attr="src=@{/resources/js/devices/index.js}" type="text/javascript"></script>
 </div>
 </body>
 </html>
