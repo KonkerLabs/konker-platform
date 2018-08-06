@@ -53,7 +53,7 @@ public class TokenServiceTest extends BusinessLayerTestSupport {
     @Test
     public void shouldReturnValidToken(){
         ServiceResponse<String> response = _tokenService.generateToken(
-                TokenService.Purpose.RESET_PASSWORD, _user, Duration.ofSeconds(10));
+                TokenService.Purpose.RESET_PASSWORD, _user, Duration.ofSeconds(10L));
         Assert.assertTrue(_tokenService.getToken(response.getResult()).isOk());
     }
 
@@ -66,7 +66,7 @@ public class TokenServiceTest extends BusinessLayerTestSupport {
     @Test
     public void shouldGenerateValidToken(){
        ServiceResponse<String> response = _tokenService.generateToken(
-               TokenService.Purpose.RESET_PASSWORD, _user, Duration.ofSeconds(10));
+               TokenService.Purpose.RESET_PASSWORD, _user, Duration.ofSeconds(10L));
        Assert.assertTrue(response.isOk());
        Assert.assertFalse(response.getResult().isEmpty());
     }
@@ -74,7 +74,7 @@ public class TokenServiceTest extends BusinessLayerTestSupport {
     @Test
     public void shouldNotGenerateValidToken(){
         ServiceResponse<String> response = _tokenService.generateToken(
-                TokenService.Purpose.RESET_PASSWORD, null, Duration.ofSeconds(10));
+                TokenService.Purpose.RESET_PASSWORD, null, Duration.ofSeconds(10L));
         Assert.assertTrue(response.getStatus() == ServiceResponse.Status.ERROR);
 
         response = _tokenService.generateToken(
@@ -83,29 +83,29 @@ public class TokenServiceTest extends BusinessLayerTestSupport {
 
         _user.setEmail("test@test");
         response = _tokenService.generateToken(
-                TokenService.Purpose.RESET_PASSWORD, _user, Duration.ofSeconds(10));
+                TokenService.Purpose.RESET_PASSWORD, _user, Duration.ofSeconds(10L));
         Assert.assertTrue(response.getStatus() == ServiceResponse.Status.ERROR);
 
         response = _tokenService.generateToken(
-                null, _user, Duration.ofSeconds(10));
+                null, _user, Duration.ofSeconds(10L));
         Assert.assertTrue(response.getStatus() == ServiceResponse.Status.ERROR);
     }
 
     @Test
     public void shouldBeValidToken(){
         ServiceResponse<String> response = _tokenService.generateToken(
-                TokenService.Purpose.RESET_PASSWORD, _user, Duration.ofDays(1));
+                TokenService.Purpose.RESET_PASSWORD, _user, Duration.ofDays(1L));
         Assert.assertTrue(_tokenService.isValidToken(response.getResult()).isOk());
     }
 
     @Test
     public void shouldBeInvalidToken(){
         ServiceResponse<String> response = _tokenService.generateToken(
-                TokenService.Purpose.RESET_PASSWORD, _user, Duration.ofSeconds((-1)));
+                TokenService.Purpose.RESET_PASSWORD, _user, Duration.ofSeconds((long) (-1)));
         Assert.assertTrue(_tokenService.isValidToken(response.getResult()).getStatus() == ServiceResponse.Status.ERROR);
 
         response = _tokenService.generateToken(
-                TokenService.Purpose.RESET_PASSWORD, _user, Duration.ofDays(1));
+                TokenService.Purpose.RESET_PASSWORD, _user, Duration.ofDays(1L));
         _tokenService.invalidateToken(response.getResult());
         Assert.assertTrue(_tokenService.isValidToken(response.getResult()).getStatus() == ServiceResponse.Status.ERROR);
 
@@ -116,7 +116,7 @@ public class TokenServiceTest extends BusinessLayerTestSupport {
     public void shouldBeInvalidatedToken()
     {
         ServiceResponse<String> response = _tokenService.generateToken(
-                TokenService.Purpose.RESET_PASSWORD, _user, Duration.ofDays(1));
+                TokenService.Purpose.RESET_PASSWORD, _user, Duration.ofDays(1L));
         Assert.assertTrue(_tokenService.invalidateToken(response.getResult()).isOk());
 
         Assert.assertTrue(_tokenService.invalidateToken(null).getStatus() == ServiceResponse.Status.ERROR);
@@ -125,7 +125,7 @@ public class TokenServiceTest extends BusinessLayerTestSupport {
                 UUID.randomUUID().toString()).getStatus() == ServiceResponse.Status.ERROR);
 
         response = _tokenService.generateToken(
-                TokenService.Purpose.RESET_PASSWORD, _user, Duration.ofDays(1));
+                TokenService.Purpose.RESET_PASSWORD, _user, Duration.ofDays(1L));
         _tokenService.invalidateToken(response.getResult());
         Assert.assertTrue(_tokenService.invalidateToken(response.getResult()).getStatus() == ServiceResponse.Status.ERROR);
     }

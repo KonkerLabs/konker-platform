@@ -91,9 +91,9 @@ public class TransformationTest {
 
     @Test
     public void shouldForwardValidationMessagesFromAnyOfItsSteps() throws Exception {
-        Map<String,Object[]> expectedStepErrors = new HashMap() {{
-            put("Some error",null);
-        }};
+        Map<String,Object[]> expectedStepErrors = new HashMap();
+        expectedStepErrors.put("Some error",null);
+
 
         when(restTransformation.applyValidations()).thenReturn(
             Optional.of(expectedStepErrors)

@@ -49,7 +49,7 @@ import com.mongodb.util.JSON;
 })
 public class DeviceCustomDataRestControllerTest extends WebLayerTestContext {
 
-    private static final String NONEXIST_APPLICATION_NANE = "AppLost";
+    private static final String NONEXIST_APPLICATION_NAME = "AppLost";
 
     @Autowired
     private DeviceRegisterService deviceRegisterService;
@@ -70,13 +70,13 @@ public class DeviceCustomDataRestControllerTest extends WebLayerTestContext {
 
     private DeviceCustomData deviceCustomData1;
 
-    private String json1 = "{ 'a' : 'b' }";
+    private final String json1 = "{ 'a' : 'b' }";
 
-    private String BASEPATH = "devices";
+    private final String BASEPATH = "devices";
 
-    private String CUSTOMDATAPATH = "customData";
+    private final String CUSTOMDATAPATH = "customData";
 
-    private String INVALID_GUID = "invalid_guid";
+    private final String INVALID_GUID = "invalid_guid";
 
     @Before
     public void setUp() {
@@ -136,10 +136,10 @@ public class DeviceCustomDataRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldReadWithWrongApplication() throws Exception {
 
-        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NANE))
+        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NAME))
                 .thenReturn(ServiceResponseBuilder.<Application>error().withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode()).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}/{3}", NONEXIST_APPLICATION_NANE, BASEPATH, device1.getGuid(), CUSTOMDATAPATH))
+        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}/{3}", NONEXIST_APPLICATION_NAME, BASEPATH, device1.getGuid(), CUSTOMDATAPATH))
                     .contentType("application/json")
                     .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is4xxClientError())
@@ -306,10 +306,10 @@ public class DeviceCustomDataRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryDeleteWithWrongApplication() throws Exception {
 
-        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NANE))
+        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NAME))
                 .thenReturn(ServiceResponseBuilder.<Application>error().withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode()).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.delete(MessageFormat.format("/{0}/{1}/{2}/{3}", NONEXIST_APPLICATION_NANE, BASEPATH, device1.getGuid(), CUSTOMDATAPATH))
+        getMockMvc().perform(MockMvcRequestBuilders.delete(MessageFormat.format("/{0}/{1}/{2}/{3}", NONEXIST_APPLICATION_NAME, BASEPATH, device1.getGuid(), CUSTOMDATAPATH))
                     .contentType("application/json")
                     .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is4xxClientError())

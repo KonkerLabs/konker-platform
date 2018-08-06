@@ -64,27 +64,27 @@ public class EventTransformationServiceTest {
     @Captor
     private ArgumentCaptor<Supplier<String>> bodyCaptor;
 
-    private String validPayloadJson = "{\n" +
+    private final String validPayloadJson = "{\n" +
             "  \"field\" : \"value\",\n" +
             "  \"count\" : 34,\n" +
             "  \"amount\" : 21.45,\n" +
             "  \"valid\" : true\n" +
-            "}";
+            '}';
 
-    private String invalidPayloadJson = "{\n" +
+    private final String invalidPayloadJson = "{\n" +
             "  \"field\" \"value\",\n" +
             "  \"count\" : 34,\n" +
             "  \"amount\" : 21,45\n" +
             "  \"valid\" : tr\n" +
-            "}";
+            '}';
 
-    private String transformationMethod = "POST";
-    private String transformationUrl = "http://server:8080/path/@{#field}?query=1";
-    private String transformationServiceUsername = "username";
-    private String transformationServicePassword = "password";
+    private final String transformationMethod = "POST";
+    private final String transformationUrl = "http://server:8080/path/@{#field}?query=1";
+    private final String transformationServiceUsername = "username";
+    private final String transformationServicePassword = "password";
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
 
         event = Event.builder().creationTimestamp(Instant.now())
@@ -111,7 +111,7 @@ public class EventTransformationServiceTest {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfEventIsNull() throws Exception {
+    public void shouldRaiseAnExceptionIfEventIsNull() {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Event cannot be null");
 
@@ -119,7 +119,7 @@ public class EventTransformationServiceTest {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfTransformationIsNull() throws Exception {
+    public void shouldRaiseAnExceptionIfTransformationIsNull() {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Transformation cannot be null");
 
@@ -127,7 +127,7 @@ public class EventTransformationServiceTest {
     }
 
     @Test
-    public void shouldReturnEmptyEventIfTransformationURLTemplateIsInvalid() throws Exception {
+    public void shouldReturnEmptyEventIfTransformationURLTemplateIsInvalid() {
         transformation.getSteps().get(0).getAttributes()
                 .put(RestTransformationStep.REST_URL_ATTRIBUTE_NAME, "http://server:8080/path/@{#dummy?query=1");
 
@@ -137,7 +137,7 @@ public class EventTransformationServiceTest {
     }
 
     @Test
-    public void shouldReturnEmptyEventIfEventPayloadIsInvalid() throws Exception {
+    public void shouldReturnEmptyEventIfEventPayloadIsInvalid() {
         event.setPayload(invalidPayloadJson);
 
         Optional<Event> transformed = subject.transform(event, transformation);
@@ -275,8 +275,7 @@ public class EventTransformationServiceTest {
 
         String secondStepURI = "http://server:8080/service/@{#customerId}/verify";
 
-        List<TransformationStep> steps = new ArrayList<>();
-        steps.addAll(transformation.getSteps());
+        List<TransformationStep> steps = new ArrayList<>(transformation.getSteps());
         steps.add(RestTransformationStep.builder()
                 .attributes(new HashMap<String, Object>() {
                     {

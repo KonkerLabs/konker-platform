@@ -48,7 +48,7 @@ public class InstantToStringConverterTest {
 	}
 
 	@Test
-	public void shouldConvertInstantToUsTimezoneAndLocale() throws Exception {
+	public void shouldConvertInstantToUsTimezoneAndLocale() {
 		when(utils.getCurrentLocale()).thenReturn(Locale.US);
 		when(utils.getDateTimeFormatPattern()).thenReturn("MM/dd/yyyy HH:mm:ss.SSS zzz");
 		when(utils.getUserZoneID()).thenReturn("America/Sao_Paulo");
@@ -59,7 +59,7 @@ public class InstantToStringConverterTest {
 	}
 
 	@Test
-	public void shouldConvertInstantToPtBrTimezoneAndLocale() throws Exception {
+	public void shouldConvertInstantToPtBrTimezoneAndLocale() {
 		when(utils.getCurrentLocale()).thenReturn(new Locale.Builder().setLanguage("pt").setRegion("BR").build());
 		when(utils.getDateTimeFormatPattern()).thenReturn("dd/MM/yyyy HH:mm:ss.SSS zzz");
 		when(utils.getUserZoneID()).thenReturn("America/Sao_Paulo");

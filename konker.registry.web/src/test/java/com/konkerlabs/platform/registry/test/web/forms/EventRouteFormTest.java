@@ -48,7 +48,7 @@ public class EventRouteFormTest {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfTenantDomainNameSupplierIsNull() throws Exception {
+    public void shouldRaiseAnExceptionIfTenantDomainNameSupplierIsNull() {
         form.setAdditionalSupplier(null);
 
         thrown.expect(IllegalStateException.class);
@@ -58,7 +58,7 @@ public class EventRouteFormTest {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfTenantDomainNameSupplierReturnsNull() throws Exception {
+    public void shouldRaiseAnExceptionIfTenantDomainNameSupplierReturnsNull() {
         form.setAdditionalSupplier(() -> null);
 
         thrown.expect(IllegalStateException.class);
@@ -68,7 +68,7 @@ public class EventRouteFormTest {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfTenantDomainNameSupplierReturnsAnEmptyString() throws Exception {
+    public void shouldRaiseAnExceptionIfTenantDomainNameSupplierReturnsAnEmptyString() {
         form.setAdditionalSupplier(() -> "");
 
         thrown.expect(IllegalStateException.class);
@@ -78,7 +78,7 @@ public class EventRouteFormTest {
     }
 
     @Test
-    public void shouldTranslateFromDeviceRouteFormToModel() throws Exception {
+    public void shouldTranslateFromDeviceRouteFormToModel() {
         form.setOutgoingScheme("device");
         form.getOutgoing().setAuthorityId("0000000000000005");
         form.getOutgoing().getAuthorityData().put("channel", "in");
@@ -130,7 +130,7 @@ public class EventRouteFormTest {
     }
 
     @Test
-    public void shouldTranslateFromRestDestinationRouteFormToModel() throws Exception {
+    public void shouldTranslateFromRestDestinationRouteFormToModel() {
         form.setOutgoingScheme("rest");
         form.getOutgoing().setAuthorityId("dda64780-eb81-11e5-958b-a73dab8b32ee");
 
@@ -177,7 +177,7 @@ public class EventRouteFormTest {
     }
 
     @Test
-    public void shouldTranslateToModelWithOptionalTransformation() throws Exception {
+    public void shouldTranslateToModelWithOptionalTransformation() {
         form.setOutgoingScheme("device");
         form.getOutgoing().setAuthorityId("0000000000000005");
         form.getOutgoing().getAuthorityData().put("channel", "in");
@@ -234,7 +234,7 @@ public class EventRouteFormTest {
     }
 
     @Test
-    public void shouldTranslateFromDeviceRouteModelToForm() throws Exception {
+    public void shouldTranslateFromDeviceRouteModelToForm() {
         form.setOutgoingScheme("device");
         form.getOutgoing().setAuthorityId("0000000000000005");
         form.getOutgoing().getAuthorityData().put("channel", "in");
@@ -282,7 +282,7 @@ public class EventRouteFormTest {
     }
 
     @Test
-    public void shouldTranslateFromRestDestinationRouteModelToForm() throws Exception {
+    public void shouldTranslateFromRestDestinationRouteModelToForm() {
         form.setOutgoingScheme("rest");
         form.getOutgoing().setAuthorityId("dda64780-eb81-11e5-958b-a73dab8b32ee");
 
@@ -329,7 +329,7 @@ public class EventRouteFormTest {
     }
 
     @Test
-    public void shouldTranslateFromModelToFormWithOptionalTransformation() throws Exception {
+    public void shouldTranslateFromModelToFormWithOptionalTransformation() {
         form.setOutgoingScheme("device");
         form.getOutgoing().setAuthorityId("0000000000000005");
         form.getOutgoing().getAuthorityData().put("channel", "in");

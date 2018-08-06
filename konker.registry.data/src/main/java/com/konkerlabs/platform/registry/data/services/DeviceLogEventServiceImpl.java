@@ -56,8 +56,8 @@ public class DeviceLogEventServiceImpl implements DeviceLogEventService {
     @Autowired
     private JsonParsingService jsonParsingService;
     
-    private Pattern integerPattern = Pattern.compile("^[0-9]*$") ;
-    private Pattern decimalPattern = Pattern.compile("^[-+]?[0-9]*[.][0-9]*$") ;
+    private final Pattern integerPattern = Pattern.compile("^[0-9]*$") ;
+    private final Pattern decimalPattern = Pattern.compile("^[-+]?[0-9]*[.][0-9]*$") ;
     private static final String EVENT_GEO_INVALID = "Incoming event has invalid geolocation data: [Field: {0}] - [Value: {1}]";
     private static final String EVENT_TIME_INVALID = "Incoming event has invalid timestamp data: [Field: {0}] - [Value: {1}]";
 
@@ -131,8 +131,8 @@ public class DeviceLogEventServiceImpl implements DeviceLogEventService {
 				return;			
 			}
 			
-			Instant tomorrow = Instant.now().plus(Duration.ofDays(1));
-			Instant aYearAgo = Instant.now().minus(Duration.ofDays(365));
+			Instant tomorrow = Instant.now().plus(Duration.ofDays(1L));
+			Instant aYearAgo = Instant.now().minus(Duration.ofDays(365L));
 			Instant creationTime = integerPattern.matcher(data.get("_ts").getValue().toString()).matches() 
 									? Instant.ofEpochMilli(new Long(data.get("_ts").getValue().toString())) 
 									: null;
@@ -222,13 +222,13 @@ public class DeviceLogEventServiceImpl implements DeviceLogEventService {
 		Double lat = new Double(latObj.toString());
 		Double lon = new Double(lonObj.toString());
 		
-		if (lat < -90 ||  lat > 90 ) {
+		if (lat < -90.0 ||  lat > 90.0) {
 			LOGGER.warn(MessageFormat.format(EVENT_GEO_INVALID, "_lat", lat),
 					device.toURI(),
             		device.getLogLevel());
 			return false;
 		}
-		if (lon < -180 || lon > 180) {
+		if (lon < -180.0 || lon > 180.0) {
 			LOGGER.warn(MessageFormat.format(EVENT_GEO_INVALID, "_lon", lon),
 					device.toURI(),
             		device.getLogLevel());
@@ -248,7 +248,7 @@ public class DeviceLogEventServiceImpl implements DeviceLogEventService {
                         device.getGuid());
 
                 redisTemplate.convertAndSend(
-                        device.getApiKey() + "." + event.getOutgoing().getChannel(),
+                        device.getApiKey() + '.' + event.getOutgoing().getChannel(),
                         device.getGuid());
 
                 return ServiceResponseBuilder.<Event>ok().withResult(saved).build();

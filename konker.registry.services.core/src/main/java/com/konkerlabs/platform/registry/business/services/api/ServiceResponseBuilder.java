@@ -15,14 +15,14 @@ public class ServiceResponseBuilder<T> {
         response.setStatus(ServiceResponse.Status.OK);
 
         return new ServiceResponseBuilder<T>(response);
-    };
+    }
 
     public static <T> ServiceResponseBuilder<T> error() {
         ServiceResponse<T> response = new ServiceResponse<T>();
         response.setStatus(ServiceResponse.Status.ERROR);
 
         return new ServiceResponseBuilder<T>(response);
-    };
+    }
 
     public ServiceResponseBuilder<T> withMessage(String code, Object... parameters) {
         this.response.getResponseMessages().put(code,

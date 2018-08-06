@@ -5,7 +5,6 @@ import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.services.kinesis.AmazonKinesisClientBuilder;
 import com.amazonaws.services.kinesis.model.*;
 import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.data.services.publishers.api.EventPublisher;

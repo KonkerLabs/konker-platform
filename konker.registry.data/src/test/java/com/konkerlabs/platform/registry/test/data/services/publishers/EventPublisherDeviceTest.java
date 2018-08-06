@@ -103,7 +103,7 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
     private Event event;
     private URI destinationUri;
 
-    private String eventPayload = "{\n" +
+    private final String eventPayload = "{\n" +
             "    \"field\" : \"value\",\n" +
             "    \"count\" : 34,\n" +
             "    \"amount\" : 21.45,\n" +
@@ -112,12 +112,12 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
     private Map<String, String> data;
     private Device device;
 
-    private static String INPUT_CHANNEL = "input";
-    private static String OUTPUT_CHANNEL = "output";
+    private static final String INPUT_CHANNEL = "input";
+    private static final String OUTPUT_CHANNEL = "output";
 
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
 
         ((EventPublisherDevice)subject).setDeviceLogEventService(deviceLogEventService);
@@ -155,13 +155,13 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         Mockito.reset(deviceLogEventService);
         Mockito.reset(rabbitTemplate);
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfEventIsNull() throws Exception {
+    public void shouldRaiseAnExceptionIfEventIsNull() {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Event cannot be null");
 
@@ -169,7 +169,7 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfURIIsNull() throws Exception {
+    public void shouldRaiseAnExceptionIfURIIsNull() {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Destination URI cannot be null or empty");
 
@@ -185,7 +185,7 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfDataIsNull() throws Exception {
+    public void shouldRaiseAnExceptionIfDataIsNull() {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Data cannot be null");
 
@@ -193,7 +193,7 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfMqttChannelIsNull() throws Exception {
+    public void shouldRaiseAnExceptionIfMqttChannelIsNull() {
         data.remove(DEVICE_MQTT_CHANNEL);
 
         thrown.expect(IllegalStateException.class);
@@ -203,7 +203,7 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfMqttChannelIsEmpty() throws Exception {
+    public void shouldRaiseAnExceptionIfMqttChannelIsEmpty() {
         data.put(DEVICE_MQTT_CHANNEL,"");
 
         thrown.expect(IllegalStateException.class);
@@ -213,7 +213,7 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfTenantIsNull() throws Exception {
+    public void shouldRaiseAnExceptionIfTenantIsNull() {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Tenant cannot be null");
 
@@ -221,7 +221,7 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfDeviceIsUnknown() throws Exception {
+    public void shouldRaiseAnExceptionIfDeviceIsUnknown() {
         destinationUri = new URIDealer(
 
         ) {

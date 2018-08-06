@@ -23,7 +23,6 @@ import org.junit.Test;
 
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 
 public class DeviceTest {
@@ -139,7 +138,7 @@ public class DeviceTest {
 
 	@Test
 	public void shouldReturnAValidationMessageIfRegistrationDateIsMoreThan1MinuteInTheFuture() throws Exception {
-		device.setRegistrationDate(Instant.now().plus(Duration.ofSeconds(61)));
+		device.setRegistrationDate(Instant.now().plus(Duration.ofSeconds(61L)));
 
 		device.onRegistration();
 
@@ -150,7 +149,7 @@ public class DeviceTest {
 
 	@Test
 	public void shouldReturnAValidationMessageIfRegistrationDateIsMoreThan1MinuteInThePast() throws Exception {
-		device.setRegistrationDate(Instant.now().minus(Duration.ofSeconds(61)));
+		device.setRegistrationDate(Instant.now().minus(Duration.ofSeconds(61L)));
 
 		device.onRegistration();
 

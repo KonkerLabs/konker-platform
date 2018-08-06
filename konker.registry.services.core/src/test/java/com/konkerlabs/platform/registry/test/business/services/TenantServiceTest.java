@@ -178,7 +178,7 @@ public class TenantServiceTest extends BusinessLayerTestSupport {
 		
 		Assert.assertNotNull(responseService);
 		Assert.assertEquals(responseService.getStatus(), ServiceResponse.Status.OK);
-		Assert.assertEquals(responseService.getResult().size(), 1);
+		Assert.assertEquals((long) responseService.getResult().size(), 1L);
 	}
 
 	@Test
@@ -216,7 +216,7 @@ public class TenantServiceTest extends BusinessLayerTestSupport {
 		
 		Assert.assertNotNull(serviceResponse);
 		Assert.assertEquals(serviceResponse.getStatus(), ServiceResponse.Status.OK);
-		Assert.assertEquals(serviceResponse.getResult().getDevicesLimit().longValue(), 5l);
+		Assert.assertEquals(serviceResponse.getResult().getDevicesLimit().longValue(), 5L);
 	}
 	
 	@Test

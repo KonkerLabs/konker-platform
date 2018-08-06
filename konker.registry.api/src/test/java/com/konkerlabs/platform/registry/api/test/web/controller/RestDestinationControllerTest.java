@@ -52,7 +52,7 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBui
 })
 public class RestDestinationControllerTest extends WebLayerTestContext {
 
-    private static final String NONEXIST_APPLICATION_NANE = "AppLost";
+    private static final String NONEXIST_APPLICATION_NAME = "AppLost";
 
     @Autowired
     private RestDestinationService restDestinationService;
@@ -70,7 +70,7 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
 
     private RestDestination restDestination2;
 
-    private String BASEPATH = "restDestinations";
+    private final String BASEPATH = "restDestinations";
 
     @Before
     public void setUp() {
@@ -199,10 +199,10 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
     @Test
     public void shouldReadWithWrongApplication() throws Exception {
 
-        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NANE))
+        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NAME))
                 .thenReturn(ServiceResponseBuilder.<Application>error().withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode()).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}", NONEXIST_APPLICATION_NANE, BASEPATH, restDestination1.getGuid()))
+        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}", NONEXIST_APPLICATION_NAME, BASEPATH, restDestination1.getGuid()))
                     .contentType("application/json")
                     .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is4xxClientError())
@@ -362,10 +362,10 @@ public class RestDestinationControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryDeleteWithWrongApplication() throws Exception {
 
-        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NANE))
+        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NAME))
                 .thenReturn(ServiceResponseBuilder.<Application>error().withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode()).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.delete(MessageFormat.format("/{0}/{1}/{2}", NONEXIST_APPLICATION_NANE, BASEPATH, restDestination1.getGuid()))
+        getMockMvc().perform(MockMvcRequestBuilders.delete(MessageFormat.format("/{0}/{1}/{2}", NONEXIST_APPLICATION_NAME, BASEPATH, restDestination1.getGuid()))
                     .contentType("application/json")
                     .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is4xxClientError())

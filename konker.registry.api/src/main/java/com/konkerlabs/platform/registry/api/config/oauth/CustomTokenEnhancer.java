@@ -24,7 +24,7 @@ public class CustomTokenEnhancer implements TokenEnhancer {
 	private Date tokenExpiresOn() {
 		return Date.from(LocalDateTime
 				.now()
-				.plusYears(10)
+				.plusYears(10L)
 				.atZone(ZoneId.systemDefault())
 				.toInstant());
 	}

@@ -53,7 +53,7 @@ public class DateToStringConverterTest {
 	}
 
 	@Test
-	public void shouldConvertDateToDDMMYYYY_BR() throws Exception {
+	public void shouldConvertDateToDDMMYYYY_BR() {
 
 		User mockUser = User.builder().dateFormat(DateFormat.DDMMYYYY).zoneId(TimeZone.AMERICA_SAO_PAULO).build();
 
@@ -65,7 +65,7 @@ public class DateToStringConverterTest {
 	}
 
 	@Test
-	public void shouldConvertDateToDDMMYYYY_LA() throws Exception {
+	public void shouldConvertDateToDDMMYYYY_LA() {
 
 		User mockUser = User.builder().dateFormat(DateFormat.DDMMYYYY).zoneId(TimeZone.AMERICA_LOS_ANGELES).build();
 
@@ -77,7 +77,7 @@ public class DateToStringConverterTest {
 	}
 
 	@Test
-	public void shouldConvertDateToYYYYMMDD_BR() throws Exception {
+	public void shouldConvertDateToYYYYMMDD_BR() {
 
 		User mockUser = User.builder().dateFormat(DateFormat.YYYYMMDD).zoneId(TimeZone.AMERICA_SAO_PAULO).build();
 
@@ -89,7 +89,7 @@ public class DateToStringConverterTest {
 	}
 
 	@Test
-	public void shouldConvertDateToMMDDYYYY_LA() throws Exception {
+	public void shouldConvertDateToMMDDYYYY_LA() {
 
 		User mockUser = User.builder().dateFormat(DateFormat.MMDDYYYY).zoneId(TimeZone.AMERICA_LOS_ANGELES).build();
 

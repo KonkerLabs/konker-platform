@@ -50,7 +50,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 })
 public class TransformationRestControllerTest extends WebLayerTestContext {
 
-    private static final String NONEXIST_APPLICATION_NANE = "AppLost";
+    private static final String NONEXIST_APPLICATION_NAME = "AppLost";
 
     @Autowired
     private TransformationService transformationService;
@@ -62,23 +62,23 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
     private Application application;
     private Application applicationOwnerIsSomeOther;
 
-    private String method = "POST";
-    private String url1 = "http://google.com/test";
-    private String url2 = "http://google.com/test2";
-    private String username = "root";
-    private String password = "secret";
-    private String BASEPATH = "restTransformations";
+    private final String method = "POST";
+    private final String url1 = "http://google.com/test";
+    private final String url2 = "http://google.com/test2";
+    private final String username = "root";
+    private final String password = "secret";
+    private final String BASEPATH = "restTransformations";
 
     private Transformation validTransformation1;
     private Transformation validTransformation2;
-    private String ID1 = "1";
-    private String ID2 = "2";
-    private String GUID1 = "cd3bf9e5-53d9-459c-9a58-95a5ecc5c695";
-    private String GUID2 = "5735af3a-7a69-4192-a261-13f278f30c8d";
-    private String NAME1 = "test1";
-    private String NAME2 = "test2";
-    private String DESCRIPTION1 = "test1Description";
-    private String DESCRIPTION2 = "test2Description";
+    private final String ID1 = "1";
+    private final String ID2 = "2";
+    private final String GUID1 = "cd3bf9e5-53d9-459c-9a58-95a5ecc5c695";
+    private final String GUID2 = "5735af3a-7a69-4192-a261-13f278f30c8d";
+    private final String NAME1 = "test1";
+    private final String NAME2 = "test2";
+    private final String DESCRIPTION1 = "test1Description";
+    private final String DESCRIPTION2 = "test2Description";
 
 
     @Before
@@ -214,10 +214,10 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldReadWithWrongApplication() throws Exception {
 
-        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NANE))
+        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NAME))
                 .thenReturn(ServiceResponseBuilder.<Application>error().withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode()).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}", NONEXIST_APPLICATION_NANE, BASEPATH, GUID1))
+        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}", NONEXIST_APPLICATION_NAME, BASEPATH, GUID1))
                     .contentType("application/json")
                     .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is4xxClientError())
@@ -379,10 +379,10 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryDeleteWithWrongApplication() throws Exception {
 
-        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NANE))
+        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NAME))
                 .thenReturn(ServiceResponseBuilder.<Application>error().withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode()).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.delete(MessageFormat.format("/{0}/{1}/{2}", NONEXIST_APPLICATION_NANE, BASEPATH, GUID1))
+        getMockMvc().perform(MockMvcRequestBuilders.delete(MessageFormat.format("/{0}/{1}/{2}", NONEXIST_APPLICATION_NAME, BASEPATH, GUID1))
                     .contentType("application/json")
                     .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is4xxClientError())

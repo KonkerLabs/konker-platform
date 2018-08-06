@@ -147,7 +147,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         otherApplication = Application.builder()
 				.name("smartffkonkerother")
 				.friendlyName("Konker Smart Frig")
-				.description("Konker Smart Frig - take pic, tells temperatue")
+				.description("Konker Smart Frig - take pic, tells temperature")
 				.tenant(currentTenant)
                 .qualifier("konker")
                 .registrationDate(Instant.ofEpochMilli(1453320973747L))

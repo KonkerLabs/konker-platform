@@ -76,7 +76,7 @@ public class AlertTriggerRestControllerTest extends WebLayerTestContext {
 
     private AlertTrigger silenceAlertTrigger;
 
-    private String BASEPATH = "triggers";
+    private final String BASEPATH = "triggers";
 
     @Before
     public void setUp() {

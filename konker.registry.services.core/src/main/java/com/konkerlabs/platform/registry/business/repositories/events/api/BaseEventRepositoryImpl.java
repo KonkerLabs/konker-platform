@@ -66,8 +66,8 @@ public abstract class BaseEventRepositoryImpl implements EventRepository {
     @Override
     public void copy(Tenant tenant, Device originDevice, Device destDevice) throws BusinessException {
 
-        Instant startInstant = ZonedDateTime.now().minusYears(100).toInstant();
-        Instant endInstant = ZonedDateTime.now().plusYears(100).toInstant();
+        Instant startInstant = ZonedDateTime.now().minusYears(100L).toInstant();
+        Instant endInstant = ZonedDateTime.now().plusYears(100L).toInstant();
 
         // incoming
         List<Event> incomingEvents = findIncomingBy(tenant, originDevice.getApplication(), originDevice.getGuid(), null, startInstant, endInstant, false, null);

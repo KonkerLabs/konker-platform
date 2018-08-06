@@ -1,6 +1,5 @@
 package com.konkerlabs.platform.registry.audit;
 
-import org.slf4j.ILoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;

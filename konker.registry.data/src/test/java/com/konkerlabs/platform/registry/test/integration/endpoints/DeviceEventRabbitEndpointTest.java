@@ -34,7 +34,7 @@ public class DeviceEventRabbitEndpointTest {
     private DeviceEventProcessor deviceEventProcessor;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         deviceEventRabbitEndpoint = new DeviceEventRabbitEndpoint(deviceEventProcessor);
 
     }

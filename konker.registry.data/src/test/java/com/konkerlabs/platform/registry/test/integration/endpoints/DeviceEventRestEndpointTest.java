@@ -93,16 +93,16 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
     @Autowired
     private JedisTaskService jedisTaskService;
 
-    private String DEVICE_USER = "tug6g6essh4m";
-    private String VALID_CHANNEL = "data";
-    private String INVALID_CHANNEL_SIZE = "abcabcabcabcabcabcabcabcabcabcabc";
-    private String INVALID_CHANNEL_CHAR = "dataç";
-    private Long OFFSET = 1475765814662l;
-    private Long waitTime = 30000l;
-    private Set<String> tags =new HashSet<>(Arrays.asList("tag1", "tag2"));
+    private final String DEVICE_USER = "tug6g6essh4m";
+    private final String VALID_CHANNEL = "data";
+    private final String INVALID_CHANNEL_SIZE = "abcabcabcabcabcabcabcabcabcabcabc";
+    private final String INVALID_CHANNEL_CHAR = "dataç";
+    private final Long OFFSET = 1475765814662L;
+    private final Long waitTime = 30000L;
+    private final Set<String> tags =new HashSet<>(Arrays.asList("tag1", "tag2"));
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         deviceEventProcessor = mock(DeviceEventProcessor.class);
         deviceEventRestEndpoint = new DeviceEventRestEndpoint(
                 applicationContext,
@@ -140,7 +140,7 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
         context.setAuthentication(auth);
 
         getMockMvc().perform(
-                get("/sub/"+ DEVICE_USER +"/"+ INVALID_CHANNEL_CHAR)
+                get("/sub/"+ DEVICE_USER + '/' + INVALID_CHANNEL_CHAR)
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("offset", String.valueOf(OFFSET))
                         .param("waitTime", String.valueOf(waitTime)))
@@ -148,7 +148,7 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
 
 
         getMockMvc().perform(
-                get("/sub/"+ DEVICE_USER +"/"+ INVALID_CHANNEL_SIZE)
+                get("/sub/"+ DEVICE_USER + '/' + INVALID_CHANNEL_SIZE)
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("offset", String.valueOf(OFFSET))
                         .param("waitTime", String.valueOf(waitTime))
@@ -157,7 +157,7 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
     }
 
     @Test
-    public void shouldRefuseRequestFromKonkerPlataform() throws Exception {
+    public void shouldRefuseRequestFromKonkerPlatform() throws Exception {
         Device device = Device.builder().deviceId("tug6g6essh4m")
                 .active(true)
                 .apiKey("e4399b2ed998")
@@ -176,7 +176,7 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
         when(jsonParsingService.isValid(json)).thenReturn(true);
 
 		getMockMvc().perform(
-                post("/pub/"+ device.getApiKey() +"/"+ VALID_CHANNEL)
+                post("/pub/"+ device.getApiKey() + '/' + VALID_CHANNEL)
                 	.flashAttr("principal", device)
                 	.header("X-Konker-Version", "0.1")
                     .contentType(MediaType.APPLICATION_JSON)

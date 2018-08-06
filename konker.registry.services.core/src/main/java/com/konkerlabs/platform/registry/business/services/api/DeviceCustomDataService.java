@@ -24,7 +24,7 @@ public interface DeviceCustomDataService {
 		}
 	}
 
-	public enum Messages {
+	enum Messages {
 		DEVICE_CUSTOM_DATA_REMOVED_SUCCESSFULLY("controller.device.custom_data.removed_succesfully");
 
 		public String getCode() {

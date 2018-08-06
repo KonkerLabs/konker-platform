@@ -16,9 +16,6 @@ import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
 import com.konkerlabs.platform.registry.data.services.routes.api.EventRouteExecutor;
 import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
-import com.konkerlabs.platform.registry.test.data.base.BusinessLayerTestSupport;
-import com.konkerlabs.platform.registry.test.data.base.BusinessTestConfiguration;
-import com.konkerlabs.platform.registry.test.data.base.MongoTestConfiguration;
 import com.konkerlabs.platform.registry.test.data.base.*;
 import com.konkerlabs.platform.utilities.config.UtilitiesConfig;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
@@ -100,14 +97,14 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
 
     private Event event;
 
-    private String inactiveRouteDeviceId = "0000000000000001";
-    private String malformedRouteDeviceId = "0000000000000002";
-    private String matchingRouteDeviceGuid = "1af9be20-441e-419b-84a9-cb84efd4f49d";
-    private String nonMatchingFilterDeviceId = "0000000000000007";
-    private String nonMatchingRouteDeviceId = "0000000000000009";
+    private final String inactiveRouteDeviceId = "0000000000000001";
+    private final String malformedRouteDeviceId = "0000000000000002";
+    private final String matchingRouteDeviceGuid = "1af9be20-441e-419b-84a9-cb84efd4f49d";
+    private final String nonMatchingFilterDeviceId = "0000000000000007";
+    private final String nonMatchingRouteDeviceId = "0000000000000009";
 
-    private String payload = "{\"metric\":\"temperature\",\"deviceGuid\":\"1af9be20-441e-419b-84a9-cb84efd4f49d\",\"value\":30,\"ts\":1454900000,\"data\":{\"sn\":1234,\"test\":1,\"foo\":2}}";
-    private String transformationResponse = "{\"okToGo\" : true }";
+    private final String payload = "{\"metric\":\"temperature\",\"deviceGuid\":\"1af9be20-441e-419b-84a9-cb84efd4f49d\",\"value\":30,\"ts\":1454900000,\"data\":{\"sn\":1234,\"test\":1,\"foo\":2}}";
+    private final String transformationResponse = "{\"okToGo\" : true }";
 
     @Before
     public void setUp() throws Exception {
@@ -160,7 +157,7 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         Mockito.reset(httpGateway);
     }
 
@@ -171,7 +168,7 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
             "/fixtures/devices.json",
             "/fixtures/transformations.json",
             "/fixtures/event-routes.json"})
-    public void shouldSendEventsForAMatchingRoute() throws ExecutionException, InterruptedException {
+    public void shouldSendEventsForAMatchingRoute() throws Exception {
         Device device = Device.builder()
                               .tenant(tenant)
                               .application(application)
@@ -191,7 +188,7 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
             "/fixtures/devices.json",
             "/fixtures/transformations.json",
             "/fixtures/event-routes.json"})
-    public void shouldSendAnyEventsForInvalidLocation() throws ExecutionException, InterruptedException {
+    public void shouldSendAnyEventsForInvalidLocation() throws Exception {
         Device device = Device.builder()
                               .tenant(tenant)
                               .application(application)
@@ -207,7 +204,7 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldntSendAnyEventsForANonmatchingRoute() throws ExecutionException, InterruptedException, URISyntaxException {
+    public void shouldntSendAnyEventsForANonmatchingRoute() throws Exception {
         Device device = Device.builder()
                 .tenant(tenant)
                 .application(application)
@@ -220,7 +217,7 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldntSendAnyEventsForANonMatchingIncomingDevice() throws ExecutionException, InterruptedException, URISyntaxException {
+    public void shouldntSendAnyEventsForANonMatchingIncomingDevice() throws Exception {
         Device device = Device.builder()
                 .tenant(tenant)
                 .application(application)
@@ -233,7 +230,7 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldntSendAnyEventsForANonMatchingIncomingChannel() throws ExecutionException, InterruptedException, URISyntaxException {
+    public void shouldntSendAnyEventsForANonMatchingIncomingChannel() throws Exception {
         Device device = Device.builder()
                 .tenant(tenant)
                 .application(application)
@@ -247,7 +244,7 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldntSendAnyEventsForANonActiveRoute() throws ExecutionException, InterruptedException, URISyntaxException {
+    public void shouldntSendAnyEventsForANonActiveRoute() throws Exception {
         Device device = Device.builder()
                 .tenant(tenant)
                 .application(application)
@@ -260,7 +257,7 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldntSendAnyEventsForMalformedExpressionFilter() throws ExecutionException, InterruptedException, URISyntaxException {
+    public void shouldntSendAnyEventsForMalformedExpressionFilter() throws Exception {
         Device device = Device.builder()
                 .tenant(tenant)
                 .application(application)

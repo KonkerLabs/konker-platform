@@ -1,6 +1,5 @@
 package com.konkerlabs.platform.registry.audit;
 
-import org.slf4j.MDC;
 import org.slf4j.helpers.NOPMDCAdapter;
 import org.slf4j.helpers.Util;
 import org.slf4j.impl.StaticMDCBinder;

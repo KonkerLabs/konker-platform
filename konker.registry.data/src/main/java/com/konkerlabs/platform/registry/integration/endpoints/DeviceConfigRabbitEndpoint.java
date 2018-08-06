@@ -48,7 +48,7 @@ public class DeviceConfigRabbitEndpoint {
     public void onConfigPub(Message message) {
 
         if (LOGGER.isDebugEnabled())
-            LOGGER.debug("A message has arrived -> " + message.toString());
+            LOGGER.debug("A message has arrived -> " + message);
 
         MessageProperties properties = message.getMessageProperties();
         if (properties == null || properties.getHeaders().isEmpty()) {

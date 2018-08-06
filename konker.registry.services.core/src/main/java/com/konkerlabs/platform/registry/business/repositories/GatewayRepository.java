@@ -1,11 +1,9 @@
 package com.konkerlabs.platform.registry.business.repositories;
 
-import com.konkerlabs.platform.registry.business.model.EventRoute;
 import com.konkerlabs.platform.registry.business.model.Gateway;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
-import java.net.URI;
 import java.util.List;
 
 public interface GatewayRepository extends MongoRepository<Gateway, String> {

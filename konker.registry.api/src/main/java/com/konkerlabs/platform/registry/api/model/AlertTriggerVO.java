@@ -3,7 +3,6 @@ package com.konkerlabs.platform.registry.api.model;
 import com.konkerlabs.platform.registry.business.model.AlertTrigger;
 
 import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;

@@ -10,7 +10,7 @@ import java.util.Map;
 
 public class ServiceResponseMatchers {
 
-    private static abstract class BaseMatcher<ServiceResponse> extends TypeSafeMatcher<ServiceResponse> {
+    private abstract static class BaseMatcher<ServiceResponse> extends TypeSafeMatcher<ServiceResponse> {
 
         protected void describeMismatchSafely(ServiceResponse item, Description mismatchDescription) {
             mismatchDescription.appendText("was ").appendValue(item);

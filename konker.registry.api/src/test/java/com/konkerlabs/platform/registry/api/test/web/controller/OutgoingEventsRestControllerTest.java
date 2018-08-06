@@ -48,7 +48,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 })
 public class OutgoingEventsRestControllerTest extends WebLayerTestContext {
 
-    private static final String NONEXIST_APPLICATION_NANE = "AppLost";
+    private static final String NONEXIST_APPLICATION_NAME = "AppLost";
 
     @Autowired
     private DeviceEventService deviceEventService;
@@ -59,11 +59,11 @@ public class OutgoingEventsRestControllerTest extends WebLayerTestContext {
     @Autowired
     private Tenant tenant;
     private Application application;
-    private String dateIso = "2017-04-07T15:10:02.827Z";
+    private final String dateIso = "2017-04-07T15:10:02.827Z";
     private Event event1;
     private Event event2;
-    private String PAYLOAD1 = "{\"id\":\"payload1\"}";
-    private String PAYLOAD2 = "{\"id\":\"payload2\"}";
+    private final String PAYLOAD1 = "{\"id\":\"payload1\"}";
+    private final String PAYLOAD2 = "{\"id\":\"payload2\"}";
 
     @Before
     public void setUp() {
@@ -94,10 +94,10 @@ public class OutgoingEventsRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryToListWithWrongApplication() throws Exception {
 
-        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NANE))
+        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NAME))
             .thenReturn(ServiceResponseBuilder.<Application>error().withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode()).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.get("/" + NONEXIST_APPLICATION_NANE + "/outgoingEvents")
+        getMockMvc().perform(MockMvcRequestBuilders.get("/" + NONEXIST_APPLICATION_NAME + "/outgoingEvents")
                                                    .contentType("application/json")
                                                    .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is4xxClientError())
