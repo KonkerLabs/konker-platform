@@ -85,7 +85,7 @@ public class UserRestController implements InitializingBean {
             value = "Get a user by email",
             response = RestResponse.class
     )
-    public UserVO read(@PathVariable("email") String email) throws BadServiceResponseException, NotFoundResponseException {
+    public UserVO read(@PathVariable("email") String email) throws NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
 
@@ -176,7 +176,7 @@ public class UserRestController implements InitializingBean {
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
 
         for (Validations value : UserService.Validations.values()) {
             validationsCode.add(value.getCode());

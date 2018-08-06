@@ -118,7 +118,7 @@ public class EventSchemaServiceImpl implements EventSchemaService {
             return ServiceResponseBuilder.<EventSchema>error()
                 .withMessage(invalid.get().getCode()).build();
 
-        EventSchema toBeSaved = null;
+        EventSchema toBeSaved;
         try {
             EventActor incoming = event.getIncoming();
             toBeSaved = prepareSchemaFor(incoming.getTenantDomain(), incoming.getApplicationName(), incoming.getDeviceGuid(), incoming.getChannel(),event.getPayload());
@@ -145,7 +145,7 @@ public class EventSchemaServiceImpl implements EventSchemaService {
         Map<String,JsonParsingService.JsonPathData> data = jsonParsingService.toFlatMap(payload);
 
         EventSchema eventSchema = Optional.of(existing)
-                .filter(eventSchemaServiceResponse -> eventSchemaServiceResponse.isOk())
+                .filter(ServiceResponse::isOk)
                 .map(eventSchemaServiceResponse -> eventSchemaServiceResponse.getResult())
                 .orElseGet(() -> {
                     EventSchema schema = EventSchema.builder()
@@ -154,7 +154,7 @@ public class EventSchemaServiceImpl implements EventSchemaService {
                     return schema;
                 });
 
-        data.forEach((path, pathData) -> eventSchema.upsertTypeFor(path,pathData));
+        data.forEach(eventSchema::upsertTypeFor);
 
         return eventSchema;
     }
@@ -189,7 +189,7 @@ public class EventSchemaServiceImpl implements EventSchemaService {
         return Optional.empty();
     }
 
-    private ServiceResponse<List<EventSchema>> findIncomingBy(Tenant tenant, Application application, String deviceGuid) {
+    private ServiceResponse<List<EventSchema>> findIncomingBy(Tenant tenant, String deviceGuid) {
 
         if (!Optional.ofNullable(tenant).isPresent()) {
             return ServiceResponseBuilder.<List<EventSchema>>error()
@@ -306,7 +306,7 @@ public class EventSchemaServiceImpl implements EventSchemaService {
         }
 
         List<String> listMetrics = metricsResponse.getFields().stream()
-                .filter(schemaField -> schemaField.getKnownTypes().contains(nodeType)).map(m -> m.getPath())
+                .filter(schemaField -> schemaField.getKnownTypes().contains(nodeType)).map(SchemaField::getPath)
                 .collect(Collectors.toList());
 
         return listMetrics;

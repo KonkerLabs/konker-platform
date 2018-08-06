@@ -2,8 +2,6 @@ package com.konkerlabs.platform.registry.api.test.web.controller;
 
 import com.konkerlabs.platform.registry.api.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.api.model.HealthAlertInputVO;
-import com.konkerlabs.platform.registry.api.model.HealthAlertInputVO;
-import com.konkerlabs.platform.registry.api.model.UserVO;
 import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
 import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
 import com.konkerlabs.platform.registry.api.web.controller.HealthAlertRestController;
@@ -16,7 +14,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
-import org.mockito.internal.matchers.Any;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -72,7 +69,7 @@ public class HealthAlertRestControllerTest extends WebLayerTestContext {
 
     private Device device;
 
-    private String BASEPATH = "triggers";
+    private final String BASEPATH = "triggers";
 
     @Before
     public void setUp() {

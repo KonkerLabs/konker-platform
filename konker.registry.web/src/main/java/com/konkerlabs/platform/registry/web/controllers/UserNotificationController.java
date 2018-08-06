@@ -30,7 +30,7 @@ public class UserNotificationController {
 
     /**
      * This class is a wrapper over the user notification meant to expose only
-     * attributes related to the header of the messagem via JSON
+     * attributes related to the header of the message via JSON
      * 
      * @author wmariusso
      *

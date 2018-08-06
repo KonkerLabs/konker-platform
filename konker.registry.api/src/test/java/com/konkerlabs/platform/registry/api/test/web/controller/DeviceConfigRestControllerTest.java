@@ -56,7 +56,7 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBui
 })
 public class DeviceConfigRestControllerTest extends WebLayerTestContext {
 
-    private static final String NONEXIST_APPLICATION_NANE = "AppLost";
+    private static final String NONEXIST_APPLICATION_NAME = "AppLost";
 
     @Autowired
     private ApplicationService applicationService;
@@ -84,7 +84,7 @@ public class DeviceConfigRestControllerTest extends WebLayerTestContext {
 
     private String json;
 
-    private String BASEPATH = "configs";
+    private final String BASEPATH = "configs";
 
     @Before
     public void setUp() {
@@ -211,11 +211,11 @@ public class DeviceConfigRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldReadWithWrongApplication() throws Exception {
 
-        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NANE))
+        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NAME))
                 .thenReturn(ServiceResponseBuilder.<Application>error().withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode()).build());
 
         getMockMvc().perform(MockMvcRequestBuilders
-                    .get(MessageFormat.format("/{0}/{1}/{2}/{3}", NONEXIST_APPLICATION_NANE, BASEPATH, deviceModel.getName(), location.getName()))
+                    .get(MessageFormat.format("/{0}/{1}/{2}/{3}", NONEXIST_APPLICATION_NAME, BASEPATH, deviceModel.getName(), location.getName()))
                     .contentType("application/json")
                     .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is4xxClientError())
@@ -231,14 +231,14 @@ public class DeviceConfigRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldReadWithWrongLocation() throws Exception {
 
-        when(locationSearchService.findByName(tenant, application, NONEXIST_APPLICATION_NANE, false))
+        when(locationSearchService.findByName(tenant, application, NONEXIST_APPLICATION_NAME, false))
             .thenReturn(ServiceResponseBuilder.<Location> error()
                     .withMessage(LocationService.Messages.LOCATION_NOT_FOUND.getCode(), new Object[] {"mg"})
                     .withResult(location)
                     .build());
 
         getMockMvc().perform(MockMvcRequestBuilders
-                    .get(MessageFormat.format("/{0}/{1}/{2}/{3}", application.getName(), BASEPATH, deviceModel.getName(), NONEXIST_APPLICATION_NANE))
+                    .get(MessageFormat.format("/{0}/{1}/{2}/{3}", application.getName(), BASEPATH, deviceModel.getName(), NONEXIST_APPLICATION_NAME))
                     .contentType("application/json")
                     .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is4xxClientError())
@@ -254,13 +254,13 @@ public class DeviceConfigRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldReadWithWrongDeviceModel() throws Exception {
 
-        when(deviceModelService.getByTenantApplicationAndName(tenant, application, NONEXIST_APPLICATION_NANE))
+        when(deviceModelService.getByTenantApplicationAndName(tenant, application, NONEXIST_APPLICATION_NAME))
             .thenReturn(ServiceResponseBuilder.<DeviceModel> error()
                     .withMessage(DeviceModelService.Validations.DEVICE_MODEL_NOT_FOUND.getCode())
                     .build());
 
         getMockMvc().perform(MockMvcRequestBuilders
-                    .get(MessageFormat.format("/{0}/{1}/{2}/{3}", application.getName(), BASEPATH, NONEXIST_APPLICATION_NANE, location.getName()))
+                    .get(MessageFormat.format("/{0}/{1}/{2}/{3}", application.getName(), BASEPATH, NONEXIST_APPLICATION_NAME, location.getName()))
                     .contentType("application/json")
                     .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is4xxClientError())
@@ -404,11 +404,11 @@ public class DeviceConfigRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryDeleteWithWrongApplication() throws Exception {
 
-        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NANE))
+        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NAME))
                 .thenReturn(ServiceResponseBuilder.<Application>error().withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode()).build());
 
         getMockMvc().perform(MockMvcRequestBuilders
-                    .delete(MessageFormat.format("/{0}/{1}/{2}/{3}/", NONEXIST_APPLICATION_NANE, BASEPATH, deviceModel.getName(), location.getName()))
+                    .delete(MessageFormat.format("/{0}/{1}/{2}/{3}/", NONEXIST_APPLICATION_NAME, BASEPATH, deviceModel.getName(), location.getName()))
                     .contentType("application/json")
                     .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is4xxClientError())

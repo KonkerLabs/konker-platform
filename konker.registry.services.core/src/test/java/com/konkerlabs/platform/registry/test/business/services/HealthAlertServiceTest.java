@@ -18,7 +18,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -106,7 +105,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
         otherApplication = Application.builder()
                 .name("smartffkonkerother")
                 .friendlyName("Konker Smart Frig")
-                .description("Konker Smart Frig - take pic, tells temperatue")
+                .description("Konker Smart Frig - take pic, tells temperature")
                 .tenant(currentTenant)
                 .qualifier("konker")
                 .registrationDate(Instant.ofEpochMilli(1453320973747L))

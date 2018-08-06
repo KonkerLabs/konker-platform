@@ -39,13 +39,13 @@ public class TenantUserDetailsServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = "/fixtures/users.json")
-    public void shouldLoadUserByItsUsername() throws Exception {
+    public void shouldLoadUserByItsUsername() {
         UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
         assertThat(userDetails,notNullValue());
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfUsernameDoesNotExist() throws Exception {
+    public void shouldRaiseAnExceptionIfUsernameDoesNotExist() {
         thrown.expect(UsernameNotFoundException.class);
         thrown.expectMessage("authentication.credentials.invalid");
 

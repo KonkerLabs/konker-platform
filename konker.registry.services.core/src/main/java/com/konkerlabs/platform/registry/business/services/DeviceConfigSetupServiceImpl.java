@@ -55,7 +55,7 @@ public class DeviceConfigSetupServiceImpl implements DeviceConfigSetupService {
         }
 
         return ServiceResponseBuilder.<List<DeviceConfig>>ok()
-                .withResult(getDeviveConfis(tenant, application))
+                .withResult(getDeviceConfigs(tenant, application))
                 .build();
 
     }
@@ -136,7 +136,7 @@ public class DeviceConfigSetupServiceImpl implements DeviceConfigSetupService {
         if (deviceConfig == null) {
             return ServiceResponseBuilder.<DeviceConfig>error()
                     .withMessage(Validations.DEVICE_CONFIG_NOT_FOUND.getCode())
-                    .withResult(deviceConfig).build();
+                    .build();
         } else {
             deviceConfig.setJson(json);
         }
@@ -225,7 +225,7 @@ public class DeviceConfigSetupServiceImpl implements DeviceConfigSetupService {
         return null;
     }
 
-    private List<DeviceConfig> getDeviveConfis(Tenant tenant, Application application) {
+    private List<DeviceConfig> getDeviceConfigs(Tenant tenant, Application application) {
 
         DeviceConfigSetup deviceConfigSetup = getCurrentConfigSetup(tenant, application);
         return deviceConfigSetup.getConfigs();
@@ -252,7 +252,7 @@ public class DeviceConfigSetupServiceImpl implements DeviceConfigSetupService {
         return DeviceConfigSetup.builder()
                                 .tenant(tenant)
                                 .application(application)
-                                .configs(new ArrayList<DeviceConfig>())
+                                .configs(new ArrayList<>())
                                 .version(version)
                                 .date(Instant.now())
                                 .build();
@@ -302,7 +302,7 @@ public class DeviceConfigSetupServiceImpl implements DeviceConfigSetupService {
         }
 
         return ServiceResponseBuilder.<List<DeviceConfig>>ok()
-                .withResult(getDeviveConfis(tenant, application)
+                .withResult(getDeviceConfigs(tenant, application)
                                 .stream()
                                 .filter(p -> p.getDeviceModelGuid().equals(deviceModel.getGuid()))
                                 .collect(Collectors.toList()))
@@ -330,12 +330,12 @@ public class DeviceConfigSetupServiceImpl implements DeviceConfigSetupService {
         }
 
         return ServiceResponseBuilder.<List<DeviceConfig>>ok()
-                .withResult(getDeviveConfis(tenant, application)
+                .withResult(getDeviceConfigs(tenant, application)
                                 .stream()
                                 .filter(p -> p.getLocationGuid().equals(location.getGuid()))
                                 .collect(Collectors.toList()))
                 .build();
 
-    };
+    }
 
 }

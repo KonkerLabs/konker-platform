@@ -7,7 +7,7 @@ import java.text.MessageFormat;
 
 public interface URIDealer {
 
-    final String URI_TEMPLATE = "{0}://{1}/{2}";
+    String URI_TEMPLATE = "{0}://{1}/{2}";
 
     String getUriScheme();
 

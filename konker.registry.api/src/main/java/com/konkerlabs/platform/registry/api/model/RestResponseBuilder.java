@@ -17,19 +17,19 @@ public class RestResponseBuilder<T> {
     }
 
     public static <T> RestResponseBuilder<T> ok() {
-        RestResponse<T> response = new RestResponse<T>();
+        RestResponse<T> response = new RestResponse<>();
         response.setStatus(RestResponse.Status.SUCCESS);
         response.setTimestamp(Instant.now().getEpochSecond());
 
-        return new RestResponseBuilder<T>(response).withHttpStatus(HttpStatus.OK);
+        return new RestResponseBuilder<>(response).withHttpStatus(HttpStatus.OK);
     };
 
     public static <T> RestResponseBuilder<T> error() {
-        RestResponse<T> response = new RestResponse<T>();
+        RestResponse<T> response = new RestResponse<>();
         response.setStatus(RestResponse.Status.ERROR);
         response.setTimestamp(Instant.now().getEpochSecond());
 
-        return new RestResponseBuilder<T>(response).withHttpStatus(HttpStatus.BAD_REQUEST);
+        return new RestResponseBuilder<>(response).withHttpStatus(HttpStatus.BAD_REQUEST);
     };
 
     public RestResponseBuilder<T> withHttpStatus(HttpStatus httpStatus) {

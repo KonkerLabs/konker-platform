@@ -55,7 +55,7 @@ public class LocationRestController extends AbstractRestController implements In
             value = "List all locations by application",
             response = LocationVO.class)
     public List<LocationVO> list(@PathVariable("application") String applicationId)
-            throws BadServiceResponseException, NotFoundResponseException, NotAuthorizedResponseException {
+            throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = null;
         Gateway gateway = null;
@@ -379,7 +379,7 @@ public class LocationRestController extends AbstractRestController implements In
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         for (Validations value : Validations.values()) {
             validationsCode.add(value.getCode());
         }

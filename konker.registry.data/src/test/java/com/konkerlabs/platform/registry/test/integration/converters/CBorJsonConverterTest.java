@@ -10,7 +10,7 @@ import com.konkerlabs.platform.registry.integration.converters.CBorJsonConverter
 
 public class CBorJsonConverterTest {
 	
-	private CBorJsonConverter converter = new CBorJsonConverter();
+	private final CBorJsonConverter converter = new CBorJsonConverter();
 	
 	@Test
     public void testJsonArrayToCBorBytesToJson() {

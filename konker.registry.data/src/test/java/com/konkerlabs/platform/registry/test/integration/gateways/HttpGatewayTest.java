@@ -50,7 +50,7 @@ public class HttpGatewayTest {
     private HttpGateway httpGateway;
     private HttpMethod method;
     private HttpHeaders headers;
-    private MediaType mediaType = MediaType.APPLICATION_JSON;
+    private final MediaType mediaType = MediaType.APPLICATION_JSON;
 
     @Before
     public void setUp() throws URISyntaxException {
@@ -101,9 +101,9 @@ public class HttpGatewayTest {
     }
 
     @Test
-    public void shouldIncludeAuhtorizationHeader() throws IntegrationException {
+    public void shouldIncludeAuthorizationHeader() throws IntegrationException {
         when(restTemplate.exchange(eq(uri), eq(HttpMethod.GET), httpEntityCaptor.capture(),
-                eq(String.class))).thenReturn(new ResponseEntity<String>(HttpStatus.OK));
+                eq(String.class))).thenReturn(new ResponseEntity<>(HttpStatus.OK));
 
         httpGateway.request(method, headers, uri, mediaType, () -> null, USERNAME, PASSWORD);
 
@@ -119,7 +119,7 @@ public class HttpGatewayTest {
     @Test
     public void shouldAddKonkerVersionHeader() throws IntegrationException {
         when(restTemplate.exchange(eq(uri), eq(HttpMethod.GET), httpEntityCaptor.capture(),
-                eq(String.class))).thenReturn(new ResponseEntity<String>(HttpStatus.OK));
+                eq(String.class))).thenReturn(new ResponseEntity<>(HttpStatus.OK));
 
         httpGateway.request(method, headers, uri, mediaType, () -> null, "", PASSWORD);
 
@@ -133,9 +133,9 @@ public class HttpGatewayTest {
     }
 
     @Test
-    public void shouldIncludeAuhtorizationHeaderWithEmptyUser() throws IntegrationException {
+    public void shouldIncludeAuthorizationHeaderWithEmptyUser() throws IntegrationException {
         when(restTemplate.exchange(eq(uri), eq(HttpMethod.GET), httpEntityCaptor.capture(),
-                eq(String.class))).thenReturn(new ResponseEntity<String>(HttpStatus.OK));
+                eq(String.class))).thenReturn(new ResponseEntity<>(HttpStatus.OK));
 
         httpGateway.request(method, headers, uri, mediaType, () -> null, "", PASSWORD);
 
@@ -149,9 +149,9 @@ public class HttpGatewayTest {
     }
 
     @Test
-    public void shouldIncludeAuhtorizationHeaderWithEmptyPasword() throws IntegrationException {
+    public void shouldIncludeAuthorizationHeaderWithEmptyPassword() throws IntegrationException {
         when(restTemplate.exchange(eq(uri), eq(HttpMethod.GET), httpEntityCaptor.capture(),
-                eq(String.class))).thenReturn(new ResponseEntity<String>(HttpStatus.OK));
+                eq(String.class))).thenReturn(new ResponseEntity<>(HttpStatus.OK));
 
         httpGateway.request(method, headers, uri, mediaType, () -> null, USERNAME, "");
 
@@ -165,9 +165,9 @@ public class HttpGatewayTest {
     }
 
     @Test
-    public void shouldNotIncludeAuhtorizationHeader() throws IntegrationException {
+    public void shouldNotIncludeAuthorizationHeader() throws IntegrationException {
         when(restTemplate.exchange(eq(uri), eq(HttpMethod.GET), httpEntityCaptor.capture(),
-                eq(String.class))).thenReturn(new ResponseEntity<String>(HttpStatus.OK));
+                eq(String.class))).thenReturn(new ResponseEntity<>(HttpStatus.OK));
 
         httpGateway.request(method, headers, uri, mediaType, () -> null, null, null);
 
@@ -181,9 +181,9 @@ public class HttpGatewayTest {
     }
 
     @Test
-    public void shouldNotIncludeAuhtorizationHeaderForEmptyUserAndPassword() throws IntegrationException {
+    public void shouldNotIncludeAuthorizationHeaderForEmptyUserAndPassword() throws IntegrationException {
         when(restTemplate.exchange(eq(uri), eq(HttpMethod.GET), httpEntityCaptor.capture(),
-                eq(String.class))).thenReturn(new ResponseEntity<String>(HttpStatus.OK));
+                eq(String.class))).thenReturn(new ResponseEntity<>(HttpStatus.OK));
 
         httpGateway.request(method, headers, uri, mediaType, () -> null, "", "");
 
@@ -201,7 +201,7 @@ public class HttpGatewayTest {
         Supplier<String> body = () -> "requestBody";
 
         when(restTemplate.exchange(eq(uri), eq(HttpMethod.GET), httpEntityCaptor.capture(),
-                eq(String.class))).thenReturn(new ResponseEntity<String>(HttpStatus.OK));
+                eq(String.class))).thenReturn(new ResponseEntity<>(HttpStatus.OK));
 
         httpGateway.request(method, headers, uri, mediaType, body, USERNAME, PASSWORD);
 
@@ -216,7 +216,7 @@ public class HttpGatewayTest {
         method = HttpMethod.POST;
 
         when(restTemplate.exchange(eq(uri), eq(method), httpEntityCaptor.capture(),
-                eq(String.class))).thenReturn(new ResponseEntity<String>(HttpStatus.OK));
+                eq(String.class))).thenReturn(new ResponseEntity<>(HttpStatus.OK));
 
         httpGateway.request(method, headers, uri, mediaType, null, USERNAME, PASSWORD);
 
@@ -235,7 +235,7 @@ public class HttpGatewayTest {
         ));
 
         when(restTemplate.exchange(eq(uri), eq(method), httpEntityCaptor.capture(),
-                eq(String.class))).thenReturn(new ResponseEntity<String>(errorBody,HttpStatus.INTERNAL_SERVER_ERROR));
+                eq(String.class))).thenReturn(new ResponseEntity<>(errorBody, HttpStatus.INTERNAL_SERVER_ERROR));
 
         httpGateway.request(method, headers, uri, mediaType, null, USERNAME, PASSWORD);
     }

@@ -9,7 +9,7 @@ import java.io.InputStream;
  */
 public interface UploadRepository {
 
-    public static enum Validations {
+    enum Validations {
         INVALID_PATH("service.upload.s3.file.delete.path.invalid"),
         INVALID_S3_BUCKET_CREDENTIALS("service.upload.s3.bucket.invalid"),
         INVALID_PARAMETERS("service.upload.s3.parameters.invalid"),
@@ -55,12 +55,12 @@ public interface UploadRepository {
      * Upload a file to bucket
      * @param base64
      * @param fileName
-     * @param sufix
+     * @param suffix
      * @param isPublic
      * @return String path generated
      * @throws Exception
      */
-    String upload(String base64, String fileName, String sufix, boolean isPublic) throws Exception;
+    String upload(String base64, String fileName, String suffix, boolean isPublic) throws Exception;
 
     /**
      * Validate the file

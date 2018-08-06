@@ -6,7 +6,6 @@ import com.amazonaws.services.kinesis.model.PutRecordResult;
 import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.registry.business.repositories.DeviceModelRepository;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.LocationSearchService;
 import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
@@ -36,8 +35,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.net.URI;
 import java.time.Instant;
 import java.util.Map;
-
-import static org.mockito.Mockito.verify;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
@@ -77,7 +74,7 @@ public class EventPublisherAmazonKinesisTest extends BusinessLayerTestSupport {
     private Event event;
     private URI destinationUri;
 
-    private String eventPayload = "{\n" +
+    private final String eventPayload = "{\n" +
             "    \"field\" : \"value\",\n" +
             "    \"count\" : 34,\n" +
             "    \"amount\" : 21.45,\n" +
@@ -89,7 +86,7 @@ public class EventPublisherAmazonKinesisTest extends BusinessLayerTestSupport {
     private Application application;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
 
         tenant = Tenant.builder()
@@ -137,7 +134,7 @@ public class EventPublisherAmazonKinesisTest extends BusinessLayerTestSupport {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         Mockito.reset(deviceLogEventService);
         Mockito.reset(deviceModelRepository);
         Mockito.reset(locationSearchService);
@@ -145,7 +142,7 @@ public class EventPublisherAmazonKinesisTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfEventIsNull() throws Exception {
+    public void shouldRaiseAnExceptionIfEventIsNull() {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Event cannot be null");
 
@@ -153,7 +150,7 @@ public class EventPublisherAmazonKinesisTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfURIIsNull() throws Exception {
+    public void shouldRaiseAnExceptionIfURIIsNull() {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Destination URI cannot be null or empty");
 
@@ -161,7 +158,7 @@ public class EventPublisherAmazonKinesisTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfDataIsNull() throws Exception {
+    public void shouldRaiseAnExceptionIfDataIsNull() {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Data cannot be null");
 
@@ -169,7 +166,7 @@ public class EventPublisherAmazonKinesisTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfTenantIsNull() throws Exception {
+    public void shouldRaiseAnExceptionIfTenantIsNull() {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Tenant cannot be null");
 
@@ -177,7 +174,7 @@ public class EventPublisherAmazonKinesisTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldSendMessages() throws Exception {
+    public void shouldSendMessages() {
 
         destinationUri = new URIDealer() {
             @Override

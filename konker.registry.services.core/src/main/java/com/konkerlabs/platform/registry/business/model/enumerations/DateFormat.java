@@ -29,7 +29,7 @@ public enum DateFormat {
     }
 
     public DateTimeFormatter getDateTimeFormatter() {
-        return DateTimeFormatter.ofPattern(this.id + " " + DEFAULT_HOUR_FORMAT);
+        return DateTimeFormatter.ofPattern(this.id + ' ' + DEFAULT_HOUR_FORMAT);
     }
 
 }

@@ -9,7 +9,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 public class MessagePackJsonConverterTest {
 
-    private MessagePackJsonConverter subject = new MessagePackJsonConverter();
+    private final MessagePackJsonConverter subject = new MessagePackJsonConverter();
 
     @Test
     public void testJsonToBytesToJson() {

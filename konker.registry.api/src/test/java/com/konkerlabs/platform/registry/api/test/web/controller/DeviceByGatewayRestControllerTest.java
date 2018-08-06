@@ -8,8 +8,6 @@ import com.konkerlabs.platform.registry.api.web.controller.DeviceRestController;
 import com.konkerlabs.platform.registry.api.web.controller.DeviceStatusRestController;
 import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
 import com.konkerlabs.platform.registry.business.model.*;
-import com.konkerlabs.platform.registry.business.model.Event.EventActor;
-import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertSeverity;
 import com.konkerlabs.platform.registry.business.services.api.*;
 import org.junit.After;
 import org.junit.Before;
@@ -21,7 +19,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.scheduling.Trigger;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -46,7 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 })
 public class DeviceByGatewayRestControllerTest extends WebLayerTestContext {
 
-    private static final String NONEXIST_APPLICATION_NANE = "AppLost";
+    private static final String NONEXIST_APPLICATION_NAME = "AppLost";
 
     @Autowired
     private DeviceRegisterService deviceRegisterService;
@@ -79,9 +76,9 @@ public class DeviceByGatewayRestControllerTest extends WebLayerTestContext {
 
     private Device device1;
 
-    private String BASEPATH = "devices";
+    private final String BASEPATH = "devices";
 
-    private Instant registrationDate = Instant.ofEpochMilli(1495716970000l).minusSeconds(3600l);
+    private final Instant registrationDate = Instant.ofEpochMilli(1495716970000L).minusSeconds(3600L);
 
     @Before
     public void setUp() {

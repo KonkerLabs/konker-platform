@@ -19,7 +19,7 @@ public class BusinessLayerTestSupport {
     public MongoDbRule mongoDbRule = newMongoDbRule().defaultSpringMongoDb("registry-test");
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mongoDbRule.getDatabaseOperation().deleteAll();
     }
 

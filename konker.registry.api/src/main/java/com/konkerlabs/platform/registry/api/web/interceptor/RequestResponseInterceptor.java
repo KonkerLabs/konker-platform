@@ -27,7 +27,7 @@ public class RequestResponseInterceptor extends HandlerInterceptorAdapter {
 			HttpServletRequest request,
 			HttpServletResponse response,
 			Object handler,
-			Exception ex) throws Exception {
+			Exception ex) throws java.io.IOException {
 
 		String emailUser = request.getUserPrincipal().getName();
 		ServiceResponse<User> serviceResponse = userService.findByEmail(emailUser);

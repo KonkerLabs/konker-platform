@@ -36,7 +36,7 @@ public class UserNotificationStatusController {
      * @return
      */
     @RequestMapping(value = "", method = RequestMethod.GET, produces = "application/json")
-    public @ResponseBody Map<String, Object> hasNewNotitifications(
+    public @ResponseBody Map<String, Object> hasNewNotifications(
             Principal principal) {
 
         ServiceResponse<Boolean> response = userNotificationService.hasNewNotifications(user);
@@ -52,7 +52,7 @@ public class UserNotificationStatusController {
      * @return
      */
     @RequestMapping(value = "", method = RequestMethod.POST, produces = "application/json", consumes="application/json")
-    public @ResponseBody Map<String, Object> unmarkNewNotitifications(@RequestBody Map<String, Object> body,
+    public @ResponseBody Map<String, Object> unmarkNewNotifications(@RequestBody Map<String, Object> body,
             Principal principal) {
 
         if (Boolean.FALSE.equals(body.getOrDefault("hasNewNotifications", Boolean.TRUE))) {

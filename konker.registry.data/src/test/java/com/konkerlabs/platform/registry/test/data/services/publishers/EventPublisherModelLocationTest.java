@@ -12,7 +12,6 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBui
 import com.konkerlabs.platform.registry.config.EmailConfig;
 import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
-import com.konkerlabs.platform.registry.data.config.RabbitMQDataConfig;
 import com.konkerlabs.platform.registry.data.services.api.DeviceLogEventService;
 import com.konkerlabs.platform.registry.data.services.publishers.EventPublisherDevice;
 import com.konkerlabs.platform.registry.data.services.publishers.EventPublisherModelLocation;
@@ -28,12 +27,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.springframework.amqp.core.Message;
-import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -44,14 +40,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.thymeleaf.spring4.SpringTemplateEngine;
 
 import java.net.URI;
-import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.*;
 
 import static com.konkerlabs.platform.registry.data.services.publishers.EventPublisherModelLocation.DEVICE_MQTT_CHANNEL;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -105,7 +97,7 @@ public class EventPublisherModelLocationTest extends BusinessLayerTestSupport {
     private Event event;
     private URI destinationUri;
 
-    private String eventPayload = "{\n" +
+    private final String eventPayload = "{\n" +
             "    \"field\" : \"value\",\n" +
             "    \"count\" : 34,\n" +
             "    \"amount\" : 21.45,\n" +
@@ -121,12 +113,12 @@ public class EventPublisherModelLocationTest extends BusinessLayerTestSupport {
     private Location locationBR;
     private Location locationSP;
 
-    private static String INPUT_CHANNEL = "input";
-    private static String OUTPUT_CHANNEL = "output";
+    private static final String INPUT_CHANNEL = "input";
+    private static final String OUTPUT_CHANNEL = "output";
 
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
 
         ((EventPublisherModelLocation)subject).setDeviceRegisterService(deviceRegisterService);
@@ -181,7 +173,7 @@ public class EventPublisherModelLocationTest extends BusinessLayerTestSupport {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         Mockito.reset(deviceLogEventService);
         Mockito.reset(deviceModelRepository);
         Mockito.reset(locationSearchService);
@@ -190,7 +182,7 @@ public class EventPublisherModelLocationTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfEventIsNull() throws Exception {
+    public void shouldRaiseAnExceptionIfEventIsNull() {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Event cannot be null");
 
@@ -198,7 +190,7 @@ public class EventPublisherModelLocationTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfURIIsNull() throws Exception {
+    public void shouldRaiseAnExceptionIfURIIsNull() {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Destination URI cannot be null or empty");
 
@@ -206,7 +198,7 @@ public class EventPublisherModelLocationTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfDataIsNull() throws Exception {
+    public void shouldRaiseAnExceptionIfDataIsNull() {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Data cannot be null");
 
@@ -214,7 +206,7 @@ public class EventPublisherModelLocationTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfMqttChannelIsNull() throws Exception {
+    public void shouldRaiseAnExceptionIfMqttChannelIsNull() {
         data.remove(DEVICE_MQTT_CHANNEL);
 
         thrown.expect(IllegalStateException.class);
@@ -224,7 +216,7 @@ public class EventPublisherModelLocationTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfMqttChannelIsEmpty() throws Exception {
+    public void shouldRaiseAnExceptionIfMqttChannelIsEmpty() {
         data.put(DEVICE_MQTT_CHANNEL,"");
 
         thrown.expect(IllegalStateException.class);
@@ -234,7 +226,7 @@ public class EventPublisherModelLocationTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfTenantIsNull() throws Exception {
+    public void shouldRaiseAnExceptionIfTenantIsNull() {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Tenant cannot be null");
 
@@ -242,7 +234,7 @@ public class EventPublisherModelLocationTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldSendMessages() throws Exception {
+    public void shouldSendMessages() {
 
         List<Location> children = new ArrayList<>();
         children.add(locationSP);
@@ -298,7 +290,7 @@ public class EventPublisherModelLocationTest extends BusinessLayerTestSupport {
 
             @Override
             public String getGuid() {
-                return deviceModel.getGuid() + "/" + locationBR.getGuid();
+                return deviceModel.getGuid() + '/' + locationBR.getGuid();
             }
         }.toURI();
 

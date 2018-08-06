@@ -136,7 +136,7 @@ public class EventsFilter {
         try {
 
             DateTimeFormatter fmt = new DateTimeFormatterBuilder().append(DateTimeFormatter.ISO_OFFSET_DATE)
-                    .parseDefaulting(ChronoField.HOUR_OF_DAY, 0).toFormatter();
+                    .parseDefaulting(ChronoField.HOUR_OF_DAY, 0L).toFormatter();
             return OffsetDateTime.parse(text, fmt).toInstant();
 
         } catch (DateTimeParseException e) {

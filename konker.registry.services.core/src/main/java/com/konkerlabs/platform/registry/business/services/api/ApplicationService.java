@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface ApplicationService {
 
-	public static final String DEFAULT_APPLICATION_ALIAS = "default";
+	String DEFAULT_APPLICATION_ALIAS = "default";
 	
 	
 	enum Validations {
@@ -33,7 +33,7 @@ public interface ApplicationService {
 		}
 	}
 	
-	public enum Messages {
+	enum Messages {
 		APPLICATION_REMOVED_SUCCESSFULLY("controller.application.removed.succesfully");
 
 		public String getCode() {
@@ -47,7 +47,7 @@ public interface ApplicationService {
 		}
 	}
 
-	public boolean isDefaultApplication(Application application,Tenant tenant);
+	boolean isDefaultApplication(Application application, Tenant tenant);
 	
    	/**
 	 * Persists a new Application.

@@ -71,9 +71,9 @@ public class GatewayRestControllerTest extends WebLayerTestContext {
 
     private Gateway gateway;
 
-    private String BASEPATH = "gateways";
+    private final String BASEPATH = "gateways";
 
-    private String INVALID_GUID = "000000-aaa";
+    private final String INVALID_GUID = "000000-aaa";
 
     @Before
     public void setUp() {

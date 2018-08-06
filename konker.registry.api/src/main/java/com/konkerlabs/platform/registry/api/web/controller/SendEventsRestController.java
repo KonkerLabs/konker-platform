@@ -40,7 +40,7 @@ import io.swagger.annotations.ApiParam;
 public class SendEventsRestController extends AbstractRestController implements InitializingBean {
 	
 	@Autowired
-	private PubServerInternalConfig pubServerIntenalConfig;
+	private PubServerInternalConfig pubServerInternalConfig;
 	
 	@Autowired
 	private RestTemplate restTemplate;
@@ -74,10 +74,10 @@ public class SendEventsRestController extends AbstractRestController implements 
 	    				.withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode())
 	    				.build());
         
-	    HttpEntity<String> request = new HttpEntity<String>(jsonPayload);
+	    HttpEntity<String> request = new HttpEntity<>(jsonPayload);
         String response = restTemplate
         		.postForObject(
-        				MessageFormat.format(pubServerIntenalConfig.getUrl(), tenant.getDomainName(), application.getName()), 
+        				MessageFormat.format(pubServerInternalConfig.getUrl(), tenant.getDomainName(), application.getName()),
         				request,
         				String.class);
         
@@ -93,7 +93,7 @@ public class SendEventsRestController extends AbstractRestController implements 
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
     	for (DeviceEventService.Validations value : DeviceEventService.Validations.values()) {
     		validationsCode.add(value.getCode());
     	}

@@ -104,7 +104,7 @@ public class KonkerLoggerAppender extends AppenderBase<ILoggingEvent> {
      * Encode URIDealer to log format
      *
      * @param dealer
-     * @return String  - entity: {val}, tentant: {val}, guid: {val}
+     * @return String  - entity: {val}, tenant: {val}, guid: {val}
      */
     private String encodeDealer(URI dealer) {
         return "Entity: " + dealer.getScheme() + ", Tenant: "
@@ -112,10 +112,10 @@ public class KonkerLoggerAppender extends AppenderBase<ILoggingEvent> {
     }
 
     /**
-     * Return tentant info
+     * Return tenant info
      *
      * @param dealer
-     * @return tentantDomain
+     * @return tenantDomain
      */
     private String getTenant(URI dealer) {
         return dealer.getHost();

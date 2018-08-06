@@ -118,13 +118,13 @@ public class ApplicationRestControllerTest extends WebLayerTestContext {
                         .guid("7d51c242-81db-11e6-a8c2-0746f976f666")
                         .build();
 
-        Instant registrationDate = Instant.ofEpochMilli(1495716970000l).minusSeconds(3600l);
+        Instant registrationDate = Instant.ofEpochMilli(1495716970000L).minusSeconds(3600L);
         health1 = HealthAlert.builder()
 				.guid("7d51c242-81db-11e6-a8c2-0746f976f223")
 				.severity(HealthAlertSeverity.FAIL)
 				.description("No message received from the device for a long time.")
 				.registrationDate(registrationDate)
-				.lastChange(Instant.ofEpochMilli(1495716970000l))
+				.lastChange(Instant.ofEpochMilli(1495716970000L))
         		.device(device)
         		.alertTrigger(alertTrigger)
         		.build();
@@ -134,7 +134,7 @@ public class ApplicationRestControllerTest extends WebLayerTestContext {
 				.severity(HealthAlertSeverity.OK)
 				.description("No message received from the device for a long time.")
 				.registrationDate(registrationDate)
-				.lastChange(Instant.ofEpochMilli(1495716970000l))
+				.lastChange(Instant.ofEpochMilli(1495716970000L))
         		.device(device)
         		.alertTrigger(alertTrigger)
         		.build();

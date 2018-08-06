@@ -50,7 +50,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 })
 public class DeviceRestControllerTest extends WebLayerTestContext {
 
-    private static final String NONEXIST_APPLICATION_NANE = "AppLost";
+    private static final String NONEXIST_APPLICATION_NAME = "AppLost";
 
     @Autowired
     private DeviceRegisterService deviceRegisterService;
@@ -95,9 +95,9 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 
     private List<Event> events;
 
-    private String BASEPATH = "devices";
+    private final String BASEPATH = "devices";
 
-    private Instant registrationDate = Instant.ofEpochMilli(1495716970000l).minusSeconds(3600l);
+    private final Instant registrationDate = Instant.ofEpochMilli(1495716970000L).minusSeconds(3600L);
 
     @Before
     public void setUp() {
@@ -127,7 +127,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .severity(HealthAlertSeverity.FAIL)
                 .description("No message received from the device for a long time.")
                 .registrationDate(registrationDate)
-                .lastChange(Instant.ofEpochMilli(1495716970000l))
+                .lastChange(Instant.ofEpochMilli(1495716970000L))
                 .device(device1)
                 .alertTrigger(alertTrigger)
                 .build();
@@ -137,7 +137,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .severity(HealthAlertSeverity.OK)
                 .description("No message received from the device for a long time.")
                 .registrationDate(registrationDate)
-                .lastChange(Instant.ofEpochMilli(1495716970000l))
+                .lastChange(Instant.ofEpochMilli(1495716970000L))
                 .device(device1)
                 .alertTrigger(alertTrigger)
                 .build();
@@ -244,10 +244,10 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldReadWithWrongApplication() throws Exception {
 
-        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NANE))
+        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NAME))
                 .thenReturn(ServiceResponseBuilder.<Application>error().withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode()).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}", NONEXIST_APPLICATION_NANE, BASEPATH, device1.getGuid()))
+        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}", NONEXIST_APPLICATION_NAME, BASEPATH, device1.getGuid()))
                 .contentType("application/json")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError())
@@ -522,10 +522,10 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryDeleteWithWrongApplication() throws Exception {
 
-        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NANE))
+        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NAME))
                 .thenReturn(ServiceResponseBuilder.<Application>error().withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode()).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.delete(MessageFormat.format("/{0}/{1}/{2}", NONEXIST_APPLICATION_NANE, BASEPATH, device1.getGuid()))
+        getMockMvc().perform(MockMvcRequestBuilders.delete(MessageFormat.format("/{0}/{1}/{2}", NONEXIST_APPLICATION_NAME, BASEPATH, device1.getGuid()))
                 .contentType("application/json")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError())
@@ -612,10 +612,10 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldShowStatWithWrongApplication() throws Exception {
 
-        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NANE))
+        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NAME))
                 .thenReturn(ServiceResponseBuilder.<Application>error().withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode()).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}/stats", NONEXIST_APPLICATION_NANE, BASEPATH, device1.getGuid()))
+        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}/stats", NONEXIST_APPLICATION_NAME, BASEPATH, device1.getGuid()))
                 .contentType("application/json")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError())
