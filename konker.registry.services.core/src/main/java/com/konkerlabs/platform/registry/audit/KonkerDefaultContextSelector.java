@@ -1,7 +1,5 @@
 package com.konkerlabs.platform.registry.audit;
 
-import ch.qos.logback.classic.selector.ContextSelector;
-
 import java.util.Arrays;
 import java.util.List;
 

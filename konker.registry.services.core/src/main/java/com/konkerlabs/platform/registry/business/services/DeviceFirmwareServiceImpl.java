@@ -117,7 +117,7 @@ public class DeviceFirmwareServiceImpl implements DeviceFirmwareService {
 
         if (!Optional.ofNullable(tenant).isPresent()) {
             Device noDevice = Device.builder().guid("NULL").tenant(
-                    Tenant.builder().domainName("unknow_domain").build()).build();
+                    Tenant.builder().domainName("unknown_domain").build()).build();
             LOGGER.debug(CommonValidations.TENANT_NULL.getCode(),
                     noDevice.toURI(),
                     noDevice.getTenant().getLogLevel());

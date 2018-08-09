@@ -19,7 +19,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.authentication.encoding.ShaPasswordEncoder;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -91,7 +90,7 @@ public class UserServiceImpl implements UserService {
                 !Optional.ofNullable(user.getEmail()).isPresent()
                 || !user.getEmail().equals(fromStorage.getEmail())) {
 
-            LOG.debug("This user id is invalid:" + (Optional.ofNullable(user.getEmail()).isPresent() ? user.getEmail() : "NULL"));
+            LOG.debug("This user id is invalid:{}", Optional.ofNullable(user.getEmail()).isPresent() ? user.getEmail() : "NULL");
             return ServiceResponseBuilder.<User>error()
                     .withMessage(Validations.INVALID_USER_EMAIL.getCode())
                     .build();
@@ -170,7 +169,7 @@ public class UserServiceImpl implements UserService {
             }
         }
 
-        Optional.ofNullable(newPasswordConfirmation).ifPresent(password -> {
+        Optional.of(newPasswordConfirmation).ifPresent(password -> {
             if (!StringUtils.isEmpty(newPasswordConfirmation)) {
                 try {
                     user.setPassword(encodePassword(password));
@@ -516,14 +515,14 @@ public class UserServiceImpl implements UserService {
     ) throws BusinessException {
 
         validatePasswordConfirmation(newPassword, newPasswordConfirmation);
-        validatePasswordLenght(newPasswordConfirmation);
+        validatePasswordLength(newPasswordConfirmation);
         validatePasswordPattern(fromForm.getUsername(), newPasswordConfirmation);
         validatePasswordBlackList(newPasswordConfirmation);
 
     }
 
     /**
-     * Validate informed oldPassword compability with stored password
+     * Validate informed oldPassword compatibility with stored password
      *
      * @param oldPassword
      * @throws BusinessException
@@ -556,7 +555,7 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    private void validatePasswordLenght(String password) throws BusinessException {
+    private void validatePasswordLength(String password) throws BusinessException {
         if (password.length() < 12) {
             throw new BusinessException(Validations.INVALID_PASSWORD_LENGTH.getCode());
         }

@@ -1,6 +1,6 @@
 package com.konkerlabs.platform.registry.business.services;
 
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,7 +31,7 @@ public class TenantLogServiceImpl implements TenantLogService {
 
 		if (!Optional.ofNullable(tenant).isPresent()) {
 			Device device = Device.builder().guid("NULL")
-					.tenant(Tenant.builder().domainName("unknow_domain").build()).build();
+					.tenant(Tenant.builder().domainName("unknown_domain").build()).build();
 			
 			LOGGER.debug(CommonValidations.TENANT_NULL.getCode(), device.toURI(),
 					device.getLogLevel());
@@ -43,9 +43,9 @@ public class TenantLogServiceImpl implements TenantLogService {
 			List<TenantLog> all = tenantLogRepository.findAll(tenant);
 
 			if (ascending) {
-				Collections.sort(all, (p1, p2) -> p1.getTime().compareTo(p2.getTime()));
+				all.sort(Comparator.comparing(TenantLog::getTime));
 			} else {
-				Collections.sort(all, (p1, p2) -> -p1.getTime().compareTo(p2.getTime()));
+				all.sort((p1, p2) -> -p1.getTime().compareTo(p2.getTime()));
 			}
 
 			return ServiceResponseBuilder.<List<TenantLog>>ok().withResult(all).build();

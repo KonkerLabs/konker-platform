@@ -67,14 +67,14 @@ public class AvatarServiceTest extends BusinessLayerTestSupport {
     private User user;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
     	MockitoAnnotations.initMocks(this);
 
         user = userRepository.findOne("admin@konkerlabs.com");
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
     	Mockito.reset(uploadService);
     }
 

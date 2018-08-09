@@ -15,7 +15,6 @@ import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.MongoBillingTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import org.junit.Before;
@@ -72,7 +71,7 @@ public class DeviceModelServiceTest extends BusinessLayerTestSupport {
     	application = Application.builder()
     					.name("smartffkonker")
     					.friendlyName("Konker Smart Frig")
-    					.description("Konker Smart Frig - take pic, tells temperatue")
+    					.description("Konker Smart Frig - take pic, tells temperature")
     					.tenant(currentTenant)
                         .qualifier("konker")
                 .registrationDate(Instant.ofEpochMilli(1453320973747L))
@@ -81,7 +80,7 @@ public class DeviceModelServiceTest extends BusinessLayerTestSupport {
     	otherApplication = Application.builder()
 				.name("smartffkonkerother")
 				.friendlyName("Konker Smart Frig")
-				.description("Konker Smart Frig - take pic, tells temperatue")
+				.description("Konker Smart Frig - take pic, tells temperature")
 				.tenant(currentTenant)
                 .qualifier("konker")
                 .registrationDate(Instant.ofEpochMilli(1453320973747L))

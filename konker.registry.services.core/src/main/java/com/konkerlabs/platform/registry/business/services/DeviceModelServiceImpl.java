@@ -48,7 +48,7 @@ public class DeviceModelServiceImpl implements DeviceModelService {
 		if (!Optional.ofNullable(tenant).isPresent()) {
 			Application app = Application.builder()
 					.name("NULL")
-					.tenant(Tenant.builder().domainName("unknow_domain").build())
+					.tenant(Tenant.builder().domainName("unknown_domain").build())
 					.build();
 
 			if(LOGGER.isDebugEnabled()){

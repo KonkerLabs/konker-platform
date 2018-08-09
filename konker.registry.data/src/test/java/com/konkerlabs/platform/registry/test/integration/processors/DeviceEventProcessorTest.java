@@ -63,9 +63,9 @@ public class DeviceEventProcessorTest {
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
-    private String sourceApiKey = "84399b2e-d99e-11e5-86bc-34238775bac9";
-    private String originalPayload = "LEDSwitch";
-    private String incomingChannel = "command";
+    private final String sourceApiKey = "84399b2e-d99e-11e5-86bc-34238775bac9";
+    private final String originalPayload = "LEDSwitch";
+    private final String incomingChannel = "command";
     private String listJson;
 
     private Event event;
@@ -98,7 +98,7 @@ public class DeviceEventProcessorTest {
     private Gateway gateway;
 
 	@Before
-    public void setUp() throws Exception {
+    public void setUp() {
         firstEventTimestamp = Instant.ofEpochMilli(1474562670340L);
         secondEventTimestamp = Instant.ofEpochMilli(1474562672395L);
 
@@ -176,7 +176,7 @@ public class DeviceEventProcessorTest {
     			"	\"_ts\": \"1510847419000\", "+ 
     			"	\"volts\": 12  "+
     			"	} "+
-    			"}"+
+                '}' +
     			", { "+
     			" \"deviceId\": \"TempSensor\", "+
     			" \"channel\": \"temp\", "+
@@ -189,10 +189,10 @@ public class DeviceEventProcessorTest {
     			"	\"temperature\": 27  "+
     			"	} "+
     			"} "+
-    			"]";
+                ']';
         
         devicesEvent = new ArrayList<>();
-        Map<String, Object> map1 = new LinkedHashMap<String, Object>();
+        Map<String, Object> map1 = new LinkedHashMap<>();
         map1.put("deviceId", "CurrentSensor");
         map1.put("channel", "in");
         Map<String, Object> payloadMap1 = new LinkedHashMap<>();
@@ -203,7 +203,7 @@ public class DeviceEventProcessorTest {
         payloadMap1.put("volts", 12);
         map1.put("payload", payloadMap1);
         
-        Map<String, Object> map2 = new LinkedHashMap<String, Object>();
+        Map<String, Object> map2 = new LinkedHashMap<>();
         map2.put("deviceId", "TempSensor");
         map2.put("channel", "temp");
         Map<String, Object> payloadMap2 = new LinkedHashMap<>();
@@ -229,7 +229,7 @@ public class DeviceEventProcessorTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         reset(deviceEventService, eventRouteExecutor, deviceRegisterService, deviceLogEventService);
     }
 
@@ -504,7 +504,7 @@ public class DeviceEventProcessorTest {
     }
 
     static class ResultCaptor<T> implements Answer {
-        private T result = null;
+        private T result;
 
         public T getResult() {
             return result;

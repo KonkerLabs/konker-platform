@@ -74,7 +74,7 @@ public class DeviceFirmwareRestControllerTest extends WebLayerTestContext {
 
     private DeviceFirmware deviceFirmware;
 
-    private String BASEPATH = "firmwares";
+    private final String BASEPATH = "firmwares";
 
     @Before
     public void setUp() {

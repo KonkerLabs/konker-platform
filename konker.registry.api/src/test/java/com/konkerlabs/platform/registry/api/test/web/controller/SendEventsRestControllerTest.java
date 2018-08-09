@@ -1,7 +1,6 @@
 package com.konkerlabs.platform.registry.api.test.web.controller;
 
 import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -12,7 +11,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.text.MessageFormat;
 import java.time.Instant;
 
-import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,7 +53,7 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBui
 })
 public class SendEventsRestControllerTest extends WebLayerTestContext {
 
-    private static final String NONEXIST_APPLICATION_NANE = "AppLost";
+    private static final String NONEXIST_APPLICATION_NAME = "AppLost";
 
     @Autowired
     private DeviceEventService deviceEventService;
@@ -70,7 +68,7 @@ public class SendEventsRestControllerTest extends WebLayerTestContext {
     private Tenant tenant;
     private Application application;
     
-    private String jsonPayload = "{\"tem\":27}";
+    private final String jsonPayload = "{\"tem\":27}";
 
     @Before
     public void setUp() {
@@ -94,10 +92,10 @@ public class SendEventsRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryToSendWithWrongApplication() throws Exception {
 
-        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NANE))
+        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NAME))
             .thenReturn(ServiceResponseBuilder.<Application>error().withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode()).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.post("/" + NONEXIST_APPLICATION_NANE + "/sendEvents")
+        getMockMvc().perform(MockMvcRequestBuilders.post("/" + NONEXIST_APPLICATION_NAME + "/sendEvents")
         		.content(jsonPayload)
                 .contentType("application/json")
                 .accept(MediaType.APPLICATION_JSON))
@@ -115,7 +113,7 @@ public class SendEventsRestControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldSendEvents() throws Exception {
-    	HttpEntity<String> request = new HttpEntity<String>(jsonPayload);
+    	HttpEntity<String> request = new HttpEntity<>(jsonPayload);
         when(applicationService.getByApplicationName(tenant, application.getName()))
         	.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
        

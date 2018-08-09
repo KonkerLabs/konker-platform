@@ -79,14 +79,14 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
     private Tenant tenant;
     private Application application;
 
-    private String invalidEventPayload = "{\n" +
+    private final String invalidEventPayload = "{\n" +
             "    \"field\" : \"value\"\n" +
             "    \"count\" : 34,2,\n" +
             "    \"amount\" : 21.45.1,\n" +
             "    \"valid\" : tru\n" +
             "";
 
-    private String validEventPayload = "{\n" +
+    private final String validEventPayload = "{\n" +
             "    \"field\" : \"value\",\n" +
             "    \"count\" : 34,\n" +
             "    \"amount\" : 21.45,\n" +
@@ -98,7 +98,7 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
     private URI destinationUri;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
 
         tenant = tenantRepository.findByDomainName("konker");
@@ -134,7 +134,7 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfEventIsNull() throws Exception {
+    public void shouldRaiseAnExceptionIfEventIsNull() {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Event cannot be null");
 
@@ -142,7 +142,7 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfURIIsNull() throws Exception {
+    public void shouldRaiseAnExceptionIfURIIsNull() {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Destination URI cannot be null or empty");
 
@@ -158,7 +158,7 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfTenantIsNull() throws Exception {
+    public void shouldRaiseAnExceptionIfTenantIsNull() {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Tenant cannot be null");
 
@@ -166,7 +166,7 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfDestinationIsUnknown() throws Exception {
+    public void shouldRaiseAnExceptionIfDestinationIsUnknown() {
         destinationUri = new URIDealer() {
             @Override
             public String getUriScheme() {

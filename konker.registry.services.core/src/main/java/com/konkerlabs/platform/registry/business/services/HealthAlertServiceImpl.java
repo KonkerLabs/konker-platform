@@ -466,9 +466,7 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 		healths.sort(
 				Comparator
 				.comparing((HealthAlert health) -> health.getSeverity().getPrior())
-				.thenComparing(
-						Comparator.comparing((HealthAlert health) -> health.getLastChange() == null ? health.getRegistrationDate() : health.getLastChange())
-                ));
+				.thenComparing((HealthAlert health) -> health.getLastChange() == null ? health.getRegistrationDate() : health.getLastChange()));
 
 		return ServiceResponseBuilder.<HealthAlert> ok()
 				.withResult(healths.get(0))
@@ -520,7 +518,7 @@ public class HealthAlertServiceImpl implements HealthAlertService {
         if (!Optional.ofNullable(tenant).isPresent()) {
             HealthAlert alert = HealthAlert.builder()
                     .guid("NULL")
-                    .tenant(Tenant.builder().domainName("unknow_domain").build())
+                    .tenant(Tenant.builder().domainName("unknown_domain").build())
                     .build();
 
             if(LOGGER.isDebugEnabled()){

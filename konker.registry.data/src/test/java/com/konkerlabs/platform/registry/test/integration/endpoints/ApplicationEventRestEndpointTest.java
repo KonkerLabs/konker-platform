@@ -76,13 +76,13 @@ public class ApplicationEventRestEndpointTest extends WebLayerTestContext {
     private ApplicationService applicationService;
 
     private String json;
-    private String tenantDomain = "anyTenant";
-    private String applicationName = "smartff"; 
-    private Tenant tenant = Tenant.builder().domainName(tenantDomain).build();
-    private Application application = Application.builder().name(applicationName).build();
+    private final String tenantDomain = "anyTenant";
+    private final String applicationName = "smartff";
+    private final Tenant tenant = Tenant.builder().domainName(tenantDomain).build();
+    private final Application application = Application.builder().name(applicationName).build();
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         deviceEventProcessor = mock(DeviceEventProcessor.class);
         applicationEventRestEndpoint = new ApplicationEventRestEndpoint(
                 applicationContext,
@@ -104,7 +104,7 @@ public class ApplicationEventRestEndpointTest extends WebLayerTestContext {
 			"	\"_ts\": \"1510847419000\", "+ 
 			"	\"volts\": 12  "+
 			"	} "+
-			"}"+
+                '}' +
 			", { "+
 			" \"deviceId\": \"TempSensor\", "+
 			" \"channel\": \"temp\", "+
@@ -117,7 +117,7 @@ public class ApplicationEventRestEndpointTest extends WebLayerTestContext {
 			"	\"temperature\": 27  "+
 			"	} "+
 			"} "+
-			"]";
+                ']';
     }
 
 	@After
@@ -128,7 +128,7 @@ public class ApplicationEventRestEndpointTest extends WebLayerTestContext {
 	}
          
     @Test
-    public void shouldRefuseRequestFromKonkerPlataform() throws Exception {
+    public void shouldRefuseRequestFromKonkerPlatform() throws Exception {
     	when(tenantService.findByDomainName(tenantDomain))
     		.thenReturn(ServiceResponseBuilder.<Tenant>ok().withResult(tenant).build());
     	
@@ -196,7 +196,7 @@ public class ApplicationEventRestEndpointTest extends WebLayerTestContext {
     }
     
     @Test
-    public void shouldPubToKonkerPlataform() throws Exception {
+    public void shouldPubToKonkerPlatform() throws Exception {
     	when(tenantService.findByDomainName(tenantDomain))
 		.thenReturn(ServiceResponseBuilder.<Tenant>ok().withResult(tenant).build());
 	

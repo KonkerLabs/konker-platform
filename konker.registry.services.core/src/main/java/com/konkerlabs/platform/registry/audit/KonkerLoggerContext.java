@@ -5,7 +5,6 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.LoggerComparator;
 import ch.qos.logback.classic.spi.LoggerContextListener;
-import ch.qos.logback.classic.spi.TurboFilterList;
 import ch.qos.logback.classic.turbo.TurboFilter;
 import ch.qos.logback.classic.util.LoggerNameUtil;
 import ch.qos.logback.core.ContextBase;
@@ -14,7 +13,6 @@ import ch.qos.logback.core.spi.LifeCycle;
 import ch.qos.logback.core.status.StatusListener;
 import ch.qos.logback.core.status.StatusManager;
 import ch.qos.logback.core.status.WarnStatus;
-import org.slf4j.ILoggerFactory;
 import org.slf4j.Marker;
 
 import java.util.*;
@@ -189,7 +187,7 @@ public class KonkerLoggerContext extends ContextBase
                                                             String format,
                                                             Object[] params,
                                                             Throwable t) {
-        return this.turboFilterList.size() == 0 ? FilterReply.NEUTRAL :
+        return this.turboFilterList.isEmpty() ? FilterReply.NEUTRAL :
                 this.turboFilterList
                         .getTurboFilterChainDecision(marker, logger, level, format, params, t);
     }
@@ -200,7 +198,7 @@ public class KonkerLoggerContext extends ContextBase
                                                     String format,
                                                     Object param,
                                                     Throwable t) {
-        return this.turboFilterList.size() == 0 ? FilterReply.NEUTRAL :
+        return this.turboFilterList.isEmpty() ? FilterReply.NEUTRAL :
                 this.turboFilterList.getTurboFilterChainDecision(marker, logger, level, format, new Object[]{param}, t);
     }
 
@@ -211,7 +209,7 @@ public class KonkerLoggerContext extends ContextBase
                                                     Object param1,
                                                     Object param2,
                                                     Throwable t) {
-        return this.turboFilterList.size() == 0 ? FilterReply.NEUTRAL :
+        return this.turboFilterList.isEmpty() ? FilterReply.NEUTRAL :
                 this.turboFilterList.getTurboFilterChainDecision(marker, logger, level, format, new Object[]{param1, param2}, t);
     }
 
@@ -300,7 +298,7 @@ public class KonkerLoggerContext extends ContextBase
     }
 
     public String toString() {
-        return this.getClass().getName() + "[" + this.getName() + "]";
+        return this.getClass().getName() + '[' + this.getName() + ']';
     }
 
     public int getMaxCallerDataDepth() {

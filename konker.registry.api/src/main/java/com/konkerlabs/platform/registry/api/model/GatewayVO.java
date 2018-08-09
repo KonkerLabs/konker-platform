@@ -1,7 +1,6 @@
 package com.konkerlabs.platform.registry.api.model;
 
 import com.konkerlabs.platform.registry.api.model.core.SerializableVO;
-import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Gateway;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

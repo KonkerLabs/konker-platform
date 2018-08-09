@@ -62,7 +62,7 @@ public class TenantLogControllerTest extends WebLayerTestContext {
 
 	@Test
 	@WithMockUser(authorities = { "ROLE_SUPER_USER", "ROLE_IOT_USER", "ROLE_ANALYTICS_USER" })
-	public void shouldDescendingByDefaut() throws Exception {
+	public void shouldDescendingByDefault() throws Exception {
 
 		ServiceResponse<List<TenantLog>> responseTenantOk = ServiceResponseBuilder.<List<TenantLog>>ok().build();
 		responseTenantOk.setResult(new ArrayList<TenantLog>());

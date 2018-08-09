@@ -138,7 +138,7 @@ public class TransformationsRestController extends AbstractRestController implem
             value = "Create the transformation")
     public RestTransformationVO create(@PathVariable("application") String applicationId,
                                        @RequestBody RestTransformationVO vo)
-            throws BadServiceResponseException, NotFoundResponseException, NotAuthorizedResponseException {
+            throws BadServiceResponseException, NotFoundResponseException {
 
         Transformation toDB = vo.patchDB(Transformation.builder().build());
         ServiceResponse<Transformation> response =
@@ -183,7 +183,7 @@ public class TransformationsRestController extends AbstractRestController implem
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
 
         for (com.konkerlabs.platform.registry.business.services.api.TransformationService.Validations value :
                 TransformationService.Validations.values()) {

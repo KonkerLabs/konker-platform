@@ -32,7 +32,7 @@ public final class KonkerLoggerFactory implements IKonkerLoggerFactory {
     static final String DETECT_LOGGER_NAME_MISMATCH_PROPERTY = "slf4j.detectLoggerNameMismatch";
     static final String JAVA_VENDOR_PROPERTY = "java.vendor.url";
     static boolean DETECT_LOGGER_NAME_MISMATCH = Util.safeGetBooleanSystemProperty("slf4j.detectLoggerNameMismatch");
-    private static final String[] API_COMPATIBILITY_LIST = new String[]{"1.6", "1.7"};
+    private static final String[] API_COMPATIBILITY_LIST = {"1.6", "1.7"};
     private static String STATIC_LOGGER_BINDER_PATH = "org/slf4j/impl/StaticLoggerBinder.class";
 
     private KonkerLoggerFactory() {
@@ -132,11 +132,10 @@ public final class KonkerLoggerFactory implements IKonkerLoggerFactory {
             }
 
             if(!match) {
-                Util.report("The requested version " + e + " by your slf4j binding is not compatible with " + Arrays.asList(API_COMPATIBILITY_LIST).toString());
+                Util.report("The requested version " + e + " by your slf4j binding is not compatible with " + Arrays.asList(API_COMPATIBILITY_LIST));
                 Util.report("See http://www.slf4j.org/codes.html#version_mismatch for further details.");
             }
         } catch (NoSuchFieldError var6) {
-            ;
         } catch (Throwable var7) {
             Util.report("Unexpected problem occured during version sanity check", var7);
         }
@@ -178,7 +177,7 @@ public final class KonkerLoggerFactory implements IKonkerLoggerFactory {
 
                 while(i$.hasNext()) {
                     URL path = (URL)i$.next();
-                    Util.report("Found binding in [" + path + "]");
+                    Util.report("Found binding in [" + path + ']');
                 }
 
                 Util.report("See http://www.slf4j.org/codes.html#multiple_bindings for an explanation.");
@@ -194,7 +193,7 @@ public final class KonkerLoggerFactory implements IKonkerLoggerFactory {
 
     private static void reportActualBinding(Set<URL> staticLoggerBinderPathSet) {
         if(isAmbiguousStaticLoggerBinderPathSet(staticLoggerBinderPathSet)) {
-            Util.report("Actual binding is of type [" + StaticLoggerBinder.getSingleton().getLoggerFactoryClassStr() + "]");
+            Util.report("Actual binding is of type [" + StaticLoggerBinder.getSingleton().getLoggerFactoryClassStr() + ']');
         }
 
     }

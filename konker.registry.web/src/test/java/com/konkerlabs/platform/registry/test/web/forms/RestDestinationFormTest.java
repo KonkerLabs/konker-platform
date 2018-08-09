@@ -54,17 +54,17 @@ public class RestDestinationFormTest {
     }
 
     @Test
-    public void shouldTranslateFromFormToModel() throws Exception {
+    public void shouldTranslateFromFormToModel() {
         assertThat(form.toModel(), equalTo(model));
     }
 
     @Test
-    public void shouldTranslateFromModelToForm() throws Exception {
+    public void shouldTranslateFromModelToForm() {
         assertThat(new RestDestinationForm().fillFrom(model), equalTo(form));
     }
 
     @Test
-    public void shouldParseDuplicatedProtocol() throws Exception {
+    public void shouldParseDuplicatedProtocol() {
         form.setServiceURI("http://http://www.domain.com");
         assertThat(form.getServiceProtocol(), equalTo("http"));
         assertThat(form.getServiceHost(), equalTo("www.domain.com"));

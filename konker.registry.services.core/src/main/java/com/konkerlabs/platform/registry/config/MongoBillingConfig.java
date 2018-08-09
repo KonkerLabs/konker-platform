@@ -41,7 +41,7 @@ public class MongoBillingConfig extends AbstractMongoConfiguration {
 	private Integer port;
 	private String username;
 	private String password;
-	private static Logger LOG = LoggerFactory.getLogger(MongoConfig.class);
+	private static Logger LOG = LoggerFactory.getLogger(MongoBillingConfig.class);
     
     public MongoBillingConfig() {
     	Map<String, Object> defaultMap = new HashMap<>();

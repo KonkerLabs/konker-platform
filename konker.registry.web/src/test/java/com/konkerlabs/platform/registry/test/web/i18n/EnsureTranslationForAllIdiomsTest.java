@@ -43,25 +43,25 @@ public class EnsureTranslationForAllIdiomsTest extends WebLayerTestContext {
     ApplicationContext applicationContext;
 
     @Test
-    public void shouldReturnANonEmptySetOfBaseFilesForTranslation() throws Exception {
+    public void shouldReturnANonEmptySetOfBaseFilesForTranslation() {
         assertThat(((AbstractResourceBasedMessageSource) messageSource).getBasenameSet(), not(empty()));
     }
 
     @Test
     public void shouldHaveTheSameTranslationKeysInEnglishAndDefaultTranslation()
-            throws UnsupportedEncodingException, IOException {
-        checkIfTranslationForLocaleMatchesDefaulTranslation(Locale.ENGLISH);
+            throws IOException {
+        checkIfTranslationForLocaleMatchesDefaultTranslation(Locale.ENGLISH);
     }
 
     @Test
     public void shouldHaveTheSameTranslationKeysInBrazilianPortugueseAndDefaultTranslation() throws Exception {
-        checkIfTranslationForLocaleMatchesDefaulTranslation(
+        checkIfTranslationForLocaleMatchesDefaultTranslation(
                 new Locale.Builder().setLanguage("pt").setRegion("BR").build());
     }
 
     // utility methods
-    private void checkIfTranslationForLocaleMatchesDefaulTranslation(Locale locale)
-            throws UnsupportedEncodingException, IOException {
+    private void checkIfTranslationForLocaleMatchesDefaultTranslation(Locale locale)
+            throws IOException {
         Set<String> baseTranslationResources = ((AbstractResourceBasedMessageSource) messageSource).getBasenameSet();
 
         for (String s : baseTranslationResources) {

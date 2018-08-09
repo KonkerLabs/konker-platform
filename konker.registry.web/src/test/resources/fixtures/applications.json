@@ -8,7 +8,7 @@
         "$ref" : "tenants"
       },
       "friendlyName" : "Konker Smart Frig",
-      "description" : "Konker Smart Frig - take pic, tells temperatue",
+      "description" : "Konker Smart Frig - take pic, tells temperature",
       "registrationDate" : 1453320973747,
       "active" : true,
       "qualifier": "konker"
@@ -21,7 +21,7 @@
         "$ref" : "tenants"
       },
       "friendlyName" : "Konker Smart Frig",
-      "description" : "Konker Smart Frig - take pic, tells temperatue",
+      "description" : "Konker Smart Frig - take pic, tells temperature",
       "registrationDate" : 1453320973747,
       "active" : true,
       "qualifier": "konker"

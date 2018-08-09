@@ -47,8 +47,7 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 	private ClientDetailsService clientDetailsService;
 
 	@Override
-	public void configure(AuthorizationServerEndpointsConfigurer endpoints)
-			throws Exception {
+	public void configure(AuthorizationServerEndpointsConfigurer endpoints) {
 		TokenEnhancerChain tokenEnhancerChain = new TokenEnhancerChain();
 		tokenEnhancerChain.setTokenEnhancers(
 				Arrays.asList(
@@ -69,7 +68,7 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 	}
 
 	@Override
-	public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
+	public void configure(AuthorizationServerSecurityConfigurer security) {
 		security.passwordEncoder(new PasswordEncoder() {
 			
 			@Override

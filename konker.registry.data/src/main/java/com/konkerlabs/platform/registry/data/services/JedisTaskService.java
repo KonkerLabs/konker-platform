@@ -45,8 +45,8 @@ public class JedisTaskService {
 		JedisPubSub jedisPubSub = new JedisPubSub() {
 			@Override
 			public void onMessage(String channel, String message) {
-				String deviceApiKey = channel.contains(".") ? channel.substring(0, channel.indexOf(".")) : channel;
-				String deviceChannel = channel.contains(".") ? channel.substring(channel.indexOf(".") + 1) : null;
+				String deviceApiKey = channel.contains(".") ? channel.substring(0, channel.indexOf('.')) : channel;
+				String deviceChannel = channel.contains(".") ? channel.substring(channel.indexOf('.') + 1) : null;
 
 				Device device = deviceRegisterService.findByApiKey(deviceApiKey);
 				response = deviceEventService.findOutgoingBy(device.getTenant(), device.getApplication(), device.getGuid(),

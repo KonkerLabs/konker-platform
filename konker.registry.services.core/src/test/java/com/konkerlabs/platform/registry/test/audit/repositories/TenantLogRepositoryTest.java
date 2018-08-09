@@ -34,7 +34,7 @@ public class TenantLogRepositoryTest {
 		int initialSize = tenantLogRepository.findAll(tenant).size();
 
 		// assert empty collection
-		Assert.assertEquals(0, initialSize);
+		Assert.assertEquals(0L, (long) initialSize);
 
 		for (int i = 0; i < 10; i++) {
 			tenantLogRepository.insert(tenant.getDomainName(), new Date(), "WARN", "I4PlMe5TbK");
@@ -42,7 +42,7 @@ public class TenantLogRepositoryTest {
 
 		List<TenantLog> logs = tenantLogRepository.findAll(tenant);
 
-		Assert.assertEquals(10, logs.size());
+		Assert.assertEquals(10L, (long) logs.size());
 		Assert.assertEquals("WARN", logs.get(0).getLevel());
 
 	}
@@ -55,7 +55,7 @@ public class TenantLogRepositoryTest {
 		int initialSize = tenantLogRepository.findAll(tenant).size();
 
 		// assert empty collection
-		Assert.assertEquals(0, initialSize);
+		Assert.assertEquals(0L, (long) initialSize);
 
 		for (int i = 0; i < 10; i++) {
 			tenantLogRepository.insert(tenant.getDomainName(), new Date().getTime(), "INFO", "LuxUkmRSB9");
@@ -63,7 +63,7 @@ public class TenantLogRepositoryTest {
 
 		List<TenantLog> logs = tenantLogRepository.findAll(tenant);
 
-		Assert.assertEquals(10, logs.size());
+		Assert.assertEquals(10L, (long) logs.size());
 		Assert.assertEquals("INFO", logs.get(0).getLevel());
 
 	}
