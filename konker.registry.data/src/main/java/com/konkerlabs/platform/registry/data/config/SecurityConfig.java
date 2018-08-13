@@ -92,7 +92,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .addFilter(filter)
                     .addFilterAfter(paramsAuthFilter, BasicAuthenticationFilter.class)
                     .requestMatchers()
-                    .antMatchers("/pub/**", "/sub/**", "/cfg/**")
+                    .antMatchers("/pub/**", "/sub/**", "/cfg/**", "/upload/**")
                 .and()
                     .authorizeRequests()
                     .anyRequest()
@@ -122,6 +122,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         	httpServletResponse.addHeader(
                         			item.getKey(),
                                     "GET");
+                        } else if ("Access-Control-Allow-Methods".equals(item.getKey()) &&
+                                httpServletRequest.getServletPath().startsWith("/upload/")) {
+                            httpServletResponse.addHeader(
+                                    item.getKey(),
+                                    "POST");
                         } else {
                             httpServletResponse.addHeader(
                                     item.getKey(),

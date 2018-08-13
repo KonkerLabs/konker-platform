@@ -163,6 +163,7 @@ public class DeviceFirmwareRestControllerTest extends WebLayerTestContext {
             .thenReturn(ServiceResponseBuilder.<DeviceFirmware>ok()
                     .withResult(deviceFirmware).build());
 
+
         getMockMvc().perform(MockMvcRequestBuilders
                 .fileUpload(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH, deviceModel.getName()))
                 .file(new MockMultipartFile("firmware", "00000".getBytes()))
