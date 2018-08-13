@@ -7,3 +7,12 @@ cassandra {
     hostname=localhost
     port=9042
 }
+s3bucket {
+    name:"konker.platform.staging.devices.upload.bucket"
+    prefix:"https://s3-us-west-2.amazonaws.com"
+    key:""
+    secret:""
+    max-size = 500000
+    file-types = "jpg,png,jpeg,wav,mp3,aiff,aac,wma,avi,flv,mov,mpg,mp4,wmv"
+    enabled = true
+}
