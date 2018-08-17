@@ -11,12 +11,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.integration.converters.DefaultJsonConverter;
 import com.konkerlabs.platform.registry.integration.converters.MessagePackJsonConverter;
@@ -423,6 +420,31 @@ public class DeviceEventProcessorTest {
         verify(defaultJsonConverter, times(1)).toJson(messagePackBytes);
         verify(deviceLogEventService, times(1)).logIncomingEvent(any(Device.class), any(Event.class));
 
+    }
+
+    @Test
+    public void shouldRouteBatteryToMgmtChannel() throws Exception {
+        when(deviceLogEventService.logIncomingEvent(eq(device), any()))
+                .thenReturn(ServiceResponseBuilder.<Event>ok().withResult(event).build());
+
+        String payloadWithBattery = "{\"_battery\":50.0}";
+
+        when(jsonParsingService.toFlatMap(payloadWithBattery))
+                .thenReturn(new HashMap<String,JsonParsingService.JsonPathData>(){
+                    {
+                        put("_battery", JsonParsingService.JsonPathData
+                                .builder()
+                                .types(Collections.singletonList(JsonNodeType.NUMBER))
+                                .value(18.0)
+                                .build());
+                    }
+                });
+
+        Instant ingestedTimestamp = Instant.now();
+        subject.process(device, incomingChannel, payloadWithBattery, ingestedTimestamp, ingestedTimestamp);
+
+        verify(eventRouteExecutor, times(2)).execute(any(Event.class), any(Device.class));
+        verify(deviceLogEventService, times(2)).logIncomingEvent(any(Device.class), any(Event.class));
     }
 
     @Test

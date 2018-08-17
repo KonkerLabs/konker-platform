@@ -1,13 +1,10 @@
 package com.konkerlabs.platform.registry.integration.processors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.DeviceModel;
-import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.Event.EventActor;
-import com.konkerlabs.platform.registry.business.model.Gateway;
 import com.konkerlabs.platform.registry.business.services.LocationTreeUtils;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
@@ -193,6 +190,7 @@ public class DeviceEventProcessor {
                 .ingestedTimestamp(ingestedTimestamp)
                 .payload(jsonPayload)
                 .build();
+
         if (device.isActive()) {
 
             ServiceResponse<Event> logResponse = deviceLogEventService.logIncomingEvent(device, event);
@@ -208,6 +206,14 @@ public class DeviceEventProcessor {
                 throw new BusinessException(Messages.INVALID_PAYLOAD.getCode());
             }
 
+            // check management keywords (mgmt channel)
+            try {
+                Map<String, JsonParsingService.JsonPathData> payloadsMap = jsonParsingService.toFlatMap(jsonPayload);
+                routeBatteryLevel(device, ingestedTimestamp, creationTimestamp, payloadsMap);
+            } catch (JsonProcessingException e) {
+                throw new BusinessException(Messages.INVALID_PAYLOAD.getCode());
+            }
+
         } else {
             LOGGER.debug(MessageFormat.format(EVENT_DROPPED,
                     device.toURI(),
@@ -216,6 +222,18 @@ public class DeviceEventProcessor {
             		device.getLogLevel());
         }
 
+    }
+
+    private void routeBatteryLevel(Device device, Instant ingestedTimestamp, Instant creationTimestamp, Map<String, JsonParsingService.JsonPathData> payloadsMap) throws BusinessException {
+        String BATTERY = "_battery";
+
+        if (payloadsMap.containsKey(BATTERY)) {
+            if (payloadsMap.get(BATTERY).getTypes().contains(JsonNodeType.NUMBER)) {
+                Number number = (Number) payloadsMap.get(BATTERY).getValue();
+                Double temperatureValue = number.doubleValue();
+                process(device, "mgmt/battery", String.format("{\"value\":%f}", temperatureValue), ingestedTimestamp, creationTimestamp);
+            }
+        }
     }
 
     private String getJsonPayload(Device device, byte[] payloadBytes) throws BusinessException {
