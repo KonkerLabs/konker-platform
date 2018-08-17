@@ -56,7 +56,7 @@ public class DeviceEventRestEndpoint {
     	DEVICE_NOT_FOUND("integration.event_processor.channel.not_found"),
     	INVALID_REQUEST_ORIGIN("integration.rest.invalid_request_origin");
 
-        private String code;
+        private final String code;
 
         public String getCode() {
             return code;
@@ -67,14 +67,14 @@ public class DeviceEventRestEndpoint {
         }
     }
 
-    private ApplicationContext applicationContext;
-    private DeviceEventProcessor deviceEventProcessor;
-    private JsonParsingService jsonParsingService;
-    private DeviceEventService deviceEventService;
-    private DeviceRegisterService deviceRegisterService;
-    private Executor executor;
-    private JedisTaskService jedisTaskService;
-    private DeviceConfigSetupService deviceConfigSetupService;
+    private final ApplicationContext applicationContext;
+    private final DeviceEventProcessor deviceEventProcessor;
+    private final JsonParsingService jsonParsingService;
+    private final DeviceEventService deviceEventService;
+    private final DeviceRegisterService deviceRegisterService;
+    private final Executor executor;
+    private final JedisTaskService jedisTaskService;
+    private final DeviceConfigSetupService deviceConfigSetupService;
 
     @Autowired
     public DeviceEventRestEndpoint(ApplicationContext applicationContext,
@@ -196,10 +196,7 @@ public class DeviceEventRestEndpoint {
         		HttpStatus.OK);
     }
 
-    @RequestMapping(
-            value = { "cfg/{apiKey}" },
-            method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "cfg/{apiKey}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity<EventResponse> configEvent(HttpServletRequest servletRequest,
                                                  @PathVariable("apiKey") String apiKey,
@@ -208,33 +205,33 @@ public class DeviceEventRestEndpoint {
     	Device device = deviceRegisterService.findByApiKey(apiKey);
 
     	if (!principal.getApiKey().equals(apiKey)) {
-            return new ResponseEntity<EventResponse>(
-            			EventResponse.builder().code(String.valueOf(HttpStatus.BAD_REQUEST.value()))
-            		.message(applicationContext.getMessage(Messages.INVALID_RESOURCE.getCode(), null, locale)).build(),
-            		HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(
+                    EventResponse.builder().code(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                            .message(applicationContext.getMessage(Messages.INVALID_RESOURCE.getCode(), null, locale)).build(),
+                    HttpStatus.BAD_REQUEST);
     	}
 
     	if (!Optional.ofNullable(device).isPresent()) {
-    		return new ResponseEntity<EventResponse>(
-        			EventResponse.builder().code(String.valueOf(HttpStatus.BAD_REQUEST.value()))
-        		.message(applicationContext.getMessage(Messages.DEVICE_NOT_FOUND.getCode(), null, locale)).build(),
-        		HttpStatus.BAD_REQUEST);
+    		return new ResponseEntity<>(
+                    EventResponse.builder().code(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                            .message(applicationContext.getMessage(Messages.DEVICE_NOT_FOUND.getCode(), null, locale)).build(),
+                    HttpStatus.BAD_REQUEST);
     	}
 
     	ServiceResponse<String> serviceResponse = deviceConfigSetupService
     			.findByModelAndLocation(device.getTenant(), device.getApplication(), device.getDeviceModel(), device.getLocation());
 
     	if (serviceResponse.isOk()) {
-    		return new ResponseEntity<EventResponse>(
-            		EventResponse.builder().code(String.valueOf(HttpStatus.OK.value()))
-            		.message(serviceResponse.getResult()).build(),
-            		HttpStatus.OK);
+    		return new ResponseEntity<>(
+                    EventResponse.builder().code(String.valueOf(HttpStatus.OK.value()))
+                            .message(serviceResponse.getResult()).build(),
+                    HttpStatus.OK);
     	} else {
-    		return new ResponseEntity<EventResponse>(
-            		EventResponse.builder().code(String.valueOf(HttpStatus.NOT_FOUND.value()))
-            		.message("{ }")
-            		.build(),
-            		HttpStatus.NOT_FOUND);
+    		return new ResponseEntity<>(
+                    EventResponse.builder().code(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                            .message("{ }")
+                            .build(),
+                    HttpStatus.NOT_FOUND);
     	}
     }
 
