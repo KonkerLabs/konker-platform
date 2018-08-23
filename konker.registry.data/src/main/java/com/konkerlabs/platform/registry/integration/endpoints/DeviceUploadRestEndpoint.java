@@ -1,5 +1,9 @@
 package com.konkerlabs.platform.registry.integration.endpoints;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.data.upload.UploadRepository;
@@ -87,10 +91,10 @@ public class DeviceUploadRestEndpoint {
             return new ResponseEntity<>(buildResponse(e.getMessage(), locale), HttpStatus.BAD_REQUEST);
         }
 
-        String payload = getPayload(file, filename, guid, md5hash);
+        JsonNode payload = getPayload(file, filename, guid, md5hash);
 
         try {
-            deviceEventProcessor.process(apiKey, channel, payload);
+            deviceEventProcessor.process(apiKey, channel, payload.toString());
         } catch (BusinessException e) {
             return new ResponseEntity<>(buildResponse(e.getMessage(), locale), HttpStatus.BAD_REQUEST);
         }
@@ -99,64 +103,23 @@ public class DeviceUploadRestEndpoint {
                 EventResponse.builder()
                         .code(String.valueOf(HttpStatus.OK.value()))
                         .message(HttpStatus.OK.name())
+                        .payload(payload)
                         .build(),
                 HttpStatus.OK);
 
     }
 
-    private String getPayload(@RequestParam(value = "file") MultipartFile file, String filename, String guid, String md5hash) {
-        StringBuilder payloadBuilder = new StringBuilder();
-        payloadBuilder.append("{");
+    private JsonNode getPayload(MultipartFile file, String filename, String guid, String md5hash) {
+        ObjectMapper objectMapper = new ObjectMapper(new JsonFactory());
+        JsonNode jsonNode = objectMapper.createObjectNode();
 
-        payloadBuilder.append('"');
-        payloadBuilder.append("filename");
-        payloadBuilder.append('"');
-        payloadBuilder.append(':');
-        payloadBuilder.append('"');
-        payloadBuilder.append(filename);
-        payloadBuilder.append('"');
+        ((ObjectNode) jsonNode).put("filename", filename);
+        ((ObjectNode) jsonNode).put("size", file.getSize());
+        ((ObjectNode) jsonNode).put("contentType", file.getContentType());
+        ((ObjectNode) jsonNode).put("md5", md5hash);
+        ((ObjectNode) jsonNode).put("guid", guid);
 
-        payloadBuilder.append(',');
-
-        payloadBuilder.append('"');
-        payloadBuilder.append("size");
-        payloadBuilder.append('"');
-        payloadBuilder.append(':');
-        payloadBuilder.append(file.getSize());
-
-        payloadBuilder.append(',');
-
-        payloadBuilder.append('"');
-        payloadBuilder.append("contentType");
-        payloadBuilder.append('"');
-        payloadBuilder.append(':');
-        payloadBuilder.append('"');
-        payloadBuilder.append(file.getContentType());
-        payloadBuilder.append('"');
-
-        payloadBuilder.append(',');
-
-        payloadBuilder.append('"');
-        payloadBuilder.append("md5");
-        payloadBuilder.append('"');
-        payloadBuilder.append(':');
-        payloadBuilder.append('"');
-        payloadBuilder.append(md5hash);
-        payloadBuilder.append('"');
-
-        payloadBuilder.append(',');
-
-        payloadBuilder.append('"');
-        payloadBuilder.append("guid");
-        payloadBuilder.append('"');
-        payloadBuilder.append(':');
-        payloadBuilder.append('"');
-        payloadBuilder.append(guid);
-        payloadBuilder.append('"');
-
-        payloadBuilder.append("}");
-
-        return payloadBuilder.toString();
+        return jsonNode;
     }
 
     private EventResponse buildResponse(String message, Locale locale) {
@@ -170,6 +133,7 @@ public class DeviceUploadRestEndpoint {
     static class EventResponse {
         private String code;
         private String message;
+        private JsonNode payload;
     }
 
 }
