@@ -51,6 +51,7 @@ public class DeviceEventRestEndpoint {
     public enum Messages {
         INVALID_REQUEST_BODY("integration.rest.invalid.body"),
         INVALID_RESOURCE("integration.rest.invalid.resource"),
+        INVALID_MGMT_CHANNEL("integration.rest.invalid.mgmt_channel"),
         INVALID_WAITTIME("integration.rest.invalid.waitTime"),
         INVALID_CHANNEL_PATTERN("integration.rest.invalid.channel"),
     	DEVICE_NOT_FOUND("integration.event_processor.channel.not_found"),
@@ -165,6 +166,42 @@ public class DeviceEventRestEndpoint {
         return EventResponse.builder()
                 .code(message)
                 .message(applicationContext.getMessage(message,null, locale)).build();
+    }
+
+    @RequestMapping(value = "pub/{apiKey}/mgmt/{channel}",
+            method = RequestMethod.POST)
+    public ResponseEntity<EventResponse> onMgmtEvent(HttpServletRequest servletRequest,
+                                                 @PathVariable("apiKey") String apiKey,
+                                                 @PathVariable("channel") String channel,
+                                                 @AuthenticationPrincipal Device principal,
+                                                 @RequestBody String body,
+                                                 Locale locale) {
+        if (!jsonParsingService.isValid(body))
+            return new ResponseEntity<EventResponse>(buildResponse(Messages.INVALID_REQUEST_BODY.getCode(),locale), HttpStatus.BAD_REQUEST);
+
+        if (!principal.getApiKey().equals(apiKey))
+            return new ResponseEntity<EventResponse>(buildResponse(Messages.INVALID_RESOURCE.getCode(),locale), HttpStatus.NOT_FOUND);
+
+        if (!isValidMgmtChannel(channel))
+            return new ResponseEntity<EventResponse>(buildResponse(Messages.INVALID_MGMT_CHANNEL.getCode(),locale), HttpStatus.NOT_FOUND);
+
+        if (servletRequest.getHeader(HttpGateway.KONKER_VERSION_HEADER) != null)
+            return new ResponseEntity<EventResponse>(buildResponse(Messages.INVALID_REQUEST_ORIGIN.getCode(), locale), HttpStatus.FORBIDDEN);
+
+        try {
+            deviceEventProcessor.process(apiKey, String.format("mgmt/%s", channel),body);
+        } catch (BusinessException e) {
+            return new ResponseEntity<EventResponse>(buildResponse(e.getMessage(),locale),HttpStatus.BAD_REQUEST);
+        }
+
+        return new ResponseEntity<EventResponse>(
+                EventResponse.builder().code(String.valueOf(HttpStatus.OK.value()))
+                        .message(HttpStatus.OK.name()).build(),
+                HttpStatus.OK);
+    }
+
+    private boolean isValidMgmtChannel(String channel) {
+        return "battery".equals(channel);
     }
 
     @RequestMapping(value = "pub/{apiKey}/{channel}",
