@@ -1,12 +1,9 @@
 package com.konkerlabs.platform.registry.audit;
 
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.core.ConsoleAppender;
 import ch.qos.logback.core.status.InfoStatus;
 import ch.qos.logback.core.status.StatusManager;
-import org.slf4j.LoggerFactory;
 
 public class KonkerLoggerBasicConfigurator {
 

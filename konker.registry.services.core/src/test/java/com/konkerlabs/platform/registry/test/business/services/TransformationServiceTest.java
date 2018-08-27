@@ -143,9 +143,9 @@ public class TransformationServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
     public void shouldReturnAValidationMessageIfTransformationIsInvalid() throws Exception {
-        Map<String, Object[]> validationErrors = new HashMap() {{
-            put("Some error", null);
-        }};
+        Map<String, Object[]> validationErrors = new HashMap();
+        validationErrors.put("Some error", null);
+
 
         transformation = spy(transformation);
         when(transformation.applyValidations()).thenReturn(Optional.of(validationErrors));

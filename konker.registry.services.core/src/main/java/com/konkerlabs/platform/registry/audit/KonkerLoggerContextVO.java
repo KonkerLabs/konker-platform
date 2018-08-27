@@ -1,7 +1,6 @@
 package com.konkerlabs.platform.registry.audit;
 
 
-import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.LoggerContextVO;
 
 import java.util.Map;

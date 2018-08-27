@@ -75,7 +75,7 @@ public class LocationRestControllerTest extends WebLayerTestContext {
 
     private Location location2;
 
-    private String BASEPATH = "locations";
+    private final String BASEPATH = "locations";
 
     @Before
     public void setUp() {

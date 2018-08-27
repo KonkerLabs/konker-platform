@@ -21,8 +21,8 @@ public class LoginAudit {
 	private User user;
     private String event;
     
-    public static enum LoginAuditEvent {
-    	LOGIN, WRONG_PASSWD;
+    public enum LoginAuditEvent {
+    	LOGIN, WRONG_PASSWD
     }
 
 }

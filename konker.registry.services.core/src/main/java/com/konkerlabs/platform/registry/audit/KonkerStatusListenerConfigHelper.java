@@ -1,6 +1,5 @@
 package com.konkerlabs.platform.registry.audit;
 
-import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.core.spi.ContextAware;
 import ch.qos.logback.core.spi.LifeCycle;
 import ch.qos.logback.core.status.OnConsoleStatusListener;

@@ -49,7 +49,7 @@ public class DeviceConfigRabbitEndpointTest {
     private DeviceRegisterService deviceRegisterService;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         deviceConfigRabbitEndpoint = new DeviceConfigRabbitEndpoint();
         deviceConfigRabbitEndpoint.setDeviceConfigSetupService(deviceConfigSetupService);
         deviceConfigRabbitEndpoint.setDeviceRegisterService(deviceRegisterService);

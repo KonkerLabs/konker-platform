@@ -103,7 +103,7 @@ public class IncomingEventsRestController extends AbstractRestController impleme
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
     	for (DeviceEventService.Validations value : DeviceEventService.Validations.values()) {
     		validationsCode.add(value.getCode());
     	}

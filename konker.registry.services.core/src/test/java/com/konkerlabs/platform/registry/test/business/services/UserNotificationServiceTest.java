@@ -79,7 +79,7 @@ public class UserNotificationServiceTest extends BusinessLayerTestSupport {
     private User anotherUser;
     private User inexistentUser;
 
-    private UserNotification scheduledMaintenaceNotification;
+    private UserNotification scheduledMaintenanceNotification;
     private UserNotification paymentPendingNotification;
     private UserNotification changePasswordNotification;
 
@@ -92,7 +92,7 @@ public class UserNotificationServiceTest extends BusinessLayerTestSupport {
         anotherUser = userRepository.findOne(ANOTHER_USER_ID);
         inexistentUser = User.builder().email(INEXISTENT_USER_ID).build();
 
-        scheduledMaintenaceNotification = UserNotification.builder().uuid(SCHEDULED_MAINTENANCE_NOTIFICATION_UUID)
+        scheduledMaintenanceNotification = UserNotification.builder().uuid(SCHEDULED_MAINTENANCE_NOTIFICATION_UUID)
                 .destination(THE_USER_ID).date(Instant.ofEpochMilli(1482327799832L)).unread(Boolean.TRUE)
                 .subject("Scheduled Maintenance").<UserNotification> build();
         paymentPendingNotification = UserNotification.builder().uuid(PAYMENT_PENDING_NOTIFICATION_UUID)
@@ -111,7 +111,7 @@ public class UserNotificationServiceTest extends BusinessLayerTestSupport {
         assertThat(notificationsResp, isResponseOk());
 
         List<UserNotification> notifications = notificationsResp.getResult();
-        assertThat(notifications, hasItem(scheduledMaintenaceNotification));
+        assertThat(notifications, hasItem(scheduledMaintenanceNotification));
         assertThat(notifications, hasItem(paymentPendingNotification));
         assertThat(notifications, hasItem(changePasswordNotification));
     }
@@ -126,7 +126,7 @@ public class UserNotificationServiceTest extends BusinessLayerTestSupport {
 
         assertThat(notifications, not(empty()));
 
-        assertThat(notifications, not(hasItem(scheduledMaintenaceNotification)));
+        assertThat(notifications, not(hasItem(scheduledMaintenanceNotification)));
     }
 
     @Test
@@ -173,7 +173,7 @@ public class UserNotificationServiceTest extends BusinessLayerTestSupport {
         assertThat(notificationsResp, isResponseOk());
 
         List<UserNotification> notifications = notificationsResp.getResult();
-        assertThat(notifications, hasItem(scheduledMaintenaceNotification));
+        assertThat(notifications, hasItem(scheduledMaintenanceNotification));
         assertThat(notifications, hasItem(changePasswordNotification));
         assertThat(notifications, not(hasItem(paymentPendingNotification)));
     }
@@ -187,7 +187,7 @@ public class UserNotificationServiceTest extends BusinessLayerTestSupport {
         List<UserNotification> notifications = notificationsResp.getResult();
 
         assertThat(notifications, not(empty()));
-        assertThat(notifications, not(hasItem(scheduledMaintenaceNotification)));
+        assertThat(notifications, not(hasItem(scheduledMaintenanceNotification)));
     }
 
     @Test
@@ -313,7 +313,7 @@ public class UserNotificationServiceTest extends BusinessLayerTestSupport {
 
         // Validates that all notifications are marked as read now
         List<UserNotification> notificationsPostChange = userNotificationService.findAll(user).getResult();
-        assertThat("The notifications should all be read afiter this call",
+        assertThat("The notifications should all be read after this call",
                 notificationsPostChange.stream().allMatch(isReadNotification));
 
         // if called a second time, they should still be marked with unread =
@@ -382,7 +382,7 @@ public class UserNotificationServiceTest extends BusinessLayerTestSupport {
         assertThat("Should be marked read in the past, not in the future", afterMarkedRead.getLastReadDate(),
                 lessThanOrEqualTo(Instant.now()));
         assertThat("Should be marked read in the recent past, not in the distant past",
-                afterMarkedRead.getLastReadDate(), greaterThan(Instant.now().minusMillis(10000)));
+                afterMarkedRead.getLastReadDate(), greaterThan(Instant.now().minusMillis(10000L)));
         assertThat("Should return the same notification", afterMarkedRead.getUuid(),
                 equalTo(SCHEDULED_MAINTENANCE_NOTIFICATION_UUID));
 
@@ -394,7 +394,7 @@ public class UserNotificationServiceTest extends BusinessLayerTestSupport {
         assertThat("Should be marked read in the past, not in the future", afterSearched.getLastReadDate(),
                 lessThanOrEqualTo(Instant.now()));
         assertThat("Should be marked read in the recent past, not in the distant past", afterSearched.getLastReadDate(),
-                greaterThan(Instant.now().minusMillis(10000)));
+                greaterThan(Instant.now().minusMillis(10000L)));
         assertThat(afterSearched.getUuid(), equalTo(SCHEDULED_MAINTENANCE_NOTIFICATION_UUID));
 
         // should be idempotent - a second markRead should not update the

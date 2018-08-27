@@ -196,7 +196,7 @@ public class AlertTriggerRestController extends AbstractRestController implement
                 value = "JSON filled with the fields described in Model and Example Value beside",
                 required = true)
             @RequestBody AlertTriggerInputVO form)
-            throws BadServiceResponseException, NotFoundResponseException, BadRequestResponseException {
+            throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);

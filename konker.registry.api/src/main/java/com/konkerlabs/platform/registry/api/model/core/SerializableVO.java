@@ -29,7 +29,7 @@ public interface SerializableVO<T, R> {
     @Transient
     default List<R> apply(List<T> t) {
         return t.parallelStream()
-                    .map(i -> apply(i))
+                    .map(this::apply)
                     .collect(Collectors.toList());
 
     }

@@ -1,6 +1,5 @@
 package com.konkerlabs.platform.registry.config;
 
-import java.net.UnknownHostException;
 import java.util.*;
 
 import org.slf4j.Logger;
@@ -36,7 +35,7 @@ public class MongoAuditConfig extends AbstractMongoConfiguration {
 	private Integer port;
 	private String username;
 	private String password;
-	private static Logger LOG = LoggerFactory.getLogger(MongoConfig.class);
+	private static Logger LOG = LoggerFactory.getLogger(MongoAuditConfig.class);
     
     public MongoAuditConfig() {
     	Map<String, Object> defaultMap = new HashMap<>();

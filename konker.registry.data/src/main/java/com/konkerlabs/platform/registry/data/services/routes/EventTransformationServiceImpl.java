@@ -29,7 +29,7 @@ import java.util.Optional;
 @Component
 public class EventTransformationServiceImpl implements EventTransformationService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EventTransformationService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(EventTransformationServiceImpl.class);
 
     @Autowired
     private JsonParsingService jsonParsingService;
@@ -80,17 +80,13 @@ public class EventTransformationServiceImpl implements EventTransformationServic
 
             HttpHeaders headers = new HttpHeaders();
             Optional.ofNullable((Map<String, String>) step.getAttributes().get(RestTransformationStep.REST_ATTRIBUTE_HEADERS))
-                    .ifPresent(item ->{
-                        item.entrySet().stream().forEach( entry ->{
-                            headers.add(entry.getKey(), entry.getValue());
-                        });
-                    });
+                    .ifPresent(item -> item.entrySet().stream().forEach(entry -> headers.add(entry.getKey(), entry.getValue())));
 
             String stepResponse = httpGateway.request(
                     HttpMethod.resolve(stepMethod),
                     headers,
                     new URI(stepUrl), MediaType.APPLICATION_JSON,
-                    () -> event.getPayload(),
+                    event::getPayload,
                     (String) step.getAttributes().get(RestTransformationStep.REST_USERNAME_ATTRIBUTE_NAME),
                     (String) step.getAttributes().get(RestTransformationStep.REST_PASSWORD_ATTRIBUTE_NAME));
 
@@ -118,7 +114,7 @@ public class EventTransformationServiceImpl implements EventTransformationServic
 
     private boolean isValidResponse(String stepResponse) {
         return Optional.ofNullable(stepResponse)
-            .filter(s -> !s.isEmpty() && !s.trim().equals("[]") && !s.trim().equals("{}"))
+            .filter(s -> !s.isEmpty() && !"[]".equals(s.trim()) && !"{}".equals(s.trim()))
             .isPresent();
     }
 }

@@ -210,7 +210,7 @@ public class DeviceModelRestController extends AbstractRestController implements
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         for (Validations value : Validations.values()) {
             validationsCode.add(value.getCode());
         }

@@ -34,7 +34,7 @@ public class GatewayEventRestEndpoint {
         INVALID_WAITTIME("integration.rest.invalid.waitTime"),
         INVALID_CHANNEL_PATTERN("integration.rest.invalid.channel"),
     	DEVICE_NOT_FOUND("integration.event_processor.channel.not_found"),
-    	INVALID_REQUEST_ORIGIN("integration.rest.invalid_requrest_origin");
+    	INVALID_REQUEST_ORIGIN("integration.rest.invalid_request_origin");
 
         private String code;
 

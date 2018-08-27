@@ -1,7 +1,6 @@
 package com.konkerlabs.platform.registry.business.model;
 
 import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
-import com.konkerlabs.platform.registry.business.services.DeviceModelServiceImpl;
 import lombok.Builder;
 import lombok.Data;
 import org.slf4j.Logger;
@@ -17,7 +16,7 @@ public class AmazonKinesis implements URIDealer {
 
     private Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
-    public final static String SECRET_KEY = "secret";
+    public static final String SECRET_KEY = "secret";
 
     public enum Validations {
 		AMAZON_KINESIS_INVALID_KEY("service.event_route.amazonkinesis.invalid_key"),

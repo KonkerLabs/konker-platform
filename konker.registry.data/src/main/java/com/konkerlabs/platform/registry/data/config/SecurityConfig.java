@@ -92,7 +92,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .addFilter(filter)
                     .addFilterAfter(paramsAuthFilter, BasicAuthenticationFilter.class)
                     .requestMatchers()
-                    .antMatchers("/pub/**", "/sub/**", "/cfg/**")
+                    .antMatchers("/pub/**", "/sub/**", "/cfg/**", "/upload/**")
                 .and()
                     .authorizeRequests()
                     .anyRequest()
@@ -112,16 +112,21 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                                             .getHeader(item.getValue().replaceAll("[\\{\\}]", "")))
                                             .map(origin -> origin)
                                             .orElse("*"));
-                        } else if (item.getKey().equals("Access-Control-Allow-Methods") &&
+                        } else if ("Access-Control-Allow-Methods".equals(item.getKey()) &&
                         		httpServletRequest.getServletPath().startsWith("/pub/")) {
                         	httpServletResponse.addHeader(
                         			item.getKey(),
                                     "POST");
-                        } else if (item.getKey().equals("Access-Control-Allow-Methods") &&
+                        } else if ("Access-Control-Allow-Methods".equals(item.getKey()) &&
                         		httpServletRequest.getServletPath().startsWith("/sub/")) {
                         	httpServletResponse.addHeader(
                         			item.getKey(),
                                     "GET");
+                        } else if ("Access-Control-Allow-Methods".equals(item.getKey()) &&
+                                httpServletRequest.getServletPath().startsWith("/upload/")) {
+                            httpServletResponse.addHeader(
+                                    item.getKey(),
+                                    "POST");
                         } else {
                             httpServletResponse.addHeader(
                                     item.getKey(),

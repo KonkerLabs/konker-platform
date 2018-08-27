@@ -45,13 +45,13 @@ public class KonkerBasicAuthenticationFilter extends BasicAuthenticationFilter {
 		if (!Optional.ofNullable(device).isPresent() &&
 				request.getRequestURI().contains("pub/")) {
 			String aux = request.getRequestURI().substring(request.getRequestURI().indexOf("pub/") + 4);
-			uriApiKey = aux.substring(0, aux.indexOf("/"));
+			uriApiKey = aux.substring(0, aux.indexOf('/'));
 			device = deviceRegisterService.findByApiKey(uriApiKey);
 
 		} else if (!Optional.ofNullable(device).isPresent() &&
 				request.getRequestURI().contains("sub/")) {
 			String aux = request.getRequestURI().substring(request.getRequestURI().indexOf("sub/") + 4);
-			uriApiKey = aux.substring(0, aux.indexOf("/"));
+			uriApiKey = aux.substring(0, aux.indexOf('/'));
 			device = deviceRegisterService.findByApiKey(uriApiKey);
 		}
 
@@ -93,7 +93,7 @@ public class KonkerBasicAuthenticationFilter extends BasicAuthenticationFilter {
 
 		String token = new String(decoded, getCredentialsCharset(request));
 
-		int delim = token.indexOf(":");
+		int delim = token.indexOf(':');
 
 		if (delim == -1) {
 			throw new BadCredentialsException("Invalid basic authentication token");

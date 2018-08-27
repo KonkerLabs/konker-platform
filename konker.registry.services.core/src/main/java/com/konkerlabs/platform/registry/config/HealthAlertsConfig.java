@@ -3,8 +3,6 @@ package com.konkerlabs.platform.registry.config;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.context.annotation.Configuration;
-
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 

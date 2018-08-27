@@ -84,10 +84,10 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
     @Qualifier("mongoEvents")
     private EventRepository eventRepository;
 
-    private String userDefinedDeviceGuid = "7d51c242-81db-11e6-a8c2-0746f010e945";
+    private final String userDefinedDeviceGuid = "7d51c242-81db-11e6-a8c2-0746f010e945";
     private String guid = "71fc0d48-674a-4d62-b3e5-0216abca63af";
-    private String apiKey = "84399b2e-d99e-11e5-86bc-34238775bac9";
-    private String payload = "{\n" +
+    private final String apiKey = "84399b2e-d99e-11e5-86bc-34238775bac9";
+    private final String payload = "{\n" +
             "    \"ts\" : \"2016-03-03T18:15:00Z\",\n" +
             "    \"value\" : 31.0,\n" +
             "    \"command\" : {\n" +
@@ -100,7 +100,7 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
             "    },\n" +
             "    \"time\" : 123\n" +
             "  }";
-    private String payloadLatLonInvalid = "{\n" +
+    private final String payloadLatLonInvalid = "{\n" +
             "    \"ts\" : \"2016-03-03T18:15:00Z\",\n" +
             "    \"value\" : 31.0,\n" +
             "    \"command\" : {\n" +
@@ -115,7 +115,7 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
             "	 \"_lat\" : 1234.56757777,\n" +
             "	 \"_lon\" : -46.6910183\n" +
             "  }";
-    private String payloadHdopInvalid = "{\n" +
+    private final String payloadHdopInvalid = "{\n" +
             "    \"ts\" : \"2016-03-03T18:15:00Z\",\n" +
             "    \"value\" : 31.0,\n" +
             "    \"command\" : {\n" +
@@ -131,7 +131,7 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
             "	 \"_lon\" : -46.6910183,\n" +
             "	 \"_hdop\" : \"abc\"\n" +
             "  }";
-    private String payloadElevInvalid = "{\n" +
+    private final String payloadElevInvalid = "{\n" +
             "    \"ts\" : \"2016-03-03T18:15:00Z\",\n" +
             "    \"value\" : 31.0,\n" +
             "    \"command\" : {\n" +
@@ -148,7 +148,7 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
             "	 \"_hdop\" : 10,\n" +
             "	 \"_elev\" : \"abc\"\n" +
             "  }";
-    private String payloadValidGeo = "{\n" +
+    private final String payloadValidGeo = "{\n" +
             "    \"ts\" : \"2016-03-03T18:15:00Z\",\n" +
             "    \"value\" : 31.0,\n" +
             "    \"command\" : {\n" +
@@ -165,7 +165,7 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
             "	 \"_hdop\" : 10,\n" +
             "	 \"_elev\" : 3.66\n" +
             "  }";
-    private String channel = "data";
+    private final String channel = "data";
     private String topic = MessageFormat.format("iot/{0}/{1}", apiKey, channel);
     private Event event;
     private Device device;
@@ -175,7 +175,7 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
     private Instant lastEventTimestamp;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         firstEventTimestamp = Instant.ofEpochMilli(1474562670340L);
         lastEventTimestamp = Instant.ofEpochMilli(1474562674450L);
 
@@ -196,21 +196,21 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfDeviceIsNull() throws Exception {
+    public void shouldRaiseAnExceptionIfDeviceIsNull() {
         ServiceResponse<Event> response = deviceEventService.logIncomingEvent(null, event);
 
         assertThat(response,ServiceResponseMatchers.hasErrorMessage(DeviceEventService.Validations.DEVICE_NULL.getCode()));
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfEventIsNull() throws Exception {
+    public void shouldRaiseAnExceptionIfEventIsNull() {
         ServiceResponse<Event> response = deviceEventService.logIncomingEvent(device, null);
 
         assertThat(response,ServiceResponseMatchers.hasErrorMessage(DeviceEventService.Validations.EVENT_NULL.getCode()));
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfPayloadIsNull() throws Exception {
+    public void shouldRaiseAnExceptionIfPayloadIsNull() {
         event.setPayload(null);
 
         ServiceResponse<Event> response = deviceEventService.logIncomingEvent(device, event);
@@ -219,7 +219,7 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfPayloadIsEmpty() throws Exception {
+    public void shouldRaiseAnExceptionIfPayloadIsEmpty() {
         event.setPayload("");
 
         ServiceResponse<Event> response = deviceEventService.logIncomingEvent(device, event);
@@ -234,7 +234,7 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
 
         deviceEventService.logIncomingEvent(device, event);
 
-        Event last = eventRepository.findIncomingBy(tenant,application,device.getGuid(),channel,event.getCreationTimestamp().minusSeconds(1l), null, false, 1).get(0);
+        Event last = eventRepository.findIncomingBy(tenant,application,device.getGuid(),channel,event.getCreationTimestamp().minusSeconds(1L), null, false, 1).get(0);
 
         assertThat(last, notNullValue());
 
@@ -250,7 +250,7 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
     	
         doNothing().when(jedisTaskService).registerLastEventTimestamp(event);
         deviceEventService.logIncomingEvent(device, event);
-        Event last = eventRepository.findIncomingBy(tenant,application,device.getGuid(),channel,event.getCreationTimestamp().minusSeconds(1l), null, false, 1).get(0);
+        Event last = eventRepository.findIncomingBy(tenant,application,device.getGuid(),channel,event.getCreationTimestamp().minusSeconds(1L), null, false, 1).get(0);
 
         assertThat(last, notNullValue());
         assertThat(last.getGeolocation(), nullValue());
@@ -266,7 +266,7 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
     	
         doNothing().when(jedisTaskService).registerLastEventTimestamp(event);
         deviceEventService.logIncomingEvent(device, event);
-        Event last = eventRepository.findIncomingBy(tenant,application,device.getGuid(),channel,event.getCreationTimestamp().minusSeconds(1l), null, false, 1).get(0);
+        Event last = eventRepository.findIncomingBy(tenant,application,device.getGuid(),channel,event.getCreationTimestamp().minusSeconds(1L), null, false, 1).get(0);
 
         assertThat(last, notNullValue());
         assertThat(last.getGeolocation().getHdop(), nullValue());
@@ -282,7 +282,7 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
     	
         doNothing().when(jedisTaskService).registerLastEventTimestamp(event);
         deviceEventService.logIncomingEvent(device, event);
-        Event last = eventRepository.findIncomingBy(tenant,application,device.getGuid(),channel,event.getCreationTimestamp().minusSeconds(1l), null, false, 1).get(0);
+        Event last = eventRepository.findIncomingBy(tenant,application,device.getGuid(),channel,event.getCreationTimestamp().minusSeconds(1L), null, false, 1).get(0);
 
         assertThat(last, notNullValue());
         assertThat(last.getGeolocation().getElev(), nullValue());
@@ -298,7 +298,7 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
     	
         doNothing().when(jedisTaskService).registerLastEventTimestamp(event);
         deviceEventService.logIncomingEvent(device, event);
-        Event last = eventRepository.findIncomingBy(tenant,application,device.getGuid(),channel,event.getCreationTimestamp().minusSeconds(1l), null, false, 1).get(0);
+        Event last = eventRepository.findIncomingBy(tenant,application,device.getGuid(),channel,event.getCreationTimestamp().minusSeconds(1L), null, false, 1).get(0);
 
         assertThat(last, notNullValue());
         assertThat(last.getGeolocation(), notNullValue());

@@ -51,12 +51,13 @@ public class DeviceEventRestEndpoint {
     public enum Messages {
         INVALID_REQUEST_BODY("integration.rest.invalid.body"),
         INVALID_RESOURCE("integration.rest.invalid.resource"),
+        INVALID_MGMT_CHANNEL("integration.rest.invalid.mgmt_channel"),
         INVALID_WAITTIME("integration.rest.invalid.waitTime"),
         INVALID_CHANNEL_PATTERN("integration.rest.invalid.channel"),
     	DEVICE_NOT_FOUND("integration.event_processor.channel.not_found"),
-    	INVALID_REQUEST_ORIGIN("integration.rest.invalid_requrest_origin");
+    	INVALID_REQUEST_ORIGIN("integration.rest.invalid_request_origin");
 
-        private String code;
+        private final String code;
 
         public String getCode() {
             return code;
@@ -67,14 +68,14 @@ public class DeviceEventRestEndpoint {
         }
     }
 
-    private ApplicationContext applicationContext;
-    private DeviceEventProcessor deviceEventProcessor;
-    private JsonParsingService jsonParsingService;
-    private DeviceEventService deviceEventService;
-    private DeviceRegisterService deviceRegisterService;
-    private Executor executor;
-    private JedisTaskService jedisTaskService;
-    private DeviceConfigSetupService deviceConfigSetupService;
+    private final ApplicationContext applicationContext;
+    private final DeviceEventProcessor deviceEventProcessor;
+    private final JsonParsingService jsonParsingService;
+    private final DeviceEventService deviceEventService;
+    private final DeviceRegisterService deviceRegisterService;
+    private final Executor executor;
+    private final JedisTaskService jedisTaskService;
+    private final DeviceConfigSetupService deviceConfigSetupService;
 
     @Autowired
     public DeviceEventRestEndpoint(ApplicationContext applicationContext,
@@ -152,7 +153,7 @@ public class DeviceEventRestEndpoint {
 
     	} else {
     		CompletableFuture.supplyAsync(() -> {
-    			String subChannel = Optional.ofNullable(channel).isPresent() ? apiKey+"."+channel : apiKey;
+    			String subChannel = Optional.ofNullable(channel).isPresent() ? apiKey+ '.' +channel : apiKey;
     			return jedisTaskService.subscribeToChannel(subChannel, startTimestamp, asc, limit);
     		}, executor)
     		.whenCompleteAsync((result, throwable) -> deferredResult.setResult(EventVO.from(result)), executor);
@@ -165,6 +166,42 @@ public class DeviceEventRestEndpoint {
         return EventResponse.builder()
                 .code(message)
                 .message(applicationContext.getMessage(message,null, locale)).build();
+    }
+
+    @RequestMapping(value = "pub/{apiKey}/mgmt/{channel}",
+            method = RequestMethod.POST)
+    public ResponseEntity<EventResponse> onMgmtEvent(HttpServletRequest servletRequest,
+                                                 @PathVariable("apiKey") String apiKey,
+                                                 @PathVariable("channel") String channel,
+                                                 @AuthenticationPrincipal Device principal,
+                                                 @RequestBody String body,
+                                                 Locale locale) {
+        if (!jsonParsingService.isValid(body))
+            return new ResponseEntity<EventResponse>(buildResponse(Messages.INVALID_REQUEST_BODY.getCode(),locale), HttpStatus.BAD_REQUEST);
+
+        if (!principal.getApiKey().equals(apiKey))
+            return new ResponseEntity<EventResponse>(buildResponse(Messages.INVALID_RESOURCE.getCode(),locale), HttpStatus.NOT_FOUND);
+
+        if (!isValidMgmtChannel(channel))
+            return new ResponseEntity<EventResponse>(buildResponse(Messages.INVALID_MGMT_CHANNEL.getCode(),locale), HttpStatus.NOT_FOUND);
+
+        if (servletRequest.getHeader(HttpGateway.KONKER_VERSION_HEADER) != null)
+            return new ResponseEntity<EventResponse>(buildResponse(Messages.INVALID_REQUEST_ORIGIN.getCode(), locale), HttpStatus.FORBIDDEN);
+
+        try {
+            deviceEventProcessor.process(apiKey, String.format("mgmt/%s", channel),body);
+        } catch (BusinessException e) {
+            return new ResponseEntity<EventResponse>(buildResponse(e.getMessage(),locale),HttpStatus.BAD_REQUEST);
+        }
+
+        return new ResponseEntity<EventResponse>(
+                EventResponse.builder().code(String.valueOf(HttpStatus.OK.value()))
+                        .message(HttpStatus.OK.name()).build(),
+                HttpStatus.OK);
+    }
+
+    private boolean isValidMgmtChannel(String channel) {
+        return "battery".equals(channel);
     }
 
     @RequestMapping(value = "pub/{apiKey}/{channel}",
@@ -196,10 +233,7 @@ public class DeviceEventRestEndpoint {
         		HttpStatus.OK);
     }
 
-    @RequestMapping(
-            value = { "cfg/{apiKey}" },
-            method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "cfg/{apiKey}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity<EventResponse> configEvent(HttpServletRequest servletRequest,
                                                  @PathVariable("apiKey") String apiKey,
@@ -208,33 +242,33 @@ public class DeviceEventRestEndpoint {
     	Device device = deviceRegisterService.findByApiKey(apiKey);
 
     	if (!principal.getApiKey().equals(apiKey)) {
-            return new ResponseEntity<EventResponse>(
-            			EventResponse.builder().code(String.valueOf(HttpStatus.BAD_REQUEST.value()))
-            		.message(applicationContext.getMessage(Messages.INVALID_RESOURCE.getCode(), null, locale)).build(),
-            		HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(
+                    EventResponse.builder().code(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                            .message(applicationContext.getMessage(Messages.INVALID_RESOURCE.getCode(), null, locale)).build(),
+                    HttpStatus.BAD_REQUEST);
     	}
 
     	if (!Optional.ofNullable(device).isPresent()) {
-    		return new ResponseEntity<EventResponse>(
-        			EventResponse.builder().code(String.valueOf(HttpStatus.BAD_REQUEST.value()))
-        		.message(applicationContext.getMessage(Messages.DEVICE_NOT_FOUND.getCode(), null, locale)).build(),
-        		HttpStatus.BAD_REQUEST);
+    		return new ResponseEntity<>(
+                    EventResponse.builder().code(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                            .message(applicationContext.getMessage(Messages.DEVICE_NOT_FOUND.getCode(), null, locale)).build(),
+                    HttpStatus.BAD_REQUEST);
     	}
 
     	ServiceResponse<String> serviceResponse = deviceConfigSetupService
     			.findByModelAndLocation(device.getTenant(), device.getApplication(), device.getDeviceModel(), device.getLocation());
 
     	if (serviceResponse.isOk()) {
-    		return new ResponseEntity<EventResponse>(
-            		EventResponse.builder().code(String.valueOf(HttpStatus.OK.value()))
-            		.message(serviceResponse.getResult()).build(),
-            		HttpStatus.OK);
+    		return new ResponseEntity<>(
+                    EventResponse.builder().code(String.valueOf(HttpStatus.OK.value()))
+                            .message(serviceResponse.getResult()).build(),
+                    HttpStatus.OK);
     	} else {
-    		return new ResponseEntity<EventResponse>(
-            		EventResponse.builder().code(String.valueOf(HttpStatus.NOT_FOUND.value()))
-            		.message("{ }")
-            		.build(),
-            		HttpStatus.NOT_FOUND);
+    		return new ResponseEntity<>(
+                    EventResponse.builder().code(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                            .message("{ }")
+                            .build(),
+                    HttpStatus.NOT_FOUND);
     	}
     }
 

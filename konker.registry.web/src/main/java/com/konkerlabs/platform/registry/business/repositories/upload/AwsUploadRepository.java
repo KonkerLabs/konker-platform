@@ -140,29 +140,29 @@ public class AwsUploadRepository implements UploadRepository {
     }
 
     @Override
-    public String upload(String base64, String fileName, String sufix, boolean isPublic) throws Exception {
+    public String upload(String base64, String fileName, String suffix, boolean isPublic) throws Exception {
         InputStream is = new ByteArrayInputStream(Base64.decode(base64.getBytes()));
-        return upload(is, fileName, sufix, isPublic);
+        return upload(is, fileName, suffix, isPublic);
     }
 
-    public String upload(InputStream is, String fileName, String sufix, Boolean isPublic) throws Exception {
-        validateFile(is, sufix);
+    public String upload(InputStream is, String fileName, String suffix, Boolean isPublic) throws Exception {
+        validateFile(is, suffix);
         if (isPublic == null) {
             isPublic = Boolean.TRUE;
         }
-        if (is != null && fileName != null) {
+        if ((is != null) && (fileName != null)) {
 
             try {
                 byte[] bytes = IOUtils.toByteArray(is);
                 s3Client.putObject(
                         new PutObjectRequest(
                         		cdnConfig.getName(),
-                                fileName + "." + sufix,
+                                fileName + '.' + suffix,
                                 new ByteArrayInputStream(bytes),
                                 S3ObjectMetadata.getObjectMetadata(bytes)
                         ).withCannedAcl(isPublic ? CannedAccessControlList.PublicRead : CannedAccessControlList.AuthenticatedRead)
                 );
-                return fileName + "." + sufix;
+                return fileName + '.' + suffix;
             } catch (AmazonServiceException | IOException e) {
                 throw new BusinessException(Validations.INVALID_S3_BUCKET_CREDENTIALS.getCode());
             } finally {
@@ -223,14 +223,14 @@ class S3Credentials {
 @Repository
 class S3ObjectMetadata {
 
-    public ObjectMetadata getObjectMetadata(InputStream is) throws BusinessException {
+    public ObjectMetadata getObjectMetadata(InputStream is) {
         ObjectMetadata objectMetadata = new ObjectMetadata();
         return objectMetadata;
     }
 
-    public static ObjectMetadata getObjectMetadata(byte[] is) throws BusinessException {
+    public static ObjectMetadata getObjectMetadata(byte[] is) {
         ObjectMetadata objectMetadata = new ObjectMetadata();
-        objectMetadata.setContentLength(Long.valueOf(is.length));
+        objectMetadata.setContentLength(Long.valueOf((long) is.length));
         return objectMetadata;
     }
 }

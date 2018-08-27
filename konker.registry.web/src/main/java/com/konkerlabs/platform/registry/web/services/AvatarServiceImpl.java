@@ -52,14 +52,14 @@ public class AvatarServiceImpl implements AvatarService {
     		
     		InputStream is = new ByteArrayInputStream(Base64.decode(base64Content.getBytes()));
 
-    		ServiceResponse<InputStream> resizeReponse =  cropAndResizeAvatar(is, fileExt);
-    		if (!resizeReponse.isOk()) {
+    		ServiceResponse<InputStream> resizeResponse =  cropAndResizeAvatar(is, fileExt);
+    		if (!resizeResponse.isOk()) {
                 return ServiceResponseBuilder.<User>error()
-                        .withMessages(resizeReponse.getResponseMessages())
+                        .withMessages(resizeResponse.getResponseMessages())
                         .build();
     		}
     		
-    		is = resizeReponse.getResult();
+    		is = resizeResponse.getResult();
     		
             ServiceResponse<String> response = uploadService.upload(is, getUniqueFileName(), fileExt, true);
             if(!response.getStatus().equals(ServiceResponse.Status.OK)){

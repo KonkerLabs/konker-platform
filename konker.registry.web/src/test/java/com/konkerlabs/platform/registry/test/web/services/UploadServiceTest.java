@@ -55,7 +55,7 @@ public class UploadServiceTest extends BusinessLayerTestSupport {
     private static List<String> filesUsedInTheTest = Collections.emptyList();
 
     @Test
-    public void shouldUploadBase64File() throws Exception {
+    public void shouldUploadBase64File() {
 
         ServiceResponse<String> response =
                 service.uploadBase64Img("data:image/jpeg;base64," + base64Img, true);
@@ -64,7 +64,7 @@ public class UploadServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldUploadInputStreamFile() throws Exception {
+    public void shouldUploadInputStreamFile() {
         InputStream is = new ByteArrayInputStream(Base64.decode(base64Img.getBytes()));
         ServiceResponse<String> response = service.upload(is, fileName, "jpg", true);
         Assert.assertNotNull(response);
@@ -98,21 +98,21 @@ public class UploadServiceTest extends BusinessLayerTestSupport {
             when(awsUploadRepository.upload(anyString(), anyString(), anyString(), anyBoolean()))
                     .thenAnswer(new Answer<String>() {
                         @Override
-                        public String answer(InvocationOnMock invocationOnMock) throws Throwable {
+                        public String answer(InvocationOnMock invocationOnMock) {
                             return "filename";
                         }
                     });
             when(awsUploadRepository.upload(any(InputStream.class), anyString(), anyString(), anyBoolean()))
                     .thenAnswer(new Answer<String>() {
                         @Override
-                        public String answer(InvocationOnMock invocationOnMock) throws Throwable {
+                        public String answer(InvocationOnMock invocationOnMock) {
                             return "s34tst";
                         }
                     });
             when(awsUploadRepository.downloadAsBase64(anyString()))
                     .thenAnswer(new Answer<String>() {
                         @Override
-                        public String answer(InvocationOnMock invocationOnMock) throws Throwable {
+                        public String answer(InvocationOnMock invocationOnMock) {
                             return "s34tst";
                         }
                     });

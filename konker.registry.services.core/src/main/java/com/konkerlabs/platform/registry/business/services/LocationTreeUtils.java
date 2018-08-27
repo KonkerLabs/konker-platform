@@ -21,11 +21,7 @@ public class LocationTreeUtils {
                 root = location;
             } else {
                 String parentGuid = location.getParent().getGuid();
-                List<Location> children = childrenListMap.get(parentGuid);
-                if (children == null) {
-                    children = new ArrayList<>();
-                    childrenListMap.put(parentGuid, children);
-                }
+                List<Location> children = childrenListMap.computeIfAbsent(parentGuid, k -> new ArrayList<>());
                 children.add(location);
              }
         }
@@ -68,7 +64,7 @@ public class LocationTreeUtils {
 
         List<Location> nodes = new ArrayList<>();
 
-        Queue<Location> queue = new LinkedList<Location>() ;
+        Queue<Location> queue = new LinkedList<>() ;
         queue.add(root);
 
         while(!queue.isEmpty()) {
@@ -129,10 +125,10 @@ public class LocationTreeUtils {
 
         List<Location> removedNodes = new ArrayList<>();
 
-        List<Location> currrentNodes = getNodesListBreadthFirstOrder(currentTree);
+        List<Location> currentNodes = getNodesListBreadthFirstOrder(currentTree);
         Set<String> newNodesSet = getNodesSetName(getNodesList(newTree));
 
-        for (Location location : currrentNodes) {
+        for (Location location : currentNodes) {
             if (!newNodesSet.contains(location.getName())) {
                 removedNodes.add(location);
             }
@@ -175,10 +171,8 @@ public class LocationTreeUtils {
 
     public static Boolean isSublocationOf(Location root, Location childCandidate) {
         return getNodesListBreadthFirstOrder(root)
-                .stream()
-                .filter(item -> item != null && childCandidate != null
+                .stream().anyMatch(item -> item != null && childCandidate != null
                         && childCandidate.getName() != null &&
-                        childCandidate.getName().equals(item.getName()))
-                .count() > 0;
+                        childCandidate.getName().equals(item.getName()));
     }
 }

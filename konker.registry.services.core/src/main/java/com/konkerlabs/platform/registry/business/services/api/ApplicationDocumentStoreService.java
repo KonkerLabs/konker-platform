@@ -6,7 +6,7 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 
 public interface ApplicationDocumentStoreService {
 
-    public enum Validations {
+    enum Validations {
         APP_DOCUMENT_NULL("service.application.document_store.null"),
         APP_DOCUMENT_ALREADY_REGISTERED("service.application.document_store.already_registered"),
         APP_DOCUMENT_DOES_NOT_EXIST("service.application.document_store.does_not_exist"),
@@ -25,7 +25,7 @@ public interface ApplicationDocumentStoreService {
         }
     }
 
-    public enum Messages {
+    enum Messages {
         APP_DOCUMENT_REMOVED_SUCCESSFULLY("controller.application.document_store.removed_succesfully");
 
         public String getCode() {

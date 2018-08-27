@@ -98,7 +98,7 @@ public class DeviceCredentialRestController extends AbstractRestController imple
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
 
         for (com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.Validations value : DeviceRegisterService.Validations.values()) {
             validationsCode.add(value.getCode());

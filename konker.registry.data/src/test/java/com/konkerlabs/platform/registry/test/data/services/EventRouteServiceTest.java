@@ -77,8 +77,8 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     private EventRoute route;
 
-    private String routeId = "01231829-4435-4eb0-abd6-7a7bae7812bd";
-    private String existingGuid = "bd923670-d888-472a-b6d9-b20af31253da";
+    private final String routeId = "01231829-4435-4eb0-abd6-7a7bae7812bd";
+    private final String existingGuid = "bd923670-d888-472a-b6d9-b20af31253da";
     private Tenant tenant;
     private Application application;
     private Tenant emptyTenant;
@@ -86,7 +86,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     private Transformation transformation;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         tenant = tenantRepository.findByDomainName("konker");
         application = applicationRepository.findByTenantAndName(tenant.getId(), "konker");
         emptyTenant = tenantRepository.findByDomainName("empty");
@@ -150,7 +150,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json"})
-    public void shouldReturnValidationMessageTenantIsNull() throws Exception {
+    public void shouldReturnValidationMessageTenantIsNull() {
         ServiceResponse<EventRoute> response = subject.save(null, application, route);
 
         assertThat(response, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
@@ -172,7 +172,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json"})
-    public void shouldReturnValidationMessageIfRecordIsNull() throws Exception {
+    public void shouldReturnValidationMessageIfRecordIsNull() {
         ServiceResponse<EventRoute> response = subject.save(tenant, application, null);
 
         assertThat(response, hasErrorMessage(CommonValidations.RECORD_NULL.getCode()));
@@ -180,7 +180,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json"})
-    public void shouldReturnValidationMessageIfRecordIsInvalid() throws Exception {
+    public void shouldReturnValidationMessageIfRecordIsInvalid() {
         Map<String, Object[]> errorMessages = new HashMap() {{
             put("some_error", new Object[]{"some_value"});
         }};
@@ -188,12 +188,12 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
         ServiceResponse<EventRoute> response = subject.save(tenant, application, route);
 
-        assertThat(response, hasErrorMessage("some_error", new Object[]{"some_value"}));
+        assertThat(response, hasErrorMessage("some_error", "some_value"));
     }
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json"})
-    public void shouldReturnValidationMessageIfTenantDoesNotExist() throws Exception {
+    public void shouldReturnValidationMessageIfTenantDoesNotExist() {
         ServiceResponse<EventRoute> response = subject.save(Tenant.builder().id("unknown_id").name("name").build(), application, route);
 
         assertThat(response, hasErrorMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()));
@@ -201,7 +201,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json"})
-    public void shouldReturnAValidationMessageIfRouteNameAlreadyExistsWithinTenant() throws Exception {
+    public void shouldReturnAValidationMessageIfRouteNameAlreadyExistsWithinTenant() {
         String existingRouteName = "Device event forwarding route";
 
         route.setName(existingRouteName);
@@ -212,7 +212,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json", "/fixtures/devices.json"})
-    public void shouldReturnCrossApplicationMessage() throws Exception {
+    public void shouldReturnCrossApplicationMessage() {
 
         route.setOutgoing(
                         RouteActor.builder().uri(
@@ -244,7 +244,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json", "/fixtures/devices.json"})
-    public void shouldReturnDeviceNotFoundMessage() throws Exception {
+    public void shouldReturnDeviceNotFoundMessage() {
 
         route.setIncoming(
                         RouteActor.builder().uri(
@@ -276,7 +276,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json", "/fixtures/devices.json"})
-    public void shouldReturnRestNotFoundMessage() throws Exception {
+    public void shouldReturnRestNotFoundMessage() {
 
         route.setOutgoing(
                         RouteActor.builder().uri(
@@ -308,7 +308,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json", "/fixtures/devices.json"})
-    public void shouldReturnErrorSavingInvalidModelLocationGuid() throws Exception {
+    public void shouldReturnErrorSavingInvalidModelLocationGuid() {
 
         route.setOutgoing(
                         RouteActor.builder().uri(
@@ -340,7 +340,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json", "/fixtures/devices.json"})
-    public void shouldReturnErrorSavingNonExistingDeviceModel() throws Exception {
+    public void shouldReturnErrorSavingNonExistingDeviceModel() {
 
         route.setOutgoing(
                         RouteActor.builder().uri(
@@ -372,7 +372,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json", "/fixtures/devices.json"})
-    public void shouldReturnErrorSavingNonExistingLocation() throws Exception {
+    public void shouldReturnErrorSavingNonExistingLocation() {
 
         final String modelGuid = "a5d6b6bd-a258-4a3b-82a9-76dc1727c7a6";
 
@@ -414,7 +414,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json", "/fixtures/devices.json"})
-    public void shouldSaveModelLocation() throws Exception {
+    public void shouldSaveModelLocation() {
 
         final String modelGuid    = "a5d6b6bd-a258-4a3b-82a9-76dc1727c7a6";
         final String locationGuid = "5217e479-e677-4281-a27f-9bbd898e6b6e";
@@ -450,7 +450,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
                                     @Override
                                     public String getGuid() {
-                                        return modelGuid + "/" + locationGuid;
+                                        return modelGuid + '/' + locationGuid;
                                     }
                                 }.toURI()
                         ).data(new HashMap<String, String>() {{
@@ -474,7 +474,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json",
             "/fixtures/transformations.json", "/fixtures/event-routes.json"})
-    public void shouldPersistIfRouteIsValid() throws Exception {
+    public void shouldPersistIfRouteIsValid() {
 
         ServiceResponse<EventRoute> response = subject.save(tenant, application, route);
 
@@ -510,7 +510,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json", "/fixtures/devices.json"})
-    public void shouldSaveAmazonKinesis() throws Exception {
+    public void shouldSaveAmazonKinesis() {
 
         route.setOutgoing(
                 RouteActor.builder().uri(
@@ -565,7 +565,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json", "/fixtures/devices.json"})
-    public void shouldReturnValidationMessageSaveAmazonKinesisWithouyKey() throws Exception {
+    public void shouldReturnValidationMessageSaveAmazonKinesisWithoutKey() {
 
         route.setOutgoing(
                 RouteActor.builder().uri(
@@ -607,7 +607,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json", "/fixtures/devices.json"})
-    public void shouldReturnValidationMessageSaveAmazonKinesisWithouySecret() throws Exception {
+    public void shouldReturnValidationMessageSaveAmazonKinesisWithoutSecret() {
 
         route.setOutgoing(
                 RouteActor.builder().uri(
@@ -649,7 +649,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json", "/fixtures/devices.json"})
-    public void shouldReturnValidationMessageSaveAmazonKinesisWithNullRegion() throws Exception {
+    public void shouldReturnValidationMessageSaveAmazonKinesisWithNullRegion() {
 
         route.setOutgoing(
                 RouteActor.builder().uri(
@@ -691,7 +691,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json", "/fixtures/devices.json"})
-    public void shouldReturnValidationMessageSaveAmazonKinesisWithInvalidRegion() throws Exception {
+    public void shouldReturnValidationMessageSaveAmazonKinesisWithInvalidRegion() {
 
         route.setOutgoing(
                 RouteActor.builder().uri(
@@ -733,7 +733,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json", "/fixtures/devices.json"})
-    public void shouldReturnValidationMessageSaveAmazonKinesisWithoutStreamName() throws Exception {
+    public void shouldReturnValidationMessageSaveAmazonKinesisWithoutStreamName() {
 
         route.setOutgoing(
                 RouteActor.builder().uri(
@@ -777,7 +777,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json"})
-    public void shouldReturnValidationMessageTenantIsNullWhenUpdating() throws Exception {
+    public void shouldReturnValidationMessageTenantIsNullWhenUpdating() {
         ServiceResponse<EventRoute> response = subject.update(null, null, existingGuid, route);
 
         assertThat(response, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
@@ -785,7 +785,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json"})
-    public void shouldReturnValidationMessageTenantDoesNotExistWhenUpdating() throws Exception {
+    public void shouldReturnValidationMessageTenantDoesNotExistWhenUpdating() {
         ServiceResponse<EventRoute> response = subject.update(
                 Tenant.builder().id("unknown_id").name("name").domainName("unknown_domain").build(),
                 application,
@@ -797,7 +797,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
-    public void shouldReturnValidationMessageGuidIsNullWhenUpdating() throws Exception {
+    public void shouldReturnValidationMessageGuidIsNullWhenUpdating() {
         ServiceResponse<EventRoute> response = subject.update(tenant, application, null, route);
 
         assertThat(response, hasErrorMessage(EventRouteService.Validations.GUID_NULL.getCode()));
@@ -805,7 +805,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
-    public void shouldReturnValidationMessageGuidIsEmptyWhenUpdating() throws Exception {
+    public void shouldReturnValidationMessageGuidIsEmptyWhenUpdating() {
         ServiceResponse<EventRoute> response = subject.update(tenant, application, "", route);
 
         assertThat(response, hasErrorMessage(EventRouteService.Validations.GUID_NULL.getCode()));
@@ -813,7 +813,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/event-routes.json"})
-    public void shouldReturnValidationMessageGuidDoesNotExistWhenUpdating() throws Exception {
+    public void shouldReturnValidationMessageGuidDoesNotExistWhenUpdating() {
         ServiceResponse<EventRoute> response = subject.update(tenant, application, "unknown_guid", route);
 
         assertThat(response, hasErrorMessage(EventRouteService.Validations.EVENT_ROUTE_NOT_FOUND.getCode()));
@@ -821,7 +821,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
-    public void shouldReturnValidationMessageIfRecordIsNullWhenUpdating() throws Exception {
+    public void shouldReturnValidationMessageIfRecordIsNullWhenUpdating() {
         ServiceResponse<EventRoute> response = subject.update(tenant, application, existingGuid, null);
 
         assertThat(response, hasErrorMessage(CommonValidations.RECORD_NULL.getCode()));
@@ -829,7 +829,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/event-routes.json"})
-    public void shouldReturnRecordValidationMessagesIfRecordIsInvalidWhenUpdating() throws Exception {
+    public void shouldReturnRecordValidationMessagesIfRecordIsInvalidWhenUpdating() {
         //Invalid state
         route.setName(null);
 
@@ -840,7 +840,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json"})
-    public void shouldReturnAValidationMessageIfRouteNameAlreadyExistsWithinTenantWhenUpdating() throws Exception {
+    public void shouldReturnAValidationMessageIfRouteNameAlreadyExistsWithinTenantWhenUpdating() {
         String existingRouteName = "Device event forwarding route 2";
 
         route.setName(existingRouteName);
@@ -851,7 +851,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json", "/fixtures/devices.json"})
-    public void shouldReturnCrossApplicationMessageWhenUpdating() throws Exception {
+    public void shouldReturnCrossApplicationMessageWhenUpdating() {
         route.setOutgoing(
                 RouteActor.builder().uri(
                         new URIDealer() {
@@ -882,7 +882,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json",
             "/fixtures/event-routes.json"})
-    public void shouldUpdateIfRouteIsValid() throws Exception {
+    public void shouldUpdateIfRouteIsValid() {
         ServiceResponse<EventRoute> response = subject.update(tenant, application, existingGuid, route);
 
         assertThat(response, isResponseOk());
@@ -893,7 +893,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     /* ---------------------- getAll ------------------------- */
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json"})
-    public void shouldReturnAllRegisteredRoutesWithinATenant() throws Exception {
+    public void shouldReturnAllRegisteredRoutesWithinATenant() {
         List<EventRoute> allRoutes = subject.getAll(tenant, application).getResult();
 
         assertThat(allRoutes, notNullValue());
@@ -918,7 +918,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json"})
-    public void shouldReturnARegisteredRouteByItsID() throws Exception {
+    public void shouldReturnARegisteredRouteByItsID() {
         EventRoute route = subject.getByGUID(tenant, application, existingGuid).getResult();
 
         assertThat(route, notNullValue());
@@ -926,7 +926,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json", "/fixtures/devices.json"})
-    public void shouldSaveEditedRouteState() throws Exception {
+    public void shouldSaveEditedRouteState() {
         EventRoute route = subject.getByGUID(tenant, application, existingGuid).getResult();
 
         String editedName = "Edited name";
@@ -943,7 +943,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json",
             "/fixtures/devices.json", "/fixtures/event-routes.json"})
-    public void shouldSaveEditedRouteAndFillDisplayNameForIncoming() throws Exception {
+    public void shouldSaveEditedRouteAndFillDisplayNameForIncoming() {
         String expectedDisplayName = "SN4434567844";
         EventRoute route = subject.getByGUID(tenant, application, existingGuid).getResult();
 
@@ -959,7 +959,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/devices.json",
             "/fixtures/event-routes.json"})
-    public void shouldUpdateRouteAndFillDisplayNameForIncoming() throws Exception {
+    public void shouldUpdateRouteAndFillDisplayNameForIncoming() {
         String expectedDisplayName = "SN4434567844";
         String newRouteName = "Changing Name To Persist";
         EventRoute route = subject.getByGUID(tenant, application, existingGuid).getResult();
@@ -978,7 +978,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/devices.json",
             "/fixtures/event-routes.json"})
-    public void shouldSaveEditedRouteAndFillDisplayNameForOutgoingDevice() throws Exception {
+    public void shouldSaveEditedRouteAndFillDisplayNameForOutgoingDevice() {
         String expectedDisplayName = "SN4434567844";
         EventRoute route = subject.getByGUID(tenant, application, existingGuid).getResult();
 
@@ -995,7 +995,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/devices.json",
             "/fixtures/event-routes.json"})
-    public void shouldUpdateRouteAndFillDisplayNameForOutgoingDevice() throws Exception {
+    public void shouldUpdateRouteAndFillDisplayNameForOutgoingDevice() {
         String expectedDisplayName = "SN4434567844";
         String newRouteName = "Changing Name To Persist";
         EventRoute route = subject.getByGUID(tenant, application, existingGuid).getResult();
@@ -1014,7 +1014,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json",
             "/fixtures/transformations.json", "/fixtures/rest-destinations.json", "/fixtures/event-routes.json"})
-    public void shouldSaveEditedRouteAndFillDisplayNameForOutgoingREST() throws Exception {
+    public void shouldSaveEditedRouteAndFillDisplayNameForOutgoingREST() {
         String expectedDisplayName = "a restful destination";
         EventRoute route = subject.getByGUID(tenant, application, existingGuid).getResult();
 
@@ -1031,7 +1031,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json",
             "/fixtures/transformations.json", "/fixtures/rest-destinations.json", "/fixtures/event-routes.json"})
-    public void shouldUpdateRouteAndFillDisplayNameForOutgoingREST() throws Exception {
+    public void shouldUpdateRouteAndFillDisplayNameForOutgoingREST() {
         String expectedDisplayName = "a restful destination";
         String newRouteName = "Changing Name To Persist";
         EventRoute route = subject.getByGUID(tenant, application, existingGuid).getResult();
@@ -1050,7 +1050,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json"})
-    public void shouldReturnErrorMessageIfRouteDoesNotBelongToTenantWhenFindByGUID() throws Exception {
+    public void shouldReturnErrorMessageIfRouteDoesNotBelongToTenantWhenFindByGUID() {
         ServiceResponse<EventRoute> response = subject.getByGUID(emptyTenant, emptyApplication, existingGuid);
 
         assertThat(response, hasErrorMessage(EventRouteService.Validations.EVENT_ROUTE_NOT_FOUND.getCode()));
@@ -1060,7 +1060,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/transformations.json", "/fixtures/event-routes.json"})
-    public void shouldReturnARegisteredRouteByItsIncomingUri() throws Exception {
+    public void shouldReturnARegisteredRouteByItsIncomingUri() {
         ServiceResponse<List<EventRoute>> ServiceResponse = subject.findByIncomingUri(route.getIncoming().getUri());
         List<EventRoute> routes = ServiceResponse.getResult();
 
@@ -1075,7 +1075,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json"})
-    public void shouldReturnValidationMessageTenantIsNullWhenRemoving() throws Exception {
+    public void shouldReturnValidationMessageTenantIsNullWhenRemoving() {
         ServiceResponse<EventRoute> response = subject.remove(null, null, existingGuid);
 
         assertThat(response, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
@@ -1083,7 +1083,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json"})
-    public void shouldReturnValidationMessageTenantDoesNotExistWhenRemoving() throws Exception {
+    public void shouldReturnValidationMessageTenantDoesNotExistWhenRemoving() {
         ServiceResponse<EventRoute> response = subject.remove(
                 Tenant.builder().id("unknown_id").name("name").domainName("unknown_domain").build(),
                 application,
@@ -1094,7 +1094,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
-    public void shouldReturnValidationMessageGuidIsNullWhenRemoving() throws Exception {
+    public void shouldReturnValidationMessageGuidIsNullWhenRemoving() {
         ServiceResponse<EventRoute> response = subject.remove(tenant, application, null);
 
         assertThat(response, hasErrorMessage(EventRouteService.Validations.GUID_NULL.getCode()));
@@ -1102,7 +1102,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
-    public void shouldReturnValidationMessageGuidIsEmptyWhenRemoving() throws Exception {
+    public void shouldReturnValidationMessageGuidIsEmptyWhenRemoving() {
         ServiceResponse<EventRoute> response = subject.remove(tenant, application, "");
 
         assertThat(response, hasErrorMessage(EventRouteService.Validations.GUID_NULL.getCode()));
@@ -1110,7 +1110,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/event-routes.json"})
-    public void shouldReturnValidationMessageGuidDoesNotExistWhenRemoving() throws Exception {
+    public void shouldReturnValidationMessageGuidDoesNotExistWhenRemoving() {
         ServiceResponse<EventRoute> response = subject.remove(tenant, application, "unknown_guid");
 
         assertThat(response, hasErrorMessage(EventRouteService.Validations.EVENT_ROUTE_NOT_FOUND.getCode()));
@@ -1118,7 +1118,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
-    public void shouldReturnValidationMessageIfRecordIsNullWhenRemoving() throws Exception {
+    public void shouldReturnValidationMessageIfRecordIsNullWhenRemoving() {
         ServiceResponse<EventRoute> response = subject.remove(tenant, application, existingGuid);
 
         assertThat(response, hasErrorMessage(EventRouteService.Validations.EVENT_ROUTE_NOT_FOUND.getCode()));
@@ -1126,7 +1126,7 @@ public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/event-routes.json"})
-    public void shouldRemoveSuccessfully() throws Exception {
+    public void shouldRemoveSuccessfully() {
         ServiceResponse<EventRoute> response = subject.remove(tenant, application, existingGuid);
 
         EventRoute removedRoute = subject.getByGUID(tenant, application, existingGuid).getResult();

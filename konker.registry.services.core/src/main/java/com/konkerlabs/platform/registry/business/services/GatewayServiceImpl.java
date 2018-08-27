@@ -225,7 +225,7 @@ public class GatewayServiceImpl implements GatewayService {
         }
 
         if (source.getLocation().getChildren() == null ||
-                source.getLocation().getChildren().size() == 0) {
+                source.getLocation().getChildren().isEmpty()) {
             pushAllChilds(
                     source.getLocation(),
                     source.getApplication(),
@@ -272,7 +272,7 @@ public class GatewayServiceImpl implements GatewayService {
 
         if (!Optional.ofNullable(tenant).isPresent()) {
             Device noDevice = Device.builder().guid("NULL").tenant(
-                    Tenant.builder().domainName("unknow_domain").build()).build();
+                    Tenant.builder().domainName("unknown_domain").build()).build();
             LOGGER.debug(CommonValidations.TENANT_NULL.getCode(),
                     noDevice.toURI(),
                     noDevice.getTenant().getLogLevel());
