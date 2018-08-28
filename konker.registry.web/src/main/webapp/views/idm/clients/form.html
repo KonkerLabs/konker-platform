@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html data-layout-decorate="layouts/default">
+<head>
+</head>
+<body>
+<div data-layout-fragment="content">
+    <fieldset>
+        <div>
+            <h1 class="page-title" data-th-text="#{clients.form.legend}"></h1>
+        </div>
+        <div class="alert alert-danger" role="alert" data-th-if="${errors != null and !errors.empty}">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <ul>
+                <li data-th-each="error : ${errors}" data-th-text="${error}"></li>
+            </ul>
+        </div>
+        <form data-th-action="@{__${action}__}" action="#" data-th-object="${oauthClient}"
+              method="post" class="form-horizontal" autocomplete="off">
+            <input type="hidden" name="_method" data-th-value="${method}"
+                   data-th-if="${method != null}"/>
+            <div class="form-group">
+                <label class="col-sm-1 control-label" for="name"
+                       data-th-text="#{clients.form.clientId}">ClientId</label>
+                <div class="col-sm-4">
+                    <input type="text" data-th-field="*{name}"
+                           class="form-control"
+                           autofocus="autofocus"
+                           id="name"
+                           name="name" data-th-placeholder="#{clients.form.clientId.placeholder}"
+                           placeholder="Type a name here..."/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-1 control-label" for="clientSecret"
+                       data-th-text="#{clients.form.clientsecret}">Name</label>
+                <div class="col-sm-4">
+                    <input type="text" data-th-field="*{clientSecret}"
+                           class="form-control"
+                           autofocus="autofocus"
+                           data-th-readonly="true"
+                           id="clientSecret"
+                           name="clientSecret" data-th-placeholder="#{clients.form.clientsecret.placeholder}"
+                           placeholder="Type a client secret here..."/>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-success">
+                <img data-th-attr="src=@{/resources/konker/images/icons-bt/save-icon-bt-01.svg}" class="bt-icon"/>
+                <span data-th-text="#{nav.save}"></span>
+            </button>
+            <a data-th-href="@{'/idm/' + ${applicationId} + '/clients/'}" class="btn btn-default">
+                <img data-th-attr="src=@{/resources/konker/images/icons-bt/back-icon-bt-01.svg}" class="bt-icon"/>
+                <span data-th-text="#{nav.back}"></span>
+            </a>
+        </form>
+    </fieldset>
+</div>
+</body>
+</html>
