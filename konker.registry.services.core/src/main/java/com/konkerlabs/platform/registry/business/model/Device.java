@@ -10,7 +10,7 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 
-import org.springframework.data.annotation.Transient;
+import com.konkerlabs.platform.registry.business.model.enumerations.FirmwareUpdateStatus;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
