@@ -2,6 +2,7 @@ package com.konkerlabs.platform.registry.integration.gateways;
 
 import java.io.UnsupportedEncodingException;
 
+import org.bson.types.Binary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.AmqpException;
@@ -49,6 +50,38 @@ public class RabbitGateway {
             LOGGER.error("AmqpException while sending message to RabbitMQ...", ex);
         }
 
+    }
+
+
+
+    public void sendFirmwareUpdate(String apiKey, Binary firmware) {
+
+
+        MessageProperties properties = new MessageProperties();
+        properties.setHeader(RabbitMQDataConfig.MSG_HEADER_APIKEY, apiKey);
+
+        Message message = new Message(firmware.getData(), properties);
+
+        rabbitTemplate.convertAndSend("mgmt.fw.sub", message);
+
+
+    }
+
+
+
+    public void confirmFirmwareUpdate(String apiKey, String confirmation) {
+
+        try {
+            MessageProperties properties = new MessageProperties();
+            properties.setHeader(RabbitMQDataConfig.MSG_HEADER_APIKEY, apiKey);
+
+            Message message = new Message(confirmation.getBytes("UTF-8"), properties);
+
+            rabbitTemplate.convertAndSend("mgmt.fw.updated.sub", message);
+
+        } catch (AmqpException | UnsupportedEncodingException ex) {
+            LOGGER.error("AmqpException while sending message to RabbitMQ...", ex);
+        }
     }
 
 }

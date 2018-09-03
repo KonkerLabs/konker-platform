@@ -2,11 +2,13 @@ package com.konkerlabs.platform.registry.integration.endpoints;
 
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.DeviceFwUpdate;
+import com.konkerlabs.platform.registry.business.repositories.DeviceFirmwareRepository;
 import com.konkerlabs.platform.registry.business.services.api.DeviceFirmwareUpdateService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.data.config.RabbitMQDataConfig;
 import com.konkerlabs.platform.registry.integration.gateways.RabbitGateway;
+import org.bson.types.Binary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
@@ -73,10 +75,11 @@ public class DeviceFirwareUpdateRabbitEndpoint {
                         device.getTenant(),
         				device.getApplication(),
         				device);
-        String result="{ }";
+        Binary result=null;
 
         if (Optional.ofNullable(serviceResponse.getResult()).isPresent()){
-            result="{binario/hash,ver??}" ;
+            result=serviceResponse.getResult().getDeviceFirmware().getFirmware();
+
         }
 
         rabbitGateway.sendFirmwareUpdate(apiKey, result);
@@ -84,7 +87,7 @@ public class DeviceFirwareUpdateRabbitEndpoint {
     }
 
 
-    @RabbitListener(queues = "mgmt.fw.updated")
+    @RabbitListener(queues = "mgmt.fw.updated.pub")
     public void onFwPubUpdated(Message message) {
 
         if (LOGGER.isDebugEnabled())
@@ -109,17 +112,17 @@ public class DeviceFirwareUpdateRabbitEndpoint {
             return;
         }
 
-        ServiceResponse<DeviceFwUpdate> serviceResponse = deviceFirmwareUpdateService.findPendingFwUpdateByDevice(
+        ServiceResponse<DeviceFwUpdate> serviceResponse = deviceFirmwareUpdateService.confirmFwUpdateByDevice(
                 device.getTenant(),
                 device.getApplication(),
                 device);
-        String result="{ }";
+        String result="{'status':false}";
 
         if (Optional.ofNullable(serviceResponse.getResult()).isPresent()){
-            result="{binario/hash,ver??}" ;
+            result="{'status':true}" ;
         }
 
-        rabbitGateway.sendFirmwareUpdate(apiKey, result);
+        rabbitGateway.confirmFirmwareUpdate(apiKey, result);
 
     }
 

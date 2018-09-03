@@ -79,6 +79,35 @@ public class DeviceFirmwareUpdateServiceImpl implements DeviceFirmwareUpdateServ
                 .build();
     }
 
+
+    @Override
+    public ServiceResponse<DeviceFwUpdate> confirmFwUpdateByDevice(Tenant tenant, Application application, Device device)  {
+
+        ServiceResponse<DeviceFwUpdate> validationResponse = validate(tenant, application, device);
+        if (!validationResponse.isOk()) {
+            return validationResponse;
+        }
+
+        DeviceFwUpdate deviceFwUpdate = deviceFirmwareUpdateRepository.findUnique(tenant.getId(), application.getName(), device.getId(), FirmwareUpdateStatus.PENDING);
+
+        if (!Optional.ofNullable(deviceFwUpdate).isPresent()) {
+            return ServiceResponseBuilder.<DeviceFwUpdate> error()
+                    .withMessage(Validations.FIRMWARE_UPDATE_PENDING_STATUS_DOES_NOT_EXIST.getCode()).build();
+        }
+
+
+        //TODO ->CHANGE the FirmwareUpdateStatus.PENDING to FirmwareUpdateStatus.UPDATED
+
+
+        return ServiceResponseBuilder.<DeviceFwUpdate>ok()
+                .withResult(deviceFwUpdate)
+                .build();
+    }
+
+
+
+
+
     private <T> ServiceResponse<T> validate(Tenant tenant, Application application, Device device) {
 
         if (!Optional.ofNullable(tenant).isPresent()) {
