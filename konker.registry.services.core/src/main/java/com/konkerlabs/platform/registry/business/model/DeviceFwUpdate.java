@@ -6,6 +6,7 @@ import com.konkerlabs.platform.registry.business.model.validation.CommonValidati
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Tolerate;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
@@ -20,11 +21,7 @@ import java.util.*;
 @Document(collection = "devicesFwUpdates")
 public class DeviceFwUpdate {
 
-
-	@Tolerate
-	public DeviceFwUpdate() {
-	}
-
+	@Id
 	private String id;
 	@DBRef
 	private Tenant tenant;
@@ -34,6 +31,8 @@ public class DeviceFwUpdate {
 	private FirmwareUpdateStatus status;
 	@DBRef
 	private DeviceFirmware deviceFirmware;
+	private String version;
+	private String guid;
 	private Instant lastChange;
 
 	public Optional<Map<String, Object[]>> applyValidations() {

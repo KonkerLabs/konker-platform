@@ -21,8 +21,7 @@ public interface DeviceFirmwareUpdateService {
         }
     }
 
-
-    public enum Messages {
+    enum Messages {
         FIRMWARE_UPDATE_STATUS_CHANGED("service.device.firmware_update.updated");
 
         public String getCode() {
@@ -36,8 +35,9 @@ public interface DeviceFirmwareUpdateService {
         }
     }
 
-    //create 
-    ServiceResponse<DeviceFwUpdate> update(Tenant tenant, Application application, Device device, FirmwareUpdateStatus firmwareUpdateStatus);
+    ServiceResponse<DeviceFwUpdate> save(Tenant tenant, Application application, Device device, DeviceFirmware deviceFirmware);
+    ServiceResponse<DeviceFwUpdate> setDeviceAsUpdated(Tenant tenant, Application application, Device device);
+    ServiceResponse<List<DeviceFwUpdate>> findByVersion(Tenant tenant, Application application, String version);
     ServiceResponse<DeviceFwUpdate> findPendingFwUpdateByDevice(Tenant tenant, Application application,  Device device);
     ServiceResponse<DeviceFwUpdate> confirmFwUpdateByDevice(Tenant tenant, Application application,  Device device);
 

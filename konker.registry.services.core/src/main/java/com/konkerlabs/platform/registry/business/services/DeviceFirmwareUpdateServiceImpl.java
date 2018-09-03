@@ -17,6 +17,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
@@ -27,16 +28,35 @@ public class DeviceFirmwareUpdateServiceImpl implements DeviceFirmwareUpdateServ
     @Autowired
     private DeviceFirmwareUpdateRepository deviceFirmwareUpdateRepository;
 
+    @Override
+    public ServiceResponse<DeviceFwUpdate> save(Tenant tenant, Application application, Device device, DeviceFirmware deviceFirmware) {
+
+        DeviceFwUpdate fwUpdate = DeviceFwUpdate
+                .builder()
+                .tenant(tenant)
+                .application(application)
+                .guid(UUID.randomUUID().toString())
+                .deviceGuid(device.getGuid())
+                .deviceFirmware(deviceFirmware)
+                .version(deviceFirmware.getVersion())
+                .status(FirmwareUpdateStatus.PENDING)
+                .lastChange(Instant.now())
+                .build();
+
+        DeviceFwUpdate deviceFwUpdated = deviceFirmwareUpdateRepository.save(fwUpdate);
+
+        return ServiceResponseBuilder.<DeviceFwUpdate>ok().withResult(deviceFwUpdated).build();
+
+    }
 
     @Override
-    public ServiceResponse<DeviceFwUpdate> update(Tenant tenant, Application application, Device device, FirmwareUpdateStatus firmwareUpdateStatus){
+    public ServiceResponse<DeviceFwUpdate> setDeviceAsUpdated(Tenant tenant, Application application, Device device) {
         ServiceResponse<DeviceFwUpdate> validationsResponse = validate(tenant, application, device);
         if (validationsResponse != null && !validationsResponse.isOk()) {
             return validationsResponse;
         }
 
-
-        DeviceFwUpdate deviceFwUpdate = deviceFirmwareUpdateRepository.findUnique(tenant.getId(), application.getName(), device.getId(), FirmwareUpdateStatus.PENDING);
+        DeviceFwUpdate deviceFwUpdate = deviceFirmwareUpdateRepository.findUnique(tenant.getId(), application.getName(), device.getGuid(), FirmwareUpdateStatus.PENDING);
 
         if (!Optional.ofNullable(deviceFwUpdate).isPresent()) {
             return ServiceResponseBuilder.<DeviceFwUpdate>error()
@@ -60,6 +80,13 @@ public class DeviceFirmwareUpdateServiceImpl implements DeviceFirmwareUpdateServ
     }
 
     @Override
+    public ServiceResponse<List<DeviceFwUpdate>> findByVersion(Tenant tenant, Application application, String version) {
+        return ServiceResponseBuilder.<List<DeviceFwUpdate>>ok()
+                .withResult(deviceFirmwareUpdateRepository.findByVersion(tenant.getId(), application.getName(), version))
+                .build();
+    }
+
+    @Override
     public ServiceResponse<DeviceFwUpdate> findPendingFwUpdateByDevice(Tenant tenant, Application application, Device device)  {
 
         ServiceResponse<DeviceFwUpdate> validationResponse = validate(tenant, application, device);
@@ -67,7 +94,7 @@ public class DeviceFirmwareUpdateServiceImpl implements DeviceFirmwareUpdateServ
             return validationResponse;
         }
 
-        DeviceFwUpdate deviceFwUpdate = deviceFirmwareUpdateRepository.findUnique(tenant.getId(), application.getName(), device.getId(), FirmwareUpdateStatus.PENDING);
+        DeviceFwUpdate deviceFwUpdate = deviceFirmwareUpdateRepository.findUnique(tenant.getId(), application.getName(), device.getGuid(), FirmwareUpdateStatus.PENDING);
 
         if (!Optional.ofNullable(deviceFwUpdate).isPresent()) {
             return ServiceResponseBuilder.<DeviceFwUpdate> error()
@@ -125,8 +152,8 @@ public class DeviceFirmwareUpdateServiceImpl implements DeviceFirmwareUpdateServ
                     .withMessage(DeviceModelService.Validations.DEVICE_MODEL_NULL.getCode()).build();
         }
 
+        return ServiceResponseBuilder.<T>ok().build();
 
-        return null;
     }
 
 }
