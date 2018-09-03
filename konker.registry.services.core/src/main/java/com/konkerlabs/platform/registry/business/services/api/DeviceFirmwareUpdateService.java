@@ -8,7 +8,8 @@ import java.util.List;
 public interface DeviceFirmwareUpdateService {
 
     enum Validations {
-        FIRMWARE_UPDATE_PENDING_STATUS_DOES_NOT_EXIST("service.device.firmware_update_pending.does_not_exist");
+        FIRMWARE_UPDATE_PENDING_STATUS_DOES_NOT_EXIST("service.device.firmware_update.pending_does_not_exist"),
+        FIRMWARE_UPDATE_ALREADY_EXISTS("service.device.firmware_update.already_exists");
 
         public String getCode() {
             return code;

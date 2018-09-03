@@ -31,6 +31,22 @@ public class DeviceFirmwareUpdateServiceImpl implements DeviceFirmwareUpdateServ
     @Override
     public ServiceResponse<DeviceFwUpdate> save(Tenant tenant, Application application, Device device, DeviceFirmware deviceFirmware) {
 
+        ServiceResponse<DeviceFwUpdate> validationsResponse = validate(tenant, application, device);
+        if (validationsResponse != null && !validationsResponse.isOk()) {
+            return validationsResponse;
+        }
+
+        DeviceFwUpdate deviceFwUpdate = deviceFirmwareUpdateRepository.findUnique(
+                tenant.getId(),
+                application.getName(),
+                device.getGuid(),
+                deviceFirmware.getVersion());
+        if (deviceFwUpdate != null) {
+            return ServiceResponseBuilder.<DeviceFwUpdate>error()
+                    .withMessage(Validations.FIRMWARE_UPDATE_ALREADY_EXISTS.getCode())
+                    .build();
+        }
+
         DeviceFwUpdate fwUpdate = DeviceFwUpdate
                 .builder()
                 .tenant(tenant)

@@ -4,21 +4,21 @@ import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.enumerations.FirmwareUpdateStatus;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.*;
-import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceCustomDataService;
+import com.konkerlabs.platform.registry.business.services.api.*;
 import com.konkerlabs.platform.registry.business.services.api.DeviceCustomDataService.Validations;
-import com.konkerlabs.platform.registry.business.services.api.DeviceFirmwareUpdateService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import java.util.List;
 
 import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -152,5 +152,45 @@ public class DeviceFirmwareUpdateServiceTest extends BusinessLayerTestSupport {
         assertThat(serviceResponse.isOk(), is(false));
 
     }
+
+
+    @Test
+    public void shouldListFirmwaresByVersion() throws Exception {
+
+        ServiceResponse<List<DeviceFwUpdate>> serviceResponse = deviceFirmwareUpdateService.findByVersion(
+                deviceB.getTenant(),
+                deviceB.getApplication(),
+                VERSION_1);
+        assertThat(serviceResponse.isOk(), is(true));
+        assertThat(serviceResponse.getResult().size(), is(2));
+
+        serviceResponse = deviceFirmwareUpdateService.findByVersion(
+                deviceB.getTenant(),
+                deviceB.getApplication(),
+                VERSION_2);
+        assertThat(serviceResponse.isOk(), is(true));
+        assertThat(serviceResponse.getResult().size(), is(1));
+
+    }
+
+    @Test
+    public void shouldNotSaveExistingFirmwareUpdate() throws Exception {
+
+        DeviceFirmware deviceFirmware = DeviceFirmware
+                .builder()
+                .version(VERSION_1)
+                .build();
+
+        ServiceResponse<DeviceFwUpdate> serviceResponse = deviceFirmwareUpdateService.save(
+                deviceB.getTenant(),
+                deviceB.getApplication(),
+                deviceB,
+                deviceFirmware);
+
+        assertThat(serviceResponse.isOk(), is(false));
+        Assert.assertTrue(serviceResponse.getResponseMessages().containsKey(DeviceFirmwareUpdateService.Validations.FIRMWARE_UPDATE_ALREADY_EXISTS.getCode()));
+
+    }
+
 
 }
