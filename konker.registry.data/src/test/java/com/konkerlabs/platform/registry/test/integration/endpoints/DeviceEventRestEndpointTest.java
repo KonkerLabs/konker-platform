@@ -123,6 +123,7 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
 		Mockito.reset(deviceRegisterService);
 		Mockito.reset(jedisTaskService);
 		Mockito.reset(deviceConfigSetupService);
+		Mockito.reset(deviceFirmwareUpdateService);
 	}
 
     @Test
@@ -316,6 +317,11 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
         @Bean
         public DeviceEventService deviceEventService() {
             return Mockito.mock(DeviceEventService.class);
+        }
+
+        @Bean
+        public DeviceFirmwareUpdateService deviceFirmwareUpdateService() {
+            return Mockito.mock(DeviceFirmwareUpdateService.class);
         }
 
         @Bean
