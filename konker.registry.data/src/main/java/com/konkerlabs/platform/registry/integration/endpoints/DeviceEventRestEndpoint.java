@@ -12,8 +12,13 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.konkerlabs.platform.registry.business.model.DeviceFirmware;
+import com.konkerlabs.platform.registry.business.model.DeviceFwUpdate;
+import com.konkerlabs.platform.registry.business.services.api.*;
+import org.bson.types.Binary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -31,10 +36,6 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.services.api.DeviceConfigSetupService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.data.services.JedisTaskService;
 import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
@@ -76,6 +77,7 @@ public class DeviceEventRestEndpoint {
     private final Executor executor;
     private final JedisTaskService jedisTaskService;
     private final DeviceConfigSetupService deviceConfigSetupService;
+    private final DeviceFirmwareUpdateService deviceFirmwareUpdateService;
 
     @Autowired
     public DeviceEventRestEndpoint(ApplicationContext applicationContext,
@@ -83,6 +85,7 @@ public class DeviceEventRestEndpoint {
                                    JsonParsingService jsonParsingService,
                                    DeviceEventService deviceEventService,
                                    DeviceRegisterService deviceRegisterService,
+                                   DeviceFirmwareUpdateService deviceFirmwareUpdateService,
                                    Executor executor,
                                    JedisTaskService jedisTaskService,
                                    DeviceConfigSetupService deviceConfigSetupService) {
@@ -91,6 +94,7 @@ public class DeviceEventRestEndpoint {
         this.jsonParsingService = jsonParsingService;
         this.deviceEventService = deviceEventService;
         this.deviceRegisterService = deviceRegisterService;
+        this.deviceFirmwareUpdateService = deviceFirmwareUpdateService;
         this.executor = executor;
         this.jedisTaskService = jedisTaskService;
         this.deviceConfigSetupService = deviceConfigSetupService;
@@ -126,7 +130,6 @@ public class DeviceEventRestEndpoint {
             httpResponse.setStatus(HttpStatus.BAD_REQUEST.value());
             return deferredResult;
     	}
-
 
     	if(Optional.ofNullable(channel).isPresent() &&
     			(channel.length() > 32 || Pattern.compile("[^A-Za-z0-9_-]").matcher(channel).find())){
@@ -270,6 +273,54 @@ public class DeviceEventRestEndpoint {
                             .build(),
                     HttpStatus.NOT_FOUND);
     	}
+    }
+
+    @RequestMapping(value = "firmware/{apiKey}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity downloadFirmware(HttpServletRequest servletRequest,
+                                                     @PathVariable("apiKey") String apiKey,
+                                                     @AuthenticationPrincipal Device principal,
+                                                     Locale locale) {
+        Device device = deviceRegisterService.findByApiKey(apiKey);
+
+        if (!principal.getApiKey().equals(apiKey)) {
+            return new ResponseEntity<>(
+                    EventResponse.builder().code(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                            .message(applicationContext.getMessage(Messages.INVALID_RESOURCE.getCode(), null, locale)).build(),
+                    HttpStatus.BAD_REQUEST);
+        }
+
+        if (!Optional.ofNullable(device).isPresent()) {
+            return new ResponseEntity<>(
+                    EventResponse.builder().code(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                            .message(applicationContext.getMessage(Messages.DEVICE_NOT_FOUND.getCode(), null, locale)).build(),
+                    HttpStatus.BAD_REQUEST);
+        }
+
+        ServiceResponse<DeviceFwUpdate> serviceResponse = deviceFirmwareUpdateService.findPendingFwUpdateByDevice(
+                device.getTenant(),
+                device.getApplication(),
+                device
+                );
+
+        if (serviceResponse.isOk()) {
+            DeviceFirmware deviceFirmware = serviceResponse.getResult().getDeviceFirmware();
+            Binary binary = deviceFirmware.getFirmware();
+            String fileName = deviceFirmware.getVersion().replaceAll("\\.", "-") + ".bin";
+
+            byte out[] = binary.getData();
+
+            HttpHeaders responseHeaders = new HttpHeaders();
+            responseHeaders.add("content-disposition", "attachment; filename=" + fileName);
+            responseHeaders.add("Content-Type", "application/octet-stream");
+
+            return new ResponseEntity(out, responseHeaders,HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(
+                    EventResponse.builder().code(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                            .message(applicationContext.getMessage(DeviceFirmwareUpdateService.Validations.FIRMWARE_UPDATE_PENDING_STATUS_DOES_NOT_EXIST.getCode(), null, locale)).build(),
+                    HttpStatus.NOT_FOUND);
+        }
     }
 
     @Data

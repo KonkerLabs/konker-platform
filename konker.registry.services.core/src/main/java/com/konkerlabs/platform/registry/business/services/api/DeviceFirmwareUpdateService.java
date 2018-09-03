@@ -42,5 +42,4 @@ public interface DeviceFirmwareUpdateService {
     ServiceResponse<DeviceFwUpdate> findPendingFwUpdateByDevice(Tenant tenant, Application application,  Device device);
     ServiceResponse<DeviceFwUpdate> confirmFwUpdateByDevice(Tenant tenant, Application application,  Device device);
 
-
 }

@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
+import com.konkerlabs.platform.registry.business.services.api.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -38,10 +39,6 @@ import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.DeviceModel;
 import com.konkerlabs.platform.registry.business.model.Location;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.services.api.DeviceConfigSetupService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.DeviceConfigSetupService.Validations;
 import com.konkerlabs.platform.registry.data.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.data.services.JedisTaskService;
@@ -88,6 +85,9 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
     private DeviceConfigSetupService deviceConfigSetupService;
 
     @Autowired
+    private DeviceFirmwareUpdateService deviceFirmwareUpdateService;
+
+    @Autowired
     private Executor executor;
 
     @Autowired
@@ -110,6 +110,7 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
                 jsonParsingService,
                 deviceEventService,
                 deviceRegisterService,
+                deviceFirmwareUpdateService,
                 executor,
                 jedisTaskService,
                 deviceConfigSetupService);
