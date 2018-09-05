@@ -12,6 +12,10 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.konkerlabs.platform.registry.business.model.DeviceFirmware;
 import com.konkerlabs.platform.registry.business.model.DeviceFwUpdate;
 import com.konkerlabs.platform.registry.business.services.api.*;
@@ -277,10 +281,44 @@ public class DeviceEventRestEndpoint {
 
     @RequestMapping(value = "firmware/{apiKey}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public ResponseEntity downloadFirmware(HttpServletRequest servletRequest,
+    public ResponseEntity<JsonNode> downloadFirmware(HttpServletRequest servletRequest,
                                                      @PathVariable("apiKey") String apiKey,
                                                      @AuthenticationPrincipal Device principal,
                                                      Locale locale) {
+        Device device = deviceRegisterService.findByApiKey(apiKey);
+
+        if (!principal.getApiKey().equals(apiKey)) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        if (!Optional.ofNullable(device).isPresent()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        ServiceResponse<DeviceFwUpdate> serviceResponse = deviceFirmwareUpdateService.findPendingFwUpdateByDevice(
+                device.getTenant(),
+                device.getApplication(),
+                device
+                );
+
+        if (serviceResponse.isOk()) {
+            ObjectMapper objectMapper = new ObjectMapper(new JsonFactory());
+            JsonNode node = objectMapper.createObjectNode();
+
+            ((ObjectNode) node).put("version", serviceResponse.getResult().getVersion());
+
+            return new ResponseEntity<JsonNode>(node, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @RequestMapping(value = "firmware/{apiKey}/binary", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity downloadFirmwareBinary(HttpServletRequest servletRequest,
+                                           @PathVariable("apiKey") String apiKey,
+                                           @AuthenticationPrincipal Device principal,
+                                           Locale locale) {
         Device device = deviceRegisterService.findByApiKey(apiKey);
 
         if (!principal.getApiKey().equals(apiKey)) {
@@ -301,7 +339,7 @@ public class DeviceEventRestEndpoint {
                 device.getTenant(),
                 device.getApplication(),
                 device
-                );
+        );
 
         if (serviceResponse.isOk()) {
             DeviceFirmware deviceFirmware = serviceResponse.getResult().getDeviceFirmware();

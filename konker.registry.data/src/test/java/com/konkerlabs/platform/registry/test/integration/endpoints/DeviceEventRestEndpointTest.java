@@ -322,10 +322,57 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
 
         when(deviceRegisterService.findByApiKey(device.getApiKey()))
                 .thenReturn(device);
-        when(deviceConfigSetupService.findByModelAndLocation(device.getTenant(), device.getApplication(), device.getDeviceModel(), device.getLocation()))
-                .thenReturn(ServiceResponseBuilder.<String> ok()
-                        .withResult("{'minimalInterval': 10, "
-                                + "'unit': 'celsius' }").build());
+
+        SecurityContext context = SecurityContextHolder.getContext();
+        Authentication auth = new UsernamePasswordAuthenticationToken(device, null);
+        context.setAuthentication(auth);
+
+        DeviceFirmware deviceFirmware = DeviceFirmware
+                .builder()
+                .firmware(new Binary("0123456789".getBytes()))
+                .version("0.5-beta")
+                .build();
+
+        DeviceFwUpdate deviceFwUpdate = DeviceFwUpdate
+                .builder()
+                .version(deviceFirmware.getVersion())
+                .deviceFirmware(deviceFirmware)
+                .build();
+
+        when(deviceFirmwareUpdateService.findPendingFwUpdateByDevice(
+                device.getTenant(),
+                device.getApplication(),
+                device))
+                .thenReturn(ServiceResponseBuilder.<DeviceFwUpdate> ok()
+                        .withResult(deviceFwUpdate).build());
+
+        getMockMvc().perform(
+            get("/firmware/"+ device.getApiKey())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().json("{'version':'0.5-beta'}"))
+        ;
+
+    }
+
+    @Test
+    public void shouldReturnFirmwareBinary() throws Exception {
+        Device device = Device.builder().deviceId("tug6g6essh4m")
+                .active(true)
+                .apiKey("e4399b2ed998")
+                .guid("7d51c242-81db-11e6-a8c2-0746f010e945")
+                .description("test")
+                .tags(tags)
+                .deviceId("device_id")
+                .guid("67014de6-81db-11e6-a5bc-3f99b38315c6")
+                .tenant(Tenant.builder().domainName("konker").name("Konker").build())
+                .application(Application.builder().name("SmartAC").build())
+                .deviceModel(DeviceModel.builder().name("SensorTemp").build())
+                .location(Location.builder().name("sp_br").build())
+                .build();
+
+        when(deviceRegisterService.findByApiKey(device.getApiKey()))
+                .thenReturn(device);
 
         SecurityContext context = SecurityContextHolder.getContext();
         Authentication auth = new UsernamePasswordAuthenticationToken(device, null);
@@ -350,8 +397,8 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
                         .withResult(deviceFwUpdate).build());
 
         getMockMvc().perform(
-                get("/firmware/"+ device.getApiKey())
-                        .contentType(MediaType.APPLICATION_JSON))
+                get("/firmware/"+ device.getApiKey() + "/binary")
+                        .contentType(MediaType.APPLICATION_OCTET_STREAM))
                 .andExpect(status().isOk())
                 .andExpect(content().bytes("0123456789".getBytes()))
         ;
