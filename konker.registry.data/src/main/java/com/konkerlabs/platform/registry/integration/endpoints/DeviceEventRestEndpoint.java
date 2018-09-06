@@ -11,6 +11,8 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -18,8 +20,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.konkerlabs.platform.registry.business.model.DeviceFirmware;
 import com.konkerlabs.platform.registry.business.model.DeviceFwUpdate;
+import com.konkerlabs.platform.registry.business.model.enumerations.FirmwareUpdateStatus;
 import com.konkerlabs.platform.registry.business.services.api.*;
 import org.bson.types.Binary;
+import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpHeaders;
@@ -311,6 +315,71 @@ public class DeviceEventRestEndpoint {
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+    }
+
+    @Data
+    public static class DeviceFwUpdateVO {
+
+        @NotNull
+        private String version;
+        @NotNull
+        private FirmwareUpdateStatus status;
+
+    }
+
+    @RequestMapping(value = "firmware/{apiKey}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity<JsonNode> updateFirmwareUpdateStatus(HttpServletRequest servletRequest,
+                                                     @PathVariable("apiKey") String apiKey,
+                                                     @AuthenticationPrincipal Device principal,
+                                                     @RequestBody
+                                                     @Valid
+                                                     DeviceFwUpdateVO deviceFwUpdateVO,
+                                                     Locale locale) {
+        Device device = deviceRegisterService.findByApiKey(apiKey);
+
+        if (!principal.getApiKey().equals(apiKey)) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        if (!Optional.ofNullable(device).isPresent()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        ServiceResponse<DeviceFwUpdate> serviceResponse = deviceFirmwareUpdateService.findPendingFwUpdateByDevice(
+                device.getTenant(),
+                device.getApplication(),
+                device
+        );
+
+        if (serviceResponse.isOk()) {
+            DeviceFwUpdate deviceFwUpdate = serviceResponse.getResult();
+            if (!deviceFwUpdate.getVersion().equals(deviceFwUpdateVO.getVersion())) {
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
+
+            deviceFwUpdate.setStatus(deviceFwUpdateVO.getStatus());
+            ServiceResponse<DeviceFwUpdate> deviceFwUpdateServiceResponse = deviceFirmwareUpdateService.updateStatus(
+                    device.getTenant(),
+                    device.getApplication(),
+                    device,
+                    deviceFwUpdate.getVersion(),
+                    deviceFwUpdateVO.getStatus()
+                    );
+
+            DeviceFwUpdate deviceFwUpdateDB = deviceFwUpdateServiceResponse.getResult();
+
+            ObjectMapper objectMapper = new ObjectMapper(new JsonFactory());
+            JsonNode node = objectMapper.createObjectNode();
+
+            ((ObjectNode) node).put("version", deviceFwUpdateDB.getVersion());
+            ((ObjectNode) node).put("status", deviceFwUpdateDB.getStatus().name());
+
+            return new ResponseEntity<JsonNode>(node, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
     }
 
     @RequestMapping(value = "firmware/{apiKey}/binary", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)

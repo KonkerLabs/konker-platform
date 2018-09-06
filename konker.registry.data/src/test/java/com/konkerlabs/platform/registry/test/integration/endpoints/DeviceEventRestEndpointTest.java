@@ -4,6 +4,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -13,6 +14,7 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 
 import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.model.enumerations.FirmwareUpdateStatus;
 import com.konkerlabs.platform.registry.business.services.api.*;
 import org.bson.types.Binary;
 import org.junit.After;
@@ -306,12 +308,10 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
 
     @Test
     public void shouldReturnFirmware() throws Exception {
-        Device device = Device.builder().deviceId("tug6g6essh4m")
+        Device device = Device.builder()
                 .active(true)
                 .apiKey("e4399b2ed998")
-                .guid("7d51c242-81db-11e6-a8c2-0746f010e945")
                 .description("test")
-                .tags(tags)
                 .deviceId("device_id")
                 .guid("67014de6-81db-11e6-a5bc-3f99b38315c6")
                 .tenant(Tenant.builder().domainName("konker").name("Konker").build())
@@ -357,12 +357,10 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
 
     @Test
     public void shouldReturnFirmwareBinary() throws Exception {
-        Device device = Device.builder().deviceId("tug6g6essh4m")
+        Device device = Device.builder()
                 .active(true)
                 .apiKey("e4399b2ed998")
-                .guid("7d51c242-81db-11e6-a8c2-0746f010e945")
                 .description("test")
-                .tags(tags)
                 .deviceId("device_id")
                 .guid("67014de6-81db-11e6-a5bc-3f99b38315c6")
                 .tenant(Tenant.builder().domainName("konker").name("Konker").build())
@@ -401,6 +399,69 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
                         .contentType(MediaType.APPLICATION_OCTET_STREAM))
                 .andExpect(status().isOk())
                 .andExpect(content().bytes("0123456789".getBytes()))
+        ;
+
+    }
+
+    @Test
+    public void shouldUpdateFirmwareUpdateStatus() throws Exception {
+        Device device = Device.builder()
+                .active(true)
+                .apiKey("e4399b2ed998")
+                .description("test")
+                .deviceId("device_id")
+                .guid("67014de6-81db-11e6-a5bc-3f99b38315c6")
+                .tenant(Tenant.builder().domainName("konker").name("Konker").build())
+                .application(Application.builder().name("SmartAC").build())
+                .deviceModel(DeviceModel.builder().name("SensorTemp").build())
+                .location(Location.builder().name("sp_br").build())
+                .build();
+
+        when(deviceRegisterService.findByApiKey(device.getApiKey()))
+                .thenReturn(device);
+
+        SecurityContext context = SecurityContextHolder.getContext();
+        Authentication auth = new UsernamePasswordAuthenticationToken(device, null);
+        context.setAuthentication(auth);
+
+        DeviceFirmware deviceFirmware = DeviceFirmware
+                .builder()
+                .firmware(new Binary("0123456789".getBytes()))
+                .version("0.5-beta")
+                .build();
+
+        DeviceFwUpdate deviceFwUpdate = DeviceFwUpdate
+                .builder()
+                .deviceFirmware(deviceFirmware)
+                .version(deviceFirmware.getVersion())
+                .status(FirmwareUpdateStatus.PENDING)
+                .build();
+
+        when(deviceFirmwareUpdateService.findPendingFwUpdateByDevice(
+                device.getTenant(),
+                device.getApplication(),
+                device))
+                .thenReturn(ServiceResponseBuilder.<DeviceFwUpdate> ok()
+                        .withResult(deviceFwUpdate).build());
+
+        when(deviceFirmwareUpdateService.updateStatus(
+                device.getTenant(),
+                device.getApplication(),
+                device,
+                deviceFirmware.getVersion(),
+                FirmwareUpdateStatus.UPDATED
+                ))
+                .thenReturn(ServiceResponseBuilder.<DeviceFwUpdate> ok()
+                        .withResult(deviceFwUpdate).build());
+
+        String json = String.format("{\"version\":\"%s\",\"status\":\"%s\"}", deviceFirmware.getVersion(), FirmwareUpdateStatus.UPDATED.name());
+
+        getMockMvc().perform(
+                put("/firmware/"+ device.getApiKey())
+                        .content(json)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().json("{'version':'0.5-beta','status':'UPDATED'}"))
         ;
 
     }

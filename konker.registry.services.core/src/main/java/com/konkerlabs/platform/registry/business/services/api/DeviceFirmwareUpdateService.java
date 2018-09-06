@@ -40,6 +40,6 @@ public interface DeviceFirmwareUpdateService {
     ServiceResponse<DeviceFwUpdate> setDeviceAsUpdated(Tenant tenant, Application application, Device device);
     ServiceResponse<List<DeviceFwUpdate>> findByVersion(Tenant tenant, Application application, String version);
     ServiceResponse<DeviceFwUpdate> findPendingFwUpdateByDevice(Tenant tenant, Application application,  Device device);
-    ServiceResponse<DeviceFwUpdate> confirmFwUpdateByDevice(Tenant tenant, Application application,  Device device);
+    ServiceResponse<DeviceFwUpdate> updateStatus(Tenant tenant, Application application, Device device, String version, FirmwareUpdateStatus status);
 
 }
