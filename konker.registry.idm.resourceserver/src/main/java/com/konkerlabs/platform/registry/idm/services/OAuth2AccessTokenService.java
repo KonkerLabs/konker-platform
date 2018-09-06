@@ -41,6 +41,12 @@ public class OAuth2AccessTokenService {
 
         OauthClientDetails clientDetails = clientDetailsResponse.getResult();
 
+        return getAccessToken(tenant, application, clientDetails);
+
+    }
+
+    public ServiceResponse<OAuth2AccessToken> getAccessToken(Tenant tenant, Application application, OauthClientDetails clientDetails) {
+
         Role gatewayRole = roleRepository.findByName(RoleService.ROLE_IOT_GATEWAY);
         Set<GrantedAuthority> authorities = new HashSet<>();
         for (Privilege privilege : gatewayRole.getPrivileges()) {

@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.api.config.oauth;
 
+import com.konkerlabs.platform.registry.idm.security.CustomTokenEnhancer;
 import com.konkerlabs.platform.registry.idm.services.MongoTokenStore;
 import com.konkerlabs.platform.security.exceptions.SecurityException;
 import com.konkerlabs.platform.security.managers.PasswordManager;

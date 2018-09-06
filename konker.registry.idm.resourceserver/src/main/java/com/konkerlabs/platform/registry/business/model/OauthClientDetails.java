@@ -23,6 +23,7 @@ public class OauthClientDetails implements Serializable, ClientDetails {
 
     @Id
     private String clientId;
+    private String name;
     @CreatedDate
     private Instant createTime = Instant.now();
     @Version
@@ -38,6 +39,8 @@ public class OauthClientDetails implements Serializable, ClientDetails {
     private Integer refreshTokenValidity;
     private Map<String, Object> additionalInformation = Collections.emptyMap();
     private boolean trusted = false;
+    private String guid;
+
     @DBRef
     private Tenant tenant;
     @DBRef
@@ -51,11 +54,7 @@ public class OauthClientDetails implements Serializable, ClientDetails {
     private Gateway parentGateway;
 
     public String getName(){
-        return clientId;
-    }
-
-    public void setName(String val){
-        this.clientId = val;
+        return name == null ? clientId : name;
     }
 
     @Tolerate

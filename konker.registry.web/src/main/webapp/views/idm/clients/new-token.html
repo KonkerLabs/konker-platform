@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html data-layout-decorate="layouts/default">
+<head>
+</head>
+<body>
+<div data-layout-fragment="content">
+    <fieldset>
+        <div>
+            <h1 class="page-title" data-th-text="#{clients.form.legend}"></h1>
+        </div>
+        <div class="alert alert-danger" role="alert" data-th-if="${errors != null and !errors.empty}">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <ul>
+                <li data-th-each="error : ${errors}" data-th-text="${error}"></li>
+            </ul>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-sm-1 control-label" for="clientId"
+                   data-th-text="#{clients.form.clientId}">ClientId</label>
+            <div class="col-sm-4">
+                <input type="text"
+                       data-th-value="${oauthClient.clientId}"
+                       data-th-disabled="true"
+                       class="form-control"
+                       id="clientId" name="clientId"/>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-sm-1 control-label" for="clientSecret"
+                   data-th-text="#{clients.form.clientsecret}">Name</label>
+            <div class="col-sm-4">
+                <input type="text"
+                       data-th-value="${oauthClient.clientSecret}"
+                       data-th-disabled="true"
+                       class="form-control"
+                       id="clientSecret" name="clientSecret"/>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-sm-1">
+                <label class="control-label" for="token">Token</label>
+            </div>
+            <div class="col-sm-9">
+                <input type="text"
+                       data-th-value="${token}"
+                       class="form-control"
+                       id="token" />
+                <p style="text-align: center;">&nbsp;<span style="display:none;" class="token-copied" data-th-text="#{devices.password.modal.generated.copied}">Copied</span></p>
+            </div>
+            <div class="col-sm-2">
+                <span style="padding-left: 10px;">
+                        <button class="btn btn-default btn-cpy-token" data-clipboard-target="#token">
+                        <p style="margin-bottom: 0px;margin: 0 0 0px;" data-th-text="#{devices.password.modal.generated.copy}">Copy</p>
+                        </button>
+                </span>
+            </div>
+        </div>
+
+        <a data-th-href="@{'/idm/' + ${oauthClient.application.name} + '/clients/'}" class="btn btn-default">
+            <img data-th-attr="src=@{/resources/konker/images/icons-bt/back-icon-bt-01.svg}" class="bt-icon"/>
+            <span data-th-text="#{nav.close}"></span>
+        </a>
+
+    </fieldset>
+</div>
+<div data-layout-fragment="script">
+    <script data-th-attr="src=@{/resources/js/clipboard.js/dist/clipboard.min.js}"></script>
+    <script>
+        var clipUser = new Clipboard('.btn-cpy-token');
+        clipUser.on('success', function(e) {
+            $('.token-copied').show();
+            $('.token-copied').fadeOut(1000);
+        });
+    </script>
+</div>
+</body>
+</html>
