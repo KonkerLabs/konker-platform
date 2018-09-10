@@ -6,7 +6,9 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
 import com.konkerlabs.platform.registry.business.model.Application;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public interface ApplicationRepository extends MongoRepository<Application,String> {
     @Query("{ 'tenant.id' : ?0 }")
     List<Application> findAllByTenant(String tenantId);

@@ -3,9 +3,11 @@ package com.konkerlabs.platform.registry.business.repositories;
 import com.konkerlabs.platform.registry.business.model.Device;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+@Repository
 public interface DeviceRepository extends MongoRepository<Device, String> {
 
     @Query("{ 'tenant.id' : ?0 }")
