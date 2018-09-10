@@ -4,23 +4,13 @@ import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.EventRoute.RouteActor;
 import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
-import com.konkerlabs.platform.registry.business.repositories.DeviceModelRepository;
-import com.konkerlabs.platform.registry.business.repositories.EventRouteRepository;
-import com.konkerlabs.platform.registry.business.repositories.LocationRepository;
-import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
-import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
-import com.konkerlabs.platform.registry.business.services.api.LocationService;
-import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.repositories.*;
+import com.konkerlabs.platform.registry.business.services.api.*;
 import com.konkerlabs.platform.registry.business.services.api.EventRouteService.Validations;
+import com.konkerlabs.platform.registry.test.data.base.BusinessDataTestConfiguration;
 import com.konkerlabs.platform.registry.test.data.base.BusinessLayerTestSupport;
-import com.konkerlabs.platform.registry.test.data.base.BusinessTestConfiguration;
-import com.konkerlabs.platform.registry.test.data.base.MongoTestConfiguration;
-import com.konkerlabs.platform.registry.test.data.base.RedisTestConfiguration;
+import com.konkerlabs.platform.registry.test.data.base.MongoDataTestConfiguration;
+import com.konkerlabs.platform.registry.test.data.base.RedisDataTestConfiguration;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import org.junit.Before;
 import org.junit.Rule;
@@ -38,8 +28,9 @@ import java.util.Map;
 import java.util.Optional;
 
 import static com.konkerlabs.platform.registry.business.model.EventRoute.builder;
-import static com.konkerlabs.platform.registry.data.services.publishers.EventPublisherDevice.DEVICE_MQTT_CHANNEL;
-import static com.konkerlabs.platform.registry.test.data.base.ServiceResponseMatchers.*;
+import static com.konkerlabs.platform.registry.data.core.services.publishers.EventPublisherDevice.DEVICE_MQTT_CHANNEL;
+import static com.konkerlabs.platform.registry.test.data.base.ServiceResponseMatchers.hasErrorMessage;
+import static com.konkerlabs.platform.registry.test.data.base.ServiceResponseMatchers.isResponseOk;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.rules.ExpectedException.none;
@@ -48,9 +39,9 @@ import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
-        BusinessTestConfiguration.class,
-        MongoTestConfiguration.class,
-        RedisTestConfiguration.class
+        BusinessDataTestConfiguration.class,
+        MongoDataTestConfiguration.class,
+        RedisDataTestConfiguration.class
 })
 public class EventRouteServiceTest extends BusinessLayerTestSupport {
 

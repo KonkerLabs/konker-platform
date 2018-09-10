@@ -1,0 +1,23 @@
+{
+  "incomingEventSchema" : [
+    { "_id" : "57ed747fd65820fdd350b45b",
+      "_class" : "com.konkerlabs.platform.registry.business.model.EventSchema",
+      "deviceGuid" : "8363c556-84ea-11e6-92a2-4b01fea7e243",
+      "channel" : "command",
+      "fields" : [
+        { "path" : "field", "knownTypes" : [ "STRING", "OBJECT", "NUMBER" ] }
+      ]
+    },
+    { "_id" : "57ed7516d65820fdd350b460",
+      "_class" : "com.konkerlabs.platform.registry.business.model.EventSchema",
+      "deviceGuid" : "8363c556-84ea-11e6-92a2-4b01fea7e243",
+      "channel" : "data",
+      "fields" : [
+        { "path" : "temperature", "knownTypes" : [ "NUMBER", "OBJECT" ] }
+      ]
+    }
+  ],
+  "outgoingEventSchema" : [
+
+  ]
+}

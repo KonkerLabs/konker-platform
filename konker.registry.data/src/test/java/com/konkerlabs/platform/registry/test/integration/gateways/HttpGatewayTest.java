@@ -1,9 +1,8 @@
 package com.konkerlabs.platform.registry.test.integration.gateways;
 
-import com.konkerlabs.platform.registry.integration.exceptions.IntegrationException;
-import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
+import com.konkerlabs.platform.registry.data.core.integration.exceptions.IntegrationException;
+import com.konkerlabs.platform.registry.data.core.integration.gateway.HttpGateway;
 import com.konkerlabs.platform.registry.test.data.base.IntegrationTestConfiguration;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

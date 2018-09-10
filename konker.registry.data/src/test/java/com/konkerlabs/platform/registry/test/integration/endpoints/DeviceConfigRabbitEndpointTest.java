@@ -25,7 +25,7 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceConfigSetupS
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.integration.endpoints.DeviceConfigRabbitEndpoint;
-import com.konkerlabs.platform.registry.integration.gateways.RabbitGateway;
+import com.konkerlabs.platform.registry.data.core.integration.gateway.RabbitGateway;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
@@ -132,6 +132,11 @@ public class DeviceConfigRabbitEndpointTest {
         @Bean
         public RabbitTemplate rabbitTemplate() {
             return Mockito.mock(RabbitTemplate.class);
+        }
+
+        @Bean
+        public RabbitGateway rabbitGateway() {
+            return Mockito.spy(RabbitGateway.class);
         }
 
     }
