@@ -1,21 +1,18 @@
 package com.konkerlabs.platform.registry.test.integration.endpoints;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.Executor;
-
 import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.enumerations.FirmwareUpdateStatus;
 import com.konkerlabs.platform.registry.business.services.api.*;
+import com.konkerlabs.platform.registry.business.services.api.DeviceConfigSetupService.Validations;
+import com.konkerlabs.platform.registry.data.config.WebMvcConfig;
+import com.konkerlabs.platform.registry.data.core.services.JedisTaskService;
+import com.konkerlabs.platform.registry.integration.endpoints.DeviceEventRestEndpoint;
+import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
+import com.konkerlabs.platform.registry.test.data.base.BusinessDataTestConfiguration;
+import com.konkerlabs.platform.registry.test.data.base.SecurityTestConfiguration;
+import com.konkerlabs.platform.registry.test.data.base.WebLayerTestContext;
+import com.konkerlabs.platform.registry.test.data.base.WebTestConfiguration;
+import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 import org.bson.types.Binary;
 import org.junit.After;
 import org.junit.Before;
@@ -38,21 +35,24 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
-import com.konkerlabs.platform.registry.business.services.api.DeviceConfigSetupService.Validations;
-import com.konkerlabs.platform.registry.data.config.WebMvcConfig;
-import com.konkerlabs.platform.registry.data.services.JedisTaskService;
-import com.konkerlabs.platform.registry.integration.endpoints.DeviceEventRestEndpoint;
-import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
-import com.konkerlabs.platform.registry.test.data.base.BusinessTestConfiguration;
-import com.konkerlabs.platform.registry.test.data.base.SecurityTestConfiguration;
-import com.konkerlabs.platform.registry.test.data.base.WebLayerTestContext;
-import com.konkerlabs.platform.registry.test.data.base.WebTestConfiguration;
-import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.Executor;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
 @ContextConfiguration(classes = {
-        BusinessTestConfiguration.class,
+        BusinessDataTestConfiguration.class,
         WebMvcConfig.class,
         WebTestConfiguration.class,
         SecurityTestConfiguration.class,

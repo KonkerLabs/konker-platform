@@ -1,22 +1,23 @@
 package com.konkerlabs.platform.registry.test.integration.processors;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.time.Instant;
-import java.util.*;
-
 import com.fasterxml.jackson.databind.node.JsonNodeType;
+import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.*;
-import com.konkerlabs.platform.registry.integration.converters.DefaultJsonConverter;
-import com.konkerlabs.platform.registry.integration.converters.MessagePackJsonConverter;
+import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.config.EventStorageConfig;
+import com.konkerlabs.platform.registry.data.core.config.RedisConfig;
+import com.konkerlabs.platform.registry.data.core.integration.converters.DefaultJsonConverter;
+import com.konkerlabs.platform.registry.data.core.integration.converters.MessagePackJsonConverter;
+import com.konkerlabs.platform.registry.data.core.services.api.DeviceLogEventService;
+import com.konkerlabs.platform.registry.data.core.services.routes.api.EventRouteExecutor;
+import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
+import com.konkerlabs.platform.registry.test.data.base.BusinessDataTestConfiguration;
+import com.konkerlabs.platform.registry.test.data.base.IntegrationTestConfiguration;
+import com.konkerlabs.platform.registry.test.data.base.MongoDataTestConfiguration;
+import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -31,25 +32,17 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
-import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
-import com.konkerlabs.platform.registry.config.EventStorageConfig;
-import com.konkerlabs.platform.registry.data.config.RedisConfig;
-import com.konkerlabs.platform.registry.data.services.api.DeviceLogEventService;
-import com.konkerlabs.platform.registry.data.services.routes.api.EventRouteExecutor;
-import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
-import com.konkerlabs.platform.registry.test.data.base.BusinessTestConfiguration;
-import com.konkerlabs.platform.registry.test.data.base.IntegrationTestConfiguration;
-import com.konkerlabs.platform.registry.test.data.base.MongoTestConfiguration;
-import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
+import java.time.Instant;
+import java.util.*;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
-        MongoTestConfiguration.class,
-        BusinessTestConfiguration.class,
+        MongoDataTestConfiguration.class,
+        BusinessDataTestConfiguration.class,
         IntegrationTestConfiguration.class,
         DeviceEventProcessorTest.BusinessLayerConfiguration.class,
         RedisConfig.class,

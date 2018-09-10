@@ -1,7 +1,11 @@
 package com.konkerlabs.platform.registry.integration.endpoints;
 
-import java.util.Optional;
-
+import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.services.api.DeviceConfigSetupService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.data.core.config.RabbitMQDataConfig;
+import com.konkerlabs.platform.registry.data.core.integration.gateway.RabbitGateway;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
@@ -11,12 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.services.api.DeviceConfigSetupService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.data.config.RabbitMQDataConfig;
-import com.konkerlabs.platform.registry.integration.gateways.RabbitGateway;
+import java.util.Optional;
 
 @Service
 public class DeviceConfigRabbitEndpoint {

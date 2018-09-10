@@ -8,13 +8,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 @Data
 @Builder
-public class Event {
+public class Event implements Serializable {
 
     private Long epochTime;
 
@@ -38,7 +39,7 @@ public class Event {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class EventActor implements URIDealer {
+    public static class EventActor implements URIDealer, Serializable {
 
         private String tenantDomain;
         private String applicationName;
@@ -100,7 +101,7 @@ public class Event {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class EventGeolocation  {
+    public static class EventGeolocation implements Serializable {
 
         private Double lat;
         private Double lon;

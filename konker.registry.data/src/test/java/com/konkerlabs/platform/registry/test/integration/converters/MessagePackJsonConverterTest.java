@@ -1,7 +1,7 @@
 package com.konkerlabs.platform.registry.test.integration.converters;
 
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.integration.converters.MessagePackJsonConverter;
+import com.konkerlabs.platform.registry.data.core.integration.converters.MessagePackJsonConverter;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 
