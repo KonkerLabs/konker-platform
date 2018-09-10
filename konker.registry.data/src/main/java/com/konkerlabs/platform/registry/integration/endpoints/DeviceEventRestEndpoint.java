@@ -1,5 +1,42 @@
 package com.konkerlabs.platform.registry.integration.endpoints;
 
+import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
+import com.konkerlabs.platform.registry.business.model.Device;
+import com.konkerlabs.platform.registry.business.model.DeviceFirmware;
+import com.konkerlabs.platform.registry.business.model.DeviceFwUpdate;
+import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.enumerations.FirmwareUpdateStatus;
+import com.konkerlabs.platform.registry.business.services.api.*;
+import com.konkerlabs.platform.registry.data.services.JedisTaskService;
+import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
+import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
+import com.konkerlabs.platform.registry.integration.serializers.EventJsonView;
+import com.konkerlabs.platform.registry.integration.serializers.EventVO;
+import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
+import lombok.Builder;
+import lombok.Data;
+import org.bson.types.Binary;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.async.DeferredResult;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
@@ -9,53 +46,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.regex.Pattern;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.konkerlabs.platform.registry.business.model.DeviceFirmware;
-import com.konkerlabs.platform.registry.business.model.DeviceFwUpdate;
-import com.konkerlabs.platform.registry.business.model.enumerations.FirmwareUpdateStatus;
-import com.konkerlabs.platform.registry.business.services.api.*;
-import org.bson.types.Binary;
-import org.hibernate.validator.constraints.NotBlank;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.context.request.async.DeferredResult;
-
-import com.fasterxml.jackson.annotation.JsonView;
-import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.data.services.JedisTaskService;
-import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
-import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
-import com.konkerlabs.platform.registry.integration.serializers.EventJsonView;
-import com.konkerlabs.platform.registry.integration.serializers.EventVO;
-import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
-
-import lombok.Builder;
-import lombok.Data;
-
 @RestController
 public class DeviceEventRestEndpoint {
+
+    private Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
     public enum Messages {
         INVALID_REQUEST_BODY("integration.rest.invalid.body"),
@@ -289,6 +283,8 @@ public class DeviceEventRestEndpoint {
                                                      @PathVariable("apiKey") String apiKey,
                                                      @AuthenticationPrincipal Device principal,
                                                      Locale locale) {
+        LOGGER.info("Firmware update info: {}", apiKey);
+
         Device device = deviceRegisterService.findByApiKey(apiKey);
 
         if (!principal.getApiKey().equals(apiKey)) {
@@ -388,6 +384,8 @@ public class DeviceEventRestEndpoint {
                                            @PathVariable("apiKey") String apiKey,
                                            @AuthenticationPrincipal Device principal,
                                            Locale locale) {
+        LOGGER.info("Downloading firmware: {}", apiKey);
+
         Device device = deviceRegisterService.findByApiKey(apiKey);
 
         if (!principal.getApiKey().equals(apiKey)) {

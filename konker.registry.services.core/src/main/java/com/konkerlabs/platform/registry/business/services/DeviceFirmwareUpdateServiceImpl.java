@@ -130,7 +130,7 @@ public class DeviceFirmwareUpdateServiceImpl implements DeviceFirmwareUpdateServ
             return validationResponse;
         }
 
-        DeviceFwUpdate deviceFwUpdateFromDB = deviceFirmwareUpdateRepository.findUnique(tenant.getId(), application.getName(), device.getId(), version);
+        DeviceFwUpdate deviceFwUpdateFromDB = deviceFirmwareUpdateRepository.findUnique(tenant.getId(), application.getName(), device.getGuid(), version);
 
         if (!Optional.ofNullable(deviceFwUpdateFromDB).isPresent()) {
             return ServiceResponseBuilder.<DeviceFwUpdate> error()
