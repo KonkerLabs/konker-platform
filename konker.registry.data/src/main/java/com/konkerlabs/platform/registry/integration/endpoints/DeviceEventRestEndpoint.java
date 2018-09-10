@@ -16,6 +16,8 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterServ
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.data.core.services.JedisTaskService;
 import com.konkerlabs.platform.registry.data.core.integration.gateway.HttpGateway;
+import com.konkerlabs.platform.registry.business.model.enumerations.FirmwareUpdateStatus;
+import com.konkerlabs.platform.registry.business.services.api.*;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
 import com.konkerlabs.platform.registry.integration.serializers.EventJsonView;
 import com.konkerlabs.platform.registry.integration.serializers.EventVO;
