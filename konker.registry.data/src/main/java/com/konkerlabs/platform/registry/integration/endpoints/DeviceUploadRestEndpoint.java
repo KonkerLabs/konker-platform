@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.integration.endpoints;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,11 +10,16 @@ import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.data.upload.UploadRepository;
 import com.konkerlabs.platform.registry.data.core.integration.gateway.HttpGateway;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
+import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 import lombok.Builder;
 import lombok.Data;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.NoSuchMessageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -31,9 +37,12 @@ import java.util.UUID;
 @RestController
 public class DeviceUploadRestEndpoint {
 
+    private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
+
     public enum Messages {
         INVALID_RESOURCE("integration.rest.invalid.resource"),
-        INVALID_REQUEST_ORIGIN("integration.rest.invalid_request_origin");
+        INVALID_REQUEST_ORIGIN("integration.rest.invalid_request_origin"),
+        INVALID_META_DATA("integration.rest.invalid_meta_data");
 
         private final String code;
 
@@ -49,14 +58,17 @@ public class DeviceUploadRestEndpoint {
     private final ApplicationContext applicationContext;
     private final DeviceEventProcessor deviceEventProcessor;
     private final UploadRepository uploadRepository;
+    private final JsonParsingService jsonParsingService;
 
     @Autowired
     public DeviceUploadRestEndpoint(ApplicationContext applicationContext,
                                     DeviceEventProcessor deviceEventProcessor,
-                                    UploadRepository uploadRepository) {
+                                    UploadRepository uploadRepository,
+                                    JsonParsingService jsonParsingService) {
         this.applicationContext = applicationContext;
         this.deviceEventProcessor = deviceEventProcessor;
         this.uploadRepository = uploadRepository;
+        this.jsonParsingService = jsonParsingService;
     }
 
     @PostMapping(path = "/upload/{apiKey}/{channel}", consumes = "multipart/form-data")
@@ -66,7 +78,8 @@ public class DeviceUploadRestEndpoint {
             @PathVariable("apiKey") String apiKey,
             @PathVariable("channel") String channel,
             @AuthenticationPrincipal Device device,
-            @RequestParam(value = "file") MultipartFile file) {
+            @RequestParam(value = "file") MultipartFile file,
+            @RequestParam(value = "meta-data", required = false) String metaData) {
 
         String filename = file.getOriginalFilename();
         String guid = UUID.randomUUID().toString();
@@ -91,7 +104,19 @@ public class DeviceUploadRestEndpoint {
             return new ResponseEntity<>(buildResponse(e.getMessage(), locale), HttpStatus.BAD_REQUEST);
         }
 
-        JsonNode payload = getPayload(file, filename, guid, md5hash);
+        try {
+            uploadRepository.upload(file.getInputStream(), fileKey, filename, false);
+        } catch (Exception e) {
+            return new ResponseEntity<>(buildResponse(e.getMessage(), locale), HttpStatus.BAD_REQUEST);
+        }
+
+        if (StringUtils.isNotBlank(metaData)) {
+            if (!jsonParsingService.isValid(metaData)) {
+                return new ResponseEntity<>(buildResponse(Messages.INVALID_META_DATA.getCode(), locale), HttpStatus.BAD_REQUEST);
+            }
+        }
+
+        JsonNode payload = getPayload(file, filename, guid, md5hash, metaData);
 
         try {
             deviceEventProcessor.process(apiKey, channel, payload.toString());
@@ -109,7 +134,7 @@ public class DeviceUploadRestEndpoint {
 
     }
 
-    private JsonNode getPayload(MultipartFile file, String filename, String guid, String md5hash) {
+    private JsonNode getPayload(MultipartFile file, String filename, String guid, String md5hash, String metaData) {
         ObjectMapper objectMapper = new ObjectMapper(new JsonFactory());
         JsonNode jsonNode = objectMapper.createObjectNode();
 
@@ -119,13 +144,30 @@ public class DeviceUploadRestEndpoint {
         ((ObjectNode) jsonNode).put("md5", md5hash);
         ((ObjectNode) jsonNode).put("guid", guid);
 
+        if (StringUtils.isNotBlank(metaData)) {
+            try {
+                JsonNode metaNode = objectMapper.readTree(metaData);
+                ((ObjectNode) jsonNode).set("metaData", metaNode);
+            } catch (IOException e) {
+                LOGGER.error("Invalid meta-data: " + metaData, e);
+            }
+        }
+
         return jsonNode;
     }
 
-    private EventResponse buildResponse(String message, Locale locale) {
+    private EventResponse buildResponse(String code, Locale locale) {
+        String message = null;
+
+        try {
+            message = applicationContext.getMessage(code, null, locale);
+        } catch (NoSuchMessageException e) {
+            LOGGER.error("NoSuchMessageException: ", e.getMessage());
+        }
+
         return EventResponse.builder()
-                .code(message)
-                .message(applicationContext.getMessage(message,null, locale)).build();
+                .code(code)
+                .message(message).build();
     }
 
     @Data
@@ -133,6 +175,7 @@ public class DeviceUploadRestEndpoint {
     static class EventResponse {
         private String code;
         private String message;
+        @JsonInclude(JsonInclude.Include.NON_NULL)
         private JsonNode payload;
     }
 

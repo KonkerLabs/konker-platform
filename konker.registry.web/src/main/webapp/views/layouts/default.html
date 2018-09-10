@@ -150,6 +150,14 @@
                           <span data-th-text="#{nav.menu.debug_messages}">Debug</span>
                       </a>                      
                   </li>
+
+                  <li class="sub-menu" th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'', ''ROLE_IOT_READ_ONLY'')')}">
+                      <a data-th-href="@{/idm/default/clients/}">
+                          <img data-th-attr="src=@{/resources/konker/images/icons-menu/icon-key.svg}" class="icon-menu" />
+                          <span data-th-text="#{nav.menu.idm.tokens}">API Tokens</span>
+                      </a>
+                  </li>
+
               </ul>
 
               <ul class="sidebar-menu subtitle" id="nav-accordion"

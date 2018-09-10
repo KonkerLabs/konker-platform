@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html data-layout-decorate="layouts/default">
+<head>
+</head>
+<body>
+<div data-layout-fragment="content">
+    <fieldset>
+        <div>
+            <h1 class="page-title" data-th-text="#{clients.form.legend}"></h1>
+        </div>
+        <div class="alert alert-danger" role="alert" data-th-if="${errors != null and !errors.empty}">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <ul>
+                <li data-th-each="error : ${errors}" data-th-text="${error}"></li>
+            </ul>
+        </div>
+        <form data-th-action="@{__${action}__}" action="#" data-th-object="${oauthClient}"
+              method="post" class="form-horizontal" autocomplete="off">
+            <input type="hidden" name="_method" data-th-value="${method}"
+                   data-th-if="${method != null}"/>
+            <div class="form-group">
+                <label class="col-sm-1 control-label" for="clientId"
+                       data-th-text="#{clients.form.clientId}">ClientId</label>
+                <div class="col-sm-4">
+                    <input type="text"
+                           data-th-value="${oauthClient.clientId}"
+                           data-th-disabled="true"
+                           class="form-control"
+                           id="clientId" name="clientId"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-1 control-label" for="clientSecret"
+                       data-th-text="#{clients.form.clientsecret}">Name</label>
+                <div class="col-sm-4">
+                    <input type="text"
+                           data-th-value="${oauthClient.clientSecret}"
+                           data-th-disabled="true"
+                           class="form-control"
+                           id="clientSecret" name="clientSecret"/>
+                </div>
+            </div>
+        </form>
+
+        <p></p>
+
+        <div>
+            <h1 class="page-title" data-th-text="#{tokens.form.tokens}"></h1>
+        </div>
+
+        <table class="table table-bordered table-striped">
+            <thead>
+            <tr>
+                <th class="col-md-1" data-th-text="#{tokens.index.token}">Token</th>
+                <th class="col-md-1" data-th-text="#{tokens.index.createTime}">CreateTime</th>
+                <th class="col-md-1 text-center" data-th-text="#{tokens.index.actions}">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr data-th-each="token : ${allTokens}">
+                <td data-th-text="${token.tokenId}"></td>
+                <td data-th-text="${@dateToStringConverter.convert(token.createTime)}"></td>
+                <td class="text-center">
+                    <a data-th-href="@{/idm/{applicationName}/clients/{id}/deleteToken(id=${token.tokenId}, applicationName=${oauthClient.application.name})}"
+                       class="btn btn-default confirm-delete"
+                       data-th-text="#{nav.remove}">
+                        Show
+                    </a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <a data-th-href="@{'/idm/' + ${oauthClient.application.name} + '/clients/'}" class="btn btn-default">
+            <img data-th-attr="src=@{/resources/konker/images/icons-bt/back-icon-bt-01.svg}" class="bt-icon"/>
+            <span data-th-text="#{nav.back}"></span>
+        </a>
+        <!-- delete item -->
+        <a
+           class="btn btn-default confirm-delete-client"
+           data-th-text="#{nav.remove}">
+            Show
+        </a>
+        <a data-th-href="@{/idm/{applicationName}/clients/{id}/createToken(id=${oauthClient.clientSecret}, applicationName=${oauthClient.application.name})}"
+           data-th-if="${allTokens.empty}"
+           class="btn btn-success">
+            <img data-th-attr="src=@{/resources/konker/images/icons-bt/save-icon-bt-01.svg}" class="bt-icon"/>
+            <span data-th-text="#{tokens.form.create_new_token}"></span>
+        </a>
+
+        <!-- delete confirm modal -->
+        <div class="modal" id="removeItemModal" tabindex="-1" role="dialog"
+             aria-labelledby="myModalLabel">
+            <div class="modal-alignment-helper">
+                <div class="modal-dialog modal-align-center">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal"
+                                    aria-label="Close"><span aria-hidden="true">&times;</span>
+                            </button>
+                            <h3 class="modal-title" data-th-text="#{nav.remove}">Remove</h3>
+                        </div>
+                        <div class="modal-body">
+                            <p data-th-text="#{clients.form.modal.remove.firstLine}"></p>
+                            <p data-th-text="#{clients.form.modal.remove.secondLine}"></p>
+                        </div>
+                        <div class="modal-footer">
+                            <a
+                                data-th-href="@{/idm/{applicationName}/clients/{id}/deleteClient(id=${oauthClient.clientSecret}, applicationName=${oauthClient.application.name})}"
+                                class="btn  btn-primary"
+                                data-th-text="#{nav.yes}">
+                                Show
+                            </a>
+                            <button type="button" data-dismiss="modal" aria-hidden="true"
+                                    class="btn btn-default" data-th-text="#{nav.no}">No
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </fieldset>
+</div>
+<div data-layout-fragment="script">
+    <script>
+        $('.confirm-delete-client').on('click', function(e) {
+            e.preventDefault();
+            $('#removeItemModal').modal('show');
+        });
+    </script>
+</div>
+</body>
+</html>

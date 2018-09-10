@@ -12,6 +12,7 @@ import com.konkerlabs.platform.registry.test.data.base.BusinessDataTestConfigura
 import com.konkerlabs.platform.registry.test.data.base.SecurityTestConfiguration;
 import com.konkerlabs.platform.registry.test.data.base.WebLayerTestContext;
 import com.konkerlabs.platform.registry.test.data.base.WebTestConfiguration;
+import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -63,13 +64,17 @@ public class DeviceUploadRestEndpointTest extends WebLayerTestContext {
     @Autowired
     private UploadRepository uploadRepository;
 
+    @Autowired
+    private JsonParsingService jsonParsingService;
+
     @Before
     public void setUp() {
         deviceEventProcessor = mock(DeviceEventProcessor.class);
         deviceUploadRestEndpoint = new DeviceUploadRestEndpoint(
                 applicationContext,
                 deviceEventProcessor,
-                uploadRepository);
+                uploadRepository,
+                jsonParsingService);
     }
 
 	@After
@@ -78,7 +83,7 @@ public class DeviceUploadRestEndpointTest extends WebLayerTestContext {
 	}
 
     @Test
-    public void shouldReturnConfig() throws Exception {
+    public void shouldUploadImage() throws Exception {
         Device device = Device.builder().deviceId("tug6g6essh4m")
                 .active(true)
                 .apiKey("e4399b2ed998")
@@ -104,6 +109,40 @@ public class DeviceUploadRestEndpointTest extends WebLayerTestContext {
                 .andExpect(status().is2xxSuccessful())
                 .andExpect(content().contentType("application/json;charset=UTF-8"))
                 .andExpect(jsonPath("$.code", is("200")))
+        ;
+
+    }
+
+    @Test
+    public void shouldUploadImageWithMetaData() throws Exception {
+        Device device = Device.builder().deviceId("tug6g6essh4m")
+                .active(true)
+                .apiKey("e4399b2ed998")
+                .guid("7d51c242-81db-11e6-a8c2-0746f010e945")
+                .description("test")
+                .deviceId("device_id")
+                .guid("67014de6-81db-11e6-a5bc-3f99b38315c6")
+                .tenant(Tenant.builder().domainName("konker").name("Konker").build())
+                .application(Application.builder().name("SmartAC").build())
+                .deviceModel(DeviceModel.builder().name("SensorTemp").build())
+                .location(Location.builder().name("sp_br").build())
+                .build();
+
+        SecurityContext context = SecurityContextHolder.getContext();
+        Authentication auth = new UsernamePasswordAuthenticationToken(device, null);
+        context.setAuthentication(auth);
+
+        getMockMvc().perform(MockMvcRequestBuilders
+                .fileUpload("/upload/"+ device.getApiKey() + "/temp")
+                .file(new MockMultipartFile("file", "photo.jpg", "image/jpeg", "00000".getBytes()))
+                .param("meta-data", "{\"location\": \"SP\", \"temp\": 22.0}")
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().is2xxSuccessful())
+                .andExpect(content().contentType("application/json;charset=UTF-8"))
+                .andExpect(jsonPath("$.code", is("200")))
+                .andExpect(jsonPath("$.payload.metaData.location", is("SP")))
+                .andExpect(jsonPath("$.payload.metaData.temp", is(22.0)))
         ;
 
     }

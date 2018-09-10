@@ -8,6 +8,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration.Dynamic;
 
+import com.konkerlabs.platform.registry.config.OAuth2Config;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestContextListener;
 import org.springframework.web.filter.HiddenHttpMethodFilter;
@@ -43,9 +44,10 @@ public class RegistryAppInitializer
             com.konkerlabs.platform.registry.config.AmazonConfig.class,
             com.konkerlabs.platform.registry.config.EnvironmentConfig.class,
             com.konkerlabs.platform.registry.config.EventStorageConfig.class,
-            RabbitMQConfig.class,
-            MessageSourceConfig.class
-            
+            com.konkerlabs.platform.registry.config.OAuth2Config.class,
+            com.konkerlabs.platform.registry.config.RabbitMQConfig.class,
+            com.konkerlabs.platform.registry.config.MessageSourceConfig.class
+
         };
     }
 

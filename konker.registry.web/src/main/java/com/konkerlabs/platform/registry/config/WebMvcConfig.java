@@ -43,6 +43,7 @@ import nz.net.ultraq.thymeleaf.LayoutDialect;
 @ComponentScan(lazyInit = true, basePackages = {
         "com.konkerlabs.platform.registry.web.controllers",
         "com.konkerlabs.platform.registry.web.converters",
+        "com.konkerlabs.platform.registry.idm.web.controllers",
         "com.konkerlabs.platform.registry.integration.endpoints"
 })
 @Import({SecurityConfig.class})
