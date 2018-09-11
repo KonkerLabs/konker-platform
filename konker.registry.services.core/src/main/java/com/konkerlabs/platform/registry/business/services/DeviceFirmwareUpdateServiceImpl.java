@@ -96,9 +96,9 @@ public class DeviceFirmwareUpdateServiceImpl implements DeviceFirmwareUpdateServ
     }
 
     @Override
-    public ServiceResponse<List<DeviceFwUpdate>> findByVersion(Tenant tenant, Application application, String version) {
+    public ServiceResponse<List<DeviceFwUpdate>> findByDeviceFirmware(Tenant tenant, Application application, DeviceFirmware deviceFirmware) {
         return ServiceResponseBuilder.<List<DeviceFwUpdate>>ok()
-                .withResult(deviceFirmwareUpdateRepository.findByVersion(tenant.getId(), application.getName(), version))
+                .withResult(deviceFirmwareUpdateRepository.findByDeviceFirmware(tenant.getId(), application.getName(), deviceFirmware.getId()))
                 .build();
     }
 

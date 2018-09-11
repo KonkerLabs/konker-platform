@@ -2,25 +2,21 @@ package com.konkerlabs.platform.registry.api.web.controller;
 
 import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
 import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
-import com.konkerlabs.platform.registry.api.model.*;
+import com.konkerlabs.platform.registry.api.model.DeviceConfigVO;
+import com.konkerlabs.platform.registry.api.model.DeviceFirmwareUpdateInputVO;
 import com.konkerlabs.platform.registry.business.model.*;
-import com.konkerlabs.platform.registry.business.services.api.DeviceFirmwareService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceFirmwareUpdateService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.bson.types.Binary;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @RestController
 @Scope("request")
@@ -36,6 +32,9 @@ public class DeviceFirmwareUpdateRestController extends AbstractRestController i
 
     @Autowired
     private DeviceRegisterService deviceRegisterService;
+
+    @Autowired
+    private DeviceModelService deviceModelService;
 
     private Set<String> validationsCode = new HashSet<>();
 
@@ -73,20 +72,33 @@ public class DeviceFirmwareUpdateRestController extends AbstractRestController i
 
     }
 
-    @GetMapping(path = "/{version}/")
+    @GetMapping(path = "/{deviceModel}/{version}/")
     @PreAuthorize("hasAuthority('SHOW_DEVICE_CONFIG')")
     @ApiOperation(
             value = "List all device firmware updates of a version",
             response = DeviceConfigVO.class)
     public List<DeviceFirmwareUpdateInputVO> list(
             @PathVariable("application") String applicationId,
+            @PathVariable("deviceModel") String deviceModelName,
             @PathVariable("version") String version
     ) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
 
-        ServiceResponse<List<DeviceFwUpdate>> serviceResponse = deviceFirmwareUpdateService.findByVersion(tenant, application, version);
+        ServiceResponse<DeviceModel> deviceModelResponse = deviceModelService.getByTenantApplicationAndName(tenant, application, deviceModelName);
+        if (!deviceModelResponse.isOk()) {
+            throw new NotFoundResponseException(deviceModelResponse);
+        }
+        DeviceModel deviceModel = deviceModelResponse.getResult();
+
+        ServiceResponse<DeviceFirmware> firmwareServiceResponse = deviceFirmwareService.findByVersion(tenant, application, deviceModel, version);
+        if (!firmwareServiceResponse.isOk()) {
+            throw new NotFoundResponseException(deviceModelResponse);
+        }
+        DeviceFirmware deviceFirmware = firmwareServiceResponse.getResult();
+
+        ServiceResponse<List<DeviceFwUpdate>> serviceResponse = deviceFirmwareUpdateService.findByDeviceFirmware(tenant, application, deviceFirmware);
 
         if (!serviceResponse.isOk()) {
             throw new BadServiceResponseException( serviceResponse, validationsCode);
