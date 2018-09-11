@@ -38,8 +38,8 @@ public interface DeviceFirmwareUpdateService {
 
     ServiceResponse<DeviceFwUpdate> save(Tenant tenant, Application application, Device device, DeviceFirmware deviceFirmware);
     ServiceResponse<DeviceFwUpdate> setDeviceAsUpdated(Tenant tenant, Application application, Device device);
-    ServiceResponse<List<DeviceFwUpdate>> findByVersion(Tenant tenant, Application application, String version);
-    ServiceResponse<DeviceFwUpdate> findPendingFwUpdateByDevice(Tenant tenant, Application application,  Device device);
+    ServiceResponse<List<DeviceFwUpdate>> findByDeviceFirmware(Tenant tenant, Application application, DeviceFirmware deviceFirmware);
+    ServiceResponse<DeviceFwUpdate> findPendingFwUpdateByDevice(Tenant tenant, Application application, Device device);
     ServiceResponse<DeviceFwUpdate> updateStatus(Tenant tenant, Application application, Device device, String version, FirmwareUpdateStatus status);
 
 }
