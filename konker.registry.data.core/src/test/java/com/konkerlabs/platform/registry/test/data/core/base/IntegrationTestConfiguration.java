@@ -9,7 +9,10 @@ import org.springframework.web.client.RestTemplate;
 import static org.mockito.Mockito.mock;
 
 @Configuration
-@ComponentScan(basePackages = "com.konkerlabs.platform.registry.integration", lazyInit = true)
+@ComponentScan(basePackages = {
+        "com.konkerlabs.platform.registry.integration",
+        "com.konkerlabs.platform.registry.data.core.integration.gateway"
+}, lazyInit = true)
 public class IntegrationTestConfiguration extends IntegrationConfig {
 
     @Override

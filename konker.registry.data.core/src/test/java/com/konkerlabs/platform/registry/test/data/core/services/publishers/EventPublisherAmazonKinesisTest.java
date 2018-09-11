@@ -142,7 +142,7 @@ public class EventPublisherAmazonKinesisTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfEventIsNull() {
+    public void shouldRaiseAnExceptionIfEventIsNull() throws Exception {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Event cannot be null");
 
@@ -150,7 +150,7 @@ public class EventPublisherAmazonKinesisTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfURIIsNull() {
+    public void shouldRaiseAnExceptionIfURIIsNull() throws Exception {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Destination URI cannot be null or empty");
 
@@ -158,7 +158,7 @@ public class EventPublisherAmazonKinesisTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfDataIsNull() {
+    public void shouldRaiseAnExceptionIfDataIsNull() throws Exception {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Data cannot be null");
 
@@ -166,7 +166,7 @@ public class EventPublisherAmazonKinesisTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfTenantIsNull() {
+    public void shouldRaiseAnExceptionIfTenantIsNull() throws Exception {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Tenant cannot be null");
 
@@ -174,7 +174,7 @@ public class EventPublisherAmazonKinesisTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldSendMessages() {
+    public void shouldSendMessages() throws Exception {
 
         destinationUri = new URIDealer() {
             @Override

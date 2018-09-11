@@ -14,6 +14,6 @@ public interface EventRouteExecutor {
     @Async
     Future<List<Event>> execute(Event incomingEvent, Device device);
 
-    void execute(Event event, Device device, EventRoute eventRoute);
+    void execute(Event event, Device device, EventRoute eventRoute) throws Exception;
 
 }

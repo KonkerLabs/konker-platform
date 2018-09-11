@@ -12,13 +12,13 @@ import static org.mockito.Mockito.mock;
 @Configuration
 @ComponentScan(basePackages = {
     "com.konkerlabs.platform.registry.business",
-        "com.konkerlabs.platform.registry.data.core.security",
+    "com.konkerlabs.platform.registry.data.core.security",
     "com.konkerlabs.platform.utilities",
 	"com.konkerlabs.platform.registry.audit.repositories",
-        "com.konkerlabs.platform.registry.data.core.integration",
-        "com.konkerlabs.platform.registry.data.core.services",
-        "com.konkerlabs.platform.registry.data.core.services.routes",
-        "com.konkerlabs.platform.registry.data.core.services.publishers"
+    "com.konkerlabs.platform.registry.data.core.integration",
+    "com.konkerlabs.platform.registry.data.core.services",
+    "com.konkerlabs.platform.registry.data.core.services.routes",
+    "com.konkerlabs.platform.registry.data.core.services.publishers"
 },lazyInit = true)
 public class BusinessTestConfiguration {
 

@@ -79,13 +79,13 @@ public class EventRouteExecutorImpl implements EventRouteExecutor {
     }
 
     @Override
-    public void execute(Event event, Device device, EventRoute eventRoute) {
+    public void execute(Event event, Device device, EventRoute eventRoute) throws Exception {
         List<Event> outEvents = new ArrayList<>();
         processEventRoute(event, device, outEvents, eventRoute);
 
     }
 
-    private void processEventRoute(Event event, Device device, List<Event> outEvents, EventRoute eventRoute) {
+    private void processEventRoute(Event event, Device device, List<Event> outEvents, EventRoute eventRoute) throws Exception {
 
         String incomingPayload = event.getPayload();
 
@@ -199,7 +199,7 @@ public class EventRouteExecutorImpl implements EventRouteExecutor {
             return true;
     }
 
-    private void forwardEvent(EventRoute eventRoute, Event event) {
+    private void forwardEvent(EventRoute eventRoute, Event event) throws Exception {
         EventPublisher eventPublisher = (EventPublisher) applicationContext
                 .getBean(eventRoute.getOutgoing().getUri().getScheme());
         eventPublisher.send(event, eventRoute.getOutgoing().getUri(),

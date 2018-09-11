@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.test.data.services.publishers;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.RestDestination;
@@ -133,7 +134,7 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfEventIsNull() {
+    public void shouldRaiseAnExceptionIfEventIsNull() throws Exception {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Event cannot be null");
 
@@ -141,7 +142,7 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfURIIsNull() {
+    public void shouldRaiseAnExceptionIfURIIsNull() throws Exception {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Destination URI cannot be null or empty");
 
@@ -157,7 +158,7 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfTenantIsNull() {
+    public void shouldRaiseAnExceptionIfTenantIsNull() throws Exception {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Tenant cannot be null");
 
@@ -165,7 +166,7 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfDestinationIsUnknown() {
+    public void shouldRaiseAnExceptionIfDestinationIsUnknown() throws Exception {
         destinationUri = new URIDealer() {
             @Override
             public String getUriScheme() {
@@ -218,6 +219,8 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldNotSendAnyEventThroughGatewayIfPayloadParsingFails() throws Exception {
+        thrown.expect(Exception.class);
+        thrown.expectMessage("Failed to parse json");
         event.setPayload(invalidEventPayload);
 
         subject.send(event, destinationUri, null, tenant, application);

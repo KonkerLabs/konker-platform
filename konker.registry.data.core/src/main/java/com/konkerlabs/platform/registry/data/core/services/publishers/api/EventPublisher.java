@@ -9,6 +9,6 @@ import java.util.Map;
 
 public interface EventPublisher {
 
-    void send(Event outgoingEvent, URI destinationUri, Map<String,String> data, Tenant tenant, Application application);
+    void send(Event outgoingEvent, URI destinationUri, Map<String,String> data, Tenant tenant, Application application) throws Exception;
 
 }
