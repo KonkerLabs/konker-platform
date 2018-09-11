@@ -1,4 +1,4 @@
-# Registry Data Ingestion Application
+# Registry Data Router Application
 
 Package:
 
@@ -15,7 +15,7 @@ mvn clean install package spring-boot:repackage -Pcassandra
 
 Usage:
 ```
-java -jar target/registry.data.jar
+java -jar target/registry.data-router.jar
 ```
 
 
@@ -26,7 +26,7 @@ Requisites:
  - define params in resources/application.conf file
 
 
- - Copy the registry-data.jar from target folder to docker-resources/build
+ - Copy the registry-data-router.jar from target folder to docker-resources/build
  - Copy the application.conf.example file to docker-resources/build/application.conf
  - Set the targets of your mongodb*, cassandra and redis instalations ( the parameters are described as CHANGE_ME in the application.conf.example)
    * If you wanto to use mongodb as event storage, you can change the block:
