@@ -1,7 +1,7 @@
 FROM openjdk:8-jre-alpine
 
 LABEL maintainer="Andre Rocha <andre@konkerlabs.com>"
-LABEL service_name="konker-http-data"
+LABEL service_name="konker-http-data-router"
 
 # add our user and group first to make sure their IDs get assigned consistently, regardless of whatever dependencies get added
 RUN addgroup -S nginx && adduser -D -S -H -G nginx nginx && rm -rf /etc/group- /etc/passwd- /etc/shadow-
@@ -14,9 +14,9 @@ WORKDIR $KONKER_BASE
 COPY docker-resources/docker-entrypoint.sh /
 RUN chmod 777 /docker-entrypoint.sh
 
-COPY docker-resources/dist/registry-data.jar /var/lib/konker/
-COPY docker-resources/dist/application.conf /var/lib/konker/
-COPY docker-resources/dist/logback.xml /var/lib/konker/
+COPY docker-resources/build/registry-data-router.jar /var/lib/konker/
+COPY docker-resources/build/application.conf /var/lib/konker/
+COPY docker-resources/build/logback.xml /var/lib/konker/
 
 #nginx - DO NOT REMOVE IT
 ENV NGINX_VERSION nginx-1.10.3
@@ -62,4 +62,3 @@ RUN chmod 777 /filebeat/filebeat && \
 #start
 EXPOSE 80
 ENTRYPOINT ["/docker-entrypoint.sh"]
-#CMD ["java","-Dconfig.file=/var/lib/konker/application.conf","-jar","/var/lib/konker/registry-api.jar"]

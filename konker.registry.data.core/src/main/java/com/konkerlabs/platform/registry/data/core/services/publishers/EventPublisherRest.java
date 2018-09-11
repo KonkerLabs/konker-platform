@@ -54,7 +54,8 @@ public class EventPublisherRest implements EventPublisher {
     }
 
     @Override
-    public void send(Event outgoingEvent, URI destinationUri, Map<String, String> data, Tenant tenant, Application application) {
+    public void send(Event outgoingEvent, URI destinationUri, Map<String, String> data, Tenant tenant, Application application)
+            throws Exception {
         Optional.ofNullable(outgoingEvent)
                 .orElseThrow(() -> new IllegalArgumentException("Event cannot be null"));
         Optional.ofNullable(destinationUri)
@@ -101,6 +102,7 @@ public class EventPublisherRest implements EventPublisher {
                         tenant.toURI(),
                         tenant.getLogLevel(),
                         e);
+                throw new Exception(e);
             }
         } else {
             LOGGER.debug(

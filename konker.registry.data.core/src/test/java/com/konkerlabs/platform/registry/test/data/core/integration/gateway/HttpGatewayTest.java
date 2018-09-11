@@ -27,11 +27,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.*;
 
-//@RunWith(SpringJUnit4ClassRunner.class)
-//@ContextConfiguration(classes = {
-//        IntegrationTestConfiguration.class,
-//        BusinessTestConfiguration.class
-//})
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = {
+        IntegrationTestConfiguration.class
+})
 public class HttpGatewayTest {
 
     private static final String USERNAME = "Username";
@@ -61,7 +60,7 @@ public class HttpGatewayTest {
         uri = new URI("http://my.enrichment.service:8080/device/000000000001/product");
     }
 
-//    @Test
+    @Test
     public void shoulRaiseAnExceptionIfHttpMethodIsNull() throws IntegrationException {
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("HTTP method must be provided");
@@ -71,7 +70,7 @@ public class HttpGatewayTest {
         verifyZeroInteractions(restTemplate);
     }
 
-//    @Test
+    @Test
     public void shouldFailWithExceptionIfUriNotDefined() throws IntegrationException {
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("Service URI must be provided");
@@ -81,7 +80,7 @@ public class HttpGatewayTest {
         verifyZeroInteractions(restTemplate);
     }
 
-//    @Test
+    @Test
     public void shouldFailWithExceptionIfUsernameNotDefined() throws IntegrationException {
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("Username and Password must be both provided together");
@@ -91,7 +90,7 @@ public class HttpGatewayTest {
         verifyZeroInteractions(restTemplate);
     }
 
-//    @Test
+    @Test
     public void shouldFailWithExceptionIfPasswordNotDefined() throws IntegrationException {
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("Username and Password must be both provided together");
@@ -101,7 +100,7 @@ public class HttpGatewayTest {
         verifyZeroInteractions(restTemplate);
     }
 
-//    @Test
+    @Test
     public void shouldIncludeAuthorizationHeader() throws IntegrationException {
         when(restTemplate.exchange(eq(uri), eq(HttpMethod.GET), httpEntityCaptor.capture(),
                 eq(String.class))).thenReturn(new ResponseEntity<>(HttpStatus.OK));
@@ -117,7 +116,7 @@ public class HttpGatewayTest {
         assertThat(headers.getFirst("Authorization"), equalTo("Basic VXNlcm5hbWU6UGFzc3dvcmQ="));
     }
 
-//    @Test
+    @Test
     public void shouldAddKonkerVersionHeader() throws IntegrationException {
         when(restTemplate.exchange(eq(uri), eq(HttpMethod.GET), httpEntityCaptor.capture(),
                 eq(String.class))).thenReturn(new ResponseEntity<>(HttpStatus.OK));
@@ -133,7 +132,7 @@ public class HttpGatewayTest {
         assertThat(headers.get(HttpGateway.KONKER_VERSION_HEADER), notNullValue());
     }
 
-//    @Test
+    @Test
     public void shouldIncludeAuthorizationHeaderWithEmptyUser() throws IntegrationException {
         when(restTemplate.exchange(eq(uri), eq(HttpMethod.GET), httpEntityCaptor.capture(),
                 eq(String.class))).thenReturn(new ResponseEntity<>(HttpStatus.OK));
@@ -149,7 +148,7 @@ public class HttpGatewayTest {
         assertThat(headers.getFirst("Authorization"), equalTo("Basic OlBhc3N3b3Jk"));
     }
 
-//    @Test
+    @Test
     public void shouldIncludeAuthorizationHeaderWithEmptyPassword() throws IntegrationException {
         when(restTemplate.exchange(eq(uri), eq(HttpMethod.GET), httpEntityCaptor.capture(),
                 eq(String.class))).thenReturn(new ResponseEntity<>(HttpStatus.OK));
@@ -165,7 +164,7 @@ public class HttpGatewayTest {
         assertThat(headers.getFirst("Authorization"), equalTo("Basic VXNlcm5hbWU6"));
     }
 
-//    @Test
+    @Test
     public void shouldNotIncludeAuthorizationHeader() throws IntegrationException {
         when(restTemplate.exchange(eq(uri), eq(HttpMethod.GET), httpEntityCaptor.capture(),
                 eq(String.class))).thenReturn(new ResponseEntity<>(HttpStatus.OK));
@@ -181,7 +180,7 @@ public class HttpGatewayTest {
         assertThat(headers.getFirst("Authorization"), nullValue());
     }
 
-//    @Test
+    @Test
     public void shouldNotIncludeAuthorizationHeaderForEmptyUserAndPassword() throws IntegrationException {
         when(restTemplate.exchange(eq(uri), eq(HttpMethod.GET), httpEntityCaptor.capture(),
                 eq(String.class))).thenReturn(new ResponseEntity<>(HttpStatus.OK));
@@ -197,7 +196,7 @@ public class HttpGatewayTest {
         assertThat(headers.getFirst("Authorization"), nullValue());
     }
 
-//    @Test
+    @Test
     public void shouldApplyRequestBodyWhenProvided() throws IntegrationException {
         Supplier<String> body = () -> "requestBody";
 
@@ -212,7 +211,7 @@ public class HttpGatewayTest {
         assertThat(entity.getBody(),equalTo(body.get()));
     }
 
-//    @Test
+    @Test
     public void shouldApplyPOSTHttpMethodWhenProvided() throws IntegrationException {
         method = HttpMethod.POST;
 
@@ -225,7 +224,7 @@ public class HttpGatewayTest {
                 eq(String.class));
     }
 
-//    @Test
+    @Test
     public void shouldRaiseAnExceptionIfResponseStatusIsNotA2xxStatus() throws Exception {
         String errorBody = "Server error";
 

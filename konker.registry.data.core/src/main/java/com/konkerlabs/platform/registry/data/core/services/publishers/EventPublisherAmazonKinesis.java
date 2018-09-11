@@ -32,7 +32,8 @@ public class EventPublisherAmazonKinesis implements EventPublisher {
 
     @Override
     @Async
-    public void send(Event outgoingEvent, URI destinationUri, Map<String, String> data, Tenant tenant, Application application) {
+    public void send(Event outgoingEvent, URI destinationUri, Map<String, String> data, Tenant tenant, Application application)
+            throws Exception {
         Optional.ofNullable(outgoingEvent)
                 .orElseThrow(() -> new IllegalArgumentException("Event cannot be null"));
         Optional.ofNullable(destinationUri)
@@ -77,6 +78,7 @@ public class EventPublisherAmazonKinesis implements EventPublisher {
                     MessageFormat.format(EVENT_DROPPED, destinationUri, sdkEx.getMessage()),
                     tenant.toURI(),
                     tenant.getLogLevel());
+            throw new Exception(sdkEx);
         }
 
     }

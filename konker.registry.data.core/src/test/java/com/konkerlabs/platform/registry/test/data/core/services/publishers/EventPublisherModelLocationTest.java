@@ -186,7 +186,7 @@ public class EventPublisherModelLocationTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfEventIsNull() {
+    public void shouldRaiseAnExceptionIfEventIsNull() throws Exception {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Event cannot be null");
 
@@ -194,7 +194,7 @@ public class EventPublisherModelLocationTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfURIIsNull() {
+    public void shouldRaiseAnExceptionIfURIIsNull() throws Exception {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Destination URI cannot be null or empty");
 
@@ -202,7 +202,7 @@ public class EventPublisherModelLocationTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfDataIsNull() {
+    public void shouldRaiseAnExceptionIfDataIsNull() throws Exception {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Data cannot be null");
 
@@ -210,7 +210,7 @@ public class EventPublisherModelLocationTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfMqttChannelIsNull() {
+    public void shouldRaiseAnExceptionIfMqttChannelIsNull() throws Exception {
         data.remove(DEVICE_MQTT_CHANNEL);
 
         thrown.expect(IllegalStateException.class);
@@ -220,7 +220,7 @@ public class EventPublisherModelLocationTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfMqttChannelIsEmpty() {
+    public void shouldRaiseAnExceptionIfMqttChannelIsEmpty() throws Exception {
         data.put(DEVICE_MQTT_CHANNEL,"");
 
         thrown.expect(IllegalStateException.class);
@@ -230,7 +230,7 @@ public class EventPublisherModelLocationTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldRaiseAnExceptionIfTenantIsNull() {
+    public void shouldRaiseAnExceptionIfTenantIsNull() throws Exception {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Tenant cannot be null");
 
@@ -238,7 +238,7 @@ public class EventPublisherModelLocationTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldSendMessages() {
+    public void shouldSendMessages() throws Exception {
 
         List<Location> children = new ArrayList<>();
         children.add(locationSP);

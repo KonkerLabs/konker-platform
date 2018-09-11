@@ -4,7 +4,7 @@ set -e
 
 echo ""
 echo ""
-echo "################################### Konker Open Platform - DATA ###################################"
+echo "################################### Konker Open Platform - DATA ROUTER ###########################"
 echo "##                                       Version: 1.0.0                                         ##"
 echo "##                                  Release date: 2017-04-24                                    ##"
 echo "##              Licence: Apache V2 (http://www.apache.org/licenses/LICENSE-2.0)                 ##"
@@ -52,5 +52,5 @@ echo "#### port: $REDIS_PORT"
 
 /filebeat/filebeat -e -c /filebeat/filebeat.yml &
 /usr/local/sbin/nginx &
-java -Dconfig.file=/var/lib/konker/application.conf -Dmongo.hostname=$MONGODB_HOSTNAME -Dmongo.port=$MONGODB_PORT -Dmongo.username=$MONGODB_USERNAME -Dmongo.password=$MONGODB_PASSWORD -DmongoAudit.hostname=$MONGODB_AUDIT_HOSTNAME -DmongoAudit.port=$MONGODB_AUDIT_PORT -DmongoAudit.username=$MONGODB_AUDIR_USERNAME -DmongoAudit.password=$MONGODB_AUDIT_PASSWORD -Deventstorage.bean=$EVENT_STORAGE -Dcassandra.clustername=$CASSANDRA_CLUSTERNAME -Dcassandra.keyspace=$CASSANDRA_KEYSPACE -Dcassandra.hostname=$CASSANDRA_HOSTNAME -Dcassandra.port=$CASSANDRA_PORT -Dcassandra.username=$CASSANDRA_USERNAME -Dcassandra.password=$CASSANDRA_PASSWORD -Dredis.master.host=$REDIS_HOSTNAME -Dredis.master.port=$REDIS_PORT -Drabbitmq.hostname=$RABBITMQ_HOSTNAME -Drabbitmq.username=$RABBITMQ_USERNAME -Drabbitmq.password=$RABBITMQ_PASSWORD -Drabbitmq.virtualHost=$RABBITMQ_VHOST -jar /var/lib/konker/registry-data.jar
+java -Dconfig.file=/var/lib/konker/application.conf -Dmongo.hostname=$MONGODB_HOSTNAME -Dmongo.port=$MONGODB_PORT -Dmongo.username=$MONGODB_USERNAME -Dmongo.password=$MONGODB_PASSWORD -DmongoAudit.hostname=$MONGODB_AUDIT_HOSTNAME -DmongoAudit.port=$MONGODB_AUDIT_PORT -DmongoAudit.username=$MONGODB_AUDIR_USERNAME -DmongoAudit.password=$MONGODB_AUDIT_PASSWORD -Deventstorage.bean=$EVENT_STORAGE -Dcassandra.clustername=$CASSANDRA_CLUSTERNAME -Dcassandra.keyspace=$CASSANDRA_KEYSPACE -Dcassandra.hostname=$CASSANDRA_HOSTNAME -Dcassandra.port=$CASSANDRA_PORT -Dcassandra.username=$CASSANDRA_USERNAME -Dcassandra.password=$CASSANDRA_PASSWORD -Dredis.master.host=$REDIS_HOSTNAME -Dredis.master.port=$REDIS_PORT -Drabbitmq.hostname=$RABBITMQ_HOSTNAME -Drabbitmq.username=$RABBITMQ_USERNAME -Drabbitmq.password=$RABBITMQ_PASSWORD -Drabbitmq.virtualHost=$RABBITMQ_VHOST -jar /var/lib/konker/registry-data-router.jar
 exec "$@"
