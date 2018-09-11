@@ -153,26 +153,6 @@ public class DeviceFirmwareUpdateServiceTest extends BusinessLayerTestSupport {
 
     }
 
-
-    @Test
-    public void shouldListFirmwaresByVersion() throws Exception {
-
-        ServiceResponse<List<DeviceFwUpdate>> serviceResponse = deviceFirmwareUpdateService.findByVersion(
-                deviceB.getTenant(),
-                deviceB.getApplication(),
-                VERSION_1);
-        assertThat(serviceResponse.isOk(), is(true));
-        assertThat(serviceResponse.getResult().size(), is(2));
-
-        serviceResponse = deviceFirmwareUpdateService.findByVersion(
-                deviceB.getTenant(),
-                deviceB.getApplication(),
-                VERSION_2);
-        assertThat(serviceResponse.isOk(), is(true));
-        assertThat(serviceResponse.getResult().size(), is(1));
-
-    }
-
     @Test
     public void shouldNotSaveExistingFirmwareUpdate() throws Exception {
 
