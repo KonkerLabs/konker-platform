@@ -13,7 +13,9 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.contains;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -171,7 +173,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
-    public void shouldReturnResponseMessagesIfTenantIsNull() throws Exception {
+    public void shouldReturnResponseMessagesIfTenantIsNull() {
         ServiceResponse<Device> serviceResponse = deviceRegisterService.register(null, currentApplication, device);
 
         assertThat(serviceResponse, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
@@ -179,7 +181,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
-    public void shouldReturnResponseMessagesIfAppIsNull() throws Exception {
+    public void shouldReturnResponseMessagesIfAppIsNull() {
         ServiceResponse<Device> serviceResponse = deviceRegisterService.register(currentTenant, null, device);
 
         assertThat(serviceResponse, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
@@ -187,7 +189,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
-    public void shouldReturnResponseMessagesIfAppNotExists() throws Exception {
+    public void shouldReturnResponseMessagesIfAppNotExists() {
         ServiceResponse<Device> serviceResponse = deviceRegisterService.register(currentTenant, otherApplication, device);
 
         assertThat(serviceResponse, hasErrorMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode()));
@@ -195,7 +197,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
-    public void shouldReturnResponseMessagesIfTenantDoesNotExist() throws Exception {
+    public void shouldReturnResponseMessagesIfTenantDoesNotExist() {
         ServiceResponse<Device> serviceResponse = deviceRegisterService
                 .register(Tenant.builder().id("unknown_id").domainName("unknown_domain").build(), currentApplication, device);
 
@@ -204,7 +206,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
-    public void shouldReturnResponseMessagesIfRecordIsNull() throws Exception {
+    public void shouldReturnResponseMessagesIfRecordIsNull() {
         ServiceResponse<Device> serviceResponse = deviceRegisterService.register(currentTenant, currentApplication, null);
 //
         assertThat(serviceResponse, hasErrorMessage(CommonValidations.RECORD_NULL.getCode()));
@@ -212,7 +214,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
-    public void shouldReturnResponseMessagesIfRecordIsInvalid() throws Exception {
+    public void shouldReturnResponseMessagesIfRecordIsInvalid() {
         Map<String, Object[]> errorMessages = new HashMap<String, Object[]>() {
             private static final long serialVersionUID = 6888355713114248747L;
             {
@@ -228,7 +230,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
-    public void shouldReturnResponseMessageIfDeviceIdAlreadyInUse() throws Exception {
+    public void shouldReturnResponseMessageIfDeviceIdAlreadyInUse() {
         device.setDeviceId(DEVICE_ID_IN_USE);
 
         Map<String, Object[]> errorMessages = new HashMap<String, Object[]>() {
@@ -245,7 +247,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
-    public void shouldReturnResponseMessageIfDeviceLimitExceeded() throws Exception {
+    public void shouldReturnResponseMessageIfDeviceLimitExceeded() {
     	currentTenant.setDevicesLimit(2l);
 
     	Map<String, Object[]> errorMessages = Collections.singletonMap(DeviceRegisterService.Validations.DEVICE_TENANT_LIMIT.getCode(), null);
@@ -256,7 +258,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
-    public void shouldApplyOnRegistrationCallbackBeforeValidations() throws Exception {
+    public void shouldApplyOnRegistrationCallbackBeforeValidations() {
         deviceRegisterService.register(currentTenant, currentApplication, device);
 
         InOrder inOrder = Mockito.inOrder(device);
@@ -267,7 +269,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
-    public void shouldPersistIfDeviceIsValid() throws Exception {
+    public void shouldPersistIfDeviceIsValid() {
         ServiceResponse<Device> response = deviceRegisterService.register(currentTenant, currentApplication, rawDevice);
 
         assertThat(response, isResponseOk());
@@ -279,7 +281,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
 	@Test
 	@UsingDataSet(locations = { "/fixtures/tenants.json", "/fixtures/applications.json" })
-	public void shouldPersistWithTenantLogLevel() throws Exception {
+	public void shouldPersistWithTenantLogLevel() {
 		currentTenant.setLogLevel(LogLevel.ALL);
 
 		ServiceResponse<Device> response = deviceRegisterService.register(currentTenant, currentApplication, rawDevice);
@@ -308,7 +310,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
-    public void shouldReturnAValidResponseIfRegisterWasSuccessful() throws Exception {
+    public void shouldReturnAValidResponseIfRegisterWasSuccessful() {
         Tenant tenant = tenantRepository.findOne("71fb0d48-674b-4f64-a3e5-0256ff3a63af");
         device.setTenant(tenant);
 
@@ -319,7 +321,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
-    public void shouldReturnAllRegisteredDevicesWithinATenant() throws Exception {
+    public void shouldReturnAllRegisteredDevicesWithinATenant() {
         ServiceResponse<List<Device>> response = deviceRegisterService.findAll(emptyTenant, currentApplication);
         assertThat(response, isResponseOk());
         List<Device> all = response.getResult();
@@ -336,7 +338,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
-    public void shouldReturnCountRegisteredDevicesWithinATenant() throws Exception {
+    public void shouldReturnCountRegisteredDevicesWithinATenant() {
         ServiceResponse<Long> response = deviceRegisterService.countAll(emptyTenant, currentApplication);
         assertThat(response, isResponseOk());
         Long all = response.getResult();
@@ -354,7 +356,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
-    public void shouldFindADeviceByItsTenantDomainNameAndDeviceGuid() throws Exception {
+    public void shouldFindADeviceByItsTenantDomainNameAndDeviceGuid() {
         Device registeredDevice = deviceRepository.findOne(THE_DEVICE_INTERNAL_MONGO_ID);
         Assert.assertThat(registeredDevice, notNullValue());
 
@@ -369,7 +371,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/devices.json", "/fixtures/tenants.json", "/fixtures/applications.json"})
-    public void shouldFindADeviceByItsApiKey() throws Exception {
+    public void shouldFindADeviceByItsApiKey() {
         Device registeredDevice = deviceRepository.findOne(THE_DEVICE_INTERNAL_MONGO_ID);
         Assert.assertThat(registeredDevice, notNullValue());
 
@@ -381,7 +383,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
-    public void shouldRaiseAnExceptionIfDeviceGuidIsNullWhenUpdating() throws Exception {
+    public void shouldRaiseAnExceptionIfDeviceGuidIsNullWhenUpdating() {
         ServiceResponse<Device> serviceResponse = deviceRegisterService.update(currentTenant, currentApplication, null, device);
 
 //        assertThat(serviceResponse,notNullValue());
@@ -392,7 +394,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
-    public void shouldRaiseAnExceptionIfAppIsNullWhenUpdating() throws Exception {
+    public void shouldRaiseAnExceptionIfAppIsNullWhenUpdating() {
         ServiceResponse<Device> serviceResponse = deviceRegisterService.update(currentTenant, null, THE_USER_DEFINED_DEVICE_ID, device);
 
 //        assertThat(serviceResponse,notNullValue());
@@ -403,7 +405,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
-    public void shouldRaiseAnExceptionIfDeviceIsNullWhenUpdating() throws Exception {
+    public void shouldRaiseAnExceptionIfDeviceIsNullWhenUpdating() {
         ServiceResponse<Device> serviceResponse = deviceRegisterService.update(currentTenant, currentApplication, THE_USER_DEFINED_DEVICE_ID, null);
 
 //        assertThat(serviceResponse,notNullValue());
@@ -415,7 +417,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
-    public void shouldReturnResponseErrorMessageIfDeviceNotExists() throws Exception {
+    public void shouldReturnResponseErrorMessageIfDeviceNotExists() {
         device.setGuid(ANOTHER_DEVICE_GUID);
 
         Map<String, Object[]> errorMessages = new HashMap<String, Object[]>() {
@@ -436,7 +438,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/devices.json", "/fixtures/tenants.json", "/fixtures/applications.json"})
-    public void shouldRetunResponseErrorMessageIfValidationFailsWhenUpdating() throws Exception {
+    public void shouldRetunResponseErrorMessageIfValidationFailsWhenUpdating() {
         device.setName(EMPTY_DEVICE_NAME);
 
         ServiceResponse<Device> response = deviceRegisterService.update(currentTenant, currentApplication, THE_USER_DEFINED_DEVICE_ID, device);
@@ -452,7 +454,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
-    public void shouldPersistIfDataIsValidWhenUpdating() throws Exception {
+    public void shouldPersistIfDataIsValidWhenUpdating() {
         Device persisted = deviceRepository.findOne(THE_DEVICE_INTERNAL_MONGO_ID);
 
         persisted.setName(ANOTHER_DEVICE_NAME);
@@ -486,7 +488,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
-    public void shouldNotSetOrChangeApiKeyWhenUpdating() throws Exception {
+    public void shouldNotSetOrChangeApiKeyWhenUpdating() {
         Device persisted = deviceRepository.findOne(THE_DEVICE_INTERNAL_MONGO_ID);
 
         persisted.setName(ANOTHER_DEVICE_NAME);
@@ -511,7 +513,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
-    public void shouldReturnResponseMessageIfDeviceGuidIsNullWhenChangingActivation() throws Exception {
+    public void shouldReturnResponseMessageIfDeviceGuidIsNullWhenChangingActivation() {
         ServiceResponse<Device> serviceResponse = deviceRegisterService.switchEnabledDisabled(currentTenant, currentApplication, null);
 
 //        assertThat(serviceResponse,notNullValue());
@@ -523,7 +525,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
-    public void shouldReturnResponseMessageIfDeviceDoesNotExist() throws Exception {
+    public void shouldReturnResponseMessageIfDeviceDoesNotExist() {
         ServiceResponse<Device> serviceResponse = deviceRegisterService.switchEnabledDisabled(currentTenant, currentApplication, "unknown_guid");
 
 //        assertThat(serviceResponse,notNullValue());
@@ -535,7 +537,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
-    public void shouldSwitchDeviceActivation() throws Exception {
+    public void shouldSwitchDeviceActivation() {
         Device device = deviceRegisterService.getByDeviceGuid(currentTenant, currentApplication, THE_DEVICE_GUID).getResult();
         boolean expected = !device.isActive();
 
@@ -554,7 +556,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
-    public void shouldReturnErrorMessageIfIdDoesNotBelongToTenantWhenGet() throws Exception {
+    public void shouldReturnErrorMessageIfIdDoesNotBelongToTenantWhenGet() {
         ServiceResponse<Device> serviceResponse = deviceRegisterService.getByDeviceGuid(emptyTenant, currentApplication, THE_DEVICE_GUID);
 
         assertThat(serviceResponse, notNullValue());
@@ -566,7 +568,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
-    public void shouldReturnErrorMessageIfDeviceBelongsToOtherTenantOnDeletion() throws Exception {
+    public void shouldReturnErrorMessageIfDeviceBelongsToOtherTenantOnDeletion() {
         ServiceResponse<Device> serviceResponse = deviceRegisterService
                 .remove(Tenant.builder().id(ANOTHER_TENANT_ID).build(), currentApplication, THE_DEVICE_GUID);
         assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.ERROR));
@@ -574,7 +576,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
-    public void shouldReturnErrorMessageIfDeviceDoesNotExistsOnDeletion() throws Exception {
+    public void shouldReturnErrorMessageIfDeviceDoesNotExistsOnDeletion() {
         ServiceResponse<Device> serviceResponse = deviceRegisterService
                 .remove(Tenant.builder().id(THE_TENANT_ID).build(), currentApplication, ANOTHER_USER_DEFINED_DEVICE_ID);
         assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.ERROR));
@@ -586,7 +588,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
             "/fixtures/devices.json",
             "/fixtures/event-routes.json",
             "/fixtures/applications.json"})
-    public void shouldReturnErrorMessageIfDeviceHaveEventRoutesOnDeletion() throws Exception {
+    public void shouldReturnErrorMessageIfDeviceHaveEventRoutesOnDeletion() {
         ServiceResponse<Device> serviceResponse = deviceRegisterService
                 .remove(Tenant.builder().id(THE_TENANT_ID).build(), currentApplication, THE_DEVICE_GUID);
         assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.ERROR));
@@ -596,7 +598,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/events-incoming.json", "/fixtures/events-outgoing.json", "/fixtures/applications.json"})
-    public void shouldReturnSuccessMessageIfDeviceDeletionSucceed() throws Exception {
+    public void shouldReturnSuccessMessageIfDeviceDeletionSucceed() {
         ServiceResponse<Device> serviceResponse = deviceRegisterService
                 .remove(Tenant.builder().id(THE_TENANT_ID).domainName(THE_TENANT_DOMAIN_NAME).build(), currentApplication, THE_DEVICE_GUID);
         assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.OK));
@@ -608,7 +610,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/events-incoming.json", "/fixtures/events-outgoing.json", "/fixtures/applications.json"})
-    public void shouldDeleteInLogicalWayEachDataIngestedOnDeviceForSucceedDeletion() throws Exception {
+    public void shouldDeleteInLogicalWayEachDataIngestedOnDeviceForSucceedDeletion() {
         Device device = deviceRegisterService
                 .findByTenantDomainNameAndDeviceGuid(currentTenant.getDomainName(), THE_DEVICE_GUID);
 
@@ -982,6 +984,31 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
             return Mockito.mock(RabbitTemplate.class);
         }
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
+    public void shouldSearchWithoutFilter() {
+        ServiceResponse<List<Device>> response = deviceRegisterService.search(currentTenant, currentApplication, null);
+        assertThat(response, isResponseOk());
+        List<Device> all = response.getResult();
+
+        all = response.getResult();
+        assertThat(all, notNullValue());
+        assertThat(all, hasSize(2));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
+    public void shouldSearchFilterByTag() {
+        ServiceResponse<List<Device>> response = deviceRegisterService.search(currentTenant, currentApplication, "anotherTag1");
+        assertThat(response, isResponseOk());
+        List<Device> all = response.getResult();
+
+        all = response.getResult();
+        assertThat(all, notNullValue());
+        assertThat(all, hasSize(1));
+        assertTrue(all.get(0).getTags().contains("anotherTag1"));
     }
 
 }

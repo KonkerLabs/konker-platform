@@ -167,7 +167,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
         devices.add(device1);
         devices.add(device2);
 
-        when(deviceRegisterService.findAll(tenant, application))
+        when(deviceRegisterService.search(tenant, application, null))
                 .thenReturn(ServiceResponseBuilder.<List<Device>>ok().withResult(devices).build());
 
         when(applicationService.getByApplicationName(tenant, application.getName()))
@@ -195,9 +195,42 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     }
 
     @Test
+    public void shouldListDevicesFilterByTag() throws Exception {
+
+        List<Device> devices = new ArrayList<>();
+        devices.add(device1);
+        devices.add(device2);
+
+        when(deviceRegisterService.search(tenant, application, "red"))
+                .thenReturn(ServiceResponseBuilder.<List<Device>>ok().withResult(devices).build());
+
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+                .thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
+        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/?tag=red", application.getName(), BASEPATH))
+                .contentType("application/json")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/json;charset=UTF-8"))
+                .andExpect(jsonPath("$.code", is(HttpStatus.OK.value())))
+                .andExpect(jsonPath("$.status", is("success")))
+                .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
+                .andExpect(jsonPath("$.result", hasSize(2)))
+                .andExpect(jsonPath("$.result[0].id", is("id1")))
+                .andExpect(jsonPath("$.result[0].name", is("name1")))
+                .andExpect(jsonPath("$.result[0].guid", is("guid1")))
+                .andExpect(jsonPath("$.result[0].active", is(true)))
+                .andExpect(jsonPath("$.result[1].id", is("id2")))
+                .andExpect(jsonPath("$.result[1].name", is("name2")))
+                .andExpect(jsonPath("$.result[1].guid", is("guid2")))
+                .andExpect(jsonPath("$.result[1].active", is(false)));
+
+
+    }
+
+    @Test
     public void shouldTryListDevicesWithInternalError() throws Exception {
 
-        when(deviceRegisterService.findAll(tenant, application))
+        when(deviceRegisterService.search(tenant, application, null))
                 .thenReturn(ServiceResponseBuilder.<List<Device>>error().build());
 
         when(applicationService.getByApplicationName(tenant, application.getName()))
