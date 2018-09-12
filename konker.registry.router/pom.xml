@@ -222,7 +222,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <finalName>registry-data-router</finalName>
+                    <finalName>registry-router</finalName>
                 </configuration>
             </plugin>
             <plugin>
