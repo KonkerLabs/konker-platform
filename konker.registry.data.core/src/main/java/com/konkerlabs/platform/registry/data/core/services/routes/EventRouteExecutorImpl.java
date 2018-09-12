@@ -23,10 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.Future;
 
 import static com.konkerlabs.platform.registry.data.core.services.publishers.EventPublisherDevice.DEVICE_MQTT_CHANNEL;
@@ -64,6 +61,10 @@ public class EventRouteExecutorImpl implements EventRouteExecutor {
             return new AsyncResult<>(outEvents);
         }
 
+        if (event.getIncoming().getChannel().equals(EventRouteExecutor.ECHO_CHANNEL)) {
+            rabbitGateway.queueEvent(device, EventRoute.builder().build(), event);
+        }
+
         List<EventRoute> eventRoutes = serviceRoutes.getResult();
         if (eventRoutes.isEmpty()) {
             return new AsyncResult<>(outEvents);
@@ -81,18 +82,20 @@ public class EventRouteExecutorImpl implements EventRouteExecutor {
     @Override
     public void execute(Event event, Device device, EventRoute eventRoute) throws Exception {
         List<Event> outEvents = new ArrayList<>();
-        processEventRoute(event, device, outEvents, eventRoute);
+        processEventRoute(event, outEvents, eventRoute);
 
     }
 
-    private void processEventRoute(Event event, Device device, List<Event> outEvents, EventRoute eventRoute) throws Exception {
+    private void processEventRoute(Event event, List<Event> outEvents, EventRoute eventRoute) throws Exception {
 
         String incomingPayload = event.getPayload();
 
         if (!eventRoute.isActive())
             return;
+
         if (!eventRoute.getIncoming().isApplication()
-                && !eventRoute.getIncoming().getData().get(DEVICE_MQTT_CHANNEL).equals(event.getIncoming().getChannel())) {
+                && !eventRoute.getIncoming().getData().get(DEVICE_MQTT_CHANNEL).equals(event.getIncoming().getChannel())
+                && !EventRouteExecutor.ECHO_CHANNEL.equals(event.getIncoming().getChannel())) {
             LOGGER.debug("Non matching channel for incoming event: {}", event, eventRoute.getTenant().toURI(), eventRoute.getTenant().getLogLevel());
             return;
         }

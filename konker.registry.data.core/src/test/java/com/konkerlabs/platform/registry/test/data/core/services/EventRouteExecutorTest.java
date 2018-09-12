@@ -24,6 +24,8 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpHeaders;
@@ -34,6 +36,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.thymeleaf.spring4.SpringTemplateEngine;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.net.URI;
 import java.time.Instant;
 import java.util.List;
@@ -44,8 +49,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
@@ -75,7 +79,8 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
     private EventRouteExecutor subject;
     @Autowired
     private HttpGateway httpGateway;
-
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
     @Autowired
     private TenantRepository tenantRepository;
     @Autowired
@@ -155,6 +160,7 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
     @After
     public void tearDown() {
         Mockito.reset(httpGateway);
+        Mockito.reset(rabbitTemplate);
     }
 
     @Test
@@ -173,6 +179,8 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
 
         Future<List<Event>> eventFuture = subject.execute(event, device);
         assertThat(eventFuture.get(), notNullValue());
+
+        verify(rabbitTemplate, times(2)).convertAndSend(Mockito.anyString(), Mockito.any(Message.class));
     }
 
     @Test
@@ -193,10 +201,43 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
 
         Future<List<Event>> eventFuture = subject.execute(event, device);
         assertThat(eventFuture.get(), notNullValue());
+
+        verify(rabbitTemplate, times(2)).convertAndSend(Mockito.anyString(), Mockito.any(Message.class));
     }
 
     @Test
-    public void shouldntSendAnyEventsForANonmatchingRoute() throws Exception {
+    @UsingDataSet(locations = {
+            "/fixtures/tenants.json",
+            "/fixtures/applications.json",
+            "/fixtures/devices.json"})
+    public void shouldSendAnyEventsForEchoChannel() throws Exception {
+        Device device = Device.builder()
+                .tenant(tenant)
+                .application(application)
+                .deviceModel(deviceModel)
+                .guid(nonMatchingFilterDeviceId)
+                .build();
+
+        event.getIncoming().setChannel("_echo");
+
+        Future<List<Event>> eventFuture = subject.execute(event, device);
+        assertThat(eventFuture.get(), notNullValue());
+
+        verify(rabbitTemplate, times(1)).convertAndSend(Mockito.anyString(), Mockito.any(Message.class));
+    }
+
+    private byte[] toByteArray(Event event) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+        ObjectOutputStream oos = new ObjectOutputStream(baos);
+        oos.writeObject(event);
+        oos.flush();
+
+        return baos.toByteArray();
+    }
+
+    @Test
+    public void shouldNotSendAnyEventsForANonmatchingRoute() throws Exception {
         Device device = Device.builder()
                 .tenant(tenant)
                 .application(application)
@@ -209,7 +250,7 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldntSendAnyEventsForANonMatchingIncomingDevice() throws Exception {
+    public void shouldNotSendAnyEventsForANonMatchingIncomingDevice() throws Exception {
         Device device = Device.builder()
                 .tenant(tenant)
                 .application(application)
@@ -222,7 +263,7 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldntSendAnyEventsForANonMatchingIncomingChannel() throws Exception {
+    public void shouldNotSendAnyEventsForANonMatchingIncomingChannel() throws Exception {
         Device device = Device.builder()
                 .tenant(tenant)
                 .application(application)
@@ -236,7 +277,7 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldntSendAnyEventsForANonActiveRoute() throws Exception {
+    public void shouldNotSendAnyEventsForANonActiveRoute() throws Exception {
         Device device = Device.builder()
                 .tenant(tenant)
                 .application(application)
@@ -249,7 +290,7 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldntSendAnyEventsForMalformedExpressionFilter() throws Exception {
+    public void shouldNotSendAnyEventsForMalformedExpressionFilter() throws Exception {
         Device device = Device.builder()
                 .tenant(tenant)
                 .application(application)
@@ -260,7 +301,7 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
         assertThat(eventFuture, notNullValue());
         assertThat(eventFuture.get(), hasSize(0));
     }
-    
+
     static class EventRouteExecutorTestConfig {
     	@Bean
     	public TenantDailyUsageRepository tenantDailyUsageRepository() {
