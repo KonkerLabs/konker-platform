@@ -14,7 +14,7 @@ WORKDIR $KONKER_BASE
 COPY docker-resources/docker-entrypoint.sh /
 RUN chmod 777 /docker-entrypoint.sh
 
-COPY docker-resources/build/registry-data-router.jar /var/lib/konker/
+COPY docker-resources/build/registry-router.jar /var/lib/konker/
 COPY docker-resources/build/application.conf /var/lib/konker/
 COPY docker-resources/build/logback.xml /var/lib/konker/
 
