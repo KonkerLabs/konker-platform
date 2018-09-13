@@ -48,12 +48,15 @@ public class DeviceRestController extends AbstractRestController implements Init
     @ApiOperation(
             value = "List all devices by application",
             response = DeviceVO.class)
-    public List<DeviceVO> list(@PathVariable("application") String applicationId) throws BadServiceResponseException, NotFoundResponseException {
+    public List<DeviceVO> list(
+            @PathVariable("application") String applicationId,
+            @ApiParam(value = "Tag filter")
+            @RequestParam(required = false) String tag) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
 
-        ServiceResponse<List<Device>> deviceResponse = deviceRegisterService.findAll(tenant, application);
+        ServiceResponse<List<Device>> deviceResponse = deviceRegisterService.search(tenant, application, tag);
 
         if (!deviceResponse.isOk()) {
             throw new BadServiceResponseException( deviceResponse, validationsCode);
