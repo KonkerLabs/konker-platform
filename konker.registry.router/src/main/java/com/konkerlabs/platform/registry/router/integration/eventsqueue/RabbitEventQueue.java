@@ -13,20 +13,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class RabbitEventQueue {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RabbitEventQueue.class);
-
-    @Autowired
-    private RabbitTemplate rabbitTemplate;
 
     @Autowired
     private EventRouteExecutor eventRouteExecutor;
@@ -47,6 +45,15 @@ public class RabbitEventQueue {
         Device device = deviceRegisterService.findByApiKey(apiKey);
 
         if (device != null) {
+
+            // _echo channel
+            if (eventRouteGuid == null &&
+                    event.getIncoming().getChannel().equals(EventRouteExecutor.ECHO_CHANNEL)) {
+                eventRouteExecutor.execute(event, device, getEchoEvent(event, device));
+                return;
+            }
+
+            // event route
             ServiceResponse<EventRoute> response = eventRouteService.getByGUID(
                     device.getTenant(),
                     device.getApplication(),
@@ -55,6 +62,40 @@ public class RabbitEventQueue {
             if (response.isOk()) {
                 eventRouteExecutor.execute(event, device, response.getResult());
             }
+        }
+
+    }
+
+    private EventRoute getEchoEvent(Event event, Device device) {
+        if (event.getIncoming().getChannel().equals(EventRouteExecutor.ECHO_CHANNEL)) {
+            Map<String, String> data = new HashMap<>();
+            data.put(EventRoute.DEVICE_MQTT_CHANNEL, EventRouteExecutor.ECHO_CHANNEL);
+
+            EventRoute eventRoute = EventRoute
+                    .builder()
+                    .name(EventRouteExecutor.ECHO_CHANNEL)
+                    .incoming(
+                            EventRoute.RouteActor
+                                    .builder()
+                                    .uri(device.toURI())
+                                    .data(data)
+                                    .build()
+                    )
+                    .outgoing(
+                            EventRoute.RouteActor
+                                    .builder()
+                                    .uri(device.toURI())
+                                    .data(data)
+                                    .build()
+                    )
+                    .tenant(device.getTenant())
+                    .application(device.getApplication())
+                    .active(true)
+                    .build();
+
+            return eventRoute;
+        } else {
+            return null;
         }
     }
 
