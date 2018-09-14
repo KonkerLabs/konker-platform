@@ -184,6 +184,8 @@ public interface DeviceRegisterService {
 	 */
 	ServiceResponse<List<Device>> findAll(Tenant tenant, Application application);
 
+	ServiceResponse<List<Device>> search(Tenant tenant, Application application, String tag);
+
 	ServiceResponse<Long> countAll(Tenant tenant, Application application);
 
 	/**

@@ -11,6 +11,8 @@ import com.konkerlabs.platform.registry.business.model.Event;
 
 public interface EventRouteExecutor {
 
+    String ECHO_CHANNEL = "_echo";
+
     @Async
     Future<List<Event>> execute(Event incomingEvent, Device device);
 
