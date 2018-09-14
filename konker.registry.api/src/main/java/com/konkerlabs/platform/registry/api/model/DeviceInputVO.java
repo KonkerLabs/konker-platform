@@ -26,7 +26,9 @@ public class DeviceInputVO {
     protected String deviceModelName;
     @ApiModelProperty(example = "true", position = 6)
     protected boolean active = true;
-    @ApiModelProperty(value = "the tags of  the device", position = 7)
+    @ApiModelProperty(example = "false", position = 7)
+    protected boolean debug;
+    @ApiModelProperty(value = "the tags of  the device", position = 8)
     protected Set<String> tags;
 
 }

@@ -56,6 +56,19 @@
         </div>
         <div class="form-group">
             <label class="col-sm-1 control-label"
+                   data-th-text="#{devices.form.debug}"
+                   for="debug"></label>
+            <div class="col-sm-4">
+                <label class="switch">
+                    <input type="checkbox"
+                           data-th-field="${device.debug}"
+                           id="debug"
+                           name="debug"/>
+                </label>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-1 control-label"
                    data-th-text="#{devices.show.active}"
                    for="active"></label>
             <div class="col-sm-4">

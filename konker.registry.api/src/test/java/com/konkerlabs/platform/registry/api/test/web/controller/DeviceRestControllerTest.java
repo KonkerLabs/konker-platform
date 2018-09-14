@@ -111,6 +111,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .location(locationBR)
                 .application(application)
                 .active(true)
+                .debug(true)
                 .registrationDate(registrationDate)
                 .lastModificationDate(registrationDate)
                 .tags(tags)
@@ -189,7 +190,8 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .andExpect(jsonPath("$.result[1].id", is("id2")))
                 .andExpect(jsonPath("$.result[1].name", is("name2")))
                 .andExpect(jsonPath("$.result[1].guid", is("guid2")))
-                .andExpect(jsonPath("$.result[1].active", is(false)));
+                .andExpect(jsonPath("$.result[1].active", is(false)))
+                .andExpect(jsonPath("$.result[1].debug", is(false)));
 
 
     }
@@ -222,7 +224,8 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .andExpect(jsonPath("$.result[1].id", is("id2")))
                 .andExpect(jsonPath("$.result[1].name", is("name2")))
                 .andExpect(jsonPath("$.result[1].guid", is("guid2")))
-                .andExpect(jsonPath("$.result[1].active", is(false)));
+                .andExpect(jsonPath("$.result[1].active", is(false)))
+                .andExpect(jsonPath("$.result[1].debug", is(false)));
 
 
     }
@@ -270,7 +273,8 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .andExpect(jsonPath("$.result.id", is("id1")))
                 .andExpect(jsonPath("$.result.name", is("name1")))
                 .andExpect(jsonPath("$.result.guid", is("guid1")))
-                .andExpect(jsonPath("$.result.active", is(true)));
+                .andExpect(jsonPath("$.result.active", is(true)))
+                .andExpect(jsonPath("$.result.debug", is(true)));
 
     }
 
@@ -436,7 +440,8 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .andExpect(jsonPath("$.result.name", is("name1")))
                 .andExpect(jsonPath("$.result.guid", is("guid1")))
                 .andExpect(jsonPath("$.result.locationName", is("br")))
-                .andExpect(jsonPath("$.result.active", is(true)));
+                .andExpect(jsonPath("$.result.active", is(true)))
+                .andExpect(jsonPath("$.result.debug", is(true)));
 
     }
 
@@ -500,7 +505,8 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .andExpect(jsonPath("$.result.name", is("name1")))
                 .andExpect(jsonPath("$.result.guid", is("guid1")))
                 .andExpect(jsonPath("$.result.tags", is(Arrays.asList("tag1", "tag2"))))
-                .andExpect(jsonPath("$.result.active", is(true)));
+                .andExpect(jsonPath("$.result.active", is(true)))
+                .andExpect(jsonPath("$.result.debug", is(true)));
 
 
     }
@@ -747,7 +753,8 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .andExpect(jsonPath("$.result.name", is("name1")))
                 .andExpect(jsonPath("$.result.guid", is("guid1")))
                 .andExpect(jsonPath("$.result.locationName", is("br")))
-                .andExpect(jsonPath("$.result.active", is(true)));
+                .andExpect(jsonPath("$.result.active", is(true)))
+                .andExpect(jsonPath("$.result.debug", is(true)));
 
     }
 
