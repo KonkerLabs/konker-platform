@@ -1,4 +1,4 @@
-package com.konkerlabs.platform.registry.data.config;
+package com.konkerlabs.platform.registry.router.config;
 
 import com.konkerlabs.platform.registry.data.core.config.SecurityConfig;
 import org.springframework.context.MessageSource;
@@ -18,7 +18,7 @@ import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 @Configuration
 @EnableWebMvc
 @ComponentScan(lazyInit = true, basePackages = {
-        "com.konkerlabs.platform.registry.integration.endpoints"
+        "com.konkerlabs.platform.registry.router.integration"
 })
 @Import({SecurityConfig.class})
 public class WebMvcConfig extends WebMvcConfigurerAdapter {
