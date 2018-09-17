@@ -18,6 +18,7 @@ import com.konkerlabs.platform.registry.data.core.services.JedisTaskService;
 import com.konkerlabs.platform.registry.data.core.integration.gateway.HttpGateway;
 import com.konkerlabs.platform.registry.business.model.enumerations.FirmwareUpdateStatus;
 import com.konkerlabs.platform.registry.business.services.api.*;
+import com.konkerlabs.platform.registry.data.core.services.routes.api.EventRouteExecutor;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
 import com.konkerlabs.platform.registry.integration.serializers.EventJsonView;
 import com.konkerlabs.platform.registry.integration.serializers.EventVO;
@@ -230,8 +231,19 @@ public class DeviceEventRestEndpoint {
 		if (servletRequest.getHeader(HttpGateway.KONKER_VERSION_HEADER) != null)
 			return new ResponseEntity<EventResponse>(buildResponse(Messages.INVALID_REQUEST_ORIGIN.getCode(), locale), HttpStatus.FORBIDDEN);
 
+		String clientIP = servletRequest.getHeader("X-FORWARDED-FOR");
+		if (clientIP == null || "".equals(clientIP)) {
+		    clientIP = servletRequest.getRemoteAddr();
+        }
+
         try {
             deviceEventProcessor.process(apiKey,channel,body);
+
+            if (principal.isDebug()) {
+                deviceEventProcessor.process(apiKey,
+                        EventRouteExecutor.DEBUG_CHANNEL,
+                        "{\"sourceIP\" : \"" + clientIP + "\"}");
+            }
         } catch (BusinessException e) {
             return new ResponseEntity<EventResponse>(buildResponse(e.getMessage(),locale),HttpStatus.BAD_REQUEST);
         }

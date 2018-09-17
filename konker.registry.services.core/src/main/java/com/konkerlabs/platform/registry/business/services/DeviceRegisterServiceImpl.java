@@ -334,6 +334,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         deviceFromDB.setLocation(updatingDevice.getLocation());
         deviceFromDB.setDeviceModel(updatingDevice.getDeviceModel());
         deviceFromDB.setActive(updatingDevice.isActive());
+        deviceFromDB.setDebug(updatingDevice.isDebug());
         deviceFromDB.setLastModificationDate(Instant.now());
 
         Optional<Map<String, Object[]>> validations = deviceFromDB.applyValidations();

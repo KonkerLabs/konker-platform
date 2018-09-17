@@ -11,6 +11,7 @@ public class DeviceRegistrationForm implements ModelBuilder<Device,DeviceRegistr
     private String name;
     private String description;
     private String guid;
+    private boolean debug;
     private boolean active;
     
     public DeviceRegistrationForm() {
@@ -25,6 +26,7 @@ public class DeviceRegistrationForm implements ModelBuilder<Device,DeviceRegistr
                 .description(getDescription())
                 .guid(getGuid())
                 .active(isActive())
+                .debug(isDebug())
                 .build();
     }
 
@@ -35,6 +37,7 @@ public class DeviceRegistrationForm implements ModelBuilder<Device,DeviceRegistr
         this.setDescription(model.getDescription());
         this.setActive(model.isActive());
         this.setGuid(model.getGuid());
+        this.setDebug(model.isDebug());
         return this;
     }
 }

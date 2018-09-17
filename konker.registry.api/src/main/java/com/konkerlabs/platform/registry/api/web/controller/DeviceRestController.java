@@ -183,6 +183,7 @@ public class DeviceRestController extends AbstractRestController implements Init
         deviceFromDB.setLocation(location);
         deviceFromDB.setDeviceModel(deviceModel);
         deviceFromDB.setActive(deviceForm.isActive());
+        deviceFromDB.setDebug(deviceForm.isDebug());
 
         ServiceResponse<Device> updateResponse = deviceRegisterService.update(tenant, application, deviceGuid, deviceFromDB);
 
