@@ -71,7 +71,7 @@ public class EventRouteExecutorImpl implements EventRouteExecutor {
         }
 
         eventRoutes.parallelStream().forEach((eventRoute) -> {
-            if (isEventRouteDeviceMatch(eventRoute, device)) {
+            if (isEventRouteDeviceMatch(eventRoute, device, event)) {
                 rabbitGateway.queueEvent(device, eventRoute, event);
             }
         });
@@ -129,7 +129,11 @@ public class EventRouteExecutorImpl implements EventRouteExecutor {
 
     }
 
-    private boolean isEventRouteDeviceMatch(EventRoute eventRoute, Device device) {
+    private boolean isEventRouteDeviceMatch(EventRoute eventRoute, Device device, Event event) {
+
+        if (event.getIncoming().getChannel().equals(DEBUG_CHANNEL)) {
+            return false;
+        }
 
         // match device actor
         if (eventRoute.getIncoming().getUri().equals(device.toURI())) {
