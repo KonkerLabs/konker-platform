@@ -276,40 +276,40 @@ public class DeviceEventProcessorTest {
         verify(eventRouteExecutor, times(1)).execute(any(Event.class), any(Device.class));
         verify(deviceLogEventService, times(1)).logIncomingEvent(any(Device.class), any(Event.class));
     }
-    
-	@Test
+
+    @Test
     public void shouldRaiseAnExceptionNoDeviceProcessGateway() throws Exception {
-    	
-    	when(jsonParsingService.toListMap(listJson)).thenReturn(devicesEvent);
-    	when(deviceRegisterService.findByDeviceId(gateway.getTenant(), gateway.getApplication(), "CurrentSensor"))
-    		.thenReturn(ServiceResponseBuilder.<Device>error().build());
-    	when(deviceRegisterService.findByDeviceId(gateway.getTenant(), gateway.getApplication(), "TempSensor"))
-    		.thenReturn(ServiceResponseBuilder.<Device>error().build());
-    	when(deviceLogEventService.logIncomingEvent(eq(device), any()))
-    		.thenReturn(ServiceResponseBuilder.<Event>ok().withResult(event).build());
-    	
-    	subject.process(gateway, listJson);
-    	
-    	verify(eventRouteExecutor, times(0)).execute(any(Event.class), any(Device.class));
+
+        when(jsonParsingService.toListMap(listJson)).thenReturn(devicesEvent);
+        when(deviceRegisterService.findByDeviceId(gateway.getTenant(), gateway.getApplication(), "CurrentSensor"))
+                .thenReturn(ServiceResponseBuilder.<Device>error().build());
+        when(deviceRegisterService.findByDeviceId(gateway.getTenant(), gateway.getApplication(), "TempSensor"))
+                .thenReturn(ServiceResponseBuilder.<Device>error().build());
+        when(deviceLogEventService.logIncomingEvent(eq(device), any()))
+                .thenReturn(ServiceResponseBuilder.<Event>ok().withResult(event).build());
+
+        subject.process(gateway, listJson);
+
+        verify(eventRouteExecutor, times(0)).execute(any(Event.class), any(Device.class));
         verify(deviceLogEventService, times(0)).logIncomingEvent(any(Device.class), any(Event.class));
     }
-	
-	@Test
+
+    @Test
     public void shouldRaiseAnExceptionDiferentLocationProcessGateway() throws Exception {
-    	when(jsonParsingService.toListMap(listJson)).thenReturn(devicesEvent);
-    	when(deviceRegisterService.findByDeviceId(gateway.getTenant(), gateway.getApplication(), "CurrentSensor"))
-    		.thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device).build());
-    	when(deviceRegisterService.findByDeviceId(gateway.getTenant(), gateway.getApplication(), "TempSensor"))
-    		.thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device).build());
-    	when(deviceLogEventService.logIncomingEvent(eq(device), any()))
-    		.thenReturn(ServiceResponseBuilder.<Event>ok().withResult(event).build());
-    	
-    	subject.process(gateway, listJson);
-    	
-    	verify(eventRouteExecutor, times(0)).execute(any(Event.class), any(Device.class));
+        when(jsonParsingService.toListMap(listJson)).thenReturn(devicesEvent);
+        when(deviceRegisterService.findByDeviceId(gateway.getTenant(), gateway.getApplication(), "CurrentSensor"))
+                .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device).build());
+        when(deviceRegisterService.findByDeviceId(gateway.getTenant(), gateway.getApplication(), "TempSensor"))
+                .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device).build());
+        when(deviceLogEventService.logIncomingEvent(eq(device), any()))
+                .thenReturn(ServiceResponseBuilder.<Event>ok().withResult(event).build());
+
+        subject.process(gateway, listJson);
+
+        verify(eventRouteExecutor, times(0)).execute(any(Event.class), any(Device.class));
         verify(deviceLogEventService, times(0)).logIncomingEvent(any(Device.class), any(Event.class));
     }
-    
+
     @SuppressWarnings("unchecked")
 	@Test
     public void shouldProcessGatewayEvent() throws Exception {
@@ -342,6 +342,74 @@ public class DeviceEventProcessorTest {
     	subject.process(gateway, listJson);
     	
     	verify(eventRouteExecutor, times(2)).execute(any(Event.class), any(Device.class));
+        verify(deviceLogEventService, times(2)).logIncomingEvent(any(Device.class), any(Event.class));
+    }
+
+    @Test
+    public void shouldRaiseAnExceptionNoDeviceProcessGatewayData() throws Exception {
+
+        when(jsonParsingService.toListMap(listJson)).thenReturn(devicesEvent);
+        when(deviceRegisterService.findByDeviceId(gateway.getTenant(), gateway.getApplication(), "CurrentSensor"))
+                .thenReturn(ServiceResponseBuilder.<Device>error().build());
+        when(deviceRegisterService.findByDeviceId(gateway.getTenant(), gateway.getApplication(), "TempSensor"))
+                .thenReturn(ServiceResponseBuilder.<Device>error().build());
+        when(deviceLogEventService.logIncomingEvent(eq(device), any()))
+                .thenReturn(ServiceResponseBuilder.<Event>ok().withResult(event).build());
+
+        subject.process(gateway, listJson, "imei", "canal");
+
+        verify(eventRouteExecutor, times(0)).execute(any(Event.class), any(Device.class));
+        verify(deviceLogEventService, times(0)).logIncomingEvent(any(Device.class), any(Event.class));
+    }
+
+    @Test
+    public void shouldRaiseAnExceptionDiferentLocationProcessGatewayData() throws Exception {
+        when(jsonParsingService.toListMap(listJson)).thenReturn(devicesEvent);
+        when(deviceRegisterService.findByDeviceId(gateway.getTenant(), gateway.getApplication(), "CurrentSensor"))
+                .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device).build());
+        when(deviceRegisterService.findByDeviceId(gateway.getTenant(), gateway.getApplication(), "TempSensor"))
+                .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device).build());
+        when(deviceLogEventService.logIncomingEvent(eq(device), any()))
+                .thenReturn(ServiceResponseBuilder.<Event>ok().withResult(event).build());
+
+        subject.process(gateway, listJson, "imei", "canal");
+
+        verify(eventRouteExecutor, times(0)).execute(any(Event.class), any(Device.class));
+        verify(deviceLogEventService, times(0)).logIncomingEvent(any(Device.class), any(Event.class));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void shouldProcessGatewayEventData() throws Exception {
+        device.setLocation(gateway.getLocation());
+
+        when(jsonParsingService.toListMap(listJson)).thenReturn(devicesEvent);
+        when(jsonParsingService.toJsonString((Map<String, Object>) devicesEvent.get(0).get("payload"))).thenReturn("{ "+
+                " 	\"_lon\": -46.6910183, "+
+                "	\"_lat\": -23.5746571,  "+
+                "	\"_hdop\": 10,  "+
+                "	\"_elev\": 3.66,  "+
+                "	\"_ts\": \"1510847419000\", "+
+                "	\"volts\": 12  "+
+                "	}");
+        when(jsonParsingService.toJsonString((Map<String, Object>) devicesEvent.get(1).get("payload"))).thenReturn(" { "+
+                "	\"_lon\": -46.6910183, "+
+                "	\"_lat\": -23.5746571,  "+
+                "	\"_hdop\": 10,  "+
+                "	\"_elev\": 3.66,  "+
+                "	\"_ts\": \"1510847419000\", "+
+                "	\"temperature\": 27  "+
+                "	}");
+        when(deviceRegisterService.findByDeviceId(gateway.getTenant(), gateway.getApplication(), "CurrentSensor"))
+                .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device).build());
+        when(deviceRegisterService.findByDeviceId(gateway.getTenant(), gateway.getApplication(), "TempSensor"))
+                .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device).build());
+        when(deviceLogEventService.logIncomingEvent(eq(device), any()))
+                .thenReturn(ServiceResponseBuilder.<Event>ok().withResult(event).build());
+
+        subject.process(gateway, listJson, "imei", "canal");
+
+        verify(eventRouteExecutor, times(2)).execute(any(Event.class), any(Device.class));
         verify(deviceLogEventService, times(2)).logIncomingEvent(any(Device.class), any(Event.class));
     }
     

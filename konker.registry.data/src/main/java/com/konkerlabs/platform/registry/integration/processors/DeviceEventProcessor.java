@@ -130,9 +130,9 @@ public class DeviceEventProcessor {
     	for (Map<String, Object> payloadGateway : payloadsGateway) {
     		ServiceResponse<Device> result = deviceRegisterService.findByDeviceId(
     				gateway.getTenant(), 
-    				gateway.getApplication(), 
+    				gateway.getApplication(),
     				payloadGateway.get("deviceId").toString());
-    		
+
     		if (result.isOk() && Optional.ofNullable(result.getResult()).isPresent()) {
     			Device device = result.getResult();
     			
@@ -146,8 +146,8 @@ public class DeviceEventProcessor {
     								ingestedTimestamp;
     				
     				process(
-    						device, 
-    						payloadGateway.get("channel").toString(), 
+    						device,
+    						payloadGateway.get("channel").toString(),
     						jsonParsingService.toJsonString(devicePayload),
     						ingestedTimestamp,
     						creationTimestamp);
@@ -167,6 +167,60 @@ public class DeviceEventProcessor {
     		
 		}
     	
+    }
+
+    public void process(Gateway gateway, String payloadList, String deviceIdFieldName, String deviceChannelFieldName) throws BusinessException, JsonProcessingException {
+        List<Map<String, Object>> payloadsGateway = jsonParsingService.toListMap(payloadList);
+
+        for (Map<String, Object> payloadDevice : payloadsGateway) {
+            ServiceResponse<Device> result = deviceRegisterService.findByDeviceId(
+                    gateway.getTenant(),
+                    gateway.getApplication(),
+                    payloadDevice.get(deviceIdFieldName).toString());
+
+            if (!result.isOk()) {
+                result = deviceRegisterService.register(
+                        gateway.getTenant(),
+                        gateway.getApplication(),
+                        Device.builder()
+                                .deviceId(payloadDevice.get(deviceIdFieldName).toString())
+                                .name(payloadDevice.get(deviceIdFieldName).toString())
+                                .active(true)
+                                .build());
+            }
+
+            if (result.isOk() && Optional.ofNullable(result.getResult()).isPresent()) {
+                Device device = result.getResult();
+
+                if (isValidAuthority(gateway, device)) {
+                    Instant ingestedTimestamp = Instant.now();
+                    Instant creationTimestamp = payloadDevice.containsKey("ts")
+                            && integerPattern.matcher(payloadDevice.get("ts").toString()).matches() ?
+                            Instant.ofEpochMilli(new Long(payloadDevice.get("ts").toString())) :
+                            ingestedTimestamp;
+
+                    process(
+                            device,
+                            payloadDevice.get(deviceChannelFieldName).toString(),
+                            jsonParsingService.toJsonString(payloadDevice),
+                            ingestedTimestamp,
+                            creationTimestamp);
+                } else {
+                    LOGGER.warn(MessageFormat.format("The gateway does not have authority over the device: {0}",
+                            device.getName()),
+                            gateway.toURI(),
+                            gateway.getTenant().getLogLevel());
+                }
+            } else {
+                LOGGER.debug(MessageFormat.format(GATEWAY_EVENT_DROPPED,
+                        gateway.toURI(),
+                        payloadList),
+                        gateway.toURI(),
+                        gateway.getTenant().getLogLevel());
+            }
+
+        }
+
     }
     
     public void process(Device device, String channel, String jsonPayload, Instant ingestedTimestamp, Instant creationTimestamp) throws BusinessException {

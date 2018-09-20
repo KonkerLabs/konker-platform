@@ -99,6 +99,35 @@ public class GatewayEventRestEndpoint {
         		HttpStatus.OK);
     }
 
+    @RequestMapping(value = "gateway/data/pub", method = RequestMethod.POST)
+    public ResponseEntity<EventResponse> onDataEvent(HttpServletRequest servletRequest,
+                                                 OAuth2Authentication oAuth2Authentication,
+                                                 @RequestBody String body,
+                                                 Locale locale) {
+        String principal = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        OauthClientDetails clientDetails = oAuthClientDetailsService.loadClientByIdAsRoot(principal).getResult();
+        Gateway gateway = clientDetails.getParentGateway();
+        String deviceIdFieldName = servletRequest.getHeader("X-Konker-DeviceIdField");
+        String deviceChannelFieldName = servletRequest.getHeader("X-Konker-DeviceChannelField");
+
+        if (!jsonParsingService.isValid(body))
+            return new ResponseEntity<EventResponse>(buildResponse(Messages.INVALID_REQUEST_BODY.getCode(),locale), HttpStatus.BAD_REQUEST);
+
+        if (servletRequest.getHeader(HttpGateway.KONKER_VERSION_HEADER) != null)
+            return new ResponseEntity<EventResponse>(buildResponse(Messages.INVALID_REQUEST_ORIGIN.getCode(), locale), HttpStatus.FORBIDDEN);
+
+        try {
+            deviceEventProcessor.process(gateway, body, deviceIdFieldName, deviceChannelFieldName);
+        } catch (BusinessException | JsonProcessingException e) {
+            return new ResponseEntity<EventResponse>(buildResponse(e.getMessage(),locale),HttpStatus.BAD_REQUEST);
+        }
+
+        return new ResponseEntity<EventResponse>(
+                EventResponse.builder().code(String.valueOf(HttpStatus.OK.value()))
+                        .message(HttpStatus.OK.name()).build(),
+                HttpStatus.OK);
+    }
+
     @Data
     @Builder
     static class EventResponse {
