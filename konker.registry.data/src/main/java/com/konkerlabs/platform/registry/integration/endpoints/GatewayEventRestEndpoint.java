@@ -34,7 +34,9 @@ public class GatewayEventRestEndpoint {
         INVALID_WAITTIME("integration.rest.invalid.waitTime"),
         INVALID_CHANNEL_PATTERN("integration.rest.invalid.channel"),
     	DEVICE_NOT_FOUND("integration.event_processor.channel.not_found"),
-    	INVALID_REQUEST_ORIGIN("integration.rest.invalid_request_origin");
+    	INVALID_REQUEST_ORIGIN("integration.rest.invalid_request_origin"),
+        INVALID_HEADER_DEVICE_ID_FIELD("integration.rest.invalid.device_id_field"),
+        INVALID_HEADER_DEVICE_CHANNEL_FIELD("integration.rest.invalid.device_channel_field");
 
         private String code;
 
@@ -115,6 +117,14 @@ public class GatewayEventRestEndpoint {
 
         if (servletRequest.getHeader(HttpGateway.KONKER_VERSION_HEADER) != null)
             return new ResponseEntity<EventResponse>(buildResponse(Messages.INVALID_REQUEST_ORIGIN.getCode(), locale), HttpStatus.FORBIDDEN);
+
+        if (deviceIdFieldName == null) {
+            return new ResponseEntity<EventResponse>(buildResponse(Messages.INVALID_HEADER_DEVICE_ID_FIELD.getCode(),locale), HttpStatus.BAD_REQUEST);
+        }
+
+        if (deviceChannelFieldName == null) {
+            return new ResponseEntity<EventResponse>(buildResponse(Messages.INVALID_HEADER_DEVICE_CHANNEL_FIELD.getCode(),locale), HttpStatus.BAD_REQUEST);
+        }
 
         try {
             deviceEventProcessor.process(gateway, body, deviceIdFieldName, deviceChannelFieldName);
