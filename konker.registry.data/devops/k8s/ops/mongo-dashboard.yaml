@@ -1,0 +1,60 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: mongo-dashboard
+  labels:
+    app: mongo-dashboard    
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo-dashboard
+  template:
+    metadata:
+      labels:
+        app: mongo-dashboard
+    spec:
+      containers:
+        - name: mongo-dashboard
+          image: "mongo-express:latest"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          env:
+          - name: ME_CONFIG_MONGODB_SERVER
+            value: "mongodb"
+          - name: ME_CONFIG_MONGODB_PORT
+            value: !!integer 27017
+          - name: ME_CONFIG_MONGODB_AUTH_USERNAME
+            value: "root"
+          - name: ME_CONFIG_MONGODB_AUTH_PASSWORD
+            value: "srB0/GGASiTDlg=="
+          - name: ME_CONFIG_MONGODB_AUTH_DATABASE
+            value: "admin"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-dashboard
+  labels:
+    app: mongo-dashboard
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: mongo-dashboard
