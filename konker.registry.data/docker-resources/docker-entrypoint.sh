@@ -2,6 +2,16 @@
 
 set -e
 
+## Force default ports
+REDIS_PORT=6379
+CASSANDRA_PORT=9042
+MONGODB_PORT=27017
+MONGODB_AUDIT_PORT=27017
+PUB_SERVER_HTTP_PORT=80
+PUB_SERVER_HTTPS_PORT=443
+PUB_SERVER_SSL_ENABLED=true
+SMS_ENABLED=true
+
 echo ""
 echo ""
 echo "################################### Konker Open Platform - DATA ###################################"
@@ -65,10 +75,11 @@ echo "#### username: *******"
 echo "#### password: *******"
 echo "#### from: $SMS_FROM"
 
+
+
 /filebeat/filebeat -e -c /filebeat/filebeat.yml &
 /usr/local/sbin/nginx &
-
-java \ 
+java \
     -Dconfig.file=/var/lib/konker/application.conf \
     -Dmongo.hostname=$MONGODB_HOSTNAME \
     -Dmongo.port=$MONGODB_PORT \
@@ -92,7 +103,7 @@ java \
     -Drabbitmq.username=$RABBITMQ_USERNAME \
     -Drabbitmq.password=$RABBITMQ_PASSWORD \
     -Drabbitmq.virtualHost=$RABBITMQ_VHOST \
-    -Dsms.username=$SMS_ENABLED \
+    -Dsms.enabled=$SMS_ENABLED \
     -Dsms.uri=$SMS_URI \
     -Dsms.username=$SMS_USERNAME \
     -Dsms.password=$SMS_PASSWORD \
