@@ -6,10 +6,7 @@ import com.konkerlabs.platform.registry.business.repositories.ApplicationReposit
 import com.konkerlabs.platform.registry.business.repositories.GatewayRepository;
 import com.konkerlabs.platform.registry.business.repositories.LocationRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
-import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
-import com.konkerlabs.platform.registry.business.services.api.GatewayService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.business.services.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,22 +33,25 @@ public class GatewayServiceImpl implements GatewayService {
     private GatewayRepository gatewayRepository;
     @Autowired
     private LocationRepository locationRepository;
+    @Autowired
+    private LocationSearchService locationSearchService;
     private static final Integer maxLocationTreeDeep = 50;
 
     @Override
-    public ServiceResponse<Gateway> save(Tenant tenant, Application application, Gateway route) {
+    public ServiceResponse<Gateway> save(Tenant tenant, Application application, Gateway gateway) {
 
         ServiceResponse<Gateway> validationResponse = validate(tenant, application);
         if (!validationResponse.isOk()) {
             return validationResponse;
         }
 
-        route.setId(null);
-        route.setTenant(tenant);
-        route.setApplication(application);
-        route.setGuid(UUID.randomUUID().toString());
+        gateway.setId(null);
+        gateway.setTenant(tenant);
+        gateway.setApplication(application);
+        gateway.setGuid(UUID.randomUUID().toString());
+        setDefaultLocation(tenant, application, gateway);
 
-        Optional<Map<String, Object[]>> validations = route.applyValidations();
+        Optional<Map<String, Object[]>> validations = gateway.applyValidations();
 
         if (validations.isPresent()) {
             return ServiceResponseBuilder.<Gateway>error()
@@ -60,16 +60,30 @@ public class GatewayServiceImpl implements GatewayService {
 
         if (Optional.ofNullable(gatewayRepository.findByName(tenant.getId(),
                 application.getName(),
-                route.getName())).isPresent()) {
+                gateway.getName())).isPresent()) {
             return ServiceResponseBuilder.<Gateway>error()
                     .withMessage(Validations.NAME_IN_USE.getCode()).build();
         }
 
-        Gateway saved = gatewayRepository.save(route);
+        Gateway saved = gatewayRepository.save(gateway);
 
-        LOGGER.info("Gateway created. Name: {}", route.getName(), tenant.toURI(), tenant.getLogLevel());
+        LOGGER.info("Gateway created. Name: {}", gateway.getName(), tenant.toURI(), tenant.getLogLevel());
 
         return ServiceResponseBuilder.<Gateway>ok().withResult(saved).build();
+    }
+
+    private void setDefaultLocation(Tenant tenant, Application application, Gateway gateway) {
+        if (gateway.getLocation() == null) {
+            ServiceResponse<Location> locationResponse = locationSearchService.findDefault(tenant, application);
+            if (locationResponse.isOk()) {
+                gateway.setLocation(locationResponse.getResult());
+            } else {
+                LOGGER.error("error getting default location",
+                        Device.builder().guid("NULL").tenant(tenant).build().toURI(),
+                        tenant.getLogLevel());
+            }
+        }
+
     }
 
     @Override
