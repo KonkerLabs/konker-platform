@@ -2,6 +2,17 @@
 
 set -e
 
+## Force default ports
+REDIS_PORT=6379
+CASSANDRA_PORT=9042
+MONGODB_PORT=27017
+MONGODB_AUDIT_PORT=27017
+PUB_SERVER_HTTP_PORT=80
+PUB_SERVER_HTTPS_PORT=443
+PUB_SERVER_SSL_ENABLED=true
+SMS_ENABLED=true
+REQUEST_MAXSIZE=99900000
+
 echo ""
 echo ""
 echo "################################### Konker Open Platform - WEB ###################################"
@@ -52,5 +63,25 @@ echo "#### host: $REDIS_HOSTNAME"
 echo "#### port: $REDIS_PORT"
 
 /usr/local/sbin/nginx &
-java -Dorg.eclipse.jetty.server.Request.maxFormContentSize=99900000 -Dconfig.file=/var/lib/jetty/resources/application.conf -Dmongo.hostname=$MONGODB_HOSTNAME -Dmongo.port=$MONGODB_PORT -Dmongo.username=$MONGODB_USERNAME -Dmongo.password=$MONGODB_PASSWORD -DmongoAudit.hostname=$MONGODB_AUDIT_HOSTNAME -DmongoAudit.port=$MONGODB_AUDIT_PORT -DmongoAudit.username=$MONGODB_AUDIR_USERNAME -DmongoAudit.password=$MONGODB_AUDIT_PASSWORD -Deventstorage.bean=$EVENT_STORAGE -Dcassandra.clustername=$CASSANDRA_CLUSTERNAME -Dcassandra.keyspace=$CASSANDRA_KEYSPACE -Dcassandra.hostname=$CASSANDRA_HOSTNAME -Dcassandra.port=$CASSANDRA_PORT -Dcassandra.username=$CASSANDRA_USERNAME -Dcassandra.password=$CASSANDRA_PASSWORD -Dredis.master.host=$REDIS_HOSTNAME -Dredis.master.port=$REDIS_PORT -jar /usr/local/jetty/start.jar
+java \ 
+    -Dorg.eclipse.jetty.server.Request.maxFormContentSize=$REQUEST_MAXSIZE \
+    -Dconfig.file=/var/lib/jetty/resources/application.conf \
+    -Dmongo.hostname=$MONGODB_HOSTNAME \
+    -Dmongo.port=$MONGODB_PORT \
+    -Dmongo.username=$MONGODB_USERNAME \
+    -Dmongo.password=$MONGODB_PASSWORD \
+    -DmongoAudit.hostname=$MONGODB_AUDIT_HOSTNAME \
+    -DmongoAudit.port=$MONGODB_AUDIT_PORT \
+    -DmongoAudit.username=$MONGODB_AUDIR_USERNAME \
+    -DmongoAudit.password=$MONGODB_AUDIT_PASSWORD \
+    -Deventstorage.bean=$EVENT_STORAGE \
+    -Dcassandra.clustername=$CASSANDRA_CLUSTERNAME \
+    -Dcassandra.keyspace=$CASSANDRA_KEYSPACE \
+    -Dcassandra.hostname=$CASSANDRA_HOSTNAME \
+    -Dcassandra.port=$CASSANDRA_PORT \
+    -Dcassandra.username=$CASSANDRA_USERNAME \
+    -Dcassandra.password=$CASSANDRA_PASSWORD \
+    -Dredis.master.host=$REDIS_HOSTNAME \
+    -Dredis.master.port=$REDIS_PORT \
+    -jar /usr/local/jetty/start.jar
 exec "$@"

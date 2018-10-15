@@ -52,13 +52,7 @@ COPY docker-resources/nginx/nginx.conf /etc/nginx/conf/nginx.conf
 COPY docker-resources/nginx/mime.types /etc/nginx/mime.types
 COPY docker-resources/nginx/conf.d /etc/nginx/conf.d
 COPY docker-resources/nginx/favicon.ico /etc/nginx/html/
-COPY docker-resources/nginx/filebeat /filebeat
-COPY docker-resources/nginx/filebeat.yml /filebeat/filebeat.yml
-
-RUN chmod 777 /filebeat/filebeat && \
-    chmod go-w /filebeat/filebeat.yml
 
 #start
 EXPOSE 80
 ENTRYPOINT ["/docker-entrypoint.sh"]
-#CMD ["java","-Dconfig.file=/var/lib/konker/application.conf","-jar","/var/lib/konker/registry-api.jar"]
