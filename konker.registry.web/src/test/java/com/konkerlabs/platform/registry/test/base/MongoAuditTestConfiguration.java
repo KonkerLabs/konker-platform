@@ -17,7 +17,7 @@ public class MongoAuditTestConfiguration extends MongoAuditConfig {
 
     @Override
     @Bean
-    public Mongo mongo() throws Exception {
+    public Mongo mongo() {
         return new Fongo("logs-test").getMongo();
     }
 

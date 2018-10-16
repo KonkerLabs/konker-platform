@@ -107,7 +107,7 @@ public class TransformationServiceImpl
     }
 
     private Optional<Map<String, Object[]>> verifyIfUrlMatchesBlacklist(List<TransformationStep> uriList) {
-        Optional<Map<String, Object[]>> result = null;
+        Optional<Map<String, Object[]>> result = Optional.empty();
         for (TransformationStep uri : uriList) {
 
             result = verifyIfUrlMatchesBlacklist((String) uri.getAttributes().get("url"));
@@ -188,7 +188,7 @@ public class TransformationServiceImpl
 
         if (Optional.ofNullable(transformationRepository
                 .findByName(fromDb.getTenant().getId(), application.getName(), fromDb.getName()))
-                .filter(transformations -> !transformations.isEmpty()).orElseGet(ArrayList<Transformation>::new)
+                .filter(transformations -> !transformations.isEmpty()).orElseGet(ArrayList::new)
                 .stream().anyMatch(transformation1 -> !transformation1.getId().equals(fromDb.getId()))) {
             return ServiceResponseBuilder.<Transformation>error()
                     .withMessage(Validations.TRANSFORMATION_NAME_IN_USE.getCode()).build();
@@ -228,7 +228,7 @@ public class TransformationServiceImpl
                     .withMessage(ApplicationService.Validations.APPLICATION_NOT_FOUND.getCode()).build();
 
         Transformation transformation = transformationRepository.findByGuid(transformationGuid);
-        List<EventRoute> eventRoutes = Collections.emptyList();
+        List<EventRoute> eventRoutes;
 
         if(transformation != null) {
             eventRoutes = eventRouteRepository.findByTransformationId(tenant.getId(),
@@ -244,8 +244,7 @@ public class TransformationServiceImpl
                     .withMessage(Validations.TRANSFORMATION_HAS_ROUTE.getCode()).build();
         }
 
-        if (Optional.ofNullable(transformation).isPresent()
-                && !transformation.getTenant().getId().equals(tenant.getId())) {
+        if (!transformation.getTenant().getId().equals(tenant.getId())) {
             return ServiceResponseBuilder.<Transformation>error()
                     .withMessage(Validations.TRANSFORMATION_BELONG_ANOTHER_TENANT.getCode()).build();
         }

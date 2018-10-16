@@ -124,7 +124,7 @@ public class EventRouteControllerTest extends WebLayerTestContext {
     private String otherRouteGuid = "71fb0d48-674b-4f64-a3e5-0256ff3a63bg";
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         List<Transformation> transformations = new ArrayList<>();
         when(transformationService.getAll(tenant, application)).thenReturn(
                 ServiceResponseBuilder.<List<Transformation>>ok()
@@ -481,7 +481,7 @@ public class EventRouteControllerTest extends WebLayerTestContext {
 
     @Test
     @WithMockUser(authorities={"REMOVE_DEVICE_ROUTE"})
-    public void shoudlRedirectToRouteIndexAfterRouteRemoval() throws Exception {
+    public void shouldRedirectToRouteIndexAfterRouteRemoval() throws Exception {
         newRoute.setGuid(routeGuid);
 
         ServiceResponse<EventRoute> responseDelete = ServiceResponseBuilder.<EventRoute>ok()
@@ -507,7 +507,7 @@ public class EventRouteControllerTest extends WebLayerTestContext {
 
     @Test
     @WithMockUser(authorities={"REMOVE_DEVICE_ROUTE"})
-    public void shoudlReturnMessageAfterTryRemoveInexistentRoute() throws Exception {
+    public void shouldReturnMessageAfterTryRemoveInexistentRoute() throws Exception {
         newRoute.setGuid(otherRouteGuid);
 
         ServiceResponse<EventRoute> responseDelete = ServiceResponseBuilder.<EventRoute>error()

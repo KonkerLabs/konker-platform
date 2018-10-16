@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "konker-registry-helm.fullname" . }}
+  labels:
+    app: {{ include "konker-registry-helm.name" . }}
+    chart: {{ include "konker-registry-helm.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ include "konker-registry-helm.name" . }}
+    release: {{ .Release.Name }}

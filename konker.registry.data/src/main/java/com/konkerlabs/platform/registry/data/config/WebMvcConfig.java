@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.data.config;
 
+import com.konkerlabs.platform.registry.data.core.config.SecurityConfig;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;

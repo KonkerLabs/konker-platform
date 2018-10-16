@@ -1,13 +1,10 @@
 package com.konkerlabs.platform.registry.business.model;
 
-import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import com.konkerlabs.platform.registry.business.services.api.AlertTriggerService;
 import com.konkerlabs.platform.registry.config.HealthAlertsConfig;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

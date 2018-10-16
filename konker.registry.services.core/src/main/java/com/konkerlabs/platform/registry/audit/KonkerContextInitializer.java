@@ -1,12 +1,7 @@
 package com.konkerlabs.platform.registry.audit;
 
-import ch.qos.logback.classic.BasicConfigurator;
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.gaffer.GafferUtil;
 import ch.qos.logback.classic.joran.JoranConfigurator;
-import ch.qos.logback.classic.spi.Configurator;
 import ch.qos.logback.classic.util.EnvUtil;
-import ch.qos.logback.classic.util.StatusListenerConfigHelper;
 import ch.qos.logback.core.LogbackException;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.status.ErrorStatus;
@@ -42,7 +37,7 @@ public class KonkerContextInitializer {
         } else {
             String urlString = url.toString();
             if (!urlString.endsWith("xml")) {
-                throw new LogbackException("Unexpected filename extension of file [" + url.toString() + "]. Should be either .groovy or .xml");
+                throw new LogbackException("Unexpected filename extension of file [" + url + "]. Should be either .groovy or .xml");
             }
             JoranConfigurator configurator1 = new JoranConfigurator();
             configurator1.setContext(this.loggerContext);
@@ -153,7 +148,7 @@ public class KonkerContextInitializer {
         try {
             urlSet = Loader.getResourceOccurrenceCount(resourceName, classLoader);
         } catch (IOException var7) {
-            sm.add(new ErrorStatus("Failed to get url list for resource [" + resourceName + "]", this.loggerContext, var7));
+            sm.add(new ErrorStatus("Failed to get url list for resource [" + resourceName + ']', this.loggerContext, var7));
         }
 
         if (urlSet != null && urlSet.size() > 1) {
@@ -162,7 +157,7 @@ public class KonkerContextInitializer {
 
             while (i$.hasNext()) {
                 URL url = (URL) i$.next();
-                sm.add(new WarnStatus("Resource [" + resourceName + "] occurs at [" + url.toString() + "]", this.loggerContext));
+                sm.add(new WarnStatus("Resource [" + resourceName + "] occurs at [" + url + ']', this.loggerContext));
             }
         }
 
@@ -171,9 +166,9 @@ public class KonkerContextInitializer {
     private void statusOnResourceSearch(String resourceName, ClassLoader classLoader, URL url) {
         StatusManager sm = this.loggerContext.getStatusManager();
         if (url == null) {
-            sm.add(new InfoStatus("Could NOT find resource [" + resourceName + "]", this.loggerContext));
+            sm.add(new InfoStatus("Could NOT find resource [" + resourceName + ']', this.loggerContext));
         } else {
-            sm.add(new InfoStatus("Found resource [" + resourceName + "] at [" + url.toString() + "]", this.loggerContext));
+            sm.add(new InfoStatus("Found resource [" + resourceName + "] at [" + url + ']', this.loggerContext));
             this.multiplicityWarning(resourceName, classLoader);
         }
 

@@ -1,17 +1,19 @@
 package com.konkerlabs.platform.registry.test.integration.endpoints;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.Executor;
-
+import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.model.enumerations.FirmwareUpdateStatus;
+import com.konkerlabs.platform.registry.business.services.api.*;
+import com.konkerlabs.platform.registry.business.services.api.DeviceConfigSetupService.Validations;
+import com.konkerlabs.platform.registry.data.config.WebMvcConfig;
+import com.konkerlabs.platform.registry.data.core.services.JedisTaskService;
+import com.konkerlabs.platform.registry.integration.endpoints.DeviceEventRestEndpoint;
+import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
+import com.konkerlabs.platform.registry.test.data.base.BusinessDataTestConfiguration;
+import com.konkerlabs.platform.registry.test.data.base.SecurityTestConfiguration;
+import com.konkerlabs.platform.registry.test.data.base.WebLayerTestContext;
+import com.konkerlabs.platform.registry.test.data.base.WebTestConfiguration;
+import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
+import org.bson.types.Binary;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -33,30 +35,24 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.DeviceModel;
-import com.konkerlabs.platform.registry.business.model.Location;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.services.api.DeviceConfigSetupService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
-import com.konkerlabs.platform.registry.business.services.api.DeviceConfigSetupService.Validations;
-import com.konkerlabs.platform.registry.data.config.WebMvcConfig;
-import com.konkerlabs.platform.registry.data.services.JedisTaskService;
-import com.konkerlabs.platform.registry.integration.endpoints.DeviceEventRestEndpoint;
-import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
-import com.konkerlabs.platform.registry.test.data.base.BusinessTestConfiguration;
-import com.konkerlabs.platform.registry.test.data.base.SecurityTestConfiguration;
-import com.konkerlabs.platform.registry.test.data.base.WebLayerTestContext;
-import com.konkerlabs.platform.registry.test.data.base.WebTestConfiguration;
-import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.Executor;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
 @ContextConfiguration(classes = {
-        BusinessTestConfiguration.class,
+        BusinessDataTestConfiguration.class,
         WebMvcConfig.class,
         WebTestConfiguration.class,
         SecurityTestConfiguration.class,
@@ -88,21 +84,24 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
     private DeviceConfigSetupService deviceConfigSetupService;
 
     @Autowired
+    private DeviceFirmwareUpdateService deviceFirmwareUpdateService;
+
+    @Autowired
     private Executor executor;
 
     @Autowired
     private JedisTaskService jedisTaskService;
 
-    private String DEVICE_USER = "tug6g6essh4m";
-    private String VALID_CHANNEL = "data";
-    private String INVALID_CHANNEL_SIZE = "abcabcabcabcabcabcabcabcabcabcabc";
-    private String INVALID_CHANNEL_CHAR = "dataç";
-    private Long OFFSET = 1475765814662l;
-    private Long waitTime = 30000l;
-    private Set<String> tags =new HashSet<>(Arrays.asList("tag1", "tag2"));
+    private final String DEVICE_USER = "tug6g6essh4m";
+    private final String VALID_CHANNEL = "data";
+    private final String INVALID_CHANNEL_SIZE = "abcabcabcabcabcabcabcabcabcabcabc";
+    private final String INVALID_CHANNEL_CHAR = "dataç";
+    private final Long OFFSET = 1475765814662L;
+    private final Long waitTime = 30000L;
+    private final Set<String> tags =new HashSet<>(Arrays.asList("tag1", "tag2"));
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         deviceEventProcessor = mock(DeviceEventProcessor.class);
         deviceEventRestEndpoint = new DeviceEventRestEndpoint(
                 applicationContext,
@@ -110,6 +109,7 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
                 jsonParsingService,
                 deviceEventService,
                 deviceRegisterService,
+                deviceFirmwareUpdateService,
                 executor,
                 jedisTaskService,
                 deviceConfigSetupService);
@@ -122,6 +122,7 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
 		Mockito.reset(deviceRegisterService);
 		Mockito.reset(jedisTaskService);
 		Mockito.reset(deviceConfigSetupService);
+		Mockito.reset(deviceFirmwareUpdateService);
 	}
 
     @Test
@@ -140,7 +141,7 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
         context.setAuthentication(auth);
 
         getMockMvc().perform(
-                get("/sub/"+ DEVICE_USER +"/"+ INVALID_CHANNEL_CHAR)
+                get("/sub/"+ DEVICE_USER + '/' + INVALID_CHANNEL_CHAR)
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("offset", String.valueOf(OFFSET))
                         .param("waitTime", String.valueOf(waitTime)))
@@ -148,7 +149,7 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
 
 
         getMockMvc().perform(
-                get("/sub/"+ DEVICE_USER +"/"+ INVALID_CHANNEL_SIZE)
+                get("/sub/"+ DEVICE_USER + '/' + INVALID_CHANNEL_SIZE)
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("offset", String.valueOf(OFFSET))
                         .param("waitTime", String.valueOf(waitTime))
@@ -157,7 +158,7 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
     }
 
     @Test
-    public void shouldRefuseRequestFromKonkerPlataform() throws Exception {
+    public void shouldRefuseRequestFromKonkerPlatform() throws Exception {
         Device device = Device.builder().deviceId("tug6g6essh4m")
                 .active(true)
                 .apiKey("e4399b2ed998")
@@ -176,7 +177,7 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
         when(jsonParsingService.isValid(json)).thenReturn(true);
 
 		getMockMvc().perform(
-                post("/pub/"+ device.getApiKey() +"/"+ VALID_CHANNEL)
+                post("/pub/"+ device.getApiKey() + '/' + VALID_CHANNEL)
                 	.flashAttr("principal", device)
                 	.header("X-Konker-Version", "0.1")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -305,6 +306,166 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
    
     }
 
+    @Test
+    public void shouldReturnFirmware() throws Exception {
+        Device device = Device.builder()
+                .active(true)
+                .apiKey("e4399b2ed998")
+                .description("test")
+                .deviceId("device_id")
+                .guid("67014de6-81db-11e6-a5bc-3f99b38315c6")
+                .tenant(Tenant.builder().domainName("konker").name("Konker").build())
+                .application(Application.builder().name("SmartAC").build())
+                .deviceModel(DeviceModel.builder().name("SensorTemp").build())
+                .location(Location.builder().name("sp_br").build())
+                .build();
+
+        when(deviceRegisterService.findByApiKey(device.getApiKey()))
+                .thenReturn(device);
+
+        SecurityContext context = SecurityContextHolder.getContext();
+        Authentication auth = new UsernamePasswordAuthenticationToken(device, null);
+        context.setAuthentication(auth);
+
+        DeviceFirmware deviceFirmware = DeviceFirmware
+                .builder()
+                .firmware(new Binary("0123456789".getBytes()))
+                .version("0.5-beta")
+                .build();
+
+        DeviceFwUpdate deviceFwUpdate = DeviceFwUpdate
+                .builder()
+                .version(deviceFirmware.getVersion())
+                .deviceFirmware(deviceFirmware)
+                .build();
+
+        when(deviceFirmwareUpdateService.findPendingFwUpdateByDevice(
+                device.getTenant(),
+                device.getApplication(),
+                device))
+                .thenReturn(ServiceResponseBuilder.<DeviceFwUpdate> ok()
+                        .withResult(deviceFwUpdate).build());
+
+        getMockMvc().perform(
+            get("/firmware/"+ device.getApiKey())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().json("{'version':'0.5-beta'}"))
+        ;
+
+    }
+
+    @Test
+    public void shouldReturnFirmwareBinary() throws Exception {
+        Device device = Device.builder()
+                .active(true)
+                .apiKey("e4399b2ed998")
+                .description("test")
+                .deviceId("device_id")
+                .guid("67014de6-81db-11e6-a5bc-3f99b38315c6")
+                .tenant(Tenant.builder().domainName("konker").name("Konker").build())
+                .application(Application.builder().name("SmartAC").build())
+                .deviceModel(DeviceModel.builder().name("SensorTemp").build())
+                .location(Location.builder().name("sp_br").build())
+                .build();
+
+        when(deviceRegisterService.findByApiKey(device.getApiKey()))
+                .thenReturn(device);
+
+        SecurityContext context = SecurityContextHolder.getContext();
+        Authentication auth = new UsernamePasswordAuthenticationToken(device, null);
+        context.setAuthentication(auth);
+
+        DeviceFirmware deviceFirmware = DeviceFirmware
+                .builder()
+                .firmware(new Binary("0123456789".getBytes()))
+                .version("0.5-beta")
+                .build();
+
+        DeviceFwUpdate deviceFwUpdate = DeviceFwUpdate
+                .builder()
+                .deviceFirmware(deviceFirmware)
+                .build();
+
+        when(deviceFirmwareUpdateService.findPendingFwUpdateByDevice(
+                device.getTenant(),
+                device.getApplication(),
+                device))
+                .thenReturn(ServiceResponseBuilder.<DeviceFwUpdate> ok()
+                        .withResult(deviceFwUpdate).build());
+
+        getMockMvc().perform(
+                get("/firmware/"+ device.getApiKey() + "/binary")
+                        .contentType(MediaType.APPLICATION_OCTET_STREAM))
+                .andExpect(status().isOk())
+                .andExpect(content().bytes("0123456789".getBytes()))
+        ;
+
+    }
+
+    @Test
+    public void shouldUpdateFirmwareUpdateStatus() throws Exception {
+        Device device = Device.builder()
+                .active(true)
+                .apiKey("e4399b2ed998")
+                .description("test")
+                .deviceId("device_id")
+                .guid("67014de6-81db-11e6-a5bc-3f99b38315c6")
+                .tenant(Tenant.builder().domainName("konker").name("Konker").build())
+                .application(Application.builder().name("SmartAC").build())
+                .deviceModel(DeviceModel.builder().name("SensorTemp").build())
+                .location(Location.builder().name("sp_br").build())
+                .build();
+
+        when(deviceRegisterService.findByApiKey(device.getApiKey()))
+                .thenReturn(device);
+
+        SecurityContext context = SecurityContextHolder.getContext();
+        Authentication auth = new UsernamePasswordAuthenticationToken(device, null);
+        context.setAuthentication(auth);
+
+        DeviceFirmware deviceFirmware = DeviceFirmware
+                .builder()
+                .firmware(new Binary("0123456789".getBytes()))
+                .version("0.5-beta")
+                .build();
+
+        DeviceFwUpdate deviceFwUpdate = DeviceFwUpdate
+                .builder()
+                .deviceFirmware(deviceFirmware)
+                .version(deviceFirmware.getVersion())
+                .status(FirmwareUpdateStatus.PENDING)
+                .build();
+
+        when(deviceFirmwareUpdateService.findPendingFwUpdateByDevice(
+                device.getTenant(),
+                device.getApplication(),
+                device))
+                .thenReturn(ServiceResponseBuilder.<DeviceFwUpdate> ok()
+                        .withResult(deviceFwUpdate).build());
+
+        when(deviceFirmwareUpdateService.updateStatus(
+                device.getTenant(),
+                device.getApplication(),
+                device,
+                deviceFirmware.getVersion(),
+                FirmwareUpdateStatus.UPDATED
+                ))
+                .thenReturn(ServiceResponseBuilder.<DeviceFwUpdate> ok()
+                        .withResult(deviceFwUpdate).build());
+
+        String json = String.format("{\"version\":\"%s\",\"status\":\"%s\"}", deviceFirmware.getVersion(), FirmwareUpdateStatus.UPDATED.name());
+
+        getMockMvc().perform(
+                put("/firmware/"+ device.getApiKey())
+                        .content(json)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().json("{'version':'0.5-beta','status':'UPDATED'}"))
+        ;
+
+    }
+
     @Configuration
     static class DeviceEventRestEndpointTestContextConfig {
         @Bean
@@ -315,6 +476,11 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
         @Bean
         public DeviceEventService deviceEventService() {
             return Mockito.mock(DeviceEventService.class);
+        }
+
+        @Bean
+        public DeviceFirmwareUpdateService deviceFirmwareUpdateService() {
+            return Mockito.mock(DeviceFirmwareUpdateService.class);
         }
 
         @Bean

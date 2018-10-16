@@ -1,7 +1,6 @@
 package com.konkerlabs.platform.registry.test.business.model.behaviors;
 
 import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.behaviors.DeviceURIDealer;
 import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import org.junit.Before;
 import org.junit.Rule;

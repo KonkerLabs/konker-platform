@@ -19,7 +19,7 @@ public class Transformation implements URIDealer, Validatable {
 
     public enum Validations {
         NAME_NULL("model.transformation.name.not_null"),
-        STEPS_EMPTY("model.tranformation.steps.not_empty");
+        STEPS_EMPTY("model.transformation.steps.not_empty");
 
         public String getCode() {
             return code;

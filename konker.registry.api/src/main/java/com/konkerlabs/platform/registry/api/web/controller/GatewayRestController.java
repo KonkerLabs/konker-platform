@@ -1,14 +1,11 @@
 package com.konkerlabs.platform.registry.api.web.controller;
 
+import com.konkerlabs.platform.registry.api.exceptions.BadRequestResponseException;
 import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
 import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
-import com.konkerlabs.platform.registry.api.model.GatewayInputVO;
-import com.konkerlabs.platform.registry.api.model.GatewayVO;
-import com.konkerlabs.platform.registry.api.model.RestResponse;
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Gateway;
-import com.konkerlabs.platform.registry.business.model.Location;
-import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.api.model.*;
+import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.GatewayService;
 import com.konkerlabs.platform.registry.business.services.api.GatewayService.Validations;
 import com.konkerlabs.platform.registry.business.services.api.LocationService;
@@ -37,6 +34,9 @@ public class GatewayRestController extends AbstractRestController implements Ini
 
     @Autowired
     private GatewayService gatewayService;
+
+    @Autowired
+    private DeviceRegisterService deviceRegisterService;
 
     @Autowired
     private OAuth2AccessTokenService oAuth2AccessTokenService;
@@ -117,6 +117,53 @@ public class GatewayRestController extends AbstractRestController implements Ini
             throw new BadServiceResponseException( accessTokenServiceResponse, validationsCode);
         }
 
+    }
+
+    @PostMapping(path = "/{gatewayGuid}/devices")
+    @PreAuthorize("hasAuthority('EDIT_GATEWAY')")
+    @ApiOperation(
+            value = "Create devices associated with gateway and return its credentials",
+            response = RestResponse.class
+    )
+    public List<DeviceRegisterGatewayVO> createDevices(@PathVariable("application") String applicationId,
+                                                           @PathVariable("gatewayGuid") String gatewayGuid,
+                                                           @ApiParam(name = "body", required = true)
+                                                           @RequestBody List<DeviceInputVO> devices)
+            throws BadServiceResponseException, BadRequestResponseException, NotFoundResponseException {
+
+        Tenant tenant = user.getTenant();
+        Application application = getApplication(applicationId);
+        Gateway gateway = gatewayService.getByGUID(tenant, application, gatewayGuid).getResult();
+        List<DeviceRegisterGatewayVO> credentialsVOS = new ArrayList<>();
+
+        for (DeviceInputVO deviceInputVO : devices) {
+            ServiceResponse<Device> response = deviceRegisterService.register(
+                    tenant,
+                    application,
+                    Device.builder()
+                            .deviceId(deviceInputVO.getId())
+                            .name(deviceInputVO.getName())
+                            .application(application)
+                            .location(gateway.getLocation())
+                            .active(true)
+                            .build());
+
+            if (response.isOk()) {
+                ServiceResponse<DeviceRegisterService.DeviceSecurityCredentials> responseCredential = deviceRegisterService
+                        .generateSecurityPassword(tenant, application, response.getResult().getGuid());
+                ServiceResponse<DeviceRegisterService.DeviceDataURLs> responseDeviceURLs = deviceRegisterService
+                        .getDeviceDataURLs(tenant, application, response.getResult(), user.getLanguage().getLocale());
+
+                DeviceRegisterService.DeviceSecurityCredentials credentials = responseCredential.getResult();
+                DeviceRegisterService.DeviceDataURLs deviceURLs = responseDeviceURLs.getResult();
+                credentialsVOS.add(new DeviceRegisterGatewayVO(credentials, deviceURLs));
+
+            } else {
+                throw new BadRequestResponseException(response, validationsCode);
+            }
+        }
+
+        return credentialsVOS;
     }
 
     @PostMapping
@@ -210,7 +257,7 @@ public class GatewayRestController extends AbstractRestController implements Ini
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
 
         for (Validations value : Validations.values()) {
             validationsCode.add(value.getCode());

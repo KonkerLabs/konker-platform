@@ -1,19 +1,16 @@
 package com.konkerlabs.platform.registry.integration.processors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.DeviceModel;
-import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.Event.EventActor;
-import com.konkerlabs.platform.registry.business.model.Gateway;
 import com.konkerlabs.platform.registry.business.services.LocationTreeUtils;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.data.services.api.DeviceLogEventService;
-import com.konkerlabs.platform.registry.data.services.routes.api.EventRouteExecutor;
-import com.konkerlabs.platform.registry.integration.converters.JsonConverter;
+import com.konkerlabs.platform.registry.data.core.services.api.DeviceLogEventService;
+import com.konkerlabs.platform.registry.data.core.services.routes.api.EventRouteExecutor;
+import com.konkerlabs.platform.registry.data.core.integration.converters.JsonConverter;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -133,9 +130,9 @@ public class DeviceEventProcessor {
     	for (Map<String, Object> payloadGateway : payloadsGateway) {
     		ServiceResponse<Device> result = deviceRegisterService.findByDeviceId(
     				gateway.getTenant(), 
-    				gateway.getApplication(), 
+    				gateway.getApplication(),
     				payloadGateway.get("deviceId").toString());
-    		
+
     		if (result.isOk() && Optional.ofNullable(result.getResult()).isPresent()) {
     			Device device = result.getResult();
     			
@@ -149,8 +146,8 @@ public class DeviceEventProcessor {
     								ingestedTimestamp;
     				
     				process(
-    						device, 
-    						payloadGateway.get("channel").toString(), 
+    						device,
+    						payloadGateway.get("channel").toString(),
     						jsonParsingService.toJsonString(devicePayload),
     						ingestedTimestamp,
     						creationTimestamp);
@@ -170,6 +167,60 @@ public class DeviceEventProcessor {
     		
 		}
     	
+    }
+
+    public void process(Gateway gateway, String payloadList, String deviceIdFieldName, String deviceChannelFieldName) throws BusinessException, JsonProcessingException {
+        List<Map<String, Object>> payloadsGateway = jsonParsingService.toListMap(payloadList);
+
+        for (Map<String, Object> payloadDevice : payloadsGateway) {
+            ServiceResponse<Device> result = deviceRegisterService.findByDeviceId(
+                    gateway.getTenant(),
+                    gateway.getApplication(),
+                    payloadDevice.get(deviceIdFieldName).toString());
+
+            if (!result.isOk()) {
+                result = deviceRegisterService.register(
+                        gateway.getTenant(),
+                        gateway.getApplication(),
+                        Device.builder()
+                                .deviceId(payloadDevice.get(deviceIdFieldName).toString())
+                                .name(payloadDevice.get(deviceIdFieldName).toString())
+                                .active(true)
+                                .build());
+            }
+
+            if (result.isOk() && Optional.ofNullable(result.getResult()).isPresent()) {
+                Device device = result.getResult();
+
+                if (isValidAuthority(gateway, device)) {
+                    Instant ingestedTimestamp = Instant.now();
+                    Instant creationTimestamp = payloadDevice.containsKey("ts")
+                            && integerPattern.matcher(payloadDevice.get("ts").toString()).matches() ?
+                            Instant.ofEpochMilli(new Long(payloadDevice.get("ts").toString())) :
+                            ingestedTimestamp;
+
+                    process(
+                            device,
+                            payloadDevice.get(deviceChannelFieldName).toString(),
+                            jsonParsingService.toJsonString(payloadDevice),
+                            ingestedTimestamp,
+                            creationTimestamp);
+                } else {
+                    LOGGER.warn(MessageFormat.format("The gateway does not have authority over the device: {0}",
+                            device.getName()),
+                            gateway.toURI(),
+                            gateway.getTenant().getLogLevel());
+                }
+            } else {
+                LOGGER.debug(MessageFormat.format(GATEWAY_EVENT_DROPPED,
+                        gateway.toURI(),
+                        payloadList),
+                        gateway.toURI(),
+                        gateway.getTenant().getLogLevel());
+            }
+
+        }
+
     }
     
     public void process(Device device, String channel, String jsonPayload, Instant ingestedTimestamp, Instant creationTimestamp) throws BusinessException {
@@ -193,6 +244,7 @@ public class DeviceEventProcessor {
                 .ingestedTimestamp(ingestedTimestamp)
                 .payload(jsonPayload)
                 .build();
+
         if (device.isActive()) {
 
             ServiceResponse<Event> logResponse = deviceLogEventService.logIncomingEvent(device, event);
@@ -208,6 +260,14 @@ public class DeviceEventProcessor {
                 throw new BusinessException(Messages.INVALID_PAYLOAD.getCode());
             }
 
+            // check management keywords (mgmt channel)
+            try {
+                Map<String, JsonParsingService.JsonPathData> payloadsMap = jsonParsingService.toFlatMap(jsonPayload);
+                routeBatteryLevel(device, ingestedTimestamp, creationTimestamp, payloadsMap);
+            } catch (JsonProcessingException e) {
+                throw new BusinessException(Messages.INVALID_PAYLOAD.getCode());
+            }
+
         } else {
             LOGGER.debug(MessageFormat.format(EVENT_DROPPED,
                     device.toURI(),
@@ -216,6 +276,18 @@ public class DeviceEventProcessor {
             		device.getLogLevel());
         }
 
+    }
+
+    private void routeBatteryLevel(Device device, Instant ingestedTimestamp, Instant creationTimestamp, Map<String, JsonParsingService.JsonPathData> payloadsMap) throws BusinessException {
+        String BATTERY = "_battery";
+
+        if (payloadsMap.containsKey(BATTERY)) {
+            if (payloadsMap.get(BATTERY).getTypes().contains(JsonNodeType.NUMBER)) {
+                Number number = (Number) payloadsMap.get(BATTERY).getValue();
+                Double temperatureValue = number.doubleValue();
+                process(device, "mgmt/battery", String.format("{\"value\":%f}", temperatureValue), ingestedTimestamp, creationTimestamp);
+            }
+        }
     }
 
     private String getJsonPayload(Device device, byte[] payloadBytes) throws BusinessException {

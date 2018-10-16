@@ -73,7 +73,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         }
 
         @Override
-        protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        protected void configure(AuthenticationManagerBuilder auth) {
             KonkerDaoAuthenticationProvider authenticationProvider = new KonkerDaoAuthenticationProvider();
             authenticationProvider.setLoginAuditService(loginAuditService);
             authenticationProvider.setUserDetailsService(userDetailsService);

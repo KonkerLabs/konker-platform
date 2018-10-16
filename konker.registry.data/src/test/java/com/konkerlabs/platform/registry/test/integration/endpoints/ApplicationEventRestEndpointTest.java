@@ -1,13 +1,21 @@
 package com.konkerlabs.platform.registry.test.integration.endpoints;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.text.MessageFormat;
-
+import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationService.Validations;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.business.services.api.TenantService;
+import com.konkerlabs.platform.registry.data.config.WebMvcConfig;
+import com.konkerlabs.platform.registry.integration.endpoints.ApplicationEventRestEndpoint;
+import com.konkerlabs.platform.registry.integration.endpoints.ApplicationEventRestEndpoint.Messages;
+import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
+import com.konkerlabs.platform.registry.test.data.base.BusinessDataTestConfiguration;
+import com.konkerlabs.platform.registry.test.data.base.SecurityTestConfiguration;
+import com.konkerlabs.platform.registry.test.data.base.WebLayerTestContext;
+import com.konkerlabs.platform.registry.test.data.base.WebTestConfiguration;
+import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -25,27 +33,18 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
-import com.konkerlabs.platform.registry.business.services.api.TenantService;
-import com.konkerlabs.platform.registry.business.services.api.ApplicationService.Validations;
-import com.konkerlabs.platform.registry.data.config.WebMvcConfig;
-import com.konkerlabs.platform.registry.integration.endpoints.ApplicationEventRestEndpoint;
-import com.konkerlabs.platform.registry.integration.endpoints.ApplicationEventRestEndpoint.Messages;
-import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
-import com.konkerlabs.platform.registry.test.data.base.BusinessTestConfiguration;
-import com.konkerlabs.platform.registry.test.data.base.SecurityTestConfiguration;
-import com.konkerlabs.platform.registry.test.data.base.WebLayerTestContext;
-import com.konkerlabs.platform.registry.test.data.base.WebTestConfiguration;
-import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
+import java.text.MessageFormat;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
 @ContextConfiguration(classes = {
-        BusinessTestConfiguration.class,
+		BusinessDataTestConfiguration.class,
         WebMvcConfig.class,
         WebTestConfiguration.class,
         SecurityTestConfiguration.class,
@@ -76,13 +75,13 @@ public class ApplicationEventRestEndpointTest extends WebLayerTestContext {
     private ApplicationService applicationService;
 
     private String json;
-    private String tenantDomain = "anyTenant";
-    private String applicationName = "smartff"; 
-    private Tenant tenant = Tenant.builder().domainName(tenantDomain).build();
-    private Application application = Application.builder().name(applicationName).build();
+    private final String tenantDomain = "anyTenant";
+    private final String applicationName = "smartff";
+    private final Tenant tenant = Tenant.builder().domainName(tenantDomain).build();
+    private final Application application = Application.builder().name(applicationName).build();
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         deviceEventProcessor = mock(DeviceEventProcessor.class);
         applicationEventRestEndpoint = new ApplicationEventRestEndpoint(
                 applicationContext,
@@ -104,7 +103,7 @@ public class ApplicationEventRestEndpointTest extends WebLayerTestContext {
 			"	\"_ts\": \"1510847419000\", "+ 
 			"	\"volts\": 12  "+
 			"	} "+
-			"}"+
+                '}' +
 			", { "+
 			" \"deviceId\": \"TempSensor\", "+
 			" \"channel\": \"temp\", "+
@@ -117,7 +116,7 @@ public class ApplicationEventRestEndpointTest extends WebLayerTestContext {
 			"	\"temperature\": 27  "+
 			"	} "+
 			"} "+
-			"]";
+                ']';
     }
 
 	@After
@@ -128,7 +127,7 @@ public class ApplicationEventRestEndpointTest extends WebLayerTestContext {
 	}
          
     @Test
-    public void shouldRefuseRequestFromKonkerPlataform() throws Exception {
+    public void shouldRefuseRequestFromKonkerPlatform() throws Exception {
     	when(tenantService.findByDomainName(tenantDomain))
     		.thenReturn(ServiceResponseBuilder.<Tenant>ok().withResult(tenant).build());
     	
@@ -196,7 +195,7 @@ public class ApplicationEventRestEndpointTest extends WebLayerTestContext {
     }
     
     @Test
-    public void shouldPubToKonkerPlataform() throws Exception {
+    public void shouldPubToKonkerPlatform() throws Exception {
     	when(tenantService.findByDomainName(tenantDomain))
 		.thenReturn(ServiceResponseBuilder.<Tenant>ok().withResult(tenant).build());
 	

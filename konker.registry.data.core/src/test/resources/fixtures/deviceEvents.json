@@ -1,0 +1,78 @@
+{
+  "incomingEvents": [
+    {
+      "_id": "57e40a6e44f4b3a77bdde14e",
+      "_class": "com.mongodb.BasicDBObject",
+      "ts": 1474562670341,
+      "incoming": {
+        "deviceGuid": "7d51c242-81db-11e6-a8c2-0746f010e945",
+        "channel": "command",
+        "tenantDomain": "konker"
+      },
+      "payload": {
+        "value": 31.0,
+        "command": {
+          "type": "ButtonPressed"
+        },
+        "data": {
+          "channels": [
+            {
+              "name": "channel_0"
+            }
+          ]
+        },
+        "time": 123
+      }
+    },
+    {
+      "_id": "57e41a6d44f4b3a77bdde15c",
+      "_class": "com.mongodb.BasicDBObject",
+      "ts": 1474562672395,
+      "incoming": {
+        "deviceGuid": "7d51c242-81db-11e6-a8c2-0746f010e945",
+        "channel": "command",
+        "tenantDomain": "konker"
+      },
+      "payload": {
+        "value": 31.0,
+        "command": {
+          "type": "ButtonPressed"
+        },
+        "data": {
+          "channels": [
+            {
+              "name": "channel_0"
+            }
+          ]
+        },
+        "time": 123
+      }
+    },
+    {
+      "_id": "58e41a6d41f4b3d77bcde17a",
+      "_class": "com.mongodb.BasicDBObject",
+      "ts": 1474562674450,
+      "incoming": {
+        "deviceGuid": "7d51c242-81db-11e6-a8c2-0746f010e945",
+        "channel": "command",
+        "tenantDomain": "konker"
+      },
+      "payload": {
+        "value": 31.0,
+        "command": {
+          "type": "ButtonPressed"
+        },
+        "data": {
+          "channels": [
+            {
+              "name": "channel_0"
+            }
+          ]
+        },
+        "time": 123
+      }
+    }
+  ],
+  "outgoingEvents": [
+  ]
+}

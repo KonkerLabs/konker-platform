@@ -1,11 +1,8 @@
 package com.konkerlabs.platform.registry.integration.endpoints;
 
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
-import com.konkerlabs.platform.registry.data.config.RabbitMQDataConfig;
+import com.konkerlabs.platform.registry.data.core.config.RabbitMQDataConfig;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
-
-import java.time.Instant;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
@@ -14,6 +11,8 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+
+import java.time.Instant;
 
 @Service
 public class DeviceEventRabbitEndpoint {
@@ -31,7 +30,7 @@ public class DeviceEventRabbitEndpoint {
     public void onDataPub(Message message) {
 
         if (LOGGER.isDebugEnabled())
-            LOGGER.debug("A message has arrived -> " + message.toString());
+            LOGGER.debug("A message has arrived -> " + message);
 
         MessageProperties properties = message.getMessageProperties();
         if (properties == null || properties.getHeaders().isEmpty()) {

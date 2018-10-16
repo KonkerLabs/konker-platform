@@ -1,16 +1,23 @@
 package com.konkerlabs.platform.registry.test.data.services.publishers;
 
-import static info.solidsoft.mockito.java8.LambdaMatcher.argLambda;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-
-import java.net.URI;
-import java.text.MessageFormat;
-import java.time.Instant;
-
+import com.fasterxml.jackson.core.JsonParseException;
+import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.Event;
+import com.konkerlabs.platform.registry.business.model.RestDestination;
+import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
+import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
+import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
+import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.events.api.EventRepository;
+import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
+import com.konkerlabs.platform.registry.data.core.integration.gateway.HttpGateway;
+import com.konkerlabs.platform.registry.data.core.services.publishers.api.EventPublisher;
+import com.konkerlabs.platform.registry.test.data.base.BusinessDataTestConfiguration;
+import com.konkerlabs.platform.registry.test.data.base.BusinessLayerTestSupport;
+import com.konkerlabs.platform.registry.test.data.base.MongoDataTestConfiguration;
+import com.konkerlabs.platform.registry.test.data.base.RedisDataTestConfiguration;
+import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -29,28 +36,21 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.RestDestination;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestinationURIDealer;
-import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
-import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
-import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
-import com.konkerlabs.platform.registry.business.services.api.RestDestinationService;
-import com.konkerlabs.platform.registry.data.services.publishers.api.EventPublisher;
-import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
-import com.konkerlabs.platform.registry.test.data.base.BusinessLayerTestSupport;
-import com.konkerlabs.platform.registry.test.data.base.BusinessTestConfiguration;
-import com.konkerlabs.platform.registry.test.data.base.MongoTestConfiguration;
-import com.konkerlabs.platform.registry.test.data.base.RedisTestConfiguration;
-import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
+import java.net.URI;
+import java.text.MessageFormat;
+import java.time.Instant;
+
+import static info.solidsoft.mockito.java8.LambdaMatcher.argLambda;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
-        MongoTestConfiguration.class,
-        BusinessTestConfiguration.class,
-        RedisTestConfiguration.class
+        MongoDataTestConfiguration.class,
+        BusinessDataTestConfiguration.class,
+        RedisDataTestConfiguration.class
 })
 @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/rest-destinations.json"})
 public class EventPublisherRestTest extends BusinessLayerTestSupport {
@@ -79,14 +79,14 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
     private Tenant tenant;
     private Application application;
 
-    private String invalidEventPayload = "{\n" +
+    private final String invalidEventPayload = "{\n" +
             "    \"field\" : \"value\"\n" +
             "    \"count\" : 34,2,\n" +
             "    \"amount\" : 21.45.1,\n" +
             "    \"valid\" : tru\n" +
             "";
 
-    private String validEventPayload = "{\n" +
+    private final String validEventPayload = "{\n" +
             "    \"field\" : \"value\",\n" +
             "    \"count\" : 34,\n" +
             "    \"amount\" : 21.45,\n" +
@@ -98,7 +98,7 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
     private URI destinationUri;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
 
         tenant = tenantRepository.findByDomainName("konker");
@@ -219,6 +219,8 @@ public class EventPublisherRestTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldNotSendAnyEventThroughGatewayIfPayloadParsingFails() throws Exception {
+        thrown.expect(Exception.class);
+        thrown.expectMessage("Failed to parse json");
         event.setPayload(invalidEventPayload);
 
         subject.send(event, destinationUri, null, tenant, application);

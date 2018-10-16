@@ -45,7 +45,7 @@ public class RestDestination implements URIDealer, Validatable {
 
     public enum RestDestinationType {
     	FORWARD_MESSAGE,
-    	CUSTOM_BODY;
+    	CUSTOM_BODY
     }
 
     @Id

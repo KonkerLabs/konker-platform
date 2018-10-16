@@ -97,6 +97,29 @@ public class DeviceFirmwareServiceImpl implements DeviceFirmwareService {
     }
 
     @Override
+    public ServiceResponse<DeviceFirmware> findByVersion(Tenant tenant, Application application, DeviceModel deviceModel, String version) {
+
+        ServiceResponse<DeviceFirmware> validationResponse = validate(tenant, application);
+        if (!validationResponse.isOk()) {
+            return validationResponse;
+        }
+
+        List<DeviceFirmware> modelFirmwares = deviceFirmwareRepository.listByDeviceModel(tenant.getId(), application.getName(), deviceModel.getId());
+        for (DeviceFirmware deviceFirmware: modelFirmwares) {
+            if (deviceFirmware.getVersion().equals(version)) {
+                return ServiceResponseBuilder.<DeviceFirmware>ok()
+                        .withResult(deviceFirmware)
+                        .build();
+            }
+        }
+
+        return ServiceResponseBuilder.<DeviceFirmware>error()
+                .withMessage(Validations.FIRMWARE_NOT_FOUND.getCode())
+                .build();
+
+    }
+
+    @Override
     public ServiceResponse<List<DeviceFirmware>> listByDeviceModel(Tenant tenant, Application application,
             DeviceModel deviceModel) {
 
@@ -117,7 +140,7 @@ public class DeviceFirmwareServiceImpl implements DeviceFirmwareService {
 
         if (!Optional.ofNullable(tenant).isPresent()) {
             Device noDevice = Device.builder().guid("NULL").tenant(
-                    Tenant.builder().domainName("unknow_domain").build()).build();
+                    Tenant.builder().domainName("unknown_domain").build()).build();
             LOGGER.debug(CommonValidations.TENANT_NULL.getCode(),
                     noDevice.toURI(),
                     noDevice.getTenant().getLogLevel());

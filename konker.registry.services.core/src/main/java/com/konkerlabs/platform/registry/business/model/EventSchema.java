@@ -48,7 +48,7 @@ public class EventSchema implements URIDealer {
 
     @Override
     public String getContext() {
-        return (deviceGuid + "_" + channel).toLowerCase();
+        return (deviceGuid + '_' + channel).toLowerCase();
     }
 
     @Override

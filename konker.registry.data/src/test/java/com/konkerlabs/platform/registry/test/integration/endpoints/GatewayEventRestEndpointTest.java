@@ -1,11 +1,17 @@
 package com.konkerlabs.platform.registry.test.integration.endpoints;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
+import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.data.config.WebMvcConfig;
+import com.konkerlabs.platform.registry.idm.services.OAuthClientDetailsService;
+import com.konkerlabs.platform.registry.integration.endpoints.GatewayEventRestEndpoint;
+import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
+import com.konkerlabs.platform.registry.test.data.base.BusinessDataTestConfiguration;
+import com.konkerlabs.platform.registry.test.data.base.SecurityTestConfiguration;
+import com.konkerlabs.platform.registry.test.data.base.WebLayerTestContext;
+import com.konkerlabs.platform.registry.test.data.base.WebTestConfiguration;
+import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -26,27 +32,16 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Gateway;
-import com.konkerlabs.platform.registry.business.model.Location;
-import com.konkerlabs.platform.registry.business.model.OauthClientDetails;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
-import com.konkerlabs.platform.registry.data.config.WebMvcConfig;
-import com.konkerlabs.platform.registry.idm.services.OAuthClientDetailsService;
-import com.konkerlabs.platform.registry.integration.endpoints.GatewayEventRestEndpoint;
-import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
-import com.konkerlabs.platform.registry.test.data.base.BusinessTestConfiguration;
-import com.konkerlabs.platform.registry.test.data.base.SecurityTestConfiguration;
-import com.konkerlabs.platform.registry.test.data.base.WebLayerTestContext;
-import com.konkerlabs.platform.registry.test.data.base.WebTestConfiguration;
-import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
 @ContextConfiguration(classes = {
-        BusinessTestConfiguration.class,
+        BusinessDataTestConfiguration.class,
         WebMvcConfig.class,
         WebTestConfiguration.class,
         SecurityTestConfiguration.class,
@@ -78,7 +73,7 @@ public class GatewayEventRestEndpointTest extends WebLayerTestContext {
     private String json;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         deviceEventProcessor = mock(DeviceEventProcessor.class);
         gatewayEventRestEndpoint = new GatewayEventRestEndpoint(
                 applicationContext,
@@ -110,7 +105,7 @@ public class GatewayEventRestEndpointTest extends WebLayerTestContext {
 			"	\"_ts\": \"1510847419000\", "+ 
 			"	\"volts\": 12  "+
 			"	} "+
-			"}"+
+                '}' +
 			", { "+
 			" \"deviceId\": \"TempSensor\", "+
 			" \"channel\": \"temp\", "+
@@ -123,7 +118,7 @@ public class GatewayEventRestEndpointTest extends WebLayerTestContext {
 			"	\"temperature\": 27  "+
 			"	} "+
 			"} "+
-			"]";
+                ']';
     }
 
 	@After
@@ -133,7 +128,7 @@ public class GatewayEventRestEndpointTest extends WebLayerTestContext {
 		Mockito.reset(oAuthClientDetailsService);}
          
     @Test
-    public void shouldRefuseRequestFromKonkerPlataform() throws Exception {
+    public void shouldRefuseRequestFromKonkerPlatform() throws Exception {
         SecurityContext context = SecurityContextHolder.getContext();
         Authentication auth = new TestingAuthenticationToken("gateway://i3k9jfe5/1c6e7df7-fe10-4c53-acae-913e0ceec883", null);
         context.setAuthentication(auth);
@@ -176,7 +171,7 @@ public class GatewayEventRestEndpointTest extends WebLayerTestContext {
     }
     
     @Test
-    public void shouldPubToKonkerPlataform() throws Exception {
+    public void shouldPubToKonkerPlatform() throws Exception {
     	SecurityContext context = SecurityContextHolder.getContext();
         Authentication auth = new TestingAuthenticationToken("gateway://i3k9jfe5/1c6e7df7-fe10-4c53-acae-913e0ceec883", null);
         context.setAuthentication(auth);

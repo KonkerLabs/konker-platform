@@ -1,14 +1,10 @@
 package com.konkerlabs.platform.registry.audit;
 
 import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.util.ContextInitializer;
-import ch.qos.logback.classic.util.ContextSelectorStaticBinder;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.status.StatusUtil;
 import ch.qos.logback.core.util.StatusPrinter;
-import org.slf4j.ILoggerFactory;
 import org.slf4j.helpers.Util;
-import org.slf4j.impl.StaticLoggerBinder;
 import org.slf4j.spi.LoggerFactoryBinder;
 
 
@@ -51,7 +47,7 @@ public class KonkerStaticLoggerBinder implements LoggerFactoryBinder {
             this.contextSelectorBinder.init(this.defaultLoggerContext, KEY);
             this.initialized = true;
         } catch (Throwable var3) {
-            Util.report("Failed to instantiate [" + LoggerContext.class.getName() + "]", var3);
+            Util.report("Failed to instantiate [" + LoggerContext.class.getName() + ']', var3);
         }
 
     }

@@ -36,15 +36,10 @@ public class AccessToken implements Serializable {
     private Long version;
 
     private byte[] token;
-
     private String authenticationId;
-
     private byte[] authentication;
-
     private String username;
-
     private String clientId;
-
     private String refreshToken;
 
     @Tolerate

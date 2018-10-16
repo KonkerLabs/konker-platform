@@ -48,7 +48,7 @@ import com.mongodb.util.JSON;
 })
 public class ApplicationDocumentStoreRestControllerTest extends WebLayerTestContext {
 
-    private static final String NONEXIST_APPLICATION_NANE = "AppLost";
+    private static final String NONEXIST_APPLICATION_NAME = "AppLost";
 
     @Autowired
     private ApplicationDocumentStoreService applicationDocumentStoreService;
@@ -64,11 +64,11 @@ public class ApplicationDocumentStoreRestControllerTest extends WebLayerTestCont
 
     private ApplicationDocumentStore deviceCustomData1;
 
-    private String json1 = "{ 'a' : 'b' }";
+    private final String json1 = "{ 'a' : 'b' }";
 
-    private String BASEPATH = "documentStore";
+    private final String BASEPATH = "documentStore";
 
-    private String CUSTOMDATAPATH = "customData";
+    private final String CUSTOMDATAPATH = "customData";
 
     @Before
     public void setUp() {
@@ -113,10 +113,10 @@ public class ApplicationDocumentStoreRestControllerTest extends WebLayerTestCont
     @Test
     public void shouldReadWithWrongApplication() throws Exception {
 
-        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NANE))
+        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NAME))
                 .thenReturn(ServiceResponseBuilder.<Application>error().withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode()).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}/{3}", NONEXIST_APPLICATION_NANE, BASEPATH, "collection1", "keyA", CUSTOMDATAPATH))
+        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}/{3}", NONEXIST_APPLICATION_NAME, BASEPATH, "collection1", "keyA", CUSTOMDATAPATH))
                     .contentType("application/json")
                     .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is4xxClientError())
@@ -247,10 +247,10 @@ public class ApplicationDocumentStoreRestControllerTest extends WebLayerTestCont
     @Test
     public void shouldTryDeleteWithWrongApplication() throws Exception {
 
-        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NANE))
+        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NAME))
                 .thenReturn(ServiceResponseBuilder.<Application>error().withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode()).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.delete(MessageFormat.format("/{0}/{1}/{2}/{3}", NONEXIST_APPLICATION_NANE, BASEPATH, "collection1", "keyA", CUSTOMDATAPATH))
+        getMockMvc().perform(MockMvcRequestBuilders.delete(MessageFormat.format("/{0}/{1}/{2}/{3}", NONEXIST_APPLICATION_NAME, BASEPATH, "collection1", "keyA", CUSTOMDATAPATH))
                     .contentType("application/json")
                     .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is4xxClientError())

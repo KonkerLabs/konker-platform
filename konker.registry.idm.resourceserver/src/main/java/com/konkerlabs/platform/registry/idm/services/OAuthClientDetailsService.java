@@ -144,6 +144,28 @@ public class OAuthClientDetailsService implements ClientDetailsService {
 
     }
 
+    public ServiceResponse<OauthClientDetails> loadApplicationAndClientSecret(Tenant tenant, Application application, String clientSecret)
+            throws ClientRegistrationException {
+        if (!Optional.ofNullable(clientSecret).isPresent()) {
+            throw new ClientRegistrationException(Validations.INVALID_ID.getCode());
+        }
+        OauthClientDetails details = oauthClientDetailRepository.findByApplicationAndSecret(application.getName(), clientSecret);
+        if (details != null) {
+            if (!details.getTenant().getId().equals(tenant.getId())) {
+                return ServiceResponseBuilder.<OauthClientDetails>error()
+                        .withMessage(Messages.CLIENT_CREDENTIALS_INVALID.getCode())
+                        .build();
+            }
+            return ServiceResponseBuilder.<OauthClientDetails>ok()
+                    .withResult(details)
+                    .build();
+        } else {
+            return ServiceResponseBuilder.<OauthClientDetails>error()
+                    .withMessage(Messages.CLIENT_CREDENTIALS_INVALID.getCode())
+                    .build();
+        }
+    }
+
     public ServiceResponse<OauthClientDetails> loadClientByIdAsRoot(String clientId) throws ClientRegistrationException {
         if (!Optional.ofNullable(clientId).isPresent()) {
             throw new ClientRegistrationException(Validations.INVALID_ID.getCode());
@@ -321,6 +343,16 @@ public class OAuthClientDetailsService implements ClientDetailsService {
                 .withResult(tokens).build();
     }
 
+    public ServiceResponse<List<AccessToken>> loadClientId(
+            OauthClientDetails oauthClient) {
+
+        List<AccessToken> tokens = accessTokenRepository
+                .findAccessTokensByClientId(oauthClient.getClientId());
+
+        return ServiceResponseBuilder.<List<AccessToken>>ok()
+                .withResult(tokens).build();
+    }
+
     public ServiceResponse<List<OauthClientDetails>> loadAllClients(
             Application application) {
 
@@ -420,6 +452,7 @@ public class OAuthClientDetailsService implements ClientDetailsService {
         oauthClientDetailRepository.save(
                 OauthClientDetails.builder()
                         .clientId(clientDetails.getClientId())
+                        .name(clientDetails.getName())
                         .parentUser(clientDetails.getParentUser())
                         .parentGateway(clientDetails.getParentGateway())
                         .tenant(tenant)
@@ -428,6 +461,7 @@ public class OAuthClientDetailsService implements ClientDetailsService {
                         .application(application)
                         .webServerRedirectUri(clientDetails.getWebServerRedirectUri())
                         .roles(clientDetails.getRoles())
+                        .guid(UUID.randomUUID().toString())
                         .build());
 
         return ServiceResponseBuilder.<OauthClientDetails>ok()

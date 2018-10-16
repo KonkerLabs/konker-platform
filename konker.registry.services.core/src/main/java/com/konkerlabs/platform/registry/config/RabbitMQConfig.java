@@ -37,6 +37,8 @@ public class RabbitMQConfig {
 
     public static final String MSG_HEADER_TIMESTAMP = "ts";
 
+    public static final String MSG_HEADER_EVENT_ROUTE_GUID = "eventRouteGuid";
+
     public RabbitMQConfig() {
         Map<String, Object> defaultMap = new HashMap<>();
         defaultMap.put("rabbitmq.hostname", "localhost");
@@ -89,6 +91,15 @@ public class RabbitMQConfig {
 
        return new Queue("device.removed", durable, exclusive, autoDelete);
 
+    }
+
+    @Bean
+    public Queue eventRoutesQueue() {
+        boolean durable = true;
+        boolean exclusive = false;
+        boolean autoDelete = false;
+
+        return new Queue("routed.events", durable, exclusive, autoDelete);
     }
 
 }

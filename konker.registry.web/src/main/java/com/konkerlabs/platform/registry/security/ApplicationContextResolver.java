@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 public class ApplicationContextResolver implements SmartFactoryBean<Application> {
 
     @Override
-    public Application getObject() throws Exception {
+    public Application getObject() {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Tenant tenant =  User.class.cast(userDetails).getTenant();
         // Return tenant default application

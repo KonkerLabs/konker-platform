@@ -56,6 +56,11 @@ def main():
     add_privileges('ROLE_IOT_GATEWAY', 'ADD_DEVICE')
     add_privileges('ROLE_IOT_GATEWAY', 'REMOVE_DEVICE')
 
+    add_privileges('ROLE_IOT_USER', 'LIST_OAUTH')
+    add_privileges('ROLE_IOT_USER', 'CREATE_OAUTH')
+    add_privileges('ROLE_IOT_USER', 'EDIT_OAUTH')
+    add_privileges('ROLE_IOT_USER', 'REMOVE_OAUTH')
+    add_privileges('ROLE_IOT_USER', 'SHOW_OAUTH')
 
 if __name__ == "__main__":
     main()

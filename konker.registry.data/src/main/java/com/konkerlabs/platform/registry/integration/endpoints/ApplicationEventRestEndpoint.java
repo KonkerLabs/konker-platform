@@ -21,7 +21,7 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.TenantService;
-import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
+import com.konkerlabs.platform.registry.data.core.integration.gateway.HttpGateway;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 
@@ -38,7 +38,7 @@ public class ApplicationEventRestEndpoint {
         INVALID_WAITTIME("integration.rest.invalid.waitTime"),
         INVALID_CHANNEL_PATTERN("integration.rest.invalid.channel"),
     	DEVICE_NOT_FOUND("integration.event_processor.channel.not_found"),
-    	INVALID_REQUEST_ORIGIN("integration.rest.invalid_requrest_origin"),
+    	INVALID_REQUEST_ORIGIN("integration.rest.invalid_request_origin"),
     	INVALID_TENANT("integration.rest.invalid_tenant");
 
         private String code;

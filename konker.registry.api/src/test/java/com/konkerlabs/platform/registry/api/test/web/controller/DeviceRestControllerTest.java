@@ -50,7 +50,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 })
 public class DeviceRestControllerTest extends WebLayerTestContext {
 
-    private static final String NONEXIST_APPLICATION_NANE = "AppLost";
+    private static final String NONEXIST_APPLICATION_NAME = "AppLost";
 
     @Autowired
     private DeviceRegisterService deviceRegisterService;
@@ -95,9 +95,9 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 
     private List<Event> events;
 
-    private String BASEPATH = "devices";
+    private final String BASEPATH = "devices";
 
-    private Instant registrationDate = Instant.ofEpochMilli(1495716970000l).minusSeconds(3600l);
+    private final Instant registrationDate = Instant.ofEpochMilli(1495716970000L).minusSeconds(3600L);
 
     @Before
     public void setUp() {
@@ -111,6 +111,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .location(locationBR)
                 .application(application)
                 .active(true)
+                .debug(true)
                 .registrationDate(registrationDate)
                 .lastModificationDate(registrationDate)
                 .tags(tags)
@@ -127,7 +128,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .severity(HealthAlertSeverity.FAIL)
                 .description("No message received from the device for a long time.")
                 .registrationDate(registrationDate)
-                .lastChange(Instant.ofEpochMilli(1495716970000l))
+                .lastChange(Instant.ofEpochMilli(1495716970000L))
                 .device(device1)
                 .alertTrigger(alertTrigger)
                 .build();
@@ -137,7 +138,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .severity(HealthAlertSeverity.OK)
                 .description("No message received from the device for a long time.")
                 .registrationDate(registrationDate)
-                .lastChange(Instant.ofEpochMilli(1495716970000l))
+                .lastChange(Instant.ofEpochMilli(1495716970000L))
                 .device(device1)
                 .alertTrigger(alertTrigger)
                 .build();
@@ -167,7 +168,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
         devices.add(device1);
         devices.add(device2);
 
-        when(deviceRegisterService.findAll(tenant, application))
+        when(deviceRegisterService.search(tenant, application, null))
                 .thenReturn(ServiceResponseBuilder.<List<Device>>ok().withResult(devices).build());
 
         when(applicationService.getByApplicationName(tenant, application.getName()))
@@ -189,7 +190,42 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .andExpect(jsonPath("$.result[1].id", is("id2")))
                 .andExpect(jsonPath("$.result[1].name", is("name2")))
                 .andExpect(jsonPath("$.result[1].guid", is("guid2")))
-                .andExpect(jsonPath("$.result[1].active", is(false)));
+                .andExpect(jsonPath("$.result[1].active", is(false)))
+                .andExpect(jsonPath("$.result[1].debug", is(false)));
+
+
+    }
+
+    @Test
+    public void shouldListDevicesFilterByTag() throws Exception {
+
+        List<Device> devices = new ArrayList<>();
+        devices.add(device1);
+        devices.add(device2);
+
+        when(deviceRegisterService.search(tenant, application, "red"))
+                .thenReturn(ServiceResponseBuilder.<List<Device>>ok().withResult(devices).build());
+
+        when(applicationService.getByApplicationName(tenant, application.getName()))
+                .thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
+        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/?tag=red", application.getName(), BASEPATH))
+                .contentType("application/json")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/json;charset=UTF-8"))
+                .andExpect(jsonPath("$.code", is(HttpStatus.OK.value())))
+                .andExpect(jsonPath("$.status", is("success")))
+                .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
+                .andExpect(jsonPath("$.result", hasSize(2)))
+                .andExpect(jsonPath("$.result[0].id", is("id1")))
+                .andExpect(jsonPath("$.result[0].name", is("name1")))
+                .andExpect(jsonPath("$.result[0].guid", is("guid1")))
+                .andExpect(jsonPath("$.result[0].active", is(true)))
+                .andExpect(jsonPath("$.result[1].id", is("id2")))
+                .andExpect(jsonPath("$.result[1].name", is("name2")))
+                .andExpect(jsonPath("$.result[1].guid", is("guid2")))
+                .andExpect(jsonPath("$.result[1].active", is(false)))
+                .andExpect(jsonPath("$.result[1].debug", is(false)));
 
 
     }
@@ -197,7 +233,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryListDevicesWithInternalError() throws Exception {
 
-        when(deviceRegisterService.findAll(tenant, application))
+        when(deviceRegisterService.search(tenant, application, null))
                 .thenReturn(ServiceResponseBuilder.<List<Device>>error().build());
 
         when(applicationService.getByApplicationName(tenant, application.getName()))
@@ -237,17 +273,18 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .andExpect(jsonPath("$.result.id", is("id1")))
                 .andExpect(jsonPath("$.result.name", is("name1")))
                 .andExpect(jsonPath("$.result.guid", is("guid1")))
-                .andExpect(jsonPath("$.result.active", is(true)));
+                .andExpect(jsonPath("$.result.active", is(true)))
+                .andExpect(jsonPath("$.result.debug", is(true)));
 
     }
 
     @Test
     public void shouldReadWithWrongApplication() throws Exception {
 
-        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NANE))
+        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NAME))
                 .thenReturn(ServiceResponseBuilder.<Application>error().withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode()).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}", NONEXIST_APPLICATION_NANE, BASEPATH, device1.getGuid()))
+        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}", NONEXIST_APPLICATION_NAME, BASEPATH, device1.getGuid()))
                 .contentType("application/json")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError())
@@ -403,7 +440,8 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .andExpect(jsonPath("$.result.name", is("name1")))
                 .andExpect(jsonPath("$.result.guid", is("guid1")))
                 .andExpect(jsonPath("$.result.locationName", is("br")))
-                .andExpect(jsonPath("$.result.active", is(true)));
+                .andExpect(jsonPath("$.result.active", is(true)))
+                .andExpect(jsonPath("$.result.debug", is(true)));
 
     }
 
@@ -467,7 +505,8 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .andExpect(jsonPath("$.result.name", is("name1")))
                 .andExpect(jsonPath("$.result.guid", is("guid1")))
                 .andExpect(jsonPath("$.result.tags", is(Arrays.asList("tag1", "tag2"))))
-                .andExpect(jsonPath("$.result.active", is(true)));
+                .andExpect(jsonPath("$.result.active", is(true)))
+                .andExpect(jsonPath("$.result.debug", is(true)));
 
 
     }
@@ -522,10 +561,10 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryDeleteWithWrongApplication() throws Exception {
 
-        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NANE))
+        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NAME))
                 .thenReturn(ServiceResponseBuilder.<Application>error().withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode()).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.delete(MessageFormat.format("/{0}/{1}/{2}", NONEXIST_APPLICATION_NANE, BASEPATH, device1.getGuid()))
+        getMockMvc().perform(MockMvcRequestBuilders.delete(MessageFormat.format("/{0}/{1}/{2}", NONEXIST_APPLICATION_NAME, BASEPATH, device1.getGuid()))
                 .contentType("application/json")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError())
@@ -612,10 +651,10 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldShowStatWithWrongApplication() throws Exception {
 
-        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NANE))
+        when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NAME))
                 .thenReturn(ServiceResponseBuilder.<Application>error().withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode()).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}/stats", NONEXIST_APPLICATION_NANE, BASEPATH, device1.getGuid()))
+        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}/stats", NONEXIST_APPLICATION_NAME, BASEPATH, device1.getGuid()))
                 .contentType("application/json")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError())
@@ -714,7 +753,8 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .andExpect(jsonPath("$.result.name", is("name1")))
                 .andExpect(jsonPath("$.result.guid", is("guid1")))
                 .andExpect(jsonPath("$.result.locationName", is("br")))
-                .andExpect(jsonPath("$.result.active", is(true)));
+                .andExpect(jsonPath("$.result.active", is(true)))
+                .andExpect(jsonPath("$.result.debug", is(true)));
 
     }
 

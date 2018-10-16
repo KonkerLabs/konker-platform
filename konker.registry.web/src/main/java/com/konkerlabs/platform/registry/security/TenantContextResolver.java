@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 public class TenantContextResolver implements SmartFactoryBean<Tenant> {
 
     @Override
-    public Tenant getObject() throws Exception {
+    public Tenant getObject() {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return User.class.cast(userDetails).getTenant();
     }

@@ -1,7 +1,6 @@
 package com.konkerlabs.platform.registry.audit;
 
 import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEvent;
 import ch.qos.logback.classic.util.LoggerNameUtil;
@@ -9,9 +8,7 @@ import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.spi.AppenderAttachable;
 import ch.qos.logback.core.spi.AppenderAttachableImpl;
 import ch.qos.logback.core.spi.FilterReply;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import org.slf4j.Marker;
 import org.slf4j.spi.LocationAwareLogger;
 
@@ -190,7 +187,7 @@ public final class KonkerLogger
     KonkerLogger createChildByLastNamePart(String lastPart) {
         int i_index = LoggerNameUtil.getFirstSeparatorIndexOf(lastPart);
         if(i_index != -1) {
-            throw new IllegalArgumentException("Child name [" + lastPart + " passed as parameter, may not include [" + '.' + "]");
+            throw new IllegalArgumentException("Child name [" + lastPart + " passed as parameter, may not include [" + '.' + ']');
         } else {
             if(this.childrenList == null) {
                 this.childrenList = new ArrayList();
@@ -519,7 +516,7 @@ public final class KonkerLogger
     public boolean isErrorEnabled(Marker marker) {
         FilterReply decision = this.callTurboFilters(marker, Level.ERROR);
         if(decision == FilterReply.NEUTRAL) {
-            return this.effectiveLevelInt <= '鱀';
+            return this.effectiveLevelInt <= (int) '鱀';
         } else if(decision == FilterReply.DENY) {
             return false;
         } else if(decision == FilterReply.ACCEPT) {
@@ -612,7 +609,7 @@ public final class KonkerLogger
     }
 
     public String toString() {
-        return "Logger[" + this.name + "]";
+        return "Logger[" + this.name + ']';
     }
 
     private FilterReply callTurboFilters(Marker marker, Level level) {

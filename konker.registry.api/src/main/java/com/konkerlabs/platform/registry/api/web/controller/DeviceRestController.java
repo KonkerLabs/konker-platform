@@ -48,12 +48,15 @@ public class DeviceRestController extends AbstractRestController implements Init
     @ApiOperation(
             value = "List all devices by application",
             response = DeviceVO.class)
-    public List<DeviceVO> list(@PathVariable("application") String applicationId) throws BadServiceResponseException, NotFoundResponseException {
+    public List<DeviceVO> list(
+            @PathVariable("application") String applicationId,
+            @ApiParam(value = "Tag filter")
+            @RequestParam(required = false) String tag) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
 
-        ServiceResponse<List<Device>> deviceResponse = deviceRegisterService.findAll(tenant, application);
+        ServiceResponse<List<Device>> deviceResponse = deviceRegisterService.search(tenant, application, tag);
 
         if (!deviceResponse.isOk()) {
             throw new BadServiceResponseException( deviceResponse, validationsCode);
@@ -180,6 +183,7 @@ public class DeviceRestController extends AbstractRestController implements Init
         deviceFromDB.setLocation(location);
         deviceFromDB.setDeviceModel(deviceModel);
         deviceFromDB.setActive(deviceForm.isActive());
+        deviceFromDB.setDebug(deviceForm.isDebug());
 
         ServiceResponse<Device> updateResponse = deviceRegisterService.update(tenant, application, deviceGuid, deviceFromDB);
 
@@ -237,7 +241,7 @@ public class DeviceRestController extends AbstractRestController implements Init
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
 
         for (com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.Validations value : DeviceRegisterService.Validations.values()) {
             validationsCode.add(value.getCode());

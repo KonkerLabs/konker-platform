@@ -129,7 +129,7 @@ public class User implements URIDealer, UserDetails {
 	public enum JobEnum {
 		CEO("model.user.job.ceo"),
 		CIO("model.user.job.cio"),
-		ENTERPRENUER("model.user.job.enterprenuer"),
+		ENTERPRENUER("model.user.job.entrepreneur"),
 		MARKETING("model.user.job.marketing"),
 		SALES("model.user.job.sales"),
 		STARTUP("model.user.job.startup"),

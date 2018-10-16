@@ -13,7 +13,17 @@
             })(window,document,'//static.hotjar.com/c/hotjar-','.js?sv=');
         /*]]>*/
     </script>
-    
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script data-th-if="${googleAnalyticsEnable}" async data-th-src="@{https://www.googletagmanager.com/gtag/js?id=} + ${googleAnalyticsId}"></script>
+    <script data-th-if="${googleAnalyticsEnable}" data-th-inline="javascript" >
+          /*<![CDATA[*/
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', [[${googleAnalyticsId}]]);
+          /*]]>*/
+    </script>
+
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
@@ -150,6 +160,14 @@
                           <span data-th-text="#{nav.menu.debug_messages}">Debug</span>
                       </a>                      
                   </li>
+
+                  <li class="sub-menu" th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'', ''ROLE_IOT_READ_ONLY'')')}">
+                      <a data-th-href="@{/idm/default/clients/}">
+                          <img data-th-attr="src=@{/resources/konker/images/icons-menu/icon-key.svg}" class="icon-menu" />
+                          <span data-th-text="#{nav.menu.idm.tokens}">API Tokens</span>
+                      </a>
+                  </li>
+
               </ul>
 
               <ul class="sidebar-menu subtitle" id="nav-accordion"

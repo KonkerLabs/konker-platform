@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry.api.test.web.controller;
 
 import com.konkerlabs.platform.registry.api.config.WebMvcConfig;
+import com.konkerlabs.platform.registry.api.model.DeviceInputVO;
 import com.konkerlabs.platform.registry.api.model.GatewayVO;
 import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
 import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
@@ -9,6 +10,8 @@ import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
 import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.services.api.*;
 import com.konkerlabs.platform.registry.idm.services.OAuth2AccessTokenService;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.DeviceSecurityCredentials;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.DeviceDataURLs;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,13 +31,18 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.any;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = GatewayRestController.class)
@@ -62,6 +70,9 @@ public class GatewayRestControllerTest extends WebLayerTestContext {
     private GatewayService gatewayService;
 
     @Autowired
+    private DeviceRegisterService deviceRegisterService;
+
+    @Autowired
     private LocationSearchService locationSearchService;
 
     @Autowired
@@ -71,9 +82,21 @@ public class GatewayRestControllerTest extends WebLayerTestContext {
 
     private Gateway gateway;
 
-    private String BASEPATH = "gateways";
+    private Device device;
 
-    private String INVALID_GUID = "000000-aaa";
+    private DeviceInputVO deviceHumidity;
+
+    private DeviceInputVO deviceTemp;
+
+    private DeviceSecurityCredentials deviceSecurityCredentials;
+
+    private DeviceDataURLs deviceDataURLs;
+
+    private List<DeviceInputVO> devices = new ArrayList<>();
+
+    private final String BASEPATH = "gateways";
+
+    private final String INVALID_GUID = "000000-aaa";
 
     @Before
     public void setUp() {
@@ -92,6 +115,27 @@ public class GatewayRestControllerTest extends WebLayerTestContext {
         gateway.setTenant(tenant);
         gateway.setApplication(application);
         gateway.setLocation(location);
+
+
+        device = Device.builder()
+                .deviceId("sendorHumidity")
+                .name("Humidity")
+                .apiKey("apikey")
+                .application(application)
+                .location(location)
+                .build();
+        deviceSecurityCredentials = new DeviceSecurityCredentials(device, "xpto123");
+        deviceDataURLs = new DeviceDataURLs(device, Locale.ENGLISH);
+
+        deviceHumidity = new DeviceInputVO();
+        deviceHumidity.setId("sendorHumidity");
+        deviceHumidity.setName("Humidity");
+        devices.add(deviceHumidity);
+
+        deviceTemp = new DeviceInputVO();
+        deviceTemp.setId("sendorTemp");
+        deviceTemp.setName("Temperature");
+        devices.add(deviceTemp);
 
         when(applicationService.getByApplicationName(tenant, application.getName()))
             .thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
@@ -194,6 +238,83 @@ public class GatewayRestControllerTest extends WebLayerTestContext {
                 .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
                 .andExpect(jsonPath("$.messages").exists())
                 .andExpect(jsonPath("$.result").doesNotExist());
+    }
+
+    @Test
+    public void shouldCreateDevicesByGateway() throws Exception {
+        when(gatewayService.getByGUID(any(Tenant.class), any(Application.class), anyString()))
+            .thenReturn(ServiceResponseBuilder.<Gateway>ok()
+                    .withResult(gateway)
+                    .build());
+
+        when(deviceRegisterService.register(any(Tenant.class), any(Application.class), any(Device.class)))
+                .thenReturn(ServiceResponseBuilder.<Device>ok()
+                        .withResult(device)
+                        .build());
+
+        when(deviceRegisterService.generateSecurityPassword(any(Tenant.class), any(Application.class), anyString()))
+                .thenReturn(ServiceResponseBuilder.<DeviceSecurityCredentials>ok()
+                        .withResult(deviceSecurityCredentials)
+                        .build());
+
+        when(deviceRegisterService.getDeviceDataURLs(any(Tenant.class), any(Application.class), any(Device.class), any(Locale.class)))
+                .thenReturn(ServiceResponseBuilder.<DeviceDataURLs>ok()
+                        .withResult(deviceDataURLs)
+                        .build());
+
+        getMockMvc().perform(MockMvcRequestBuilders
+                .post(MessageFormat.format("/{0}/{1}/{2}/devices", application.getName(), BASEPATH, "abdc-guid-gateway"))
+                .content(getJson(devices))
+                .contentType("application/json")
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().is2xxSuccessful())
+                .andExpect(content().contentType("application/json;charset=UTF-8"))
+                .andExpect(jsonPath("$.code", is(HttpStatus.CREATED.value())))
+                .andExpect(jsonPath("$.status", is("success")))
+                .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                .andExpect(jsonPath("$.messages").doesNotExist())
+                .andExpect(jsonPath("$.result").isArray())
+                .andExpect(jsonPath("$.result[0].id", is("sendorHumidity")))
+                .andExpect(jsonPath("$.result[0].name", is("Humidity")))
+                .andExpect(jsonPath("$.result[0].username", is("apikey")))
+                .andExpect(jsonPath("$.result[0].password", is("xpto123")))
+                .andExpect(jsonPath("$.result[0].httpURLPub", is("http://dev-server:8080/pub/apikey/<Channel>")))
+                .andExpect(jsonPath("$.result[0].httpURLSub", is("http://dev-server:8080/sub/apikey/<Channel>")))
+                .andExpect(jsonPath("$.result[0].httpsURLPub", is("https://dev-server:443/pub/apikey/<Channel>")))
+                .andExpect(jsonPath("$.result[0].httpsURLSub", is("https://dev-server:443/sub/apikey/<Channel>")))
+                .andExpect(jsonPath("$.result[0].mqttURL", is("mqtt://dev-server:1883")))
+                .andExpect(jsonPath("$.result[0].mqttsURL", is("mqtts://dev-server:1883")))
+                .andExpect(jsonPath("$.result[0].mqttPubTopic", is("data/apikey/pub/<Channel>")))
+                .andExpect(jsonPath("$.result[0].mqttSubTopic", is("data/apikey/sub/<Channel>")));
+
+    }
+
+    @Test
+    public void shouldTryCreateDevicesByGatewayWithBadRequest() throws Exception {
+        when(gatewayService.getByGUID(any(Tenant.class), any(Application.class), anyString()))
+                .thenReturn(ServiceResponseBuilder.<Gateway>ok()
+                        .withResult(gateway)
+                        .build());
+
+        when(deviceRegisterService.register(any(Tenant.class), any(Application.class), any(Device.class)))
+                .thenReturn(ServiceResponseBuilder.<Device>error()
+                        .withMessage(DeviceRegisterService.Validations.DEVICE_ID_DOES_NOT_EXIST.getCode())
+                        .build());
+
+        getMockMvc().perform(MockMvcRequestBuilders
+                .post(MessageFormat.format("/{0}/{1}/{2}/devices", application.getName(), BASEPATH, "abdc-guid-gateway"))
+                .content(getJson(devices))
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().is4xxClientError())
+                .andExpect(content().contentType("application/json;charset=UTF-8"))
+                .andExpect(jsonPath("$.code", is(HttpStatus.BAD_REQUEST.value())))
+                .andExpect(jsonPath("$.status", is("error")))
+                .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
+                .andExpect(jsonPath("$.messages[0]", is("Device ID does not exist")))
+                .andExpect(jsonPath("$.result").doesNotExist());
+
     }
 
     @Test

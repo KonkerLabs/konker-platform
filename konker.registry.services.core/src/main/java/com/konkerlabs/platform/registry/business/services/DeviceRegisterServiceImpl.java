@@ -8,10 +8,7 @@ import com.google.zxing.qrcode.QRCodeWriter;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
-import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
-import com.konkerlabs.platform.registry.business.repositories.EventRouteRepository;
-import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
+import com.konkerlabs.platform.registry.business.repositories.*;
 import com.konkerlabs.platform.registry.business.repositories.events.api.EventRepository;
 import com.konkerlabs.platform.registry.business.services.api.*;
 import com.konkerlabs.platform.registry.config.EventStorageConfig;
@@ -48,6 +45,9 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
     @Autowired
     private DeviceRepository deviceRepository;
+
+    @Autowired
+    private DeviceSearchRepository deviceSearchRepository;
 
     @Autowired
     private EventRouteRepository eventRouteRepository;
@@ -209,6 +209,19 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         return ServiceResponseBuilder.<List<Device>>ok().withResult(all).build();
     }
 
+    @Override
+    public ServiceResponse<List<Device>> search(Tenant tenant, Application application, String tag) {
+
+        ServiceResponse<List<Device>> validationResponse = validate(tenant, application);
+        if (!validationResponse.isOk()) {
+            return validationResponse;
+        }
+
+        List<Device> all = deviceSearchRepository.search(tenant.getId(), application.getName(), tag);
+
+        return ServiceResponseBuilder.<List<Device>>ok().withResult(all).build();
+
+    }
 
     @Override
     public ServiceResponse<Long> countAll(Tenant tenant, Application application) {
@@ -321,6 +334,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         deviceFromDB.setLocation(updatingDevice.getLocation());
         deviceFromDB.setDeviceModel(updatingDevice.getDeviceModel());
         deviceFromDB.setActive(updatingDevice.isActive());
+        deviceFromDB.setDebug(updatingDevice.isDebug());
         deviceFromDB.setLastModificationDate(Instant.now());
 
         Optional<Map<String, Object[]>> validations = deviceFromDB.applyValidations();

@@ -28,11 +28,11 @@ public class DeviceRegistrationFormTest {
     }
 
     @Test
-    public void shouldTranslateFromFormToModel() throws Exception {
+    public void shouldTranslateFromFormToModel() {
         assertThat(form.toModel(),equalTo(model));
     }
 
-    public void shouldTranslateFromModelToForm() throws Exception {
+    public void shouldTranslateFromModelToForm() {
         DeviceRegistrationForm givenForm = new DeviceRegistrationForm().fillFrom(model);
         assertThat(givenForm,equalTo(form));
     }

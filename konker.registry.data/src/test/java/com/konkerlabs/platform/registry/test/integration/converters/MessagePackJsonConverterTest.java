@@ -1,7 +1,7 @@
 package com.konkerlabs.platform.registry.test.integration.converters;
 
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.integration.converters.MessagePackJsonConverter;
+import com.konkerlabs.platform.registry.data.core.integration.converters.MessagePackJsonConverter;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 
@@ -9,7 +9,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 public class MessagePackJsonConverterTest {
 
-    private MessagePackJsonConverter subject = new MessagePackJsonConverter();
+    private final MessagePackJsonConverter subject = new MessagePackJsonConverter();
 
     @Test
     public void testJsonToBytesToJson() {

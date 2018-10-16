@@ -6,7 +6,6 @@ import com.konkerlabs.platform.registry.business.model.behaviors.RESTDestination
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.utilities.validations.InterpolableURIValidator;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -192,7 +191,7 @@ public class RestDestinationTest {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("CONTEXT cannot be null or empty");
 
-        subject.getTenant().setDomainName(null);;
+        subject.getTenant().setDomainName(null);
         URI uri = subject.toURI();
         assertThat(uri, nullValue());
     }
@@ -202,7 +201,7 @@ public class RestDestinationTest {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("CONTEXT cannot be null or empty");
 
-        subject.getTenant().setDomainName("");;
+        subject.getTenant().setDomainName("");
         URI uri = subject.toURI();
         assertThat(uri, nullValue());
     }
@@ -222,7 +221,7 @@ public class RestDestinationTest {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("GUID cannot be null or empty");
 
-        subject.setGuid("");;
+        subject.setGuid("");
         URI uri = subject.toURI();
         assertThat(uri, nullValue());
     }

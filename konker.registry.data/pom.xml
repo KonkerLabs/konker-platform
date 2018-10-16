@@ -105,6 +105,11 @@
             <artifactId>konker.registry.services.storage.cassandra</artifactId>
             <version>0.0.1</version>
         </dependency>
+        <dependency>
+            <groupId>com.konkerlabs</groupId>
+            <artifactId>konker.registry.data.core</artifactId>
+            <version>0.0.1</version>
+        </dependency>
         <!-- Konker IDM -->
         <dependency>
             <artifactId>konker.registry.idm.resourceserver</artifactId>
@@ -195,6 +200,12 @@
             <artifactId>mockito-java8</artifactId>
             <version>0.3.1</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.5</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 

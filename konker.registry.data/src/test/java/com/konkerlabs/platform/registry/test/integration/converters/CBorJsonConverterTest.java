@@ -6,11 +6,11 @@ import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.integration.converters.CBorJsonConverter;
+import com.konkerlabs.platform.registry.data.core.integration.converters.CBorJsonConverter;
 
 public class CBorJsonConverterTest {
 	
-	private CBorJsonConverter converter = new CBorJsonConverter();
+	private final CBorJsonConverter converter = new CBorJsonConverter();
 	
 	@Test
     public void testJsonArrayToCBorBytesToJson() {

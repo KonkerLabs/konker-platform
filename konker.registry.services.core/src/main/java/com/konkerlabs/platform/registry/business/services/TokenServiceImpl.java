@@ -44,12 +44,12 @@ public class TokenServiceImpl implements TokenService {
             } else {
                 return ServiceResponseBuilder.<Token>error()
                         .withMessage(Validations.INVALID_TOKEN.getCode())
-                        .withResult(result).build();
+                        .build();
             }
         } else {
             return ServiceResponseBuilder.<Token>error()
                     .withMessage(Validations.INVALID_TOKEN.getCode())
-                    .withResult(result).build();
+                    .build();
         }
     }
 

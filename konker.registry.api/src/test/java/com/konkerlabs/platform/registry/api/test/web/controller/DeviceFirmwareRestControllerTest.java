@@ -74,7 +74,7 @@ public class DeviceFirmwareRestControllerTest extends WebLayerTestContext {
 
     private DeviceFirmware deviceFirmware;
 
-    private String BASEPATH = "firmwares";
+    private final String BASEPATH = "firmwares";
 
     @Before
     public void setUp() {
@@ -162,6 +162,7 @@ public class DeviceFirmwareRestControllerTest extends WebLayerTestContext {
         when(deviceConfigSetupService.save(org.mockito.Matchers.any(Tenant.class), org.mockito.Matchers.any(Application.class), org.mockito.Matchers.any(DeviceFirmware.class)))
             .thenReturn(ServiceResponseBuilder.<DeviceFirmware>ok()
                     .withResult(deviceFirmware).build());
+
 
         getMockMvc().perform(MockMvcRequestBuilders
                 .fileUpload(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH, deviceModel.getName()))

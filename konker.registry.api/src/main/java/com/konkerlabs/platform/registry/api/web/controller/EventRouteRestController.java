@@ -293,7 +293,7 @@ public class EventRouteRestController extends AbstractRestController implements 
             if (restResponse.isOk()) {
                 routeActor.setDisplayName(restResponse.getResult().getName());
                 routeActor.setUri(restResponse.getResult().toURI());
-                routeActor.setData(new HashMap<String, String>() {} );
+                routeActor.setData(new HashMap<>());
                 return routeActor;
             } else {
                 throw new BadServiceResponseException( restResponse, validationsCode);
@@ -413,7 +413,7 @@ public class EventRouteRestController extends AbstractRestController implements 
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
 
         for (Validations value : EventRouteService.Validations.values()) {
             validationsCode.add(value.getCode());

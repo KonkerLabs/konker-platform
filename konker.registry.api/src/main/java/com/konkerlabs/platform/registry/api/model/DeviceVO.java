@@ -33,6 +33,7 @@ public class DeviceVO extends DeviceInputVO
         vo.setLocationName(t.getLocation() != null ? t.getLocation().getName() : null);
         vo.setDeviceModelName(t.getDeviceModel() != null ? t.getDeviceModel().getName() : null);
         vo.setActive(t.isActive());
+        vo.setDebug(t.isDebug());
         vo.setId(t.getDeviceId());
         vo.setTags(t.getTags()!=null ? t.getTags() : Collections.emptySet());
         return vo;
@@ -46,6 +47,7 @@ public class DeviceVO extends DeviceInputVO
         t.setId(this.getId());
         t.setGuid(this.getGuid());
         t.setTags(this.getTags());
+        t.setDebug(this.isDebug());
         return t;
     }
 }

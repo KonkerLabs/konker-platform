@@ -105,7 +105,7 @@ public class TenantServiceImpl implements TenantService {
 					.build();
 		}
 
-		tenant.setDevicesLimit(new Long(5l));
+		tenant.setDevicesLimit(5L);
 		tenant.setDomainName(generateDomainName());
 
 		Tenant fromStorage = tenantRepository.save(tenant);
@@ -128,11 +128,11 @@ public class TenantServiceImpl implements TenantService {
 		Random random = new Random();
 		StringBuilder domainName = new StringBuilder();
 		
-		int index = (int) (random.nextFloat() * letters.length());
+		int index = (int) (random.nextFloat() * (float) letters.length());
 		domainName.append(letters.charAt(index));
 		
 		while (domainName.length() < 8) {
-			index = (int) (random.nextFloat() * alphaNumeric.length());
+			index = (int) (random.nextFloat() * (float) alphaNumeric.length());
 			domainName.append(alphaNumeric.charAt(index));
 		}
 		

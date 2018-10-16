@@ -1,0 +1,84 @@
+image:
+  repository: konkerlabs/konker-registry
+  tag: webapp-1.0.0-k8s
+  pullPolicy: IfNotPresent
+  credentials:
+    secret: dockerregistry
+
+nameOverride: "konker-registry-web"
+fullnameOverride: "konker-registry-web"
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  annotations: {
+    "kubernetes.io/ingress.class": "nginx",
+    "kubernetes.io/tls-acme": "true"
+  }
+  path: /
+  hosts:
+    - web-example.yourhost.net
+  tls:
+  - secretName: web-example.yourhost.net-tls
+    hosts:
+    - web-example.yourhost.net
+    commonName: web-example.yourhost.net
+
+resources:
+  limits:
+    cpu: 600m
+    memory: 896Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+livenessProbe:
+  httpGet:
+    path: /registry/login
+    port: http
+readinessProbe:
+  httpGet:
+    path: /registry/login
+    port: http
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+configmap:
+  MONGODB_HOSTNAME: mongodb
+  MONGODB_AUDIT_HOSTNAME: mongodb
+  EVENT_STORAGE: cassandra
+  CASSANDRA_CLUSTERNAME: registry
+  CASSANDRA_KEYSPACE: registry
+  CASSANDRA_HOSTNAME: cassandra
+
+secrets:
+  MONGODB_USERNAME: ""
+  MONGODB_PASSWORD: ""
+  MONGODB_AUDIR_USERNAME: ""
+  MONGODB_AUDIT_PASSWORD: ""
+  CASSANDRA_USERNAME: ""
+  CASSANDRA_PASSWORD: ""
+
+# Uncomment lines bellow if you want to define node or resource affinity
+#affinity: {
+#  nodeAffinity: {
+#    requiredDuringSchedulingIgnoredDuringExecution: {
+#      nodeSelectorTerms: [
+#        matchExpressions: [
+#          key: "cloud.google.com/gke-nodepool",
+#          operator: "In",
+#          values: [
+#            "postgresql-nodes"
+#          ]
+#        ]
+#      ]
+#    }
+#  }
+#}

@@ -23,7 +23,7 @@ import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.UserRepository;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.LoginAuditService;
-import com.konkerlabs.platform.registry.data.security.DeviceUserDetailsService;
+import com.konkerlabs.platform.registry.data.core.security.DeviceUserDetailsService;
 
 @Configuration
 public class WebTestConfiguration {

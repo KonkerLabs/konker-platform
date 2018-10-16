@@ -62,7 +62,7 @@ public class DeviceCredentialsRestControllerTest extends WebLayerTestContext {
 
     private Device device1;
 
-    private String BASEPATH = "deviceCredentials";
+    private final String BASEPATH = "deviceCredentials";
 
     @Before
     public void setUp() {

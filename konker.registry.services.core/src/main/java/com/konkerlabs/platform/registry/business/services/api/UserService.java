@@ -16,7 +16,7 @@ public interface UserService {
         INVALID_USER_PREFERENCE_DATEFORMAT("service.user.validation.dateformat.invalid"),
         INVALID_USER_PREFERENCE_LOCALE("service.user.validation.locale.invalid"),
         INVALID_USER_PREFERENCE_LANGUAGE("service.user.validation.language.invalid"),
-        INVALID_PASSWORD_LENGTH("service.user.validation.password.invalid.lenght"),
+        INVALID_PASSWORD_LENGTH("service.user.validation.password.invalid.length"),
         INVALID_PASSWORD_USER_DATA("service.user.validation.password.invalid.userdata"),
         INVALID_PASSWORD_CONFIRMATION("service.user.validation.password.invalid.confirmation"),
         INVALID_PASSWORD_INVALID("service.user.validation.password.invalid"),

@@ -6,7 +6,7 @@ import com.konkerlabs.platform.registry.business.model.Gateway;
 import com.konkerlabs.platform.registry.business.model.OauthClientDetails;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.idm.services.OAuthClientDetailsService;
-import com.konkerlabs.platform.registry.integration.gateways.HttpGateway;
+import com.konkerlabs.platform.registry.data.core.integration.gateway.HttpGateway;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 import lombok.Builder;
@@ -34,7 +34,9 @@ public class GatewayEventRestEndpoint {
         INVALID_WAITTIME("integration.rest.invalid.waitTime"),
         INVALID_CHANNEL_PATTERN("integration.rest.invalid.channel"),
     	DEVICE_NOT_FOUND("integration.event_processor.channel.not_found"),
-    	INVALID_REQUEST_ORIGIN("integration.rest.invalid_requrest_origin");
+    	INVALID_REQUEST_ORIGIN("integration.rest.invalid_request_origin"),
+        INVALID_HEADER_DEVICE_ID_FIELD("integration.rest.invalid.device_id_field"),
+        INVALID_HEADER_DEVICE_CHANNEL_FIELD("integration.rest.invalid.device_channel_field");
 
         private String code;
 
@@ -97,6 +99,43 @@ public class GatewayEventRestEndpoint {
         		EventResponse.builder().code(String.valueOf(HttpStatus.OK.value()))
         		.message(HttpStatus.OK.name()).build(),
         		HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "gateway/data/pub", method = RequestMethod.POST)
+    public ResponseEntity<EventResponse> onDataEvent(HttpServletRequest servletRequest,
+                                                 OAuth2Authentication oAuth2Authentication,
+                                                 @RequestBody String body,
+                                                 Locale locale) {
+        String principal = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        OauthClientDetails clientDetails = oAuthClientDetailsService.loadClientByIdAsRoot(principal).getResult();
+        Gateway gateway = clientDetails.getParentGateway();
+        String deviceIdFieldName = servletRequest.getHeader("X-Konker-DeviceIdField");
+        String deviceChannelFieldName = servletRequest.getHeader("X-Konker-DeviceChannelField");
+
+        if (!jsonParsingService.isValid(body))
+            return new ResponseEntity<EventResponse>(buildResponse(Messages.INVALID_REQUEST_BODY.getCode(),locale), HttpStatus.BAD_REQUEST);
+
+        if (servletRequest.getHeader(HttpGateway.KONKER_VERSION_HEADER) != null)
+            return new ResponseEntity<EventResponse>(buildResponse(Messages.INVALID_REQUEST_ORIGIN.getCode(), locale), HttpStatus.FORBIDDEN);
+
+        if (deviceIdFieldName == null) {
+            return new ResponseEntity<EventResponse>(buildResponse(Messages.INVALID_HEADER_DEVICE_ID_FIELD.getCode(),locale), HttpStatus.BAD_REQUEST);
+        }
+
+        if (deviceChannelFieldName == null) {
+            return new ResponseEntity<EventResponse>(buildResponse(Messages.INVALID_HEADER_DEVICE_CHANNEL_FIELD.getCode(),locale), HttpStatus.BAD_REQUEST);
+        }
+
+        try {
+            deviceEventProcessor.process(gateway, body, deviceIdFieldName, deviceChannelFieldName);
+        } catch (BusinessException | JsonProcessingException e) {
+            return new ResponseEntity<EventResponse>(buildResponse(e.getMessage(),locale),HttpStatus.BAD_REQUEST);
+        }
+
+        return new ResponseEntity<EventResponse>(
+                EventResponse.builder().code(String.valueOf(HttpStatus.OK.value()))
+                        .message(HttpStatus.OK.name()).build(),
+                HttpStatus.OK);
     }
 
     @Data
