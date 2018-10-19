@@ -61,7 +61,7 @@ public class AccountClientsController implements ApplicationContextAware {
                 applicationService.findAll(tenant);
 
         ModelAndView view = new ModelAndView(
-                String.format("/idm/clients/index", applicationId))
+                String.format("idm/clients/index", applicationId))
                 .addObject("applicationId", tenant.getDomainName())
                 .addObject("allClients", clientList.getResult())
                 .addObject("allApplications", allApplications.getResult());
