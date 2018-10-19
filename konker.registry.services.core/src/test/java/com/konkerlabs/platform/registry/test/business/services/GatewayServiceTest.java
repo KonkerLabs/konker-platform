@@ -149,14 +149,14 @@ public class GatewayServiceTest extends BusinessLayerTestSupport {
     public void shouldTrySaveWithNullLocation() {
 
         Gateway newFirmware = Gateway.builder()
-                .name(gateway.getName())
+                .name("gwsemlocation")
                 .tenant(tenant)
                 .application(application)
                 .location(null)
                 .build();
 
         ServiceResponse<Gateway> response = subject.save(tenant, application, newFirmware);
-        assertThat(response, hasErrorMessage(Gateway.Validations.LOCATION_NULL.getCode()));
+        assertThat(response, isResponseOk());
 
     }
 
