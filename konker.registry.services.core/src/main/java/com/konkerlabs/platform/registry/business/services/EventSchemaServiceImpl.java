@@ -239,6 +239,30 @@ public class EventSchemaServiceImpl implements EventSchemaService {
             .withResult(existing).build();
     }
 
+    private ServiceResponse<EventSchema> findIncomingBy(Tenant tenant, Application application, Device device, String channel) {
+
+        if (!Optional.ofNullable(tenant).isPresent()) {
+            return ServiceResponseBuilder.<EventSchema>error()
+                    .withMessage(CommonValidations.TENANT_NULL.getCode())
+                    .build();
+        }
+
+        if (!Optional.ofNullable(device).isPresent()) {
+            return ServiceResponseBuilder.<EventSchema> error()
+                    .withMessage(DeviceRegisterService.Validations.DEVICE_GUID_DOES_NOT_EXIST.getCode())
+                    .build();
+        }
+
+        EventSchema existing = mongoTemplate.findOne(
+                Query.query(Criteria.where("deviceGuid")
+                        .is(device.getGuid()).andOperator(Criteria.where("channel").is(channel))),
+                EventSchema.class, SchemaType.INCOMING.getCollectionName()
+        );
+
+        return ServiceResponseBuilder.<EventSchema>ok()
+                .withResult(existing).build();
+    }
+
     @Override
     public ServiceResponse<EventSchema> findOutgoingBy(Tenant tenant, Application application, String deviceGuid, String channel) {
         return ServiceResponseBuilder.<EventSchema>ok().build();
@@ -324,13 +348,14 @@ public class EventSchemaServiceImpl implements EventSchemaService {
 					1000);
 
 			ObjectMapper mapper = new ObjectMapper();
+            Device device = deviceRepository.findByTenantAndGuid(tenant.getId(), deviceGuid);
 
 			for (Event event : lastEvents) {
 				if (event.getIncoming() == null) {
 					continue;
 				}
 
-				ServiceResponse<EventSchema> schemaResponse = findIncomingBy(tenant, application, deviceGuid,
+                ServiceResponse<EventSchema> schemaResponse = findIncomingBy(tenant, application, device,
 						event.getIncoming().getChannel());
 				EventSchema schema = schemaResponse.getResult();
 				if (schema == null) {
