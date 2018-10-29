@@ -63,15 +63,13 @@ echo "#### host: $REDIS_HOSTNAME"
 echo "#### port: $REDIS_PORT"
 
 /usr/local/sbin/nginx &
-java \ 
-    -Dorg.eclipse.jetty.server.Request.maxFormContentSize=$REQUEST_MAXSIZE \
-    -Dconfig.file=/var/lib/jetty/resources/application.conf \
+java -Dconfig.file=/var/lib/konker/application.conf \
     -Dmongo.hostname=$MONGODB_HOSTNAME \
-    -Dmongo.port=$MONGODB_PORT \
+    -Dmongo.port=27017 \
     -Dmongo.username=$MONGODB_USERNAME \
     -Dmongo.password=$MONGODB_PASSWORD \
     -DmongoAudit.hostname=$MONGODB_AUDIT_HOSTNAME \
-    -DmongoAudit.port=$MONGODB_AUDIT_PORT \
+    -DmongoAudit.port=27017 \
     -DmongoAudit.username=$MONGODB_AUDIR_USERNAME \
     -DmongoAudit.password=$MONGODB_AUDIT_PASSWORD \
     -Deventstorage.bean=$EVENT_STORAGE \
@@ -81,7 +79,5 @@ java \
     -Dcassandra.port=$CASSANDRA_PORT \
     -Dcassandra.username=$CASSANDRA_USERNAME \
     -Dcassandra.password=$CASSANDRA_PASSWORD \
-    -Dredis.master.host=$REDIS_HOSTNAME \
-    -Dredis.master.port=$REDIS_PORT \
     -jar /usr/local/jetty/start.jar
 exec "$@"

@@ -74,8 +74,8 @@ RUN set -xe \
 COPY docker-resources/docker-entrypoint.sh /
 RUN chmod 777 /docker-entrypoint.sh
 
-COPY docker-resources/dist/registry.war /var/lib/jetty/webapps/
-COPY docker-resources/dist/application.conf /var/lib/jetty/resources/
+COPY target/registry.war /var/lib/jetty/webapps/
+COPY src/main/resources/application.conf.example /var/lib/jetty/resources/application.conf
 COPY docker-resources/dist/logback.xml /var/lib/jetty/webapps/resources/
 COPY docker-resources/dist/logback.xml /var/lib/jetty/resources/
 COPY docker-resources/dist/mail /var/lib/jetty/webapps/resources/mail/
