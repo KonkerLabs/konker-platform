@@ -63,7 +63,8 @@ echo "#### host: $REDIS_HOSTNAME"
 echo "#### port: $REDIS_PORT"
 
 /usr/local/sbin/nginx &
-java -Dconfig.file=/var/lib/konker/application.conf \
+java -Dconfig.file=/var/lib/jetty/resources/application.conf \
+    -Dorg.eclipse.jetty.server.Request.maxFormContentSize=$REQUEST_MAXSIZE \
     -Dmongo.hostname=$MONGODB_HOSTNAME \
     -Dmongo.port=27017 \
     -Dmongo.username=$MONGODB_USERNAME \
