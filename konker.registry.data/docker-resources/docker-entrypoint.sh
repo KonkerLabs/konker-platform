@@ -82,22 +82,22 @@ echo "#### from: $SMS_FROM"
 java \
     -Dconfig.file=/var/lib/konker/application.conf \
     -Dmongo.hostname=$MONGODB_HOSTNAME \
-    -Dmongo.port=$MONGODB_PORT \
+    -Dmongo.port=27017 \
     -Dmongo.username=$MONGODB_USERNAME \
     -Dmongo.password=$MONGODB_PASSWORD \
     -DmongoAudit.hostname=$MONGODB_AUDIT_HOSTNAME \
-    -DmongoAudit.port=$MONGODB_AUDIT_PORT \
+    -DmongoAudit.port=27017 \
     -DmongoAudit.username=$MONGODB_AUDIR_USERNAME \
     -DmongoAudit.password=$MONGODB_AUDIT_PASSWORD \
     -Deventstorage.bean=$EVENT_STORAGE \
     -Dcassandra.clustername=$CASSANDRA_CLUSTERNAME \
     -Dcassandra.keyspace=$CASSANDRA_KEYSPACE \
     -Dcassandra.hostname=$CASSANDRA_HOSTNAME \
-    -Dcassandra.port=$CASSANDRA_PORT \
+    -Dcassandra.port=4260 \
     -Dcassandra.username=$CASSANDRA_USERNAME \
     -Dcassandra.password=$CASSANDRA_PASSWORD \
     -Dredis.master.host=$REDIS_HOSTNAME \
-    -Dredis.master.port=$REDIS_PORT \
+    -Dredis.master.port=6379 \
     -Dredis.master.password=$REDIS_PASSWORD \
     -Drabbitmq.hostname=$RABBITMQ_HOSTNAME \
     -Drabbitmq.username=$RABBITMQ_USERNAME \
