@@ -22,6 +22,11 @@ INTEGRATION_TIMEOUT_SMS=3000
 ANALYTICS_ENABLED=false
 EMAIL_PORT=587
 AMAZON_KINESIS_ENABLED=true
+CDN_MAX_SIZE=500000
+CDN_ENABLED=true
+EMAIL_ENABLED=true
+S3BUCKET_MAX_SIZE=500000
+S3BUCKET_ENABLED=true
 
 
 echo ""
@@ -113,11 +118,6 @@ echo "#### max size: $CDN_MAX_SIZE"
 echo "#### file types: $CDN_FILE_TYPES"
 echo "#### enabled: $CDN_ENABLED"
 echo "#### default avatar: $CDN_DEFAULT_AVATAR"
-echo "## Recaptcha"
-echo "#### secret key: $RECAPTCHA_SECRETKEY"
-echo "#### site key: $RECAPTCHA_SITEKEY"
-echo "#### host: $RECAPTCHA_HOST"
-echo "#### enabled: $RECAPTCHA_ENABLED"
 echo "## Email"
 echo "#### host: $EMAIL_HOST"
 echo "#### port: $EMAIL_PORT"
@@ -193,10 +193,6 @@ java \
     -Dcdn.file-types=$CDN_FILE_TYPES \
     -Dcdn.enabled=$CDN_ENABLED \
     -Dcdn.defaultavatar=$CDN_DEFAULT_AVATAR \
-    -Drecaptcha.secretKey=$RECAPTCHA_SECRETKEY \
-    -Drecaptcha.siteKey=$RECAPTCHA_SITEKEY \
-    -Drecaptcha.host=$RECAPTCHA_HOST \
-    -Drecaptcha.enabled=$RECAPTCHA_ENABLED \
     -Demail.host=$EMAIL_HOST \
     -Demail.port=$EMAIL_PORT \
     -Demail.sender=$EMAIL_SENDER \
