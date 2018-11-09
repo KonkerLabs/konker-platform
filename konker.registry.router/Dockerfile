@@ -14,9 +14,9 @@ WORKDIR $KONKER_BASE
 COPY docker-resources/docker-entrypoint.sh /
 RUN chmod 777 /docker-entrypoint.sh
 
-COPY target/registry-router.jar /var/lib/konker/
-COPY docker-resources/build/application.conf.example /var/lib/konker/application.conf
-COPY docker-resources/build/logback.xml /var/lib/konker/
+COPY docker-resources/dist/registry-router.jar /var/lib/konker/
+COPY docker-resources/dist/application.conf.example /var/lib/konker/application.conf
+COPY docker-resources/dist/logback.xml /var/lib/konker/
 
 #nginx - DO NOT REMOVE IT
 ENV NGINX_VERSION nginx-1.10.3
