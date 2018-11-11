@@ -1,0 +1,17 @@
+---
+params:
+  marathon:
+    user: konker
+    passwd: "#########"
+    uri: http://marathon.demo.konkerlabs.net
+  docker:
+    user: konkerkobayashi
+    passwd: #########
+  bitbucket:
+    user: cyk-konker
+    passwd: #########
+  amazons3:
+    access_key_id: #########
+    secret_access_key: #########
+  slack:
+    url_hook: https://hooks.slack.com/services/#########
