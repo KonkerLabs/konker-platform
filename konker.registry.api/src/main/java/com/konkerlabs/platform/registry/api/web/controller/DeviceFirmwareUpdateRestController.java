@@ -4,6 +4,7 @@ import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseExcepti
 import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
 import com.konkerlabs.platform.registry.api.model.DeviceConfigVO;
 import com.konkerlabs.platform.registry.api.model.DeviceFirmwareUpdateInputVO;
+import com.konkerlabs.platform.registry.api.model.DeviceFirmwareUpdateSuspendInputVO;
 import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.services.api.*;
 import io.swagger.annotations.Api;
@@ -63,6 +64,40 @@ public class DeviceFirmwareUpdateRestController extends AbstractRestController i
         DeviceFirmware deviceFirmware = serviceFirmwareResponse.getResult();
 
         ServiceResponse<DeviceFwUpdate> serviceResponse = deviceFirmwareUpdateService.save(tenant, application, device, deviceFirmware);
+
+        if (!serviceResponse.isOk()) {
+            throw new BadServiceResponseException( serviceResponse, validationsCode);
+        } else {
+            return new DeviceFirmwareUpdateInputVO().apply(serviceResponse.getResult());
+        }
+
+    }
+
+
+    @PutMapping(path = "/suspend")
+    @ApiOperation(value = "Suspend a device firmware update")
+    @PreAuthorize("hasAuthority('CREATE_DEVICE_CONFIG')")
+    public DeviceFirmwareUpdateInputVO suspend(
+            @PathVariable("application") String applicationId,
+            @RequestBody DeviceFirmwareUpdateSuspendInputVO deviceFirmwareUpdateSuspendForm
+    ) throws BadServiceResponseException, NotFoundResponseException {
+
+        Tenant tenant = user.getTenant();
+        Application application = getApplication(applicationId);
+
+        ServiceResponse<Device> deviceServiceResponse = deviceRegisterService.getByDeviceGuid(tenant, application, deviceFirmwareUpdateSuspendForm.getDeviceGuid());
+        if (!deviceServiceResponse.isOk()) {
+            throw new NotFoundResponseException(deviceServiceResponse);
+        }
+        Device device = deviceServiceResponse.getResult();
+        String firmwareVersion = deviceFirmwareUpdateSuspendForm.getVersion();
+
+        ServiceResponse<DeviceFirmware> serviceFirmwareResponse = deviceFirmwareService.findByVersion(tenant, application, device.getDeviceModel(), firmwareVersion);
+        if (!serviceFirmwareResponse.isOk()) {
+            throw new BadServiceResponseException(serviceFirmwareResponse, validationsCode);
+        }
+
+        ServiceResponse<DeviceFwUpdate> serviceResponse = deviceFirmwareUpdateService.setDeviceAsSuspended(tenant, application, device);
 
         if (!serviceResponse.isOk()) {
             throw new BadServiceResponseException( serviceResponse, validationsCode);

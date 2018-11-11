@@ -95,6 +95,37 @@ public class DeviceFirmwareUpdateServiceImpl implements DeviceFirmwareUpdateServ
         return ServiceResponseBuilder.<DeviceFwUpdate>ok().withResult(deviceFwUpdated).build();
     }
 
+
+    @Override
+    public ServiceResponse<DeviceFwUpdate> setDeviceAsSuspended(Tenant tenant, Application application, Device device) {
+        ServiceResponse<DeviceFwUpdate> validationsResponse = validate(tenant, application, device);
+        if (validationsResponse != null && !validationsResponse.isOk()) {
+            return validationsResponse;
+        }
+
+        DeviceFwUpdate deviceFwUpdate = deviceFirmwareUpdateRepository.findUnique(tenant.getId(), application.getName(), device.getGuid(), FirmwareUpdateStatus.PENDING);
+
+        if (!Optional.ofNullable(deviceFwUpdate).isPresent()) {
+            return ServiceResponseBuilder.<DeviceFwUpdate>error()
+                    .withMessage(Validations.FIRMWARE_UPDATE_PENDING_STATUS_DOES_NOT_EXIST.getCode())
+                    .build();
+        }
+
+        deviceFwUpdate.setStatus(FirmwareUpdateStatus.SUSPENDED);
+        deviceFwUpdate.setLastChange(Instant.now());
+
+        Optional<Map<String, Object[]>> validations = deviceFwUpdate.applyValidations();
+        if (validations.isPresent()) {
+            return ServiceResponseBuilder.<DeviceFwUpdate>error()
+                    .withMessages(validations.get())
+                    .build();
+        }
+
+        DeviceFwUpdate deviceFwUpdated = deviceFirmwareUpdateRepository.save(deviceFwUpdate);
+
+        return ServiceResponseBuilder.<DeviceFwUpdate>ok().withResult(deviceFwUpdated).build();
+    }
+
     @Override
     public ServiceResponse<List<DeviceFwUpdate>> findByDeviceFirmware(Tenant tenant, Application application, DeviceFirmware deviceFirmware) {
         return ServiceResponseBuilder.<List<DeviceFwUpdate>>ok()
