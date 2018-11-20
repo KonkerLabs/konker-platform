@@ -345,7 +345,7 @@ public class EventSchemaServiceImpl implements EventSchemaService {
 		try {
 			// List all last events
 			List<Event> lastEvents = eventRepository.findIncomingBy(tenant, application, deviceGuid, null, null, null, false,
-					1000);
+                    limit);
 
 			ObjectMapper mapper = new ObjectMapper();
             Device device = deviceRepository.findByTenantAndGuid(tenant.getId(), deviceGuid);
