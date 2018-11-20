@@ -338,7 +338,7 @@ public class EventSchemaServiceImpl implements EventSchemaService {
     }
 
 	@Override
-	public ServiceResponse<EventSchema> findLastIncomingBy(Tenant tenant, Application application, String deviceGuid, JsonNodeType nodeType) {
+	public ServiceResponse<EventSchema> findLastIncomingBy(Tenant tenant, Application application, String deviceGuid, JsonNodeType nodeType, Integer limit) {
 
 		EventSchema lastEvent = null;
 

@@ -228,7 +228,7 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
         eventSchemaService.appendIncomingSchema(incomingEventSnd);
         eventRepository.saveIncoming(tenant, application, incomingEventSnd);
 
-        ServiceResponse<EventSchema> response = eventSchemaService.findLastIncomingBy(tenant, application, deviceGuid, JsonNodeType.NUMBER);
+        ServiceResponse<EventSchema> response = eventSchemaService.findLastIncomingBy(tenant, application, deviceGuid, JsonNodeType.NUMBER, 50);
 
         assertThat(response, isResponseOk());
         assertThat(response.getResult().getChannel(), equalTo(channel));

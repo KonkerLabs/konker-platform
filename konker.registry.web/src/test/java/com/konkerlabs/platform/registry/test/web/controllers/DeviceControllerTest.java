@@ -240,7 +240,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
 
 		when(eventSchemaService.findKnownIncomingChannelsBy(tenant, application, savedDevice.getGuid()))
 			.thenReturn(ServiceResponseBuilder.<List<String>> ok().withResult(channels).build());
-		when(eventSchemaService.findLastIncomingBy(tenant, application, savedDevice.getGuid(), JsonNodeType.NUMBER))
+		when(eventSchemaService.findLastIncomingBy(tenant, application, savedDevice.getGuid(), JsonNodeType.NUMBER, 50))
 			.thenReturn(ServiceResponseBuilder.<EventSchema> ok().withResult(lastSchema).build());
 		when(eventSchemaService.findKnownIncomingMetricsBy(tenant, application, savedDevice.getGuid(), "square", JsonNodeType.NUMBER))
 			.thenReturn(ServiceResponseBuilder.<List<String>> ok().withResult(Collections.emptyList()).build());
@@ -282,7 +282,7 @@ public class DeviceControllerTest extends WebLayerTestContext {
 
         when(eventSchemaService.findKnownIncomingChannelsBy(tenant, application, savedDevice.getGuid()))
             .thenReturn(ServiceResponseBuilder.<List<String>> ok().withResult(channels).build());
-        when(eventSchemaService.findLastIncomingBy(tenant, application, savedDevice.getGuid(), JsonNodeType.NUMBER))
+        when(eventSchemaService.findLastIncomingBy(tenant, application, savedDevice.getGuid(), JsonNodeType.NUMBER, 50))
             .thenReturn(ServiceResponseBuilder.<EventSchema> ok().withResult(lastSchema).build());
         when(eventSchemaService.findKnownIncomingMetricsBy(tenant, application, savedDevice.getGuid(), "square", JsonNodeType.NUMBER))
             .thenReturn(ServiceResponseBuilder.<List<String>> ok().withResult(metrics).build());
