@@ -79,20 +79,20 @@ public class DeviceFirmwareUpdateRestController extends AbstractRestController i
     @PreAuthorize("hasAuthority('CREATE_DEVICE_CONFIG')")
     public DeviceFirmwareUpdateInputVO suspend(
             @PathVariable("application") String applicationId,
-            @RequestBody DeviceFirmwareUpdateSuspendInputVO deviceFirmwareUpdateSuspendForm
+            @RequestParam(value = "deviceGuid", required = true) String deviceGuid,
+            @RequestParam(value = "version", required = true) String version
     ) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
 
-        ServiceResponse<Device> deviceServiceResponse = deviceRegisterService.getByDeviceGuid(tenant, application, deviceFirmwareUpdateSuspendForm.getDeviceGuid());
+        ServiceResponse<Device> deviceServiceResponse = deviceRegisterService.getByDeviceGuid(tenant, application, deviceGuid);
         if (!deviceServiceResponse.isOk()) {
             throw new NotFoundResponseException(deviceServiceResponse);
         }
         Device device = deviceServiceResponse.getResult();
-        String firmwareVersion = deviceFirmwareUpdateSuspendForm.getVersion();
 
-        ServiceResponse<DeviceFirmware> serviceFirmwareResponse = deviceFirmwareService.findByVersion(tenant, application, device.getDeviceModel(), firmwareVersion);
+        ServiceResponse<DeviceFirmware> serviceFirmwareResponse = deviceFirmwareService.findByVersion(tenant, application, device.getDeviceModel(), version);
         if (!serviceFirmwareResponse.isOk()) {
             throw new BadServiceResponseException(serviceFirmwareResponse, validationsCode);
         }
