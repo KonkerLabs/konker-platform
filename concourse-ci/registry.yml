@@ -167,6 +167,7 @@ jobs:
     passed:
     - test-and-package-stg
     version: latest
+  - get: github-repo-stg
   - get: docker-confs-repo-stg
   - task: setup docker artifacts
     privileged: true
@@ -183,6 +184,7 @@ jobs:
         - |
           ls
           cp registry-data-s3-stg/registry-data-$(cat registry-data-s3-stg/version).jar github-repo-stg/konker.registry.data/docker-resources/dist/registry-data.jar
+          cp github-repo-stg/konker.registry.data/Dockerfile docker-artifacts
           cp -r github-repo-stg/konker.registry.data/docker-resources docker-artifacts
         dir: ""
       inputs:
@@ -190,12 +192,14 @@ jobs:
         path: ""
       - name: registry-data-s3-stg
         path: ""
+      - name: github-repo-stg
+        path: ""
       outputs:
       - name: docker-artifacts
         path: ""
   - put: docker-image-data-stg
     params:
-      build: docker-artifacts/docker
+      build: docker-artifacts
       tag: registry-data-s3-stg/version
       tag_prefix: staging-data-
 - name: docker-router-stg
@@ -205,6 +209,7 @@ jobs:
     passed:
     - test-and-package-stg
     version: latest
+  - get: github-repo-stg
   - get: docker-confs-repo-stg
   - task: setup docker artifacts
     privileged: true
@@ -221,6 +226,7 @@ jobs:
         - |
           ls
           cp registry-router-s3-stg/registry-router-$(cat registry-router-s3-stg/version).jar github-repo-stg/konker.registry.router/docker-resources/dist/registry-router.jar
+          cp github-repo-stg/konker.registry.router/Dockerfile docker-artifacts
           cp -r github-repo-stg/konker.registry.router/docker-resources docker-artifacts
         dir: ""
       inputs:
@@ -228,12 +234,14 @@ jobs:
         path: ""
       - name: registry-router-s3-stg
         path: ""
+      - name: github-repo-stg
+        path: ""
       outputs:
       - name: docker-artifacts
         path: ""
   - put: docker-image-router-stg
     params:
-      build: docker-artifacts/docker
+      build: docker-artifacts
       tag: registry-router-s3-stg/version
       tag_prefix: staging-router-
 - name: docker-api-stg
@@ -243,6 +251,7 @@ jobs:
     passed:
     - test-and-package-stg
     version: latest
+  - get: github-repo-stg
   - get: docker-confs-repo-stg
   - task: setup docker artifacts
     privileged: true
@@ -259,6 +268,7 @@ jobs:
         - |
           ls
           cp registry-api-s3-stg/registry-api-$(cat registry-api-s3-stg/version).jar github-repo-stg/konker.registry.api/docker-resources/dist/registry-api.jar
+          cp github-repo-stg/konker.registry.api/Dockerfile docker-artifacts
           cp -r github-repo-stg/konker.registry.api/docker-resources docker-artifacts
         dir: ""
       inputs:
@@ -266,12 +276,14 @@ jobs:
         path: ""
       - name: registry-api-s3-stg
         path: ""
+      - name: github-repo-stg
+        path: ""
       outputs:
       - name: docker-artifacts
         path: ""
   - put: docker-image-api-stg
     params:
-      build: docker-artifacts/docker
+      build: docker-artifacts
       tag: registry-api-s3-stg/version
       tag_prefix: staging-api-
 - name: docker-web-stg
@@ -281,6 +293,7 @@ jobs:
     passed:
     - test-and-package-stg
     version: latest
+  - get: github-repo-stg
   - get: docker-confs-repo-stg
   - task: setup docker artifacts
     privileged: true
@@ -297,19 +310,21 @@ jobs:
         - |
           ls
           cp registry-web-s3-stg/registry-$(cat registry-web-s3-stg/version).war github-repo-stg/konker.registry.web/docker-resources/dist/registry.war
+          cp github-repo-stg/konker.registry.web/Dockerfile docker-artifacts
           cp -r github-repo-stg/konker.registry.web/docker-resources docker-artifacts
-          ls docker-artifacts
         dir: ""
       inputs:
       - name: docker-confs-repo-stg
         path: ""
       - name: registry-web-s3-stg
         path: ""
+      - name: github-repo-stg
+        path: ""
       outputs:
       - name: docker-artifacts
         path: ""
   - put: docker-image-web-stg
     params:
-      build: docker-artifacts/docker
+      build: docker-artifacts
       tag: registry-web-s3-stg/version
       tag_prefix: staging-

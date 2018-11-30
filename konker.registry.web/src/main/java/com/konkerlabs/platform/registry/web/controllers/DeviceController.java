@@ -329,7 +329,7 @@ public class DeviceController implements ApplicationContextAware {
         List<String> listMetrics = Collections.emptyList();
 
         // Try to find the last numeric metric
-        ServiceResponse<EventSchema> lastEvent = eventSchemaService.findLastIncomingBy(tenant, application, deviceGuid, JsonNodeType.NUMBER);
+        ServiceResponse<EventSchema> lastEvent = eventSchemaService.findLastIncomingBy(tenant, application, deviceGuid, JsonNodeType.NUMBER, 50);
         if (lastEvent.isOk() && lastEvent.getResult() != null) {
             defaultChannel = lastEvent.getResult().getChannel();
             defaultMetric = lastEvent.getResult().getFields().iterator().next().getPath();

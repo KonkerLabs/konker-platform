@@ -338,14 +338,14 @@ public class EventSchemaServiceImpl implements EventSchemaService {
     }
 
 	@Override
-	public ServiceResponse<EventSchema> findLastIncomingBy(Tenant tenant, Application application, String deviceGuid, JsonNodeType nodeType) {
+	public ServiceResponse<EventSchema> findLastIncomingBy(Tenant tenant, Application application, String deviceGuid, JsonNodeType nodeType, Integer limit) {
 
 		EventSchema lastEvent = null;
 
 		try {
 			// List all last events
 			List<Event> lastEvents = eventRepository.findIncomingBy(tenant, application, deviceGuid, null, null, null, false,
-					1000);
+                    limit);
 
 			ObjectMapper mapper = new ObjectMapper();
             Device device = deviceRepository.findByTenantAndGuid(tenant.getId(), deviceGuid);
