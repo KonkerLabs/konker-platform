@@ -39,7 +39,7 @@ public class DeviceFirmwareUpdateRestController extends AbstractRestController i
 
     private Set<String> validationsCode = new HashSet<>();
 
-    @PostMapping(path = "/")
+    @PostMapping
     @ApiOperation(value = "Create a device firmware update")
     @PreAuthorize("hasAuthority('CREATE_DEVICE_CONFIG')")
     public DeviceFirmwareUpdateInputVO create(
@@ -107,31 +107,31 @@ public class DeviceFirmwareUpdateRestController extends AbstractRestController i
 
     }
 
-    @GetMapping(path = "/{deviceModel}/{version}/")
-    @PreAuthorize("hasAuthority('SHOW_DEVICE_CONFIG')")
-    @ApiOperation(
-            value = "List all device firmware updates of a version",
-            response = DeviceConfigVO.class)
+
+    @GetMapping
+    @ApiOperation(value = "List all device firmware updates of a version")
+    @PreAuthorize("hasAuthority('CREATE_DEVICE_CONFIG')")
     public List<DeviceFirmwareUpdateInputVO> list(
             @PathVariable("application") String applicationId,
-            @PathVariable("deviceModel") String deviceModelName,
-            @PathVariable("version") String version
+            @RequestParam(value = "deviceGuid", required = true) String deviceGuid,
+            @RequestParam(value = "version", required = true) String version
     ) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
 
-        ServiceResponse<DeviceModel> deviceModelResponse = deviceModelService.getByTenantApplicationAndName(tenant, application, deviceModelName);
-        if (!deviceModelResponse.isOk()) {
-            throw new NotFoundResponseException(deviceModelResponse);
+        ServiceResponse<Device> deviceServiceResponse = deviceRegisterService.getByDeviceGuid(tenant, application, deviceGuid);
+        if (!deviceServiceResponse.isOk()) {
+            throw new NotFoundResponseException(deviceServiceResponse);
         }
-        DeviceModel deviceModel = deviceModelResponse.getResult();
+        Device device = deviceServiceResponse.getResult();
 
-        ServiceResponse<DeviceFirmware> firmwareServiceResponse = deviceFirmwareService.findByVersion(tenant, application, deviceModel, version);
-        if (!firmwareServiceResponse.isOk()) {
-            throw new NotFoundResponseException(deviceModelResponse);
+        ServiceResponse<DeviceFirmware> serviceFirmwareResponse = deviceFirmwareService.findByVersion(tenant, application, device.getDeviceModel(), version);
+        if (!serviceFirmwareResponse.isOk()) {
+            throw new BadServiceResponseException(serviceFirmwareResponse, validationsCode);
         }
-        DeviceFirmware deviceFirmware = firmwareServiceResponse.getResult();
+
+        DeviceFirmware deviceFirmware = serviceFirmwareResponse.getResult();
 
         ServiceResponse<List<DeviceFwUpdate>> serviceResponse = deviceFirmwareUpdateService.findByDeviceFirmware(tenant, application, deviceFirmware);
 

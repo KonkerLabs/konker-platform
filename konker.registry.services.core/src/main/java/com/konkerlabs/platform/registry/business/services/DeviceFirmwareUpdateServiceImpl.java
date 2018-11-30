@@ -137,8 +137,15 @@ public class DeviceFirmwareUpdateServiceImpl implements DeviceFirmwareUpdateServ
         }
 
 
+        List<DeviceFwUpdate> deviceFwUpdateList = deviceFirmwareUpdateRepository.findByDeviceFirmware(tenant.getId(), application.getName(), deviceFirmware.getId());
+
+        if (!Optional.ofNullable(deviceFwUpdateList).isPresent()) {
+            return ServiceResponseBuilder.<List<DeviceFwUpdate>> error()
+                    .withMessage(Validations.FIRMWARE_UPDATE_NOT_FOUND.getCode()).build();
+        }
+
         return ServiceResponseBuilder.<List<DeviceFwUpdate>>ok()
-                .withResult(deviceFirmwareUpdateRepository.findByDeviceFirmware(tenant.getId(), application.getName(), deviceFirmware.getId()))
+                .withResult(deviceFwUpdateList)
                 .build();
     }
 

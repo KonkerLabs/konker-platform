@@ -4,11 +4,11 @@ import com.konkerlabs.platform.registry.api.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.api.model.DeviceFirmwareUpdateInputVO;
 import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
 import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
-import com.konkerlabs.platform.registry.api.web.controller.DeviceFirmwareRestController;
 import com.konkerlabs.platform.registry.api.web.controller.DeviceFirmwareUpdateRestController;
 import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
 import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.enumerations.FirmwareUpdateStatus;
+import com.konkerlabs.platform.registry.business.repositories.DeviceFirmwareUpdateRepository;
 import com.konkerlabs.platform.registry.business.services.api.*;
 import org.junit.After;
 import org.junit.Before;
@@ -20,7 +20,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -33,6 +32,7 @@ import java.util.UUID;
 
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -64,19 +64,28 @@ public class DeviceFirmwareUpdateRestControllerTest extends WebLayerTestContext 
     @Autowired
     private DeviceFirmwareUpdateService deviceFirmwareUpdateService;
 
+    @Autowired
+    private DeviceRegisterService deviceRegisterService;
+
+    @Autowired
+    private DeviceFirmwareUpdateRepository deviceFirmwareUpdateRepository;
 
     private DeviceModel deviceModel;
 
-    private DeviceFwUpdate deviceFwUpdate;
+    private DeviceFwUpdate deviceFwUpdatePendingUpdate;
 
-    private DeviceFwUpdate deviceFwUpdate2;
+    private DeviceFwUpdate deviceFwUpdatePendingRequest;
 
-    private DeviceFirmware deviceFirmware;
+    private DeviceFwUpdate deviceFwUpdated;
+
+    private DeviceFirmware deviceFirmwareOld;
+
+    private DeviceFirmware deviceFirmwareNew;
 
     private Device device;
 
     private final String BASEPATH = "firmwares";
-    private final String BASEPATH_UPDATE = "firmwaresupdates";
+    private final String BASEPATH_UPDATE = "firmwareupdates";
 
     @Before
     public void setUp() {
@@ -88,29 +97,16 @@ public class DeviceFirmwareUpdateRestControllerTest extends WebLayerTestContext 
         		.name("air conditioner")
         		.build();
 
-        deviceFirmware = DeviceFirmware.builder()
-                .version("0.4.4")
+        deviceFirmwareOld = DeviceFirmware.builder()
+                .version("0.4.3")
                 .deviceModel(deviceModel)
                 .uploadDate(Instant.now())
                 .build();
 
-        deviceFwUpdate = DeviceFwUpdate.builder()
-                .version("0.4.3")
-                .status(FirmwareUpdateStatus.UPDATED)
-                .application(application)
-                .deviceFirmware(deviceFirmware)
-                .deviceGuid(UUID.randomUUID().toString())
-                .build();
-
-
-
-
-        deviceFwUpdate2 = DeviceFwUpdate.builder()
-                .version("0.4.2")
-                .status(FirmwareUpdateStatus.UPDATED)
-                .application(application)
-                .deviceFirmware(deviceFirmware)
-                .deviceGuid(UUID.randomUUID().toString())
+        deviceFirmwareNew = DeviceFirmware.builder()
+                .version("0.4.4")
+                .deviceModel(deviceModel)
+                .uploadDate(Instant.now())
                 .build();
 
         device = Device.builder()
@@ -122,6 +118,34 @@ public class DeviceFirmwareUpdateRestControllerTest extends WebLayerTestContext 
                 .application(application)
                 .active(true)
                 .build();
+
+
+        deviceFwUpdatePendingUpdate = DeviceFwUpdate.builder()
+                .version("0.4.3")
+                .status(FirmwareUpdateStatus.PENDING)
+                .application(application)
+                .deviceFirmware(deviceFirmwareOld)
+                .deviceGuid(UUID.randomUUID().toString())
+                .build();
+
+        deviceFwUpdatePendingRequest= DeviceFwUpdate.builder()
+                .version("0.4.4")
+                .status(FirmwareUpdateStatus.PENDING)
+                .application(application)
+                .deviceFirmware(deviceFirmwareNew)
+                .deviceGuid(deviceFwUpdatePendingUpdate.getGuid())
+                .build();
+
+
+        deviceFwUpdated = DeviceFwUpdate.builder()
+                .version("0.4.4")
+                .status(FirmwareUpdateStatus.UPDATED)
+                .application(application)
+                .deviceFirmware(deviceFirmwareNew)
+                .deviceGuid(UUID.randomUUID().toString())
+                .build();
+
+
 
         when(applicationService.getByApplicationName(tenant, application.getName()))
             .thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
@@ -139,40 +163,68 @@ public class DeviceFirmwareUpdateRestControllerTest extends WebLayerTestContext 
     @Test
     public void shouldTryCreateDeviceFirmwareUpdate() throws Exception {
 
-        when(deviceFirmwareUpdateService.save(tenant, application, device, deviceFirmware))
-                .thenReturn(ServiceResponseBuilder.<DeviceFwUpdate>ok().withResult(deviceFwUpdate).build());
+
+        DeviceFwUpdate fwUpdate = DeviceFwUpdate
+                .builder()
+                .tenant(tenant)
+                .application(application)
+                .guid(UUID.randomUUID().toString())
+                .deviceGuid(device.getGuid())
+                .deviceFirmware(deviceFirmwareNew)
+                .version(deviceFirmwareNew.getVersion())
+                .status(FirmwareUpdateStatus.PENDING)
+                .lastChange(Instant.now())
+                .build();
+
+
+
+        when(deviceRegisterService.getByDeviceGuid(tenant, application, deviceFwUpdatePendingUpdate.getGuid()))
+                .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device).build());
+
+        when(deviceFirmwareService.findByVersion(tenant, application, device.getDeviceModel(), deviceFirmwareNew.getVersion()))
+                .thenReturn(ServiceResponseBuilder.<DeviceFirmware>ok().withResult(deviceFirmwareNew).build());
+
+
+        when(deviceFirmwareUpdateService.save(tenant, application, device, deviceFirmwareNew))
+                .thenReturn(ServiceResponseBuilder.<DeviceFwUpdate>ok().withResult(fwUpdate).build());
 
         getMockMvc().perform(MockMvcRequestBuilders
-                .post("/")
-                .content(getJson(new DeviceFirmwareUpdateInputVO().apply(deviceFwUpdate)))
+                .post(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH_UPDATE))
+                .content(getJson(new DeviceFirmwareUpdateInputVO().apply(deviceFwUpdatePendingRequest)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is4xxClientError())
+                .andDo(print())
+                .andExpect(status().isCreated())
                 .andExpect(content().contentType("application/json;charset=UTF-8"))
-                .andExpect(jsonPath("$.code", is(HttpStatus.BAD_REQUEST.value())))
-                .andExpect(jsonPath("$.status", is("error")))
-                .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
-                .andExpect(jsonPath("$.messages").exists())
-                .andExpect(jsonPath("$.result").doesNotExist());
+                .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
+                .andExpect(jsonPath("$.result.deviceGuid", is(device.getGuid())))
+                .andExpect(jsonPath("$.result.version", is(fwUpdate.getVersion())))
+                .andExpect(jsonPath("$.result.status", is(FirmwareUpdateStatus.PENDING.toString())));
     }
 
     @Test
     public void shouldTryCreateDeviceFirmwareUpdateWithBadRequest() throws Exception {
 
 
-        when(deviceFirmwareUpdateService.save(tenant, application, device, deviceFirmware))
+        when(deviceRegisterService.getByDeviceGuid(tenant, application, device.getGuid()))
+                .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device).build());
+
+        when(deviceFirmwareService.findByVersion(tenant, application, device.getDeviceModel(), deviceFirmwareNew.getVersion()))
+                .thenReturn(ServiceResponseBuilder.<DeviceFirmware>ok().withResult(deviceFirmwareNew).build());
+
+        when(deviceFirmwareUpdateService.save(tenant, application, device, deviceFirmwareNew))
                 .thenReturn(ServiceResponseBuilder.<DeviceFwUpdate>error()
-                .withMessage(DeviceFirmwareUpdateService.Validations.FIRMWARE_UPDATE_ALREADY_EXISTS.getCode())
-                .build());
+                        .withMessage(DeviceFirmwareUpdateService.Validations.FIRMWARE_UPDATE_ALREADY_EXISTS.getCode())
+                        .build());
+
 
         getMockMvc().perform(MockMvcRequestBuilders
-                .post("/")
-                .content(getJson(new DeviceFirmwareUpdateInputVO().apply(deviceFwUpdate)))
+                .post(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH_UPDATE))
+                .content(getJson(new DeviceFirmwareUpdateInputVO().apply(deviceFwUpdatePendingRequest)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is4xxClientError())
+                .andExpect(status().is5xxServerError())
                 .andExpect(content().contentType("application/json;charset=UTF-8"))
-                .andExpect(jsonPath("$.code", is(HttpStatus.BAD_REQUEST.value())))
                 .andExpect(jsonPath("$.status", is("error")))
                 .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
                 .andExpect(jsonPath("$.messages").exists())
@@ -183,46 +235,73 @@ public class DeviceFirmwareUpdateRestControllerTest extends WebLayerTestContext 
     @Test
     public void shouldTrySuspendDeviceFirmwareUpdate() throws Exception {
 
+        DeviceFwUpdate fwUpdateSuspended = DeviceFwUpdate
+                .builder()
+                .tenant(tenant)
+                .application(application)
+                .guid(UUID.randomUUID().toString())
+                .deviceGuid(device.getGuid())
+                .deviceFirmware(deviceFirmwareNew)
+                .version(deviceFirmwareNew.getVersion())
+                .status(FirmwareUpdateStatus.SUSPENDED)
+                .lastChange(Instant.now())
+                .build();
 
-        when(deviceFirmwareUpdateService.setDeviceAsSuspended(tenant, application,  device))
-                .thenReturn(ServiceResponseBuilder.<DeviceFwUpdate>ok().withResult(deviceFwUpdate2).build());
+        when(deviceRegisterService.getByDeviceGuid(tenant, application, device.getGuid()))
+                .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device).build());
+
+        when(deviceFirmwareService.findByVersion(tenant, application, device.getDeviceModel(), deviceFwUpdatePendingUpdate.getVersion()))
+                .thenReturn(ServiceResponseBuilder.<DeviceFirmware>ok().withResult(deviceFirmwareNew).build());
 
 
+        when(deviceFirmwareUpdateService.setDeviceAsSuspended(tenant, application, device))
+                .thenReturn(ServiceResponseBuilder.<DeviceFwUpdate>ok().withResult(fwUpdateSuspended).build());
 
         getMockMvc().perform(MockMvcRequestBuilders
-                .put(MessageFormat.format("/{0}/", "suspend"))
-                .param("deviceGuid", deviceFwUpdate.getDeviceGuid())
-                .param("version", "100.0.0")
+                .put(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH_UPDATE,"suspend"))
+                .param("deviceGuid", device.getGuid())
+                .param("version", deviceFwUpdatePendingUpdate.getVersion())
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json;charset=UTF-8"))
                 .andExpect(jsonPath("$.code", is(HttpStatus.OK.value())))
                 .andExpect(jsonPath("$.status", is("success")))
                 .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
-                .andExpect(jsonPath("$.result", hasSize(2)))
-                .andExpect(jsonPath("$.result[0].version", is(deviceFirmware.getVersion())))
-                .andExpect(jsonPath("$.result[0].uploadTimestamp", notNullValue()))
-                .andExpect(jsonPath("$.result[1].version", is(deviceFirmware.getVersion())))
-                .andExpect(jsonPath("$.result[1].uploadTimestamp", notNullValue()));
-        ;
+                .andExpect(jsonPath("$.result.version", is(fwUpdateSuspended.getVersion())))
+                .andExpect(jsonPath("$.result.status", is(fwUpdateSuspended.getStatus().toString())));
 
     }
 
     @Test
     public void shouldTrySuspendDeviceFirmwareUpdateWithBadRequest() throws Exception {
 
+        DeviceFwUpdate fwUpdateSuspended = DeviceFwUpdate
+                .builder()
+                .tenant(tenant)
+                .application(application)
+                .guid(UUID.randomUUID().toString())
+                .deviceGuid(device.getGuid())
+                .deviceFirmware(deviceFirmwareNew)
+                .version(deviceFirmwareNew.getVersion())
+                .status(FirmwareUpdateStatus.SUSPENDED)
+                .lastChange(Instant.now())
+                .build();
 
-        when(deviceFirmwareUpdateService.setDeviceAsSuspended(tenant, application,  device))
-                .thenReturn(ServiceResponseBuilder.<DeviceFwUpdate>error()
-                        .withMessage(DeviceFirmwareUpdateService.Validations.FIRMWARE_UPDATE_PENDING_STATUS_DOES_NOT_EXIST.getCode())
+        when(deviceRegisterService.getByDeviceGuid(tenant, application, device.getGuid()))
+                .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device).build());
+
+        when(deviceFirmwareService.findByVersion(tenant, application, device.getDeviceModel(), deviceFwUpdatePendingUpdate.getVersion()))
+                .thenReturn(ServiceResponseBuilder.<DeviceFirmware>error()
+                        .withMessage(DeviceFirmwareService.Validations.FIRMWARE_NOT_FOUND.getCode())
                         .build());
 
 
         getMockMvc().perform(MockMvcRequestBuilders
-                .put(MessageFormat.format("/{0}/", "suspend"))
-                .param("deviceGuid", deviceFwUpdate.getDeviceGuid())
-                .param("version", "100.0.0")
+                .put(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH_UPDATE,"suspend"))
+                .param("deviceGuid", device.getGuid())
+                .param("version",  deviceFwUpdatePendingUpdate.getVersion())
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError())
@@ -230,7 +309,7 @@ public class DeviceFirmwareUpdateRestControllerTest extends WebLayerTestContext 
                 .andExpect(jsonPath("$.code", is(HttpStatus.BAD_REQUEST.value())))
                 .andExpect(jsonPath("$.status", is("error")))
                 .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
-                .andExpect(jsonPath("$.messages[0]", is("Firmware_update does not exist")))
+                .andExpect(jsonPath("$.messages[0]", is("Firmware not found")))
                 .andExpect(jsonPath("$.result").doesNotExist());
 
 
@@ -242,79 +321,80 @@ public class DeviceFirmwareUpdateRestControllerTest extends WebLayerTestContext 
     public void shouldListDeviceFirmwaresVersionUpdates() throws Exception {
 
         List<DeviceFirmware> firmwares = new ArrayList<>();
-        firmwares.add(deviceFirmware);
-        firmwares.add(deviceFirmware);
+        firmwares.add(deviceFirmwareNew);
+        firmwares.add(deviceFirmwareNew);
+
 
         List<DeviceFwUpdate>  firmwaresUpdates = new ArrayList<>();
-        firmwares.add(deviceFirmware);
-        firmwares.add(deviceFirmware);
+        firmwaresUpdates.add(deviceFwUpdatePendingRequest);
+        firmwaresUpdates.add(deviceFwUpdatePendingRequest);
 
-        when(deviceModelService.getByTenantApplicationAndName(tenant, application, deviceModel.getName()))
-                .thenReturn(ServiceResponseBuilder.<DeviceModel> ok()
-                        .withResult(deviceModel)
-                        .build());
+        when(deviceRegisterService.getByDeviceGuid(tenant, application, device.getGuid()))
+                .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device).build());
 
-        when(deviceFirmwareService.findByVersion(tenant, application, deviceModel, deviceFirmware.getVersion()))
-                .thenReturn(ServiceResponseBuilder.<DeviceFirmware>  ok()
-                        .withResult(deviceFirmware)
-                        .build());
+        when(deviceFirmwareService.findByVersion(tenant, application, device.getDeviceModel(), deviceFwUpdatePendingUpdate.getVersion()))
+                .thenReturn(ServiceResponseBuilder.<DeviceFirmware>ok().withResult(deviceFirmwareNew).build());
 
-        when(deviceFirmwareUpdateService.findByDeviceFirmware(tenant, application, deviceFirmware))
+
+        when(deviceFirmwareUpdateService.findByDeviceFirmware(tenant, application, deviceFirmwareNew))
                 .thenReturn(ServiceResponseBuilder.<List<DeviceFwUpdate>> ok()
                         .withResult(firmwaresUpdates)
                         .build());
-        getMockMvc()
-                .perform(MockMvcRequestBuilders
-                        .get(MessageFormat.format("/{0}/{1}/", deviceModel, deviceFirmware.getVersion()))
-                        .contentType("application/json")
-                        .accept(MediaType.APPLICATION_JSON))
+
+        getMockMvc().perform(MockMvcRequestBuilders
+                .get(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH_UPDATE))
+                .param("deviceGuid", device.getGuid())
+                .param("version", deviceFwUpdatePendingUpdate.getVersion())
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json;charset=UTF-8"))
                 .andExpect(jsonPath("$.code", is(HttpStatus.OK.value())))
                 .andExpect(jsonPath("$.status", is("success")))
                 .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
                 .andExpect(jsonPath("$.result", hasSize(2)))
-                .andExpect(jsonPath("$.result[0].version", is(deviceFirmware.getVersion())))
-                .andExpect(jsonPath("$.result[0].uploadTimestamp", notNullValue()))
-                .andExpect(jsonPath("$.result[1].version", is(deviceFirmware.getVersion())))
-                .andExpect(jsonPath("$.result[1].uploadTimestamp", notNullValue()));
-
+                .andExpect(jsonPath("$.result[0].version", is(deviceFirmwareNew.getVersion())));
     }
 
     @Test
     public void shouldReturnInternalErrorWhenListDeviceFirmwaresVersionUpdates() throws Exception {
 
         List<DeviceFirmware> firmwares = new ArrayList<>();
-        firmwares.add(deviceFirmware);
-        firmwares.add(deviceFirmware);
+        firmwares.add(deviceFirmwareNew);
+        firmwares.add(deviceFirmwareNew);
 
-        when(deviceModelService.getByTenantApplicationAndName(tenant, application, deviceModel.getName()))
-                .thenReturn(ServiceResponseBuilder.<DeviceModel> ok()
-                        .withResult(deviceModel)
-                        .build());
 
-        when(deviceFirmwareService.findByVersion(tenant, application, deviceModel, deviceFirmware.getVersion()))
-                .thenReturn(ServiceResponseBuilder.<DeviceFirmware>  ok()
-                        .withResult(deviceFirmware)
-                        .build());
+        List<DeviceFwUpdate>  firmwaresUpdates = new ArrayList<>();
+        firmwaresUpdates.add(deviceFwUpdatePendingRequest);
+        firmwaresUpdates.add(deviceFwUpdatePendingRequest);
 
-        when(deviceFirmwareUpdateService.findByDeviceFirmware(tenant, application, deviceFirmware))
-                .thenReturn(ServiceResponseBuilder.<List<DeviceFwUpdate>> error().build());
+        when(deviceRegisterService.getByDeviceGuid(tenant, application, device.getGuid()))
+                .thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device).build());
 
+        when(deviceFirmwareService.findByVersion(tenant, application, device.getDeviceModel(), deviceFwUpdatePendingUpdate.getVersion()))
+                .thenReturn(ServiceResponseBuilder.<DeviceFirmware>ok().withResult(deviceFirmwareNew).build());
+
+
+        when(deviceFirmwareUpdateService.findByDeviceFirmware(tenant, application, deviceFirmwareNew))
+                .thenReturn(ServiceResponseBuilder.<List<DeviceFwUpdate>> error()
+                        .withMessage(DeviceFirmwareUpdateService.Validations.FIRMWARE_UPDATE_NOT_FOUND.getCode()).build());
 
 
         getMockMvc().perform(MockMvcRequestBuilders
-                .get(MessageFormat.format("/{0}/{1}/", deviceModel, deviceFirmware.getVersion()))
-                .contentType("application/json")
+                .get(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH_UPDATE))
+                .param("deviceGuid", device.getGuid())
+                .param("version", deviceFwUpdatePendingUpdate.getVersion())
+                .contentType(MediaType.MULTIPART_FORM_DATA)
                 .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is4xxClientError())
+                .andDo(print())
+                .andExpect(status().is5xxServerError())
                 .andExpect(content().contentType("application/json;charset=UTF-8"))
-                .andExpect(jsonPath("$.code", is(HttpStatus.BAD_REQUEST.value())))
+                .andExpect(jsonPath("$.code", is(HttpStatus.INTERNAL_SERVER_ERROR.value())))
                 .andExpect(jsonPath("$.status", is("error")))
                 .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
-                .andExpect(jsonPath("$.messages[0]", is("Firmware already registered")))
-                .andExpect(jsonPath("$.result").doesNotExist())
-                .andExpect(jsonPath("$.result[1].uploadTimestamp", notNullValue()));
+                .andExpect(jsonPath("$.messages[0]", is("Firmware update process not found")))
+                .andExpect(jsonPath("$.result").doesNotExist());
     }
 
 }

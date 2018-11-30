@@ -9,7 +9,8 @@ public interface DeviceFirmwareUpdateService {
 
     enum Validations {
         FIRMWARE_UPDATE_PENDING_STATUS_DOES_NOT_EXIST("service.device.firmware_update.pending_does_not_exist"),
-        FIRMWARE_UPDATE_ALREADY_EXISTS("service.device.firmware_update.already_exists");
+        FIRMWARE_UPDATE_ALREADY_EXISTS("service.device.firmware_update.already_exists"),
+        FIRMWARE_UPDATE_NOT_FOUND("service.device.firmware_update.not_found");
 
         public String getCode() {
             return code;
