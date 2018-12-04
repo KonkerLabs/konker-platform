@@ -147,6 +147,11 @@ public class WebTestConfiguration {
     }
 
     @Bean
+    public DeviceFirmwareUpdateService deviceFirmwareUpdateService() {
+        return Mockito.mock(DeviceFirmwareUpdateService.class);
+    }
+
+    @Bean
     public Gateway gateway() {
         return Gateway.builder().location(
                 Location.builder()
