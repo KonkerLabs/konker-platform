@@ -64,6 +64,9 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
     @Autowired
     private DeviceModelService deviceModelService;
+
+    @Autowired
+    private AlertTriggerService alertTriggerService;
     
     @Autowired
     private RabbitTemplate rabbitTemplate;
@@ -166,6 +169,29 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
         LOGGER.info("Device created. Id: {}", device.getDeviceId(), tenant.toURI(), tenant.getLogLevel());
 
         Device saved = deviceRepository.save(device);
+
+        ServiceResponse<AlertTrigger> response = alertTriggerService.findByLocationDeviceModelAndType(
+                device.getTenant(),
+                device.getApplication(),
+                device.getLocation(),
+                device.getDeviceModel(),
+                AlertTrigger.AlertTriggerType.SILENCE);
+
+        if (response.isOk() &&
+                !Optional.ofNullable(response.getResult()).isPresent()) {
+            alertTriggerService.save(
+                    device.getTenant(),
+                    device.getApplication(),
+                    AlertTrigger.builder()
+                            .tenant(device.getTenant())
+                            .application(device.getApplication())
+                            .name("defaultTrigger")
+                            .location(device.getLocation())
+                            .deviceModel(device.getDeviceModel())
+                            .type(AlertTrigger.AlertTriggerType.SILENCE)
+                            .minutes(10)
+                            .build());
+        }
 
         return ServiceResponseBuilder.<Device>ok().withResult(saved).build();
     }
