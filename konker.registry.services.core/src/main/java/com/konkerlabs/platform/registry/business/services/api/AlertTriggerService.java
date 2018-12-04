@@ -11,7 +11,8 @@ public interface AlertTriggerService {
         ALERT_TRIGGER_ALREADY_EXISTS("service.alert_trigger.already_exists"),
         ALERT_TRIGGER_GUID_NULL("service.alert_trigger.guid_null"),
         ALERT_TRIGGER_INVALID_DEVICE_MODEL("service.alert_trigger.invalid_device_model"),
-        ALERT_TRIGGER_INVALID_LOCATION("service.alert_trigger.invalid_location");
+        ALERT_TRIGGER_INVALID_LOCATION("service.alert_trigger.invalid_location"),
+        ALERT_TRIGGER_INVALID_TYPE("service.alert_trigger.invalid_type");
 
         private String code;
 
@@ -45,5 +46,7 @@ public interface AlertTriggerService {
     ServiceResponse<List<AlertTrigger>> listByTenantAndApplication(Tenant tenant, Application application);
     ServiceResponse<AlertTrigger> findByTenantAndApplicationAndGuid(Tenant tenant, Application application, String triggerGuid);
     ServiceResponse<AlertTrigger> findByTenantAndApplicationAndName(Tenant tenant, Application application, String triggerName);
+    ServiceResponse<AlertTrigger> findByLocationDeviceModelAndType(Tenant tenant, Application application, Location location,
+                                                                   DeviceModel deviceModel, AlertTrigger.AlertTriggerType alertTriggerType);
 
 }

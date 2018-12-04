@@ -6,6 +6,7 @@ groups:
   - docker-web-stg
   - docker-data-stg
   - docker-router-stg
+  - k8s-api-stg
 resources:
 - name: registry-data-s3-stg
   type: s3
@@ -29,6 +30,13 @@ resources:
     branch: master
     password: (( grab params.bitbucket.passwd ))
     uri: https://bitbucket.org/konkerlabs/konker-platform-env-confs
+    username: (( grab params.bitbucket.user ))
+- name: values-k8s-repo-stg
+  type: git
+  source:
+    branch: develop
+    password: (( grab params.bitbucket.passwd ))
+    uri: https://bitbucket.org/konkerlabs/konker-devops-k8s
     username: (( grab params.bitbucket.user ))
 - name: docker-image-web-stg
   type: docker-image
@@ -90,6 +98,19 @@ resources:
   source:
     branch: develop
     uri: https://github.com/KonkerLabs/konker-platform.git
+- name: helm-release
+  type: helm
+  source:
+    kubeconfig: |
+      apiVersion: v1
+      kind: Config
+      preferences: {}
+      contexts:
+      - context:
+          cluster: kubernetes
+          namespace: registry-staging
+          user: aws
+        name: aws
 resource_types:
 - name: marathon
   type: docker-image
@@ -100,6 +121,11 @@ resource_types:
   source:
     repository: cfcommunity/slack-notification-resource
     tag: latest
+- name: helm
+  type: docker-image
+  source:
+    repository: ilyasotkov/concourse-helm-resource
+    tag: 1.1.1
 jobs:
 - name: test-and-package-stg
   build_logs_to_retain: 1
@@ -168,6 +194,7 @@ jobs:
     - test-and-package-stg
     version: latest
   - get: github-repo-stg
+    trigger: true
   - get: docker-confs-repo-stg
   - task: setup docker artifacts
     privileged: true
@@ -210,6 +237,7 @@ jobs:
     - test-and-package-stg
     version: latest
   - get: github-repo-stg
+    trigger: true
   - get: docker-confs-repo-stg
   - task: setup docker artifacts
     privileged: true
@@ -252,6 +280,7 @@ jobs:
     - test-and-package-stg
     version: latest
   - get: github-repo-stg
+    trigger: true
   - get: docker-confs-repo-stg
   - task: setup docker artifacts
     privileged: true
@@ -294,6 +323,7 @@ jobs:
     - test-and-package-stg
     version: latest
   - get: github-repo-stg
+    trigger: true
   - get: docker-confs-repo-stg
   - task: setup docker artifacts
     privileged: true
@@ -328,3 +358,18 @@ jobs:
       build: docker-artifacts
       tag: registry-web-s3-stg/version
       tag_prefix: staging-
+- name: k8s-api-stg
+  build_logs_to_retain: 1
+  plan:
+  - get: github-repo-stg
+    passed:
+    - docker-api-stg
+    trigger: true
+  - get: values-k8s-repo-stg
+  - put: helm-release
+    params:
+      chart: github-repo-stg/konker.registry.api/konker-registry-api-helm.tgz
+      values: values-k8s-repo-stg/konker-registry-values/api-values-staging.yaml
+      orverride_values:
+      - key: version
+        path: version/number
