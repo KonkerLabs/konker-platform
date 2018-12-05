@@ -22,16 +22,10 @@ import static org.mockito.Mockito.when;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
+import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.services.api.*;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -52,11 +46,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.thymeleaf.spring4.SpringTemplateEngine;
 
 import com.konkerlabs.platform.registry.billing.repositories.TenantDailyUsageRepository;
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.Location;
-import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.enumerations.Language;
 import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
@@ -65,12 +54,8 @@ import com.konkerlabs.platform.registry.business.repositories.DeviceModelReposit
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.LocationRepository;
 import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
-import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.DeviceSecurityCredentials;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.Messages;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.config.EmailConfig;
 import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
@@ -129,6 +114,8 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     private ApplicationRepository applicationRepository;
     @Autowired
     private DeviceEventService deviceEventService;
+    @Autowired
+    private UserService userService;
 
     private Device device;
     private Tenant currentTenant;
@@ -136,7 +123,9 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     private Device rawDevice;
     private Application currentApplication;
     private Application otherApplication;
-//    private Event event;
+    private User userAdmin;
+    private User userApplication;
+    private User userLocation;
 
     @Before
     public void setUp() {
@@ -168,7 +157,9 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 //                .deleted(false)
 //                .build();
 
-
+        userAdmin = userService.findByEmail("admin@konkerlabs.com").getResult();
+        userApplication = userService.findByEmail("user.application@konkerlabs.com").getResult();
+        userLocation = userService.findByEmail("user.location@konkerlabs.com").getResult();
     }
 
     @Test
@@ -987,9 +978,10 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json",
+            "/fixtures/location.json", "/fixtures/users.json"})
     public void shouldSearchWithoutFilter() {
-        ServiceResponse<List<Device>> response = deviceRegisterService.search(currentTenant, currentApplication, null);
+        ServiceResponse<List<Device>> response = deviceRegisterService.search(currentTenant, currentApplication, userAdmin, null);
         assertThat(response, isResponseOk());
         List<Device> all = response.getResult();
 
@@ -999,9 +991,10 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json",
+            "/fixtures/location.json", "/fixtures/users.json"})
     public void shouldSearchFilterByTag() {
-        ServiceResponse<List<Device>> response = deviceRegisterService.search(currentTenant, currentApplication, "anotherTag1");
+        ServiceResponse<List<Device>> response = deviceRegisterService.search(currentTenant, currentApplication, userAdmin, "anotherTag1");
         assertThat(response, isResponseOk());
         List<Device> all = response.getResult();
 
@@ -1009,6 +1002,60 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         assertThat(all, notNullValue());
         assertThat(all, hasSize(1));
         assertTrue(all.get(0).getTags().contains("anotherTag1"));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json",
+            "/fixtures/locations.json", "/fixtures/users.json"})
+    public void shouldSearchFilterByUserAdmin() {
+        List<Device> all = new ArrayList<>();
+        ServiceResponse<List<Device>> response = deviceRegisterService.search(currentTenant, currentApplication, userAdmin, null);
+        assertThat(response, isResponseOk());
+        all.addAll(response.getResult());
+
+        currentApplication.setName("konker");
+        response = deviceRegisterService.search(currentTenant, currentApplication, userAdmin, null);
+        assertThat(response, isResponseOk());
+        all.addAll(response.getResult());
+
+        assertThat(all, notNullValue());
+        assertThat(all, hasSize(3));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json",
+            "/fixtures/locations.json", "/fixtures/users.json"})
+    public void shouldSearchFilterByUserApplication() {
+        List<Device> all = new ArrayList<>();
+        ServiceResponse<List<Device>> response = deviceRegisterService.search(currentTenant, currentApplication, userApplication, null);
+        assertThat(response, isResponseOk());
+        all.addAll(response.getResult());
+
+        assertThat(all, notNullValue());
+        assertThat(all, hasSize(2));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json",
+            "/fixtures/locations.json", "/fixtures/users.json"})
+    public void shouldSearchFilterByUserLocation() {
+        ServiceResponse<List<Device>> response = deviceRegisterService.search(currentTenant, currentApplication, userLocation, null);
+        assertThat(response, isResponseOk());
+        List<Device> all = response.getResult();
+
+        assertThat(all, notNullValue());
+        assertThat(all, hasSize(1));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json",
+            "/fixtures/locations.json", "/fixtures/users.json"})
+    public void shouldSearchFilterByUserNoPermission() {
+        ServiceResponse<List<Device>> serviceResponse = deviceRegisterService.search(currentTenant, otherApplication, userLocation, null);
+
+        assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+        assertThat(serviceResponse.getResponseMessages(), hasEntry(ApplicationService.Validations.APPLICATION_HAS_NO_PERMISSION.getCode(), null));
+        assertThat(serviceResponse.getResult(), nullValue());
     }
 
 }

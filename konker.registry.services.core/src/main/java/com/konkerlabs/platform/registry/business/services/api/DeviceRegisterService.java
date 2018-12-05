@@ -3,6 +3,7 @@ package com.konkerlabs.platform.registry.business.services.api;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
 
 import lombok.*;
@@ -184,7 +185,7 @@ public interface DeviceRegisterService {
 	 */
 	ServiceResponse<List<Device>> findAll(Tenant tenant, Application application);
 
-	ServiceResponse<List<Device>> search(Tenant tenant, Application application, String tag);
+	ServiceResponse<List<Device>> search(Tenant tenant, Application application, User user, String tag);
 
 	ServiceResponse<Long> countAll(Tenant tenant, Application application);
 

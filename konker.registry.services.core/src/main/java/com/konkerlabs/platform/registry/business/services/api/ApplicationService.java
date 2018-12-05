@@ -20,6 +20,7 @@ public interface ApplicationService {
 		APPLICATION_HAS_ROUTE("service.application.has.route"),
 		APPLICATION_HAS_TRANSFORMATION("service.application.has.transformation"),
 		APPLICATION_HAS_REST_DESTINATION("service.application.has.rest.destination"),
+		APPLICATION_HAS_NO_PERMISSION("service.application.has.no.permission"),
 		GATEWAY_NULL("service.gateway.null");
 
 		public String getCode() {

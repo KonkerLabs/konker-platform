@@ -8,6 +8,7 @@ import com.konkerlabs.platform.registry.api.model.DeviceInputVO;
 import com.konkerlabs.platform.registry.api.model.DeviceVO;
 import com.konkerlabs.platform.registry.api.model.RestResponse;
 import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.Validations;
 import com.konkerlabs.platform.registry.business.services.api.GatewayService;
@@ -56,7 +57,7 @@ public class DeviceRestController extends AbstractRestController implements Init
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
 
-        ServiceResponse<List<Device>> deviceResponse = deviceRegisterService.search(tenant, application, tag);
+        ServiceResponse<List<Device>> deviceResponse = deviceRegisterService.search(tenant, application, user.getParentUser(), tag);
 
         if (!deviceResponse.isOk()) {
             throw new BadServiceResponseException( deviceResponse, validationsCode);
@@ -244,6 +245,10 @@ public class DeviceRestController extends AbstractRestController implements Init
     public void afterPropertiesSet() {
 
         for (com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.Validations value : DeviceRegisterService.Validations.values()) {
+            validationsCode.add(value.getCode());
+        }
+
+        for (ApplicationService.Validations value : ApplicationService.Validations.values()) {
             validationsCode.add(value.getCode());
         }
 
