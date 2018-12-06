@@ -95,7 +95,7 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
 
         tenant = tenantRepository.findByDomainName("konker");
         device = deviceRepository.findByTenantAndGuid(tenant.getId(), userDefinedDeviceGuid);
-        application = applicationRepository.findByTenantAndName(tenant.getId(), "smartffkonker");
+        application = applicationRepository.findByTenantAndName(tenant.getId(), "konker");
         event = Event.builder()
                 .incoming(
                         Event.EventActor.builder()

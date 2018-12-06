@@ -6,6 +6,7 @@ import java.util.List;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.User;
 
 public interface DeviceEventService {
 
@@ -26,6 +27,28 @@ public interface DeviceEventService {
             this.code = code;
         }
     }
+
+    /**
+     * Return all existing incoming device events by provided arguments
+     *
+     * @param tenant
+     * @param application
+     * @param user
+     * @param deviceGuid
+     * @param startingTimestamp
+     * @param endTimestamp
+     * @param limit
+     * @return Found events
+     */
+    ServiceResponse<List<Event>> findIncomingBy(Tenant tenant,
+                                                Application application,
+                                                User user,
+                                                String deviceGuid,
+                                                String channel,
+                                                Instant startingTimestamp,
+                                                Instant endTimestamp,
+                                                boolean ascending,
+                                                Integer limit);
 
     /**
      * Return all existing incoming device events by provided arguments

@@ -1,10 +1,9 @@
 package com.konkerlabs.platform.registry.business.services;
 
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.events.api.EventRepository;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
@@ -20,8 +19,10 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
@@ -31,6 +32,8 @@ public class DeviceEventServiceImpl implements DeviceEventService {
     private ApplicationContext applicationContext;
     @Autowired
     private EventStorageConfig eventStorageConfig;
+    @Autowired
+    private DeviceRepository deviceRepository;
 
     private EventRepository eventRepository;
 
@@ -49,6 +52,41 @@ public class DeviceEventServiceImpl implements DeviceEventService {
         }
     }
 
+
+    @Override
+    public ServiceResponse<List<Event>> findIncomingBy(Tenant tenant,
+                                                       Application application,
+                                                       User user,
+                                                       String deviceGuid,
+                                                       String channel,
+                                                       Instant startingTimestamp,
+                                                       Instant endTimestamp,
+                                                       boolean ascending,
+                                                       Integer limit) {
+        if (Optional.ofNullable(user.getApplication()).isPresent()
+                && !application.equals(user.getApplication())) {
+
+            return ServiceResponseBuilder.<List<Event>>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_HAS_NO_PERMISSION.getCode())
+                    .build();
+        }
+
+        ServiceResponse<List<Event>> serviceResponse = findIncomingBy(tenant, application, deviceGuid, channel, startingTimestamp, endTimestamp, ascending, limit);
+
+        if (serviceResponse.isOk() &&
+                Optional.ofNullable(user.getLocation()).isPresent()) {
+            List<Event> eventList = serviceResponse.getResult();
+            List<Event> eventsFiltered = eventList.stream()
+                .filter(event -> user.getLocation().equals(
+                        deviceRepository.findByTenantAndGuid(
+                                tenant.getId(),
+                                event.getIncoming().getDeviceGuid()).getLocation()))
+                .collect(Collectors.toList());
+            serviceResponse.setResult(eventsFiltered);
+        }
+
+        return serviceResponse;
+    }
 
     @Override
     public ServiceResponse<List<Event>> findIncomingBy(Tenant tenant,

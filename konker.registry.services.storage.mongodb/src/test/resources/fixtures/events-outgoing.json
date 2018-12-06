@@ -23,6 +23,32 @@
         "deviceId":"SN1234567890",
         "channel": "e4399b2ed998.testchannel"
       }
+    },
+    {
+      "_class" : "com.mongodb.DBObject",
+      "payload":"{}",
+      "ts": 1453320973747,
+      "outgoing": {
+        "_class": "com.konkerlabs.platform.registry.business.model.EventActor",
+        "deviceGuid": "8363c556-84ea-11e6-92a2-4b01fea7e259",
+        "tenantDomain":"konker",
+        "applicationName": "konker",
+        "deviceId":"SN1234567890",
+        "channel": "e4399b2ed998.testchannel"
+      }
+    },
+    {
+      "_class" : "com.mongodb.DBObject",
+      "payload":"{}",
+      "ts": 1453320973757,
+      "outgoing": {
+        "_class": "com.konkerlabs.platform.registry.business.model.EventActor",
+        "deviceGuid": "8363c556-84ea-11e6-92a2-4b01fea7e259",
+        "tenantDomain":"konker",
+        "applicationName": "konker",
+        "deviceId":"SN1234567890",
+        "channel": "e4399b2ed998.testchannel"
+      }
     }
   ]
 }

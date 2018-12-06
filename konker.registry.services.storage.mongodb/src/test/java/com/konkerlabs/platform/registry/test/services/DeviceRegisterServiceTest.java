@@ -81,6 +81,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     private static final String THE_DEVICE_INTERNAL_MONGO_ID = "67014de6-81db-11e6-a5bc-3f99b38315c6";
     private static final String THE_USER_DEFINED_DEVICE_ID = "SN1234567890";
     private static final String THE_DEVICE_GUID = "7d51c242-81db-11e6-a8c2-0746f010e945";
+    private static final String THE_OTHER_DEVICE_GUID = "8363c556-84ea-11e6-92a2-4b01fea7e259";
     private static final String THE_DEVICE_API_KEY = "e4399b2ed998";
     private static final String DEVICE_ID_IN_USE = "SN1234567890";
     private static final String INCOMING_CHANNEL = "e4399b2ed998.testchannel";
@@ -123,6 +124,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     private Device rawDevice;
     private Application currentApplication;
     private Application otherApplication;
+    private Application konkerApplication;
     private User userAdmin;
     private User userApplication;
     private User userLocation;
@@ -132,6 +134,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         currentTenant = tenantRepository.findByDomainName("konker");
         emptyTenant = tenantRepository.findByDomainName("empty");
         currentApplication = applicationRepository.findByTenantAndName(currentTenant.getId(), "smartffkonker");
+        konkerApplication = applicationRepository.findByTenantAndName(currentTenant.getId(), "konker");
 
         applicationRepository.findAllByTenant(currentTenant.getId());
 
@@ -603,19 +606,19 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/events-incoming.json", "/fixtures/events-outgoing.json", "/fixtures/applications.json"})
     public void shouldDeleteInLogicalWayEachDataIngestedOnDeviceForSucceedDeletion() {
         Device device = deviceRegisterService
-                .findByTenantDomainNameAndDeviceGuid(currentTenant.getDomainName(), THE_DEVICE_GUID);
+                .findByTenantDomainNameAndDeviceGuid(currentTenant.getDomainName(), THE_OTHER_DEVICE_GUID);
 
 
-        ServiceResponse<List<Event>> incomingEvents = deviceEventService.findIncomingBy(currentTenant, currentApplication, THE_DEVICE_GUID,
+        ServiceResponse<List<Event>> incomingEvents = deviceEventService.findIncomingBy(currentTenant, konkerApplication, THE_OTHER_DEVICE_GUID,
                 INCOMING_CHANNEL, null, null, false, 100);
-        ServiceResponse<List<Event>> outgoingEvents = deviceEventService.findOutgoingBy(currentTenant, currentApplication, THE_DEVICE_GUID,
+        ServiceResponse<List<Event>> outgoingEvents = deviceEventService.findOutgoingBy(currentTenant, konkerApplication, THE_OTHER_DEVICE_GUID,
                 OUTGOING_CHANNEL, null, null, false, 100);
 
         assertThat(incomingEvents.getResult().size(), equalTo(2));
         assertThat(outgoingEvents.getResult().size(), equalTo(2));
 
         ServiceResponse<Device> serviceResponse = deviceRegisterService
-                .remove(currentTenant, currentApplication, device.getGuid());
+                .remove(currentTenant, konkerApplication, device.getGuid());
 
         assertThat(serviceResponse.getResponseMessages(), equalTo(Collections.singletonMap(Messages.DEVICE_REMOVED_SUCCESSFULLY.getCode(), null)));
     }
