@@ -75,6 +75,28 @@ public interface DeviceEventService {
      *
      * @param tenant
      * @param application
+     * @param user
+     * @param deviceGuid
+     * @param startingTimestamp
+     * @param endTimestamp
+     * @param limit
+     * @return Found events
+     */
+    ServiceResponse<List<Event>> findOutgoingBy(Tenant tenant,
+                                                Application application,
+                                                User user,
+                                                String deviceGuid,
+                                                String channel,
+                                                Instant startingTimestamp,
+                                                Instant endTimestamp,
+                                                boolean ascending,
+                                                Integer limit);
+
+    /**
+     * Return all existing incoming device events by provided arguments
+     *
+     * @param tenant
+     * @param application
      * @param deviceGuid
      * @param startingTimestamp
      * @param endTimestamp

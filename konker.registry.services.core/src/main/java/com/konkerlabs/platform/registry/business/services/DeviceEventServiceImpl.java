@@ -134,6 +134,41 @@ public class DeviceEventServiceImpl implements DeviceEventService {
     @Override
     public ServiceResponse<List<Event>> findOutgoingBy(Tenant tenant,
                                                        Application application,
+                                                       User user,
+                                                       String deviceGuid,
+                                                       String channel,
+                                                       Instant startingTimestamp,
+                                                       Instant endTimestamp,
+                                                       boolean ascending,
+                                                       Integer limit) {
+        if (Optional.ofNullable(user.getApplication()).isPresent()
+                && !application.equals(user.getApplication())) {
+
+            return ServiceResponseBuilder.<List<Event>>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_HAS_NO_PERMISSION.getCode())
+                    .build();
+        }
+
+        ServiceResponse<List<Event>> serviceResponse = findOutgoingBy(tenant, application, deviceGuid, channel, startingTimestamp, endTimestamp, ascending, limit);
+
+        if (serviceResponse.isOk() &&
+                Optional.ofNullable(user.getLocation()).isPresent()) {
+            List<Event> eventList = serviceResponse.getResult();
+            List<Event> eventsFiltered = eventList.stream()
+                    .filter(event -> user.getLocation().equals(
+                            deviceRepository.findByTenantAndGuid(
+                                    tenant.getId(),
+                                    event.getOutgoing().getDeviceGuid()).getLocation()))
+                    .collect(Collectors.toList());
+            serviceResponse.setResult(eventsFiltered);
+        }
+
+        return serviceResponse;
+    }
+
+    @Override
+    public ServiceResponse<List<Event>> findOutgoingBy(Tenant tenant,
+                                                       Application application,
                                                        String deviceGuid,
                                                        String channel,
                                                        Instant startingTimestamp,

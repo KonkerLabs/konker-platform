@@ -1022,7 +1022,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         all.addAll(response.getResult());
 
         assertThat(all, notNullValue());
-        assertThat(all, hasSize(3));
+        assertThat(all, hasSize(4));
     }
 
     @Test
