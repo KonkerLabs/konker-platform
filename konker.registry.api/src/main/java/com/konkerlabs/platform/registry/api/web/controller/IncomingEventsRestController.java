@@ -92,7 +92,16 @@ public class IncomingEventsRestController extends AbstractRestController impleme
         Instant startingTimestamp = filter.getStartingTimestamp();
         Instant endTimestamp = filter.getEndTimestamp();
 
-        ServiceResponse<List<Event>> restDestinationResponse = deviceEventService.findIncomingBy(tenant, application, deviceGuid, channel, startingTimestamp, endTimestamp, ascending, limit);
+        ServiceResponse<List<Event>> restDestinationResponse = deviceEventService.findIncomingBy(
+                tenant,
+                application,
+                user.getParentUser(),
+                deviceGuid,
+                channel,
+                startingTimestamp,
+                endTimestamp,
+                ascending,
+                limit);
 
         if (!restDestinationResponse.isOk()) {
             throw new BadServiceResponseException( restDestinationResponse, validationsCode);

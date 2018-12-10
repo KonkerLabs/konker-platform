@@ -10,6 +10,9 @@ import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
 import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.Event.EventActor;
 import com.konkerlabs.platform.registry.business.model.HealthAlert.HealthAlertSeverity;
+import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
+import com.konkerlabs.platform.registry.business.model.enumerations.Language;
+import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
 import com.konkerlabs.platform.registry.business.services.api.*;
 import com.konkerlabs.platform.registry.business.services.api.HealthAlertService.Validations;
 import org.junit.After;
@@ -95,6 +98,8 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 
     private List<Event> events;
 
+    private User user;
+
     private final String BASEPATH = "devices";
 
     private final Instant registrationDate = Instant.ofEpochMilli(1495716970000L).minusSeconds(3600L);
@@ -151,6 +156,14 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .build();
         events = Collections.singletonList(event);
 
+        user = User.builder()
+                .email("user@domain.com")
+                .zoneId(TimeZone.AMERICA_SAO_PAULO)
+                .language(Language.EN)
+                .avatar("default.jpg")
+                .dateFormat(DateFormat.YYYYMMDD)
+                .tenant(tenant).build();
+
         when(locationSearchService.findByName(tenant, application, "br", false))
                 .thenReturn(ServiceResponseBuilder.<Location>ok().withResult(locationBR).build());
 
@@ -168,7 +181,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
         devices.add(device1);
         devices.add(device2);
 
-        when(deviceRegisterService.search(tenant, application, null))
+        when(deviceRegisterService.search(tenant, application, user, null))
                 .thenReturn(ServiceResponseBuilder.<List<Device>>ok().withResult(devices).build());
 
         when(applicationService.getByApplicationName(tenant, application.getName()))
@@ -203,7 +216,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
         devices.add(device1);
         devices.add(device2);
 
-        when(deviceRegisterService.search(tenant, application, "red"))
+        when(deviceRegisterService.search(tenant, application, user, "red"))
                 .thenReturn(ServiceResponseBuilder.<List<Device>>ok().withResult(devices).build());
 
         when(applicationService.getByApplicationName(tenant, application.getName()))
@@ -233,7 +246,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryListDevicesWithInternalError() throws Exception {
 
-        when(deviceRegisterService.search(tenant, application, null))
+        when(deviceRegisterService.search(tenant, application, user, null))
                 .thenReturn(ServiceResponseBuilder.<List<Device>>error().build());
 
         when(applicationService.getByApplicationName(tenant, application.getName()))

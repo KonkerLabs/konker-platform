@@ -236,14 +236,35 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
     }
 
     @Override
-    public ServiceResponse<List<Device>> search(Tenant tenant, Application application, String tag) {
+    public ServiceResponse<List<Device>> search(Tenant tenant, Application application, User user, String tag) {
 
         ServiceResponse<List<Device>> validationResponse = validate(tenant, application);
         if (!validationResponse.isOk()) {
             return validationResponse;
         }
 
-        List<Device> all = deviceSearchRepository.search(tenant.getId(), application.getName(), tag);
+        if (Optional.ofNullable(user.getApplication()).isPresent()
+            && !application.equals(user.getApplication())) {
+            Device noDevice = Device.builder()
+                    .guid("NULL")
+                    .tenant(tenant)
+                    .application(user.getApplication())
+                    .build();
+            LOGGER.debug(ApplicationService.Validations.APPLICATION_HAS_NO_PERMISSION.getCode(),
+                    noDevice.toURI(),
+                    noDevice.getTenant().getLogLevel());
+            return ServiceResponseBuilder.<List<Device>>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_HAS_NO_PERMISSION.getCode())
+                    .build();
+        }
+
+        List<Device> all = deviceSearchRepository.search(
+                tenant.getId(),
+                application.getName(),
+                Optional.ofNullable(user.getLocation())
+                        .orElse(Location.builder().build())
+                        .getId(),
+                tag);
 
         return ServiceResponseBuilder.<List<Device>>ok().withResult(all).build();
 

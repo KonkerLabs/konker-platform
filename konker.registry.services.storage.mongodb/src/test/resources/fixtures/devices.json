@@ -12,6 +12,10 @@
       	"$id" : "smartffkonker",
       	"$ref" : "applications"
       },
+      "location" : {
+        "$id" : "591200ea9061e67cb2228f85",
+        "$ref" : "locations"
+      },
       "deviceId" : "SN1234567890",
       "apiKey" : "e4399b2ed998",
       "name" : "Test name",
@@ -21,20 +25,62 @@
       "active" : false
     },
     {
+      "_class": "com.konkerlabs.platform.registry.model.Device",
+      "_id": "69014da6-81da-13e6-a1bc-3f98b38315c6",
+      "guid": "8363c556-84ea-11e6-92a2-4b01fea7e243",
+      "tenant": {
+        "$id": "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref": "tenants"
+      },
+      "application": {
+        "$id": "smartffkonker",
+        "$ref": "applications"
+      },
+      "deviceId": "SN1234567891",
+      "apiKey": "e4399b2ed999",
+      "name": "Test name 2",
+      "description": "Description",
+      "registrationDate": 1453320973747,
+      "active": true
+    },
+    {
       "_class" : "com.konkerlabs.platform.registry.model.Device",
-      "_id" : "69014da6-81da-13e6-a1bc-3f98b38315c6",
-      "guid" : "8363c556-84ea-11e6-92a2-4b01fea7e243",
+      "_id" : "69014da6-81da-13e6-a1bc-3f98b38315d9",
+      "guid" : "8363c556-84ea-11e6-92a2-4b01fea7e258",
       "tenant" : {
         "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
         "$ref" : "tenants"
       },
       "application" : {
-      	"$id" : "smartffkonker",
-      	"$ref" : "applications"
+        "$id" : "konker",
+        "$ref" : "applications"
       },
-      "deviceId" : "SN1234567891",
-      "apiKey" : "e4399b2ed999",
-      "name" : "Test name 2",
+      "deviceId" : "SN1234567889",
+      "apiKey" : "e4399b2ed888",
+      "name" : "Test name 3",
+      "description" : "Description",
+      "registrationDate" : 1453320973747,
+      "active" : true
+    },
+    {
+      "_class" : "com.konkerlabs.platform.registry.model.Device",
+      "_id" : "69014da6-81da-13e6-a1bc-3f98b38315d7",
+      "guid" : "8363c556-84ea-11e6-92a2-4b01fea7e259",
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
+      },
+      "application" : {
+        "$id" : "konker",
+        "$ref" : "applications"
+      },
+      "location" : {
+        "$id" : "591200ea9061e67cb2228f85",
+        "$ref" : "locations"
+      },
+      "deviceId" : "SN1234567888",
+      "apiKey" : "e4399b2ed888",
+      "name" : "Test name 3",
       "description" : "Description",
       "registrationDate" : 1453320973747,
       "active" : true

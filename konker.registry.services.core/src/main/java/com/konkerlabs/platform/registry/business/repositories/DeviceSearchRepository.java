@@ -17,7 +17,7 @@ public class DeviceSearchRepository  {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-	public List<Device> search(String tenantId, String applicationName, String tag) {
+	public List<Device> search(String tenantId, String applicationName, String locationId, String tag) {
 
         Query query = new Query();
 
@@ -26,6 +26,10 @@ public class DeviceSearchRepository  {
 
         if (StringUtils.isNotBlank(tag)) {
             criterias.add(Criteria.where("tags").in(tag));
+        }
+
+        if (StringUtils.isNotBlank(locationId)) {
+            criterias.add(Criteria.where("location.id").is(locationId));
         }
 
         query.addCriteria(Criteria

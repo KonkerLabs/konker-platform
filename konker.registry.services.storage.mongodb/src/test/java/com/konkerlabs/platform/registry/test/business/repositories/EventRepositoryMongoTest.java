@@ -10,6 +10,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.function.Supplier;
 
+import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -55,6 +56,8 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
     @Autowired
     private TenantRepository tenantRepository;
     @Autowired
+    private ApplicationRepository applicationRepository;
+    @Autowired
     private DeviceRepository deviceRepository;
 
     @Autowired
@@ -65,6 +68,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
 
     private Tenant tenant;
     private Application application;
+    private Application applicationSmartff;
     private String incomingPayload;
     private Event incomingEvent;
     private Event outgoingEvent;
@@ -84,6 +88,8 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
 
         deviceGuid = "7d51c242-81db-11e6-a8c2-0746f010e945";
         tenant = tenantRepository.findByDomainName("konker");
+        application = applicationRepository.findByTenantAndName(tenant.getId(), "konker");
+        applicationSmartff = applicationRepository.findByTenantAndName(tenant.getId(), "smartffkonker");
 
         incomingPayload = "{\n" +
                 "    \"value\" : 31.0,\n" +
@@ -260,7 +266,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json","/fixtures/applications.json"})
     public void shouldRetrieveLastTwoEventsByTenantAndDeviceWhenFindingIncomingBy() throws Exception {
         List<Event> events = eventRepository.findIncomingBy(tenant, application, deviceGuid, "command",
                 firstEventTimestamp.plus(1,ChronoUnit.SECONDS),
@@ -274,7 +280,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json","/fixtures/applications.json"})
     public void shouldRemoveEvents() throws Exception {
         List<Event> events = eventRepository.findIncomingBy(tenant, application, deviceGuid, "command",
                 firstEventTimestamp.plus(1,ChronoUnit.SECONDS),
@@ -294,7 +300,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/applications.json","/fixtures/devices.json","/fixtures/deviceEvents.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/applications.json","/fixtures/devices.json","/fixtures/deviceEvents.json", "/fixtures/events-incoming.json"})
     public void shouldCopyEvents() throws Exception {
         String destinationGuid = "8363c556-84ea-11e6-92a2-4b01fea7e243";
 
@@ -305,15 +311,17 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         assertThat(events,notNullValue());
         assertThat(events,hasSize(0));
 
-        Device originDevice = deviceRepository.findByTenantAndApplicationAndGuid(tenant.getId(), "smartffkonker", deviceGuid);
-        Device destDevice = deviceRepository.findByTenantAndApplicationAndGuid(tenant.getId(), "smartffkonker", destinationGuid);
+        Device originDevice = deviceRepository.findByTenantAndApplicationAndGuid(tenant.getId(), application.getName(), "8363c556-84ea-11e6-92a2-4b01fea7e259");
+        Device destDevice = deviceRepository.findByTenantAndApplicationAndGuid(tenant.getId(), applicationSmartff.getName(), destinationGuid);
 
         eventRepository.copy(tenant, originDevice, destDevice);
 
         // checks if events were copied
-        events = eventRepository.findIncomingBy(tenant, application, destinationGuid, "command",
-                firstEventTimestamp.plus(1,ChronoUnit.SECONDS),
-                null,false,2);
+        events = eventRepository.findIncomingBy(tenant, applicationSmartff, destinationGuid, "e4399b2ed998.testchannel",
+                null,
+                null,
+                false,
+                2);
 
         assertThat(events,notNullValue());
         assertThat(events,hasSize(2));
@@ -338,7 +346,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json","/fixtures/applications.json"})
     public void shouldRetrieveTheOnlyFirstEventByTenantAndDeviceWhenFindingIncomingBy() throws Exception {
         List<Event> events = eventRepository.findIncomingBy(tenant, application,
                 deviceGuid,"command",
@@ -353,7 +361,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json"})
+    @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json","/fixtures/applications.json"})
     public void shouldLimitResultsAccordingToLimitParameterWhenFindingIncomingBy() throws Exception {
         List<Event> events = eventRepository.findIncomingBy(tenant, application,
                 deviceGuid,"command",
