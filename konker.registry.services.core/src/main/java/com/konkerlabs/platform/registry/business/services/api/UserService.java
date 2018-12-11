@@ -86,13 +86,19 @@ public interface UserService {
     		String newPassword,
     		String newPasswordConfirmation);
     
+    ServiceResponse<User> save(String application,
+                               String location,
+                               User user,
+                               String newPassword,
+                               String newPasswordConfirmation);
+
     ServiceResponse<User> createAccount(User user,
     		String newPassword,
             String newPasswordConfirmation);
-    
+
+
     ServiceResponse<User> createAccountWithPasswordHash(User user,
     		String passwordHash);
-    
 
     ServiceResponse<User> findByEmail(String email);
     

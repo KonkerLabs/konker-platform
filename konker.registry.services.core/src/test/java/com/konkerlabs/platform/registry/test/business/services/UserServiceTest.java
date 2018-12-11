@@ -1,11 +1,18 @@
 package com.konkerlabs.platform.registry.test.business.services;
 
+import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.Location;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
 import com.konkerlabs.platform.registry.business.model.enumerations.Language;
 import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
+import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
+import com.konkerlabs.platform.registry.business.repositories.LocationRepository;
+import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.repositories.UserRepository;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
+import com.konkerlabs.platform.registry.business.services.api.LocationService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.UserService;
 import com.konkerlabs.platform.registry.config.PasswordUserConfig;
@@ -39,7 +46,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 @UsingDataSet(locations = {
         "/fixtures/tenants.json",
         "/fixtures/users.json",
-        "/fixtures/passwordBlacklist.json"
+        "/fixtures/passwordBlacklist.json",
+        "/fixtures/applications.json",
+        "/fixtures/locations.json"
 })
 public class UserServiceTest extends BusinessLayerTestSupport {
 
@@ -50,9 +59,21 @@ public class UserServiceTest extends BusinessLayerTestSupport {
     private UserRepository userRepository;
 
     @Autowired
+    private TenantRepository tenantRepository;
+
+    @Autowired
+    private ApplicationRepository applicationRepository;
+
+    @Autowired
+    private LocationRepository locationRepository;
+
+    @Autowired
     private UserService userService;
 
     private User user;
+    private Tenant tenant;
+    private Application application;
+    private Location location;
     private Iterable<User> users;
     private static final String oldPassword="abc123456789$$";
     private static final String oldPasswordWrong="password";
@@ -69,6 +90,10 @@ public class UserServiceTest extends BusinessLayerTestSupport {
 
         user = userRepository.findOne("admin@konkerlabs.com");
         users = userRepository.findAll();
+
+        tenant = tenantRepository.findByDomainName("konker");
+        application = applicationRepository.findByTenantAndName(tenant.getId(), "konker");
+        location = locationRepository.findByTenantAndApplicationAndName(tenant.getId(), application.getName(), "br");
     }
 
     @After
@@ -258,6 +283,47 @@ public class UserServiceTest extends BusinessLayerTestSupport {
 
         User updated = userRepository.findOne(user.getEmail());
         assertThat(updated.getDateFormat().getCode(), !equals(user.getDateFormat().getCode()));
+    }
+
+    @Test
+    public void shouldReturnErrorWhenSaveApplicationDoesNotExist(){
+        ServiceResponse<User> serviceResponse =
+                userService.save("appxpto", location.getName(), user,newPassword, newPasswordConfirmation);
+        Assert.assertNotNull(serviceResponse);
+        assertThat(serviceResponse,
+                hasErrorMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode()));
+
+        serviceResponse = userService.save(null, location.getName(), user,newPassword, newPasswordConfirmation);
+        Assert.assertNotNull(serviceResponse);
+        assertThat(serviceResponse,
+                hasErrorMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode()));
+    }
+
+    @Test
+    public void shouldReturnErrorWhenSaveLocationDoesNotExist(){
+        ServiceResponse<User> serviceResponse =
+                userService.save(application.getName(), "locationxpto", user,newPassword, newPasswordConfirmation);
+        Assert.assertNotNull(serviceResponse);
+        assertThat(serviceResponse,
+                hasErrorMessage(LocationService.Validations.LOCATION_GUID_DOES_NOT_EXIST.getCode()));
+    }
+
+    @Test
+    public void shouldSaveUserWithApplication() {
+        user.setName("newName");
+        ServiceResponse<User> serviceResponse =
+                userService.save(application.getName(),
+                        location.getName(),
+                        user,
+                        newPassword,
+                        newPasswordConfirmation);
+        Assert.assertNotNull(serviceResponse);
+        assertThat(
+                serviceResponse,
+                isResponseOk());
+
+        User updated = userRepository.findOne(user.getEmail());
+        assertThat(updated.getName(), !equals(user.getName()));
     }
     
     @Test

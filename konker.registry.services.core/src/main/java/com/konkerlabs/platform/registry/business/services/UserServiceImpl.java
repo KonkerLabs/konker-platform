@@ -1,11 +1,11 @@
 package com.konkerlabs.platform.registry.business.services;
 
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
-import com.konkerlabs.platform.registry.business.model.Role;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.User;
+import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
 import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
+import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
+import com.konkerlabs.platform.registry.business.repositories.LocationRepository;
 import com.konkerlabs.platform.registry.business.repositories.PasswordBlacklistRepository;
 import com.konkerlabs.platform.registry.business.repositories.UserRepository;
 import com.konkerlabs.platform.registry.business.services.api.*;
@@ -48,6 +48,10 @@ public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
     @Autowired
     private PasswordBlacklistRepository passwordBlacklistRepository;
+    @Autowired
+    private ApplicationRepository applicationRepository;
+    @Autowired
+    private LocationRepository locationRepository;
     
     @Autowired
     private TenantService tenantService;
@@ -194,6 +198,48 @@ public class UserServiceImpl implements UserService {
 
         fillFrom(user, fromStorage);
         return persistValidUser(fromStorage);
+    }
+
+    @Override
+    public ServiceResponse<User> save(String application,
+                                      String location,
+                                      User user,
+                                      String newPassword,
+                                      String newPasswordConfirmation) {
+        Application appFromDB = applicationRepository.findByTenantAndName(user.getTenant().getId(), application);
+
+        if ((Optional.ofNullable(application).isPresent()
+                || Optional.ofNullable(location).isPresent())
+            && !Optional.ofNullable(appFromDB).isPresent()) {
+            return ServiceResponseBuilder.<User>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode())
+                    .build();
+        }
+
+        Location locationFromDB = locationRepository.findByTenantAndApplicationAndName(
+                appFromDB.getTenant().getId(),
+                appFromDB.getName(),
+                location);
+
+        if (Optional.ofNullable(location).isPresent()
+                && !Optional.ofNullable(locationFromDB).isPresent()) {
+            return ServiceResponseBuilder.<User>error()
+                    .withMessage(LocationService.Validations.LOCATION_GUID_DOES_NOT_EXIST.getCode())
+                    .build();
+        }
+
+        if (Optional.ofNullable(appFromDB).isPresent()) {
+            Role role = roleService.findByName(RoleService.ROLE_IOT_READ_ONLY).getResult();
+            user.setRoles(Collections.singletonList(role));
+        } else {
+            Role role = roleService.findByName(RoleService.ROLE_IOT_USER).getResult();
+            user.setRoles(Collections.singletonList(role));
+        }
+
+        user.setApplication(appFromDB);
+        user.setLocation(locationFromDB);
+
+        return save(user, newPassword, newPasswordConfirmation);
     }
 
     private ServiceResponse<User> saveWithPasswordHash(User user, String passwordHash) {

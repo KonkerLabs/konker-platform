@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.ArrayList;
 import java.util.List;
 
+import com.konkerlabs.platform.registry.business.model.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,9 +33,6 @@ import com.konkerlabs.platform.registry.api.test.config.MongoTestConfig;
 import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
 import com.konkerlabs.platform.registry.api.web.controller.UserRestController;
 import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
-import com.konkerlabs.platform.registry.business.model.Role;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.services.api.RoleService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.UserService;
@@ -190,6 +188,8 @@ public class UserRestControllerTest extends WebLayerTestContext {
     public void shouldCreateUser() throws Exception {
 
     	when(userService.save(
+				org.mockito.Matchers.anyString(),
+				org.mockito.Matchers.anyString(),
     			org.mockito.Matchers.any(User.class),
     			org.mockito.Matchers.anyString(),
     			org.mockito.Matchers.anyString()))
@@ -220,6 +220,8 @@ public class UserRestControllerTest extends WebLayerTestContext {
     public void shouldTryCreateUserWithBadRequest() throws Exception {
 
     	when(userService.save(
+                org.mockito.Matchers.anyString(),
+                org.mockito.Matchers.anyString(),
     			org.mockito.Matchers.any(User.class),
     			org.mockito.Matchers.anyString(),
     			org.mockito.Matchers.anyString()))
