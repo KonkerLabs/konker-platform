@@ -249,6 +249,8 @@ public class UserRestControllerTest extends WebLayerTestContext {
                 .thenReturn(ServiceResponseBuilder.<User>ok().withResult(user1).build());
 
         when(userService.save(
+				org.mockito.Matchers.anyString(),
+				org.mockito.Matchers.anyString(),
         		org.mockito.Matchers.any(User.class),
         		org.mockito.Matchers.anyString(),
         		org.mockito.Matchers.anyString()))
@@ -273,6 +275,8 @@ public class UserRestControllerTest extends WebLayerTestContext {
                 .thenReturn(ServiceResponseBuilder.<User>ok().withResult(user1).build());
 
         when(userService.save(
+				org.mockito.Matchers.anyString(),
+				org.mockito.Matchers.anyString(),
         		org.mockito.Matchers.any(User.class),
         		org.mockito.Matchers.anyString(),
         		org.mockito.Matchers.anyString()))

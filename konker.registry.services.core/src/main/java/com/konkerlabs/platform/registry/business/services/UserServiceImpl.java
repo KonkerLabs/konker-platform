@@ -206,7 +206,9 @@ public class UserServiceImpl implements UserService {
                                       User user,
                                       String newPassword,
                                       String newPasswordConfirmation) {
-        Application appFromDB = applicationRepository.findByTenantAndName(user.getTenant().getId(), application);
+        Application appFromDB = applicationRepository.findByTenantAndName(
+                user.getTenant().getId(),
+                "default".equals(application) ? user.getTenant().getDomainName() : application);
 
         if ((Optional.ofNullable(application).isPresent()
                 || Optional.ofNullable(location).isPresent())
@@ -217,8 +219,8 @@ public class UserServiceImpl implements UserService {
         }
 
         Location locationFromDB = locationRepository.findByTenantAndApplicationAndName(
-                appFromDB.getTenant().getId(),
-                appFromDB.getName(),
+                user.getTenant().getId(),
+                application,
                 location);
 
         if (Optional.ofNullable(location).isPresent()
@@ -529,6 +531,8 @@ public class UserServiceImpl implements UserService {
         storage.setName(form.getName());
         storage.setPhone(form.getPhone());
         storage.setNotificationViaEmail(form.isNotificationViaEmail());
+        storage.setApplication(form.getApplication());
+        storage.setLocation(form.getLocation());
         
         if (!storage.isActive()) {
         	storage.setActive(form.isActive());

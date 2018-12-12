@@ -159,7 +159,7 @@ public class UserRestController implements InitializingBean {
         userFromDB.setName(userForm.getName());
         userFromDB.setNotificationViaEmail(userForm.isNotificationViaEmail());
 
-        ServiceResponse<User> updateResponse = userService.save(userFromDB, password, password);
+        ServiceResponse<User> updateResponse = userService.save(userForm.getApplication(), userForm.getLocation(), userFromDB, password, password);
 
         if (!updateResponse.isOk()) {
             throw new BadServiceResponseException( userResponse, validationsCode);
@@ -176,6 +176,14 @@ public class UserRestController implements InitializingBean {
         }
         
         for (Errors value : UserService.Errors.values()) {
+            validationsCode.add(value.getCode());
+        }
+
+        for (ApplicationService.Validations value : ApplicationService.Validations.values()) {
+            validationsCode.add(value.getCode());
+        }
+
+        for (LocationService.Validations value : LocationService.Validations.values()) {
             validationsCode.add(value.getCode());
         }
 
