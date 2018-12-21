@@ -8,7 +8,6 @@ import lombok.Data;
 public class PrivateStorage {
 
     private String collectionName;
-    private String keyName;
     private String collectionContent;
 
 }

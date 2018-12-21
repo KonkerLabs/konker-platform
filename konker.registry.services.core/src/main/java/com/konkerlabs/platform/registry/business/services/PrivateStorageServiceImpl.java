@@ -1,7 +1,6 @@
 package com.konkerlabs.platform.registry.business.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.konkerlabs.platform.registry.billing.model.TenantDailyUsage;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
@@ -11,8 +10,6 @@ import com.konkerlabs.platform.registry.storage.repositories.PrivateStorageRepos
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 import com.mongodb.DBObject;
 import com.mongodb.Mongo;
-import com.mongodb.WriteResult;
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
@@ -72,8 +69,8 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
                     .build();
         }
 
-        DBObject dbObject = privateStorageRepository.findByKey(collectionName, content.get("_id").toString());
-        if (Optional.ofNullable(dbObject).isPresent()) {
+        PrivateStorage fromDB = privateStorageRepository.findById(collectionName, content.get("_id").toString());
+        if (Optional.ofNullable(fromDB).isPresent()) {
             return ServiceResponseBuilder.<PrivateStorage>error()
                     .withMessage(Validations.PRIVATE_STORAGE_COLLECTION_CONTENT_ALREADY_EXISTS.getCode())
                     .build();
@@ -81,6 +78,10 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
 
         privateStorageRepository.save(collectionName, content);
         return ServiceResponseBuilder.<PrivateStorage>ok()
+                .withResult(PrivateStorage.builder()
+                        .collectionName(collectionName)
+                        .collectionContent(jsonParsingService.toJsonString(content))
+                        .build())
                 .build();
     }
 
@@ -94,31 +95,114 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
     public ServiceResponse<PrivateStorage> update(Tenant tenant,
                                                   Application application,
                                                   String collectionName,
-                                                  String collectionContent) {
-        return null;
+                                                  String collectionContent) throws JsonProcessingException {
+        ServiceResponse<PrivateStorage> validationResponse = validate(tenant, application, collectionName);
+
+        if (!validationResponse.isOk()) {
+            return validationResponse;
+        }
+        privateStorageRepository = PrivateStorageRepository.getInstance(mongo, tenant.getDomainName());
+
+        if (!jsonParsingService.isValid(collectionContent)) {
+            return ServiceResponseBuilder.<PrivateStorage>error()
+                    .withMessage(Validations.PRIVATE_STORAGE_INVALID_JSON.getCode())
+                    .build();
+        }
+
+        if (isPrivateStorageFull(tenant)) {
+            return ServiceResponseBuilder.<PrivateStorage>error()
+                    .withMessage(Validations.PRIVATE_STORAGE_IS_FULL.getCode())
+                    .build();
+        }
+
+        Map<String, Object> content = jsonParsingService.toMap(collectionContent);
+        if (!content.containsKey("_id")) {
+            return ServiceResponseBuilder.<PrivateStorage>error()
+                    .withMessage(Validations.PRIVATE_STORAGE_NO_COLLECTION_ID_FIELD.getCode())
+                    .build();
+        }
+
+        PrivateStorage fromDB = privateStorageRepository.findById(collectionName, content.get("_id").toString());
+        if (!Optional.ofNullable(fromDB).isPresent()) {
+            return ServiceResponseBuilder.<PrivateStorage>error()
+                    .withMessage(Validations.PRIVATE_STORAGE_DOES_NOT_EXIST.getCode())
+                    .build();
+        }
+
+        PrivateStorage privateStorage = privateStorageRepository.update(collectionName, content);
+        return ServiceResponseBuilder.<PrivateStorage>ok()
+                .withResult(privateStorage)
+                .build();
     }
 
     @Override
     public ServiceResponse<PrivateStorage> remove(Tenant tenant,
                                                   Application application,
                                                   String collectionName,
-                                                  String key) {
-        return null;
+                                                  String id) throws JsonProcessingException {
+        ServiceResponse<PrivateStorage> validationResponse = validate(tenant, application, collectionName);
+
+        if (!validationResponse.isOk()) {
+            return validationResponse;
+        }
+        privateStorageRepository = PrivateStorageRepository.getInstance(mongo, tenant.getDomainName());
+
+        if (!Optional.ofNullable(id).isPresent()) {
+            return ServiceResponseBuilder.<PrivateStorage>error()
+                    .withMessage(Validations.PRIVATE_STORAGE_COLLECTION_ID_IS_NULL.getCode())
+                    .build();
+        }
+
+        PrivateStorage fromDB = privateStorageRepository.findById(collectionName, id);
+        if (!Optional.ofNullable(fromDB).isPresent()) {
+            return ServiceResponseBuilder.<PrivateStorage>error()
+                    .withMessage(Validations.PRIVATE_STORAGE_DOES_NOT_EXIST.getCode())
+                    .build();
+        }
+
+        privateStorageRepository.remove(collectionName, id);
+        return ServiceResponseBuilder.<PrivateStorage>ok()
+                .withMessage(Messages.PRIVATE_STORAGE_REMOVED_SUCCESSFULLY.getCode())
+                .build();
     }
 
     @Override
-    public ServiceResponse<PrivateStorage> findAll(Tenant tenant,
-                                                   Application application,
-                                                   String collectionName) {
-        return null;
+    public ServiceResponse<List<PrivateStorage>> findAll(Tenant tenant,
+                                                        Application application,
+                                                        String collectionName) throws JsonProcessingException {
+        ServiceResponse<List<PrivateStorage>> validationResponse = validate(tenant, application, collectionName);
+
+        if (!validationResponse.isOk()) {
+            return validationResponse;
+        }
+        privateStorageRepository = PrivateStorageRepository.getInstance(mongo, tenant.getDomainName());
+
+        return ServiceResponseBuilder.<List<PrivateStorage>>ok()
+                .withResult(privateStorageRepository.findAll(collectionName))
+                .build();
     }
 
     @Override
-    public ServiceResponse<PrivateStorage> findByTenantApplicationKey(Tenant tenant,
-                                                                      Application application,
-                                                                      String collectionName,
-                                                                      String key) {
-        return null;
+    public ServiceResponse<PrivateStorage> findById(Tenant tenant,
+                                                    Application application,
+                                                    String collectionName,
+                                                    String id) throws JsonProcessingException {
+        ServiceResponse<PrivateStorage> validationResponse = validate(tenant, application, collectionName);
+
+        if (!validationResponse.isOk()) {
+            return validationResponse;
+        }
+        privateStorageRepository = PrivateStorageRepository.getInstance(mongo, tenant.getDomainName());
+
+        if (!Optional.ofNullable(id).isPresent()) {
+            return ServiceResponseBuilder.<PrivateStorage>error()
+                    .withMessage(Validations.PRIVATE_STORAGE_COLLECTION_ID_IS_NULL.getCode())
+                    .build();
+        }
+
+        return ServiceResponseBuilder.<PrivateStorage>ok()
+                .withResult(privateStorageRepository.findById(collectionName, id))
+                .build();
     }
 
     private <T> ServiceResponse<T> validate(Tenant tenant, Application application, String collectionName) {

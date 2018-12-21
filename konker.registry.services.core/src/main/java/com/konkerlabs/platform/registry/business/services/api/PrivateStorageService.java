@@ -5,6 +5,8 @@ import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.storage.model.PrivateStorage;
 
+import java.util.List;
+
 public interface PrivateStorageService {
 
     enum Validations {
@@ -15,6 +17,7 @@ public interface PrivateStorageService {
         PRIVATE_STORAGE_INVALID_JSON("service.private.storage.invalid_json"),
         PRIVATE_STORAGE_INVALID_COLLECTION_NAME("service.private.storage.invalid_collection_name"),
         PRIVATE_STORAGE_NO_COLLECTION_ID_FIELD("service.private.storage.no.collection.id.field"),
+        PRIVATE_STORAGE_COLLECTION_ID_IS_NULL("service.private.storage.collection.id.null"),
         PRIVATE_STORAGE_INVALID_KEY_NAME("service.private.storage.invalid_key_name");
 
         public String getCode() {
@@ -50,20 +53,20 @@ public interface PrivateStorageService {
     ServiceResponse<PrivateStorage> update(Tenant tenant,
                                            Application application,
                                            String collectionName,
-                                           String collectionContent);
+                                           String collectionContent) throws JsonProcessingException;
 
     ServiceResponse<PrivateStorage> remove(Tenant tenant,
                                            Application application,
                                            String collectionName,
-                                           String key);
+                                           String id) throws JsonProcessingException;
 
-    ServiceResponse<PrivateStorage> findAll(Tenant tenant,
-                                            Application application,
-                                            String collectionName);
+    ServiceResponse<List<PrivateStorage>> findAll(Tenant tenant,
+                                                  Application application,
+                                                  String collectionName) throws JsonProcessingException;
 
-    ServiceResponse<PrivateStorage> findByTenantApplicationKey(Tenant tenant,
-                                                               Application application,
-                                                               String collectionName,
-                                                               String key);
+    ServiceResponse<PrivateStorage> findById(Tenant tenant,
+                                             Application application,
+                                             String collectionName,
+                                             String id) throws JsonProcessingException;
 
 }

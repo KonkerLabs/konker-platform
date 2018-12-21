@@ -1,14 +1,16 @@
 package com.konkerlabs.platform.registry.storage.repositories;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.config.MongoPrivateStorageConfig;
 import com.konkerlabs.platform.registry.storage.model.PrivateStorage;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
+import com.konkerlabs.platform.utilities.parsers.json.JsonParsingServiceImpl;
 import com.mongodb.*;
-import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.mongodb.core.CollectionOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Repository;
@@ -21,10 +23,14 @@ import java.util.Optional;
 @Repository
 public class PrivateStorageRepository {
 
-	private static Logger LOG = LoggerFactory.getLogger(PrivateStorageRepository.class);
+    public static final String ID = "_id";
+    private static Logger LOG = LoggerFactory.getLogger(PrivateStorageRepository.class);
 
 	@Autowired
+    @Qualifier("mongoPrivateStorageTemplate")
 	private MongoTemplate mongoPrivateStorageTemplate;
+
+    private JsonParsingService jsonParsingService;
 
 	public static PrivateStorageRepository getInstance(Mongo mongo, String dbName) {
 		try {
@@ -32,6 +38,7 @@ public class PrivateStorageRepository {
 			MongoPrivateStorageConfig mongoTenantConfig = new MongoPrivateStorageConfig();
 			mongoTenantConfig.setDbName(dbName);
 			privateStorageRepository.mongoPrivateStorageTemplate = mongoTenantConfig.mongoTemplate(mongo);
+            privateStorageRepository.jsonParsingService = new JsonParsingServiceImpl();
 
 			return privateStorageRepository;
 		} catch (Exception e) {
@@ -56,10 +63,40 @@ public class PrivateStorageRepository {
 		collection.insert(document[0]);
 	}
 
-	public List<PrivateStorage> findAll(Tenant tenant, String collectionName) {
-		List<PrivateStorage> logs = new ArrayList<>();
+	public PrivateStorage update(String collectionName,  Map<String, Object> content) throws JsonProcessingException {
+        DBObject queryById = new BasicDBObject().append(ID, content.get(ID));
 
-		checkCollection(collectionName);
+        DBCollection collectionFor = mongoPrivateStorageTemplate.getCollection(collectionName);
+        DBObject dbObject = collectionFor.findOne(queryById);
+
+        if (!Optional.ofNullable(dbObject).isPresent()) {
+            return null;
+        }
+
+        content.remove("_id");
+        dbObject.putAll(content);
+
+	    DBObject query = new BasicDBObject().append(ID, dbObject.get(ID));
+
+        DBCollection collection = mongoPrivateStorageTemplate.getCollection(collectionName);
+        collection.update(query, dbObject);
+
+        return PrivateStorage.builder()
+                .collectionName(collectionName)
+                .collectionContent(jsonParsingService.toJsonString(dbObject.toMap()))
+                .build();
+    }
+
+    public void remove(String collectionName, String id) {
+        DBObject query = new BasicDBObject();
+        query.put(ID, id);
+
+        DBCollection collection = mongoPrivateStorageTemplate.getCollection(collectionName);
+        collection.remove(query);
+	}
+
+	public List<PrivateStorage> findAll(String collectionName) throws JsonProcessingException {
+		List<PrivateStorage> privateStorages = new ArrayList<>();
 
 		DBCollection collection = mongoPrivateStorageTemplate.getCollection(collectionName);
 		DBCursor cursor = collection.find();
@@ -68,27 +105,35 @@ public class PrivateStorageRepository {
 			while (cursor.hasNext()) {
 				cursor.next();
 
-				String message = (String) cursor.curr().get("message");
-				String level = (String) cursor.curr().get("level");
+				String content = jsonParsingService.toJsonString(cursor.curr().toMap());
 
-				logs.add(PrivateStorage.builder()
-                        .collectionName(level)
-                        .keyName(level)
-                        .collectionContent(level)
+				privateStorages.add(PrivateStorage.builder()
+                        .collectionName(collectionName)
+                        .collectionContent(content)
                         .build());
 			}
 		} finally {
 			cursor.close();
 		}
 
-		return logs;
+		return privateStorages;
 	}
 
-	public DBObject findByKey(String collectionName, String key) {
-        DBCollection collection = mongoPrivateStorageTemplate.getCollection(collectionName);
-        DBObject object = collection.findOne(key);
+	public PrivateStorage findById(String collectionName, String id) throws JsonProcessingException {
+        DBObject query = new BasicDBObject();
+        query.put(ID, id);
 
-        return object;
+        DBCollection collection = mongoPrivateStorageTemplate.getCollection(collectionName);
+        DBObject object = collection.findOne(query);
+
+        if (!Optional.ofNullable(object).isPresent()) {
+            return null;
+        }
+
+        return PrivateStorage.builder()
+                .collectionName(collectionName)
+                .collectionContent(jsonParsingService.toJsonString(object.toMap()))
+                .build();
     }
 
 	private void checkCollection(String collectionName) {
