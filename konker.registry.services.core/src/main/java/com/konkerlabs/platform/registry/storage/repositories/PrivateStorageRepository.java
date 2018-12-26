@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry.storage.repositories;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.config.MongoPrivateStorageConfig;
 import com.konkerlabs.platform.registry.storage.model.PrivateStorage;
@@ -15,10 +16,8 @@ import org.springframework.data.mongodb.core.CollectionOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.text.MessageFormat;
+import java.util.*;
 
 @Repository
 public class PrivateStorageRepository {
@@ -32,10 +31,11 @@ public class PrivateStorageRepository {
 
     private JsonParsingService jsonParsingService;
 
-	public static PrivateStorageRepository getInstance(Mongo mongo, String dbName) {
+	public static PrivateStorageRepository getInstance(Mongo mongo, Tenant tenant, Application application) {
 		try {
 			PrivateStorageRepository privateStorageRepository = new PrivateStorageRepository();
 			MongoPrivateStorageConfig mongoTenantConfig = new MongoPrivateStorageConfig();
+            String dbName = MessageFormat.format("{0}_{1}", tenant.getDomainName(), application.getName());
 			mongoTenantConfig.setDbName(dbName);
 			privateStorageRepository.mongoPrivateStorageTemplate = mongoTenantConfig.mongoTemplate(mongo);
             privateStorageRepository.jsonParsingService = new JsonParsingServiceImpl();
@@ -134,6 +134,13 @@ public class PrivateStorageRepository {
                 .collectionName(collectionName)
                 .collectionContent(jsonParsingService.toJsonString(object.toMap()))
                 .build();
+    }
+
+    public Set<String> listCollections() {
+        Set<String> collectionNames = mongoPrivateStorageTemplate.getCollectionNames();
+        collectionNames.remove("system.users");
+        collectionNames.remove("system.indexes");
+        return collectionNames;
     }
 
 	private void checkCollection(String collectionName) {

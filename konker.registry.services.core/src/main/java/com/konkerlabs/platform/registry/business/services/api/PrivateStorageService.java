@@ -6,6 +6,7 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.storage.model.PrivateStorage;
 
 import java.util.List;
+import java.util.Set;
 
 public interface PrivateStorageService {
 
@@ -13,7 +14,7 @@ public interface PrivateStorageService {
         PRIVATE_STORAGE_NULL("service.private.storage.null"),
         PRIVATE_STORAGE_IS_FULL("service.private.storage.is.full"),
         PRIVATE_STORAGE_COLLECTION_CONTENT_ALREADY_EXISTS("service.private.storage.collection.content.already_exists"),
-        PRIVATE_STORAGE_DOES_NOT_EXIST("service.private.storage.does_not_exist"),
+        PRIVATE_STORAGE_COLLECTION_CONTENT_DOES_NOT_EXIST("service.private.storage.collection.content.does_not_exist"),
         PRIVATE_STORAGE_INVALID_JSON("service.private.storage.invalid_json"),
         PRIVATE_STORAGE_INVALID_COLLECTION_NAME("service.private.storage.invalid_collection_name"),
         PRIVATE_STORAGE_NO_COLLECTION_ID_FIELD("service.private.storage.no.collection.id.field"),
@@ -69,4 +70,6 @@ public interface PrivateStorageService {
                                              String collectionName,
                                              String id) throws JsonProcessingException;
 
+    ServiceResponse<Set<String>> listCollections(Tenant tenant,
+                                                 Application application);
 }

@@ -164,4 +164,9 @@ public class WebTestConfiguration {
         ).name("konker").build();
     }
 
+    @Bean
+    public PrivateStorageService privateStorageService() {
+        return Mockito.mock(PrivateStorageService.class);
+    }
+
 }

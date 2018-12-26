@@ -8,7 +8,6 @@ import com.konkerlabs.platform.registry.business.services.api.*;
 import com.konkerlabs.platform.registry.storage.model.PrivateStorage;
 import com.konkerlabs.platform.registry.storage.repositories.PrivateStorageRepository;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
-import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -18,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
@@ -48,7 +48,7 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
         if (!validationResponse.isOk()) {
             return validationResponse;
         }
-        privateStorageRepository = PrivateStorageRepository.getInstance(mongo, tenant.getDomainName());
+        privateStorageRepository = PrivateStorageRepository.getInstance(mongo, tenant, application);
 
         if (!jsonParsingService.isValid(collectionContent)) {
             return ServiceResponseBuilder.<PrivateStorage>error()
@@ -101,7 +101,7 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
         if (!validationResponse.isOk()) {
             return validationResponse;
         }
-        privateStorageRepository = PrivateStorageRepository.getInstance(mongo, tenant.getDomainName());
+        privateStorageRepository = PrivateStorageRepository.getInstance(mongo, tenant, application);
 
         if (!jsonParsingService.isValid(collectionContent)) {
             return ServiceResponseBuilder.<PrivateStorage>error()
@@ -125,7 +125,7 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
         PrivateStorage fromDB = privateStorageRepository.findById(collectionName, content.get("_id").toString());
         if (!Optional.ofNullable(fromDB).isPresent()) {
             return ServiceResponseBuilder.<PrivateStorage>error()
-                    .withMessage(Validations.PRIVATE_STORAGE_DOES_NOT_EXIST.getCode())
+                    .withMessage(Validations.PRIVATE_STORAGE_COLLECTION_CONTENT_DOES_NOT_EXIST.getCode())
                     .build();
         }
 
@@ -145,7 +145,7 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
         if (!validationResponse.isOk()) {
             return validationResponse;
         }
-        privateStorageRepository = PrivateStorageRepository.getInstance(mongo, tenant.getDomainName());
+        privateStorageRepository = PrivateStorageRepository.getInstance(mongo, tenant, application);
 
         if (!Optional.ofNullable(id).isPresent()) {
             return ServiceResponseBuilder.<PrivateStorage>error()
@@ -156,7 +156,7 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
         PrivateStorage fromDB = privateStorageRepository.findById(collectionName, id);
         if (!Optional.ofNullable(fromDB).isPresent()) {
             return ServiceResponseBuilder.<PrivateStorage>error()
-                    .withMessage(Validations.PRIVATE_STORAGE_DOES_NOT_EXIST.getCode())
+                    .withMessage(Validations.PRIVATE_STORAGE_COLLECTION_CONTENT_DOES_NOT_EXIST.getCode())
                     .build();
         }
 
@@ -175,7 +175,7 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
         if (!validationResponse.isOk()) {
             return validationResponse;
         }
-        privateStorageRepository = PrivateStorageRepository.getInstance(mongo, tenant.getDomainName());
+        privateStorageRepository = PrivateStorageRepository.getInstance(mongo, tenant, application);
 
         return ServiceResponseBuilder.<List<PrivateStorage>>ok()
                 .withResult(privateStorageRepository.findAll(collectionName))
@@ -192,7 +192,7 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
         if (!validationResponse.isOk()) {
             return validationResponse;
         }
-        privateStorageRepository = PrivateStorageRepository.getInstance(mongo, tenant.getDomainName());
+        privateStorageRepository = PrivateStorageRepository.getInstance(mongo, tenant, application);
 
         if (!Optional.ofNullable(id).isPresent()) {
             return ServiceResponseBuilder.<PrivateStorage>error()
@@ -202,6 +202,23 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
 
         return ServiceResponseBuilder.<PrivateStorage>ok()
                 .withResult(privateStorageRepository.findById(collectionName, id))
+                .build();
+    }
+
+    @Override
+    public ServiceResponse<Set<String>> listCollections(Tenant tenant, Application application) {
+        if (!Optional.ofNullable(tenant).isPresent()) {
+            return ServiceResponseBuilder.<Set<String>>error().withMessage(CommonValidations.TENANT_NULL.getCode()).build();
+        }
+
+        if (!Optional.ofNullable(application).isPresent()) {
+            return ServiceResponseBuilder.<Set<String>>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()).build();
+        }
+        privateStorageRepository = PrivateStorageRepository.getInstance(mongo, tenant, application);
+
+        return ServiceResponseBuilder.<Set<String>>ok()
+                .withResult(privateStorageRepository.listCollections())
                 .build();
     }
 

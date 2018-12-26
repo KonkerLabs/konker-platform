@@ -9,6 +9,7 @@ import com.konkerlabs.platform.registry.business.services.api.ApplicationService
 import com.konkerlabs.platform.registry.business.services.api.PrivateStorageService;
 import com.konkerlabs.platform.registry.business.services.api.PrivateStorageService.Validations;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.config.MongoPrivateStorageConfig;
 import com.konkerlabs.platform.registry.storage.model.PrivateStorage;
 import com.konkerlabs.platform.registry.storage.repositories.PrivateStorageRepository;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
@@ -27,6 +28,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +37,6 @@ import java.util.Set;
 import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.mockito.Mockito.when;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -78,11 +79,15 @@ public class PrivateStorageServiceTest extends BusinessLayerTestSupport {
     private String jsonNoId = "{\"key1\": \"adba7f77-33cb-4e77-8560-288d273e7aee\", \"a\": 2}";
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
     	tenant = tenantRepository.findByDomainName("konker");
     	tenantInm = tenantRepository.findByDomainName("inm");
     	application = applicationRepository.findByTenantAndName(tenant.getId(), "smartffkonker");
+        privateStorageRepository = PrivateStorageRepository.getInstance(mongo, tenant, application);
 
+        MongoPrivateStorageConfig config = new MongoPrivateStorageConfig();
+        config.setDbName(MessageFormat.format("{0}_{1}", tenant.getDomainName(), application.getName()));
+        mongoTemplate = config.mongoTemplate(mongo);
     }
 
     @After
@@ -220,13 +225,12 @@ public class PrivateStorageServiceTest extends BusinessLayerTestSupport {
     @Test
     public void shouldTryUpdateContentNotExists() throws Exception {
         ServiceResponse<PrivateStorage> serviceResponse = privateStorageService.update(tenant, application, COLLECTION_NAME, jsonB);
-        assertThat(serviceResponse, hasErrorMessage(Validations.PRIVATE_STORAGE_DOES_NOT_EXIST.getCode()));
+        assertThat(serviceResponse, hasErrorMessage(Validations.PRIVATE_STORAGE_COLLECTION_CONTENT_DOES_NOT_EXIST.getCode()));
 
     }
 
     @Test
     public void shouldUpdate() throws Exception {
-        privateStorageRepository = PrivateStorageRepository.getInstance(mongo, "konker");
         Map<String, Object> collectionContent = new HashMap<>();
         collectionContent.put("_id", "adba7f77-33cb-4e77-8560-288d273e7add");
         collectionContent.put("barCode", "00000");
@@ -277,13 +281,12 @@ public class PrivateStorageServiceTest extends BusinessLayerTestSupport {
     @Test
     public void shouldTryToRemoveWithNonexistentData() throws Exception {
         ServiceResponse<PrivateStorage> serviceResponse = privateStorageService.remove(tenant, application, COLLECTION_NAME, "adba7f77-33cb-4e77-8560-288d273e7add");
-        assertThat(serviceResponse, hasErrorMessage(PrivateStorageService.Validations.PRIVATE_STORAGE_DOES_NOT_EXIST.getCode()));
+        assertThat(serviceResponse, hasErrorMessage(PrivateStorageService.Validations.PRIVATE_STORAGE_COLLECTION_CONTENT_DOES_NOT_EXIST.getCode()));
 
     }
 
     @Test
     public void shouldRemove() throws Exception {
-        privateStorageRepository = PrivateStorageRepository.getInstance(mongo, "konker");
         Map<String, Object> collectionContent = new HashMap<>();
         collectionContent.put("_id", "adba7f77-33cb-4e77-8560-288d273e7add");
         collectionContent.put("barCode", "00000");
@@ -326,7 +329,6 @@ public class PrivateStorageServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldTryFindAll() throws Exception {
-        privateStorageRepository = PrivateStorageRepository.getInstance(mongo, "konker");
         Map<String, Object> collectionContent = new HashMap<>();
         collectionContent.put("_id", "adba7f77-33cb-4e77-8560-288d273e7add");
         collectionContent.put("barCode", "00000");
@@ -378,8 +380,7 @@ public class PrivateStorageServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldTryFindById() throws Exception {
-        privateStorageRepository = PrivateStorageRepository.getInstance(mongo, "konker");
+    public void shouldFindById() throws Exception {
         Map<String, Object> collectionContent = new HashMap<>();
         collectionContent.put("_id", "adba7f77-33cb-4e77-8560-288d273e7add");
         collectionContent.put("barCode", "00000");
@@ -392,4 +393,31 @@ public class PrivateStorageServiceTest extends BusinessLayerTestSupport {
 
     }
 
+    @Test
+    public void shouldTryListCollectionsWithNullTenant() throws Exception {
+        ServiceResponse<Set<String>> serviceResponse = privateStorageService.listCollections(null, application);
+        assertThat(serviceResponse, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
+
+    }
+
+    @Test
+    public void shouldTryListCollectionsWithNullApplication() throws Exception {
+        ServiceResponse<Set<String>> serviceResponse = privateStorageService.listCollections(tenant, null);
+        assertThat(serviceResponse, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
+
+    }
+
+    @Test
+    public void shouldListCollection() throws Exception {
+        Map<String, Object> collectionContent = new HashMap<>();
+        collectionContent.put("_id", "adba7f77-33cb-4e77-8560-288d273e7add");
+        collectionContent.put("barCode", "00001");
+        privateStorageRepository.save(COLLECTION_NAME, collectionContent);
+
+        ServiceResponse<Set<String>> serviceResponse = privateStorageService.listCollections(tenant, application);
+        assertThat(serviceResponse.isOk(), is(true));
+        assertThat(serviceResponse.getResult().size(), is(1));
+        assertThat(serviceResponse.getResult().iterator().next(), is(COLLECTION_NAME));
+
+    }
 }
