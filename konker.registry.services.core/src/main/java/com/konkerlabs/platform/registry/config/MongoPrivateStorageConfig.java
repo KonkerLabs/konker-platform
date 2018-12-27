@@ -76,9 +76,11 @@ public class MongoPrivateStorageConfig extends AbstractMongoConfiguration {
 	@Bean
 	public Mongo mongo() throws Exception {
 		if (!StringUtils.isEmpty(getUsername()) && !StringUtils.isEmpty(getPassword())) {
+			LOG.info("Connecting to MongoDB single node with auth");
 			MongoCredential credential = MongoCredential.createCredential(getUsername(), getDatabaseName(), getPassword().toCharArray());
 			return new MongoClient(new ServerAddress(hostname), Collections.singletonList(credential));
 		} else {
+            LOG.info("Connecting to MongoDB locally");
 			return new MongoClient(hostname);
 		}
 
