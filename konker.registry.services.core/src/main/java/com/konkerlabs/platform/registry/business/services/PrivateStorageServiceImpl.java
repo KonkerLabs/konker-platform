@@ -13,6 +13,8 @@ import com.konkerlabs.platform.registry.storage.model.PrivateStorage;
 import com.konkerlabs.platform.registry.storage.repositories.PrivateStorageRepository;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 import com.mongodb.Mongo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
@@ -26,6 +28,8 @@ import java.util.Set;
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
 public class PrivateStorageServiceImpl implements PrivateStorageService {
+
+    private static Logger LOG = LoggerFactory.getLogger(PrivateStorageServiceImpl.class);
 
     @Autowired
     private JsonParsingService jsonParsingService;
@@ -61,6 +65,7 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
                     .build();
         }
 
+        LOG.info("[Save] Creating Private Storage Repository instance...");
         privateStorageRepository = PrivateStorageRepository.getInstance(mongo, tenant, application);
 
         if (!jsonParsingService.isValid(collectionContent)) {
@@ -122,6 +127,8 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
                     .withMessage(ApplicationService.Validations.APPLICATION_HAS_NO_PERMISSION.getCode())
                     .build();
         }
+
+        LOG.info("[Update] Creating Private Storage Repository instance...");
         privateStorageRepository = PrivateStorageRepository.getInstance(mongo, tenant, application);
 
         if (!jsonParsingService.isValid(collectionContent)) {
@@ -174,6 +181,8 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
                     .withMessage(ApplicationService.Validations.APPLICATION_HAS_NO_PERMISSION.getCode())
                     .build();
         }
+
+        LOG.info("[Remove] Creating Private Storage Repository instance...");
         privateStorageRepository = PrivateStorageRepository.getInstance(mongo, tenant, application);
 
         if (!Optional.ofNullable(id).isPresent()) {
@@ -212,6 +221,8 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
                     .withMessage(ApplicationService.Validations.APPLICATION_HAS_NO_PERMISSION.getCode())
                     .build();
         }
+
+        LOG.info("[FindALl] Creating Private Storage Repository instance...");
         privateStorageRepository = PrivateStorageRepository.getInstance(mongo, tenant, application);
 
         return ServiceResponseBuilder.<List<PrivateStorage>>ok()
@@ -237,6 +248,8 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
                     .withMessage(ApplicationService.Validations.APPLICATION_HAS_NO_PERMISSION.getCode())
                     .build();
         }
+
+        LOG.info("[FindById] Creating Private Storage Repository instance...");
         privateStorageRepository = PrivateStorageRepository.getInstance(mongo, tenant, application);
 
         if (!Optional.ofNullable(id).isPresent()) {
@@ -267,6 +280,8 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
                     .withMessage(ApplicationService.Validations.APPLICATION_HAS_NO_PERMISSION.getCode())
                     .build();
         }
+
+        LOG.info("[FindCollections] Creating Private Storage Repository instance...");
         privateStorageRepository = PrivateStorageRepository.getInstance(mongo, tenant, application);
 
         return ServiceResponseBuilder.<Set<String>>ok()
