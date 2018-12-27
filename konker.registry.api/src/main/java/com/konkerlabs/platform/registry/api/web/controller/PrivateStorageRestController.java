@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -119,7 +120,9 @@ public class PrivateStorageRestController extends AbstractRestController impleme
             if (!response.isOk()) {
                 throw new NotFoundResponseException(response);
             } else {
-                return JSON.parse(response.getResult().getCollectionContent());
+                return JSON.parse(
+                        Optional.ofNullable(response.getResult())
+                                .orElse(PrivateStorage.builder().build()).getCollectionContent());
             }
         } catch (JsonProcessingException e) {
             throw new NotFoundResponseException(response);
