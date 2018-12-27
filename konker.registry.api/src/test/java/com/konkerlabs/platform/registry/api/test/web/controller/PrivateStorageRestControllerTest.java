@@ -7,6 +7,7 @@ import com.konkerlabs.platform.registry.api.web.controller.PrivateStorageRestCon
 import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.PrivateStorageService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
@@ -16,7 +17,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -35,8 +35,8 @@ import java.util.Set;
 
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -105,7 +105,7 @@ public class PrivateStorageRestControllerTest extends WebLayerTestContext {
         Set<String> collections = new HashSet();
         collections.add("customers");
 
-        when(privateStorageService.listCollections(any(Tenant.class), any(Application.class)))
+        when(privateStorageService.listCollections(any(Tenant.class), any(Application.class), any(User.class)))
                 .thenReturn(ServiceResponseBuilder.<Set<String>>ok().withResult(collections).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH, "/collections"))
@@ -141,7 +141,7 @@ public class PrivateStorageRestControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldTryListCollectionsWithBadRequest() throws Exception {
-        when(privateStorageService.listCollections(any(Tenant.class), any(Application.class)))
+        when(privateStorageService.listCollections(any(Tenant.class), any(Application.class), any(User.class)))
                 .thenReturn(ServiceResponseBuilder.<Set<String>>error()
                         .withMessage(PrivateStorageService.Validations.PRIVATE_STORAGE_COLLECTION_CONTENT_DOES_NOT_EXIST.getCode()).build());
 
@@ -160,7 +160,7 @@ public class PrivateStorageRestControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldListData() throws Exception {
-        when(privateStorageService.findAll(any(Tenant.class), any(Application.class), anyString()))
+        when(privateStorageService.findAll(any(Tenant.class), any(Application.class), any(User.class), anyString()))
                 .thenReturn(ServiceResponseBuilder.<List<PrivateStorage>>ok()
                         .withResult(allData).build());
 
@@ -199,7 +199,7 @@ public class PrivateStorageRestControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldTryListDataWithBadRequest() throws Exception {
-        when(privateStorageService.findAll(any(Tenant.class), any(Application.class), anyString()))
+        when(privateStorageService.findAll(any(Tenant.class), any(Application.class), any(User.class), anyString()))
                 .thenReturn(ServiceResponseBuilder.<List<PrivateStorage>>error()
                         .withMessage(PrivateStorageService.Validations.PRIVATE_STORAGE_INVALID_COLLECTION_NAME.getCode()).build());
 
@@ -217,7 +217,7 @@ public class PrivateStorageRestControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldReadData() throws Exception {
-        when(privateStorageService.findById(any(Tenant.class), any(Application.class), anyString(), anyString()))
+        when(privateStorageService.findById(any(Tenant.class), any(Application.class), any(User.class), anyString(), anyString()))
                 .thenReturn(ServiceResponseBuilder.<PrivateStorage>ok()
                         .withResult(privateStorage1).build());
 
@@ -254,7 +254,7 @@ public class PrivateStorageRestControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldTryReadDataWithBadRequest() throws Exception {
-        when(privateStorageService.findById(any(Tenant.class), any(Application.class), anyString(), anyString()))
+        when(privateStorageService.findById(any(Tenant.class), any(Application.class), any(User.class), anyString(), anyString()))
                 .thenReturn(ServiceResponseBuilder.<PrivateStorage>error()
                         .withMessage(PrivateStorageService.Validations.PRIVATE_STORAGE_INVALID_COLLECTION_NAME.getCode()).build());
 
@@ -273,7 +273,7 @@ public class PrivateStorageRestControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldCreateData() throws Exception {
-        when(privateStorageService.save(any(Tenant.class), any(Application.class), anyString(), anyString()))
+        when(privateStorageService.save(any(Tenant.class), any(Application.class), any(User.class), anyString(), anyString()))
                 .thenReturn(ServiceResponseBuilder.<PrivateStorage>ok().withResult(privateStorage1).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.post(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH, "customers"))
@@ -291,7 +291,7 @@ public class PrivateStorageRestControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldTryCreateDataWithBadRequest() throws Exception {
-        when(privateStorageService.save(any(Tenant.class), any(Application.class), anyString(), anyString()))
+        when(privateStorageService.save(any(Tenant.class), any(Application.class), any(User.class), anyString(), anyString()))
                 .thenReturn(ServiceResponseBuilder.<PrivateStorage>error().withMessage(PrivateStorageService.Validations.PRIVATE_STORAGE_IS_FULL.getCode()).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.post(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH, "customers"))
@@ -310,7 +310,7 @@ public class PrivateStorageRestControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldUpdateData() throws Exception {
-        when(privateStorageService.update(any(Tenant.class), any(Application.class), anyString(), anyString()))
+        when(privateStorageService.update(any(Tenant.class), any(Application.class), any(User.class), anyString(), anyString()))
                 .thenReturn(ServiceResponseBuilder.<PrivateStorage>ok().withResult(privateStorage1).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.put(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH, "customers"))
@@ -327,7 +327,7 @@ public class PrivateStorageRestControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldTryUpdateDataWithInternalError() throws Exception {
-        when(privateStorageService.update(any(Tenant.class), any(Application.class), anyString(), anyString()))
+        when(privateStorageService.update(any(Tenant.class), any(Application.class), any(User.class), anyString(), anyString()))
                 .thenReturn(ServiceResponseBuilder.<PrivateStorage>error().build());
 
         getMockMvc().perform(MockMvcRequestBuilders.put(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH, "customers"))
@@ -346,7 +346,7 @@ public class PrivateStorageRestControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldDeleteData() throws Exception {
-        when(privateStorageService.remove(any(Tenant.class), any(Application.class), anyString(), anyString()))
+        when(privateStorageService.remove(any(Tenant.class), any(Application.class), any(User.class), anyString(), anyString()))
                 .thenReturn(ServiceResponseBuilder.<PrivateStorage>ok().build());
 
         getMockMvc().perform(MockMvcRequestBuilders.delete(MessageFormat.format("/{0}/{1}/{2}/{3}", application.getName(), BASEPATH, "customers", "adbc-123"))
@@ -382,7 +382,7 @@ public class PrivateStorageRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryDeleteDataWithInternalError() throws Exception {
 
-        when(privateStorageService.remove(any(Tenant.class), any(Application.class), anyString(), anyString()))
+        when(privateStorageService.remove(any(Tenant.class), any(Application.class), any(User.class), anyString(), anyString()))
                 .thenReturn(ServiceResponseBuilder.<PrivateStorage>error().build());
 
         getMockMvc().perform(MockMvcRequestBuilders.delete(MessageFormat.format("/{0}/{1}/{2}/{3}", application.getName(), BASEPATH, "customers", "adbc-123"))

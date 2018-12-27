@@ -3,8 +3,12 @@ package com.konkerlabs.platform.registry.business.services;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.registry.business.services.api.*;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
+import com.konkerlabs.platform.registry.business.services.api.PrivateStorageService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.storage.model.PrivateStorage;
 import com.konkerlabs.platform.registry.storage.repositories.PrivateStorageRepository;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
@@ -41,6 +45,7 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
     @Override
     public ServiceResponse<PrivateStorage> save(Tenant tenant,
                                                 Application application,
+                                                User user,
                                                 String collectionName,
                                                 String collectionContent) throws JsonProcessingException {
         ServiceResponse<PrivateStorage> validationResponse = validate(tenant, application, collectionName);
@@ -48,6 +53,14 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
         if (!validationResponse.isOk()) {
             return validationResponse;
         }
+
+        if (Optional.ofNullable(user.getApplication()).isPresent()
+                && !application.equals(user.getApplication())) {
+            return ServiceResponseBuilder.<PrivateStorage>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_HAS_NO_PERMISSION.getCode())
+                    .build();
+        }
+
         privateStorageRepository = PrivateStorageRepository.getInstance(mongo, tenant, application);
 
         if (!jsonParsingService.isValid(collectionContent)) {
@@ -94,12 +107,20 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
     @Override
     public ServiceResponse<PrivateStorage> update(Tenant tenant,
                                                   Application application,
+                                                  User user,
                                                   String collectionName,
                                                   String collectionContent) throws JsonProcessingException {
         ServiceResponse<PrivateStorage> validationResponse = validate(tenant, application, collectionName);
 
         if (!validationResponse.isOk()) {
             return validationResponse;
+        }
+
+        if (Optional.ofNullable(user.getApplication()).isPresent()
+                && !application.equals(user.getApplication())) {
+            return ServiceResponseBuilder.<PrivateStorage>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_HAS_NO_PERMISSION.getCode())
+                    .build();
         }
         privateStorageRepository = PrivateStorageRepository.getInstance(mongo, tenant, application);
 
@@ -138,12 +159,20 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
     @Override
     public ServiceResponse<PrivateStorage> remove(Tenant tenant,
                                                   Application application,
+                                                  User user,
                                                   String collectionName,
                                                   String id) throws JsonProcessingException {
         ServiceResponse<PrivateStorage> validationResponse = validate(tenant, application, collectionName);
 
         if (!validationResponse.isOk()) {
             return validationResponse;
+        }
+
+        if (Optional.ofNullable(user.getApplication()).isPresent()
+                && !application.equals(user.getApplication())) {
+            return ServiceResponseBuilder.<PrivateStorage>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_HAS_NO_PERMISSION.getCode())
+                    .build();
         }
         privateStorageRepository = PrivateStorageRepository.getInstance(mongo, tenant, application);
 
@@ -169,11 +198,19 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
     @Override
     public ServiceResponse<List<PrivateStorage>> findAll(Tenant tenant,
                                                         Application application,
+                                                        User user,
                                                         String collectionName) throws JsonProcessingException {
         ServiceResponse<List<PrivateStorage>> validationResponse = validate(tenant, application, collectionName);
 
         if (!validationResponse.isOk()) {
             return validationResponse;
+        }
+
+        if (Optional.ofNullable(user.getApplication()).isPresent()
+                && !application.equals(user.getApplication())) {
+            return ServiceResponseBuilder.<List<PrivateStorage>>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_HAS_NO_PERMISSION.getCode())
+                    .build();
         }
         privateStorageRepository = PrivateStorageRepository.getInstance(mongo, tenant, application);
 
@@ -185,12 +222,20 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
     @Override
     public ServiceResponse<PrivateStorage> findById(Tenant tenant,
                                                     Application application,
+                                                    User user,
                                                     String collectionName,
                                                     String id) throws JsonProcessingException {
         ServiceResponse<PrivateStorage> validationResponse = validate(tenant, application, collectionName);
 
         if (!validationResponse.isOk()) {
             return validationResponse;
+        }
+
+        if (Optional.ofNullable(user.getApplication()).isPresent()
+                && !application.equals(user.getApplication())) {
+            return ServiceResponseBuilder.<PrivateStorage>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_HAS_NO_PERMISSION.getCode())
+                    .build();
         }
         privateStorageRepository = PrivateStorageRepository.getInstance(mongo, tenant, application);
 
@@ -206,7 +251,7 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
     }
 
     @Override
-    public ServiceResponse<Set<String>> listCollections(Tenant tenant, Application application) {
+    public ServiceResponse<Set<String>> listCollections(Tenant tenant, Application application, User user) {
         if (!Optional.ofNullable(tenant).isPresent()) {
             return ServiceResponseBuilder.<Set<String>>error().withMessage(CommonValidations.TENANT_NULL.getCode()).build();
         }
@@ -214,6 +259,13 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
         if (!Optional.ofNullable(application).isPresent()) {
             return ServiceResponseBuilder.<Set<String>>error()
                     .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()).build();
+        }
+
+        if (Optional.ofNullable(user.getApplication()).isPresent()
+                && !application.equals(user.getApplication())) {
+            return ServiceResponseBuilder.<Set<String>>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_HAS_NO_PERMISSION.getCode())
+                    .build();
         }
         privateStorageRepository = PrivateStorageRepository.getInstance(mongo, tenant, application);
 

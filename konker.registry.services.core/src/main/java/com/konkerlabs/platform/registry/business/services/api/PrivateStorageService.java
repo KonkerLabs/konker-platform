@@ -3,6 +3,7 @@ package com.konkerlabs.platform.registry.business.services.api;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.storage.model.PrivateStorage;
 
 import java.util.List;
@@ -48,28 +49,34 @@ public interface PrivateStorageService {
 
     ServiceResponse<PrivateStorage> save(Tenant tenant,
                                          Application application,
+                                         User user,
                                          String collectionName,
                                          String collectionContent) throws JsonProcessingException;
 
     ServiceResponse<PrivateStorage> update(Tenant tenant,
                                            Application application,
+                                           User user,
                                            String collectionName,
                                            String collectionContent) throws JsonProcessingException;
 
     ServiceResponse<PrivateStorage> remove(Tenant tenant,
                                            Application application,
+                                           User user,
                                            String collectionName,
                                            String id) throws JsonProcessingException;
 
     ServiceResponse<List<PrivateStorage>> findAll(Tenant tenant,
                                                   Application application,
+                                                  User user,
                                                   String collectionName) throws JsonProcessingException;
 
     ServiceResponse<PrivateStorage> findById(Tenant tenant,
                                              Application application,
+                                             User user,
                                              String collectionName,
                                              String id) throws JsonProcessingException;
 
     ServiceResponse<Set<String>> listCollections(Tenant tenant,
-                                                 Application application);
+                                                 Application application,
+                                                 User user);
 }

@@ -5,9 +5,8 @@ import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseExcepti
 import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
 import com.konkerlabs.platform.registry.api.model.RestResponse;
 import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.PrivateStorageService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.storage.model.PrivateStorage;
@@ -65,7 +64,7 @@ public class PrivateStorageRestController extends AbstractRestController impleme
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
 
-        ServiceResponse<Set<String>> response = privateStorageService.listCollections(tenant, application);
+        ServiceResponse<Set<String>> response = privateStorageService.listCollections(tenant, application, user.getParentUser());
 
         if (!response.isOk()) {
             throw new NotFoundResponseException(response);
@@ -87,7 +86,7 @@ public class PrivateStorageRestController extends AbstractRestController impleme
 
         ServiceResponse<List<PrivateStorage>> response = null;
         try {
-            response = privateStorageService.findAll(tenant, application, collection);
+            response = privateStorageService.findAll(tenant, application, user.getParentUser(), collection);
 
             if (!response.isOk()) {
                 throw new NotFoundResponseException(response);
@@ -115,7 +114,7 @@ public class PrivateStorageRestController extends AbstractRestController impleme
 
         ServiceResponse<PrivateStorage> response = null;
         try {
-            response = privateStorageService.findById(tenant, application, collection, key);
+            response = privateStorageService.findById(tenant, application, user.getParentUser(), collection, key);
 
             if (!response.isOk()) {
                 throw new NotFoundResponseException(response);
@@ -145,7 +144,7 @@ public class PrivateStorageRestController extends AbstractRestController impleme
 
         ServiceResponse<PrivateStorage> response = null;
         try {
-            response = privateStorageService.save(tenant, application, collection, collectionContent);
+            response = privateStorageService.save(tenant, application, user.getParentUser(), collection, collectionContent);
 
             if (!response.isOk()) {
                 throw new BadServiceResponseException( response, validationsCode);
@@ -172,7 +171,7 @@ public class PrivateStorageRestController extends AbstractRestController impleme
 
         ServiceResponse<PrivateStorage> response = null;
         try {
-            response = privateStorageService.update(tenant, application, collection, collectionContent);
+            response = privateStorageService.update(tenant, application, user.getParentUser(), collection, collectionContent);
 
             if (!response.isOk()) {
                 throw new BadServiceResponseException( response, validationsCode);
@@ -196,7 +195,7 @@ public class PrivateStorageRestController extends AbstractRestController impleme
 
         ServiceResponse<PrivateStorage> response = null;
         try {
-            response = privateStorageService.remove(tenant, application, collection, key);
+            response = privateStorageService.remove(tenant, application, user.getParentUser(), collection, key);
 
             if (!response.isOk()) {
                 if (response.getResponseMessages().containsKey(PrivateStorageService.Validations.PRIVATE_STORAGE_COLLECTION_CONTENT_DOES_NOT_EXIST.getCode())) {
@@ -218,6 +217,10 @@ public class PrivateStorageRestController extends AbstractRestController impleme
         }
 
         for (PrivateStorageService.Messages value : PrivateStorageService.Messages.values()) {
+            validationsCode.add(value.getCode());
+        }
+
+        for (ApplicationService.Validations value : ApplicationService.Validations.values()) {
             validationsCode.add(value.getCode());
         }
 
