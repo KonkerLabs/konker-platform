@@ -34,10 +34,10 @@ public class PrivateStorageRepository {
 	public static PrivateStorageRepository getInstance(Mongo mongo, Tenant tenant, Application application) {
 		try {
 			PrivateStorageRepository privateStorageRepository = new PrivateStorageRepository();
-			MongoPrivateStorageConfig mongoTenantConfig = new MongoPrivateStorageConfig();
+			MongoPrivateStorageConfig mongoPrivateStorageConfig = new MongoPrivateStorageConfig();
             String dbName = MessageFormat.format("{0}_{1}", tenant.getDomainName(), application.getName());
-			mongoTenantConfig.setDbName(dbName);
-			privateStorageRepository.mongoPrivateStorageTemplate = mongoTenantConfig.mongoTemplate(mongo);
+			mongoPrivateStorageConfig.setDbName(dbName);
+			privateStorageRepository.mongoPrivateStorageTemplate = mongoPrivateStorageConfig.mongoTemplate(mongo);
             privateStorageRepository.jsonParsingService = new JsonParsingServiceImpl();
 
 			return privateStorageRepository;

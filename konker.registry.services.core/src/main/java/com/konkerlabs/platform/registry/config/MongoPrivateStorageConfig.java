@@ -4,10 +4,7 @@ import com.konkerlabs.platform.registry.business.model.converters.InstantReadCon
 import com.konkerlabs.platform.registry.business.model.converters.InstantWriteConverter;
 import com.konkerlabs.platform.registry.business.model.converters.URIReadConverter;
 import com.konkerlabs.platform.registry.business.model.converters.URIWriteConverter;
-import com.mongodb.Mongo;
-import com.mongodb.MongoClient;
-import com.mongodb.MongoCredential;
-import com.mongodb.ServerAddress;
+import com.mongodb.*;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import lombok.Data;
@@ -23,6 +20,7 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 import org.springframework.util.StringUtils;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Configuration
 @EnableMongoRepositories(basePackages = "com.konkerlabs.platform.registry.storage.repositories", mongoTemplateRef = "mongoPrivateStorageTemplate")
@@ -69,8 +67,37 @@ public class MongoPrivateStorageConfig extends AbstractMongoConfiguration {
 
     @Bean(name = "mongoPrivateStorageTemplate")
 	public MongoTemplate mongoTemplate(Mongo mongo) throws Exception {
-		return new MongoTemplate(mongo, this.getDatabaseName());
+        MongoTemplate mongoTemplate = new MongoTemplate(mongo, this.getDatabaseName());
+        createUserIfNotExists();
+        return mongoTemplate;
 	}
+
+	private void createUserIfNotExists() throws Exception {
+        if (!username.isEmpty()
+                && !password.isEmpty()) {
+            LOG.info("Caling the method createUserIfNoExists");
+
+            Mongo mongo = mongo();
+            DB db = mongo.getDB(getDatabaseName());
+
+            BasicDBObject dbStats = new BasicDBObject("usersInfo", 1);
+            CommandResult statComand = db.command(dbStats);
+            BasicDBList users = (BasicDBList) statComand.get("users");
+            List<String> allUsers = users.stream()
+                    .map(u -> (String) ((BasicDBObject) u).get("user"))
+                    .collect(Collectors.toList());
+            LOG.info("List all users: " + allUsers);
+            if (!allUsers.contains(username)) {
+                LOG.info("Creating user: " + username);
+                Map<String, Object> commandArguments = new HashMap<>();
+                commandArguments.put("createUser", username);
+                commandArguments.put("pwd", password);
+                commandArguments.put("roles", new String[]{ "readWrite" });
+                BasicDBObject command = new BasicDBObject(commandArguments);
+                db.command(command);
+            }
+        }
+    }
 
 	@Override
 	@Bean(name = "mongoPrivateStorage")
