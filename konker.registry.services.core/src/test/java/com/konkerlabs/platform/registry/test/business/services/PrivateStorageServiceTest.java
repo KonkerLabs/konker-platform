@@ -71,6 +71,7 @@ public class PrivateStorageServiceTest extends BusinessLayerTestSupport {
     private ApplicationRepository applicationRepository;
 
     @Autowired
+    @Qualifier("mongoPrivateStorage")
     private Mongo mongo;
 
     @Autowired

@@ -16,6 +16,7 @@ import com.mongodb.Mongo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,7 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
     private JsonParsingService jsonParsingService;
 
     @Autowired
+    @Qualifier("mongoPrivateStorage")
     private Mongo mongo;
 
     private PrivateStorageRepository privateStorageRepository;
