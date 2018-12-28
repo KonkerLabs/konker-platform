@@ -16,7 +16,7 @@ public class MongoPrivateStorageTestConfiguration extends MongoPrivateStorageCon
     }
 
     @Override
-    @Bean
+    @Bean(name = "mongoPrivateStorage")
     public Mongo mongo() throws Exception {
         return new Fongo("konker").getMongo();
     }

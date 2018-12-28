@@ -73,7 +73,7 @@ public class MongoPrivateStorageConfig extends AbstractMongoConfiguration {
 	}
 
 	@Override
-	@Bean
+	@Bean(name = "mongoPrivateStorage")
 	public Mongo mongo() throws Exception {
 		if (!StringUtils.isEmpty(getUsername()) && !StringUtils.isEmpty(getPassword())) {
 			LOG.info("Connecting to MongoDB single node with auth");
