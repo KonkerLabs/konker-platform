@@ -64,7 +64,7 @@ public class PrivateStorageRestController extends AbstractRestController impleme
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
 
-        ServiceResponse<Set<String>> response = privateStorageService.listCollections(tenant, application, user.getParentUser());
+        ServiceResponse<List<String>> response = privateStorageService.listCollections(tenant, application, user.getParentUser());
 
         if (!response.isOk()) {
             throw new NotFoundResponseException(response);
