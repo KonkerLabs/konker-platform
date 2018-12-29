@@ -76,7 +76,7 @@ public interface PrivateStorageService {
                                              String collectionName,
                                              String id) throws JsonProcessingException;
 
-    ServiceResponse<Set<String>> listCollections(Tenant tenant,
+    ServiceResponse<List<String>> listCollections(Tenant tenant,
                                                  Application application,
                                                  User user);
 }

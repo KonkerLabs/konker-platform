@@ -31,22 +31,9 @@ public class PrivateStorageRepository {
 
     private JsonParsingService jsonParsingService;
 
-	public static PrivateStorageRepository getInstance(Mongo mongo, Tenant tenant, Application application) {
-		try {
-			PrivateStorageRepository privateStorageRepository = new PrivateStorageRepository();
-			MongoPrivateStorageConfig mongoPrivateStorageConfig = new MongoPrivateStorageConfig();
-            String dbName = MessageFormat.format("{0}_{1}", tenant.getDomainName(), application.getName());
-			mongoPrivateStorageConfig.setDbName(dbName);
-			privateStorageRepository.mongoPrivateStorageTemplate = mongoPrivateStorageConfig.mongoTemplate(mongo);
-            privateStorageRepository.jsonParsingService = new JsonParsingServiceImpl();
-
-			return privateStorageRepository;
-		} catch (Exception e) {
-			LOG.error("Exception while creating TenantLogRepository instance", e);
-
-			return null;
-		}
-	}
+    public PrivateStorageRepository() {
+        jsonParsingService = new JsonParsingServiceImpl();
+    }
 
 	public void save(String collectionName, Map<String, Object> collectionContent) {
 		checkCollection(collectionName);

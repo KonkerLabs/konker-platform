@@ -12,19 +12,18 @@ import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBui
 import com.konkerlabs.platform.registry.storage.model.PrivateStorage;
 import com.konkerlabs.platform.registry.storage.repositories.PrivateStorageRepository;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
-import com.mongodb.Mongo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
@@ -36,17 +35,9 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
     private JsonParsingService jsonParsingService;
 
     @Autowired
-    @Qualifier("mongoPrivateStorage")
-    private Mongo mongo;
-
     private PrivateStorageRepository privateStorageRepository;
 
     private static final String COLLECTION_KEY_PATTERN = "[a-zA-Z0-9\\-_]{2,100}";
-
-    public PrivateStorageServiceImpl(PrivateStorageRepository privateStorageRepository,
-                                     JsonParsingService jsonParsingService) {
-
-    }
 
     @Override
     public ServiceResponse<PrivateStorage> save(Tenant tenant,
@@ -67,9 +58,6 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
                     .build();
         }
 
-        LOG.info("[Save] Creating Private Storage Repository instance...");
-        privateStorageRepository = PrivateStorageRepository.getInstance(mongo, tenant, application);
-
         if (!jsonParsingService.isValid(collectionContent)) {
             return ServiceResponseBuilder.<PrivateStorage>error()
                     .withMessage(Validations.PRIVATE_STORAGE_INVALID_JSON.getCode())
@@ -89,6 +77,7 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
                     .build();
         }
 
+        collectionName = getCollectionName(tenant, application, collectionName);
         PrivateStorage fromDB = privateStorageRepository.findById(collectionName, content.get("_id").toString());
         if (Optional.ofNullable(fromDB).isPresent()) {
             return ServiceResponseBuilder.<PrivateStorage>error()
@@ -103,6 +92,10 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
                         .collectionContent(jsonParsingService.toJsonString(content))
                         .build())
                 .build();
+    }
+
+    private String getCollectionName(Tenant tenant, Application application, String collectionName) {
+        return MessageFormat.format("{0}-{1}-{2}", tenant.getDomainName(), application.getName(), collectionName);
     }
 
     private boolean isPrivateStorageFull(Tenant tenant) {
@@ -130,9 +123,6 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
                     .build();
         }
 
-        LOG.info("[Update] Creating Private Storage Repository instance...");
-        privateStorageRepository = PrivateStorageRepository.getInstance(mongo, tenant, application);
-
         if (!jsonParsingService.isValid(collectionContent)) {
             return ServiceResponseBuilder.<PrivateStorage>error()
                     .withMessage(Validations.PRIVATE_STORAGE_INVALID_JSON.getCode())
@@ -152,6 +142,7 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
                     .build();
         }
 
+        collectionName = getCollectionName(tenant, application, collectionName);
         PrivateStorage fromDB = privateStorageRepository.findById(collectionName, content.get("_id").toString());
         if (!Optional.ofNullable(fromDB).isPresent()) {
             return ServiceResponseBuilder.<PrivateStorage>error()
@@ -184,15 +175,13 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
                     .build();
         }
 
-        LOG.info("[Remove] Creating Private Storage Repository instance...");
-        privateStorageRepository = PrivateStorageRepository.getInstance(mongo, tenant, application);
-
         if (!Optional.ofNullable(id).isPresent()) {
             return ServiceResponseBuilder.<PrivateStorage>error()
                     .withMessage(Validations.PRIVATE_STORAGE_COLLECTION_ID_IS_NULL.getCode())
                     .build();
         }
 
+        collectionName = getCollectionName(tenant, application, collectionName);
         PrivateStorage fromDB = privateStorageRepository.findById(collectionName, id);
         if (!Optional.ofNullable(fromDB).isPresent()) {
             return ServiceResponseBuilder.<PrivateStorage>error()
@@ -224,9 +213,7 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
                     .build();
         }
 
-        LOG.info("[FindALl] Creating Private Storage Repository instance...");
-        privateStorageRepository = PrivateStorageRepository.getInstance(mongo, tenant, application);
-
+        collectionName = getCollectionName(tenant, application, collectionName);
         return ServiceResponseBuilder.<List<PrivateStorage>>ok()
                 .withResult(privateStorageRepository.findAll(collectionName))
                 .build();
@@ -251,43 +238,43 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
                     .build();
         }
 
-        LOG.info("[FindById] Creating Private Storage Repository instance...");
-        privateStorageRepository = PrivateStorageRepository.getInstance(mongo, tenant, application);
-
         if (!Optional.ofNullable(id).isPresent()) {
             return ServiceResponseBuilder.<PrivateStorage>error()
                     .withMessage(Validations.PRIVATE_STORAGE_COLLECTION_ID_IS_NULL.getCode())
                     .build();
         }
 
+        collectionName = getCollectionName(tenant, application, collectionName);
         return ServiceResponseBuilder.<PrivateStorage>ok()
                 .withResult(privateStorageRepository.findById(collectionName, id))
                 .build();
     }
 
     @Override
-    public ServiceResponse<Set<String>> listCollections(Tenant tenant, Application application, User user) {
+    public ServiceResponse<List<String>> listCollections(Tenant tenant, Application application, User user) {
         if (!Optional.ofNullable(tenant).isPresent()) {
-            return ServiceResponseBuilder.<Set<String>>error().withMessage(CommonValidations.TENANT_NULL.getCode()).build();
+            return ServiceResponseBuilder.<List<String>>error().withMessage(CommonValidations.TENANT_NULL.getCode()).build();
         }
 
         if (!Optional.ofNullable(application).isPresent()) {
-            return ServiceResponseBuilder.<Set<String>>error()
+            return ServiceResponseBuilder.<List<String>>error()
                     .withMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()).build();
         }
 
         if (Optional.ofNullable(user.getApplication()).isPresent()
                 && !application.equals(user.getApplication())) {
-            return ServiceResponseBuilder.<Set<String>>error()
+            return ServiceResponseBuilder.<List<String>>error()
                     .withMessage(ApplicationService.Validations.APPLICATION_HAS_NO_PERMISSION.getCode())
                     .build();
         }
 
-        LOG.info("[FindCollections] Creating Private Storage Repository instance...");
-        privateStorageRepository = PrivateStorageRepository.getInstance(mongo, tenant, application);
+        List<String> collectionsName = privateStorageRepository.listCollections()
+                .stream()
+                .map(c -> c.split("-")[2])
+                .collect(Collectors.toList());
 
-        return ServiceResponseBuilder.<Set<String>>ok()
-                .withResult(privateStorageRepository.listCollections())
+        return ServiceResponseBuilder.<List<String>>ok()
+                .withResult(collectionsName)
                 .build();
     }
 

@@ -102,11 +102,11 @@ public class PrivateStorageRestControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldListCollections() throws Exception {
-        Set<String> collections = new HashSet();
+        List<String> collections = new ArrayList<>();
         collections.add("customers");
 
         when(privateStorageService.listCollections(any(Tenant.class), any(Application.class), any(User.class)))
-                .thenReturn(ServiceResponseBuilder.<Set<String>>ok().withResult(collections).build());
+                .thenReturn(ServiceResponseBuilder.<List<String>>ok().withResult(collections).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH, "/collections"))
                 .contentType("application/json")
@@ -142,7 +142,7 @@ public class PrivateStorageRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryListCollectionsWithBadRequest() throws Exception {
         when(privateStorageService.listCollections(any(Tenant.class), any(Application.class), any(User.class)))
-                .thenReturn(ServiceResponseBuilder.<Set<String>>error()
+                .thenReturn(ServiceResponseBuilder.<List<String>>error()
                         .withMessage(PrivateStorageService.Validations.PRIVATE_STORAGE_COLLECTION_CONTENT_DOES_NOT_EXIST.getCode()).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}", application.getName(), BASEPATH, "/collections"))
