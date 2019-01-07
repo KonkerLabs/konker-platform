@@ -270,7 +270,8 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
 
         List<String> collectionsName = privateStorageRepository.listCollections()
                 .stream()
-                .map(c -> c.split("-")[2])
+                .filter(f -> f.contains("-".concat(application.getName())))
+                .map(c -> c.substring(c.lastIndexOf(application.getName()) + application.getName().length() + 1))
                 .collect(Collectors.toList());
 
         return ServiceResponseBuilder.<List<String>>ok()
