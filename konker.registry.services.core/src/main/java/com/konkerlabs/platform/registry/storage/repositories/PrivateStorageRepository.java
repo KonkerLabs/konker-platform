@@ -83,27 +83,14 @@ public class PrivateStorageRepository {
 	}
 
 	public List<PrivateStorage> findAll(String collectionName) throws JsonProcessingException {
-		List<PrivateStorage> privateStorages = new ArrayList<>();
+		List<PrivateStorage> privatesStorage = new ArrayList<>();
 
 		DBCollection collection = mongoPrivateStorageTemplate.getCollection(collectionName);
 		DBCursor cursor = collection.find();
 
-		try {
-			while (cursor.hasNext()) {
-				cursor.next();
+        toPrivateStorageList(collectionName, privatesStorage, cursor);
 
-				String content = jsonParsingService.toJsonString(cursor.curr().toMap());
-
-				privateStorages.add(PrivateStorage.builder()
-                        .collectionName(collectionName)
-                        .collectionContent(content)
-                        .build());
-			}
-		} finally {
-			cursor.close();
-		}
-
-		return privateStorages;
+        return privatesStorage;
 	}
 
 	public PrivateStorage findById(String collectionName, String id) throws JsonProcessingException {
@@ -123,6 +110,36 @@ public class PrivateStorageRepository {
                 .build();
     }
 
+    public List<PrivateStorage> findByQuery(String collectionName, Map<String, String> queryParam) throws JsonProcessingException {
+        List<PrivateStorage> privatesStorage = new ArrayList<>();
+        DBObject query = new BasicDBObject();
+        query.putAll(queryParam);
+
+        DBCollection collection = mongoPrivateStorageTemplate.getCollection(collectionName);
+        DBCursor cursor = collection.find(query);
+
+        toPrivateStorageList(collectionName, privatesStorage, cursor);
+
+        return privatesStorage;
+    }
+
+    private void toPrivateStorageList(String collectionName, List<PrivateStorage> privatesStorage, DBCursor cursor) throws JsonProcessingException {
+        try {
+            while (cursor.hasNext()) {
+                cursor.next();
+
+                String content = jsonParsingService.toJsonString(cursor.curr().toMap());
+
+                privatesStorage.add(PrivateStorage.builder()
+                        .collectionName(collectionName)
+                        .collectionContent(content)
+                        .build());
+            }
+        } finally {
+            cursor.close();
+        }
+    }
+
     public Set<String> listCollections() {
         Set<String> collectionNames = mongoPrivateStorageTemplate.getCollectionNames();
         collectionNames.remove("system.users");
@@ -136,5 +153,4 @@ public class PrivateStorageRepository {
 			mongoPrivateStorageTemplate.createCollection(collectionName, options);
 		}
 	}
-
 }

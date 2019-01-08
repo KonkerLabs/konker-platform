@@ -20,10 +20,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -46,6 +43,13 @@ public class PrivateStorageRestController extends AbstractRestController impleme
                     "\t \"email\": \"konker@konkerlabs.com\",\n" +
                     "\t \"address\": \"Avenida Brigadeiro Faria Lima\"\n" +
                     "\t}\n";
+
+    public static final String SEARCH_NOTES =
+            "### Query Search Example\n\n" +
+                    "* _id:818599ad-0000-0000-0000-000000000000\n\n" +
+                    "* customer:Konker\n\n" +
+                    "* email:konker@konkerlabs.com\n\n" +
+                    "* customer:Konker email:konker@konkerlabs.com\n\n";
 
     @Autowired
     public PrivateStorageRestController(PrivateStorageService privateStorageService) {
@@ -101,32 +105,42 @@ public class PrivateStorageRestController extends AbstractRestController impleme
         }
     }
 
-    @GetMapping(path = "/{collectionName}/{key}")
-    @ApiOperation(value = "Get a data by collection and key")
+    @GetMapping(path = "/{collectionName}/search")
+    @ApiOperation(value = "Get a data by collection and query", notes = SEARCH_NOTES)
     @PreAuthorize("hasAuthority('SHOW_PRIVATE_STORAGE')")
-    public Object read(
+    public Object searchByQuery(
     		@PathVariable("application") String applicationId,
     		@PathVariable("collectionName") String collection,
-    		@PathVariable("key") String key) throws BadServiceResponseException, NotFoundResponseException {
+            @ApiParam(value = "Query string", example = "_id:818599ad-3502-4e70-a852-fc7af8e0a9f4")
+            @RequestParam(required = false, defaultValue = "", name = "q") String query) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
 
-        ServiceResponse<PrivateStorage> response = null;
+        ServiceResponse<List<PrivateStorage>> response = null;
         try {
-            response = privateStorageService.findById(tenant, application, user.getParentUser(), collection, key);
+            Map<String, String> queryParam = new HashMap<>();
+
+            if (query.length() > 0) {
+                String[] keysQuery = query.split(" ");
+                queryParam = Arrays.stream(keysQuery)
+                        .map(k -> k.split(":"))
+                        .collect(Collectors.toMap(k -> k[0], k -> k[1]));
+            }
+
+            response = privateStorageService.findByQuery(tenant, application, user.getParentUser(), collection, queryParam);
 
             if (!response.isOk()) {
                 throw new NotFoundResponseException(response);
             } else {
-                return JSON.parse(
-                        Optional.ofNullable(response.getResult())
-                                .orElse(PrivateStorage.builder().build()).getCollectionContent());
+                return response.getResult()
+                        .stream()
+                        .map(p -> JSON.parse(p.getCollectionContent()))
+                        .collect(Collectors.toList());
             }
         } catch (JsonProcessingException e) {
             throw new NotFoundResponseException(response);
         }
-
 
     }
 
