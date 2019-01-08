@@ -85,6 +85,8 @@ public class PrivateStorageServiceTest extends BusinessLayerTestSupport {
     private String jsonC = "{\"_id\":\"adba7f77-33cb-4e77-8560-288d273e7add\",\"barCode\":\"00000\"}";
     private String jsonNoId = "{\"key1\": \"adba7f77-33cb-4e77-8560-288d273e7aee\", \"a\": 2}";
 
+    private Map<String, String> queryParams = new HashMap<>();
+
     @Before
     public void setUp() throws Exception {
     	tenant = tenantRepository.findByDomainName("konker");
@@ -93,6 +95,8 @@ public class PrivateStorageServiceTest extends BusinessLayerTestSupport {
 
         userAdmin = userService.findByEmail("admin@konkerlabs.com").getResult();
         userApplication = userService.findByEmail("user.application@konkerlabs.com").getResult();
+
+        queryParams.put("_id", "adba7f77-33cb-4e77-8560-288d273e7add");
     }
 
     @After
@@ -430,6 +434,67 @@ public class PrivateStorageServiceTest extends BusinessLayerTestSupport {
         assertThat(serviceResponse.isOk(), is(true));
         assertThat(serviceResponse.getResult().getCollectionName(), is(FULL_COLLECTION_NAME));
         assertThat(serviceResponse.getResult().getCollectionContent(), is(jsonC));
+
+    }
+
+    @Test
+    public void shouldTryFindByQueryWithNullApplication() throws Exception {
+        ServiceResponse<List<PrivateStorage>> serviceResponse = privateStorageService.findByQuery(tenant, null, userAdmin, COLLECTION_NAME, queryParams);
+        assertThat(serviceResponse, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
+
+    }
+
+    @Test
+    public void shouldTryFindByQueryWithNullCollectionName() throws Exception {
+        ServiceResponse<List<PrivateStorage>> serviceResponse = privateStorageService.findByQuery(tenant, application, userAdmin, null, queryParams);
+        assertThat(serviceResponse, hasErrorMessage(Validations.PRIVATE_STORAGE_INVALID_COLLECTION_NAME.getCode()));
+
+    }
+
+    @Test
+    public void shouldTryFindByQueryWithInvalidCollectionName() throws Exception {
+        ServiceResponse<List<PrivateStorage>> serviceResponse = privateStorageService.findByQuery(tenant, application, userAdmin, "collection/A", queryParams);
+        assertThat(serviceResponse, hasErrorMessage(Validations.PRIVATE_STORAGE_INVALID_COLLECTION_NAME.getCode()));
+
+    }
+
+    @Test
+    public void shouldTryFindByQueryWithInvalidApplication() throws Exception {
+        ServiceResponse<List<PrivateStorage>> serviceResponse = privateStorageService.findByQuery(tenant, application, userApplication, COLLECTION_NAME, queryParams);
+        assertThat(serviceResponse, hasErrorMessage(ApplicationService.Validations.APPLICATION_HAS_NO_PERMISSION.getCode()));
+
+    }
+
+    @Test
+    public void shouldTryFindByQueryWithParamNullOrEmpty() throws Exception {
+        Map<String, Object> collectionContent = new HashMap<>();
+        collectionContent.put("_id", "adba7f77-33cb-4e77-8560-288d273e7add");
+        collectionContent.put("barCode", "00000");
+        privateStorageRepository.save(FULL_COLLECTION_NAME, collectionContent);
+
+        ServiceResponse<List<PrivateStorage>> serviceResponse = privateStorageService.findByQuery(tenant, application, userAdmin, COLLECTION_NAME, null);
+        assertThat(serviceResponse.isOk(), is(true));
+        assertThat(serviceResponse.getResult().get(0).getCollectionName(), is(FULL_COLLECTION_NAME));
+        assertThat(serviceResponse.getResult().get(0).getCollectionContent(), is(jsonC));
+
+        serviceResponse = privateStorageService.findByQuery(tenant, application, userAdmin, COLLECTION_NAME, new HashMap<>());
+        assertThat(serviceResponse.isOk(), is(true));
+        assertThat(serviceResponse.getResult().get(0).getCollectionName(), is(FULL_COLLECTION_NAME));
+        assertThat(serviceResponse.getResult().get(0).getCollectionContent(), is(jsonC));
+
+    }
+
+    @Test
+    public void shouldFindByQuery() throws Exception {
+        Map<String, Object> collectionContent = new HashMap<>();
+        collectionContent.put("_id", "adba7f77-33cb-4e77-8560-288d273e7add");
+        collectionContent.put("barCode", "00000");
+        privateStorageRepository.save(FULL_COLLECTION_NAME, collectionContent);
+
+        ServiceResponse<List<PrivateStorage>> serviceResponse = privateStorageService.findByQuery(tenant, application, userAdmin, COLLECTION_NAME, queryParams);
+        assertThat(serviceResponse.isOk(), is(true));
+        assertThat(serviceResponse.getResult().get(0).getCollectionName(), is(FULL_COLLECTION_NAME));
+        assertThat(serviceResponse.getResult().get(0).getCollectionContent(), is(jsonC));
 
     }
 

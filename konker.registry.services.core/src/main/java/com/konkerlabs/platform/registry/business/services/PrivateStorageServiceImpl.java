@@ -20,9 +20,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import java.text.MessageFormat;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -247,6 +245,35 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
         collectionName = getCollectionName(tenant, application, collectionName);
         return ServiceResponseBuilder.<PrivateStorage>ok()
                 .withResult(privateStorageRepository.findById(collectionName, id))
+                .build();
+    }
+
+    @Override
+    public ServiceResponse<List<PrivateStorage>> findByQuery(Tenant tenant,
+                                                             Application application,
+                                                             User user,
+                                                             String collectionName,
+                                                             Map<String, String> queryParam) throws JsonProcessingException {
+        ServiceResponse<List<PrivateStorage>> validationResponse = validate(tenant, application, collectionName);
+
+        if (!validationResponse.isOk()) {
+            return validationResponse;
+        }
+
+        if (Optional.ofNullable(user.getApplication()).isPresent()
+                && !application.equals(user.getApplication())) {
+            return ServiceResponseBuilder.<List<PrivateStorage>>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_HAS_NO_PERMISSION.getCode())
+                    .build();
+        }
+
+        if (!Optional.ofNullable(queryParam).isPresent()) {
+            queryParam = new HashMap<>();
+        }
+
+        collectionName = getCollectionName(tenant, application, collectionName);
+        return ServiceResponseBuilder.<List<PrivateStorage>>ok()
+                .withResult(privateStorageRepository.findByQuery(collectionName, queryParam))
                 .build();
     }
 

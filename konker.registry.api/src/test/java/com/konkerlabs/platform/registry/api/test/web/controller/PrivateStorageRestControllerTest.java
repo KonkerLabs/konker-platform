@@ -28,10 +28,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
@@ -217,20 +214,21 @@ public class PrivateStorageRestControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldReadData() throws Exception {
-        when(privateStorageService.findById(any(Tenant.class), any(Application.class), any(User.class), anyString(), anyString()))
-                .thenReturn(ServiceResponseBuilder.<PrivateStorage>ok()
-                        .withResult(privateStorage1).build());
+        when(privateStorageService.findByQuery(any(Tenant.class), any(Application.class), any(User.class), anyString(), any(Map.class)))
+                .thenReturn(ServiceResponseBuilder.<List<PrivateStorage>>ok()
+                        .withResult(Collections.singletonList(privateStorage1)).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}/{3}", application.getName(), BASEPATH, "customers", "adbc-123"))
+        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}/search", application.getName(), BASEPATH, "customers"))
                 .contentType("application/json")
+                .param("q", "customers:konker")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json;charset=UTF-8"))
                 .andExpect(jsonPath("$.code", is(HttpStatus.OK.value())))
                 .andExpect(jsonPath("$.status", is("success")))
                 .andExpect(jsonPath("$.timestamp",greaterThan(1400000000)))
-                .andExpect(jsonPath("$.result").isMap())
-                .andExpect(jsonPath("$.result", is(JSON.parse(json1))));
+                .andExpect(jsonPath("$.result").isArray())
+                .andExpect(jsonPath("$.result[0]", is(JSON.parse(json1))));
 
     }
 
@@ -239,8 +237,9 @@ public class PrivateStorageRestControllerTest extends WebLayerTestContext {
         when(applicationService.getByApplicationName(tenant, NONEXIST_APPLICATION_NAME))
                 .thenReturn(ServiceResponseBuilder.<Application>error().withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode()).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}/{3}", NONEXIST_APPLICATION_NAME, BASEPATH, "customers", "adbc-123"))
+        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}/search", NONEXIST_APPLICATION_NAME, BASEPATH, "customers"))
                 .contentType("application/json")
+                .param("q", "customers:konker")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError())
                 .andExpect(content().contentType("application/json;charset=UTF-8"))
@@ -254,12 +253,13 @@ public class PrivateStorageRestControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldTryReadDataWithBadRequest() throws Exception {
-        when(privateStorageService.findById(any(Tenant.class), any(Application.class), any(User.class), anyString(), anyString()))
+        when(privateStorageService.findByQuery(any(Tenant.class), any(Application.class), any(User.class), anyString(), any(Map.class)))
                 .thenReturn(ServiceResponseBuilder.<PrivateStorage>error()
                         .withMessage(PrivateStorageService.Validations.PRIVATE_STORAGE_INVALID_COLLECTION_NAME.getCode()).build());
 
-        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}/{3}", application.getName(), BASEPATH, "customers", "adbc-123"))
-                .accept(MediaType.APPLICATION_JSON)
+        getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}/search", application.getName(), BASEPATH, "customers"))
+                .contentType("application/json")
+                .param("q", "customers:konker")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError())
                 .andExpect(content().contentType("application/json;charset=UTF-8"))
