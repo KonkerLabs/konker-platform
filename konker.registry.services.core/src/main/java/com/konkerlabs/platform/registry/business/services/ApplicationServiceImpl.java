@@ -1,16 +1,15 @@
 package com.konkerlabs.platform.registry.business.services;
 
 import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import com.konkerlabs.platform.registry.business.model.Application;
@@ -289,8 +288,15 @@ public class ApplicationServiceImpl implements ApplicationService {
 
 	@Override
 	public ServiceResponse<List<Application>> findAll(Tenant tenant) {
-		List<Application> all = applicationRepository.findAllByTenant(tenant.getId());	
+		List<Application> all = applicationRepository.findAllByTenant(tenant.getId());
 		return ServiceResponseBuilder.<List<Application>>ok().withResult(all).build();
+	}
+
+	@Override
+	public ServiceResponse<Page<Application>> findAll(Tenant tenant, int page, int size) {
+        page = page > 0 ? page - 1 : 0;
+		Page<Application> all = applicationRepository.findAllByTenant(tenant.getId(), new PageRequest(page, size));
+		return ServiceResponseBuilder.<Page<Application>>ok().withResult(all).build();
 	}
 
 	@Override

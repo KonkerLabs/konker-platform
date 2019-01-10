@@ -19,6 +19,7 @@ import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -52,17 +53,21 @@ public class DeviceRestController extends AbstractRestController implements Init
     public List<DeviceVO> list(
             @PathVariable("application") String applicationId,
             @ApiParam(value = "Tag filter")
-            @RequestParam(required = false) String tag) throws BadServiceResponseException, NotFoundResponseException {
+            @RequestParam(required = false) String tag,
+            @ApiParam(value = "Page number")
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @ApiParam(value = "Number of elements per page")
+            @RequestParam(required = false, defaultValue = "500") int size) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
 
-        ServiceResponse<List<Device>> deviceResponse = deviceRegisterService.search(tenant, application, user.getParentUser(), tag);
+        ServiceResponse<Page<Device>> deviceResponse = deviceRegisterService.search(tenant, application, user.getParentUser(), tag, page, size);
 
         if (!deviceResponse.isOk()) {
             throw new BadServiceResponseException( deviceResponse, validationsCode);
         } else {
-            return new DeviceVO().apply(deviceResponse.getResult());
+            return new DeviceVO().apply(deviceResponse.getResult().getContent());
         }
 
     }

@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -236,9 +237,9 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
     }
 
     @Override
-    public ServiceResponse<List<Device>> search(Tenant tenant, Application application, User user, String tag) {
+    public ServiceResponse<Page<Device>> search(Tenant tenant, Application application, User user, String tag, int page, int size) {
 
-        ServiceResponse<List<Device>> validationResponse = validate(tenant, application);
+        ServiceResponse<Page<Device>> validationResponse = validate(tenant, application);
         if (!validationResponse.isOk()) {
             return validationResponse;
         }
@@ -253,20 +254,23 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
             LOGGER.debug(ApplicationService.Validations.APPLICATION_HAS_NO_PERMISSION.getCode(),
                     noDevice.toURI(),
                     noDevice.getTenant().getLogLevel());
-            return ServiceResponseBuilder.<List<Device>>error()
+            return ServiceResponseBuilder.<Page<Device>>error()
                     .withMessage(ApplicationService.Validations.APPLICATION_HAS_NO_PERMISSION.getCode())
                     .build();
         }
 
-        List<Device> all = deviceSearchRepository.search(
+        page = page > 0 ? page - 1 : 0;
+        Page<Device> all = deviceSearchRepository.search(
                 tenant.getId(),
                 application.getName(),
                 Optional.ofNullable(user.getLocation())
                         .orElse(Location.builder().build())
                         .getId(),
-                tag);
+                tag,
+                page,
+                size);
 
-        return ServiceResponseBuilder.<List<Device>>ok().withResult(all).build();
+        return ServiceResponseBuilder.<Page<Device>>ok().withResult(all).build();
 
     }
 

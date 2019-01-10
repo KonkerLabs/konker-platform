@@ -39,6 +39,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.domain.Page;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -984,11 +985,11 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json",
             "/fixtures/location.json", "/fixtures/users.json"})
     public void shouldSearchWithoutFilter() {
-        ServiceResponse<List<Device>> response = deviceRegisterService.search(currentTenant, currentApplication, userAdmin, null);
+        ServiceResponse<Page<Device>> response = deviceRegisterService.search(currentTenant, currentApplication, userAdmin, null, 1, 10);
         assertThat(response, isResponseOk());
-        List<Device> all = response.getResult();
+        List<Device> all = response.getResult().getContent();
 
-        all = response.getResult();
+        all = response.getResult().getContent();
         assertThat(all, notNullValue());
         assertThat(all, hasSize(2));
     }
@@ -997,11 +998,11 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json",
             "/fixtures/location.json", "/fixtures/users.json"})
     public void shouldSearchFilterByTag() {
-        ServiceResponse<List<Device>> response = deviceRegisterService.search(currentTenant, currentApplication, userAdmin, "anotherTag1");
+        ServiceResponse<Page<Device>> response = deviceRegisterService.search(currentTenant, currentApplication, userAdmin, "anotherTag1", 1, 10);
         assertThat(response, isResponseOk());
-        List<Device> all = response.getResult();
+        List<Device> all = response.getResult().getContent();
 
-        all = response.getResult();
+        all = response.getResult().getContent();
         assertThat(all, notNullValue());
         assertThat(all, hasSize(1));
         assertTrue(all.get(0).getTags().contains("anotherTag1"));
@@ -1012,14 +1013,14 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
             "/fixtures/locations.json", "/fixtures/users.json"})
     public void shouldSearchFilterByUserAdmin() {
         List<Device> all = new ArrayList<>();
-        ServiceResponse<List<Device>> response = deviceRegisterService.search(currentTenant, currentApplication, userAdmin, null);
+        ServiceResponse<Page<Device>> response = deviceRegisterService.search(currentTenant, currentApplication, userAdmin, null, 1, 10);
         assertThat(response, isResponseOk());
-        all.addAll(response.getResult());
+        all.addAll(response.getResult().getContent());
 
         currentApplication.setName("konker");
-        response = deviceRegisterService.search(currentTenant, currentApplication, userAdmin, null);
+        response = deviceRegisterService.search(currentTenant, currentApplication, userAdmin, null, 1, 10);
         assertThat(response, isResponseOk());
-        all.addAll(response.getResult());
+        all.addAll(response.getResult().getContent());
 
         assertThat(all, notNullValue());
         assertThat(all, hasSize(4));
@@ -1030,9 +1031,9 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
             "/fixtures/locations.json", "/fixtures/users.json"})
     public void shouldSearchFilterByUserApplication() {
         List<Device> all = new ArrayList<>();
-        ServiceResponse<List<Device>> response = deviceRegisterService.search(currentTenant, currentApplication, userApplication, null);
+        ServiceResponse<Page<Device>> response = deviceRegisterService.search(currentTenant, currentApplication, userApplication, null, 1, 10);
         assertThat(response, isResponseOk());
-        all.addAll(response.getResult());
+        all.addAll(response.getResult().getContent());
 
         assertThat(all, notNullValue());
         assertThat(all, hasSize(2));
@@ -1042,9 +1043,9 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json",
             "/fixtures/locations.json", "/fixtures/users.json"})
     public void shouldSearchFilterByUserLocation() {
-        ServiceResponse<List<Device>> response = deviceRegisterService.search(currentTenant, currentApplication, userLocation, null);
+        ServiceResponse<Page<Device>> response = deviceRegisterService.search(currentTenant, currentApplication, userLocation, null, 1, 10);
         assertThat(response, isResponseOk());
-        List<Device> all = response.getResult();
+        List<Device> all = response.getResult().getContent();
 
         assertThat(all, notNullValue());
         assertThat(all, hasSize(1));
@@ -1054,7 +1055,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json",
             "/fixtures/locations.json", "/fixtures/users.json"})
     public void shouldSearchFilterByUserNoPermission() {
-        ServiceResponse<List<Device>> serviceResponse = deviceRegisterService.search(currentTenant, otherApplication, userLocation, null);
+        ServiceResponse<Page<Device>> serviceResponse = deviceRegisterService.search(currentTenant, otherApplication, userLocation, null, 1, 10);
 
         assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.ERROR));
         assertThat(serviceResponse.getResponseMessages(), hasEntry(ApplicationService.Validations.APPLICATION_HAS_NO_PERMISSION.getCode(), null));
