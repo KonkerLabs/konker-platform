@@ -6,7 +6,8 @@ public enum CommonValidations {
     TENANT_NULL("model.tenant.not_null"),
     TENANT_DOES_NOT_EXIST("service.tenant.does_not_exist"),
     RECORD_NULL("service.device.record.not_null"),
-    URL_MATCHES_BLACKLIST("service.url.matches_blacklist");
+    URL_MATCHES_BLACKLIST("service.url.matches_blacklist"),
+    SIZE_ELEMENT_PAGE_INVALID("service.size.element.page.invalid");
 
     private String code;
 

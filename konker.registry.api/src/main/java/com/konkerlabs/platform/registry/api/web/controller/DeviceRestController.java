@@ -8,6 +8,7 @@ import com.konkerlabs.platform.registry.api.model.DeviceInputVO;
 import com.konkerlabs.platform.registry.api.model.DeviceVO;
 import com.konkerlabs.platform.registry.api.model.RestResponse;
 import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.Validations;
@@ -258,6 +259,10 @@ public class DeviceRestController extends AbstractRestController implements Init
         }
 
         for (com.konkerlabs.platform.registry.business.model.Device.Validations value : Device.Validations.values()) {
+            validationsCode.add(value.getCode());
+        }
+
+        for (CommonValidations value : CommonValidations.values()) {
             validationsCode.add(value.getCode());
         }
 

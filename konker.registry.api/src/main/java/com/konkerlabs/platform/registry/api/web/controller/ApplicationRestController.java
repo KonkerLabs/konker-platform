@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -238,6 +239,10 @@ public class ApplicationRestController extends AbstractRestController implements
         }
 
         for (ApplicationService.Validations value : ApplicationService.Validations.values()) {
+            validationsCode.add(value.getCode());
+        }
+
+        for (CommonValidations value : CommonValidations.values()) {
             validationsCode.add(value.getCode());
         }
 

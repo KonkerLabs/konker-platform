@@ -1,17 +1,5 @@
 package com.konkerlabs.platform.registry.business.services;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Service;
-
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.DeviceModel;
@@ -25,6 +13,19 @@ import com.konkerlabs.platform.registry.business.services.api.ApplicationService
 import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.Scope;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
@@ -296,6 +297,30 @@ public class DeviceModelServiceImpl implements DeviceModelService {
 		}
 
 		return ServiceResponseBuilder.<List<DeviceModel>>ok().withResult(all).build();
+	}
+
+	@Override
+	public ServiceResponse<Page<DeviceModel>> findAll(Tenant tenant, Application application, int page, int size) {
+        page = page > 0 ? page - 1 : 0;
+
+        if (size <= 0) {
+            return ServiceResponseBuilder.<Page<DeviceModel>>error()
+                    .withMessage(CommonValidations.SIZE_ELEMENT_PAGE_INVALID.getCode())
+                    .build();
+        }
+
+		Page<DeviceModel> all = deviceModelRepository.findAllByTenantIdAndApplicationName(tenant.getId(),
+                application.getName(),
+                new PageRequest(page, size));
+
+		if (all.getContent().isEmpty()) {
+			ServiceResponse<DeviceModel> defaultResponse = findDefault(tenant, application);
+			if (defaultResponse.isOk()) {
+				all.getContent().add(defaultResponse.getResult());
+			}
+		}
+
+		return ServiceResponseBuilder.<Page<DeviceModel>>ok().withResult(all).build();
 	}
 
 	@Override

@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -387,6 +388,16 @@ public class DeviceModelServiceTest extends BusinessLayerTestSupport {
     	assertThat(response, isResponseOk());
     	assertThat(response.getResult(), notNullValue());
     	assertThat(response.getResult(), hasSize(2));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/device-model.json"})
+    public void shouldReturnAllAppPaginated() throws Exception {
+        ServiceResponse<Page<DeviceModel>> response = deviceModelService.findAll(currentTenant, application, 1, 1);
+
+        assertThat(response, isResponseOk());
+        assertThat(response.getResult(), notNullValue());
+        assertThat(response.getResult().getContent(), hasSize(1));
     }
 
     @Test

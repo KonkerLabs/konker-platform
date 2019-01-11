@@ -259,6 +259,12 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .build();
         }
 
+        if (size <= 0) {
+            return ServiceResponseBuilder.<Page<Device>>error()
+                    .withMessage(CommonValidations.SIZE_ELEMENT_PAGE_INVALID.getCode())
+                    .build();
+        }
+
         page = page > 0 ? page - 1 : 0;
         Page<Device> all = deviceSearchRepository.search(
                 tenant.getId(),
