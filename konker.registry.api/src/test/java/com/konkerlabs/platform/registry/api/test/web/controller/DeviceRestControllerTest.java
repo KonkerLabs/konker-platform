@@ -23,11 +23,15 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import java.text.MessageFormat;
 import java.time.Instant;
@@ -104,6 +108,8 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 
     private final Instant registrationDate = Instant.ofEpochMilli(1495716970000L).minusSeconds(3600L);
 
+    private MultiValueMap<String, String> paramPageable;
+
     @Before
     public void setUp() {
         final Location locationBR = Location.builder().name("br").build();
@@ -164,6 +170,10 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .dateFormat(DateFormat.YYYYMMDD)
                 .tenant(tenant).build();
 
+        paramPageable = new LinkedMultiValueMap<>();
+        paramPageable.add("page", "1");
+        paramPageable.add("size", "10");
+
         when(locationSearchService.findByName(tenant, application, "br", false))
                 .thenReturn(ServiceResponseBuilder.<Location>ok().withResult(locationBR).build());
 
@@ -176,19 +186,21 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldListDevices() throws Exception {
+        List<Device> listDevices = new ArrayList<>();
+        listDevices.add(device1);
+        listDevices.add(device2);
 
-        List<Device> devices = new ArrayList<>();
-        devices.add(device1);
-        devices.add(device2);
+        Page<Device> devices = new PageImpl(listDevices);
 
-        when(deviceRegisterService.search(tenant, application, user, null))
-                .thenReturn(ServiceResponseBuilder.<List<Device>>ok().withResult(devices).build());
+        when(deviceRegisterService.search(tenant, application, user, null, 1, 10))
+                .thenReturn(ServiceResponseBuilder.<Page<Device>>ok().withResult(devices).build());
 
         when(applicationService.getByApplicationName(tenant, application.getName()))
                 .thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH))
                 .contentType("application/json")
+                .params(paramPageable)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json;charset=UTF-8"))
@@ -212,17 +224,20 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldListDevicesFilterByTag() throws Exception {
 
-        List<Device> devices = new ArrayList<>();
-        devices.add(device1);
-        devices.add(device2);
+        List<Device> listDevices = new ArrayList<>();
+        listDevices.add(device1);
+        listDevices.add(device2);
 
-        when(deviceRegisterService.search(tenant, application, user, "red"))
-                .thenReturn(ServiceResponseBuilder.<List<Device>>ok().withResult(devices).build());
+        Page<Device> devices = new PageImpl(listDevices);
+
+        when(deviceRegisterService.search(tenant, application, user, "red", 1, 10))
+                .thenReturn(ServiceResponseBuilder.<Page<Device>>ok().withResult(devices).build());
 
         when(applicationService.getByApplicationName(tenant, application.getName()))
                 .thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
         getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/?tag=red", application.getName(), BASEPATH))
                 .contentType("application/json")
+                .params(paramPageable)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json;charset=UTF-8"))
@@ -246,14 +261,15 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryListDevicesWithInternalError() throws Exception {
 
-        when(deviceRegisterService.search(tenant, application, user, null))
-                .thenReturn(ServiceResponseBuilder.<List<Device>>error().build());
+        when(deviceRegisterService.search(tenant, application, user, null, 1, 10))
+                .thenReturn(ServiceResponseBuilder.<Page<Device>>error().build());
 
         when(applicationService.getByApplicationName(tenant, application.getName()))
                 .thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH))
                 .accept(MediaType.APPLICATION_JSON)
+                .params(paramPageable)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is5xxServerError())
                 .andExpect(content().contentType("application/json;charset=UTF-8"))

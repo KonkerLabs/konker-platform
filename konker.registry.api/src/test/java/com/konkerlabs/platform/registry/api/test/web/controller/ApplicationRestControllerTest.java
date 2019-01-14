@@ -22,11 +22,15 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import java.text.MessageFormat;
 import java.time.Instant;
@@ -72,6 +76,8 @@ public class ApplicationRestControllerTest extends WebLayerTestContext {
 
     private Device device;
     private AlertTrigger alertTrigger;
+
+    private MultiValueMap<String, String> paramPageable;
 
     @Before
     public void setUp() {
@@ -140,6 +146,10 @@ public class ApplicationRestControllerTest extends WebLayerTestContext {
         		.build();
 
 		healths = Arrays.asList(health1, health2);
+
+        paramPageable = new LinkedMultiValueMap<>();
+        paramPageable.add("page", "1");
+        paramPageable.add("size", "10");
     }
 
     @After
@@ -154,11 +164,13 @@ public class ApplicationRestControllerTest extends WebLayerTestContext {
         applications.add(application1);
         applications.add(application2);
 
-        when(applicationService.findAll(tenant))
+        Page<Application> pageApplication = new PageImpl(applications);
+
+        when(applicationService.findAll(tenant, 1, 10))
         	.thenReturn(
         			ServiceResponseBuilder
-        				.<List<Application>>ok()
-                		.withResult(applications)
+        				.<Page<Application>>ok()
+                		.withResult(pageApplication)
                 		.build());
         
         when(applicationService.isDefaultApplication(application0, tenant))
@@ -168,6 +180,7 @@ public class ApplicationRestControllerTest extends WebLayerTestContext {
         .perform(MockMvcRequestBuilders
         		.get("/applications/")
         		.contentType("application/json")
+                .params(paramPageable)
         		.accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType("application/json;charset=UTF-8"))
@@ -189,12 +202,13 @@ public class ApplicationRestControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldReturnInternalErrorWhenListApplications() throws Exception {
-        when(applicationService.findAll(tenant))
-                .thenReturn(ServiceResponseBuilder.<List<Application>>error().build());
+        when(applicationService.findAll(tenant, 1, 10))
+                .thenReturn(ServiceResponseBuilder.<Page<Application>>error().build());
 
         getMockMvc()
         .perform(MockMvcRequestBuilders.get("/applications/")
         		.accept(MediaType.APPLICATION_JSON)
+				.params(paramPageable)
         		.contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().is5xxServerError())
         .andExpect(content().contentType("application/json;charset=UTF-8"))

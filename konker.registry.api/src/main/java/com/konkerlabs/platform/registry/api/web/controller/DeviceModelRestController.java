@@ -4,18 +4,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
 import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
@@ -55,17 +50,21 @@ public class DeviceModelRestController extends AbstractRestController implements
     @ApiOperation(
             value = "List all device models by application",
             response = DeviceModelVO.class)
-    public List<DeviceModelVO> list(@PathVariable("application") String applicationId) throws BadServiceResponseException, NotFoundResponseException {
+    public List<DeviceModelVO> list(@PathVariable("application") String applicationId,
+                                    @ApiParam(value = "Page number")
+                                    @RequestParam(required = false, defaultValue = "0") int page,
+                                    @ApiParam(value = "Number of elements per page")
+                                    @RequestParam(required = false, defaultValue = "500") int size) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
 
-        ServiceResponse<List<DeviceModel>> deviceModelResponse = deviceModelService.findAll(tenant, application);
+        ServiceResponse<Page<DeviceModel>> deviceModelResponse = deviceModelService.findAll(tenant, application, page, size);
 
         if (!deviceModelResponse.isOk()) {
             throw new BadServiceResponseException( deviceModelResponse, validationsCode);
         } else {
-            return new DeviceModelVO().apply(deviceModelResponse.getResult());
+            return new DeviceModelVO().apply(deviceModelResponse.getResult().getContent());
         }
 
     }
@@ -219,6 +218,9 @@ public class DeviceModelRestController extends AbstractRestController implements
             validationsCode.add(value.getCode());
         }
 
+        for (CommonValidations value : CommonValidations.values()) {
+            validationsCode.add(value.getCode());
+        }
     }
 
 }

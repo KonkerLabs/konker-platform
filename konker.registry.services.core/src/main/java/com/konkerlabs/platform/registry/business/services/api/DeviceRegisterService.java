@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
+import org.springframework.data.domain.Page;
 import org.springframework.util.StringUtils;
 
 public interface DeviceRegisterService {
@@ -185,7 +186,7 @@ public interface DeviceRegisterService {
 	 */
 	ServiceResponse<List<Device>> findAll(Tenant tenant, Application application);
 
-	ServiceResponse<List<Device>> search(Tenant tenant, Application application, User user, String tag);
+	ServiceResponse<Page<Device>> search(Tenant tenant, Application application, User user, String tag, int page, int size);
 
 	ServiceResponse<Long> countAll(Tenant tenant, Application application);
 

@@ -21,6 +21,8 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
@@ -40,6 +42,8 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceModelService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = DeviceModelRestController.class)
@@ -72,6 +76,8 @@ public class DeviceModelRestControllerTest extends WebLayerTestContext {
 
     private final String BASEPATH = "deviceModels";
 
+	private MultiValueMap<String, String> paramPageable;
+
     @Before
     public void setUp() {
         deviceModel1 = DeviceModel.builder()
@@ -90,6 +96,10 @@ public class DeviceModelRestControllerTest extends WebLayerTestContext {
         		.defaultModel(false)
         		.build();
 
+        paramPageable = new LinkedMultiValueMap<>();
+        paramPageable.add("page", "1");
+        paramPageable.add("size", "10");
+
         when(applicationService.getByApplicationName(tenant, application.getName()))
             .thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
 
@@ -106,17 +116,20 @@ public class DeviceModelRestControllerTest extends WebLayerTestContext {
         deviceModels.add(deviceModel1);
         deviceModels.add(deviceModel2);
 
-        when(deviceModelService.findAll(tenant, application))
+        Page<DeviceModel> pageDeviceModel = new PageImpl(deviceModels);
+
+        when(deviceModelService.findAll(tenant, application, 1, 10))
         	.thenReturn(
         			ServiceResponseBuilder
-        				.<List<DeviceModel>>ok()
-                		.withResult(deviceModels)
+        				.<Page<DeviceModel>>ok()
+                		.withResult(pageDeviceModel)
                 		.build());
 
         getMockMvc()
         .perform(MockMvcRequestBuilders
         		.get(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH))
         		.contentType("application/json")
+                .params(paramPageable)
         		.accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType("application/json;charset=UTF-8"))
@@ -138,12 +151,13 @@ public class DeviceModelRestControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldReturnInternalErrorWhenListDeviceModels() throws Exception {
-        when(deviceModelService.findAll(tenant, application))
-                .thenReturn(ServiceResponseBuilder.<List<DeviceModel>>error().build());
+        when(deviceModelService.findAll(tenant, application, 1 , 10))
+                .thenReturn(ServiceResponseBuilder.<Page<DeviceModel>>error().build());
 
         getMockMvc()
         .perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH))
         		.accept(MediaType.APPLICATION_JSON)
+                .params(paramPageable)
         		.contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().is5xxServerError())
         .andExpect(content().contentType("application/json;charset=UTF-8"))
