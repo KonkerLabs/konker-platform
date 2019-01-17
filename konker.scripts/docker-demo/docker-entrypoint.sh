@@ -89,6 +89,8 @@ echo "starting RabbitMQ..."
 /usr/sbin/rabbitmq-server &
 service rabbitmq-server status &
 
+/etc/rabbitmq/sleepstart.sh
+
 echo "starting konker registry data ingestion..."
 java -Dconfig.file=/var/lib/jetty/resources/application.conf -jar /var/lib/konker/registry-data.jar --server.port=9090 &
 

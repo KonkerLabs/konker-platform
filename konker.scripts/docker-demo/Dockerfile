@@ -72,9 +72,12 @@ RUN yum install -y rabbitmq-server-3.6.10-1.el7.noarch.rpm
 
 #MONGO
 RUN mkdir /etc/mongo
+
 COPY build/mongodb/mongod.conf /etc/default/
 COPY build/mongodb/sleepstart.sh /etc/mongo/
-RUN chmod +x /etc/mongo/sleepstart.sh
+COPY build/rabbitmq/sleepstart.sh /etc/rabbitmq/
+RUN chmod +x /etc/mongo/sleepstart.sh && \
+	chmod +x /etc/rabbitmq/sleepstart.sh
 
 #ENTRYPONT
 COPY docker-entrypoint.sh /
