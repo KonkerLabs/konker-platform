@@ -41,8 +41,8 @@ fi
 echo ""
 echo ""
 echo "##################################### Konker Open Platform #######################################"
-echo "##                                       Version: 0.3.1                                         ##"
-echo "##                                  Release date: 2017-04-24                                    ##"
+echo "##                                       Version: 0.9.1                                         ##"
+echo "##                                  Release date: 2019-01-17                                    ##"
 echo "##              Licence: Apache V2 (http://www.apache.org/licenses/LICENSE-2.0)                 ##"
 echo "##                           Need Support?: support@konkerlabs.com                              ##"
 echo "##################################################################################################"
@@ -64,6 +64,9 @@ echo "dddddddddddddddddddddhhhhhhy/'                                            
 echo ""
 echo ""
 
+echo "adding host"
+echo "127.0.0.1  dev-server" >> /etc/hosts
+
 echo "securing konker mqtt service..."
 generate_mosquitto_credentials.sh
 
@@ -84,12 +87,19 @@ mosquitto -c /etc/mosquitto/mosquitto.conf &
 
 echo "starting RabbitMQ..."
 /usr/sbin/rabbitmq-server &
+service rabbitmq-server status &
 
 echo "starting konker registry data ingestion..."
 java -Dconfig.file=/var/lib/jetty/resources/application.conf -jar /var/lib/konker/registry-data.jar --server.port=9090 &
 
+echo "starting konker registry router..."
+java -Dconfig.file=/var/lib/jetty/resources/application.conf -jar /var/lib/konker/registry-router.jar --server.port=9091 &
+
+echo "starting konker registry api..."
+java -Dconfig.file=/var/lib/jetty/resources/application.conf -jar /var/lib/konker/registry-api.jar --server.port=8080 &
+
 echo "starting konker mqtt rabbit bridge..."
-java -jar /var/lib/konker/mosquitto-rabbitmq-bridge.jar | tee /var/log/konker/mosquitto-rabbitmq-bridge.log &
+java -Dconfig.file=/var/lib/jetty/resources/application.conf -jar /var/lib/konker/mosquitto-rabbitmq-bridge.jar | tee /var/log/konker/mosquitto-rabbitmq-bridge.log &
 
 #Usage statistics feature
 /var/lib/konker/usage-statistics.py &

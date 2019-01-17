@@ -9,7 +9,7 @@ RUN yum install -y wget nc
 RUN yum -y install java-1.8.0-openjdk-devel
 
 #PYTHON
-RUN rpm -iUvh http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-10.noarch.rpm  && \
+RUN rpm -iUvh http://dl.fedoraproject.org/pub/epel/7/x86_64/Packages/e/epel-release-7-11.noarch.rpm  && \
 yum update -y && \
 yum install -y python python-pip && \
     pip install --upgrade pip && \
@@ -102,7 +102,9 @@ COPY build/jetty/mail /var/lib/jetty/resources/mail/
 #konkers modules
 RUN  mkdir /var/lib/konker
 RUN  mkdir /var/log/konker
+COPY build/konker/registry-api.jar /var/lib/konker/
 COPY build/konker/registry-data.jar /var/lib/konker/
+COPY build/konker/registry-router.jar /var/lib/konker/
 COPY build/konker/mosquitto-rabbitmq-bridge.jar /var/lib/konker/
 
 #usage statistics feature
