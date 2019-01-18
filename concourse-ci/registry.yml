@@ -1,0 +1,375 @@
+groups:
+- name: staging
+  jobs:
+  - test-and-package-stg
+  - docker-api-stg
+  - docker-web-stg
+  - docker-data-stg
+  - docker-router-stg
+  - k8s-api-stg
+resources:
+- name: registry-data-s3-stg
+  type: s3
+  source:
+    access_key_id: (( grab params.amazons3.access_key_id ))
+    bucket: konker-cd-pipeline-artifacts
+    regexp: staging/registry-data-(.*).jar
+    region_name: us-east-1
+    secret_access_key: (( grab params.amazons3.secret_access_key ))
+- name: registry-router-s3-stg
+  type: s3
+  source:
+    access_key_id: (( grab params.amazons3.access_key_id ))
+    bucket: konker-cd-pipeline-artifacts
+    regexp: staging/registry-router-(.*).jar
+    region_name: us-east-1
+    secret_access_key: (( grab params.amazons3.secret_access_key ))
+- name: docker-confs-repo-stg
+  type: git
+  source:
+    branch: master
+    password: (( grab params.bitbucket.passwd ))
+    uri: https://bitbucket.org/konkerlabs/konker-platform-env-confs
+    username: (( grab params.bitbucket.user ))
+- name: values-k8s-repo-stg
+  type: git
+  source:
+    branch: develop
+    password: (( grab params.bitbucket.passwd ))
+    uri: https://bitbucket.org/konkerlabs/konker-devops-k8s
+    username: (( grab params.bitbucket.user ))
+- name: docker-image-web-stg
+  type: docker-image
+  source:
+    password: (( grab params.docker.passwd ))
+    repository: konkerlabs/konker-registry
+    username: (( grab params.docker.user ))
+  check_every: 12h
+- name: docker-image-api-stg
+  type: docker-image
+  source:
+    password: (( grab params.docker.passwd ))
+    repository: konkerlabs/konker-registry
+    username: (( grab params.docker.user ))
+  check_every: 12h
+- name: docker-image-data-stg
+  type: docker-image
+  source:
+    password: (( grab params.docker.passwd ))
+    repository: konkerlabs/konker-registry
+    username: (( grab params.docker.user ))
+  check_every: 12h
+- name: docker-image-router-stg
+  type: docker-image
+  source:
+    password: (( grab params.docker.passwd ))
+    repository: konkerlabs/konker-registry
+    username: (( grab params.docker.user ))
+  check_every: 12h
+- name: registry-api-s3-stg
+  type: s3
+  source:
+    access_key_id: (( grab params.amazons3.access_key_id ))
+    bucket: konker-cd-pipeline-artifacts
+    regexp: staging/registry-api-(.*).jar
+    region_name: us-east-1
+    secret_access_key: (( grab params.amazons3.secret_access_key ))
+- name: registry-web-s3-stg
+  type: s3
+  source:
+    access_key_id: (( grab params.amazons3.access_key_id ))
+    bucket: konker-cd-pipeline-artifacts
+    regexp: staging/registry-(.*).war
+    region_name: us-east-1
+    secret_access_key: (( grab params.amazons3.secret_access_key ))
+- name: slack-alert
+  type: slack-notification
+  source:
+    url: (( grab params.slack.url_hook ))
+- name: version-stg
+  type: semver
+  source:
+    branch: develop
+    driver: git
+    file: version
+    uri: https://github.com/KonkerLabs/konker-platform.git
+- name: github-repo-stg
+  type: git
+  source:
+    branch: develop
+    uri: https://github.com/KonkerLabs/konker-platform.git
+- name: helm-release
+  type: helm
+  source:
+    kubeconfig: |
+      apiVersion: v1
+      kind: Config
+      preferences: {}
+      contexts:
+      - context:
+          cluster: kubernetes
+          namespace: registry-staging
+          user: aws
+        name: aws
+resource_types:
+- name: marathon
+  type: docker-image
+  source:
+    repository: ckaznocha/marathon-resource
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: cfcommunity/slack-notification-resource
+    tag: latest
+- name: helm
+  type: docker-image
+  source:
+    repository: ilyasotkov/concourse-helm-resource
+    tag: 1.1.1
+jobs:
+- name: test-and-package-stg
+  build_logs_to_retain: 1
+  plan:
+  - get: version-stg
+  - get: github-repo-stg
+    trigger: true
+  - task: maven-package
+    privileged: true
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          password: (( grab params.docker.passwd ))
+          repository: konkerlabs/konker-registry
+          tag: concourse-maven-cache
+          username: (( grab params.docker.user ))
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          echo run tests...
+          mvn -f github-repo-stg/pom.xml clean compile test
+          echo packaging...
+          mvn -f github-repo-stg/pom.xml -DskipTests=true package install
+          echo copy packages...
+          mv github-repo-stg/konker.registry.web/target/registry.war jars/registry-$(cat version-stg/version).war
+          mv github-repo-stg/konker.registry.api/target/registry-api.jar jars/registry-api-$(cat version-stg/version).jar
+          mv github-repo-stg/konker.registry.data/target/registry-data.jar jars/registry-data-$(cat version-stg/version).jar
+          mv github-repo-stg/konker.registry.router/target/registry-router.jar jars/registry-router-$(cat version-stg/version).jar
+        dir: ""
+      inputs:
+      - name: github-repo-stg
+        path: ""
+      - name: version-stg
+        path: ""
+      outputs:
+      - name: jars
+        path: ""
+  - put: registry-data-s3-stg
+    params:
+      file: jars/registry-data-*.jar
+  - put: registry-router-s3-stg
+    params:
+      file: jars/registry-router-*.jar
+  - put: registry-api-s3-stg
+    params:
+      file: jars/registry-api-*.jar
+  - put: registry-web-s3-stg
+    params:
+      file: jars/registry-*.war
+  on_failure:
+    do:
+    - put: slack-alert
+      params:
+        icon_emoji: ':concourse-ci:'
+        text: |
+          :warning: *$BUILD_PIPELINE_NAME*.*$BUILD_JOB_NAME* failed!
+- name: docker-data-stg
+  build_logs_to_retain: 1
+  plan:
+  - get: registry-data-s3-stg
+    passed:
+    - test-and-package-stg
+    version: latest
+  - get: github-repo-stg
+    trigger: true
+  - get: docker-confs-repo-stg
+  - task: setup docker artifacts
+    privileged: true
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: docker
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          ls
+          cp registry-data-s3-stg/registry-data-$(cat registry-data-s3-stg/version).jar github-repo-stg/konker.registry.data/docker-resources/dist/registry-data.jar
+          cp github-repo-stg/konker.registry.data/Dockerfile docker-artifacts
+          cp -r github-repo-stg/konker.registry.data/docker-resources docker-artifacts
+        dir: ""
+      inputs:
+      - name: docker-confs-repo-stg
+        path: ""
+      - name: registry-data-s3-stg
+        path: ""
+      - name: github-repo-stg
+        path: ""
+      outputs:
+      - name: docker-artifacts
+        path: ""
+  - put: docker-image-data-stg
+    params:
+      build: docker-artifacts
+      tag: registry-data-s3-stg/version
+      tag_prefix: staging-data-
+- name: docker-router-stg
+  build_logs_to_retain: 1
+  plan:
+  - get: registry-router-s3-stg
+    passed:
+    - test-and-package-stg
+    version: latest
+  - get: github-repo-stg
+    trigger: true
+  - get: docker-confs-repo-stg
+  - task: setup docker artifacts
+    privileged: true
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: docker
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          ls
+          cp registry-router-s3-stg/registry-router-$(cat registry-router-s3-stg/version).jar github-repo-stg/konker.registry.router/docker-resources/dist/registry-router.jar
+          cp github-repo-stg/konker.registry.router/Dockerfile docker-artifacts
+          cp -r github-repo-stg/konker.registry.router/docker-resources docker-artifacts
+        dir: ""
+      inputs:
+      - name: docker-confs-repo-stg
+        path: ""
+      - name: registry-router-s3-stg
+        path: ""
+      - name: github-repo-stg
+        path: ""
+      outputs:
+      - name: docker-artifacts
+        path: ""
+  - put: docker-image-router-stg
+    params:
+      build: docker-artifacts
+      tag: registry-router-s3-stg/version
+      tag_prefix: staging-router-
+- name: docker-api-stg
+  build_logs_to_retain: 1
+  plan:
+  - get: registry-api-s3-stg
+    passed:
+    - test-and-package-stg
+    version: latest
+  - get: github-repo-stg
+    trigger: true
+  - get: docker-confs-repo-stg
+  - task: setup docker artifacts
+    privileged: true
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: docker
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          ls
+          cp registry-api-s3-stg/registry-api-$(cat registry-api-s3-stg/version).jar github-repo-stg/konker.registry.api/docker-resources/dist/registry-api.jar
+          cp github-repo-stg/konker.registry.api/Dockerfile docker-artifacts
+          cp -r github-repo-stg/konker.registry.api/docker-resources docker-artifacts
+        dir: ""
+      inputs:
+      - name: docker-confs-repo-stg
+        path: ""
+      - name: registry-api-s3-stg
+        path: ""
+      - name: github-repo-stg
+        path: ""
+      outputs:
+      - name: docker-artifacts
+        path: ""
+  - put: docker-image-api-stg
+    params:
+      build: docker-artifacts
+      tag: registry-api-s3-stg/version
+      tag_prefix: staging-api-
+- name: docker-web-stg
+  build_logs_to_retain: 1
+  plan:
+  - get: registry-web-s3-stg
+    passed:
+    - test-and-package-stg
+    version: latest
+  - get: github-repo-stg
+    trigger: true
+  - get: docker-confs-repo-stg
+  - task: setup docker artifacts
+    privileged: true
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: docker
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          ls
+          cp registry-web-s3-stg/registry-$(cat registry-web-s3-stg/version).war github-repo-stg/konker.registry.web/docker-resources/dist/registry.war
+          cp github-repo-stg/konker.registry.web/Dockerfile docker-artifacts
+          cp -r github-repo-stg/konker.registry.web/docker-resources docker-artifacts
+        dir: ""
+      inputs:
+      - name: docker-confs-repo-stg
+        path: ""
+      - name: registry-web-s3-stg
+        path: ""
+      - name: github-repo-stg
+        path: ""
+      outputs:
+      - name: docker-artifacts
+        path: ""
+  - put: docker-image-web-stg
+    params:
+      build: docker-artifacts
+      tag: registry-web-s3-stg/version
+      tag_prefix: staging-
+- name: k8s-api-stg
+  build_logs_to_retain: 1
+  plan:
+  - get: github-repo-stg
+    passed:
+    - docker-api-stg
+    trigger: true
+  - get: values-k8s-repo-stg
+  - put: helm-release
+    params:
+      chart: github-repo-stg/konker.registry.api/konker-registry-api-helm.tgz
+      values: values-k8s-repo-stg/konker-registry-values/api-values-staging.yaml
+      orverride_values:
+      - key: version
+        path: version/number

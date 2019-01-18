@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -64,6 +65,9 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
     @Autowired
     private DeviceModelService deviceModelService;
+
+    @Autowired
+    private AlertTriggerService alertTriggerService;
     
     @Autowired
     private RabbitTemplate rabbitTemplate;
@@ -167,6 +171,29 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
         Device saved = deviceRepository.save(device);
 
+        ServiceResponse<AlertTrigger> response = alertTriggerService.findByLocationDeviceModelAndType(
+                device.getTenant(),
+                device.getApplication(),
+                device.getLocation(),
+                device.getDeviceModel(),
+                AlertTrigger.AlertTriggerType.SILENCE);
+
+        if (response.isOk() &&
+                !Optional.ofNullable(response.getResult()).isPresent()) {
+            alertTriggerService.save(
+                    device.getTenant(),
+                    device.getApplication(),
+                    AlertTrigger.builder()
+                            .tenant(device.getTenant())
+                            .application(device.getApplication())
+                            .name("defaultTrigger")
+                            .location(device.getLocation())
+                            .deviceModel(device.getDeviceModel())
+                            .type(AlertTrigger.AlertTriggerType.SILENCE)
+                            .minutes(10)
+                            .build());
+        }
+
         return ServiceResponseBuilder.<Device>ok().withResult(saved).build();
     }
 
@@ -210,16 +237,46 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
     }
 
     @Override
-    public ServiceResponse<List<Device>> search(Tenant tenant, Application application, String tag) {
+    public ServiceResponse<Page<Device>> search(Tenant tenant, Application application, User user, String tag, int page, int size) {
 
-        ServiceResponse<List<Device>> validationResponse = validate(tenant, application);
+        ServiceResponse<Page<Device>> validationResponse = validate(tenant, application);
         if (!validationResponse.isOk()) {
             return validationResponse;
         }
 
-        List<Device> all = deviceSearchRepository.search(tenant.getId(), application.getName(), tag);
+        if (Optional.ofNullable(user.getApplication()).isPresent()
+            && !application.equals(user.getApplication())) {
+            Device noDevice = Device.builder()
+                    .guid("NULL")
+                    .tenant(tenant)
+                    .application(user.getApplication())
+                    .build();
+            LOGGER.debug(ApplicationService.Validations.APPLICATION_HAS_NO_PERMISSION.getCode(),
+                    noDevice.toURI(),
+                    noDevice.getTenant().getLogLevel());
+            return ServiceResponseBuilder.<Page<Device>>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_HAS_NO_PERMISSION.getCode())
+                    .build();
+        }
 
-        return ServiceResponseBuilder.<List<Device>>ok().withResult(all).build();
+        if (size <= 0) {
+            return ServiceResponseBuilder.<Page<Device>>error()
+                    .withMessage(CommonValidations.SIZE_ELEMENT_PAGE_INVALID.getCode())
+                    .build();
+        }
+
+        page = page > 0 ? page - 1 : 0;
+        Page<Device> all = deviceSearchRepository.search(
+                tenant.getId(),
+                application.getName(),
+                Optional.ofNullable(user.getLocation())
+                        .orElse(Location.builder().build())
+                        .getId(),
+                tag,
+                page,
+                size);
+
+        return ServiceResponseBuilder.<Page<Device>>ok().withResult(all).build();
 
     }
 

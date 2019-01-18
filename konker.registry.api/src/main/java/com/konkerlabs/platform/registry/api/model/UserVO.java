@@ -1,6 +1,8 @@
 package com.konkerlabs.platform.registry.api.model;
 
 import com.konkerlabs.platform.registry.api.model.core.SerializableVO;
+import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.Location;
 import com.konkerlabs.platform.registry.business.model.User;
 
 import io.swagger.annotations.ApiModel;
@@ -8,6 +10,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+
+import java.util.Optional;
 
 
 @Data
@@ -28,6 +32,8 @@ public class UserVO extends UserInputVO implements SerializableVO<User, UserVO> 
 		vo.setPhone(t.getPhone());
 		vo.setName(t.getName());
 		vo.setNotificationViaEmail(t.isNotificationViaEmail());
+		vo.setApplication(Optional.ofNullable(t.getApplication()).orElse(Application.builder().build()).getName());
+		vo.setLocation(Optional.ofNullable(t.getLocation()).orElse(Location.builder().build()).getName());
 		return vo;
 	}
 

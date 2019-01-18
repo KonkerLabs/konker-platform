@@ -147,6 +147,11 @@ public class WebTestConfiguration {
     }
 
     @Bean
+    public DeviceFirmwareUpdateService deviceFirmwareUpdateService() {
+        return Mockito.mock(DeviceFirmwareUpdateService.class);
+    }
+
+    @Bean
     public Gateway gateway() {
         return Gateway.builder().location(
                 Location.builder()
@@ -157,6 +162,11 @@ public class WebTestConfiguration {
                         .description("br")
                         .build()
         ).name("konker").build();
+    }
+
+    @Bean
+    public PrivateStorageService privateStorageService() {
+        return Mockito.mock(PrivateStorageService.class);
     }
 
 }

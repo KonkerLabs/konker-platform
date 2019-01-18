@@ -3,6 +3,7 @@ package com.konkerlabs.platform.registry.business.services.api;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
 
 import lombok.*;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
+import org.springframework.data.domain.Page;
 import org.springframework.util.StringUtils;
 
 public interface DeviceRegisterService {
@@ -184,7 +186,7 @@ public interface DeviceRegisterService {
 	 */
 	ServiceResponse<List<Device>> findAll(Tenant tenant, Application application);
 
-	ServiceResponse<List<Device>> search(Tenant tenant, Application application, String tag);
+	ServiceResponse<Page<Device>> search(Tenant tenant, Application application, User user, String tag, int page, int size);
 
 	ServiceResponse<Long> countAll(Tenant tenant, Application application);
 

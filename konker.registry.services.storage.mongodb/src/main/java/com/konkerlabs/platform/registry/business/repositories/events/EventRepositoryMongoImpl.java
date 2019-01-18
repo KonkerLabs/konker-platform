@@ -140,9 +140,10 @@ public class EventRepositoryMongoImpl extends BaseEventRepositoryImpl {
                 });
 
         Query query = Query.query(
-                Criteria.where(
-                        MessageFormat.format("{0}.{1}", type.getActorFieldName(),"tenantDomain")
-                        ).is(tenant.getDomainName())
+                Criteria.where(MessageFormat.format("{0}.{1}", type.getActorFieldName(),"tenantDomain"))
+                        .is(tenant.getDomainName())
+                        .where(MessageFormat.format("{0}.{1}", type.getActorFieldName(),"applicationName"))
+                        .is(application.getName())
                         .andOperator(criterias.toArray(new Criteria[criterias.size()])));
 
         Optional.ofNullable(limit).filter(integer -> integer > 0).ifPresent(integer -> query.limit(integer));

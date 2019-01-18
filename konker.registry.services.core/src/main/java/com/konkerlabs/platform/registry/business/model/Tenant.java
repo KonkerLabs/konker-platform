@@ -19,6 +19,7 @@ public class Tenant implements URIDealer {
     private String domainName;
     private LogLevel logLevel = LogLevel.WARNING;
     private Long devicesLimit;
+    private Long privateStorageSize;
 
     public static final String URI_SCHEME = "tenant";
 

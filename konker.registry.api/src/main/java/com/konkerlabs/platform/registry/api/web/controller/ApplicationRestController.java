@@ -5,18 +5,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
 import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
@@ -56,11 +51,15 @@ public class ApplicationRestController extends AbstractRestController implements
     @ApiOperation(
             value = "List all applications by organization",
             response = ApplicationVO.class)
-    public List<ApplicationVO> list() throws BadServiceResponseException {
+    public List<ApplicationVO> list(
+            @ApiParam(value = "Page number")
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @ApiParam(value = "Number of elements per page")
+            @RequestParam(required = false, defaultValue = "500") int size) throws BadServiceResponseException {
 
         Tenant tenant = user.getTenant();
 
-        ServiceResponse<List<Application>> applicationResponse = applicationService.findAll(tenant);
+        ServiceResponse<Page<Application>> applicationResponse = applicationService.findAll(tenant, page, size);
 
         if (!applicationResponse.isOk()) {
             throw new BadServiceResponseException( applicationResponse, validationsCode);
@@ -72,7 +71,7 @@ public class ApplicationRestController extends AbstractRestController implements
     			}
     		}
         	
-            return new ApplicationVO().apply(applicationResponse.getResult());
+            return new ApplicationVO().apply(applicationResponse.getResult().getContent());
         }
 
     }
@@ -240,6 +239,10 @@ public class ApplicationRestController extends AbstractRestController implements
         }
 
         for (ApplicationService.Validations value : ApplicationService.Validations.values()) {
+            validationsCode.add(value.getCode());
+        }
+
+        for (CommonValidations value : CommonValidations.values()) {
             validationsCode.add(value.getCode());
         }
 

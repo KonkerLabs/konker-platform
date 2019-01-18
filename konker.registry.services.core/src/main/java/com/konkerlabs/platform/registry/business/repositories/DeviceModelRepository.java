@@ -2,6 +2,8 @@ package com.konkerlabs.platform.registry.business.repositories;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
@@ -11,6 +13,9 @@ public interface DeviceModelRepository extends MongoRepository<DeviceModel, Stri
 
 	@Query("{ 'tenant.id' : ?0, 'application.name' : ?1 }")
 	List<DeviceModel> findAllByTenantIdAndApplicationName(String tenantId, String applicationName);
+
+    @Query("{ 'tenant.id' : ?0, 'application.name' : ?1 }")
+    Page<DeviceModel> findAllByTenantIdAndApplicationName(String tenantId, String applicationName, Pageable pageRequest);
 
     @Query("{ 'tenant.id' : ?0, 'application.name' : ?1, 'name' : ?2 }")
     DeviceModel findByTenantIdApplicationNameAndName(String tenantId, String applicationName, String name);

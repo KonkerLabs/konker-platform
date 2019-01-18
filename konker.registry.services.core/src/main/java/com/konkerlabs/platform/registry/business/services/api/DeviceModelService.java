@@ -6,6 +6,7 @@ import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.DeviceModel;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import org.springframework.data.domain.Page;
 
 public interface DeviceModelService {
 
@@ -91,6 +92,18 @@ public interface DeviceModelService {
 	 * @return
 	 */
 	ServiceResponse<List<DeviceModel>> findAll(Tenant tenant, Application application);
+
+	/**
+	 * Returns all deviceModel owned by the provided tenant and application paginated.
+	 *
+	 *
+	 * @param tenant
+	 * @param application
+     * @param page atual page
+     * @param size elements per page
+	 * @return
+	 */
+	ServiceResponse<Page<DeviceModel>> findAll(Tenant tenant, Application application, int page, int size);
 
 
 	/**

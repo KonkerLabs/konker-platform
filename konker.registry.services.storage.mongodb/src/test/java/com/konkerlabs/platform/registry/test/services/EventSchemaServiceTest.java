@@ -209,6 +209,7 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
                                 .deviceGuid(deviceGuid)
                                 .channel(channel)
                                 .tenantDomain(tenant.getDomainName())
+                                .applicationName(application.getName())
                                 .build()).build();
 
         eventSchemaService.appendIncomingSchema(incomingEvent);
@@ -223,6 +224,7 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
                                 .deviceGuid(deviceGuid)
                                 .channel(channel)
                                 .tenantDomain(tenant.getDomainName())
+                                .applicationName(application.getName())
                                 .build()).build();
 
         eventSchemaService.appendIncomingSchema(incomingEventSnd);

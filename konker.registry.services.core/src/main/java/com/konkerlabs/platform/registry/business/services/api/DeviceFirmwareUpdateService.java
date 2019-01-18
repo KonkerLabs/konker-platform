@@ -9,7 +9,8 @@ public interface DeviceFirmwareUpdateService {
 
     enum Validations {
         FIRMWARE_UPDATE_PENDING_STATUS_DOES_NOT_EXIST("service.device.firmware_update.pending_does_not_exist"),
-        FIRMWARE_UPDATE_ALREADY_EXISTS("service.device.firmware_update.already_exists");
+        FIRMWARE_UPDATE_ALREADY_EXISTS("service.device.firmware_update.already_exists"),
+        FIRMWARE_UPDATE_NOT_FOUND("service.device.firmware_update.not_found");
 
         public String getCode() {
             return code;
@@ -38,6 +39,7 @@ public interface DeviceFirmwareUpdateService {
 
     ServiceResponse<DeviceFwUpdate> save(Tenant tenant, Application application, Device device, DeviceFirmware deviceFirmware);
     ServiceResponse<DeviceFwUpdate> setDeviceAsUpdated(Tenant tenant, Application application, Device device);
+    ServiceResponse<DeviceFwUpdate> setDeviceAsSuspended(Tenant tenant, Application application, Device device);
     ServiceResponse<List<DeviceFwUpdate>> findByDeviceFirmware(Tenant tenant, Application application, DeviceFirmware deviceFirmware);
     ServiceResponse<DeviceFwUpdate> findPendingFwUpdateByDevice(Tenant tenant, Application application, Device device);
     ServiceResponse<DeviceFwUpdate> updateStatus(Tenant tenant, Application application, Device device, String version, FirmwareUpdateStatus status);

@@ -31,6 +31,8 @@ import java.util.List;
 import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
+
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
@@ -234,6 +236,109 @@ public class AlertTriggerServiceTest extends BusinessLayerTestSupport {
         assertThat(serviceResponse, hasErrorMessage(Validations.ALERT_TRIGGER_NOT_FOUND.getCode()));
 
     }
+
+    /***************************** findByLocationDeviceModelAndType *****************************/
+
+    @Test
+    public void shouldTryFindByLocationDeviceModelAndTypeNullTenant() {
+
+        ServiceResponse<AlertTrigger> serviceResponse = alertTriggerService.findByLocationDeviceModelAndType(
+                null,
+                application,
+                locationA,
+                deviceModel,
+                AlertTrigger.AlertTriggerType.SILENCE);
+
+        assertThat(serviceResponse, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
+
+    }
+
+    @Test
+    public void shouldTryFindByLocationDeviceModelAndTypeNullApplication() {
+
+        ServiceResponse<AlertTrigger> serviceResponse = alertTriggerService.findByLocationDeviceModelAndType(
+                currentTenant,
+                null,
+                locationA,
+                deviceModel,
+                AlertTrigger.AlertTriggerType.SILENCE);
+
+        assertThat(serviceResponse, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
+
+    }
+
+    @Test
+    public void shouldTryFindByLocationDeviceModelAndTypeNullLocation() {
+
+        ServiceResponse<AlertTrigger> serviceResponse = alertTriggerService.findByLocationDeviceModelAndType(
+                currentTenant,
+                application,
+                null,
+                deviceModel,
+                AlertTrigger.AlertTriggerType.SILENCE);
+
+        assertThat(serviceResponse, hasErrorMessage(Validations.ALERT_TRIGGER_INVALID_LOCATION.getCode()));
+
+    }
+
+    @Test
+    public void shouldTryFindByLocationDeviceModelAndTypeNullDeviceModel() {
+
+        ServiceResponse<AlertTrigger> serviceResponse = alertTriggerService.findByLocationDeviceModelAndType(
+                currentTenant,
+                application,
+                locationA,
+                null,
+                AlertTrigger.AlertTriggerType.SILENCE);
+
+        assertThat(serviceResponse, hasErrorMessage(Validations.ALERT_TRIGGER_INVALID_DEVICE_MODEL.getCode()));
+
+    }
+
+    @Test
+    public void shouldTryFindByLocationDeviceModelAndTypeNullAlertTriggerType() {
+
+        ServiceResponse<AlertTrigger> serviceResponse = alertTriggerService.findByLocationDeviceModelAndType(
+                currentTenant,
+                application,
+                locationA,
+                deviceModel,
+                null);
+
+        assertThat(serviceResponse, hasErrorMessage(Validations.ALERT_TRIGGER_INVALID_TYPE.getCode()));
+
+    }
+
+    @Test
+    public void shouldFindByLocationDeviceModelAndType() {
+
+        ServiceResponse<AlertTrigger> serviceResponse = alertTriggerService.findByLocationDeviceModelAndType(
+                currentTenant,
+                application,
+                locationA,
+                deviceModel,
+                AlertTrigger.AlertTriggerType.SILENCE);
+
+        assertThat(serviceResponse.isOk(), is(true));
+        assertThat(serviceResponse.getResult().getGuid(), is(triggerA.getGuid()));
+
+    }
+
+    @Test
+    public void shouldFindByLocationDeviceModelAndTypeReturningNullResult() {
+
+        ServiceResponse<AlertTrigger> serviceResponse = alertTriggerService.findByLocationDeviceModelAndType(
+                currentTenant,
+                application,
+                Location.builder().id("nullResult").build(),
+                deviceModel,
+                AlertTrigger.AlertTriggerType.SILENCE);
+
+        assertThat(serviceResponse.isOk(), is(true));
+        assertThat(serviceResponse.getResult(), nullValue());
+
+    }
+
 
     /***************************** remove *****************************/
 

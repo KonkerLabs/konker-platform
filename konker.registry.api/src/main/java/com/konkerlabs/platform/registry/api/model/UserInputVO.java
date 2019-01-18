@@ -24,4 +24,9 @@ public class UserInputVO {
     @ApiModelProperty(value = "allow the user to receive notification by email", example = "true", position = 5)
     protected boolean notificationViaEmail;
 
+    @ApiModelProperty(value = "application that the user belongs to", example = "konker", position = 6)
+    protected String application;
+
+    @ApiModelProperty(value = "location that the user belongs to", example = "br_sp", position = 7)
+    protected String location;
 }

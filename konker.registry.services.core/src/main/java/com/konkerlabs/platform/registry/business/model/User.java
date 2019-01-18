@@ -30,6 +30,10 @@ public class User implements URIDealer, UserDetails {
     private String email;
     @DBRef
     private Tenant tenant;
+    @DBRef
+    private Application application;
+    @DBRef
+    private Location location;
     private String password;
 
     private String phone;

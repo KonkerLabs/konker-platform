@@ -72,6 +72,36 @@ public class AlertTriggerServiceImpl implements AlertTriggerService {
     }
 
     @Override
+    public ServiceResponse<AlertTrigger> findByLocationDeviceModelAndType(Tenant tenant, Application application, Location location,
+                                                                          DeviceModel deviceModel, AlertTrigger.AlertTriggerType alertTriggerType) {
+        ServiceResponse<AlertTrigger> validationsResponse = validate(tenant, application);
+        if (validationsResponse != null && !validationsResponse.isOk()) {
+            return validationsResponse;
+        }
+
+        if (!Optional.ofNullable(location).isPresent()) {
+            return ServiceResponseBuilder.<AlertTrigger>error().withMessage(Validations.ALERT_TRIGGER_INVALID_LOCATION.getCode()).build();
+        }
+
+        if (!Optional.ofNullable(deviceModel).isPresent()) {
+            return ServiceResponseBuilder.<AlertTrigger>error().withMessage(Validations.ALERT_TRIGGER_INVALID_DEVICE_MODEL.getCode()).build();
+        }
+
+        if (!Optional.ofNullable(alertTriggerType).isPresent()) {
+            return ServiceResponseBuilder.<AlertTrigger>error().withMessage(Validations.ALERT_TRIGGER_INVALID_TYPE.getCode()).build();
+        }
+
+        return ServiceResponseBuilder.<AlertTrigger>ok()
+                .withResult(alertTriggerRepository.findByLocationDeviceModelAndType(
+                        tenant.getId(),
+                        application.getName(),
+                        location.getId(),
+                        deviceModel.getId(),
+                        alertTriggerType))
+                .build();
+    }
+
+    @Override
     public ServiceResponse<AlertTrigger> save(Tenant tenant, Application application, AlertTrigger trigger) {
 
         ServiceResponse<AlertTrigger> validationsResponse = validate(tenant, application);

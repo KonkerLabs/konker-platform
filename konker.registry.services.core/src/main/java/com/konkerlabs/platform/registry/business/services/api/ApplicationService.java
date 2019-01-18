@@ -2,6 +2,7 @@ package com.konkerlabs.platform.registry.business.services.api;
 
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -20,6 +21,7 @@ public interface ApplicationService {
 		APPLICATION_HAS_ROUTE("service.application.has.route"),
 		APPLICATION_HAS_TRANSFORMATION("service.application.has.transformation"),
 		APPLICATION_HAS_REST_DESTINATION("service.application.has.rest.destination"),
+		APPLICATION_HAS_NO_PERMISSION("service.application.has.no.permission"),
 		GATEWAY_NULL("service.gateway.null");
 
 		public String getCode() {
@@ -89,6 +91,17 @@ public interface ApplicationService {
 	 * @return
 	 */
 	ServiceResponse<List<Application>> findAll(Tenant tenant);
+
+	/**
+	 * Returns all applications owned by the provided tenant paginated.
+	 *
+	 *
+	 * @param tenant
+	 * @param page
+	 * @param size
+	 * @return paginated list of application
+	 */
+	ServiceResponse<Page<Application>> findAll(Tenant tenant, int page, int size);
 
 
 	/**

@@ -4,7 +4,8 @@ public enum FirmwareUpdateStatus {
 
     UNKNOWN("firmware.unknown", "UNKNOWN"),
 	PENDING("firmware.pending", "PENDING"),
-	UPDATED("firmware.updated", "UPDATED");
+	UPDATED("firmware.updated", "UPDATED"),
+    SUSPENDED("firmware.suspended", "SUSPENDED");
 
     private String code;
     private String id;
