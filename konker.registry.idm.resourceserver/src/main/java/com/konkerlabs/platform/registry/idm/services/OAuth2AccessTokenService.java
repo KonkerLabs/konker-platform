@@ -47,7 +47,13 @@ public class OAuth2AccessTokenService {
 
     public ServiceResponse<OAuth2AccessToken> getAccessToken(Tenant tenant, Application application, OauthClientDetails clientDetails) {
 
-        Role gatewayRole = roleRepository.findByName(RoleService.ROLE_IOT_GATEWAY);
+        Role gatewayRole;
+        if (clientDetails.getClientId().contains("gateway")) {
+            gatewayRole = roleRepository.findByName(RoleService.ROLE_IOT_GATEWAY);
+        } else {
+            gatewayRole = roleRepository.findByName(RoleService.ROLE_IOT_USER);
+        }
+
         Set<GrantedAuthority> authorities = new HashSet<>();
         for (Privilege privilege : gatewayRole.getPrivileges()) {
             authorities.add(new SimpleGrantedAuthority(privilege.getName()));
