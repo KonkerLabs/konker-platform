@@ -5,7 +5,6 @@ import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
 import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
 import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
-import com.konkerlabs.platform.registry.business.repositories.LocationRepository;
 import com.konkerlabs.platform.registry.business.repositories.PasswordBlacklistRepository;
 import com.konkerlabs.platform.registry.business.repositories.UserRepository;
 import com.konkerlabs.platform.registry.business.services.api.*;
@@ -50,8 +49,9 @@ public class UserServiceImpl implements UserService {
     private PasswordBlacklistRepository passwordBlacklistRepository;
     @Autowired
     private ApplicationRepository applicationRepository;
+
     @Autowired
-    private LocationRepository locationRepository;
+    private LocationSearchService locationSearchService;
     
     @Autowired
     private TenantService tenantService;
@@ -218,13 +218,22 @@ public class UserServiceImpl implements UserService {
                     .build();
         }
 
-        Location locationFromDB = locationRepository.findByTenantAndApplicationAndName(
-                user.getTenant().getId(),
-                application,
-                location);
+        ServiceResponse<Location> locationServiceResponse;
 
-        if (Optional.ofNullable(location).isPresent()
-                && !Optional.ofNullable(locationFromDB).isPresent()) {
+        if ("default".equals(location)) {
+            locationServiceResponse = this.locationSearchService.findDefault(
+                    user.getTenant(),
+                    appFromDB);
+        } else {
+            locationServiceResponse = this.locationSearchService.findByName(
+                    user.getTenant(),
+                    appFromDB,
+                    location,
+                    false);
+        }
+
+        if (!locationServiceResponse.isOk()
+                && Optional.ofNullable(location).isPresent()) {
             return ServiceResponseBuilder.<User>error()
                     .withMessage(LocationService.Validations.LOCATION_GUID_DOES_NOT_EXIST.getCode())
                     .build();
@@ -239,7 +248,7 @@ public class UserServiceImpl implements UserService {
         }
 
         user.setApplication(appFromDB);
-        user.setLocation(locationFromDB);
+        user.setLocation(locationServiceResponse.getResult());
 
         return save(user, newPassword, newPasswordConfirmation);
     }

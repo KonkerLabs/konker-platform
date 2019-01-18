@@ -98,7 +98,7 @@ echo "starting konker registry router..."
 java -Dconfig.file=/var/lib/jetty/resources/application.conf -jar /var/lib/konker/registry-router.jar --server.port=9091 &
 
 echo "starting konker registry api..."
-java -Dconfig.file=/var/lib/jetty/resources/application.conf -jar /var/lib/konker/registry-api.jar --server.port=8080 &
+java -Dconfig.file=/var/lib/jetty/resources/application.conf -jar /var/lib/konker/registry-api.jar --server.port=8081 &
 
 echo "starting konker mqtt rabbit bridge..."
 java -Dconfig.file=/var/lib/jetty/resources/application.conf -jar /var/lib/konker/mosquitto-rabbitmq-bridge.jar | tee /var/log/konker/mosquitto-rabbitmq-bridge.log &
