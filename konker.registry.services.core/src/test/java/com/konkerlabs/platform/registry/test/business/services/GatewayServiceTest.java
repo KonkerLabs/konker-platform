@@ -1,9 +1,6 @@
 package com.konkerlabs.platform.registry.test.business.services;
 
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Gateway;
-import com.konkerlabs.platform.registry.business.model.Location;
-import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
 import com.konkerlabs.platform.registry.business.repositories.GatewayRepository;
@@ -12,9 +9,9 @@ import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.GatewayService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
-import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
+import com.konkerlabs.platform.registry.business.services.api.UserService;
+import com.konkerlabs.platform.registry.config.EmailConfig;
+import com.konkerlabs.platform.registry.test.base.*;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import org.junit.Before;
 import org.junit.Rule;
@@ -36,8 +33,12 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.rules.ExpectedException.none;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {MongoTestConfiguration.class, BusinessTestConfiguration.class})
-@UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
+@ContextConfiguration(classes = {
+        MongoTestConfiguration.class,
+        MongoBillingTestConfiguration.class,
+        BusinessTestConfiguration.class,
+        EmailTestConfig.class})
+@UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/users.json", "/fixtures/locations.json"})
 public class GatewayServiceTest extends BusinessLayerTestSupport {
 
     @Rule
@@ -58,6 +59,9 @@ public class GatewayServiceTest extends BusinessLayerTestSupport {
     @Autowired
     private ApplicationRepository applicationRepository;
 
+    @Autowired
+    private UserService userService;
+
     private Tenant tenant;
 
     private Application application;
@@ -65,6 +69,9 @@ public class GatewayServiceTest extends BusinessLayerTestSupport {
 
     private Location location;
     private Gateway gateway;
+    private User userAdmin;
+    private User userApplication;
+    private User userLocation;
 
     private String guid;
 
@@ -77,15 +84,7 @@ public class GatewayServiceTest extends BusinessLayerTestSupport {
         application = applicationRepository.findByTenantAndName(tenant.getId(), "konker");
         otherApplication = applicationRepository.findByTenantAndName(tenant.getId(), "smartffkonker");
 
-        location = Location.builder()
-                .guid("3bc07c9e-eb48-4c92-97a8-d9c662d1bfcd")
-                .name("BR")
-                .description("Brazil")
-                .application(application)
-                .defaultLocation(true)
-                .tenant(tenant)
-                .build();
-        location = locationRepository.save(location);
+        location = locationRepository.findByTenantAndApplicationAndName(tenant.getId(), application.getName(), "br");
 
         gateway = Gateway.builder()
                 .tenant(tenant)
@@ -96,12 +95,17 @@ public class GatewayServiceTest extends BusinessLayerTestSupport {
                 .build();
         gatewayRepository.save(gateway);
 
+        location = locationRepository.findByTenantAndApplicationAndName(tenant.getId(), application.getName(), "sp");
         Gateway deviceFirmware = Gateway.builder()
                 .tenant(tenant)
                 .application(application)
                 .location(location)
                 .build();
         gatewayRepository.save(deviceFirmware);
+
+        userAdmin = userService.findByEmail("admin@konkerlabs.com").getResult();
+        userApplication = userService.findByEmail("user.application@konkerlabs.com").getResult();
+        userLocation = userService.findByEmail("user.location@konkerlabs.com").getResult();
 
     }
 
@@ -228,7 +232,7 @@ public class GatewayServiceTest extends BusinessLayerTestSupport {
     @Test
     public void shouldGetAll() {
 
-        ServiceResponse<List<Gateway>> response = subject.getAll(tenant, application);
+        ServiceResponse<List<Gateway>> response = subject.getAll(tenant, application, userAdmin);
         assertThat(response, isResponseOk());
         assertThat(response.getResult(), notNullValue());
         assertThat(response.getResult().isEmpty(), is(false));
@@ -236,9 +240,25 @@ public class GatewayServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
+    public void shouldGetAllByApplication() {
+        ServiceResponse<List<Gateway>> response = subject.getAll(tenant, application, userApplication);
+        assertThat(response, isResponseOk());
+        assertThat(response.getResult(), notNullValue());
+        assertThat(response.getResult().isEmpty(), is(false));
+    }
+
+    @Test
+    public void shouldGetAllByLocation() {
+        ServiceResponse<List<Gateway>> response = subject.getAll(tenant, application, userLocation);
+        assertThat(response, isResponseOk());
+        assertThat(response.getResult(), notNullValue());
+        assertThat(response.getResult().isEmpty(), is(false));
+    }
+
+    @Test
     public void shouldTryGetAllWithNullTenant() {
 
-        ServiceResponse<List<Gateway>> response = subject.getAll(null, application);
+        ServiceResponse<List<Gateway>> response = subject.getAll(null, application, null);
         assertThat(response, hasErrorMessage(TENANT_NULL.getCode()));
 
     }
