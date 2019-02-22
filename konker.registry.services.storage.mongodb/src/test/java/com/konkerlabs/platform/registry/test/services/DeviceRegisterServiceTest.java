@@ -1,31 +1,21 @@
 package com.konkerlabs.platform.registry.test.services;
 
-import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasAllErrors;
-import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
-import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.isResponseOk;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.contains;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
-
-import java.time.Duration;
-import java.time.Instant;
-import java.util.*;
-
+import com.konkerlabs.platform.registry.billing.repositories.TenantDailyUsageRepository;
 import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.model.enumerations.Language;
+import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
+import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
+import com.konkerlabs.platform.registry.business.repositories.*;
 import com.konkerlabs.platform.registry.business.services.api.*;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.DeviceSecurityCredentials;
+import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.Messages;
+import com.konkerlabs.platform.registry.config.EmailConfig;
+import com.konkerlabs.platform.registry.config.EventStorageConfig;
+import com.konkerlabs.platform.registry.config.PubServerConfig;
+import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
+import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
+import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
+import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -46,24 +36,16 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.thymeleaf.spring4.SpringTemplateEngine;
 
-import com.konkerlabs.platform.registry.billing.repositories.TenantDailyUsageRepository;
-import com.konkerlabs.platform.registry.business.model.enumerations.Language;
-import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
-import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
-import com.konkerlabs.platform.registry.business.repositories.DeviceModelRepository;
-import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
-import com.konkerlabs.platform.registry.business.repositories.LocationRepository;
-import com.konkerlabs.platform.registry.business.repositories.TenantRepository;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.DeviceSecurityCredentials;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.Messages;
-import com.konkerlabs.platform.registry.config.EmailConfig;
-import com.konkerlabs.platform.registry.config.EventStorageConfig;
-import com.konkerlabs.platform.registry.config.PubServerConfig;
-import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
-import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
-import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
-import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.*;
+
+import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
@@ -985,7 +967,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json",
             "/fixtures/location.json", "/fixtures/users.json"})
     public void shouldSearchWithoutFilter() {
-        ServiceResponse<Page<Device>> response = deviceRegisterService.search(currentTenant, currentApplication, userAdmin, null, 1, 10);
+        ServiceResponse<Page<Device>> response = deviceRegisterService.search(currentTenant, currentApplication, userAdmin, null, null, 1, 10);
         assertThat(response, isResponseOk());
         List<Device> all = response.getResult().getContent();
 
@@ -998,7 +980,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json",
             "/fixtures/location.json", "/fixtures/users.json"})
     public void shouldSearchFilterByTag() {
-        ServiceResponse<Page<Device>> response = deviceRegisterService.search(currentTenant, currentApplication, userAdmin, "anotherTag1", 1, 10);
+        ServiceResponse<Page<Device>> response = deviceRegisterService.search(currentTenant, currentApplication, userAdmin, null, "anotherTag1", 1, 10);
         assertThat(response, isResponseOk());
         List<Device> all = response.getResult().getContent();
 
@@ -1013,12 +995,12 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
             "/fixtures/locations.json", "/fixtures/users.json"})
     public void shouldSearchFilterByUserAdmin() {
         List<Device> all = new ArrayList<>();
-        ServiceResponse<Page<Device>> response = deviceRegisterService.search(currentTenant, currentApplication, userAdmin, null, 1, 10);
+        ServiceResponse<Page<Device>> response = deviceRegisterService.search(currentTenant, currentApplication, userAdmin, null, null, 1, 10);
         assertThat(response, isResponseOk());
         all.addAll(response.getResult().getContent());
 
         currentApplication.setName("konker");
-        response = deviceRegisterService.search(currentTenant, currentApplication, userAdmin, null, 1, 10);
+        response = deviceRegisterService.search(currentTenant, currentApplication, userAdmin, null, null, 1, 10);
         assertThat(response, isResponseOk());
         all.addAll(response.getResult().getContent());
 
@@ -1031,7 +1013,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
             "/fixtures/locations.json", "/fixtures/users.json"})
     public void shouldSearchFilterByUserApplication() {
         List<Device> all = new ArrayList<>();
-        ServiceResponse<Page<Device>> response = deviceRegisterService.search(currentTenant, currentApplication, userApplication, null, 1, 10);
+        ServiceResponse<Page<Device>> response = deviceRegisterService.search(currentTenant, currentApplication, userApplication, null, null, 1, 10);
         assertThat(response, isResponseOk());
         all.addAll(response.getResult().getContent());
 
@@ -1043,7 +1025,19 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json",
             "/fixtures/locations.json", "/fixtures/users.json"})
     public void shouldSearchFilterByUserLocation() {
-        ServiceResponse<Page<Device>> response = deviceRegisterService.search(currentTenant, currentApplication, userLocation, null, 1, 10);
+        ServiceResponse<Page<Device>> response = deviceRegisterService.search(currentTenant, currentApplication, userLocation, null, null, 1, 10);
+        assertThat(response, isResponseOk());
+        List<Device> all = response.getResult().getContent();
+
+        assertThat(all, notNullValue());
+        assertThat(all, hasSize(1));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json",
+            "/fixtures/locations.json", "/fixtures/users.json"})
+    public void shouldSearchFilterByLocation() {
+        ServiceResponse<Page<Device>> response = deviceRegisterService.search(currentTenant, currentApplication, userApplication, "br", null, 1, 10);
         assertThat(response, isResponseOk());
         List<Device> all = response.getResult().getContent();
 
@@ -1055,10 +1049,32 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json",
             "/fixtures/locations.json", "/fixtures/users.json"})
     public void shouldSearchFilterByUserNoPermission() {
-        ServiceResponse<Page<Device>> serviceResponse = deviceRegisterService.search(currentTenant, otherApplication, userLocation, null, 1, 10);
+        ServiceResponse<Page<Device>> serviceResponse = deviceRegisterService.search(currentTenant, otherApplication, userLocation, "sp", null, 1, 10);
 
         assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.ERROR));
         assertThat(serviceResponse.getResponseMessages(), hasEntry(ApplicationService.Validations.APPLICATION_HAS_NO_PERMISSION.getCode(), null));
+        assertThat(serviceResponse.getResult(), nullValue());
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json",
+            "/fixtures/locations.json", "/fixtures/users.json"})
+    public void shouldSearchFilterByInexistLocation() {
+        ServiceResponse<Page<Device>> serviceResponse = deviceRegisterService.search(currentTenant, currentApplication, userLocation, "noLoc", null, 1, 10);
+
+        assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+        assertThat(serviceResponse.getResponseMessages(), hasEntry(LocationService.Validations.LOCATION_GUID_DOES_NOT_EXIST.getCode(), null));
+        assertThat(serviceResponse.getResult(), nullValue());
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json",
+            "/fixtures/locations.json", "/fixtures/users.json"})
+    public void shouldSearchFilterByNoPermissionLocation() {
+        ServiceResponse<Page<Device>> serviceResponse = deviceRegisterService.search(currentTenant, currentApplication, userLocation, "rj", null, 1, 10);
+
+        assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+        assertThat(serviceResponse.getResponseMessages(), hasEntry(DeviceRegisterService.Validations.DEVICE_LOCATION_IS_NOT_CHILD.getCode(), null));
         assertThat(serviceResponse.getResult(), nullValue());
     }
 

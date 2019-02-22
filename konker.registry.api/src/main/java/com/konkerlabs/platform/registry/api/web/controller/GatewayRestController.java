@@ -5,11 +5,8 @@ import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseExcepti
 import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
 import com.konkerlabs.platform.registry.api.model.*;
 import com.konkerlabs.platform.registry.business.model.*;
-import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
-import com.konkerlabs.platform.registry.business.services.api.GatewayService;
+import com.konkerlabs.platform.registry.business.services.api.*;
 import com.konkerlabs.platform.registry.business.services.api.GatewayService.Validations;
-import com.konkerlabs.platform.registry.business.services.api.LocationService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.idm.services.OAuth2AccessTokenService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -53,7 +50,7 @@ public class GatewayRestController extends AbstractRestController implements Ini
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
 
-        ServiceResponse<List<Gateway>> gatewayResponse = gatewayService.getAll(tenant, application);
+        ServiceResponse<List<Gateway>> gatewayResponse = gatewayService.getAll(tenant, application, user.getParentUser());
 
         if (!gatewayResponse.isOk()) {
             throw new BadServiceResponseException( gatewayResponse, validationsCode);
@@ -268,6 +265,10 @@ public class GatewayRestController extends AbstractRestController implements Ini
         }
 
         for (LocationService.Validations value : LocationService.Validations.values()) {
+            validationsCode.add(value.getCode());
+        }
+
+        for (ApplicationService.Validations value : ApplicationService.Validations.values()) {
             validationsCode.add(value.getCode());
         }
         

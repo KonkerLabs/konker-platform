@@ -8,6 +8,9 @@ import com.konkerlabs.platform.registry.api.test.config.WebTestConfiguration;
 import com.konkerlabs.platform.registry.api.web.controller.GatewayRestController;
 import com.konkerlabs.platform.registry.api.web.wrapper.CrudResponseAdvice;
 import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
+import com.konkerlabs.platform.registry.business.model.enumerations.Language;
+import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
 import com.konkerlabs.platform.registry.business.services.api.*;
 import com.konkerlabs.platform.registry.idm.services.OAuth2AccessTokenService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService.DeviceSecurityCredentials;
@@ -84,6 +87,8 @@ public class GatewayRestControllerTest extends WebLayerTestContext {
 
     private Device device;
 
+    private User user;
+
     private DeviceInputVO deviceHumidity;
 
     private DeviceInputVO deviceTemp;
@@ -137,6 +142,14 @@ public class GatewayRestControllerTest extends WebLayerTestContext {
         deviceTemp.setName("Temperature");
         devices.add(deviceTemp);
 
+        user = User.builder()
+                .email("user@domain.com")
+                .zoneId(TimeZone.AMERICA_SAO_PAULO)
+                .language(Language.EN)
+                .avatar("default.jpg")
+                .dateFormat(DateFormat.YYYYMMDD)
+                .tenant(tenant).build();
+
         when(applicationService.getByApplicationName(tenant, application.getName()))
             .thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
 
@@ -163,7 +176,7 @@ public class GatewayRestControllerTest extends WebLayerTestContext {
         List<Gateway> gateways = new ArrayList<>();
         gateways.add(gateway);
 
-        when(gatewayService.getAll(tenant, application))
+        when(gatewayService.getAll(tenant, application, user))
                 .thenReturn(ServiceResponseBuilder.<List<Gateway>>ok().withResult(gateways).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/", application.getName(), BASEPATH))
