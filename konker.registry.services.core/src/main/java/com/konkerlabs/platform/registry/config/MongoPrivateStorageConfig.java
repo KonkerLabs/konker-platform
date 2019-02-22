@@ -1,8 +1,9 @@
 package com.konkerlabs.platform.registry.config;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
-import com.mongodb.ServerAddress;
+import com.mongodb.*;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -19,9 +20,6 @@ import com.konkerlabs.platform.registry.business.model.converters.InstantReadCon
 import com.konkerlabs.platform.registry.business.model.converters.InstantWriteConverter;
 import com.konkerlabs.platform.registry.business.model.converters.URIReadConverter;
 import com.konkerlabs.platform.registry.business.model.converters.URIWriteConverter;
-import com.mongodb.Mongo;
-import com.mongodb.MongoClient;
-import com.mongodb.MongoCredential;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
@@ -35,6 +33,7 @@ public class MongoPrivateStorageConfig extends AbstractMongoConfiguration {
 	private Integer port;
 	private String username;
 	private String password;
+	private String dbName = "private-storage";
 	private static Logger LOG = LoggerFactory.getLogger(MongoPrivateStorageConfig.class);
 
     public MongoPrivateStorageConfig() {
@@ -79,18 +78,19 @@ public class MongoPrivateStorageConfig extends AbstractMongoConfiguration {
 
     @Override
     protected String getDatabaseName() {
-		return "private-storage";
+		return dbName;
     }
 
 
-    @Override
     @Bean(name = "mongoPrivateStorageTemplate")
-	public MongoTemplate mongoTemplate() throws Exception {
-        MongoTemplate mongoTemplate = new MongoTemplate(this.mongo(), this.getDatabaseName());
-        return mongoTemplate;
+	public MongoTemplate mongoTemplate(Mongo mongo) throws Exception {
+		MongoTemplate mongoTemplate = new MongoTemplate(mongo, this.getDatabaseName());
+		//createUserIfNotExists();
+		return mongoTemplate;
 	}
 
 	@Override
+	@Bean(name = "mongoPrivateStorage")
 	public Mongo mongo() throws Exception {
 		if (!StringUtils.isEmpty(getUsername()) && !StringUtils.isEmpty(getPassword())) {
 			try {
@@ -103,6 +103,33 @@ public class MongoPrivateStorageConfig extends AbstractMongoConfiguration {
 		} else {
 			LOG.info("Connecting to MongoDB locally");
 			return new MongoClient(hostname);
+		}
+	}
+
+	private void createUserIfNotExists() throws Exception {
+		if (!username.isEmpty()
+				&& !password.isEmpty()) {
+			LOG.info("Caling the method createUserIfNoExists");
+
+			Mongo mongo = mongo();
+			DB db = mongo.getDB(getDatabaseName());
+
+			BasicDBObject dbStats = new BasicDBObject("usersInfo", 1);
+			CommandResult statComand = db.command(dbStats);
+			BasicDBList users = (BasicDBList) statComand.get("users");
+			List<String> allUsers = users.stream()
+					.map(u -> (String) ((BasicDBObject) u).get("user"))
+					.collect(Collectors.toList());
+			LOG.info("List all users: " + allUsers);
+			if (!allUsers.contains(username)) {
+				LOG.info("Creating user: " + username);
+				Map<String, Object> commandArguments = new HashMap<>();
+				commandArguments.put("createUser", username);
+				commandArguments.put("pwd", password);
+				commandArguments.put("roles", new String[]{ "readWrite" });
+				BasicDBObject command = new BasicDBObject(commandArguments);
+				db.command(command);
+			}
 		}
 	}
 

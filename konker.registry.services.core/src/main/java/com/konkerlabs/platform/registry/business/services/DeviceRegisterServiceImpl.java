@@ -244,13 +244,22 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
             return validationResponse;
         }
 
-        if (Optional.ofNullable(user.getApplication()).isPresent()
-            && !application.equals(user.getApplication())) {
+        if ((Optional.ofNullable(user).isPresent()
+                && Optional.ofNullable(user.getApplication()).isPresent()
+                && !application.equals(user.getApplication()))
+                || !Optional.ofNullable(user).isPresent()) {
+
             Device noDevice = Device.builder()
                     .guid("NULL")
                     .tenant(tenant)
-                    .application(user.getApplication())
-                    .build();
+                    .application(
+                            (Optional.ofNullable(user)
+                                    .orElse(User
+                                            .builder()
+                                            .application(Application.builder().name("default").build())
+                                            .build()))
+                                    .getApplication()
+                    ).build();
             LOGGER.debug(ApplicationService.Validations.APPLICATION_HAS_NO_PERMISSION.getCode(),
                     noDevice.toURI(),
                     noDevice.getTenant().getLogLevel());
