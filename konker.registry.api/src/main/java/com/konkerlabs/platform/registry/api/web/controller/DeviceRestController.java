@@ -53,6 +53,8 @@ public class DeviceRestController extends AbstractRestController implements Init
             response = DeviceVO.class)
     public List<DeviceVO> list(
             @PathVariable("application") String applicationId,
+            @ApiParam(value = "Location")
+            @RequestParam(required = false) String locationName,
             @ApiParam(value = "Tag filter")
             @RequestParam(required = false) String tag,
             @ApiParam(value = "Page number")
@@ -63,7 +65,13 @@ public class DeviceRestController extends AbstractRestController implements Init
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
 
-        ServiceResponse<Page<Device>> deviceResponse = deviceRegisterService.search(tenant, application, user.getParentUser(), tag, page, size);
+        ServiceResponse<Page<Device>> deviceResponse = deviceRegisterService.search(tenant,
+                application,
+                user.getParentUser(),
+                locationName,
+                tag,
+                page,
+                size);
 
         if (!deviceResponse.isOk()) {
             throw new BadServiceResponseException( deviceResponse, validationsCode);
