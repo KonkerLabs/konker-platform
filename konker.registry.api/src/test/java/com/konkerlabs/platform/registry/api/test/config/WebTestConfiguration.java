@@ -67,6 +67,11 @@ public class WebTestConfiguration {
     }
 
     @Bean
+    public TenantService tenantService() {
+        return Mockito.mock(TenantService.class);
+    }
+
+    @Bean
     public UserService userService() {
     	return Mockito.mock(UserService.class);
     }

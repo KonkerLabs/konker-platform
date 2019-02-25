@@ -5,16 +5,17 @@ import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
-
-import lombok.*;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
+import org.springframework.data.domain.Page;
+import org.springframework.util.StringUtils;
 
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Locale;
-
-import org.springframework.context.support.ReloadableResourceBundleMessageSource;
-import org.springframework.data.domain.Page;
-import org.springframework.util.StringUtils;
 
 public interface DeviceRegisterService {
 
@@ -26,7 +27,8 @@ public interface DeviceRegisterService {
 		DEVICE_GUID_DOES_NOT_EXIST("service.device.guid.does_not_exist"),
 		DEVICE_HAVE_EVENTROUTES("service.device.have_eventroutes"),
 		DEVICE_TENANT_LIMIT("service.device.tenant.limit"),
-		EQUALS_ORIGIN_DESTINATION_APPLICATIONS("service.device.equals_origin_destination_applications");
+		EQUALS_ORIGIN_DESTINATION_APPLICATIONS("service.device.equals_origin_destination_applications"),
+		DEVICE_LOCATION_IS_NOT_CHILD("service.device.location_is_not_child");
 
 		public String getCode() {
 			return code;
@@ -186,7 +188,7 @@ public interface DeviceRegisterService {
 	 */
 	ServiceResponse<List<Device>> findAll(Tenant tenant, Application application);
 
-	ServiceResponse<Page<Device>> search(Tenant tenant, Application application, User user, String tag, int page, int size);
+	ServiceResponse<Page<Device>> search(Tenant tenant, Application application, User user, String locationName, String tag, int page, int size);
 
 	ServiceResponse<Long> countAll(Tenant tenant, Application application);
 

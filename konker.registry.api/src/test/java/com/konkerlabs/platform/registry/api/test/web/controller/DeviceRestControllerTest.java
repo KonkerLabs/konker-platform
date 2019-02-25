@@ -192,7 +192,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 
         Page<Device> devices = new PageImpl(listDevices);
 
-        when(deviceRegisterService.search(tenant, application, user, null, 1, 10))
+        when(deviceRegisterService.search(tenant, application, user, null, null, 1, 10))
                 .thenReturn(ServiceResponseBuilder.<Page<Device>>ok().withResult(devices).build());
 
         when(applicationService.getByApplicationName(tenant, application.getName()))
@@ -230,7 +230,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
 
         Page<Device> devices = new PageImpl(listDevices);
 
-        when(deviceRegisterService.search(tenant, application, user, "red", 1, 10))
+        when(deviceRegisterService.search(tenant, application, user, null, "red", 1, 10))
                 .thenReturn(ServiceResponseBuilder.<Page<Device>>ok().withResult(devices).build());
 
         when(applicationService.getByApplicationName(tenant, application.getName()))
@@ -261,7 +261,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldTryListDevicesWithInternalError() throws Exception {
 
-        when(deviceRegisterService.search(tenant, application, user, null, 1, 10))
+        when(deviceRegisterService.search(tenant, application, user, null, null, 1, 10))
                 .thenReturn(ServiceResponseBuilder.<Page<Device>>error().build());
 
         when(applicationService.getByApplicationName(tenant, application.getName()))

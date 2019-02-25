@@ -147,15 +147,30 @@ public class GatewayServiceImpl implements GatewayService {
     }
 
     @Override
-    public ServiceResponse<List<Gateway>> getAll(Tenant tenant, Application application) {
+    public ServiceResponse<List<Gateway>> getAll(Tenant tenant, Application application, User user) {
 
         ServiceResponse<List<Gateway>> validationResponse = validate(tenant, application);
         if (!validationResponse.isOk()) {
             return validationResponse;
         }
 
+        if (Optional.ofNullable(user.getApplication()).isPresent()
+                && !application.equals(user.getApplication())) {
+            return ServiceResponseBuilder.<List<Gateway>>error()
+                    .withMessage(ApplicationService.Validations.APPLICATION_HAS_NO_PERMISSION.getCode())
+                    .build();
+        }
+
+
+        List<Gateway> gateways = null;
+        if (!Optional.ofNullable(user.getLocation()).isPresent()) {
+            gateways = gatewayRepository.findAll(tenant.getId(), application.getName());
+        } else {
+            gateways = gatewayRepository.findByLocation(tenant.getId(), application.getName(), user.getLocation().getId());
+        }
+
         return ServiceResponseBuilder.<List<Gateway>>ok()
-                .withResult(gatewayRepository.findAll(tenant.getId(), application.getName()))
+                .withResult(gateways)
                 .build();
     }
 
