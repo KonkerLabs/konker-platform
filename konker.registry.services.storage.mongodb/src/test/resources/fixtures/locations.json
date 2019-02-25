@@ -17,6 +17,26 @@
         }
     },
     {
+      "_id" : "591200ea9061e67cb2228888",
+      "_class" : "com.konkerlabs.platform.registry.business.model.Location",
+      "name" : "rj",
+      "description" : "Rio de Janeiro",
+      "guid" : "d75758a6-235b-413b-85b3-d218404f8c24",
+      "defaultLocation" : false,
+      "tenant" : {
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af",
+        "$ref" : "tenants"
+      },
+      "application" : {
+        "$id" : "smartffkonker",
+        "$ref" : "applications"
+      },
+      "parent" : {
+        "$id" : "591200ea9061e67cb2228f85",
+        "$ref" : "locations"
+      }
+    },
+    {
         "_id" : "vmes6ye0k5dqouz0m0fm",
         "_class" : "com.konkerlabs.platform.registry.business.model.Location",
         "name" : "sp",

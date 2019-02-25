@@ -53,6 +53,8 @@ public class DeviceRestController extends AbstractRestController implements Init
             response = DeviceVO.class)
     public List<DeviceVO> list(
             @PathVariable("application") String applicationId,
+            @ApiParam(value = "Location")
+            @RequestParam(required = false) String locationName,
             @ApiParam(value = "Tag filter")
             @RequestParam(required = false) String tag,
             @ApiParam(value = "Page number")

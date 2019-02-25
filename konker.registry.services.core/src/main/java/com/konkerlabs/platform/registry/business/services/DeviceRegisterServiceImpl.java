@@ -237,20 +237,29 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
     }
 
     @Override
-    public ServiceResponse<Page<Device>> search(Tenant tenant, Application application, User user, String tag, int page, int size) {
+    public ServiceResponse<Page<Device>> search(Tenant tenant, Application application, User user, String locationName, String tag, int page, int size) {
 
         ServiceResponse<Page<Device>> validationResponse = validate(tenant, application);
         if (!validationResponse.isOk()) {
             return validationResponse;
         }
 
-        if (Optional.ofNullable(user.getApplication()).isPresent()
-            && !application.equals(user.getApplication())) {
+        if ((Optional.ofNullable(user).isPresent()
+                && Optional.ofNullable(user.getApplication()).isPresent()
+                && !application.equals(user.getApplication()))
+                || !Optional.ofNullable(user).isPresent()) {
+
             Device noDevice = Device.builder()
                     .guid("NULL")
                     .tenant(tenant)
-                    .application(user.getApplication())
-                    .build();
+                    .application(
+                            (Optional.ofNullable(user)
+                                    .orElse(User
+                                            .builder()
+                                            .application(Application.builder().name("default").build())
+                                            .build()))
+                                    .getApplication()
+                    ).build();
             LOGGER.debug(ApplicationService.Validations.APPLICATION_HAS_NO_PERMISSION.getCode(),
                     noDevice.toURI(),
                     noDevice.getTenant().getLogLevel());
@@ -265,13 +274,30 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
                     .build();
         }
 
+        Location location = Optional.ofNullable(user.getLocation()).orElse(Location.builder().build());
+        if (Optional.ofNullable(locationName).isPresent()) {
+            ServiceResponse<Location> response = locationSearchService.findByName(tenant, application, locationName, true);
+
+            if (response.isOk()) {
+                if (Optional.ofNullable(user.getLocation()).isPresent()
+                        && !LocationTreeUtils.isSublocationOf(user.getLocation(), response.getResult())) {
+                    return ServiceResponseBuilder.<Page<Device>>error()
+                            .withMessage(DeviceRegisterService.Validations.DEVICE_LOCATION_IS_NOT_CHILD.getCode())
+                            .build();
+                }
+                location = response.getResult();
+            } else {
+                return ServiceResponseBuilder.<Page<Device>>error()
+                        .withMessage(LocationService.Validations.LOCATION_GUID_DOES_NOT_EXIST.getCode())
+                        .build();
+            }
+        }
+
         page = page > 0 ? page - 1 : 0;
         Page<Device> all = deviceSearchRepository.search(
                 tenant.getId(),
                 application.getName(),
-                Optional.ofNullable(user.getLocation())
-                        .orElse(Location.builder().build())
-                        .getId(),
+                location.getId(),
                 tag,
                 page,
                 size);

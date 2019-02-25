@@ -1,9 +1,6 @@
 package com.konkerlabs.platform.registry.business.services.api;
 
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Gateway;
-import com.konkerlabs.platform.registry.business.model.Location;
-import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.*;
 
 import java.util.List;
 
@@ -28,7 +25,7 @@ public interface GatewayService {
 
     ServiceResponse<Gateway> save(Tenant tenant, Application application, Gateway route);
     ServiceResponse<Gateway> update(Tenant tenant, Application application, String guid, Gateway eventRoute);
-    ServiceResponse<List<Gateway>> getAll(Tenant tenant, Application application);
+    ServiceResponse<List<Gateway>> getAll(Tenant tenant, Application application, User user);
     ServiceResponse<Gateway> getByGUID(Tenant tenant, Application application, String guid);
     ServiceResponse<Gateway> remove(Tenant tenant, Application application, String guid);
     ServiceResponse<Boolean> validateGatewayAuthorization(Gateway source, Location locationToAuthorize);

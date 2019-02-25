@@ -313,13 +313,6 @@ public class DeviceModelServiceImpl implements DeviceModelService {
                 application.getName(),
                 new PageRequest(page, size));
 
-		if (all.getContent().isEmpty()) {
-			ServiceResponse<DeviceModel> defaultResponse = findDefault(tenant, application);
-			if (defaultResponse.isOk()) {
-				all.getContent().add(defaultResponse.getResult());
-			}
-		}
-
 		return ServiceResponseBuilder.<Page<DeviceModel>>ok().withResult(all).build();
 	}
 
