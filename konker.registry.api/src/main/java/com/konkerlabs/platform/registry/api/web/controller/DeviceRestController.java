@@ -62,8 +62,14 @@ public class DeviceRestController extends AbstractRestController implements Init
 
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
+        User userLogged = user.getParentUser() != null ?
+                user.getParentUser() :
+                User.builder()
+                        .application(user.getParentGateway().getApplication())
+                        .location(user.getParentGateway().getLocation())
+                        .build();
 
-        ServiceResponse<Page<Device>> deviceResponse = deviceRegisterService.search(tenant, application, user.getParentUser(), tag, page, size);
+        ServiceResponse<Page<Device>> deviceResponse = deviceRegisterService.search(tenant, application, userLogged, tag, page, size);
 
         if (!deviceResponse.isOk()) {
             throw new BadServiceResponseException( deviceResponse, validationsCode);
