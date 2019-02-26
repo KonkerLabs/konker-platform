@@ -24,9 +24,11 @@ public interface UserService {
         INVALID_PASSWORD_BLACKLISTED("service.user.validation.password.invalid.blacklisted"),
         INVALID_PASSWORD_TYPE("service.user.validation.password.invalid_type"),
         INVALID_AVATAR("service.user.validation.avatar.invalid"),
-        INVALID_USER_LIMIT_CREATION("service.user.validation.limit.creation"), 
-        NO_EXIST_USER("service.user.validation.no.exist"), 
-        USER_EXIST("service.user.validation.exist");
+        INVALID_USER_LIMIT_CREATION("service.user.validation.limit.creation"),
+        NO_EXIST_USER("service.user.validation.no.exist"),
+        USER_EXIST("service.user.validation.exist"),
+        NO_PERMISSION_TO_REMOVE("service.user.validation.no_permission_to_remove_user"),
+        NO_PERMISSION_TO_REMOVE_HIMSELF("service.user.validation.no_permission_to_remove_himself");
 
         private String code;
 
@@ -37,8 +39,8 @@ public interface UserService {
         public String getCode() {
             return code;
         }
-    }
 
+    }
     enum Errors {
         ERROR_SAVE_USER("service.user.error.detail.save");
 
@@ -52,8 +54,8 @@ public interface UserService {
             return code;
         }
 
+
     }
-    
     enum Messages {
     	USER_REGISTERED_SUCCESSFULLY("controller.user.registered.success"),
     	USER_ACTIVATED_SUCCESSFULLY("controller.user.activated.success"),
@@ -70,8 +72,8 @@ public interface UserService {
             return code;
         }
 
-    }
 
+    }
     /**
      * Save user details
      * @param user
@@ -81,11 +83,11 @@ public interface UserService {
                                String password,
                                String newPassword,
                                String newPasswordConfirmation);
-    
+
     ServiceResponse<User> save(User user,
     		String newPassword,
     		String newPasswordConfirmation);
-    
+
     ServiceResponse<User> save(String application,
                                String location,
                                User user,
@@ -101,9 +103,11 @@ public interface UserService {
     		String passwordHash);
 
     ServiceResponse<User> findByEmail(String email);
-    
+
     ServiceResponse<List<User>> findAll(Tenant tenant);
 
 	ServiceResponse<User> findByTenantAndEmail(Tenant tenant, String email);
+
+    ServiceResponse<User> remove(Tenant tenant, User loggedUser, String emailUserToRemove);
 
 }

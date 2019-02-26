@@ -163,23 +163,17 @@ public class UserRestController implements InitializingBean {
     }
 
     @DeleteMapping(path = "/{email:.+}")
-    @PreAuthorize("hasAuthority('DELETE_USER')")
+    @PreAuthorize("hasAuthority('REMOVE_USER')")
     @ApiOperation(value = "Delete a user")
-    public void update(@PathVariable("email") String email) throws BadServiceResponseException {
-
+    public void delete(@PathVariable("email") String email) throws BadServiceResponseException {
         Tenant tenant = user.getTenant();
 
-        ServiceResponse<User> userResponse = userService.findByTenantAndEmail(tenant, email);
-        if (!userResponse.isOk()) {
-            throw new BadServiceResponseException( userResponse, validationsCode);
+        ServiceResponse<User> deleteResponse = userService.remove(tenant, user.getParentUser(), email);
+
+        if (!deleteResponse.isOk()) {
+            throw new BadServiceResponseException(deleteResponse, validationsCode);
+
         }
-
-//        ServiceResponse<User> updateResponse = userService.remove(user.getParentUser(), userResponse.getResult());
-
-//        if (!updateResponse.isOk()) {
-//            throw new BadServiceResponseException( userResponse, validationsCode);
-//
-//        }
 
     }
 
