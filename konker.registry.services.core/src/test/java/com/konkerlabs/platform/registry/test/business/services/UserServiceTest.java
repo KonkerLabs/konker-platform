@@ -71,6 +71,10 @@ public class UserServiceTest extends BusinessLayerTestSupport {
     private UserService userService;
 
     private User user;
+    private User userApplication;
+    private User userApplication2;
+    private User userLocation;
+    private User userLocation2;
     private Tenant tenant;
     private Application application;
     private Location location;
@@ -89,6 +93,10 @@ public class UserServiceTest extends BusinessLayerTestSupport {
     	MockitoAnnotations.initMocks(this);
 
         user = userRepository.findOne("admin@konkerlabs.com");
+        userApplication = userRepository.findOne("user.application@konkerlabs.com");
+        userApplication2 = userRepository.findOne("user.application2@konkerlabs.com");
+        userLocation = userRepository.findOne("user.location@konkerlabs.com");
+        userLocation2 = userRepository.findOne("user.location2@konkerlabs.com");
         users = userRepository.findAll();
 
         tenant = tenantRepository.findByDomainName("konker");
@@ -484,6 +492,92 @@ public class UserServiceTest extends BusinessLayerTestSupport {
         assertThat(
                 serviceResponse,
                 hasErrorMessage(UserService.Validations.INVALID_USER_NAME.getCode()));
+    }
+
+    @Test
+    public void shouldReturnUserNoExistOnRemove() {
+        ServiceResponse<User> serviceResponse = userService.remove(
+                user.getTenant(),
+                user,
+                "user.notexist@domain.com");
+
+        Assert.assertNotNull(serviceResponse);
+        assertThat(
+                serviceResponse,
+                hasErrorMessage(UserService.Validations.NO_EXIST_USER.getCode()));
+    }
+
+    @Test
+    public void shouldReturnNoPermissionDeleteHimselfOnRemove() {
+        ServiceResponse<User> serviceResponse = userService.remove(
+                user.getTenant(),
+                user,
+                user.getEmail());
+
+        Assert.assertNotNull(serviceResponse);
+        assertThat(
+                serviceResponse,
+                hasErrorMessage(UserService.Validations.NO_PERMISSION_TO_REMOVE_HIMSELF.getCode()));
+    }
+
+    @Test
+    public void shouldReturnNoPermissionDiffApplicationOnRemove() {
+        ServiceResponse<User> serviceResponse = userService.remove(
+                userApplication.getTenant(),
+                userApplication,
+                userApplication2.getEmail());
+
+        Assert.assertNotNull(serviceResponse);
+        assertThat(
+                serviceResponse,
+                hasErrorMessage(UserService.Validations.NO_PERMISSION_TO_REMOVE.getCode()));
+    }
+
+    @Test
+    public void shouldReturnNoPermissionDiffLocationOnRemove() {
+        ServiceResponse<User> serviceResponse = userService.remove(
+                userLocation.getTenant(),
+                userLocation,
+                userLocation2.getEmail());
+
+        Assert.assertNotNull(serviceResponse);
+        assertThat(
+                serviceResponse,
+                hasErrorMessage(UserService.Validations.NO_PERMISSION_TO_REMOVE.getCode()));
+
+        serviceResponse = userService.remove(
+                userLocation.getTenant(),
+                userLocation,
+                userApplication.getEmail());
+
+        Assert.assertNotNull(serviceResponse);
+        assertThat(
+                serviceResponse,
+                hasErrorMessage(UserService.Validations.NO_PERMISSION_TO_REMOVE.getCode()));
+
+        serviceResponse = userService.remove(
+                userLocation.getTenant(),
+                userLocation,
+                user.getEmail());
+
+        Assert.assertNotNull(serviceResponse);
+        assertThat(
+                serviceResponse,
+                hasErrorMessage(UserService.Validations.NO_PERMISSION_TO_REMOVE.getCode()));
+    }
+
+    @Test
+    public void shouldRemove() {
+        ServiceResponse<User> serviceResponse = userService.remove(
+                user.getTenant(),
+                user,
+                userApplication2.getEmail());
+
+        Assert.assertNotNull(serviceResponse);
+        assertThat(serviceResponse, isResponseOk());
+
+        User deleted = userRepository.findOne(userApplication2.getEmail());
+        assertThat(deleted, Matchers.nullValue());
     }
 
 }
