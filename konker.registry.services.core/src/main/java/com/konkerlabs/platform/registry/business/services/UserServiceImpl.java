@@ -11,7 +11,6 @@ import com.konkerlabs.platform.registry.business.services.api.*;
 import com.konkerlabs.platform.registry.config.EmailConfig;
 import com.konkerlabs.platform.registry.config.PasswordUserConfig;
 import com.konkerlabs.platform.security.managers.PasswordManager;
-
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -674,5 +673,40 @@ public class UserServiceImpl implements UserService {
 				.withResult(user)
 				.build();
 	}
+
+    @Override
+    public ServiceResponse<User> remove(Tenant tenant, User loggedUser, String emailUserToRemove) {
+        User user = userRepository.findAllByTenantIdAndEmail(tenant.getId(), emailUserToRemove);
+
+        if (!Optional.ofNullable(user).isPresent()) {
+            return ServiceResponseBuilder.<User>error()
+                    .withMessage(Validations.NO_EXIST_USER.getCode())
+                    .build();
+        }
+
+        if (loggedUser.equals(user)) {
+            return ServiceResponseBuilder.<User>error()
+                    .withMessage(Validations.NO_PERMISSION_TO_REMOVE_HIMSELF.getCode())
+                    .build();
+        }
+
+        if (Optional.ofNullable(loggedUser.getApplication()).isPresent()
+                && !loggedUser.getApplication().equals(user.getApplication())) {
+
+            return ServiceResponseBuilder.<User>error()
+                    .withMessage(Validations.NO_PERMISSION_TO_REMOVE.getCode())
+                    .build();
+        }
+
+        if (Optional.ofNullable(loggedUser.getLocation()).isPresent()
+                && !LocationTreeUtils.isSublocationOf(loggedUser.getLocation(), user.getLocation())) {
+            return ServiceResponseBuilder.<User>error()
+                    .withMessage(Validations.NO_PERMISSION_TO_REMOVE.getCode())
+                    .build();
+        }
+
+        userRepository.delete(user);
+        return ServiceResponseBuilder.<User>ok().build();
+    }
 
 }
