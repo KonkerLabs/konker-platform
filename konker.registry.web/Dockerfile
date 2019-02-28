@@ -82,7 +82,7 @@ COPY docker-resources/dist/mail /var/lib/jetty/webapps/resources/mail/
 COPY docker-resources/dist/mail /var/lib/jetty/resources/mail/
 
 #nginx
-ENV NGINX_VERSION nginx-1.10.3
+ENV NGINX_VERSION nginx-1.15.8
 
 RUN apk --update add openssl-dev pcre-dev zlib-dev wget build-base && \
     mkdir -p /tmp/src && \

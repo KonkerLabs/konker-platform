@@ -18,7 +18,7 @@ COPY docker-resources/dist/application.conf /var/lib/konker/
 COPY docker-resources/dist/logback.xml /var/lib/konker/
 
 #nginx - DO NOT REMOVE IT
-ENV NGINX_VERSION nginx-1.10.3
+ENV NGINX_VERSION nginx-1.15.8
 
 RUN apk --update add openssl-dev pcre-dev zlib-dev wget build-base && \
     mkdir -p /tmp/src && \
