@@ -136,7 +136,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 					.build();
 		}
 
-		if (applicationRepository.findOne(application.getName()) != null) {
+		if (getByApplicationName(tenant, application.getName()).getResult() != null) {
 			LOGGER.debug("error saving application",
 					Application.builder().name("NULL").tenant(tenant).build().toURI(),
 					tenant.getLogLevel());
@@ -145,6 +145,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     .build();
 		}
 
+		application.setName(tenant.getDomainName().concat("@").concat(application.getName()));
 		application.setTenant(tenant);
 		application.setRegistrationDate(Instant.now());
 		application.setQualifier(Application.DEFAULT_QUALIFIER);
@@ -235,7 +236,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
 		name = DEFAULT_APPLICATION_ALIAS.equals(name) ? tenant.getDomainName() : name;
 		
-		Application application = applicationRepository.findByTenantAndName(tenant.getId(), name);
+		Application application = getByApplicationName(tenant, name).getResult();
 
 		if (!Optional.ofNullable(application).isPresent()) {
 			return ServiceResponseBuilder.<Application>error()
@@ -318,7 +319,11 @@ public class ApplicationServiceImpl implements ApplicationService {
 			return ServiceResponseBuilder.<Application> error()
 					.withMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()).build();
 
-		Application application = applicationRepository.findByTenantAndName(tenantFromDB.getId(), name);
+        String applicationName = name;
+        Application application = Optional
+                .ofNullable(applicationRepository.findByTenantAndName(tenantFromDB.getId(), name))
+                .orElseGet(() -> applicationRepository
+                        .findByTenantAndName(tenantFromDB.getId(), tenantFromDB.getDomainName().concat("@").concat(applicationName)));
 		if (!Optional.ofNullable(application).isPresent()) {
 			return ServiceResponseBuilder.<Application> error()
 					.withMessage(Validations.APPLICATION_DOES_NOT_EXIST.getCode()).build();
