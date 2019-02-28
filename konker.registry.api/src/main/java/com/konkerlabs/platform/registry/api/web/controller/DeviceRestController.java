@@ -66,8 +66,8 @@ public class DeviceRestController extends AbstractRestController implements Init
         Application application = getApplication(applicationId);
         User userLogged = Optional.ofNullable(user.getParentUser())
                 .orElseGet(() -> User.builder()
-                        .application(user.getParentGateway().getApplication())
-                        .location(user.getParentGateway().getLocation())
+                        .application(user.getApplication())
+                        .location(user.getParentGateway() != null ? user.getParentGateway().getLocation() : Location.builder().build())
                         .build());
 
         ServiceResponse<Page<Device>> deviceResponse = deviceRegisterService.search(tenant,

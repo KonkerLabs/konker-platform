@@ -47,7 +47,7 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private PasswordBlacklistRepository passwordBlacklistRepository;
     @Autowired
-    private ApplicationRepository applicationRepository;
+    private ApplicationService applicationService;
 
     @Autowired
     private LocationSearchService locationSearchService;
@@ -205,9 +205,9 @@ public class UserServiceImpl implements UserService {
                                       User user,
                                       String newPassword,
                                       String newPasswordConfirmation) {
-        Application appFromDB = applicationRepository.findByTenantAndName(
-                user.getTenant().getId(),
-                "default".equals(application) ? user.getTenant().getDomainName() : application);
+        Application appFromDB = applicationService.getByApplicationName(
+                user.getTenant(),
+                "default".equals(application) ? user.getTenant().getDomainName() : application).getResult();
 
         if ((Optional.ofNullable(application).isPresent()
                 || Optional.ofNullable(location).isPresent())

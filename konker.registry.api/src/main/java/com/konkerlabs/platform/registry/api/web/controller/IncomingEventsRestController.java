@@ -8,6 +8,7 @@ import com.konkerlabs.platform.registry.api.model.EventsFilter;
 import com.konkerlabs.platform.registry.business.model.Application;
 import com.konkerlabs.platform.registry.business.model.Event;
 import com.konkerlabs.platform.registry.business.model.Tenant;
+import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @RestController
@@ -75,6 +77,8 @@ public class IncomingEventsRestController extends AbstractRestController impleme
 
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
+        User loggedUser = Optional.ofNullable(user.getParentUser())
+                .orElseGet(() -> User.builder().application(user.getApplication()).build());
 
         boolean ascending = false;
         if (sort.equalsIgnoreCase("oldest")) {
@@ -95,7 +99,7 @@ public class IncomingEventsRestController extends AbstractRestController impleme
         ServiceResponse<List<Event>> restDestinationResponse = deviceEventService.findIncomingBy(
                 tenant,
                 application,
-                user.getParentUser(),
+                loggedUser,
                 deviceGuid,
                 channel,
                 startingTimestamp,
