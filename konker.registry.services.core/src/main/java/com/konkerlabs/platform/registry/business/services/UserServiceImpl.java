@@ -4,7 +4,6 @@ import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
 import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
-import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
 import com.konkerlabs.platform.registry.business.repositories.PasswordBlacklistRepository;
 import com.konkerlabs.platform.registry.business.repositories.UserRepository;
 import com.konkerlabs.platform.registry.business.services.api.*;
@@ -30,6 +29,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -707,6 +707,21 @@ public class UserServiceImpl implements UserService {
 
         userRepository.delete(user);
         return ServiceResponseBuilder.<User>ok().build();
+    }
+
+    @Override
+    public ServiceResponse<List<User>> findAllByApplicationLocation(Tenant tenant, Application application, Location location) {
+        List<User> allUsers = new ArrayList<>();
+
+        allUsers.addAll(userRepository.findAllAdminUsers(tenant.getId()));
+        allUsers.addAll(userRepository.findAllByTenantIdApplicationName(tenant.getId(), application.getName()));
+        allUsers.addAll(userRepository.findAllByTenantIdApplicationNameLocationId(tenant.getId(), application.getName(), location.getId()));
+
+        return ServiceResponseBuilder.<List<User>>ok()
+                .withResult(allUsers.stream()
+                        .distinct()
+                        .collect(Collectors.toList()))
+                .build();
     }
 
 }
