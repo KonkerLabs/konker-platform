@@ -1,0 +1,29 @@
+{
+  "alertTriggers": [
+    {
+      "_id" : "5c7919eb2f5ccf1f8b1db245",
+      "description" : "inactivity alert",
+      "deviceModel" : {
+        "$ref" : "devicesModel",
+        "$id" : "67014de6-81db-11e6-a5bc-3f99b788249c"
+      },
+      "minutes" : 2,
+      "application" : {
+        "$ref" : "applications",
+        "$id" : "konker"
+      },
+      "location" : {
+        "$ref" : "locations",
+        "$id" : "591200ea9061e67cb2228f85"
+      },
+      "guid" : "dfe8ab59-98e3-4da3-9e4c-56cee35136d7",
+      "type" : "SILENCE",
+      "_class" : "com.konkerlabs.platform.registry.business.model.SilenceTrigger",
+      "tenant" : {
+        "$ref" : "tenants",
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af"
+      },
+      "name" : "silence"
+    }
+  ]
+}

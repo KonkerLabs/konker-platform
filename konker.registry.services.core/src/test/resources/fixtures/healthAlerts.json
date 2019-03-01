@@ -1,0 +1,33 @@
+{
+  "healthAlerts": [
+    {
+      "_id" : "5931c8f060b2224e030fae4c",
+      "_class" : "com.konkerlabs.platform.registry.business.model.HealthAlert",
+      "guid" : "c77c0fdf-1067-4e6c-88ed-91b524e15f60",
+      "severity" : "FAIL",
+      "description" : "No message received from the device since a long time.",
+      "registrationDate" : 1496434928480,
+      "lastChange" : 1496435167312,
+      "type" : "SILENCE",
+      "triggerGuid" : "c1e3fe9b-ad86-4893-aa50-40b3e7b26083",
+      "deviceGuid" : "76ef21f6-1439-4f9d-b33b-55363c6cdd49",
+      "solved" : false,
+      "tenant" : {
+        "$ref" : "tenants",
+        "$id" : "71fb0d48-674b-4f64-a3e5-0256ff3a63af"
+      },
+      "application" : {
+        "$ref" : "applications",
+        "$id" : "konker"
+      },
+      "alertTrigger" : {
+        "$ref" : "alertTriggers",
+        "$id" : "5c7919eb2f5ccf1f8b1db245"
+      },
+      "device" : {
+        "$ref" : "devices",
+        "$id" : "69014da6-81da-13e6-a1bc-3f98b38315c7"
+      }
+    }
+  ]
+}

@@ -1,6 +1,8 @@
 package com.konkerlabs.platform.registry.business.services.api;
 
 
+import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.Location;
 import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
 
@@ -109,5 +111,7 @@ public interface UserService {
 	ServiceResponse<User> findByTenantAndEmail(Tenant tenant, String email);
 
     ServiceResponse<User> remove(Tenant tenant, User loggedUser, String emailUserToRemove);
+
+    ServiceResponse<List<User>> findAllByApplicationLocation(Tenant tenant, Application application, Location location);
 
 }

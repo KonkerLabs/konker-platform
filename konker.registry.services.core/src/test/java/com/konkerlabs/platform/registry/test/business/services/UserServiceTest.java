@@ -580,4 +580,16 @@ public class UserServiceTest extends BusinessLayerTestSupport {
         assertThat(deleted, Matchers.nullValue());
     }
 
+    @Test
+    public void shouldFindAllByApplicationLocation() {
+        ServiceResponse<List<User>> serviceResponse = userService.findAllByApplicationLocation(
+                user.getTenant(),
+                application,
+                location);
+
+        Assert.assertNotNull(serviceResponse);
+        assertThat(serviceResponse, isResponseOk());
+        Assert.assertEquals(serviceResponse.getResult().size(), 5);
+    }
+
 }
