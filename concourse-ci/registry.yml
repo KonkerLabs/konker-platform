@@ -98,24 +98,12 @@ resources:
   source:
     branch: develop
     uri: https://github.com/KonkerLabs/konker-platform.git
-- name: helm-release
+- name: registry-api-helm-stg
   type: helm
   source:
-    kubeconfig: |
-      apiVersion: v1
-      kind: Config
-      preferences: {}
-      contexts:
-      - context:
-          cluster: kubernetes
-          namespace: registry-staging
-          user: aws
-        name: aws
+    cluster_url: (( grab params.k8s.cluster_url ))
+    cluster_ca: (( grab params.k8s.cluster_ca ))
 resource_types:
-- name: marathon
-  type: docker-image
-  source:
-    repository: ckaznocha/marathon-resource
 - name: slack-notification
   type: docker-image
   source:
@@ -124,8 +112,7 @@ resource_types:
 - name: helm
   type: docker-image
   source:
-    repository: ilyasotkov/concourse-helm-resource
-    tag: 1.1.1
+    repository: linkyard/concourse-helm-resource
 jobs:
 - name: test-and-package-stg
   build_logs_to_retain: 1
@@ -366,10 +353,11 @@ jobs:
     - docker-api-stg
     trigger: true
   - get: values-k8s-repo-stg
-  - put: helm-release
+  - put: registry-api-helm-stg
     params:
       chart: github-repo-stg/konker.registry.api/konker-registry-api-helm.tgz
       values: values-k8s-repo-stg/konker-registry-values/api-values-staging.yaml
       orverride_values:
-      - key: version
-        path: version/number
+      - key: image.tag
+        path: staging-api-1.1.8-ESPRESSO-alpha
+        type: string
