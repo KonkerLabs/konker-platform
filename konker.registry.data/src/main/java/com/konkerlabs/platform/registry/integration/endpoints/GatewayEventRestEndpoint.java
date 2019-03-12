@@ -137,7 +137,6 @@ public class GatewayEventRestEndpoint {
                 deviceEventProcessor.process(gateway, body, deviceIdFieldName, deviceChannelFieldName);
             } catch (BusinessException | JsonProcessingException e) {
                 LOGGER.error("Error for processing Gateway datas", e);
-                return new ResponseEntity<EventResponse>(buildResponse(e.getMessage(), locale), HttpStatus.BAD_REQUEST);
             }
             return "Processing";
         });
