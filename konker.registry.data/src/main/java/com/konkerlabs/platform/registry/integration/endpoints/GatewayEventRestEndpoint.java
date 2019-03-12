@@ -11,6 +11,8 @@ import com.konkerlabs.platform.registry.integration.processors.DeviceEventProces
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 import lombok.Builder;
 import lombok.Data;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
@@ -24,9 +26,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Locale;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 @RestController
 public class GatewayEventRestEndpoint {
+
+    private Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
     public enum Messages {
         INVALID_REQUEST_BODY("integration.rest.invalid.body"),
@@ -126,11 +132,15 @@ public class GatewayEventRestEndpoint {
             return new ResponseEntity<EventResponse>(buildResponse(Messages.INVALID_HEADER_DEVICE_CHANNEL_FIELD.getCode(),locale), HttpStatus.BAD_REQUEST);
         }
 
-        try {
-            deviceEventProcessor.process(gateway, body, deviceIdFieldName, deviceChannelFieldName);
-        } catch (BusinessException | JsonProcessingException e) {
-            return new ResponseEntity<EventResponse>(buildResponse(e.getMessage(),locale),HttpStatus.BAD_REQUEST);
-        }
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                deviceEventProcessor.process(gateway, body, deviceIdFieldName, deviceChannelFieldName);
+            } catch (BusinessException | JsonProcessingException e) {
+                LOGGER.error("Error for processing Gateway datas", e);
+                return new ResponseEntity<EventResponse>(buildResponse(e.getMessage(), locale), HttpStatus.BAD_REQUEST);
+            }
+            return "Processing";
+        });
 
         return new ResponseEntity<EventResponse>(
                 EventResponse.builder().code(String.valueOf(HttpStatus.OK.value()))
