@@ -7,6 +7,7 @@ import com.konkerlabs.platform.registry.data.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.idm.services.OAuthClientDetailsService;
 import com.konkerlabs.platform.registry.integration.endpoints.GatewayEventRestEndpoint;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
+import com.konkerlabs.platform.registry.integration.processors.GatewayEventProcessor;
 import com.konkerlabs.platform.registry.test.data.base.BusinessDataTestConfiguration;
 import com.konkerlabs.platform.registry.test.data.base.SecurityTestConfiguration;
 import com.konkerlabs.platform.registry.test.data.base.WebLayerTestContext;
@@ -55,7 +56,7 @@ public class GatewayEventRestEndpointTest extends WebLayerTestContext {
     public GatewayEventRestEndpoint gatewayEventRestEndpoint;
 
     @Autowired
-    private DeviceEventProcessor deviceEventProcessor;
+    private GatewayEventProcessor gatewayEventProcessor;
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -74,10 +75,10 @@ public class GatewayEventRestEndpointTest extends WebLayerTestContext {
 
     @Before
     public void setUp() {
-        deviceEventProcessor = mock(DeviceEventProcessor.class);
+        gatewayEventProcessor = mock(GatewayEventProcessor.class);
         gatewayEventRestEndpoint = new GatewayEventRestEndpoint(
                 applicationContext,
-                deviceEventProcessor,
+                gatewayEventProcessor,
                 jsonParsingService,
                 deviceRegisterService,
                 oAuthClientDetailsService);
@@ -201,6 +202,11 @@ public class GatewayEventRestEndpointTest extends WebLayerTestContext {
         @Bean
         public DeviceEventProcessor deviceEventProcessor() {
             return Mockito.mock(DeviceEventProcessor.class);
+        }
+
+        @Bean
+        public GatewayEventProcessor gatewayEventProcessor() {
+            return Mockito.mock(GatewayEventProcessor.class);
         }
 
         @Bean

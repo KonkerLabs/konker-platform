@@ -68,6 +68,21 @@ public class RabbitGateway {
         }
     }
 
+    public void queueEventDataPub(String apiKey, String channel, Long epochMilli, byte[] payload) {
+        try {
+            MessageProperties properties = new MessageProperties();
+            properties.setHeader(RabbitMQConfig.MSG_HEADER_APIKEY, apiKey);
+            properties.setHeader(RabbitMQConfig.MSG_HEADER_CHANNEL, channel);
+            properties.setHeader(RabbitMQConfig.MSG_HEADER_TIMESTAMP, epochMilli);
+
+            Message message = new Message(payload, properties);
+
+            rabbitTemplate.convertAndSend("data.pub", message);
+        } catch (AmqpException ex) {
+            LOGGER.error("AmqpException while sending message to RabbitMQ...", ex);
+        }
+    }
+
     private byte[] toByteArray(Event event) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 

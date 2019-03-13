@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.integration.endpoints;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.data.core.config.RabbitMQDataConfig;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
@@ -62,7 +63,7 @@ public class DeviceEventRabbitEndpoint {
 
         try {
             deviceEventProcessor.process(apiKey, channel, bytesPayload, ingestedTimestamp);
-        } catch (BusinessException be) {
+        } catch (BusinessException | JsonProcessingException be) {
             LOGGER.error("BusinessException processing message", be);
         }
 
