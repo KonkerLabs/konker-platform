@@ -4,6 +4,7 @@ import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.data.core.integration.converters.JsonConverter;
+import com.konkerlabs.platform.registry.data.core.integration.converters.helper.ConverterHelper;
 import com.konkerlabs.platform.registry.data.core.integration.gateway.RabbitGateway;
 import com.konkerlabs.platform.registry.data.core.services.publishers.api.EventPublisher;
 import com.konkerlabs.platform.registry.data.core.services.api.DeviceLogEventService;
@@ -34,15 +35,15 @@ public class EventPublisherDevice implements EventPublisher {
     private RabbitGateway rabbitGateway;
     private DeviceRegisterService deviceRegisterService;
     private DeviceLogEventService deviceLogEventService;
-    private BeanFactory beans;
+    private ConverterHelper converterHelper;
 
     @Autowired
     public EventPublisherDevice(RabbitGateway rabbitGateway,
                                 DeviceRegisterService deviceRegisterService,
-                                BeanFactory beans) {
+                                ConverterHelper converterHelper) {
         this.rabbitGateway = rabbitGateway;
         this.deviceRegisterService = deviceRegisterService;
-        this.beans = beans;
+        this.converterHelper = converterHelper;
     }
 
     @Autowired
@@ -101,8 +102,8 @@ public class EventPublisherDevice implements EventPublisher {
                                 .deviceId(outgoingDevice.getDeviceId())
                                 .build()
                         );
-      
-        ServiceResponse<byte[]> converterResponse = getJsonPayload(outgoingDevice, outgoingEvent.getPayload());
+
+        ServiceResponse<byte[]> converterResponse = converterHelper.getJsonPayload(outgoingDevice, outgoingEvent.getPayload());
         if (!converterResponse.isOk())
             LOGGER.error("Failed to convert message to its destination format",
                     converterResponse.getResponseMessages(),
@@ -120,21 +121,6 @@ public class EventPublisherDevice implements EventPublisher {
                     response.getResponseMessages(),
                     outgoingDevice.toURI(),
                     outgoingDevice.getLogLevel());
-
-    }
-
-    private ServiceResponse<byte[]> getJsonPayload(Device device, String payloadJson) {
-
-        DeviceModel.ContentType contentType = DeviceModel.ContentType.APPLICATION_JSON;
-        if (device.getDeviceModel() != null &&
-            device.getDeviceModel().getContentType() != null) {
-            contentType = device.getDeviceModel().getContentType();
-        }
-
-        JsonConverter jsonConverter = BeanFactoryAnnotationUtils.qualifiedBeanOfType(beans, JsonConverter.class, contentType.getValue());
-        ServiceResponse<byte[]> jsonConverterResponse = jsonConverter.fromJson(payloadJson);
-
-        return jsonConverterResponse;
 
     }
 

@@ -8,6 +8,7 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterServ
 import com.konkerlabs.platform.registry.idm.services.OAuthClientDetailsService;
 import com.konkerlabs.platform.registry.data.core.integration.gateway.HttpGateway;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
+import com.konkerlabs.platform.registry.integration.processors.GatewayEventProcessor;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 import lombok.Builder;
 import lombok.Data;
@@ -56,19 +57,19 @@ public class GatewayEventRestEndpoint {
     }
 
     private ApplicationContext applicationContext;
-    private DeviceEventProcessor deviceEventProcessor;
+    private GatewayEventProcessor gatewayEventProcessor;
     private JsonParsingService jsonParsingService;
     private DeviceRegisterService deviceRegisterService;
     private OAuthClientDetailsService oAuthClientDetailsService;
 
     @Autowired
     public GatewayEventRestEndpoint(ApplicationContext applicationContext,
-                                   DeviceEventProcessor deviceEventProcessor,
+                                    GatewayEventProcessor gatewayEventProcessor,
                                    JsonParsingService jsonParsingService,
                                    DeviceRegisterService deviceRegisterService,
                                    OAuthClientDetailsService oAuthClientDetailsService) {
         this.applicationContext = applicationContext;
-        this.deviceEventProcessor = deviceEventProcessor;
+        this.gatewayEventProcessor = gatewayEventProcessor;
         this.jsonParsingService = jsonParsingService;
         this.deviceRegisterService = deviceRegisterService;
         this.oAuthClientDetailsService = oAuthClientDetailsService;
@@ -95,11 +96,14 @@ public class GatewayEventRestEndpoint {
 		if (servletRequest.getHeader(HttpGateway.KONKER_VERSION_HEADER) != null)
 			return new ResponseEntity<EventResponse>(buildResponse(Messages.INVALID_REQUEST_ORIGIN.getCode(), locale), HttpStatus.FORBIDDEN);
 
-        try {
-        	deviceEventProcessor.process(gateway, body);
-        } catch (BusinessException | JsonProcessingException e) {
-            return new ResponseEntity<EventResponse>(buildResponse(e.getMessage(),locale),HttpStatus.BAD_REQUEST);
-        }
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                gatewayEventProcessor.process(gateway, body);
+            } catch (BusinessException | JsonProcessingException e) {
+                LOGGER.error("Error for processing Gateway data", e);
+            }
+            return "Processing";
+        });
 
         return new ResponseEntity<EventResponse>(
         		EventResponse.builder().code(String.valueOf(HttpStatus.OK.value()))
@@ -134,9 +138,9 @@ public class GatewayEventRestEndpoint {
 
         CompletableFuture.supplyAsync(() -> {
             try {
-                deviceEventProcessor.process(gateway, body, deviceIdFieldName, deviceChannelFieldName);
+                gatewayEventProcessor.process(gateway, body, deviceIdFieldName, deviceChannelFieldName);
             } catch (BusinessException | JsonProcessingException e) {
-                LOGGER.error("Error for processing Gateway datas", e);
+                LOGGER.error("Error for processing Gateway data", e);
             }
             return "Processing";
         });
