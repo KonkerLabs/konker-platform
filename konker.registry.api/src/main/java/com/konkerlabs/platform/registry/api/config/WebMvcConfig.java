@@ -9,7 +9,9 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
+import org.springframework.http.MediaType;
 import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
@@ -76,4 +78,14 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
     	registry.addInterceptor(requestResponseInterceptor()).addPathPatterns("/applications/*", "/users/*");
     }
 
+    @Override
+    public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
+        configurer.favorPathExtension(true)
+            .favorParameter(false)
+            .ignoreAcceptHeader(false)
+            .useJaf(false)
+            .defaultContentType(MediaType.APPLICATION_JSON)
+            .mediaType("xml", MediaType.APPLICATION_XML)
+            .mediaType("json", MediaType.APPLICATION_JSON);
+    }
 }
