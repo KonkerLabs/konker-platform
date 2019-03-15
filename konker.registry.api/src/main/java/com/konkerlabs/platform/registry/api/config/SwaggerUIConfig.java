@@ -64,7 +64,7 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
                 .apis(RequestHandlerSelectors.withClassAnnotation(RestController.class))
                 .paths(PathSelectors.any())
                 .build()
-                .protocols(Sets.newHashSet(getSwaggerConfig().getString(SWAGGER_PROTOCOL)))
+                .protocols(Sets.newHashSet("http","https"))
                 .apiInfo(apiInfo())
                 .securitySchemes(newArrayList(securitySchema()))
                 .securityContexts(newArrayList(securityContext()))
