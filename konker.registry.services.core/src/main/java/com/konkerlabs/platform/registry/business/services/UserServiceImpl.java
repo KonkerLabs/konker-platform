@@ -4,14 +4,12 @@ import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
 import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
-import com.konkerlabs.platform.registry.business.repositories.ApplicationRepository;
 import com.konkerlabs.platform.registry.business.repositories.PasswordBlacklistRepository;
 import com.konkerlabs.platform.registry.business.repositories.UserRepository;
 import com.konkerlabs.platform.registry.business.services.api.*;
 import com.konkerlabs.platform.registry.config.EmailConfig;
 import com.konkerlabs.platform.registry.config.PasswordUserConfig;
 import com.konkerlabs.platform.security.managers.PasswordManager;
-
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +29,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -48,7 +47,7 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private PasswordBlacklistRepository passwordBlacklistRepository;
     @Autowired
-    private ApplicationRepository applicationRepository;
+    private ApplicationService applicationService;
 
     @Autowired
     private LocationSearchService locationSearchService;
@@ -206,9 +205,9 @@ public class UserServiceImpl implements UserService {
                                       User user,
                                       String newPassword,
                                       String newPasswordConfirmation) {
-        Application appFromDB = applicationRepository.findByTenantAndName(
-                user.getTenant().getId(),
-                "default".equals(application) ? user.getTenant().getDomainName() : application);
+        Application appFromDB = applicationService.getByApplicationName(
+                user.getTenant(),
+                "default".equals(application) ? user.getTenant().getDomainName() : application).getResult();
 
         if ((Optional.ofNullable(application).isPresent()
                 || Optional.ofNullable(location).isPresent())
@@ -674,5 +673,55 @@ public class UserServiceImpl implements UserService {
 				.withResult(user)
 				.build();
 	}
+
+    @Override
+    public ServiceResponse<User> remove(Tenant tenant, User loggedUser, String emailUserToRemove) {
+        User user = userRepository.findAllByTenantIdAndEmail(tenant.getId(), emailUserToRemove);
+
+        if (!Optional.ofNullable(user).isPresent()) {
+            return ServiceResponseBuilder.<User>error()
+                    .withMessage(Validations.NO_EXIST_USER.getCode())
+                    .build();
+        }
+
+        if (loggedUser.equals(user)) {
+            return ServiceResponseBuilder.<User>error()
+                    .withMessage(Validations.NO_PERMISSION_TO_REMOVE_HIMSELF.getCode())
+                    .build();
+        }
+
+        if (Optional.ofNullable(loggedUser.getApplication()).isPresent()
+                && !loggedUser.getApplication().equals(user.getApplication())) {
+
+            return ServiceResponseBuilder.<User>error()
+                    .withMessage(Validations.NO_PERMISSION_TO_REMOVE.getCode())
+                    .build();
+        }
+
+        if (Optional.ofNullable(loggedUser.getLocation()).isPresent()
+                && !LocationTreeUtils.isSublocationOf(loggedUser.getLocation(), user.getLocation())) {
+            return ServiceResponseBuilder.<User>error()
+                    .withMessage(Validations.NO_PERMISSION_TO_REMOVE.getCode())
+                    .build();
+        }
+
+        userRepository.delete(user);
+        return ServiceResponseBuilder.<User>ok().build();
+    }
+
+    @Override
+    public ServiceResponse<List<User>> findAllByApplicationLocation(Tenant tenant, Application application, Location location) {
+        List<User> allUsers = new ArrayList<>();
+
+        allUsers.addAll(userRepository.findAllAdminUsers(tenant.getId()));
+        allUsers.addAll(userRepository.findAllByTenantIdApplicationName(tenant.getId(), application.getName()));
+        allUsers.addAll(userRepository.findAllByTenantIdApplicationNameLocationId(tenant.getId(), application.getName(), location.getId()));
+
+        return ServiceResponseBuilder.<List<User>>ok()
+                .withResult(allUsers.stream()
+                        .distinct()
+                        .collect(Collectors.toList()))
+                .build();
+    }
 
 }

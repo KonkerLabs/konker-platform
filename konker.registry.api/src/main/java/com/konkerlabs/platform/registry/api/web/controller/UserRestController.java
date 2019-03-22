@@ -12,13 +12,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.konkerlabs.platform.registry.api.exceptions.BadServiceResponseException;
 import com.konkerlabs.platform.registry.api.exceptions.NotFoundResponseException;
@@ -163,6 +157,21 @@ public class UserRestController implements InitializingBean {
 
         if (!updateResponse.isOk()) {
             throw new BadServiceResponseException( userResponse, validationsCode);
+
+        }
+
+    }
+
+    @DeleteMapping(path = "/{email:.+}")
+    @PreAuthorize("hasAuthority('REMOVE_USER')")
+    @ApiOperation(value = "Delete a user")
+    public void delete(@PathVariable("email") String email) throws BadServiceResponseException {
+        Tenant tenant = user.getTenant();
+
+        ServiceResponse<User> deleteResponse = userService.remove(tenant, user.getParentUser(), email);
+
+        if (!deleteResponse.isOk()) {
+            throw new BadServiceResponseException(deleteResponse, validationsCode);
 
         }
 

@@ -39,6 +39,10 @@
       	"$id" : "67014de6-81db-11e6-a5bc-3f99b788249c",
       	"$ref" : "devicesModel"
       },
+      "location" : {
+        "$id": "591200ea9061e67cb2228f85",
+        "$ref": "locations"
+      },
       "deviceId" : "SN1234567891",
       "apiKey" : "e4399b2ed999",
       "name" : "Test name 2",

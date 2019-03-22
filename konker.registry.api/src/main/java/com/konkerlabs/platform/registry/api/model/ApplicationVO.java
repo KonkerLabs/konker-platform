@@ -34,7 +34,7 @@ public class ApplicationVO extends ApplicationInputVO
 	@Override
 	public ApplicationVO apply(Application model) {
 		ApplicationVO vo = new ApplicationVO();
-		vo.setName(model.getName());
+		vo.setName(model.getName().contains("@") ? model.getName().split("@")[1] : model.getName());
 		vo.setFriendlyName(model.getFriendlyName());
 		vo.setDescription(model.getDescription());
 		return vo;

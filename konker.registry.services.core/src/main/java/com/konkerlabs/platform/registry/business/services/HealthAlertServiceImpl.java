@@ -113,7 +113,7 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 	}
 
 	private void sendNotification(Tenant tenant, HealthAlert healthAlert, final Device device) {
-		ServiceResponse<List<User>> serviceResponse = userService.findAll(tenant);
+		ServiceResponse<List<User>> serviceResponse = userService.findAllByApplicationLocation(tenant, device.getApplication(), device.getLocation());
 
 		if (serviceResponse.isOk() && !serviceResponse.getResult().isEmpty()) {
 			serviceResponse.getResult().forEach(u -> {
