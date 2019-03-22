@@ -88,7 +88,7 @@ public class DeviceEventProcessor {
      * @param timestamp
      * @throws BusinessException
      */
-    public void process(String apiKey, String channel, byte bytesPayload[], Instant timestamp) throws BusinessException {
+    public void process(String apiKey, String channel, byte bytesPayload[], Instant timestamp) throws BusinessException, JsonProcessingException {
         Optional.ofNullable(apiKey).filter(s -> !s.isEmpty())
                 .orElseThrow(() -> new BusinessException(Messages.APIKEY_MISSING.getCode()));
 
@@ -97,7 +97,13 @@ public class DeviceEventProcessor {
 
         String jsonPayload = getJsonPayload(device, bytesPayload);
 
-        process(device, channel, jsonPayload, timestamp, timestamp);
+        Map<String, JsonParsingService.JsonPathData> payloadsMap = jsonParsingService.toFlatMap(jsonPayload);
+        Instant creationTimestamp = payloadsMap.containsKey("ts")
+                && integerPattern.matcher(payloadsMap.get("ts").getValue().toString()).matches() ?
+                Instant.ofEpochMilli(new Long(payloadsMap.get("ts").getValue().toString())) :
+                timestamp;
+
+        process(device, channel, jsonPayload, timestamp, creationTimestamp);
     }
 
     /**
@@ -121,106 +127,6 @@ public class DeviceEventProcessor {
     
     private Boolean isValidAuthority(Gateway gateway, Device device) throws BusinessException {
         return LocationTreeUtils.isSublocationOf(gateway.getLocation(), device.getLocation());
-    }
-    
-    @SuppressWarnings("unchecked")
-	public void process(Gateway gateway, String payloadList) throws BusinessException, JsonProcessingException {
-    	List<Map<String, Object>> payloadsGateway = jsonParsingService.toListMap(payloadList);
-    	
-    	for (Map<String, Object> payloadGateway : payloadsGateway) {
-    		ServiceResponse<Device> result = deviceRegisterService.findByDeviceId(
-    				gateway.getTenant(), 
-    				gateway.getApplication(),
-    				payloadGateway.get("deviceId").toString());
-
-    		if (result.isOk() && Optional.ofNullable(result.getResult()).isPresent()) {
-    			Device device = result.getResult();
-    			
-    			if (isValidAuthority(gateway, device)) {
-    				Map<String, Object> devicePayload = (Map<String, Object>) payloadGateway.get("payload");
-    				
-    				Instant ingestedTimestamp = Instant.now();
-					Instant creationTimestamp = payloadGateway.containsKey("ts") 
-    						&& integerPattern.matcher(payloadGateway.get("ts").toString()).matches() ? 
-    								Instant.ofEpochMilli(new Long(payloadGateway.get("ts").toString())) : 
-    								ingestedTimestamp;
-    				
-    				process(
-    						device,
-    						payloadGateway.get("channel").toString(),
-    						jsonParsingService.toJsonString(devicePayload),
-    						ingestedTimestamp,
-    						creationTimestamp);
-    			} else {
-    				LOGGER.warn(MessageFormat.format("The gateway does not have authority over the device: {0}",
-                            device.getName()),
-                    		gateway.toURI(),
-                    		gateway.getTenant().getLogLevel());
-                }
-    		} else {
-                LOGGER.debug(MessageFormat.format(GATEWAY_EVENT_DROPPED,
-                        gateway.toURI(),
-                        payloadList),
-                		gateway.toURI(),
-                		gateway.getTenant().getLogLevel());
-            }
-    		
-		}
-    	
-    }
-
-    public void process(Gateway gateway, String payloadList, String deviceIdFieldName, String deviceChannelFieldName) throws BusinessException, JsonProcessingException {
-        List<Map<String, Object>> payloadsGateway = jsonParsingService.toListMap(payloadList);
-
-        for (Map<String, Object> payloadDevice : payloadsGateway) {
-            ServiceResponse<Device> result = deviceRegisterService.findByDeviceId(
-                    gateway.getTenant(),
-                    gateway.getApplication(),
-                    payloadDevice.get(deviceIdFieldName).toString());
-
-            if (!result.isOk()) {
-                result = deviceRegisterService.register(
-                        gateway.getTenant(),
-                        gateway.getApplication(),
-                        Device.builder()
-                                .deviceId(payloadDevice.get(deviceIdFieldName).toString())
-                                .name(payloadDevice.get(deviceIdFieldName).toString())
-                                .active(true)
-                                .build());
-            }
-
-            if (result.isOk() && Optional.ofNullable(result.getResult()).isPresent()) {
-                Device device = result.getResult();
-
-                if (isValidAuthority(gateway, device)) {
-                    Instant ingestedTimestamp = Instant.now();
-                    Instant creationTimestamp = payloadDevice.containsKey("ts")
-                            && integerPattern.matcher(payloadDevice.get("ts").toString()).matches() ?
-                            Instant.ofEpochMilli(new Long(payloadDevice.get("ts").toString())) :
-                            ingestedTimestamp;
-
-                    process(
-                            device,
-                            payloadDevice.get(deviceChannelFieldName).toString(),
-                            jsonParsingService.toJsonString(payloadDevice),
-                            ingestedTimestamp,
-                            creationTimestamp);
-                } else {
-                    LOGGER.warn(MessageFormat.format("The gateway does not have authority over the device: {0}",
-                            device.getName()),
-                            gateway.toURI(),
-                            gateway.getTenant().getLogLevel());
-                }
-            } else {
-                LOGGER.debug(MessageFormat.format(GATEWAY_EVENT_DROPPED,
-                        gateway.toURI(),
-                        payloadList),
-                        gateway.toURI(),
-                        gateway.getTenant().getLogLevel());
-            }
-
-        }
-
     }
     
     public void process(Device device, String channel, String jsonPayload, Instant ingestedTimestamp, Instant creationTimestamp) throws BusinessException {

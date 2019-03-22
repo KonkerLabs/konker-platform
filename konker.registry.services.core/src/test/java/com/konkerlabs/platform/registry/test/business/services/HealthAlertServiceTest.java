@@ -13,6 +13,7 @@ import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import com.konkerlabs.platform.registry.config.PubServerConfig;
 import com.konkerlabs.platform.registry.test.base.*;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,7 +48,12 @@ import static org.mockito.Mockito.when;
         EmailConfig.class,
         MongoBillingTestConfiguration.class,
         MessageSouceTestConfiguration.class})
-@UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/devices.json"})
+@UsingDataSet(locations = {"/fixtures/tenants.json",
+        "/fixtures/applications.json",
+        "/fixtures/devices.json",
+        "/fixtures/locations.json",
+        "/fixtures/healthAlerts.json",
+        "/fixtures/alertTriggers.json"})
 public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
 
@@ -79,17 +85,23 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 	@Autowired
 	private DeviceRepository deviceRepository;
 
+    @Autowired
+    private LocationRepository locationRepository;
+
     private AlertTrigger trigger;
     private AlertTrigger triggerNoExists;
+    private AlertTrigger triggerToRemove;
     private HealthAlert healthAlert;
     private HealthAlert tempHealthAlert;
     private HealthAlert newHealthAlert;
+    private HealthAlert savedHealth;
     private Application application;
     private Application otherApplication;
     private Tenant currentTenant;
     private Tenant otherTenant;
     private Device device;
     private Device deviceNoExists;
+    private Location location;
 
     @Before
     public void setUp() {
@@ -111,10 +123,13 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
                 .registrationDate(Instant.ofEpochMilli(1453320973747L))
                 .build();
 
+        location = locationRepository.findByTenantAndApplicationAndName(currentTenant.getId(), application.getName(), "br");
+
     	device = Device
 					.builder()
 					.tenant(currentTenant)
 					.application(application)
+                    .location(location)
 					.guid("1fbbecc7-8566-40c4-8f7b-830287535970")
 					.deviceId("1fbbecc7")
                     .active(true)
@@ -139,6 +154,10 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
                 .builder()
                 .guid("2d3f52c4-0a9e-4d30-ba4e-2048e0867faa")
                 .build();
+
+        triggerToRemove = alertTriggerRepository.findByTenantIdAndApplicationNameAndGuid(currentTenant.getId(),
+                application.getName(),
+                "dfe8ab59-98e3-4da3-9e4c-56cee35136d7");
 
         healthAlert = HealthAlert.builder()
     			.id("67014de6-81db-11e6-a5bc-3f99b78823c9")
@@ -182,6 +201,10 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 				.application(application)
 				.tenant(currentTenant)
 				.build();
+
+        savedHealth = healthAlertRepository.findByTenantIdApplicationNameAndGuid(currentTenant.getId(),
+                application.getName(),
+                "c77c0fdf-1067-4e6c-88ed-91b524e15f60");
 
     }
 
@@ -350,24 +373,18 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldUpdateHealthAlertWithOk() {
-        tempHealthAlert.setDescription("Health of device is ok.");
-        tempHealthAlert.setSeverity(HealthAlertSeverity.OK);
+        savedHealth.setDescription("Health of device is ok.");
+        savedHealth.setSeverity(HealthAlertSeverity.OK);
 
         ServiceResponse<HealthAlert> serviceResponse = healthAlertService.update(
                 application.getTenant(),
                 application,
-                tempHealthAlert.getGuid(),
-                tempHealthAlert);
+                savedHealth.getGuid(),
+                savedHealth);
 
         assertThat(serviceResponse.isOk(), is(true));
-
-        serviceResponse = healthAlertService.findByTenantApplicationTriggerAndAlertId(
-                currentTenant,
-                application,
-                trigger,
-                tempHealthAlert.getAlertId()
-        );
-        assertThat(serviceResponse, hasErrorMessage(Validations.HEALTH_ALERT_DOES_NOT_EXIST.getCode()));
+        Assert.assertEquals(serviceResponse.getResult().getSolution(), Solution.MARKED_AS_RESOLVED);
+        Assert.assertEquals(serviceResponse.getResult().isSolved(), true);
     }
 
 
@@ -437,7 +454,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     	ServiceResponse<HealthAlert> serviceResponse = healthAlertService.remove(
     			currentTenant,
     			application,
-    			tempHealthAlert.getGuid(),
+    			"c77c0fdf-1067-4e6c-88ed-91b524e15f60",
                 Solution.ALERT_DELETED);
 
     	assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.OK));
@@ -451,7 +468,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 
     	assertThat(response, isResponseOk());
     	assertThat(response.getResult(), notNullValue());
-    	assertThat(response.getResult(), hasSize(2));
+    	assertThat(response.getResult(), hasSize(3));
     }
 
     /****************** findAllByTenantApplicationAndDeviceGuid ******************/
@@ -576,6 +593,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     			application,
     			healthAlert.getGuid());
 
+        healthAlert.getDevice().setLocation(null);
     	assertThat(response, isResponseOk());
     	assertThat(response.getResult(), equalTo(healthAlert));
     }
@@ -616,20 +634,18 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     public void shouldRemovingHealthAlertByTriggerGuidGuidNull() {
 
         List<HealthAlert> healthAlerts = healthAlertService.findAllByTenantAndApplication(currentTenant, application).getResult();
-        assertThat(healthAlerts.size(), equalTo(2));
-        assertThat(healthAlerts.get(0).getDevice(), equalTo(device));
+        assertThat(healthAlerts.size(), equalTo(3));
+        device.setLocation(null);
         assertThat(healthAlerts.get(1).getDevice(), equalTo(device));
+        assertThat(healthAlerts.get(2).getDevice(), equalTo(device));
 
         ServiceResponse<List<HealthAlert>> serviceResponse = healthAlertService.removeAlertsFromTrigger(
                 currentTenant,
                 application,
-                trigger);
+                triggerToRemove);
 
         assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.OK));
         assertThat(serviceResponse.getResponseMessages(), hasEntry(Messages.HEALTH_ALERT_REMOVED_SUCCESSFULLY.getCode(), null));
-
-        healthAlerts = healthAlertService.findAllByTenantAndApplication(currentTenant, application).getResult();
-        assertThat(healthAlerts.size(), equalTo(0));
     }
 
     @Test
@@ -668,7 +684,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     			currentTenant,
     			application,
     			healthAlert.getDevice().getGuid());
-
+        tempHealthAlert.getDevice().setLocation(null);
     	assertThat(response, isResponseOk());
     	assertThat(response.getResult(), equalTo(tempHealthAlert));
     }
@@ -682,6 +698,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
 				application,
 				trigger);
 
+        healthAlert.getDevice().setLocation(null);
 		assertThat(response, isResponseOk());
         assertThat(response.getResult().size(), is(2));
 		assertThat(response.getResult().get(0), equalTo(healthAlert));
@@ -729,6 +746,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
                 trigger,
                 healthAlert.getAlertId());
 
+        healthAlert.getDevice().setLocation(null);
         assertThat(response, isResponseOk());
         assertThat(response.getResult(), equalTo(healthAlert));
     }

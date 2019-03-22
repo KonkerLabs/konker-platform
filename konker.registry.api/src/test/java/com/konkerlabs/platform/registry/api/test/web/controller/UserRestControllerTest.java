@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,9 +55,13 @@ public class UserRestControllerTest extends WebLayerTestContext {
     @Autowired
     private RoleService roleService;
 
-
     @Autowired
     private Tenant tenant;
+
+    @Autowired
+    private OauthClientDetails loggedUser;
+
+	private final String BASEPATH = "users";
 
     private User user1;
 
@@ -294,6 +299,41 @@ public class UserRestControllerTest extends WebLayerTestContext {
         .andExpect(jsonPath("$.messages").doesNotExist())
         .andExpect(jsonPath("$.result").doesNotExist());
 
+    }
+
+	@Test
+	public void shouldDeleteDevice() throws Exception {
+		when(userService.remove(tenant, loggedUser.getParentUser(), user2.getEmail()))
+				.thenReturn(ServiceResponseBuilder.<User>ok().build());
+
+		getMockMvc().perform(MockMvcRequestBuilders.delete(MessageFormat.format("/{0}/{1}", BASEPATH, user2.getEmail()))
+				.contentType("application/json")
+				.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().is2xxSuccessful())
+				.andExpect(content().contentType("application/json;charset=UTF-8"))
+				.andExpect(jsonPath("$.code", is(HttpStatus.NO_CONTENT.value())))
+				.andExpect(jsonPath("$.status", is("success")))
+				.andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
+				.andExpect(jsonPath("$.result").doesNotExist());
+	}
+
+    @Test
+    public void shouldTryDeleteDeviceWithIternalError() throws Exception {
+        when(userService.remove(tenant, loggedUser.getParentUser(), user2.getEmail()))
+                .thenReturn(ServiceResponseBuilder.<User>error()
+                        .withMessage(UserService.Validations.NO_EXIST_USER.getCode())
+                        .build());
+
+        getMockMvc().perform(MockMvcRequestBuilders.delete(MessageFormat.format("/{0}/{1}", BASEPATH, user2.getEmail()))
+                .contentType("application/json")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().is4xxClientError())
+                .andExpect(content().contentType("application/json;charset=UTF-8"))
+                .andExpect(jsonPath("$.code", is(HttpStatus.BAD_REQUEST.value())))
+                .andExpect(jsonPath("$.status", is("error")))
+                .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
+                .andExpect(jsonPath("$.messages").exists())
+                .andExpect(jsonPath("$.result").doesNotExist());
     }
 
 }
