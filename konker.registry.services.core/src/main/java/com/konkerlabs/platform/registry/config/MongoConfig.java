@@ -4,6 +4,13 @@ import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.concurrent.ConcurrentMapCache;
+import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
+import org.springframework.cache.support.SimpleCacheManager;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
@@ -22,9 +29,13 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
 import lombok.Data;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.util.StringUtils;
 
 @Configuration
+@EnableCaching
+@EnableScheduling
 @EnableMongoRepositories(basePackages = "com.konkerlabs.platform.registry.business.repositories")
 @Data
 public class MongoConfig extends AbstractMongoConfiguration {
@@ -95,6 +106,23 @@ public class MongoConfig extends AbstractMongoConfiguration {
     @Override
     public CustomConversions customConversions() {
         return new CustomConversions(converters);
+    }
+
+    @Bean
+    public CacheManager cacheManager() {
+        SimpleCacheManager cacheManager = new SimpleCacheManager();
+        Cache eventsSchemaCache = new ConcurrentMapCache("eventSchemaCache");
+        Cache deviceCache = new ConcurrentMapCache("deviceCache");
+        cacheManager.setCaches(Arrays.asList(eventsSchemaCache, deviceCache));
+        return cacheManager;
+    }
+
+    @Scheduled(fixedRate = 300000)
+    public void evictAllCaches() {
+        LOG.info("Evict every cache");
+        CacheManager cacheManager = cacheManager();
+        cacheManager.getCacheNames().stream()
+                .forEach(cacheName -> cacheManager.getCache(cacheName).clear());
     }
 
 }
