@@ -153,7 +153,7 @@ public class GatewayEventProcessor {
 
                     byte[] payloadBytes = converterHelper.getJsonPayload(device, jsonParsingService.toJsonString(payloadDevice)).getResult();
                     rabbitGateway.queueEventDataPub(device.getApiKey(),
-                            deviceChannelFieldName,
+                            payloadDevice.get(deviceChannelFieldName).toString(),
                             ingestedTimestamp.toEpochMilli(),
                             payloadBytes);
                 } else {

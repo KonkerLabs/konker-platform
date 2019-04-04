@@ -5,6 +5,7 @@ import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
 import com.konkerlabs.platform.registry.business.model.Gateway;
 import com.konkerlabs.platform.registry.business.model.OauthClientDetails;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.config.RabbitMQConfig;
 import com.konkerlabs.platform.registry.idm.services.OAuthClientDetailsService;
 import com.konkerlabs.platform.registry.data.core.integration.gateway.HttpGateway;
 import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
@@ -16,19 +17,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.util.Base64Utils;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
+import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+
+import static java.text.MessageFormat.format;
 
 @RestController
 public class GatewayEventRestEndpoint {
@@ -61,18 +66,24 @@ public class GatewayEventRestEndpoint {
     private JsonParsingService jsonParsingService;
     private DeviceRegisterService deviceRegisterService;
     private OAuthClientDetailsService oAuthClientDetailsService;
+    private RestTemplate restTemplate;
+    private RabbitMQConfig rabbitMQConfig;
 
     @Autowired
     public GatewayEventRestEndpoint(ApplicationContext applicationContext,
                                     GatewayEventProcessor gatewayEventProcessor,
-                                   JsonParsingService jsonParsingService,
-                                   DeviceRegisterService deviceRegisterService,
-                                   OAuthClientDetailsService oAuthClientDetailsService) {
+                                    JsonParsingService jsonParsingService,
+                                    DeviceRegisterService deviceRegisterService,
+                                    OAuthClientDetailsService oAuthClientDetailsService,
+                                    RestTemplate restTemplate,
+                                    RabbitMQConfig rabbitMQConfig) {
         this.applicationContext = applicationContext;
         this.gatewayEventProcessor = gatewayEventProcessor;
         this.jsonParsingService = jsonParsingService;
         this.deviceRegisterService = deviceRegisterService;
         this.oAuthClientDetailsService = oAuthClientDetailsService;
+        this.restTemplate = restTemplate;
+        this.rabbitMQConfig = rabbitMQConfig;
     }
 
     private EventResponse buildResponse(String message, Locale locale) {
@@ -96,19 +107,51 @@ public class GatewayEventRestEndpoint {
 		if (servletRequest.getHeader(HttpGateway.KONKER_VERSION_HEADER) != null)
 			return new ResponseEntity<EventResponse>(buildResponse(Messages.INVALID_REQUEST_ORIGIN.getCode(), locale), HttpStatus.FORBIDDEN);
 
-        CompletableFuture.supplyAsync(() -> {
-            try {
-                gatewayEventProcessor.process(gateway, body);
-            } catch (BusinessException | JsonProcessingException e) {
-                LOGGER.error("Error for processing Gateway data", e);
-            }
-            return "Processing";
-        });
+        ResponseEntity<String> exchange = getHealthCheckRabbit();
 
-        return new ResponseEntity<EventResponse>(
-        		EventResponse.builder().code(String.valueOf(HttpStatus.OK.value()))
-        		.message(HttpStatus.OK.name()).build(),
-        		HttpStatus.OK);
+        if (exchange.getStatusCode().equals(HttpStatus.OK)) {
+            CompletableFuture.supplyAsync(() -> {
+                try {
+                    gatewayEventProcessor.process(gateway, body);
+                } catch (BusinessException | JsonProcessingException e) {
+                    LOGGER.error("Error for processing Gateway data", e);
+                }
+                return "Processing";
+            });
+
+            return new ResponseEntity<EventResponse>(
+                    EventResponse.builder().code(String.valueOf(HttpStatus.OK.value()))
+                            .message(HttpStatus.OK.name()).build(),
+                    HttpStatus.OK);
+
+        } else {
+            return new ResponseEntity<EventResponse>(
+                    EventResponse.builder().code(String.valueOf(HttpStatus.SERVICE_UNAVAILABLE.value()))
+                            .message(HttpStatus.SERVICE_UNAVAILABLE.name()).build(),
+                    HttpStatus.SERVICE_UNAVAILABLE);
+        }
+
+    }
+
+    private ResponseEntity<String> getHealthCheckRabbit() {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            String encodedCredentials = Base64Utils
+                    .encodeToString(format("{0}:{1}", rabbitMQConfig.getUsername(), rabbitMQConfig.getPassword()).getBytes());
+            headers.add("Authorization", format("Basic {0}", encodedCredentials));
+            HttpEntity<String> entity = new HttpEntity(
+                    null,
+                    headers
+            );
+            return restTemplate.exchange(
+                    format("http://{0}:{1}/{2}", rabbitMQConfig.getHostname(), rabbitMQConfig.getApiPort(), "api/healthchecks/node"),
+                    HttpMethod.GET,
+                    entity,
+                    String.class);
+
+        } catch (Exception e) {
+            return new ResponseEntity<String>(HttpStatus.SERVICE_UNAVAILABLE);
+        }
     }
 
     @RequestMapping(value = "gateway/data/pub", method = RequestMethod.POST)
@@ -136,19 +179,29 @@ public class GatewayEventRestEndpoint {
             return new ResponseEntity<EventResponse>(buildResponse(Messages.INVALID_HEADER_DEVICE_CHANNEL_FIELD.getCode(),locale), HttpStatus.BAD_REQUEST);
         }
 
-        CompletableFuture.supplyAsync(() -> {
-            try {
-                gatewayEventProcessor.process(gateway, body, deviceIdFieldName, deviceChannelFieldName);
-            } catch (BusinessException | JsonProcessingException e) {
-                LOGGER.error("Error for processing Gateway data", e);
-            }
-            return "Processing";
-        });
+        ResponseEntity<String> exchange = getHealthCheckRabbit();
 
-        return new ResponseEntity<EventResponse>(
-                EventResponse.builder().code(String.valueOf(HttpStatus.OK.value()))
-                        .message(HttpStatus.OK.name()).build(),
-                HttpStatus.OK);
+        if (exchange.getStatusCode().equals(HttpStatus.OK)) {
+            CompletableFuture.supplyAsync(() -> {
+                try {
+                    gatewayEventProcessor.process(gateway, body, deviceIdFieldName, deviceChannelFieldName);
+                } catch (BusinessException | JsonProcessingException e) {
+                    LOGGER.error("Error for processing Gateway data", e);
+                }
+                return "Processing";
+            });
+
+            return new ResponseEntity<EventResponse>(
+                    EventResponse.builder().code(String.valueOf(HttpStatus.OK.value()))
+                            .message(HttpStatus.OK.name()).build(),
+                    HttpStatus.OK);
+
+        } else {
+            return new ResponseEntity<EventResponse>(
+                    EventResponse.builder().code(String.valueOf(HttpStatus.SERVICE_UNAVAILABLE.value()))
+                            .message(HttpStatus.SERVICE_UNAVAILABLE.name()).build(),
+                    HttpStatus.SERVICE_UNAVAILABLE);
+        }
     }
 
     @Data
