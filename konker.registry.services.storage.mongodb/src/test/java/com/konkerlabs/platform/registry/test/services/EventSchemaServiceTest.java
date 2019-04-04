@@ -17,6 +17,7 @@ import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.MongoTestConfiguration;
 import com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers;
 import com.lordofthejars.nosqlunit.annotation.UsingDataSet;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -79,6 +80,7 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
 
     private String firstField = "root.fieldOne";
     private String secondField = "root.fieldTwo";
+    private String cityField = "city";
 
     private String firstJson = "{\n" +
             "    \"root\" : {\n" +
@@ -111,14 +113,20 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
             .channel(firstChannel)
             .field(
                 EventSchema.SchemaField.builder()
-                        .path(firstField)
+                        .path("field")
+                        .knownType(JsonNodeType.STRING)
                         .knownType(JsonNodeType.OBJECT)
-                        .knownType(JsonNodeType.STRING).build())
+                        .knownType(JsonNodeType.NUMBER).build())
+            .field(
+                EventSchema.SchemaField.builder()
+                        .path(firstField)
+                        .knownType(JsonNodeType.STRING)
+                        .knownType(JsonNodeType.OBJECT).build())
             .field(
                 EventSchema.SchemaField.builder()
                         .path(secondField)
-                        .knownType(JsonNodeType.OBJECT)
-                        .knownType(JsonNodeType.STRING).build())
+                        .knownType(JsonNodeType.STRING)
+                        .knownType(JsonNodeType.OBJECT).build())
             .build();
 
         secondEventSchema = EventSchema.builder()
@@ -128,7 +136,8 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
                         EventSchema.SchemaField.builder()
                                 .path(firstField)
                                 .knownType(JsonNodeType.OBJECT)
-                                .knownType(JsonNodeType.STRING).build())
+                                .knownType(JsonNodeType.STRING)
+                                .knownType(JsonNodeType.NUMBER).build())
                 .field(
                         EventSchema.SchemaField.builder()
                                 .path(secondField)
@@ -145,6 +154,17 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
                                 .channel(firstChannel)
                                 .tenantDomain(tenant.getDomainName())
                                 .build()).build();
+    }
+
+    @After
+    public void tearDown() {
+        tenant = null;
+        application = null;
+        firstChannel = null;
+        secondChannel = null;
+        firstEventSchema = null;
+        secondEventSchema = null;
+        incomingEvent = null;
     }
 
     @Test
@@ -181,9 +201,9 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/eventSchemas.json"})
     public void shouldFindKnownIncomingMetrics() throws Exception {
-        List<String> knownMetrics = Arrays.asList(new String[]{"temperature"});
+        List<String> knownMetrics = Arrays.asList(new String[]{"field"});
 
-        ServiceResponse<List<String>> response = eventSchemaService.findKnownIncomingMetricsBy(tenant, application, deviceGuid, "data", JsonNodeType.NUMBER);
+        ServiceResponse<List<String>> response = eventSchemaService.findKnownIncomingMetricsBy(tenant, application, deviceGuid, "command", JsonNodeType.NUMBER);
 
         assertThat(response,isResponseOk());
         assertThat(response.getResult(), equalTo(knownMetrics));
@@ -230,11 +250,11 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
         eventSchemaService.appendIncomingSchema(incomingEventSnd);
         eventRepository.saveIncoming(tenant, application, incomingEventSnd);
 
-        ServiceResponse<EventSchema> response = eventSchemaService.findLastIncomingBy(tenant, application, deviceGuid, JsonNodeType.NUMBER, 50);
+        ServiceResponse<EventSchema> response = eventSchemaService.findLastIncomingBy(tenant, application, deviceGuid, JsonNodeType.STRING, 50);
 
         assertThat(response, isResponseOk());
         assertThat(response.getResult().getChannel(), equalTo(channel));
-        assertThat(response.getResult().getFields().iterator().next().getPath(), equalTo(secondField));
+        assertThat(response.getResult().getFields().iterator().next().getPath(), equalTo(cityField));
     }
 
     @Test
@@ -302,7 +322,7 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
         ServiceResponse<EventSchema> response = eventSchemaService.appendIncomingSchema(incomingEvent);
         assertThat(response,isResponseOk());
         assertThat(response.getResult().getChannel(), equalTo("command"));
-        assertThat(response.getResult().getFields().size(), equalTo(4));
+        assertThat(response.getResult().getFields().size(), equalTo(6));
 
         for (EventSchema.SchemaField schemaField: response.getResult().getFields()) {
             if (schemaField.getPath().equals("field")) {
@@ -321,6 +341,14 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
             else if (schemaField.getPath().equals("root.2")) {
                 assertTrue(schemaField.getKnownTypes().contains(JsonNodeType.ARRAY));
                 assertTrue(schemaField.getKnownTypes().contains(JsonNodeType.NUMBER));
+            }
+            else if (schemaField.getPath().equals("root.fieldOne")) {
+                assertTrue(schemaField.getKnownTypes().contains(JsonNodeType.STRING));
+                assertTrue(schemaField.getKnownTypes().contains(JsonNodeType.OBJECT));
+            }
+            else if (schemaField.getPath().equals("root.fieldTwo")) {
+                assertTrue(schemaField.getKnownTypes().contains(JsonNodeType.STRING));
+                assertTrue(schemaField.getKnownTypes().contains(JsonNodeType.OBJECT));
             }
             else {
                 assertFalse(true);

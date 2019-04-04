@@ -281,6 +281,7 @@ public class EventPublisherDeviceTest extends BusinessLayerTestSupport{
                 .orElseGet(() -> deviceRegisterService.switchEnabledDisabled(tenant, application, THE_DEVICE_GUID).getResult());
 
         device = deviceRegisterService.findByTenantDomainNameAndDeviceGuid(REGISTERED_TENANT_DOMAIN,REGISTERED_DEVICE_GUID);
+        device.setActive(true);
 
         assertThat(event.getIncoming().getChannel(), equalTo(INPUT_CHANNEL));
         subject.send(event,destinationUri,data,device.getTenant(),device.getApplication());
