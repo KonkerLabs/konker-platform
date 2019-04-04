@@ -117,7 +117,7 @@ public class MongoConfig extends AbstractMongoConfiguration {
         return cacheManager;
     }
 
-    @Scheduled(fixedRate = 300000)
+    @Scheduled(fixedRate = 1800000)
     public void evictAllCaches() {
         LOG.info("Evict every cache");
         CacheManager cacheManager = cacheManager();

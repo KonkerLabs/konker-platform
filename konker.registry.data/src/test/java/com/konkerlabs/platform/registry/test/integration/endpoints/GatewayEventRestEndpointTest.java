@@ -3,6 +3,7 @@ package com.konkerlabs.platform.registry.test.integration.endpoints;
 import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.config.RabbitMQConfig;
 import com.konkerlabs.platform.registry.data.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.idm.services.OAuthClientDetailsService;
 import com.konkerlabs.platform.registry.integration.endpoints.GatewayEventRestEndpoint;
@@ -32,6 +33,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.web.client.RestTemplate;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -70,6 +72,12 @@ public class GatewayEventRestEndpointTest extends WebLayerTestContext {
     @Autowired
     private OAuthClientDetailsService oAuthClientDetailsService;
 
+    @Autowired
+    private RestTemplate restTemplate;
+
+    @Autowired
+    private RabbitMQConfig rabbitMQConfig;
+
     private Gateway gateway;
     private String json;
 
@@ -81,7 +89,9 @@ public class GatewayEventRestEndpointTest extends WebLayerTestContext {
                 gatewayEventProcessor,
                 jsonParsingService,
                 deviceRegisterService,
-                oAuthClientDetailsService);
+                oAuthClientDetailsService,
+                restTemplate,
+                rabbitMQConfig);
         
         gateway = Gateway.builder()
         		.active(true)
@@ -217,6 +227,16 @@ public class GatewayEventRestEndpointTest extends WebLayerTestContext {
         @Bean
         public OAuthClientDetailsService oAuthClientDetailsService() {
             return Mockito.mock(OAuthClientDetailsService.class);
+        }
+
+        @Bean
+        public RestTemplate restTemplate() {
+            return Mockito.mock(RestTemplate.class);
+        }
+
+        @Bean
+        public RabbitMQConfig rabbitMQConfig() {
+            return Mockito.mock(RabbitMQConfig.class);
         }
 
     }
