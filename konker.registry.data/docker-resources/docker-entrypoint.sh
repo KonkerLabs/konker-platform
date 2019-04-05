@@ -27,6 +27,7 @@ CDN_ENABLED=true
 EMAIL_ENABLED=true
 S3BUCKET_MAX_SIZE=500000
 S3BUCKET_ENABLED=true
+RABBITMQ_API_PORT=15672
 
 
 echo ""
@@ -161,6 +162,7 @@ java \
     -Dredis.master.host=$REDIS_HOSTNAME \
     -Dredis.master.port=$REDIS_PORT \
     -Drabbitmq.hostname=$RABBITMQ_HOSTNAME \
+    -Drabbitmq.apiport=$RABBITMQ_API_PORT \
     -Drabbitmq.username=$RABBITMQ_USERNAME \
     -Drabbitmq.password=$RABBITMQ_PASSWORD \
     -Drabbitmq.virtualHost=$RABBITMQ_VHOST \

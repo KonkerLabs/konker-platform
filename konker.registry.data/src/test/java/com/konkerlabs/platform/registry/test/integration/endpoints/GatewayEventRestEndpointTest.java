@@ -3,6 +3,7 @@ package com.konkerlabs.platform.registry.test.integration.endpoints;
 import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.config.RabbitMQConfig;
 import com.konkerlabs.platform.registry.data.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.idm.services.OAuthClientDetailsService;
 import com.konkerlabs.platform.registry.integration.endpoints.GatewayEventRestEndpoint;
@@ -24,7 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -32,7 +33,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.util.Base64Utils;
+import org.springframework.web.client.RestTemplate;
 
+import static java.text.MessageFormat.format;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -70,6 +76,12 @@ public class GatewayEventRestEndpointTest extends WebLayerTestContext {
     @Autowired
     private OAuthClientDetailsService oAuthClientDetailsService;
 
+    @Autowired
+    private RestTemplate restTemplate;
+
+    @Autowired
+    private RabbitMQConfig rabbitMQConfig;
+
     private Gateway gateway;
     private String json;
 
@@ -81,7 +93,9 @@ public class GatewayEventRestEndpointTest extends WebLayerTestContext {
                 gatewayEventProcessor,
                 jsonParsingService,
                 deviceRegisterService,
-                oAuthClientDetailsService);
+                oAuthClientDetailsService,
+                restTemplate,
+                rabbitMQConfig);
         
         gateway = Gateway.builder()
         		.active(true)
@@ -173,6 +187,15 @@ public class GatewayEventRestEndpointTest extends WebLayerTestContext {
     
     @Test
     public void shouldPubToKonkerPlatform() throws Exception {
+        HttpHeaders headers = new HttpHeaders();
+        String encodedCredentials = Base64Utils
+                .encodeToString(format("{0}:{1}", rabbitMQConfig.getUsername(), rabbitMQConfig.getPassword()).getBytes());
+        headers.add("Authorization", format("Basic {0}", encodedCredentials));
+        HttpEntity<String> entity = new HttpEntity(
+                null,
+                headers
+        );
+
     	SecurityContext context = SecurityContextHolder.getContext();
         Authentication auth = new TestingAuthenticationToken("gateway://i3k9jfe5/1c6e7df7-fe10-4c53-acae-913e0ceec883", null);
         context.setAuthentication(auth);
@@ -181,6 +204,12 @@ public class GatewayEventRestEndpointTest extends WebLayerTestContext {
         	.thenReturn(ServiceResponseBuilder.<OauthClientDetails>ok()
         			.withResult(OauthClientDetails.builder().parentGateway(gateway).build()).build());
         when(jsonParsingService.isValid(json)).thenReturn(true);
+        when(restTemplate.exchange(
+                format("http://{0}:{1}/{2}", rabbitMQConfig.getHostname(), rabbitMQConfig.getApiPort(), "api/healthchecks/node"),
+                HttpMethod.GET,
+                entity,
+                String.class)).thenReturn(new ResponseEntity<String>(HttpStatus.OK));
+
 
 		getMockMvc().perform(
                 post("/gateway/pub")
@@ -217,6 +246,16 @@ public class GatewayEventRestEndpointTest extends WebLayerTestContext {
         @Bean
         public OAuthClientDetailsService oAuthClientDetailsService() {
             return Mockito.mock(OAuthClientDetailsService.class);
+        }
+
+        @Bean
+        public RestTemplate restTemplate() {
+            return Mockito.mock(RestTemplate.class);
+        }
+
+        @Bean
+        public RabbitMQConfig rabbitMQConfig() {
+            return Mockito.mock(RabbitMQConfig.class);
         }
 
     }

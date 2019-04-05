@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry.business.repositories;
 
 import com.konkerlabs.platform.registry.business.model.Device;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -15,6 +16,7 @@ public interface DeviceRepository extends MongoRepository<Device, String> {
     @Query("{ 'tenant.id' : ?0, 'application.name' : ?1, 'deviceId' : ?2 }")
     Device findByTenantIdAndApplicationAndDeviceId(String tenantId, String applicationName, String deviceId);
     @Query("{ 'tenant.id' : ?0, 'guid' : ?1 }")
+    @Cacheable("deviceCache")
     Device findByTenantAndGuid(String tenantId, String deviceGuid);
     @Query("{ 'apiKey' : ?0 }")
     Device findByApiKey(String apiKey);

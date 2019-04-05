@@ -1,6 +1,8 @@
 package com.konkerlabs.platform.registry.business.services;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -11,10 +13,13 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
+import com.konkerlabs.platform.registry.business.repositories.EventSchemaRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -51,7 +56,9 @@ import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
 public class EventSchemaServiceImpl implements EventSchemaService {
 
-    private enum SchemaType {
+    private static final Logger LOGGER = LoggerFactory.getLogger(EventSchemaServiceImpl.class);
+
+    public enum SchemaType {
         INCOMING("incomingEventSchema"),
         OUTGOING("outgoingEventSchema");
 
@@ -92,6 +99,8 @@ public class EventSchemaServiceImpl implements EventSchemaService {
 
     @Autowired
     private EventStorageConfig eventStorageConfig;
+    @Autowired
+    private EventSchemaRepository eventSchemaRepository;
     private EventRepository eventRepository;
 
     @PostConstruct
@@ -229,11 +238,7 @@ public class EventSchemaServiceImpl implements EventSchemaService {
                     .build();
         }
 
-        EventSchema existing = mongoTemplate.findOne(
-                Query.query(Criteria.where("deviceGuid")
-                        .is(deviceGuid).andOperator(Criteria.where("channel").is(channel))),
-                EventSchema.class, SchemaType.INCOMING.getCollectionName()
-        );
+        EventSchema existing = eventSchemaRepository.findByDeviceGuidChannel(deviceGuid, channel);
 
         return ServiceResponseBuilder.<EventSchema>ok()
             .withResult(existing).build();
