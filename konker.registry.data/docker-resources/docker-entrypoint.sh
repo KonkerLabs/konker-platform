@@ -162,6 +162,7 @@ java \
     -Dredis.master.host=$REDIS_HOSTNAME \
     -Dredis.master.port=$REDIS_PORT \
     -Drabbitmq.hostname=$RABBITMQ_HOSTNAME \
+    -Drabbitmq.apihost=$RABBITMQ_API_HOST \
     -Drabbitmq.apiport=$RABBITMQ_API_PORT \
     -Drabbitmq.username=$RABBITMQ_USERNAME \
     -Drabbitmq.password=$RABBITMQ_PASSWORD \

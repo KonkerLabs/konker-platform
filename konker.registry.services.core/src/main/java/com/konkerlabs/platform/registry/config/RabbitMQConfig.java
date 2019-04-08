@@ -30,6 +30,7 @@ public class RabbitMQConfig {
     private String username;
     private String password;
     private String virtualHost;
+    private String apiHost;
     private String apiPort;
 
     public static final String MSG_HEADER_APIKEY = "apiKey";
@@ -43,6 +44,7 @@ public class RabbitMQConfig {
     public RabbitMQConfig() {
         Map<String, Object> defaultMap = new HashMap<>();
         defaultMap.put("rabbitmq.hostname", "localhost");
+        defaultMap.put("rabbitmq.apihost", "localhost");
         defaultMap.put("rabbitmq.apiport", "8083");
         defaultMap.put("rabbitmq.username", "guest");
         defaultMap.put("rabbitmq.password", "guest");
@@ -55,6 +57,7 @@ public class RabbitMQConfig {
         setUsername(config.getString("rabbitmq.username"));
         setPassword(config.getString("rabbitmq.password"));
         setVirtualHost(config.getString("rabbitmq.virtualHost"));
+        setApiHost(config.getString("rabbitmq.apihost"));
         setApiPort(config.getString("rabbitmq.apiport"));
     }
 

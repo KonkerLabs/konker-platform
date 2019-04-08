@@ -144,7 +144,7 @@ public class GatewayEventRestEndpoint {
                     headers
             );
             return restTemplate.exchange(
-                    format("http://{0}:{1}/{2}", rabbitMQConfig.getHostname(), rabbitMQConfig.getApiPort(), "api/healthchecks/node"),
+                    format("http://{0}:{1}/{2}", rabbitMQConfig.getApiHost(), rabbitMQConfig.getApiPort(), "api/healthchecks/node"),
                     HttpMethod.GET,
                     entity,
                     String.class);
