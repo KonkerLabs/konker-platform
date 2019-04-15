@@ -137,7 +137,7 @@ public class GatewayEventRestEndpoint {
         try {
             HttpHeaders headers = new HttpHeaders();
             String encodedCredentials = Base64Utils
-                    .encodeToString(format("{0}:{1}", rabbitMQConfig.getUsername(), rabbitMQConfig.getPassword()).getBytes());
+                    .encodeToString(format("{0}:{1}", rabbitMQConfig.getApiUsername(), rabbitMQConfig.getApiPassword()).getBytes());
             headers.add("Authorization", format("Basic {0}", encodedCredentials));
             HttpEntity<String> entity = new HttpEntity(
                     null,

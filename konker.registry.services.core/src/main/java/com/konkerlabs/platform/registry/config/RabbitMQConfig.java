@@ -32,6 +32,8 @@ public class RabbitMQConfig {
     private String virtualHost;
     private String apiHost;
     private String apiPort;
+    private String apiUsername;
+    private String apiPassword;
 
     public static final String MSG_HEADER_APIKEY = "apiKey";
 
@@ -46,8 +48,10 @@ public class RabbitMQConfig {
         defaultMap.put("rabbitmq.hostname", "localhost");
         defaultMap.put("rabbitmq.apihost", "localhost");
         defaultMap.put("rabbitmq.apiport", "8083");
-        defaultMap.put("rabbitmq.username", "guest");
-        defaultMap.put("rabbitmq.password", "guest");
+        defaultMap.put("rabbitmq.apiusername", "guest");
+        defaultMap.put("rabbitmq.apipassword", "guest");
+        defaultMap.put("rabbitmq.username", "");
+        defaultMap.put("rabbitmq.password", "");
         defaultMap.put("rabbitmq.virtualHost", "");
 
         Config defaultConf = ConfigFactory.parseMap(defaultMap);
@@ -59,13 +63,16 @@ public class RabbitMQConfig {
         setVirtualHost(config.getString("rabbitmq.virtualHost"));
         setApiHost(config.getString("rabbitmq.apihost"));
         setApiPort(config.getString("rabbitmq.apiport"));
+        setApiUsername(config.getString("rabbitmq.apiusername"));
+        setApiPassword(config.getString("rabbitmq.apipassword"));
     }
 
     @Bean
     public ConnectionFactory connectionFactory() {
         LOGGER.info("Hostname: {}", getHostname());
 
-        CachingConnectionFactory connectionFactory = new CachingConnectionFactory(getHostname());
+        CachingConnectionFactory connectionFactory = new CachingConnectionFactory();
+        connectionFactory.setAddresses(getHostname());
         if (StringUtils.hasText(getUsername())) {
             connectionFactory.setUsername(getUsername());
             connectionFactory.setPassword(getPassword());
