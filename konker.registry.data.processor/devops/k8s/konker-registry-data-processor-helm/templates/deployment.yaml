@@ -1,0 +1,75 @@
+{{- $helmName := include "konker-registry-data-processor.name" . -}}
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ include "konker-registry-data-processor.fullname" . }}
+  labels:
+    app: {{ include "konker-registry-data-processor.name" . }}
+    chart: {{ include "konker-registry-data-processor.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "konker-registry-data-processor.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "konker-registry-data-processor.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      imagePullSecrets:
+      - name: {{ .Values.image.credentials.secret }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.livenessProbe.httpGet.path }}
+              port: {{ .Values.livenessProbe.httpGet.port }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.readinessProbe.httpGet.path }}
+              port: {{ .Values.readinessProbe.httpGet.port }}
+          resources:
+          env:
+          {{- if .Values.configmap -}}
+          {{- range $key, $value := .Values.configmap }}
+          - name: {{ $key }}
+            valueFrom:
+              configMapKeyRef:
+                name: {{ $helmName }}
+                key: {{ $key }}
+          {{- end }}
+          {{- end }}
+
+          {{- if .Values.secrets -}}
+          {{- range $key, $value := .Values.secrets }}
+          - name: {{ $key }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ $helmName }}
+                key: {{ $key }}
+          {{- end }}
+          {{- end }}
+
+{{ toYaml .Values.resources | indent 12 }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}

@@ -7,7 +7,7 @@ import com.konkerlabs.platform.registry.config.RabbitMQConfig;
 import com.konkerlabs.platform.registry.data.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.idm.services.OAuthClientDetailsService;
 import com.konkerlabs.platform.registry.integration.endpoints.GatewayEventRestEndpoint;
-import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
+import com.konkerlabs.platform.registry.data.core.integration.processors.DeviceEventProcessor;
 import com.konkerlabs.platform.registry.integration.processors.GatewayEventProcessor;
 import com.konkerlabs.platform.registry.test.data.base.BusinessDataTestConfiguration;
 import com.konkerlabs.platform.registry.test.data.base.SecurityTestConfiguration;
@@ -38,7 +38,6 @@ import org.springframework.web.client.RestTemplate;
 
 import static java.text.MessageFormat.format;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;

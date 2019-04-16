@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "konker-registry-data-processor.fullname" . }}
+  labels:
+    app: {{ include "konker-registry-data-processor.name" . }}
+    chart: {{ include "konker-registry-data-processor.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ include "konker-registry-data-processor.name" . }}
+    release: {{ .Release.Name }}
