@@ -140,6 +140,8 @@ public class GatewayEventRestEndpoint {
                     null,
                     headers
             );
+
+            LOGGER.info(format("Connecting to {0}:{1}", rabbitMQConfig.getApiHost(), rabbitMQConfig.getApiPort()));
             return restTemplate.exchange(
                     format("http://{0}:{1}/{2}", rabbitMQConfig.getApiHost(), rabbitMQConfig.getApiPort(), "api/healthchecks/node"),
                     HttpMethod.GET,
@@ -147,6 +149,7 @@ public class GatewayEventRestEndpoint {
                     String.class);
 
         } catch (Exception e) {
+            LOGGER.error("Error to connect in ", e);
             return new ResponseEntity<String>(HttpStatus.SERVICE_UNAVAILABLE);
         }
     }

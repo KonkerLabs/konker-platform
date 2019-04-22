@@ -2,7 +2,7 @@
 kind: ConfigMap
 apiVersion: v1
 metadata:
-  name: {{ include "konker-registry-data-processor.name" . }}
+  name: {{ include "konker-registry-data-processor-helm.name" . }}
 data:
 {{- range $key, $value := .Values.configmap }}
   {{ $key }}: {{ $value }}

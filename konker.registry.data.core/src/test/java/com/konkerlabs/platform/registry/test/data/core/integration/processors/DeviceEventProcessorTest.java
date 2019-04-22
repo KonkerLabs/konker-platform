@@ -8,7 +8,6 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterServ
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.config.EventStorageConfig;
-import com.konkerlabs.platform.registry.data.core.config.MongoDataCoreConfig;
 import com.konkerlabs.platform.registry.data.core.config.RedisConfig;
 import com.konkerlabs.platform.registry.data.core.integration.converters.DefaultJsonConverter;
 import com.konkerlabs.platform.registry.data.core.integration.converters.MessagePackJsonConverter;
@@ -17,6 +16,7 @@ import com.konkerlabs.platform.registry.data.core.services.api.DeviceLogEventSer
 import com.konkerlabs.platform.registry.data.core.services.routes.api.EventRouteExecutor;
 import com.konkerlabs.platform.registry.test.data.core.base.BusinessTestConfiguration;
 import com.konkerlabs.platform.registry.test.data.core.base.IntegrationTestConfiguration;
+import com.konkerlabs.platform.registry.test.data.core.base.MongoTestConfiguration;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 import org.junit.After;
 import org.junit.Before;
@@ -41,7 +41,7 @@ import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
-        MongoDataCoreConfig.class,
+        MongoTestConfiguration.class,
         BusinessTestConfiguration.class,
         IntegrationTestConfiguration.class,
         DeviceEventProcessorTest.BusinessLayerConfiguration.class,

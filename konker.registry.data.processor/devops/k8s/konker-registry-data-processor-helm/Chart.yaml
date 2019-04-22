@@ -1,5 +1,5 @@
 apiVersion: v1
-appVersion: "data-1.2.4-k8s"
+appVersion: "data-processor-1.2.4-k8s"
 description: A Helm chart for Kubernetes
 name: konker-registry-data-processor-helm
 version: data-processor-1.2.4-k8s

@@ -1,11 +1,10 @@
 package com.konkerlabs.platform.registry.router.integration.eventsqueue;
 
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.Event;
-import com.konkerlabs.platform.registry.business.model.EventRoute;
+import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.TenantService;
 import com.konkerlabs.platform.registry.data.core.config.RabbitMQDataConfig;
 import com.konkerlabs.platform.registry.data.core.services.routes.api.EventRouteExecutor;
 import org.slf4j.Logger;
@@ -28,6 +27,9 @@ public class RabbitEventQueue {
 
     @Autowired
     private EventRouteExecutor eventRouteExecutor;
+
+    @Autowired
+    private TenantService tenantService;
 
     @Autowired
     private DeviceRegisterService deviceRegisterService;
@@ -57,6 +59,18 @@ public class RabbitEventQueue {
             ServiceResponse<EventRoute> response = eventRouteService.getByGUID(
                     device.getTenant(),
                     device.getApplication(),
+                    eventRouteGuid);
+
+            if (response.isOk()) {
+                eventRouteExecutor.execute(event, device, response.getResult());
+            }
+        } else if (event.getIncoming().getApplicationName()
+                .equals(event.getIncoming().getDeviceGuid())) {
+            Tenant tenant = tenantService.findByDomainName(event.getIncoming().getTenantDomain()).getResult();
+            // event route
+            ServiceResponse<EventRoute> response = eventRouteService.getByGUID(
+                    tenant,
+                    Application.builder().name(event.getIncoming().getApplicationName()).build(),
                     eventRouteGuid);
 
             if (response.isOk()) {

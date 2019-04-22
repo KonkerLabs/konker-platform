@@ -1,23 +1,23 @@
-{{- $helmName := include "konker-registry-data-processor.name" . -}}
+{{- $helmName := include "konker-registry-data-processor-helm.name" . -}}
 apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
-  name: {{ include "konker-registry-data-processor.fullname" . }}
+  name: {{ include "konker-registry-data-processor-helm.fullname" . }}
   labels:
-    app: {{ include "konker-registry-data-processor.name" . }}
-    chart: {{ include "konker-registry-data-processor.chart" . }}
+    app: {{ include "konker-registry-data-processor-helm.name" . }}
+    chart: {{ include "konker-registry-data-processor-helm.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ include "konker-registry-data-processor.name" . }}
+      app: {{ include "konker-registry-data-processor-helm.name" . }}
       release: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app: {{ include "konker-registry-data-processor.name" . }}
+        app: {{ include "konker-registry-data-processor-helm.name" . }}
         release: {{ .Release.Name }}
     spec:
       imagePullSecrets:

@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "konker-registry-data-processor.fullname" . }}
+  name: {{ include "konker-registry-data-processor-helm.fullname" . }}
   labels:
-    app: {{ include "konker-registry-data-processor.name" . }}
-    chart: {{ include "konker-registry-data-processor.chart" . }}
+    app: {{ include "konker-registry-data-processor-helm.name" . }}
+    chart: {{ include "konker-registry-data-processor-helm.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 spec:
@@ -15,5 +15,5 @@ spec:
       protocol: TCP
       name: http
   selector:
-    app: {{ include "konker-registry-data-processor.name" . }}
+    app: {{ include "konker-registry-data-processor-helm.name" . }}
     release: {{ .Release.Name }}
