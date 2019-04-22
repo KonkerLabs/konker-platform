@@ -118,7 +118,7 @@ public class SendEventsRestControllerTest extends WebLayerTestContext {
         	.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
        
         when(restTemplate.postForObject(
-        		MessageFormat.format("http://localhost:8082/registry-data/{0}/{1}/pub", tenant.getDomainName(), application.getName()), 
+        		MessageFormat.format("http://localhost:8085/registry-data-processor/{0}/{1}/pub", tenant.getDomainName(), application.getName()),
         		request, 
         		String.class))
 			.thenReturn("{status: 200}");
