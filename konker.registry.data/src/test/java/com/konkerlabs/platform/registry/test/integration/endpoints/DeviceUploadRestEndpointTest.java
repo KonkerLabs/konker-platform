@@ -7,7 +7,7 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterServ
 import com.konkerlabs.platform.registry.data.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.data.upload.UploadRepository;
 import com.konkerlabs.platform.registry.integration.endpoints.DeviceUploadRestEndpoint;
-import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
+import com.konkerlabs.platform.registry.data.core.integration.processors.DeviceEventProcessor;
 import com.konkerlabs.platform.registry.test.data.base.BusinessDataTestConfiguration;
 import com.konkerlabs.platform.registry.test.data.base.SecurityTestConfiguration;
 import com.konkerlabs.platform.registry.test.data.base.WebLayerTestContext;

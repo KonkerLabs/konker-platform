@@ -92,6 +92,10 @@ echo "#### host: $RABBITMQ_HOSTNAME"
 echo "#### vhost: $RABBITMQ_VHOST"
 echo "#### user: *******"
 echo "#### password: *******"
+echo "#### api host: $RABBITMQ_API_HOST"
+echo "#### api port: $RABBITMQ_API_PORT"
+echo "#### api user: $RABBITMQ_API_USER"
+echo "#### api pass: ********"
 echo "## SMS"
 echo "#### enabled: $SMS_ENABLED"
 echo "#### uri: $SMS_URI"
@@ -162,7 +166,10 @@ java \
     -Dredis.master.host=$REDIS_HOSTNAME \
     -Dredis.master.port=$REDIS_PORT \
     -Drabbitmq.hostname=$RABBITMQ_HOSTNAME \
+    -Drabbitmq.apihost=$RABBITMQ_API_HOST \
     -Drabbitmq.apiport=$RABBITMQ_API_PORT \
+    -Drabbitmq.apiusername=$RABBITMQ_API_USERNAME \
+    -Drabbitmq.apipassword=$RABBITMQ_API_PASSWORD \
     -Drabbitmq.username=$RABBITMQ_USERNAME \
     -Drabbitmq.password=$RABBITMQ_PASSWORD \
     -Drabbitmq.virtualHost=$RABBITMQ_VHOST \

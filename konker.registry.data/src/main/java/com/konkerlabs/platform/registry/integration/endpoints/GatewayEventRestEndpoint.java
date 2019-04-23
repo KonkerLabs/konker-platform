@@ -8,7 +8,6 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterServ
 import com.konkerlabs.platform.registry.config.RabbitMQConfig;
 import com.konkerlabs.platform.registry.idm.services.OAuthClientDetailsService;
 import com.konkerlabs.platform.registry.data.core.integration.gateway.HttpGateway;
-import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
 import com.konkerlabs.platform.registry.integration.processors.GatewayEventProcessor;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 import lombok.Builder;
@@ -28,10 +27,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
-import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 import static java.text.MessageFormat.format;
 
@@ -137,19 +134,22 @@ public class GatewayEventRestEndpoint {
         try {
             HttpHeaders headers = new HttpHeaders();
             String encodedCredentials = Base64Utils
-                    .encodeToString(format("{0}:{1}", rabbitMQConfig.getUsername(), rabbitMQConfig.getPassword()).getBytes());
+                    .encodeToString(format("{0}:{1}", rabbitMQConfig.getApiUsername(), rabbitMQConfig.getApiPassword()).getBytes());
             headers.add("Authorization", format("Basic {0}", encodedCredentials));
             HttpEntity<String> entity = new HttpEntity(
                     null,
                     headers
             );
+
+            LOGGER.info(format("Connecting to {0}:{1}", rabbitMQConfig.getApiHost(), rabbitMQConfig.getApiPort()));
             return restTemplate.exchange(
-                    format("http://{0}:{1}/{2}", rabbitMQConfig.getHostname(), rabbitMQConfig.getApiPort(), "api/healthchecks/node"),
+                    format("http://{0}:{1}/{2}", rabbitMQConfig.getApiHost(), rabbitMQConfig.getApiPort(), "api/healthchecks/node"),
                     HttpMethod.GET,
                     entity,
                     String.class);
 
         } catch (Exception e) {
+            LOGGER.error("Error to connect in ", e);
             return new ResponseEntity<String>(HttpStatus.SERVICE_UNAVAILABLE);
         }
     }

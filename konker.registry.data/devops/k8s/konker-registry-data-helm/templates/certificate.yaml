@@ -1,5 +1,5 @@
 {{- if .Values.ingress.tls -}}
-{{- $fullName := include "konker-registry-helm.fullname" . -}}
+{{- $fullName := include "konker-registry-data-helm.fullname" . -}}
 {{- range .Values.ingress.tls }}
 apiVersion: certmanager.k8s.io/v1alpha1
 kind: Certificate
