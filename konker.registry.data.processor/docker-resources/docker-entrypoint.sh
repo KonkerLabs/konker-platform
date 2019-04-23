@@ -32,7 +32,7 @@ RABBITMQ_API_PORT=15672
 
 echo ""
 echo ""
-echo "################################### Konker Open Platform - DATA ###################################"
+echo "################################### Konker Open Platform - DATA PROCESSOR ########################"
 echo "##                                       Version: 1.0.0                                         ##"
 echo "##                                  Release date: 2017-04-24                                    ##"
 echo "##              Licence: Apache V2 (http://www.apache.org/licenses/LICENSE-2.0)                 ##"
