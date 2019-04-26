@@ -112,7 +112,11 @@ public class PrivateStorageRestController extends AbstractRestController impleme
     		@PathVariable("application") String applicationId,
     		@PathVariable("collectionName") String collection,
             @ApiParam(value = "Query string", example = "_id:818599ad-3502-4e70-a852-fc7af8e0a9f4")
-            @RequestParam(required = false, defaultValue = "", name = "q") String query) throws BadServiceResponseException, NotFoundResponseException {
+            @RequestParam(required = false, defaultValue = "", name = "q") String query,
+            @ApiParam(value = "Page number")
+            @RequestParam(required = false, defaultValue = "0") int pageNumber,
+            @ApiParam(value = "Number of elements per page")
+            @RequestParam(required = false, defaultValue = "10") int pageSize) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
@@ -122,13 +126,13 @@ public class PrivateStorageRestController extends AbstractRestController impleme
             Map<String, String> queryParam = new HashMap<>();
 
             if (query.length() > 0) {
-                String[] keysQuery = query.split(" ");
+                String[] keysQuery = query.split("&");
                 queryParam = Arrays.stream(keysQuery)
-                        .map(k -> k.split(":"))
+                        .map(k -> k.split("="))
                         .collect(Collectors.toMap(k -> k[0], k -> k[1]));
             }
 
-            response = privateStorageService.findByQuery(tenant, application, user.getParentUser(), collection, queryParam);
+            response = privateStorageService.findByQuery(tenant, application, user.getParentUser(), collection, queryParam, pageNumber, pageSize);
 
             if (!response.isOk()) {
                 throw new NotFoundResponseException(response);
