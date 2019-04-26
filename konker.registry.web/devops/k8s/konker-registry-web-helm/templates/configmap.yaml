@@ -5,6 +5,6 @@ metadata:
   name: {{ include "konker-registry-helm.name" . }}
 data:
 {{- range $key, $value := .Values.configmap }}
-  {{ $key }}: {{ $value }}
+  {{ $key }}: {{ $value | quote }}
 {{- end }}
 {{- end }}
