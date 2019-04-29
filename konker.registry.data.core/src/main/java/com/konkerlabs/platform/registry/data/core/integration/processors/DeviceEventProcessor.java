@@ -96,13 +96,7 @@ public class DeviceEventProcessor {
 
         String jsonPayload = getJsonPayload(device, bytesPayload);
 
-        Map<String, JsonParsingService.JsonPathData> payloadsMap = jsonParsingService.toFlatMap(jsonPayload);
-        Instant creationTimestamp = payloadsMap.containsKey("ts")
-                && integerPattern.matcher(payloadsMap.get("ts").getValue().toString()).matches() ?
-                Instant.ofEpochMilli(new Long(payloadsMap.get("ts").getValue().toString())) :
-                timestamp;
-
-        process(device, channel, jsonPayload, timestamp, creationTimestamp);
+        process(device, channel, jsonPayload, timestamp, timestamp);
     }
 
     /**

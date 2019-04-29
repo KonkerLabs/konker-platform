@@ -20,7 +20,10 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -253,7 +256,22 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
                                                              Application application,
                                                              User user,
                                                              String collectionName,
-                                                             Map<String, String> queryParam) throws JsonProcessingException {
+                                                             Map<String, String> queryParam,
+                                                             int pageNumber,
+                                                             int pageSize) throws JsonProcessingException {
+        pageNumber = pageNumber > 0 ? (pageNumber - 1) * pageSize : 0;
+
+        if (pageSize <= 0) {
+            return ServiceResponseBuilder.<List<PrivateStorage>>error()
+                    .withMessage(CommonValidations.SIZE_ELEMENT_PAGE_INVALID.getCode())
+                    .build();
+        }
+
+        if (pageSize > 10) {
+            return ServiceResponseBuilder.<List<PrivateStorage>>error()
+                    .withMessage(CommonValidations.SIZE_ELEMENT_PAGE_OVERPASS.getCode())
+                    .build();
+        }
         ServiceResponse<List<PrivateStorage>> validationResponse = validate(tenant, application, collectionName);
 
         if (!validationResponse.isOk()) {
@@ -273,7 +291,7 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
 
         collectionName = getCollectionName(tenant, application, collectionName);
         return ServiceResponseBuilder.<List<PrivateStorage>>ok()
-                .withResult(privateStorageRepository.findByQuery(collectionName, queryParam))
+                .withResult(privateStorageRepository.findByQuery(collectionName, queryParam, pageNumber, pageSize))
                 .build();
     }
 

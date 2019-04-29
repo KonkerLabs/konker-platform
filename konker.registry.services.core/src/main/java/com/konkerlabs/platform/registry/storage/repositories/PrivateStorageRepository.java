@@ -1,13 +1,13 @@
 package com.konkerlabs.platform.registry.storage.repositories;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.config.MongoPrivateStorageConfig;
 import com.konkerlabs.platform.registry.storage.model.PrivateStorage;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingServiceImpl;
-import com.mongodb.*;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,8 +16,8 @@ import org.springframework.data.mongodb.core.CollectionOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.text.MessageFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Repository
 public class PrivateStorageRepository {
@@ -110,17 +110,60 @@ public class PrivateStorageRepository {
                 .build();
     }
 
-    public List<PrivateStorage> findByQuery(String collectionName, Map<String, String> queryParam) throws JsonProcessingException {
+    public List<PrivateStorage> findByQuery(String collectionName, Map<String, String> queryParam, int pageNumber, int pageSize) throws JsonProcessingException {
+        List<BasicDBObject> criterias = queryParam.entrySet()
+                .stream()
+                .map(item -> {
+                    String[] params = item.getValue().split(":");
+                    String value = params[0];
+                    FilterEnum filter = FilterEnum.DEFAULT;
+
+                    if (params.length == 2) {
+                        String operator = params[0];
+                        value = params[1];
+                        filter = FilterEnum.valueOf(operator.toUpperCase());
+                    }
+
+                    return filter.criteria(item.getKey(), value);
+                })
+                .collect(Collectors.toList());
+
         List<PrivateStorage> privatesStorage = new ArrayList<>();
         DBObject query = new BasicDBObject();
-        query.putAll(queryParam);
+
+        List<BasicDBObject> andCriteria = new ArrayList<>();
+        andCriteria.addAll(criterias);
+        query.put("$and", andCriteria);
 
         DBCollection collection = mongoPrivateStorageTemplate.getCollection(collectionName);
         DBCursor cursor = collection.find(query);
 
-        toPrivateStorageList(collectionName, privatesStorage, cursor);
+        toPrivateStorageList(collectionName, privatesStorage, cursor, pageNumber, pageSize);
 
         return privatesStorage;
+    }
+
+    private void toPrivateStorageList(String collectionName,
+                                      List<PrivateStorage> privatesStorage,
+                                      DBCursor cursor,
+                                      int pageNumber,
+                                      int pageSize) throws JsonProcessingException {
+        try {
+            cursor.skip(pageNumber);
+            cursor.limit(pageSize);
+            while (cursor.hasNext()) {
+                cursor.next();
+
+                String content = jsonParsingService.toJsonString(cursor.curr().toMap());
+
+                privatesStorage.add(PrivateStorage.builder()
+                        .collectionName(collectionName)
+                        .collectionContent(content)
+                        .build());
+            }
+        } finally {
+            cursor.close();
+        }
     }
 
     private void toPrivateStorageList(String collectionName, List<PrivateStorage> privatesStorage, DBCursor cursor) throws JsonProcessingException {
