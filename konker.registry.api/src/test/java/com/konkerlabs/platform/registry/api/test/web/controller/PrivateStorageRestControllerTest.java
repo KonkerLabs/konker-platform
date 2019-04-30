@@ -219,13 +219,13 @@ public class PrivateStorageRestControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldReadData() throws Exception {
-        when(privateStorageService.findByQuery(any(Tenant.class), any(Application.class), any(User.class), anyString(), any(Map.class), pageNumber, pageSize))
+        when(privateStorageService.findByQuery(any(Tenant.class), any(Application.class), any(User.class), anyString(), any(Map.class), anyString(), any(Integer.class), any(Integer.class)))
                 .thenReturn(ServiceResponseBuilder.<List<PrivateStorage>>ok()
                         .withResult(Collections.singletonList(privateStorage1)).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}/search", application.getName(), BASEPATH, "customers"))
                 .contentType("application/json")
-                .param("q", "customers:konker")
+                .param("q", "customers=konker")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json;charset=UTF-8"))
@@ -258,13 +258,13 @@ public class PrivateStorageRestControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldTryReadDataWithBadRequest() throws Exception {
-        when(privateStorageService.findByQuery(any(Tenant.class), any(Application.class), any(User.class), anyString(), any(Map.class), pageNumber, pageSize))
-                .thenReturn(ServiceResponseBuilder.<PrivateStorage>error()
+        when(privateStorageService.findByQuery(any(Tenant.class), any(Application.class), any(User.class), anyString(), any(Map.class), anyString(), any(Integer.class), any(Integer.class)))
+                .thenReturn(ServiceResponseBuilder.<List<PrivateStorage>>error()
                         .withMessage(PrivateStorageService.Validations.PRIVATE_STORAGE_INVALID_COLLECTION_NAME.getCode()).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}/search", application.getName(), BASEPATH, "customers"))
                 .contentType("application/json")
-                .param("q", "customers:konker")
+                .param("q", "customers=konker")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError())
                 .andExpect(content().contentType("application/json;charset=UTF-8"))

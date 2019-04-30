@@ -81,6 +81,7 @@ public interface PrivateStorageService {
                                                       User user,
                                                       String collectionName,
                                                       Map<String, String> queryParam,
+                                                      String sort,
                                                       int pageNumber,
                                                       int pageSize) throws JsonProcessingException;
 
