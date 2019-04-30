@@ -257,6 +257,7 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
                                                              User user,
                                                              String collectionName,
                                                              Map<String, String> queryParam,
+                                                             String sort,
                                                              int pageNumber,
                                                              int pageSize) throws JsonProcessingException {
         pageNumber = pageNumber > 0 ? (pageNumber - 1) * pageSize : 0;
@@ -270,6 +271,12 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
         if (pageSize > 10) {
             return ServiceResponseBuilder.<List<PrivateStorage>>error()
                     .withMessage(CommonValidations.SIZE_ELEMENT_PAGE_OVERPASS.getCode())
+                    .build();
+        }
+
+        if (sort != null && !sort.contains("asc:") && !sort.contains("desc:")) {
+            return ServiceResponseBuilder.<List<PrivateStorage>>error()
+                    .withMessage(CommonValidations.SORT_INVALID.getCode())
                     .build();
         }
         ServiceResponse<List<PrivateStorage>> validationResponse = validate(tenant, application, collectionName);
@@ -291,7 +298,7 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
 
         collectionName = getCollectionName(tenant, application, collectionName);
         return ServiceResponseBuilder.<List<PrivateStorage>>ok()
-                .withResult(privateStorageRepository.findByQuery(collectionName, queryParam, pageNumber, pageSize))
+                .withResult(privateStorageRepository.findByQuery(collectionName, queryParam, sort, pageNumber, pageSize))
                 .build();
     }
 

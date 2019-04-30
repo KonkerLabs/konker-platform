@@ -8,7 +8,8 @@ public enum CommonValidations {
     RECORD_NULL("service.device.record.not_null"),
     URL_MATCHES_BLACKLIST("service.url.matches_blacklist"),
     SIZE_ELEMENT_PAGE_INVALID("service.size.element.page.invalid"),
-    SIZE_ELEMENT_PAGE_OVERPASS("service.size.element.page.ovepass");
+    SIZE_ELEMENT_PAGE_OVERPASS("service.size.element.page.ovepass"),
+    SORT_INVALID("service.search.sort.invalid");
 
     private String code;
 

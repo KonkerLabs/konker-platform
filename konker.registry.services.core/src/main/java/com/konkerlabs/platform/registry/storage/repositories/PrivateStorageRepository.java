@@ -110,7 +110,11 @@ public class PrivateStorageRepository {
                 .build();
     }
 
-    public List<PrivateStorage> findByQuery(String collectionName, Map<String, String> queryParam, int pageNumber, int pageSize) throws JsonProcessingException {
+    public List<PrivateStorage> findByQuery(String collectionName,
+                                            Map<String, String> queryParam,
+                                            String sort,
+                                            int pageNumber,
+                                            int pageSize) throws JsonProcessingException {
         List<BasicDBObject> criterias = queryParam.entrySet()
                 .stream()
                 .map(item -> {
@@ -131,12 +135,21 @@ public class PrivateStorageRepository {
         List<PrivateStorage> privatesStorage = new ArrayList<>();
         DBObject query = new BasicDBObject();
 
-        List<BasicDBObject> andCriteria = new ArrayList<>();
-        andCriteria.addAll(criterias);
-        query.put("$and", andCriteria);
+        if (!criterias.isEmpty()) {
+            List<BasicDBObject> andCriteria = new ArrayList<>();
+            andCriteria.addAll(criterias);
+            query.put("$and", andCriteria);
+        }
+
 
         DBCollection collection = mongoPrivateStorageTemplate.getCollection(collectionName);
         DBCursor cursor = collection.find(query);
+
+        if (sort != null) {
+            String[] sortParams = sort.split(":");
+            BasicDBObject sortObject = SortEnum.valueOf(sortParams[0].toUpperCase()).sort(sortParams[1]);
+            cursor.sort(sortObject);
+        }
 
         toPrivateStorageList(collectionName, privatesStorage, cursor, pageNumber, pageSize);
 

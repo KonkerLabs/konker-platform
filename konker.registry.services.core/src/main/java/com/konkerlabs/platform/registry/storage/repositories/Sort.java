@@ -2,8 +2,8 @@ package com.konkerlabs.platform.registry.storage.repositories;
 
 import com.mongodb.BasicDBObject;
 
-public interface Filter {
+public interface Sort {
 
-    BasicDBObject criteria(String key, Object value);
+    BasicDBObject sort(String field);
 
 }
