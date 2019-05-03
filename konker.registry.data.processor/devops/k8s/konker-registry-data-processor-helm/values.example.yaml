@@ -1,0 +1,104 @@
+image:
+  repository: konkerlabs/konker-registry
+  tag: data-processor-1.2.4-k8s
+  pullPolicy: IfNotPresent
+  credentials:
+    secret: dockerregistry
+
+nameOverride: "konker-registry-data-processor"
+fullnameOverride: "konker-registry-data-processor"
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  annotations: {
+    "kubernetes.io/ingress.class": "nginx",
+    "certmanager.k8s.io/issuer: letsencrypt-stg"
+  }
+  path: /
+  hosts:
+    - data-example.yourhost.net
+  tls:
+  - secretName: data-example.yourhost.net-tls
+    hosts:
+    - data-example.yourhost.net
+    commonName: data-example.yourhost.net
+
+resources:
+  limits:
+    cpu: 600m
+    memory: 896Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+livenessProbe:
+  httpGet:
+    path: /registry-data-processor/status/
+    port: httpdemo.konkerlabs.net
+readinessProbe:
+  httpGet:
+    path: /registry-data/status/
+    port: http
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+configmap:
+  MONGODB_HOSTNAME: mongodb
+  MONGODB_AUDIT_HOSTNAME: mongodb
+  EVENT_STORAGE: cassandra
+  CASSANDRA_CLUSTERNAME: registry
+  CASSANDRA_KEYSPACE: registry
+  CASSANDRA_HOSTNAME: cassandra
+  SMS_ENABLED: true
+  PUB_SERVER_HOSTNAME: "api.examplehost."
+  PUB_SERVER_HTTP_PORT: "80"
+  PUB_SERVER_HTTPS_PORT: "443"
+  PUB_SERVER_MQTT_HOSTNAME: "mqtt.demo.konkerlabs.net" 
+  PUB_SERVER_MQTT_PORT: "1883"
+  PUB_SERVER_MQTT_TLS_PORT: "8883"
+  PUB_SERVER_HTTP_CTX: ""
+  PUB_SERVER_SSL_ENABLED: true
+  EVENT_STORAGE_BEAN: "cassandraEvents"
+  REDIS_MASTER_HOST: "redis-master"
+  REDIS_MASTER_PORT: !!integer 6379
+  #CASSANDRA_PORT: !!string "4260"
+  #MONGODB_PORT: !!int 27017
+  #MONGODB_AUDIT_PORT: !!int 27017  
+
+secrets:
+  MONGODB_USERNAME: ""
+  MONGODB_PASSWORD: ""
+  MONGODB_AUDIR_USERNAME: ""
+  MONGODB_AUDIT_PASSWORD: ""
+  CASSANDRA_USERNAME: ""
+  CASSANDRA_PASSWORD: ""
+  SMS_USERNAME: ""
+  SMS_PASSWORD: ""
+  SMS_FROM: ""
+  REDIS_PASSWORD: ""
+  RABBITMQ_PASSWORD: ""
+
+# Uncomment lines bellow if you want to define node or resource affinity
+#affinity: {
+#  nodeAffinity: {
+#    requiredDuringSchedulingIgnoredDuringExecution: {
+#      nodeSelectorTerms: [
+#        matchExpressions: [
+#          key: "cloud.google.com/gke-nodepool",
+#          operator: "In",
+#          values: [
+#            "postgresql-nodes"
+#          ]
+#        ]
+#      ]
+#    }
+#  }
+#}

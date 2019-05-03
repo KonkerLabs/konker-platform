@@ -8,7 +8,6 @@ import com.konkerlabs.platform.registry.storage.model.PrivateStorage;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public interface PrivateStorageService {
 
@@ -78,10 +77,13 @@ public interface PrivateStorageService {
                                              String id) throws JsonProcessingException;
 
     ServiceResponse<List<PrivateStorage>> findByQuery(Tenant tenant,
-                                             Application application,
-                                             User user,
-                                             String collectionName,
-                                             Map<String, String> queryParam) throws JsonProcessingException;
+                                                      Application application,
+                                                      User user,
+                                                      String collectionName,
+                                                      Map<String, String> queryParam,
+                                                      String sort,
+                                                      int pageNumber,
+                                                      int pageSize) throws JsonProcessingException;
 
     ServiceResponse<List<String>> listCollections(Tenant tenant,
                                                  Application application,

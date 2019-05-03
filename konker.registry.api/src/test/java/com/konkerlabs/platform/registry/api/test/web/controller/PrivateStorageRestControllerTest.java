@@ -28,7 +28,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
@@ -70,6 +73,8 @@ public class PrivateStorageRestControllerTest extends WebLayerTestContext {
     private final String json2 = "{\"_id\":\"adbc-456\",\"desc\":\"just a test 456\"}";
 
     private final String BASEPATH = "privateStorage";
+    private int pageNumber = 0;
+    private int pageSize = 10;
 
     @Before
     public void setUp() {
@@ -214,13 +219,13 @@ public class PrivateStorageRestControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldReadData() throws Exception {
-        when(privateStorageService.findByQuery(any(Tenant.class), any(Application.class), any(User.class), anyString(), any(Map.class)))
+        when(privateStorageService.findByQuery(any(Tenant.class), any(Application.class), any(User.class), anyString(), any(Map.class), anyString(), any(Integer.class), any(Integer.class)))
                 .thenReturn(ServiceResponseBuilder.<List<PrivateStorage>>ok()
                         .withResult(Collections.singletonList(privateStorage1)).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}/search", application.getName(), BASEPATH, "customers"))
                 .contentType("application/json")
-                .param("q", "customers:konker")
+                .param("q", "customers=konker")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json;charset=UTF-8"))
@@ -253,13 +258,13 @@ public class PrivateStorageRestControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldTryReadDataWithBadRequest() throws Exception {
-        when(privateStorageService.findByQuery(any(Tenant.class), any(Application.class), any(User.class), anyString(), any(Map.class)))
-                .thenReturn(ServiceResponseBuilder.<PrivateStorage>error()
+        when(privateStorageService.findByQuery(any(Tenant.class), any(Application.class), any(User.class), anyString(), any(Map.class), anyString(), any(Integer.class), any(Integer.class)))
+                .thenReturn(ServiceResponseBuilder.<List<PrivateStorage>>error()
                         .withMessage(PrivateStorageService.Validations.PRIVATE_STORAGE_INVALID_COLLECTION_NAME.getCode()).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}/search", application.getName(), BASEPATH, "customers"))
                 .contentType("application/json")
-                .param("q", "customers:konker")
+                .param("q", "customers=konker")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError())
                 .andExpect(content().contentType("application/json;charset=UTF-8"))

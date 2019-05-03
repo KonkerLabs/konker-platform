@@ -7,7 +7,7 @@ import com.konkerlabs.platform.registry.business.services.api.DeviceConfigSetupS
 import com.konkerlabs.platform.registry.data.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.data.core.services.JedisTaskService;
 import com.konkerlabs.platform.registry.integration.endpoints.DeviceEventRestEndpoint;
-import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
+import com.konkerlabs.platform.registry.data.core.integration.processors.DeviceEventProcessor;
 import com.konkerlabs.platform.registry.test.data.base.BusinessDataTestConfiguration;
 import com.konkerlabs.platform.registry.test.data.base.SecurityTestConfiguration;
 import com.konkerlabs.platform.registry.test.data.base.WebLayerTestContext;

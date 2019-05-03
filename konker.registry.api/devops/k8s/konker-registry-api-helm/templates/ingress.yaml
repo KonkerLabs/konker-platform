@@ -1,13 +1,13 @@
 {{- if .Values.ingress.enabled -}}
-{{- $fullName := include "konker-registry-helm.fullname" . -}}
+{{- $fullName := include "konker-registry-api-helm.fullname" . -}}
 {{- $ingressPath := .Values.ingress.path -}}
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   name: {{ $fullName }}
   labels:
-    app: {{ include "konker-registry-helm.name" . }}
-    chart: {{ include "konker-registry-helm.chart" . }}
+    app: {{ include "konker-registry-api-helm.name" . }}
+    chart: {{ include "konker-registry-api-helm.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 {{- with .Values.ingress.annotations }}
