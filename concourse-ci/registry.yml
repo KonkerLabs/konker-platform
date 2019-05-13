@@ -145,6 +145,7 @@ jobs:
           mv github-repo-stg/konker.registry.web/target/registry.war jars/registry-$(cat version-stg/version).war
           mv github-repo-stg/konker.registry.api/target/registry-api.jar jars/registry-api-$(cat version-stg/version).jar
           mv github-repo-stg/konker.registry.data/target/registry-data.jar jars/registry-data-$(cat version-stg/version).jar
+          mv github-repo-stg/konker.registry.data/target/registry-data-processor.jar jars/registry-data-processor-$(cat version-stg/version).jar
           mv github-repo-stg/konker.registry.router/target/registry-router.jar jars/registry-router-$(cat version-stg/version).jar
         dir: ""
       inputs:
@@ -158,6 +159,9 @@ jobs:
   - put: registry-data-s3-stg
     params:
       file: jars/registry-data-*.jar
+  - put: registry-data-processor-s3-stg
+    params:
+      file: jars/registry-data-processor-*.jar
   - put: registry-router-s3-stg
     params:
       file: jars/registry-router-*.jar
@@ -217,6 +221,49 @@ jobs:
       build: docker-artifacts
       tag: registry-data-s3-stg/version
       tag_prefix: staging-data-
+- name: docker-data-processor-stg
+  build_logs_to_retain: 1
+  plan:
+  - get: registry-data-processor-s3-stg
+    trigger: true
+    passed:
+    - test-and-package-stg
+    version: latest
+  - get: github-repo-stg
+  - get: docker-confs-repo-stg
+  - task: setup docker artifacts
+    privileged: true
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: docker
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          ls
+          cp registry-data-processor-s3-stg/registry-data-processor-$(cat registry-data-processor-s3-stg/version).jar github-repo-stg/konker.registry.data.processor/docker-resources/dist/registry-data-processor.jar
+          cp github-repo-stg/konker.registry.data.processor/Dockerfile docker-artifacts
+          cp -r github-repo-stg/konker.registry.data.processor/docker-resources docker-artifacts
+        dir: ""
+      inputs:
+      - name: docker-confs-repo-stg
+        path: ""
+      - name: registry-data-processor-s3-stg
+        path: ""
+      - name: github-repo-stg
+        path: ""
+      outputs:
+      - name: docker-artifacts
+        path: ""
+  - put: docker-image-data-processor-stg
+    params:
+      build: docker-artifacts
+      tag: registry-data-processor-s3-stg/version
+      tag_prefix: staging-data-processor-
 - name: docker-router-stg
   build_logs_to_retain: 1
   plan:
