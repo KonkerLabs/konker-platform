@@ -20,7 +20,7 @@ public class PubServerInternalConfig {
 	
 	public PubServerInternalConfig() {
 		Map<String, Object> defaultMap = new HashMap<>();
-		defaultMap.put("pubServerInternal.url", "http://localhost:8082/registry-data/{0}/{1}/pub");
+		defaultMap.put("pubServerInternal.url", "http://localhost:8085/registry-data-processor/{0}/{1}/pub");
 		Config defaultConf = ConfigFactory.parseMap(defaultMap);
 
 		Config config = ConfigFactory.load().withFallback(defaultConf);

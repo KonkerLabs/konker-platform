@@ -19,7 +19,7 @@ import com.konkerlabs.platform.registry.data.core.integration.gateway.HttpGatewa
 import com.konkerlabs.platform.registry.business.model.enumerations.FirmwareUpdateStatus;
 import com.konkerlabs.platform.registry.business.services.api.*;
 import com.konkerlabs.platform.registry.data.core.services.routes.api.EventRouteExecutor;
-import com.konkerlabs.platform.registry.integration.processors.DeviceEventProcessor;
+import com.konkerlabs.platform.registry.data.core.integration.processors.DeviceEventProcessor;
 import com.konkerlabs.platform.registry.integration.serializers.EventJsonView;
 import com.konkerlabs.platform.registry.integration.serializers.EventVO;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;

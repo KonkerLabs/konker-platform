@@ -18,6 +18,7 @@
         <module>konker.registry.api</module>
         <module>konker.registry.data.core</module>
         <module>konker.registry.data</module>
+        <module>konker.registry.data.processor</module>
         <module>konker.registry.router</module>
         <module>konker.registry.cassandra-etl</module>
   </modules>

@@ -45,11 +45,29 @@ public class PrivateStorageRestController extends AbstractRestController impleme
                     "\t}\n";
 
     public static final String SEARCH_NOTES =
-            "### Query Search Example\n\n" +
-                    "* _id:818599ad-0000-0000-0000-000000000000\n\n" +
-                    "* customer:Konker\n\n" +
-                    "* email:konker@konkerlabs.com\n\n" +
-                    "* customer:Konker email:konker@konkerlabs.com\n\n";
+            "### Filter Operators\n\n" +
+                    "<b>Filter</b>  |<b>Description</b>  |  <b>Filter example</b>\n" +
+                    "--------|--------|-------------------\n" +
+                    "eq      |Equals  | name=eq:Konker\n" +
+                    "ne      |Not Equals | name=ne:Konker\n" +
+                    "gt      |Greater Than | addressNumber=gt:100\n" +
+                    "gte     |Greater Than or equals to | addressNumber=gte:100\n" +
+                    "lt      |Less Than | addressNumber=lt:100\n" +
+                    "lte     |Less Than or equals to | addressNumber=lte:100\n" +
+                    "in      |IN      | name=in:konker,konkerlabs,labs\n" +
+                    "nin     |Not IN  | name=nin:konker,konkerlabs,labs\n" +
+                    "btn     |Between | addressNumber=btn:10,50\n" +
+                    "like    |Like    | email=like:@konkerlabs\n\n" +
+            "### Paging \n\n" +
+                    "* pageNumber - current page number\n" +
+                    "* pageSize - Number of elements per page \n\n" +
+                    "Example: ...?pageNumber=1&pageSize=10 \n\n" +
+            "### Sorting \n\n" +
+                    "* asc - ASC order \n" +
+                    "* desc - DESC order \n\n" +
+                    "Example: ...?sort=desc:name \n\n" +
+            "### Full Example \n\n" +
+                    "https://{API_ADDRESS}/v1/{application}/privateStorage/{collectionName}/search?q=name=eq:konker&addressNumber=gt:100&sort=desc:name&pageNumber=1&pageSize=10";
 
     @Autowired
     public PrivateStorageRestController(PrivateStorageService privateStorageService) {
@@ -112,7 +130,13 @@ public class PrivateStorageRestController extends AbstractRestController impleme
     		@PathVariable("application") String applicationId,
     		@PathVariable("collectionName") String collection,
             @ApiParam(value = "Query string", example = "_id:818599ad-3502-4e70-a852-fc7af8e0a9f4")
-            @RequestParam(required = false, defaultValue = "", name = "q") String query) throws BadServiceResponseException, NotFoundResponseException {
+            @RequestParam(required = false, defaultValue = "", name = "q") String query,
+            @ApiParam(value = "The sort order", example = "asc:name")
+            @RequestParam(required = false) String sort,
+            @ApiParam(value = "Page number")
+            @RequestParam(required = false, defaultValue = "0") int pageNumber,
+            @ApiParam(value = "Number of elements per page")
+            @RequestParam(required = false, defaultValue = "10") int pageSize) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
@@ -122,13 +146,13 @@ public class PrivateStorageRestController extends AbstractRestController impleme
             Map<String, String> queryParam = new HashMap<>();
 
             if (query.length() > 0) {
-                String[] keysQuery = query.split(" ");
+                String[] keysQuery = query.split("&");
                 queryParam = Arrays.stream(keysQuery)
-                        .map(k -> k.split(":"))
+                        .map(k -> k.split("="))
                         .collect(Collectors.toMap(k -> k[0], k -> k[1]));
             }
 
-            response = privateStorageService.findByQuery(tenant, application, user.getParentUser(), collection, queryParam);
+            response = privateStorageService.findByQuery(tenant, application, user.getParentUser(), collection, queryParam, sort, pageNumber, pageSize);
 
             if (!response.isOk()) {
                 throw new NotFoundResponseException(response);
