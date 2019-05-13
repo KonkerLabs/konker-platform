@@ -103,6 +103,7 @@ resources:
   source:
     cluster_url: (( grab params.k8s.cluster_url ))
     cluster_ca: (( grab params.k8s.cluster_ca ))
+    token: (( grab params.k8s.token ))
 resource_types:
 - name: slack-notification
   type: docker-image
@@ -177,11 +178,11 @@ jobs:
   build_logs_to_retain: 1
   plan:
   - get: registry-data-s3-stg
+    trigger: true
     passed:
     - test-and-package-stg
     version: latest
   - get: github-repo-stg
-    trigger: true
   - get: docker-confs-repo-stg
   - task: setup docker artifacts
     privileged: true
@@ -220,11 +221,11 @@ jobs:
   build_logs_to_retain: 1
   plan:
   - get: registry-router-s3-stg
+    trigger: true
     passed:
     - test-and-package-stg
     version: latest
   - get: github-repo-stg
-    trigger: true
   - get: docker-confs-repo-stg
   - task: setup docker artifacts
     privileged: true
@@ -263,11 +264,11 @@ jobs:
   build_logs_to_retain: 1
   plan:
   - get: registry-api-s3-stg
+    trigger: true
     passed:
     - test-and-package-stg
     version: latest
   - get: github-repo-stg
-    trigger: true
   - get: docker-confs-repo-stg
   - task: setup docker artifacts
     privileged: true
@@ -306,11 +307,11 @@ jobs:
   build_logs_to_retain: 1
   plan:
   - get: registry-web-s3-stg
+    trigger: true
     passed:
     - test-and-package-stg
     version: latest
   - get: github-repo-stg
-    trigger: true
   - get: docker-confs-repo-stg
   - task: setup docker artifacts
     privileged: true
