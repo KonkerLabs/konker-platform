@@ -14,7 +14,7 @@ resources:
   source:
     access_key_id: (( grab params.amazons3.access_key_id ))
     bucket: konker-cd-pipeline-artifacts
-    regexp: staging/registry-data-(.*).jar
+    regexp: staging/registry-data-(\d+.\d+.\d+.*).jar
     region_name: us-east-1
     secret_access_key: (( grab params.amazons3.secret_access_key ))
 - name: registry-data-processor-s3-stg
@@ -22,7 +22,7 @@ resources:
   source:
     access_key_id: (( grab params.amazons3.access_key_id ))
     bucket: konker-cd-pipeline-artifacts
-    regexp: staging/registry-data-(.*).jar
+    regexp: staging/registry-data-processor-(.*).jar
     region_name: us-east-1
     secret_access_key: (( grab params.amazons3.secret_access_key ))
 - name: registry-router-s3-stg
@@ -161,7 +161,7 @@ jobs:
           mv github-repo-stg/konker.registry.web/target/registry.war jars/registry-$(cat version-stg/version).war
           mv github-repo-stg/konker.registry.api/target/registry-api.jar jars/registry-api-$(cat version-stg/version).jar
           mv github-repo-stg/konker.registry.data/target/registry-data.jar jars/registry-data-$(cat version-stg/version).jar
-          mv github-repo-stg/konker.registry.data/target/registry-data-processor.jar jars/registry-data-processor-$(cat version-stg/version).jar
+          mv github-repo-stg/konker.registry.data.processor/target/registry-data-processor.jar jars/registry-data-processor-$(cat version-stg/version).jar
           mv github-repo-stg/konker.registry.router/target/registry-router.jar jars/registry-router-$(cat version-stg/version).jar
         dir: ""
       inputs:
@@ -174,7 +174,7 @@ jobs:
         path: ""
   - put: registry-data-s3-stg
     params:
-      file: jars/registry-data-*.jar
+      file: jars/registry-data-?.?.?-*.jar
   - put: registry-data-processor-s3-stg
     params:
       file: jars/registry-data-processor-*.jar
