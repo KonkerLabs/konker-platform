@@ -7,6 +7,7 @@ import com.konkerlabs.platform.registry.business.model.validation.CommonValidati
 import com.konkerlabs.platform.registry.business.repositories.*;
 import com.konkerlabs.platform.registry.business.services.api.*;
 import com.konkerlabs.platform.registry.business.services.api.EventRouteService.Validations;
+import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import com.konkerlabs.platform.registry.test.data.base.BusinessDataTestConfiguration;
 import com.konkerlabs.platform.registry.test.data.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.data.base.MongoDataTestConfiguration;
@@ -41,7 +42,8 @@ import static org.mockito.Mockito.when;
 @ContextConfiguration(classes = {
         BusinessDataTestConfiguration.class,
         MongoDataTestConfiguration.class,
-        RedisDataTestConfiguration.class
+        RedisDataTestConfiguration.class,
+        EventStorageConfig.class
 })
 public class EventRouteServiceTest extends BusinessLayerTestSupport {
 
