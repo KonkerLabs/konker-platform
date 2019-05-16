@@ -1,0 +1,430 @@
+groups:
+- name: production
+  jobs:
+  - test-and-package-prod
+  - docker-api-prod
+  - docker-web-prod
+  - docker-data-prod
+  - docker-data-processor-prod
+  - docker-router-prod
+  - k8s-api-prod
+resources:
+- name: registry-data-s3-prod
+  type: s3
+  source:
+    access_key_id: (( grab params.amazons3.access_key_id ))
+    bucket: konker-cd-pipeline-artifacts
+    regexp: demo/registry-data-(\d+.\d+.\d+.*).jar
+    region_name: us-east-1
+    secret_access_key: (( grab params.amazons3.secret_access_key ))
+- name: registry-data-processor-s3-prod
+  type: s3
+  source:
+    access_key_id: (( grab params.amazons3.access_key_id ))
+    bucket: konker-cd-pipeline-artifacts
+    regexp: demo/registry-data-processor-(.*).jar
+    region_name: us-east-1
+    secret_access_key: (( grab params.amazons3.secret_access_key ))
+- name: registry-router-s3-prod
+  type: s3
+  source:
+    access_key_id: (( grab params.amazons3.access_key_id ))
+    bucket: konker-cd-pipeline-artifacts
+    regexp: demo/registry-router-(.*).jar
+    region_name: us-east-1
+    secret_access_key: (( grab params.amazons3.secret_access_key ))
+- name: docker-confs-repo-prod
+  type: git
+  source:
+    branch: master
+    password: (( grab params.bitbucket.passwd ))
+    uri: https://bitbucket.org/konkerlabs/konker-platform-env-confs
+    username: (( grab params.bitbucket.user ))
+- name: values-k8s-repo-prod
+  type: git
+  source:
+    branch: develop
+    password: (( grab params.bitbucket.passwd ))
+    uri: https://bitbucket.org/konkerlabs/konker-devops-k8s
+    username: (( grab params.bitbucket.user ))
+- name: docker-image-web-prod
+  type: docker-image
+  source:
+    password: (( grab params.docker.passwd ))
+    repository: konkerlabs/konker-registry
+    username: (( grab params.docker.user ))
+  check_every: 12h
+- name: docker-image-api-prod
+  type: docker-image
+  source:
+    password: (( grab params.docker.passwd ))
+    repository: konkerlabs/konker-registry
+    username: (( grab params.docker.user ))
+  check_every: 12h
+- name: docker-image-data-prod
+  type: docker-image
+  source:
+    password: (( grab params.docker.passwd ))
+    repository: konkerlabs/konker-registry
+    username: (( grab params.docker.user ))
+  check_every: 12h
+- name: docker-image-data-processor-prod
+  type: docker-image
+  source:
+    password: (( grab params.docker.passwd ))
+    repository: konkerlabs/konker-registry
+    username: (( grab params.docker.user ))
+  check_every: 12h
+- name: docker-image-router-prod
+  type: docker-image
+  source:
+    password: (( grab params.docker.passwd ))
+    repository: konkerlabs/konker-registry
+    username: (( grab params.docker.user ))
+  check_every: 12h
+- name: registry-api-s3-prod
+  type: s3
+  source:
+    access_key_id: (( grab params.amazons3.access_key_id ))
+    bucket: konker-cd-pipeline-artifacts
+    regexp: demo/registry-api-(.*).jar
+    region_name: us-east-1
+    secret_access_key: (( grab params.amazons3.secret_access_key ))
+- name: registry-web-s3-prod
+  type: s3
+  source:
+    access_key_id: (( grab params.amazons3.access_key_id ))
+    bucket: konker-cd-pipeline-artifacts
+    regexp: demo/registry-(.*).war
+    region_name: us-east-1
+    secret_access_key: (( grab params.amazons3.secret_access_key ))
+- name: slack-alert
+  type: slack-notification
+  source:
+    url: (( grab params.slack.url_hook ))
+- name: version-prod
+  type: semver
+  source:
+    branch: master
+    driver: git
+    file: version
+    uri: https://github.com/KonkerLabs/konker-platform.git
+- name: github-repo-prod
+  type: git
+  source:
+    branch: master
+    tag_filter: v*
+    uri: https://github.com/KonkerLabs/konker-platform.git
+- name: registry-api-helm-prod
+  type: helm
+  source:
+    cluster_url: (( grab params.k8s.cluster_url ))
+    cluster_ca: (( grab params.k8s.cluster_ca ))
+    token: (( grab params.k8s.token ))
+resource_types:
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: cfcommunity/slack-notification-resource
+    tag: latest
+- name: helm
+  type: docker-image
+  source:
+    repository: linkyard/concourse-helm-resource
+jobs:
+- name: test-and-package-prod
+  build_logs_to_retain: 1
+  plan:
+  - get: version-prod
+  - get: github-repo-prod
+    trigger: true
+  - task: maven-package
+    privileged: true
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          password: (( grab params.docker.passwd ))
+          repository: konkerlabs/konker-registry
+          tag: concourse-maven-cache
+          username: (( grab params.docker.user ))
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          echo run tests...
+          mvn -f github-repo-prod/pom.xml clean compile test
+          echo packaging...
+          mvn -f github-repo-prod/pom.xml -DskipTests=true package install
+          echo copy packages...
+          mv github-repo-prod/konker.registry.web/target/registry.war jars/registry-$(cat version-prod/version).war
+          mv github-repo-prod/konker.registry.api/target/registry-api.jar jars/registry-api-$(cat version-prod/version).jar
+          mv github-repo-prod/konker.registry.data/target/registry-data.jar jars/registry-data-$(cat version-prod/version).jar
+          mv github-repo-prod/konker.registry.data.processor/target/registry-data-processor.jar jars/registry-data-processor-$(cat version-prod/version).jar
+          mv github-repo-prod/konker.registry.router/target/registry-router.jar jars/registry-router-$(cat version-prod/version).jar
+        dir: ""
+      inputs:
+      - name: github-repo-prod
+        path: ""
+      - name: version-prod
+        path: ""
+      outputs:
+      - name: jars
+        path: ""
+  - put: registry-data-s3-prod
+    params:
+      file: jars/registry-data-?.?.?-*.jar
+  - put: registry-data-processor-s3-prod
+    params:
+      file: jars/registry-data-processor-*.jar
+  - put: registry-router-s3-prod
+    params:
+      file: jars/registry-router-*.jar
+  - put: registry-api-s3-prod
+    params:
+      file: jars/registry-api-*.jar
+  - put: registry-web-s3-prod
+    params:
+      file: jars/registry-*.war
+  on_failure:
+    do:
+    - put: slack-alert
+      params:
+        icon_emoji: ':concourse-ci:'
+        text: |
+          :warning: *$BUILD_PIPELINE_NAME*.*$BUILD_JOB_NAME* failed!
+- name: docker-data-prod
+  build_logs_to_retain: 1
+  plan:
+  - get: registry-data-s3-prod
+    trigger: true
+    passed:
+    - test-and-package-prod
+    version: latest
+  - get: github-repo-prod
+  - get: docker-confs-repo-prod
+  - task: setup docker artifacts
+    privileged: true
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: docker
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          ls
+          cp registry-data-s3-prod/registry-data-$(cat registry-data-s3-prod/version).jar github-repo-prod/konker.registry.data/docker-resources/dist/registry-data.jar
+          cp github-repo-prod/konker.registry.data/Dockerfile docker-artifacts
+          cp -r github-repo-prod/konker.registry.data/docker-resources docker-artifacts
+        dir: ""
+      inputs:
+      - name: docker-confs-repo-prod
+        path: ""
+      - name: registry-data-s3-prod
+        path: ""
+      - name: github-repo-prod
+        path: ""
+      outputs:
+      - name: docker-artifacts
+        path: ""
+  - put: docker-image-data-prod
+    params:
+      build: docker-artifacts
+      tag: registry-data-s3-prod/version
+      tag_prefix: demo-data-
+- name: docker-data-processor-prod
+  build_logs_to_retain: 1
+  plan:
+  - get: registry-data-processor-s3-prod
+    trigger: true
+    passed:
+    - test-and-package-prod
+    version: latest
+  - get: github-repo-prod
+  - get: docker-confs-repo-prod
+  - task: setup docker artifacts
+    privileged: true
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: docker
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          ls
+          cp registry-data-processor-s3-prod/registry-data-processor-$(cat registry-data-processor-s3-prod/version).jar github-repo-prod/konker.registry.data.processor/docker-resources/dist/registry-data-processor.jar
+          cp github-repo-prod/konker.registry.data.processor/Dockerfile docker-artifacts
+          cp -r github-repo-prod/konker.registry.data.processor/docker-resources docker-artifacts
+        dir: ""
+      inputs:
+      - name: docker-confs-repo-prod
+        path: ""
+      - name: registry-data-processor-s3-prod
+        path: ""
+      - name: github-repo-prod
+        path: ""
+      outputs:
+      - name: docker-artifacts
+        path: ""
+  - put: docker-image-data-processor-prod
+    params:
+      build: docker-artifacts
+      tag: registry-data-processor-s3-prod/version
+      tag_prefix: demo-data-processor-
+- name: docker-router-prod
+  build_logs_to_retain: 1
+  plan:
+  - get: registry-router-s3-prod
+    trigger: true
+    passed:
+    - test-and-package-prod
+    version: latest
+  - get: github-repo-prod
+  - get: docker-confs-repo-prod
+  - task: setup docker artifacts
+    privileged: true
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: docker
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          ls
+          cp registry-router-s3-prod/registry-router-$(cat registry-router-s3-prod/version).jar github-repo-prod/konker.registry.router/docker-resources/dist/registry-router.jar
+          cp github-repo-prod/konker.registry.router/Dockerfile docker-artifacts
+          cp -r github-repo-prod/konker.registry.router/docker-resources docker-artifacts
+        dir: ""
+      inputs:
+      - name: docker-confs-repo-prod
+        path: ""
+      - name: registry-router-s3-prod
+        path: ""
+      - name: github-repo-prod
+        path: ""
+      outputs:
+      - name: docker-artifacts
+        path: ""
+  - put: docker-image-router-prod
+    params:
+      build: docker-artifacts
+      tag: registry-router-s3-prod/version
+      tag_prefix: demo-router-
+- name: docker-api-prod
+  build_logs_to_retain: 1
+  plan:
+  - get: registry-api-s3-prod
+    trigger: true
+    passed:
+    - test-and-package-prod
+    version: latest
+  - get: github-repo-prod
+  - get: docker-confs-repo-prod
+  - task: setup docker artifacts
+    privileged: true
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: docker
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          ls
+          tar -czvf github-repo-prod/konker.registry.api/devops/k8s/konker-registry-api-helm.tgz github-repo-prod/konker.registry.api/devops/k8s/konker-registry-api-helm
+          cp registry-api-s3-prod/registry-api-$(cat registry-api-s3-prod/version).jar github-repo-prod/konker.registry.api/docker-resources/dist/registry-api.jar
+          cp github-repo-prod/konker.registry.api/Dockerfile docker-artifacts
+          cp -r github-repo-prod/konker.registry.api/docker-resources docker-artifacts
+        dir: ""
+      inputs:
+      - name: docker-confs-repo-prod
+        path: ""
+      - name: registry-api-s3-prod
+        path: ""
+      - name: github-repo-prod
+        path: ""
+      outputs:
+      - name: docker-artifacts
+        path: ""
+  - put: docker-image-api-prod
+    params:
+      build: docker-artifacts
+      tag: registry-api-s3-prod/version
+      tag_prefix: demo-api-
+- name: docker-web-prod
+  build_logs_to_retain: 1
+  plan:
+  - get: registry-web-s3-prod
+    trigger: true
+    passed:
+    - test-and-package-prod
+    version: latest
+  - get: github-repo-prod
+  - get: docker-confs-repo-prod
+  - task: setup docker artifacts
+    privileged: true
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: docker
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          ls
+          cp registry-web-s3-prod/registry-$(cat registry-web-s3-prod/version).war github-repo-prod/konker.registry.web/docker-resources/dist/registry.war
+          cp github-repo-prod/konker.registry.web/Dockerfile docker-artifacts
+          cp -r github-repo-prod/konker.registry.web/docker-resources docker-artifacts
+        dir: ""
+      inputs:
+      - name: docker-confs-repo-prod
+        path: ""
+      - name: registry-web-s3-prod
+        path: ""
+      - name: github-repo-prod
+        path: ""
+      outputs:
+      - name: docker-artifacts
+        path: ""
+  - put: docker-image-web-prod
+    params:
+      build: docker-artifacts
+      tag: registry-web-s3-prod/version
+      tag_prefix: demo-
+- name: k8s-api-prod
+  build_logs_to_retain: 1
+  plan:
+  - get: version-prod
+  - get: github-repo-prod
+    passed:
+    - docker-api-prod
+    trigger: true
+  - get: values-k8s-repo-prod
+  - put: registry-api-helm-prod
+    params:
+      chart: github-repo-prod/konker.registry.api/devops/k8s/konker-registry-api-helm.tgz
+      values: values-k8s-repo-prod/konker-registry-values/konker.registry.api/values-production.yaml
+      orverride_values:
+      - key: image.tag
+        path: demo-api-$(cat version-prod/version)
+        type: string

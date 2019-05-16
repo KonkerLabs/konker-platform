@@ -5,6 +5,7 @@ groups:
   - docker-api-stg
   - docker-web-stg
   - docker-data-stg
+  - docker-data-processor-stg
   - docker-router-stg
   - k8s-api-stg
 resources:
@@ -13,7 +14,15 @@ resources:
   source:
     access_key_id: (( grab params.amazons3.access_key_id ))
     bucket: konker-cd-pipeline-artifacts
-    regexp: staging/registry-data-(.*).jar
+    regexp: staging/registry-data-(\d+.\d+.\d+.*).jar
+    region_name: us-east-1
+    secret_access_key: (( grab params.amazons3.secret_access_key ))
+- name: registry-data-processor-s3-stg
+  type: s3
+  source:
+    access_key_id: (( grab params.amazons3.access_key_id ))
+    bucket: konker-cd-pipeline-artifacts
+    regexp: staging/registry-data-processor-(.*).jar
     region_name: us-east-1
     secret_access_key: (( grab params.amazons3.secret_access_key ))
 - name: registry-router-s3-stg
@@ -53,6 +62,13 @@ resources:
     username: (( grab params.docker.user ))
   check_every: 12h
 - name: docker-image-data-stg
+  type: docker-image
+  source:
+    password: (( grab params.docker.passwd ))
+    repository: konkerlabs/konker-registry
+    username: (( grab params.docker.user ))
+  check_every: 12h
+- name: docker-image-data-processor-stg
   type: docker-image
   source:
     password: (( grab params.docker.passwd ))
@@ -145,6 +161,7 @@ jobs:
           mv github-repo-stg/konker.registry.web/target/registry.war jars/registry-$(cat version-stg/version).war
           mv github-repo-stg/konker.registry.api/target/registry-api.jar jars/registry-api-$(cat version-stg/version).jar
           mv github-repo-stg/konker.registry.data/target/registry-data.jar jars/registry-data-$(cat version-stg/version).jar
+          mv github-repo-stg/konker.registry.data.processor/target/registry-data-processor.jar jars/registry-data-processor-$(cat version-stg/version).jar
           mv github-repo-stg/konker.registry.router/target/registry-router.jar jars/registry-router-$(cat version-stg/version).jar
         dir: ""
       inputs:
@@ -157,7 +174,10 @@ jobs:
         path: ""
   - put: registry-data-s3-stg
     params:
-      file: jars/registry-data-*.jar
+      file: jars/registry-data-?.?.?-*.jar
+  - put: registry-data-processor-s3-stg
+    params:
+      file: jars/registry-data-processor-*.jar
   - put: registry-router-s3-stg
     params:
       file: jars/registry-router-*.jar
@@ -217,6 +237,49 @@ jobs:
       build: docker-artifacts
       tag: registry-data-s3-stg/version
       tag_prefix: staging-data-
+- name: docker-data-processor-stg
+  build_logs_to_retain: 1
+  plan:
+  - get: registry-data-processor-s3-stg
+    trigger: true
+    passed:
+    - test-and-package-stg
+    version: latest
+  - get: github-repo-stg
+  - get: docker-confs-repo-stg
+  - task: setup docker artifacts
+    privileged: true
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: docker
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          ls
+          cp registry-data-processor-s3-stg/registry-data-processor-$(cat registry-data-processor-s3-stg/version).jar github-repo-stg/konker.registry.data.processor/docker-resources/dist/registry-data-processor.jar
+          cp github-repo-stg/konker.registry.data.processor/Dockerfile docker-artifacts
+          cp -r github-repo-stg/konker.registry.data.processor/docker-resources docker-artifacts
+        dir: ""
+      inputs:
+      - name: docker-confs-repo-stg
+        path: ""
+      - name: registry-data-processor-s3-stg
+        path: ""
+      - name: github-repo-stg
+        path: ""
+      outputs:
+      - name: docker-artifacts
+        path: ""
+  - put: docker-image-data-processor-stg
+    params:
+      build: docker-artifacts
+      tag: registry-data-processor-s3-stg/version
+      tag_prefix: staging-data-processor-
 - name: docker-router-stg
   build_logs_to_retain: 1
   plan:
@@ -284,6 +347,7 @@ jobs:
         - -exc
         - |
           ls
+          tar -czvf github-repo-stg/konker.registry.api/devops/k8s/konker-registry-api-helm.tgz github-repo-stg/konker.registry.api/devops/k8s/konker-registry-api-helm
           cp registry-api-s3-stg/registry-api-$(cat registry-api-s3-stg/version).jar github-repo-stg/konker.registry.api/docker-resources/dist/registry-api.jar
           cp github-repo-stg/konker.registry.api/Dockerfile docker-artifacts
           cp -r github-repo-stg/konker.registry.api/docker-resources docker-artifacts
@@ -349,6 +413,7 @@ jobs:
 - name: k8s-api-stg
   build_logs_to_retain: 1
   plan:
+  - get: version-stg
   - get: github-repo-stg
     passed:
     - docker-api-stg
@@ -356,9 +421,9 @@ jobs:
   - get: values-k8s-repo-stg
   - put: registry-api-helm-stg
     params:
-      chart: github-repo-stg/konker.registry.api/konker-registry-api-helm.tgz
-      values: values-k8s-repo-stg/konker-registry-values/api-values-staging.yaml
+      chart: github-repo-stg/konker.registry.api/devops/k8s/konker-registry-api-helm.tgz
+      values: values-k8s-repo-stg/konker-registry-values/konker.registry.api/values-staging.yaml
       orverride_values:
       - key: image.tag
-        path: staging-api-1.1.8-ESPRESSO-alpha
+        path: staging-api-$(cat version-stg/version)
         type: string
