@@ -270,7 +270,7 @@ public class DeviceRegisterServiceImpl implements DeviceRegisterService {
 
         if (size <= 0) {
             return ServiceResponseBuilder.<Page<Device>>error()
-                    .withMessage(CommonValidations.SIZE_ELEMENT_PAGE_INVALID.getCode())
+                    .withMessage(CommonValidations.SIZE_ELEMENT_PAGE_INVALID.getCode(), "0")
                     .build();
         }
 
