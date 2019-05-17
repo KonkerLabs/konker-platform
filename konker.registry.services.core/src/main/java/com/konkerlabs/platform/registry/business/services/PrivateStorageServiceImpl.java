@@ -264,13 +264,13 @@ public class PrivateStorageServiceImpl implements PrivateStorageService {
 
         if (pageSize <= 0) {
             return ServiceResponseBuilder.<List<PrivateStorage>>error()
-                    .withMessage(CommonValidations.SIZE_ELEMENT_PAGE_INVALID.getCode())
+                    .withMessage(CommonValidations.SIZE_ELEMENT_PAGE_INVALID.getCode(), "0")
                     .build();
         }
 
-        if (pageSize > 10) {
+        if (pageSize > 1000) {
             return ServiceResponseBuilder.<List<PrivateStorage>>error()
-                    .withMessage(CommonValidations.SIZE_ELEMENT_PAGE_OVERPASS.getCode())
+                    .withMessage(CommonValidations.SIZE_ELEMENT_PAGE_OVERPASS.getCode(), "1000")
                     .build();
         }
 
