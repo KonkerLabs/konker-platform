@@ -7,6 +7,7 @@ REDIS_PORT=6379
 CASSANDRA_PORT=9042
 MONGODB_PORT=27017
 MONGODB_AUDIT_PORT=27017
+MONGODB_BILLING_PORT=27017
 MONGODB_PRIVATE_STORAGE_PORT=27017
 PUB_SERVER_HTTP_PORT=80
 PUB_SERVER_HTTPS_PORT=443
@@ -65,6 +66,11 @@ echo "#### password: *****"
 echo "## MongoDB Autdit"
 echo "#### host: $MONGODB_AUDIT_HOSTNAME"
 echo "#### port: $MONGODB_AUDIT_PORT"
+echo "####user: ******"
+echo "#### password: *****"
+echo "## MongoDB Billing"
+echo "#### host: $MONGODB_BILLING_HOSTNAME"
+echo "#### port: $MONGODB_BILLING_PORT"
 echo "####user: ******"
 echo "#### password: *****"
 echo "## MongoDB Private Storage"
@@ -153,8 +159,12 @@ java -Dconfig.file=/var/lib/jetty/resources/application.conf \
     -Dmongo.password=$MONGODB_PASSWORD \
     -DmongoAudit.hostname=$MONGODB_AUDIT_HOSTNAME \
     -DmongoAudit.port=$MONGODB_AUDIT_PORT \
-    -DmongoAudit.username=$MONGODB_AUDIR_USERNAME \
+    -DmongoAudit.username=$MONGODB_AUDIT_USERNAME \
     -DmongoAudit.password=$MONGODB_AUDIT_PASSWORD \
+    -DmongoBilling.hostname=$MONGODB_BILLING_HOSTNAME \
+    -DmongoBilling.port=$MONGODB_BILLING_PORT \
+    -DmongoBilling.username=$MONGODB_BILLING_USERNAME \
+    -DmongoBilling.password=$MONGODB_BILLING_PASSWORD \
     -DmongoPrivateStorage.hostname=$MONGODB_PRIVATE_STORAGE_HOSTNAME \
     -DmongoPrivateStorage.port=$MONGODB_PRIVATE_STORAGE_PORT \
     -DmongoPrivateStorage.username=$MONGODB_PRIVATE_STORAGE_USERNAME \
