@@ -7,6 +7,7 @@ REDIS_PORT=6379
 CASSANDRA_PORT=9042
 MONGODB_PORT=27017
 MONGODB_AUDIT_PORT=27017
+MONGODB_PRIVATE_STORAGE_PORT=27017
 PUB_SERVER_HTTP_PORT=80
 PUB_SERVER_HTTPS_PORT=443
 PUB_SERVER_MQTT_PORT=1883
@@ -64,6 +65,11 @@ echo "#### password: *****"
 echo "## MongoDB Autdit"
 echo "#### host: $MONGODB_AUDIT_HOSTNAME"
 echo "#### port: $MONGODB_AUDIT_PORT"
+echo "####user: ******"
+echo "#### password: *****"
+echo "## MongoDB Private Storage"
+echo "#### host: $MONGODB_PRIVATE_STORAGE_HOSTNAME"
+echo "#### port: $MONGODB_PRIVATE_STORAGE_PORT"
 echo "####user: ******"
 echo "#### password: *****"
 echo "## EventStorage: $EVENT_STORAGE_BEAN"
@@ -149,6 +155,10 @@ java -Dconfig.file=/var/lib/jetty/resources/application.conf \
     -DmongoAudit.port=$MONGODB_AUDIT_PORT \
     -DmongoAudit.username=$MONGODB_AUDIR_USERNAME \
     -DmongoAudit.password=$MONGODB_AUDIT_PASSWORD \
+    -DmongoPrivateStorage.hostname=$MONGODB_PRIVATE_STORAGE_HOSTNAME \
+    -DmongoPrivateStorage.port=$MONGODB_PRIVATE_STORAGE_PORT \
+    -DmongoPrivateStorage.username=$MONGODB_PRIVATE_STORAGE_USERNAME \
+    -DmongoPrivateStorage.password=$MONGODB_PRIVATE_STORAGE_PASSWORD \
     -Deventstorage.bean=$EVENT_STORAGE_BEAN \
     -Dcassandra.clustername=$CASSANDRA_CLUSTERNAME \
     -Dcassandra.keyspace=$CASSANDRA_KEYSPACE \
