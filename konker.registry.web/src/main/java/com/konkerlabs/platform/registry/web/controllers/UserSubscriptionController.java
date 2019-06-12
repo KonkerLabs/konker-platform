@@ -87,7 +87,7 @@ public class UserSubscriptionController implements ApplicationContextAware {
     	user.setLanguage(Language.valueOf(
     			Optional.ofNullable(locale.toString())
     				.filter(l -> l.startsWith("pt"))
-    				.orElse(locale.getLanguage()).toUpperCase()));
+    				.orElse("en").toUpperCase()));
 
         ServiceResponse<User> serviceResponse = userService.createAccount(
         		user, 
