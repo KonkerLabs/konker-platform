@@ -14,6 +14,7 @@ public interface DeviceRepository extends MongoRepository<Device, String> {
     @Query("{ 'tenant.id' : ?0 }")
     List<Device> findAllByTenant(String tenantId);
     @Query("{ 'tenant.id' : ?0, 'application.name' : ?1, 'deviceId' : ?2 }")
+    @Cacheable("applicationDevicesCache")
     Device findByTenantIdAndApplicationAndDeviceId(String tenantId, String applicationName, String deviceId);
     @Query("{ 'tenant.id' : ?0, 'guid' : ?1 }")
     @Cacheable("deviceCache")
@@ -31,7 +32,5 @@ public interface DeviceRepository extends MongoRepository<Device, String> {
     List<Device> findAllByTenantIdAndApplicationNameAndLocationName(String tenantId, String applicationName, String locationId);
     @Query("{ 'tenant.id' : ?0, 'application.name' : ?1, 'deviceModel.id' : ?2 }")
 	List<Device> findAllByTenantIdApplicationNameAndDeviceModel(String tenantId, String applicationName, String deviceModelId);
-    @Query("{ 'tenant.id' : ?0, 'application.name' : ?1, 'deviceId' : ?2 }")
-	Device findAllByTenantIdApplicationNameDeviceId(String tenantId, String applicationName, String deviceId);
 
 }
