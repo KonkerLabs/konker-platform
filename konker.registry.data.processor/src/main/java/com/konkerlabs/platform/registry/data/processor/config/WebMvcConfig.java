@@ -1,4 +1,4 @@
-package com.konkerlabs.platform.registry.data.config;
+package com.konkerlabs.platform.registry.data.processor.config;
 
 import com.konkerlabs.platform.registry.data.core.config.SecurityConfig;
 import org.springframework.context.MessageSource;
