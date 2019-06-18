@@ -158,5 +158,6 @@ java -Dconfig.file=/var/lib/konker/application.conf \
     -Dswagger.hostname=$SWAGGER_HOSTNAME \
     -Dswagger.protocol=$SWAGGER_PROTOCOL \
     -DpubServerInternal.url=$PUB_SERVER_INTERNAL_URL \
+    -Dspringfox.documentation.swagger.v2.host: $SWAGGER_HOSTNAME:443 \
     -jar /var/lib/konker/registry-api.jar
 exec "$@"
