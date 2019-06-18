@@ -19,6 +19,7 @@ public interface DeviceRepository extends MongoRepository<Device, String> {
     @Cacheable("deviceCache")
     Device findByTenantAndGuid(String tenantId, String deviceGuid);
     @Query("{ 'apiKey' : ?0 }")
+    @Cacheable("apiKeyCache")
     Device findByApiKey(String apiKey);
     @Query("{ 'tenant.id' : ?0, 'application.name' : ?1 }")
 	List<Device> findAllByTenantIdAndApplicationName(String tenantId, String applicationName);

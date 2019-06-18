@@ -113,7 +113,8 @@ public class MongoConfig extends AbstractMongoConfiguration {
         SimpleCacheManager cacheManager = new SimpleCacheManager();
         Cache eventsSchemaCache = new ConcurrentMapCache("eventSchemaCache");
         Cache deviceCache = new ConcurrentMapCache("deviceCache");
-        cacheManager.setCaches(Arrays.asList(eventsSchemaCache, deviceCache));
+        Cache apiKeyCache = new ConcurrentMapCache("apiKeyCache");
+        cacheManager.setCaches(Arrays.asList(eventsSchemaCache, deviceCache, apiKeyCache));
         return cacheManager;
     }
 
