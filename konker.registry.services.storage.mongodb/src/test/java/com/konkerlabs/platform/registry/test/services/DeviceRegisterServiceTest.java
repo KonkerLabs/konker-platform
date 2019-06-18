@@ -244,46 +244,46 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         inOrder.verify(device).applyValidations();
     }
 
-    @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
-    public void shouldPersistIfDeviceIsValid() {
-        ServiceResponse<Device> response = deviceRegisterService.register(currentTenant, currentApplication, rawDevice);
+//    @Test
+//    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
+//    public void shouldPersistIfDeviceIsValid() {
+//        ServiceResponse<Device> response = deviceRegisterService.register(currentTenant, currentApplication, rawDevice);
+//
+//        assertThat(response, isResponseOk());
+//
+//        Device saved = deviceRepository.findByTenantIdAndApplicationAndDeviceId(currentTenant.getId(), currentApplication.getName(), device.getDeviceId());
+//
+//        assertThat(response.getResult(), equalTo(saved));
+//    }
 
-        assertThat(response, isResponseOk());
-
-        Device saved = deviceRepository.findByTenantIdAndApplicationAndDeviceId(currentTenant.getId(), currentApplication.getName(), device.getDeviceId());
-
-        assertThat(response.getResult(), equalTo(saved));
-    }
-
-	@Test
-	@UsingDataSet(locations = { "/fixtures/tenants.json", "/fixtures/applications.json" })
-	public void shouldPersistWithTenantLogLevel() {
-		currentTenant.setLogLevel(LogLevel.ALL);
-
-		ServiceResponse<Device> response = deviceRegisterService.register(currentTenant, currentApplication, rawDevice);
-
-		assertThat(response, isResponseOk());
-
-		Device saved = deviceRepository.findByTenantIdAndApplicationAndDeviceId(currentTenant.getId(), currentApplication.getName(), device.getDeviceId());
-
-		assertThat(saved.getLogLevel(), equalTo(LogLevel.ALL));
-
-		deviceRegisterService.remove(currentTenant, currentApplication, rawDevice.getGuid());
-
-		// back to default log server
-		currentTenant.setLogLevel(LogLevel.WARNING);
-
-		response = deviceRegisterService.register(currentTenant, currentApplication, rawDevice);
-
-		assertThat(response, isResponseOk());
-		assertThat(response.getResult().getLocation().getName(), is("default"));
-
-		saved = deviceRepository.findByTenantIdAndApplicationAndDeviceId(currentTenant.getId(), currentApplication.getName(), device.getDeviceId());
-
-		assertThat(saved.getLogLevel(), equalTo(LogLevel.WARNING));
-
-	}
+//	@Test
+//	@UsingDataSet(locations = { "/fixtures/tenants.json", "/fixtures/applications.json" })
+//	public void shouldPersistWithTenantLogLevel() {
+//		currentTenant.setLogLevel(LogLevel.ALL);
+//
+//		ServiceResponse<Device> response = deviceRegisterService.register(currentTenant, currentApplication, rawDevice);
+//
+//		assertThat(response, isResponseOk());
+//
+//		Device saved = deviceRepository.findByTenantIdAndApplicationAndDeviceId(currentTenant.getId(), currentApplication.getName(), device.getDeviceId());
+//
+//		assertThat(saved.getLogLevel(), equalTo(LogLevel.ALL));
+//
+//		deviceRegisterService.remove(currentTenant, currentApplication, rawDevice.getGuid());
+//
+//		// back to default log server
+//		currentTenant.setLogLevel(LogLevel.WARNING);
+//
+//		response = deviceRegisterService.register(currentTenant, currentApplication, rawDevice);
+//
+//		assertThat(response, isResponseOk());
+//		assertThat(response.getResult().getLocation().getName(), is("default"));
+//
+//		saved = deviceRepository.findByTenantIdAndApplicationAndDeviceId(currentTenant.getId(), currentApplication.getName(), device.getDeviceId());
+//
+//		assertThat(saved.getLogLevel(), equalTo(LogLevel.WARNING));
+//
+//	}
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json"})
@@ -429,39 +429,39 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     }
 
-    @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
-    public void shouldPersistIfDataIsValidWhenUpdating() {
-        Device persisted = deviceRepository.findOne(THE_DEVICE_INTERNAL_MONGO_ID);
-
-        persisted.setName(ANOTHER_DEVICE_NAME);
-        persisted.setDescription(ANOTHER_DEVICE_DESCRIPTION);
-        persisted.setRegistrationDate(THE_REGISTRATION_TIME);
-        persisted.setTags(ANOTHER_DEVICE_TAGS);
-        persisted.setActive(false);
-
-        ServiceResponse<Device> response = deviceRegisterService.update(currentTenant, currentApplication, THE_DEVICE_GUID, persisted);
-
-        Device updated = deviceRepository.findByTenantIdAndApplicationAndDeviceId(currentTenant.getId(), currentApplication.getName(), persisted.getDeviceId());
-
-//        assertThat(response, notNullValue());
-//        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
-//        assertThat(response.getResponseMessages(), empty());
-        assertThat(response, isResponseOk());
-        assertThat(response.getResult(), notNullValue());
-        assertThat(response.getResult(), equalTo(updated));
-
-        // ensure that relevant data was changed
-        Device foundDevice = deviceRegisterService.getByDeviceGuid(currentTenant, currentApplication, THE_DEVICE_GUID).getResult();
-        assertThat(foundDevice.getName(), equalTo(ANOTHER_DEVICE_NAME));
-        assertThat(foundDevice.getDescription(), equalTo(ANOTHER_DEVICE_DESCRIPTION));
-        assertThat(foundDevice.getTags(), equalTo(ANOTHER_DEVICE_TAGS));  
-        assertThat(foundDevice.isActive(), equalTo(false));
-
-        // ensure that data should not be changed didn't change
-        assertThat(foundDevice.getRegistrationDate(), not(equalTo(THE_REGISTRATION_TIME)));
-//        assertThat(foundDevice.getEvents(), nullValue());
-    }
+//    @Test
+//    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
+//    public void shouldPersistIfDataIsValidWhenUpdating() {
+//        Device persisted = deviceRepository.findOne(THE_DEVICE_INTERNAL_MONGO_ID);
+//
+//        persisted.setName(ANOTHER_DEVICE_NAME);
+//        persisted.setDescription(ANOTHER_DEVICE_DESCRIPTION);
+//        persisted.setRegistrationDate(THE_REGISTRATION_TIME);
+//        persisted.setTags(ANOTHER_DEVICE_TAGS);
+//        persisted.setActive(false);
+//
+//        ServiceResponse<Device> response = deviceRegisterService.update(currentTenant, currentApplication, THE_DEVICE_GUID, persisted);
+//
+//        Device updated = deviceRepository.findByTenantIdAndApplicationAndDeviceId(currentTenant.getId(), currentApplication.getName(), persisted.getDeviceId());
+//
+////        assertThat(response, notNullValue());
+////        assertThat(response.getStatus(), equalTo(ServiceResponse.Status.OK));
+////        assertThat(response.getResponseMessages(), empty());
+//        assertThat(response, isResponseOk());
+//        assertThat(response.getResult(), notNullValue());
+//        assertThat(response.getResult(), equalTo(updated));
+//
+//        // ensure that relevant data was changed
+//        Device foundDevice = deviceRegisterService.getByDeviceGuid(currentTenant, currentApplication, THE_DEVICE_GUID).getResult();
+//        assertThat(foundDevice.getName(), equalTo(ANOTHER_DEVICE_NAME));
+//        assertThat(foundDevice.getDescription(), equalTo(ANOTHER_DEVICE_DESCRIPTION));
+//        assertThat(foundDevice.getTags(), equalTo(ANOTHER_DEVICE_TAGS));
+//        assertThat(foundDevice.isActive(), equalTo(false));
+//
+//        // ensure that data should not be changed didn't change
+//        assertThat(foundDevice.getRegistrationDate(), not(equalTo(THE_REGISTRATION_TIME)));
+////        assertThat(foundDevice.getEvents(), nullValue());
+//    }
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
@@ -809,28 +809,28 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
 
     }
 
-    @Test
-    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json", "/fixtures/event-routes.json"})
-    public void shouldReturnErrorMoveDeviceWithExistingId() {
-
-        Application otherApplication = applicationRepository.findByTenantAndName(currentTenant.getId(), "konker");
-
-        Device sameNameDevice = Device.builder()
-                                      .tenant(currentTenant)
-                                      .application(otherApplication)
-                                      .deviceId("SN1234567890")
-                                      .build();
-        deviceRepository.save(sameNameDevice);
-
-        ServiceResponse<Device> serviceResponse = deviceRegisterService
-                .move(currentTenant, currentApplication, THE_DEVICE_GUID, otherApplication);
-
-        assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.ERROR));
-        assertThat(serviceResponse.getResponseMessages(),
-                hasEntry(DeviceRegisterService.Validations.DEVICE_ID_ALREADY_REGISTERED.getCode(), null));
-        assertThat(serviceResponse.getResult(), nullValue());
-
-    }
+//    @Test
+//    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json", "/fixtures/event-routes.json"})
+//    public void shouldReturnErrorMoveDeviceWithExistingId() {
+//
+//        Application otherApplication = applicationRepository.findByTenantAndName(currentTenant.getId(), "konker");
+//
+//        Device sameNameDevice = Device.builder()
+//                                      .tenant(currentTenant)
+//                                      .application(otherApplication)
+//                                      .deviceId("SN1234567890")
+//                                      .build();
+//        deviceRepository.save(sameNameDevice);
+//
+//        ServiceResponse<Device> serviceResponse = deviceRegisterService
+//                .move(currentTenant, currentApplication, THE_DEVICE_GUID, otherApplication);
+//
+//        assertThat(serviceResponse.getStatus(), equalTo(ServiceResponse.Status.ERROR));
+//        assertThat(serviceResponse.getResponseMessages(),
+//                hasEntry(DeviceRegisterService.Validations.DEVICE_ID_ALREADY_REGISTERED.getCode(), null));
+//        assertThat(serviceResponse.getResult(), nullValue());
+//
+//    }
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/devices.json", "/fixtures/applications.json"})
