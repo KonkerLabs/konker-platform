@@ -113,12 +113,6 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
             .channel(firstChannel)
             .field(
                 EventSchema.SchemaField.builder()
-                        .path("field")
-                        .knownType(JsonNodeType.STRING)
-                        .knownType(JsonNodeType.OBJECT)
-                        .knownType(JsonNodeType.NUMBER).build())
-            .field(
-                EventSchema.SchemaField.builder()
                         .path(firstField)
                         .knownType(JsonNodeType.STRING)
                         .knownType(JsonNodeType.OBJECT).build())
@@ -322,7 +316,7 @@ public class EventSchemaServiceTest extends BusinessLayerTestSupport {
         ServiceResponse<EventSchema> response = eventSchemaService.appendIncomingSchema(incomingEvent);
         assertThat(response,isResponseOk());
         assertThat(response.getResult().getChannel(), equalTo("command"));
-        assertThat(response.getResult().getFields().size(), equalTo(6));
+        assertThat(response.getResult().getFields().size(), equalTo(4));
 
         for (EventSchema.SchemaField schemaField: response.getResult().getFields()) {
             if (schemaField.getPath().equals("field")) {
