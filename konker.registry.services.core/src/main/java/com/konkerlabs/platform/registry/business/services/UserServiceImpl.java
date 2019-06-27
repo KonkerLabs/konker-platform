@@ -217,6 +217,15 @@ public class UserServiceImpl implements UserService {
                     .build();
         }
 
+        User fromStorage = Optional.ofNullable(userRepository.findOne(user.getEmail())).orElse(user);
+
+        if (Optional.ofNullable(fromStorage).isPresent()
+                && !fromStorage.getTenant().equals(user.getTenant())) {
+            return ServiceResponseBuilder.<User>error()
+                    .withMessage(Validations.USER_EXIST.getCode())
+                    .build();
+        }
+
         ServiceResponse<Location> locationServiceResponse;
 
         if ("default".equals(location)) {
