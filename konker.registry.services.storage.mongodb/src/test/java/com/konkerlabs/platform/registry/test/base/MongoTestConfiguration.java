@@ -22,9 +22,5 @@ public class MongoTestConfiguration extends MongoConfig {
         return new Fongo("registry-test").getMongo();
     }
 
-    @Bean
-    @Override
-    public CacheManager cacheManager() {
-        return new NoOpCacheManager();
-    }
+
 }
