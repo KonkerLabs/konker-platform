@@ -34,8 +34,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.util.StringUtils;
 
 @Configuration
-@EnableCaching
-@EnableScheduling
 @EnableMongoRepositories(basePackages = "com.konkerlabs.platform.registry.business.repositories")
 @Data
 public class MongoConfig extends AbstractMongoConfiguration {
