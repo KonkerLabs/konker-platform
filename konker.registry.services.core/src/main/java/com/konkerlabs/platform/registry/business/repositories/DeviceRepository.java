@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry.business.repositories;
 
 import com.konkerlabs.platform.registry.business.model.Device;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
@@ -14,7 +15,7 @@ public interface DeviceRepository extends MongoRepository<Device, String> {
     @Query("{ 'tenant.id' : ?0 }")
     List<Device> findAllByTenant(String tenantId);
     @Query("{ 'tenant.id' : ?0, 'application.name' : ?1, 'deviceId' : ?2 }")
-    @Cacheable("applicationDevicesCache")
+    @Cacheable(value = "applicationDevicesCache", keyGenerator = "customKeyGenerator")
     Device findByTenantIdAndApplicationAndDeviceId(String tenantId, String applicationName, String deviceId);
     @Query("{ 'tenant.id' : ?0, 'guid' : ?1 }")
     @Cacheable("deviceCache")
@@ -33,4 +34,7 @@ public interface DeviceRepository extends MongoRepository<Device, String> {
     @Query("{ 'tenant.id' : ?0, 'application.name' : ?1, 'deviceModel.id' : ?2 }")
 	List<Device> findAllByTenantIdApplicationNameAndDeviceModel(String tenantId, String applicationName, String deviceModelId);
 
+    @CachePut(value = "applicationDevicesCache", keyGenerator = "customKeyGenerator")
+    @Override
+    <S extends Device> S save(S s);
 }

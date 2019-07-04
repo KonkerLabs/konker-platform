@@ -34,8 +34,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.util.StringUtils;
 
 @Configuration
-@EnableCaching
-@EnableScheduling
 @EnableMongoRepositories(basePackages = "com.konkerlabs.platform.registry.business.repositories")
 @Data
 public class MongoConfig extends AbstractMongoConfiguration {
@@ -106,28 +104,6 @@ public class MongoConfig extends AbstractMongoConfiguration {
     @Override
     public CustomConversions customConversions() {
         return new CustomConversions(converters);
-    }
-
-    @Bean
-    public CacheManager cacheManager() {
-        SimpleCacheManager cacheManager = new SimpleCacheManager();
-        Cache eventsSchemaCache = new ConcurrentMapCache("eventSchemaCache");
-        Cache deviceCache = new ConcurrentMapCache("deviceCache");
-        Cache apiKeyCache = new ConcurrentMapCache("apiKeyCache");
-        Cache applicationDevicesCache = new ConcurrentMapCache("applicationDevicesCache");
-        cacheManager.setCaches(Arrays.asList(eventsSchemaCache,
-                deviceCache,
-                apiKeyCache,
-                applicationDevicesCache));
-        return cacheManager;
-    }
-
-    @Scheduled(fixedRate = 1800000)
-    public void evictAllCaches() {
-        LOG.info("Evict every cache");
-        CacheManager cacheManager = cacheManager();
-        cacheManager.getCacheNames().stream()
-                .forEach(cacheName -> cacheManager.getCache(cacheName).clear());
     }
 
 }

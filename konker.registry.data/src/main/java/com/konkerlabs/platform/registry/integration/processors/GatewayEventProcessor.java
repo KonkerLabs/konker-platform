@@ -7,7 +7,6 @@ import com.konkerlabs.platform.registry.business.model.Gateway;
 import com.konkerlabs.platform.registry.business.services.LocationTreeUtils;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.config.MongoConfig;
 import com.konkerlabs.platform.registry.data.core.integration.converters.helper.ConverterHelper;
 import com.konkerlabs.platform.registry.data.core.integration.gateway.RabbitGateway;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
@@ -54,19 +53,16 @@ public class GatewayEventProcessor {
     private JsonParsingService jsonParsingService;
     private ConverterHelper converterHelper;
     private RabbitGateway rabbitGateway;
-    private MongoConfig mongoConfig;
 
     @Autowired
     public GatewayEventProcessor(DeviceRegisterService deviceRegisterService,
                                  JsonParsingService jsonParsingService,
                                  ConverterHelper converterHelper,
-                                 RabbitGateway rabbitGateway,
-                                 MongoConfig mongoConfig) {
+                                 RabbitGateway rabbitGateway) {
         this.deviceRegisterService = deviceRegisterService;
         this.jsonParsingService = jsonParsingService;
         this.converterHelper = converterHelper;
         this.rabbitGateway = rabbitGateway;
-        this.mongoConfig = mongoConfig;
     }
 
     private Boolean isValidAuthority(Gateway gateway, Device device) throws BusinessException {
@@ -139,7 +135,6 @@ public class GatewayEventProcessor {
                                 .name(payloadDevice.get(deviceIdFieldName).toString())
                                 .active(true)
                                 .build());
-                mongoConfig.evictAllCaches();
             }
 
             if (result.isOk() && Optional.ofNullable(result.getResult()).isPresent()) {
