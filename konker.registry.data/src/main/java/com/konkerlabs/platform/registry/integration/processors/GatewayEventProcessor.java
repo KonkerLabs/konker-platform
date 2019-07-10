@@ -133,6 +133,7 @@ public class GatewayEventProcessor {
                         Device.builder()
                                 .deviceId(payloadDevice.get(deviceIdFieldName).toString())
                                 .name(payloadDevice.get(deviceIdFieldName).toString())
+                                .location(gateway.getLocation())
                                 .active(true)
                                 .build());
             }
