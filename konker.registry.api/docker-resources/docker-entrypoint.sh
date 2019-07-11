@@ -21,6 +21,7 @@ INTEGRATION_TIMEOUT_SMS=3000
 EMAIL_PORT=587
 AMAZON_KINESIS_ENABLED=true
 EMAIL_ENABLED=true
+SWAGGER_PORT=443
 
 echo ""
 echo ""
@@ -158,6 +159,6 @@ java -Dconfig.file=/var/lib/konker/application.conf \
     -Dswagger.hostname=$SWAGGER_HOSTNAME \
     -Dswagger.protocol=$SWAGGER_PROTOCOL \
     -DpubServerInternal.url=$PUB_SERVER_INTERNAL_URL \
-    -Dspringfox.documentation.swagger.v2.host=$SWAGGER_HOSTNAME:443 \
+    -Dspringfox.documentation.swagger.v2.host=$SWAGGER_HOSTNAME:$SWAGGER_PORT \
     -jar /var/lib/konker/registry-api.jar
 exec "$@"
