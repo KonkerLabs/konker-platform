@@ -13,6 +13,7 @@ import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.util.*;
 
@@ -22,7 +23,7 @@ import java.util.*;
 @CompoundIndexes({
         @CompoundIndex(name = "device_channel_idx", def = "{'deviceGuid': 1, 'channel': 1}", unique = true)
 })
-public class EventSchema implements URIDealer {
+public class EventSchema implements URIDealer, Serializable {
 
     @Id
     private String id;
@@ -72,7 +73,7 @@ public class EventSchema implements URIDealer {
     @Data
     @EqualsAndHashCode(of = "path")
     @Builder
-    public static class SchemaField {
+    public static class SchemaField implements Serializable {
         private String path;
         @Singular
         private Set<JsonNodeType> knownTypes;
