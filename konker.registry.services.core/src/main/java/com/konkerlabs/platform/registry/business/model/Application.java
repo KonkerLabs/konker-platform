@@ -10,6 +10,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,7 +23,7 @@ import java.util.regex.Pattern;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(of = {"name", "qualifier"})
-public class Application implements URIDealer {
+public class Application implements URIDealer, Serializable {
 
 	@Id
 	private String name;

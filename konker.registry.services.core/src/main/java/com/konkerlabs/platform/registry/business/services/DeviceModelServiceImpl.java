@@ -305,7 +305,7 @@ public class DeviceModelServiceImpl implements DeviceModelService {
 
         if (size <= 0) {
             return ServiceResponseBuilder.<Page<DeviceModel>>error()
-                    .withMessage(CommonValidations.SIZE_ELEMENT_PAGE_INVALID.getCode())
+                    .withMessage(CommonValidations.SIZE_ELEMENT_PAGE_INVALID.getCode(), "0")
                     .build();
         }
 

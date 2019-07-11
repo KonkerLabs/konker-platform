@@ -342,6 +342,7 @@ public class GatewayEventProcessorTest {
                         Device.builder()
                                 .deviceId("CurrentSensor")
                                 .name("CurrentSensor")
+                                .location(gateway.getLocation())
                                 .active(true)
                                 .build()))
                 .thenReturn(ServiceResponseBuilder.<Device>error().build());
@@ -354,6 +355,7 @@ public class GatewayEventProcessorTest {
                         Device.builder()
                                 .deviceId("TempSensor")
                                 .name("TempSensor")
+                                .location(gateway.getLocation())
                                 .active(true)
                                 .build()))
                 .thenReturn(ServiceResponseBuilder.<Device>error().build());
@@ -380,6 +382,7 @@ public class GatewayEventProcessorTest {
                         Device.builder()
                                 .deviceId("CurrentSensor")
                                 .name("CurrentSensor")
+                                .location(gateway.getLocation())
                                 .active(true)
                                 .build()))
                 .thenReturn(ServiceResponseBuilder.<Device>error().build());
@@ -390,6 +393,7 @@ public class GatewayEventProcessorTest {
                         Device.builder()
                                 .deviceId("TempSensor")
                                 .name("TempSensor")
+                                .location(gateway.getLocation())
                                 .active(true)
                                 .build()))
                 .thenReturn(ServiceResponseBuilder.<Device>error().build());

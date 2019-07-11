@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.business.model;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +25,7 @@ import lombok.experimental.Tolerate;
 @Builder
 @Document(collection = "locations")
 @EqualsAndHashCode(of = {"guid", "name"})
-public class Location implements URIDealer, Validatable {
+public class Location implements URIDealer, Validatable, Serializable {
 
     public static final String URI_SCHEME = "location";
 

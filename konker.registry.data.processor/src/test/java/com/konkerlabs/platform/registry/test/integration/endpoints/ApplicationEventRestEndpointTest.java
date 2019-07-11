@@ -7,7 +7,7 @@ import com.konkerlabs.platform.registry.business.services.api.ApplicationService
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
 import com.konkerlabs.platform.registry.business.services.api.TenantService;
-import com.konkerlabs.platform.registry.data.config.WebMvcConfig;
+import com.konkerlabs.platform.registry.data.processor.config.WebMvcConfig;
 import com.konkerlabs.platform.registry.integration.endpoints.ApplicationEventRestEndpoint;
 import com.konkerlabs.platform.registry.integration.endpoints.ApplicationEventRestEndpoint.Messages;
 import com.konkerlabs.platform.registry.data.core.integration.processors.DeviceEventProcessor;

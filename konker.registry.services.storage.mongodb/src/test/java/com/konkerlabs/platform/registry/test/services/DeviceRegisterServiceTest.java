@@ -455,7 +455,7 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
         Device foundDevice = deviceRegisterService.getByDeviceGuid(currentTenant, currentApplication, THE_DEVICE_GUID).getResult();
         assertThat(foundDevice.getName(), equalTo(ANOTHER_DEVICE_NAME));
         assertThat(foundDevice.getDescription(), equalTo(ANOTHER_DEVICE_DESCRIPTION));
-        assertThat(foundDevice.getTags(), equalTo(ANOTHER_DEVICE_TAGS));  
+        assertThat(foundDevice.getTags(), equalTo(ANOTHER_DEVICE_TAGS));
         assertThat(foundDevice.isActive(), equalTo(false));
 
         // ensure that data should not be changed didn't change

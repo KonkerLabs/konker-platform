@@ -111,6 +111,7 @@ RUN ln -sf /dev/stderr /var/log/nginx/error.log
 #WORKDIR /etc/nginx
 RUN chmod 755 /usr/local/sbin/nginx & \
 	mkdir -p /var/log/konker-platform
+RUN chmod 777 /var/log/konker-platform
 
 COPY docker-resources/nginx/nginx.conf /etc/nginx/nginx.conf
 COPY docker-resources/nginx/nginx.conf /etc/nginx/conf/nginx.conf
