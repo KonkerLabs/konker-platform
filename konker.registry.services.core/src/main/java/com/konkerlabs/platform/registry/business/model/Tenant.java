@@ -6,12 +6,14 @@ import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.io.Serializable;
 import java.util.Optional;
 
 @Document(collection = "tenants")
 @Data
 @Builder
-public class Tenant implements URIDealer {
+public class Tenant implements URIDealer, Serializable {
 
     @Id
     private String id;

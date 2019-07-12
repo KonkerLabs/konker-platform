@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.business.model;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -23,7 +24,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(of = {"guid", "name", "description", "defaultModel"})
-public class DeviceModel implements URIDealer {
+public class DeviceModel implements URIDealer, Serializable {
 
 	@Id
 	private String id;

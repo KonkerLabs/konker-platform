@@ -15,7 +15,7 @@ public class EventSchemaRepository {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    @Cacheable("eventSchemaCache")
+    @Cacheable(value = "eventSchemaCache", keyGenerator = "customKeyGenerator")
 	public EventSchema findByDeviceGuidChannel(String deviceGuid, String channel) {
         EventSchema existing = mongoTemplate.findOne(
                 Query.query(Criteria.where("deviceGuid")
