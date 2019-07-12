@@ -1,6 +1,9 @@
 package com.konkerlabs.platform.registry.config;
 
 import com.konkerlabs.platform.registry.business.model.Device;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CachingConfigurerSupport;
@@ -17,23 +20,37 @@ import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.Map;
 
 @Configuration
 @EnableCaching
 @EnableScheduling
+@Data
 public class RedisCacheConfig extends CachingConfigurerSupport {
 
     private static Logger LOG = LoggerFactory.getLogger(RedisCacheConfig.class);
 
+    private String host;
+    private Integer port;
+
     public RedisCacheConfig() {
         LOG.info("Initializing redis caching...");
+        Map<String, Object> defaultMap = new HashMap<>();
+        defaultMap.put("redis.master.host", "localhost");
+        defaultMap.put("redis.master.port", 6379);
+        Config defaultConf = ConfigFactory.parseMap(defaultMap);
+
+        Config config = ConfigFactory.load().withFallback(defaultConf);
+        setHost(config.getString("redis.master.host"));
+        setPort(config.getInt("redis.master.port"));
     }
 
     @Bean
     public JedisConnectionFactory jedisConnectionFactory() {
         JedisConnectionFactory factory = new JedisConnectionFactory();
-        factory.setHostName("127.0.0.1");
-        factory.setPort(6379);
+        factory.setHostName(host);
+        factory.setPort(port);
         return factory;
     }
 
