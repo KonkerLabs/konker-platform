@@ -304,11 +304,17 @@ public class DeviceEventRestEndpoint {
         Device device = deviceRegisterService.findByApiKey(apiKey);
 
         if (!principal.getApiKey().equals(apiKey)) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(
+                    EventResponse.builder().code(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                            .message(applicationContext.getMessage(Messages.INVALID_RESOURCE.getCode(), null, locale)).build(),
+                    HttpStatus.BAD_REQUEST);
         }
 
         if (!Optional.ofNullable(device).isPresent()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity(
+                EventResponse.builder().code(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                        .message(applicationContext.getMessage(Messages.DEVICE_NOT_FOUND.getCode(), null, locale)).build(),
+                HttpStatus.BAD_REQUEST);
         }
 
         ServiceResponse<DeviceFwUpdate> serviceResponse = deviceFirmwareUpdateService.findPendingFwUpdateByDevice(
@@ -325,7 +331,10 @@ public class DeviceEventRestEndpoint {
 
             return new ResponseEntity<JsonNode>(node, HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity(
+                    EventResponse.builder().code(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                            .message(applicationContext.getMessage(DeviceFirmwareUpdateService.Validations.FIRMWARE_UPDATE_PENDING_STATUS_DOES_NOT_EXIST.getCode(), null, locale)).build(),
+                    HttpStatus.NOT_FOUND);
         }
     }
 
@@ -351,11 +360,17 @@ public class DeviceEventRestEndpoint {
         Device device = deviceRegisterService.findByApiKey(apiKey);
 
         if (!principal.getApiKey().equals(apiKey)) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(
+                    EventResponse.builder().code(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                            .message(applicationContext.getMessage(Messages.INVALID_RESOURCE.getCode(), null, locale)).build(),
+                    HttpStatus.BAD_REQUEST);
         }
 
         if (!Optional.ofNullable(device).isPresent()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity(
+                    EventResponse.builder().code(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                            .message(applicationContext.getMessage(Messages.DEVICE_NOT_FOUND.getCode(), null, locale)).build(),
+                    HttpStatus.BAD_REQUEST);
         }
 
         ServiceResponse<DeviceFwUpdate> serviceResponse = deviceFirmwareUpdateService.findPendingFwUpdateByDevice(
@@ -389,7 +404,10 @@ public class DeviceEventRestEndpoint {
 
             return new ResponseEntity<JsonNode>(node, HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity(
+                    EventResponse.builder().code(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                            .message(applicationContext.getMessage(DeviceFirmwareUpdateService.Validations.FIRMWARE_UPDATE_PENDING_STATUS_DOES_NOT_EXIST.getCode(), null, locale)).build(),
+                    HttpStatus.NOT_FOUND);
         }
 
     }
