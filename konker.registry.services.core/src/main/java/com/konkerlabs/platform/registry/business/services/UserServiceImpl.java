@@ -202,9 +202,26 @@ public class UserServiceImpl implements UserService {
     @Override
     public ServiceResponse<User> save(String application,
                                       String location,
+                                      String loggedUser,
                                       User user,
                                       String newPassword,
                                       String newPasswordConfirmation) {
+        User fromStorage = Optional.ofNullable(userRepository.findOne(user.getEmail())).orElse(user);
+
+        if (loggedUser.equals(fromStorage.getEmail())
+                && !Optional.ofNullable(application).equals(Optional.ofNullable(fromStorage.getApplication()))) {
+            return ServiceResponseBuilder.<User>error()
+                    .withMessage(Validations.NO_PERMISSION_TO_CHANGE_APP_HIMSELF.getCode())
+                    .build();
+        }
+
+        if (loggedUser.equals(fromStorage.getEmail())
+                && !Optional.ofNullable(location).equals(Optional.ofNullable(fromStorage.getLocation()))) {
+            return ServiceResponseBuilder.<User>error()
+                    .withMessage(Validations.NO_PERMISSION_TO_CHANGE_LOCATION_HIMSELF.getCode())
+                    .build();
+        }
+
         Application appFromDB = applicationService.getByApplicationName(
                 user.getTenant(),
                 "default".equals(application) ? user.getTenant().getDomainName() : application).getResult();
@@ -216,8 +233,6 @@ public class UserServiceImpl implements UserService {
                     .withMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode())
                     .build();
         }
-
-        User fromStorage = Optional.ofNullable(userRepository.findOne(user.getEmail())).orElse(user);
 
         if (Optional.ofNullable(fromStorage).isPresent()
                 && !fromStorage.getTenant().equals(user.getTenant())) {
