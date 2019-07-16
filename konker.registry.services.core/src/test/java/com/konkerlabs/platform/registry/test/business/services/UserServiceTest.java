@@ -296,12 +296,12 @@ public class UserServiceTest extends BusinessLayerTestSupport {
     @Test
     public void shouldReturnErrorWhenSaveApplicationDoesNotExist(){
         ServiceResponse<User> serviceResponse =
-                userService.save("appxpto", location.getName(), user,newPassword, newPasswordConfirmation);
+                userService.save("appxpto", location.getName(), userApplication.getEmail(), user,newPassword, newPasswordConfirmation);
         Assert.assertNotNull(serviceResponse);
         assertThat(serviceResponse,
                 hasErrorMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode()));
 
-        serviceResponse = userService.save(null, location.getName(), user,newPassword, newPasswordConfirmation);
+        serviceResponse = userService.save(null, location.getName(), userApplication.getEmail(), user,newPassword, newPasswordConfirmation);
         Assert.assertNotNull(serviceResponse);
         assertThat(serviceResponse,
                 hasErrorMessage(ApplicationService.Validations.APPLICATION_DOES_NOT_EXIST.getCode()));
@@ -310,7 +310,7 @@ public class UserServiceTest extends BusinessLayerTestSupport {
     @Test
     public void shouldReturnErrorWhenSaveLocationDoesNotExist(){
         ServiceResponse<User> serviceResponse =
-                userService.save(application.getName(), "locationxpto", user,newPassword, newPasswordConfirmation);
+                userService.save(application.getName(), "locationxpto", userApplication.getEmail(), user,newPassword, newPasswordConfirmation);
         Assert.assertNotNull(serviceResponse);
         assertThat(serviceResponse,
                 hasErrorMessage(LocationService.Validations.LOCATION_GUID_DOES_NOT_EXIST.getCode()));
@@ -322,6 +322,7 @@ public class UserServiceTest extends BusinessLayerTestSupport {
         ServiceResponse<User> serviceResponse =
                 userService.save(application.getName(),
                         location.getName(),
+                        userApplication.getEmail(),
                         user,
                         newPassword,
                         newPasswordConfirmation);

@@ -30,7 +30,9 @@ public interface UserService {
         NO_EXIST_USER("service.user.validation.no.exist"),
         USER_EXIST("service.user.validation.exist"),
         NO_PERMISSION_TO_REMOVE("service.user.validation.no_permission_to_remove_user"),
-        NO_PERMISSION_TO_REMOVE_HIMSELF("service.user.validation.no_permission_to_remove_himself");
+        NO_PERMISSION_TO_REMOVE_HIMSELF("service.user.validation.no_permission_to_remove_himself"),
+        NO_PERMISSION_TO_CHANGE_APP_HIMSELF("service.user.validation.no_permission_to_change_app_himself"),
+        NO_PERMISSION_TO_CHANGE_LOCATION_HIMSELF("service.user.validation.no_permission_to_change_location_himself");
 
         private String code;
 
@@ -92,6 +94,7 @@ public interface UserService {
 
     ServiceResponse<User> save(String application,
                                String location,
+                               String loggedUser,
                                User user,
                                String newPassword,
                                String newPasswordConfirmation);

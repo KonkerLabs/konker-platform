@@ -104,12 +104,6 @@ public class DeviceUploadRestEndpoint {
             return new ResponseEntity<>(buildResponse(e.getMessage(), locale), HttpStatus.BAD_REQUEST);
         }
 
-        try {
-            uploadRepository.upload(file.getInputStream(), fileKey, filename, false);
-        } catch (Exception e) {
-            return new ResponseEntity<>(buildResponse(e.getMessage(), locale), HttpStatus.BAD_REQUEST);
-        }
-
         if (StringUtils.isNotBlank(metaData)) {
             if (!jsonParsingService.isValid(metaData)) {
                 return new ResponseEntity<>(buildResponse(Messages.INVALID_META_DATA.getCode(), locale), HttpStatus.BAD_REQUEST);
