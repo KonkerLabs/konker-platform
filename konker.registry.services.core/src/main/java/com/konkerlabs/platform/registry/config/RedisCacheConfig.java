@@ -78,6 +78,16 @@ public class RedisCacheConfig extends CachingConfigurerSupport {
         return new CustomKeyGenerator();
     }
 
+    @Bean("apiKeyCustomKeyGenerator")
+    public KeyGenerator apiKeyCustomKeyGenerator() {
+        return new ApiKeyCustomKeyGenerator();
+    }
+
+    @Bean("tenantIdDeviceGuidKeyGenerator")
+    public KeyGenerator tenantIdDeviceGuidKeyGenerator() {
+        return new TenantIdDeviceGuidCustomKeyGenerator();
+    }
+
     @Bean("deviceGuidRemovedKeyGenerator")
     public KeyGenerator DeviceGuidRemovedKeyGenerator() {
         return new DeviceGuidRemovedKeyGenerator();
@@ -125,6 +135,53 @@ public class RedisCacheConfig extends CachingConfigurerSupport {
             }
         }
     }
+
+    @Component
+    class ApiKeyCustomKeyGenerator implements KeyGenerator {
+
+        @Override
+        public Object generate(Object target, Method method, Object... params) {
+            if (params[0] instanceof Device) {
+                Device device = (Device) params[0];
+                return MessageFormat.format("CompoundKey[{0}]",
+                        device.getApiKey());
+            } else {
+                StringBuffer pattern = new StringBuffer("CompoundKey[");
+
+                for (int i = 0; i < params.length; i++) {
+                    pattern.append("{" + i + "}");
+                }
+                pattern.append("]");
+
+                return MessageFormat.format(pattern.toString(), params);
+            }
+        }
+    }
+
+    @Component
+    class TenantIdDeviceGuidCustomKeyGenerator implements KeyGenerator {
+
+        @Override
+        public Object generate(Object target, Method method, Object... params) {
+            if (params[0] instanceof Device) {
+                Device device = (Device) params[0];
+                return MessageFormat.format("CompoundKey[{0}{1}]",
+                        device.getTenant().getId(),
+                        device.getGuid());
+            } else {
+                StringBuffer pattern = new StringBuffer("CompoundKey[");
+
+                for (int i = 0; i < params.length; i++) {
+                    pattern.append("{" + i + "}");
+                }
+                pattern.append("]");
+
+                return MessageFormat.format(pattern.toString(), params);
+            }
+        }
+    }
+
+
 
     @Component
     class DeviceGuidRemovedKeyGenerator implements KeyGenerator {
