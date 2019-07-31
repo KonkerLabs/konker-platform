@@ -20,10 +20,10 @@ public interface DeviceRepository extends MongoRepository<Device, String> {
     @Cacheable(value = "deviceCache", keyGenerator = "customKeyGenerator")
     Device findByTenantIdAndApplicationAndDeviceId(String tenantId, String applicationName, String deviceId);
     @Query("{ 'tenant.id' : ?0, 'guid' : ?1 }")
-    @Cacheable(value = "deviceCache", keyGenerator = "customKeyGenerator")
+    @Cacheable(value = "deviceCache", keyGenerator = "tenantIdDeviceGuidKeyGenerator")
     Device findByTenantAndGuid(String tenantId, String deviceGuid);
     @Query("{ 'apiKey' : ?0 }")
-    @Cacheable(value = "deviceCache", keyGenerator = "customKeyGenerator")
+    @Cacheable(value = "deviceCache", keyGenerator = "apiKeyCustomKeyGenerator")
     Device findByApiKey(String apiKey);
     @Query("{ 'tenant.id' : ?0, 'application.name' : ?1 }")
 	List<Device> findAllByTenantIdAndApplicationName(String tenantId, String applicationName);
@@ -36,7 +36,11 @@ public interface DeviceRepository extends MongoRepository<Device, String> {
     @Query("{ 'tenant.id' : ?0, 'application.name' : ?1, 'deviceModel.id' : ?2 }")
 	List<Device> findAllByTenantIdApplicationNameAndDeviceModel(String tenantId, String applicationName, String deviceModelId);
 
-    @CachePut(value = "deviceCache", keyGenerator = "customKeyGenerator")
+    @Caching(put = {
+            @CachePut(value = "deviceCache", keyGenerator = "customKeyGenerator"),
+            @CachePut(value = "deviceCache", keyGenerator = "apiKeyCustomKeyGenerator"),
+            @CachePut(value = "deviceCache", keyGenerator = "tenantIdDeviceGuidKeyGenerator")
+    })
     @Override
     <S extends Device> S save(S s);
 
