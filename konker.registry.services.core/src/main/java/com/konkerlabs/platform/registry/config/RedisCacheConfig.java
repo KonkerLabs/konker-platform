@@ -121,8 +121,6 @@ public class RedisCacheConfig extends CachingConfigurerSupport {
                         device.getDeviceId());
             } else if (method.getName().equals("findByTenantIdAndApplicationAndDeviceId")) {
                 return MessageFormat.format("CompoundKey[{0}_{1}_{2}]", params);
-            } else if (method.getName().equals("findByDeviceGuidChannel")) {
-                return MessageFormat.format("CompoundKey[{0}]", params[0]);
             } else {
                 StringBuffer pattern = new StringBuffer("CompoundKey[");
 
