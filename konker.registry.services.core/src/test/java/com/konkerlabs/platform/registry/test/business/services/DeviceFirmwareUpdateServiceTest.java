@@ -53,12 +53,14 @@ public class DeviceFirmwareUpdateServiceTest extends BusinessLayerTestSupport {
 
     private Device deviceA;
     private Device deviceB;
+    private Device deviceC;
     private Tenant tenant;
     private Application application;
 
     private DeviceFwUpdate deviceFwUpdateA;
     private DeviceFwUpdate deviceFwUpdateB1;
     private DeviceFwUpdate deviceFwUpdateB2;
+    private DeviceFwUpdate deviceFwUpdateC;
 
     @Before
     public void setUp() {
@@ -88,6 +90,13 @@ public class DeviceFirmwareUpdateServiceTest extends BusinessLayerTestSupport {
                 .build();
         deviceB = deviceRepository.save(deviceB);
 
+        deviceC = Device.builder()
+                .tenant(tenant)
+                .application(application)
+                .guid("0b39af34-d504-41d2-affe-be307285db49")
+                .build();
+        deviceC = deviceRepository.save(deviceC);
+
         deviceFwUpdateB1 = DeviceFwUpdate.builder()
                                .tenant(tenant)
                                .application(application)
@@ -105,6 +114,15 @@ public class DeviceFirmwareUpdateServiceTest extends BusinessLayerTestSupport {
                 .version(VERSION_2)
                 .build();
         deviceFwUpdateB2 = deviceFirmwareUpdateRepository.save(deviceFwUpdateB2);
+
+        deviceFwUpdateC = DeviceFwUpdate.builder()
+                .tenant(tenant)
+                .application(application)
+                .deviceGuid(deviceC.getGuid())
+                .status(FirmwareUpdateStatus.UPDATING)
+                .version(VERSION_2)
+                .build();
+        deviceFwUpdateC = deviceFirmwareUpdateRepository.save(deviceFwUpdateC);
 
     }
 
@@ -133,22 +151,46 @@ public class DeviceFirmwareUpdateServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
-    public void shouldSetStatusAsUpdated() throws Exception {
+    public void shouldFindUpdatingFwByTenantAndApplication() throws Exception {
 
-        ServiceResponse<DeviceFwUpdate> serviceResponse = deviceFirmwareUpdateService.findPendingFwUpdateByDevice(
-                deviceB.getTenant(),
-                deviceB.getApplication(),
-                deviceB);
+        ServiceResponse<DeviceFwUpdate> serviceResponse = deviceFirmwareUpdateService.findUpdatingFwByDevice(
+                deviceC.getTenant(),
+                deviceC.getApplication(),
+                deviceC);
         assertThat(serviceResponse.isOk(), is(true));
         assertThat(serviceResponse.getResult().getVersion(), is(VERSION_2));
-        assertThat(serviceResponse.getResult().getStatus(), is(FirmwareUpdateStatus.PENDING));
+        assertThat(serviceResponse.getResult().getStatus(), is(FirmwareUpdateStatus.UPDATING));
 
-        deviceFirmwareUpdateService.setDeviceAsUpdated(tenant, application, deviceB);
+    }
+
+    @Test
+    public void shouldNotFindUpdatingFwByTenantAndApplication() throws Exception {
+
+        ServiceResponse<DeviceFwUpdate> serviceResponse = deviceFirmwareUpdateService.findUpdatingFwByDevice(
+                deviceA.getTenant(),
+                deviceA.getApplication(),
+                deviceA);
+        assertThat(serviceResponse.isOk(), is(false));
+
+    }
+
+    @Test
+    public void shouldSetStatusAsUpdated() throws Exception {
+
+        ServiceResponse<DeviceFwUpdate> serviceResponse = deviceFirmwareUpdateService.findUpdatingFwByDevice(
+                deviceC.getTenant(),
+                deviceC.getApplication(),
+                deviceC);
+        assertThat(serviceResponse.isOk(), is(true));
+        assertThat(serviceResponse.getResult().getVersion(), is(VERSION_2));
+        assertThat(serviceResponse.getResult().getStatus(), is(FirmwareUpdateStatus.UPDATING));
+
+        deviceFirmwareUpdateService.setDeviceAsUpdated(tenant, application, deviceC);
 
         serviceResponse = deviceFirmwareUpdateService.findPendingFwUpdateByDevice(
-                deviceB.getTenant(),
-                deviceB.getApplication(),
-                deviceB);
+                deviceC.getTenant(),
+                deviceC.getApplication(),
+                deviceC);
         assertThat(serviceResponse.isOk(), is(false));
 
     }

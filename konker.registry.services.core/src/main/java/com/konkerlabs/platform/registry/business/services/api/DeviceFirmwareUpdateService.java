@@ -42,6 +42,7 @@ public interface DeviceFirmwareUpdateService {
     ServiceResponse<DeviceFwUpdate> setDeviceAsSuspended(Tenant tenant, Application application, Device device);
     ServiceResponse<List<DeviceFwUpdate>> findByDeviceFirmware(Tenant tenant, Application application, DeviceFirmware deviceFirmware);
     ServiceResponse<DeviceFwUpdate> findPendingFwUpdateByDevice(Tenant tenant, Application application, Device device);
+    ServiceResponse<DeviceFwUpdate> findUpdatingFwByDevice(Tenant tenant, Application application, Device device);
     ServiceResponse<DeviceFwUpdate> updateStatus(Tenant tenant, Application application, Device device, String version, FirmwareUpdateStatus status);
 
 }

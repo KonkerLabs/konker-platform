@@ -373,7 +373,7 @@ public class DeviceEventRestEndpoint {
                     HttpStatus.BAD_REQUEST);
         }
 
-        ServiceResponse<DeviceFwUpdate> serviceResponse = deviceFirmwareUpdateService.findPendingFwUpdateByDevice(
+        ServiceResponse<DeviceFwUpdate> serviceResponse = deviceFirmwareUpdateService.findUpdatingFwByDevice(
                 device.getTenant(),
                 device.getApplication(),
                 device
@@ -443,7 +443,8 @@ public class DeviceEventRestEndpoint {
         );
 
         if (serviceResponse.isOk()) {
-            DeviceFirmware deviceFirmware = serviceResponse.getResult().getDeviceFirmware();
+            DeviceFwUpdate deviceFwUpdate = serviceResponse.getResult();
+            DeviceFirmware deviceFirmware = deviceFwUpdate.getDeviceFirmware();
             Binary binary = deviceFirmware.getFirmware();
             String fileName = deviceFirmware.getVersion().replaceAll("\\.", "-") + ".bin";
 
@@ -452,6 +453,12 @@ public class DeviceEventRestEndpoint {
             HttpHeaders responseHeaders = new HttpHeaders();
             responseHeaders.add("content-disposition", "attachment; filename=" + fileName);
             responseHeaders.add("Content-Type", "application/octet-stream");
+
+            deviceFirmwareUpdateService.updateStatus(device.getTenant(),
+                    device.getApplication(),
+                    device,
+                    deviceFwUpdate.getVersion(),
+                    FirmwareUpdateStatus.UPDATING);
 
             return new ResponseEntity(out, responseHeaders,HttpStatus.OK);
         } else {
