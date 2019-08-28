@@ -434,10 +434,10 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
                 .builder()
                 .deviceFirmware(deviceFirmware)
                 .version(deviceFirmware.getVersion())
-                .status(FirmwareUpdateStatus.PENDING)
+                .status(FirmwareUpdateStatus.UPDATING)
                 .build();
 
-        when(deviceFirmwareUpdateService.findPendingFwUpdateByDevice(
+        when(deviceFirmwareUpdateService.findUpdatingFwByDevice(
                 device.getTenant(),
                 device.getApplication(),
                 device))
