@@ -258,7 +258,7 @@ public class LocationRestController extends AbstractRestController implements In
         ServiceResponse<Location> updateResponse = locationService.update(tenant, application, locationFromDB.getGuid(), locationFromDB);
 
         if (!updateResponse.isOk()) {
-            throw new BadServiceResponseException( locationResponse, validationsCode);
+            throw new BadServiceResponseException( updateResponse, validationsCode);
         }
 
         // update childrens (subtree)

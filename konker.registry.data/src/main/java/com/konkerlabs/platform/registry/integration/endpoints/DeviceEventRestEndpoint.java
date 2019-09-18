@@ -139,7 +139,7 @@ public class DeviceEventRestEndpoint {
     	}
 
     	if(Optional.ofNullable(channel).isPresent() &&
-    			(channel.length() > 32 || Pattern.compile("[^A-Za-z0-9_-]").matcher(channel).find())){
+    			(channel.length() > 36 || Pattern.compile("[^A-Za-z0-9_-]").matcher(channel).find())){
             deferredResult.setErrorResult(applicationContext.getMessage(Messages.INVALID_CHANNEL_PATTERN.getCode(), null, locale));
             httpResponse.setStatus(HttpStatus.BAD_REQUEST.value());
             return deferredResult;

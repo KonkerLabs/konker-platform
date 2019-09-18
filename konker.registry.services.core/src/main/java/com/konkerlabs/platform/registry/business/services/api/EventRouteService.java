@@ -14,7 +14,9 @@ public interface EventRouteService {
         GUID_NULL("service.event_route.guid.not_null"),
         EVENT_ROUTE_NOT_FOUND("service.event_route.not_found"),
         EVENT_ROUTE_URI_NULL("service.event_route.uri.not_null"),
-        CROSS_APPLICATION("service.event_route.cross_application"),;
+        CROSS_APPLICATION("service.event_route.cross_application"),
+        INCOMING_CHANNEL_INVALID("service.event_route.incoming_channel_invalid"),
+        OUTGOING_CHANNEL_INVALID("service.event_route.outgoing_channel_invalid");
 
         private String code;
 

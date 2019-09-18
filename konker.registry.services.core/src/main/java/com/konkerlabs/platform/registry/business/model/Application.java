@@ -76,9 +76,10 @@ public class Application implements URIDealer, Serializable {
 
 		Map<String, Object[]> validations = new HashMap<>();
 
-		if (getName() != null && regex.matcher(getName()).find())
+		String name = getName().contains("@") ? getName().split("@")[1] : getName();
+		if (name != null && regex.matcher(name).find())
 			validations.put(Validations.NAME_INVALID.code,null);
-		if (getName() == null || getName().isEmpty())
+		if (name == null || name.isEmpty())
 			validations.put(Validations.NAME_NULL_EMPTY.code,null);
 		if (getFriendlyName() == null || getFriendlyName().isEmpty())
 			validations.put(Validations.FRIENDLY_NAME_NULL_EMPTY.code,null);

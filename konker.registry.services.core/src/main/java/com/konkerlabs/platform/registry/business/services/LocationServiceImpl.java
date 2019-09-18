@@ -125,6 +125,13 @@ public class LocationServiceImpl implements LocationService {
                     .withMessage(CommonValidations.RECORD_NULL.getCode())
                     .build();
 
+        if (updatingLocation.getId()
+                .equals(updatingLocation.getParent().getId())) {
+            return ServiceResponseBuilder.<Location>error()
+                    .withMessage(Validations.LOCATION_PARENT_INVALID.getCode())
+                    .build();
+        }
+
         Location locationFromDB = locationRepository.findByTenantAndApplicationAndGuid(tenant.getId(), application.getName(), guid);
         if (locationFromDB == null) {
             return ServiceResponseBuilder.<Location>error()

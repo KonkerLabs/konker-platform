@@ -71,6 +71,11 @@ public class EventRouteServiceImpl implements EventRouteService {
             return ServiceResponseBuilder.<EventRoute>error()
                     .withMessage(CommonValidations.RECORD_NULL.getCode()).build();
 
+        ServiceResponse<EventRoute> routeValidation = validateRoute(route);
+        if (!routeValidation.isOk()) {
+            return routeValidation;
+        }
+
         route.setId(null);
         route.setTenant(tenant);
         route.setApplication(application);
@@ -121,6 +126,11 @@ public class EventRouteServiceImpl implements EventRouteService {
             return ServiceResponseBuilder.<EventRoute>error()
                     .withMessage(Validations.GUID_NULL.getCode())
                     .build();
+        }
+
+        ServiceResponse<EventRoute> routeValidation = validateRoute(eventRoute);
+        if (!routeValidation.isOk()) {
+            return routeValidation;
         }
 
         EventRoute current = eventRouteRepository.findByGuid(
@@ -408,6 +418,22 @@ public class EventRouteServiceImpl implements EventRouteService {
 
         return ServiceResponseBuilder.<T>ok().build();
 
+    }
+
+    private <T> ServiceResponse<T> validateRoute(EventRoute route) {
+        if (route.getIncoming().getData().get("channel").length() > 36) {
+            return ServiceResponseBuilder.<T>error()
+                    .withMessage(Validations.INCOMING_CHANNEL_INVALID.getCode())
+                    .build();
+        }
+
+        if (route.getOutgoing().getData().get("channel").length() > 36) {
+            return ServiceResponseBuilder.<T>error()
+                    .withMessage(Validations.OUTGOING_CHANNEL_INVALID.getCode())
+                    .build();
+        }
+
+        return ServiceResponseBuilder.<T>ok().build();
     }
 
 }
