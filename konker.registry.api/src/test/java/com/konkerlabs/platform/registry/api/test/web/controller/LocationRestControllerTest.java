@@ -313,7 +313,7 @@ public class LocationRestControllerTest extends WebLayerTestContext {
                 .andExpect(jsonPath("$.code", is(HttpStatus.INTERNAL_SERVER_ERROR.value())))
                 .andExpect(jsonPath("$.status", is("error")))
                 .andExpect(jsonPath("$.timestamp", greaterThan(1400000000)))
-                .andExpect(jsonPath("$.messages").doesNotExist())
+                .andExpect(jsonPath("$.messages.[0]", is("Location not found: {0}")))
                 .andExpect(jsonPath("$.result").doesNotExist());
 
     }
