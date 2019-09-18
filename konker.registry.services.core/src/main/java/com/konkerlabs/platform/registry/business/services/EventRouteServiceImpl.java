@@ -71,7 +71,7 @@ public class EventRouteServiceImpl implements EventRouteService {
             return ServiceResponseBuilder.<EventRoute>error()
                     .withMessage(CommonValidations.RECORD_NULL.getCode()).build();
 
-        ServiceResponse<EventRoute> routeValidation = validateRoute(route);
+        ServiceResponse<EventRoute> routeValidation = validateChannel(route);
         if (!routeValidation.isOk()) {
             return routeValidation;
         }
@@ -128,7 +128,7 @@ public class EventRouteServiceImpl implements EventRouteService {
                     .build();
         }
 
-        ServiceResponse<EventRoute> routeValidation = validateRoute(eventRoute);
+        ServiceResponse<EventRoute> routeValidation = validateChannel(eventRoute);
         if (!routeValidation.isOk()) {
             return routeValidation;
         }
@@ -420,14 +420,16 @@ public class EventRouteServiceImpl implements EventRouteService {
 
     }
 
-    private <T> ServiceResponse<T> validateRoute(EventRoute route) {
-        if (route.getIncoming().getData().get("channel").length() > 36) {
+    private <T> ServiceResponse<T> validateChannel(EventRoute route) {
+        if (route.getIncoming().isDevice() &&
+                route.getIncoming().getData().get("channel").length() > 36) {
             return ServiceResponseBuilder.<T>error()
                     .withMessage(Validations.INCOMING_CHANNEL_INVALID.getCode())
                     .build();
         }
 
-        if (route.getOutgoing().getData().get("channel").length() > 36) {
+        if (route.getOutgoing().isDevice() &&
+                route.getOutgoing().getData().get("channel").length() > 36) {
             return ServiceResponseBuilder.<T>error()
                     .withMessage(Validations.OUTGOING_CHANNEL_INVALID.getCode())
                     .build();

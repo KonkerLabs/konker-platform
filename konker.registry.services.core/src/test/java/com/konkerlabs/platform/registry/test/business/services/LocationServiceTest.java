@@ -130,6 +130,7 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
     @Test
     public void shouldUpdateWithNonExistingGuid() {
         Location newLocation = Location.builder()
+                                       .id("591200ea9061e67cb2228f99")
                                        .name("br2")
                                        .description("BBRR")
                                        .defaultLocation(false)
@@ -143,6 +144,7 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
     @Test
     public void shouldUpdateWithNullName() {
         Location newLocation = Location.builder()
+                                       .id("591200ea9061e67cb2228f99")
                                        .name(null)
                                        .description("BBRR")
                                        .defaultLocation(false)
@@ -155,6 +157,7 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
     @Test
     public void shouldTryToUpdateWithExistingName() {
         Location newLocation = Location.builder()
+                                       .id("591200ea9061e67cb2228f99")
                                        .name("sp")
                                        .description("BBRR")
                                        .defaultLocation(false)
@@ -167,6 +170,7 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
     @Test
     public void shouldTryToUpdateWithoutParent() {
         Location newLocation = Location.builder()
+                                       .id("591200ea9061e67cb2228f99")
                                        .name("BR2")
                                        .description("BBRR")
                                        .defaultLocation(false)
@@ -182,6 +186,7 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
         assertThat(parent.isDefaultLocation(), is(true));
 
         Location newLocation = Location.builder()
+                .id("591200ea9061e67cb2228f99")
                 .parent(parent)
                 .name("BR2")
                 .description("BBRR")
@@ -202,10 +207,28 @@ public class LocationServiceTest extends BusinessLayerTestSupport {
     }
 
     @Test
+    public void shouldUpdateWithSameParentAndLocation() {
+        Location parent = locationSearchService.findByName(tenant, application, "sp", false).getResult();
+
+        Location newLocation = Location.builder()
+                .id(parent.getId())
+                .parent(parent)
+                .name(parent.getName())
+                .description("BBRR")
+                .defaultLocation(false)
+                .build();
+
+        ServiceResponse<Location> response = locationService.update(tenant, application, "d75758a6-235b-413b-85b3-d218404f8c11", newLocation);
+        assertThat(response.isOk(), is(false));
+        assertThat(response.getResponseMessages(), hasEntry(Validations.LOCATION_PARENT_INVALID.getCode(), null));
+    }
+
+    @Test
     public void shouldUpdate() {
         Location parent = locationSearchService.findByName(tenant, application, "sp", false).getResult();
 
         Location newLocation = Location.builder()
+                                       .id("591200ea9061e67cb2228f99")
                                        .parent(parent)
                                        .name("BR2")
                                        .description("BBRR")
