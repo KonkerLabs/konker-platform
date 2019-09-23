@@ -213,6 +213,7 @@ public class EventRouteExecutorImpl implements EventRouteExecutor {
                 eventRoute.getOutgoing().getData(),
                 eventRoute.getTenant(),
                 eventRoute.getApplication());
+        eventRoutePerformedTimes(eventRoute);
     }
 
     private void logEventFilterMismatch(Event event, EventRoute eventRoute) {
@@ -227,5 +228,9 @@ public class EventRouteExecutorImpl implements EventRouteExecutor {
                 eventRoute.getName(), event.getPayload()),
                 eventRoute.toURI(),
                 eventRoute.getTenant().getLogLevel());
+    }
+
+    private void eventRoutePerformedTimes(EventRoute eventRoute) {
+
     }
 }
