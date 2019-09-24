@@ -29,6 +29,7 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
         messageSource.addBasenames(
                 "classpath:/messages/devices",
                 "classpath:/messages/routes",
+                "classpath:/messages/routes-counter",
                 "classpath:/messages/integration",
                 "classpath:/messages/transformations",
                 "classpath:/messages/devices-config",
