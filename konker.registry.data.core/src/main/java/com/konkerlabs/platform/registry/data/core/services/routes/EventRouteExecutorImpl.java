@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.repositories.DeviceModelRepository;
 import com.konkerlabs.platform.registry.business.services.LocationTreeUtils;
+import com.konkerlabs.platform.registry.business.services.api.EventRouteCounterService;
 import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
 import com.konkerlabs.platform.registry.business.services.api.LocationSearchService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
@@ -49,6 +50,8 @@ public class EventRouteExecutorImpl implements EventRouteExecutor {
     private DeviceModelRepository deviceModelRepository;
     @Autowired
     private RabbitGateway rabbitGateway;
+    @Autowired
+    private EventRouteCounterService eventRouteCounterService;
 
     @Override
     public Future<List<Event>> execute(Event event, Device device) {
@@ -231,6 +234,27 @@ public class EventRouteExecutorImpl implements EventRouteExecutor {
     }
 
     private void eventRoutePerformedTimes(EventRoute eventRoute) {
+        ServiceResponse<EventRouteCounter> response = eventRouteCounterService.getByEventRoute(
+                eventRoute.getTenant(),
+                eventRoute.getApplication(),
+                eventRoute);
 
+        EventRouteCounter eventRouteCounter;
+        if (response.isOk() && Optional.ofNullable(response.getResult()).isPresent()) {
+            eventRouteCounter = response.getResult();
+        } else {
+            eventRouteCounter = EventRouteCounter.builder()
+                    .tenant(eventRoute.getTenant())
+                    .application(eventRoute.getApplication())
+                    .eventRoute(eventRoute)
+                    .performedTimes(0l)
+                    .build();
+        }
+
+        eventRouteCounter.addPerformedTimes();
+        eventRouteCounterService.save(eventRouteCounter.getTenant(),
+                eventRouteCounter.getApplication(),
+                eventRouteCounter);
+        LOGGER.info("Event Route Counter created");
     }
 }

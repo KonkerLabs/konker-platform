@@ -76,4 +76,8 @@ public class EventRouteCounter implements URIDealer, Validatable {
  		return Optional.of(validations).filter(stringMap -> !stringMap.isEmpty());
  	}
 
+ 	public void addPerformedTimes() {
+        this.performedTimes += 1;
+    }
+
 }

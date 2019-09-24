@@ -1,9 +1,14 @@
 package com.konkerlabs.platform.registry.test.business.services;
 
-import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.model.Application;
+import com.konkerlabs.platform.registry.business.model.EventRoute;
+import com.konkerlabs.platform.registry.business.model.EventRouteCounter;
+import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.*;
-import com.konkerlabs.platform.registry.business.services.api.*;
+import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
+import com.konkerlabs.platform.registry.business.services.api.EventRouteCounterService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
@@ -17,9 +22,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-
-import java.time.Instant;
 
 import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
 import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.isResponseOk;
@@ -47,10 +49,6 @@ public class EventRouteCounterServiceTest extends BusinessLayerTestSupport {
     private ApplicationRepository applicationRepository;
     @Autowired
     private EventRouteRepository eventRouteRepository;
-    @Autowired
-    private DeviceModelRepository deviceModelRepository;
-    @Autowired
-    private LocationRepository locationRepository;
 
     private EventRouteCounter eventRouteCounter;
     private EventRoute route;
@@ -147,11 +145,10 @@ public class EventRouteCounterServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/event-routes.json"})
     public void shouldGetByEventRouteCreationDateTenantIsNull() {
-        ServiceResponse<EventRouteCounter> response = eventRouteCounterService.getByEventRouteAndCreationDate(
+        ServiceResponse<EventRouteCounter> response = eventRouteCounterService.getByEventRoute(
                 null,
                 application,
-                route,
-                Instant.now());
+                route);
 
         assertThat(response, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
     }
@@ -159,11 +156,10 @@ public class EventRouteCounterServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/event-routes.json"})
     public void shouldGetByEventRouteCreationDateTenantNotExist() {
-        ServiceResponse<EventRouteCounter> response = eventRouteCounterService.getByEventRouteAndCreationDate(
+        ServiceResponse<EventRouteCounter> response = eventRouteCounterService.getByEventRoute(
                 Tenant.builder().domainName("no-exist").build(),
                 application,
-                route,
-                Instant.now());
+                route);
 
         assertThat(response, hasErrorMessage(CommonValidations.TENANT_DOES_NOT_EXIST.getCode()));
     }
@@ -171,11 +167,10 @@ public class EventRouteCounterServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/event-routes.json"})
     public void shouldGetByEventRouteCreationDateApplicationIsNull() {
-        ServiceResponse<EventRouteCounter> response = eventRouteCounterService.getByEventRouteAndCreationDate(
+        ServiceResponse<EventRouteCounter> response = eventRouteCounterService.getByEventRoute(
                 tenant,
                 null,
-                route,
-                Instant.now());
+                route);
 
         assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_NULL.getCode()));
     }
@@ -183,13 +178,46 @@ public class EventRouteCounterServiceTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/event-routes.json"})
     public void shouldGetByEventRouteCreationDateApplicationNotFound() {
-        ServiceResponse<EventRouteCounter> response = eventRouteCounterService.getByEventRouteAndCreationDate(
+        ServiceResponse<EventRouteCounter> response = eventRouteCounterService.getByEventRoute(
                 tenant,
                 Application.builder().name("not-found").build(),
-                route,
-                Instant.now());
+                route);
 
         assertThat(response, hasErrorMessage(ApplicationService.Validations.APPLICATION_NOT_FOUND.getCode()));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/event-routes.json"})
+    public void shouldGetByEventRouteCreationDateEventRouteNull() {
+        ServiceResponse<EventRouteCounter> response = eventRouteCounterService.getByEventRoute(
+                tenant,
+                application,
+                null);
+
+        assertThat(response, hasErrorMessage(EventRouteCounterService.Validations.EVENT_ROUTE_NULL.getCode()));
+    }
+
+    @Test
+    @UsingDataSet(locations = {"/fixtures/tenants.json", "/fixtures/applications.json", "/fixtures/event-routes.json"})
+    public void shouldGetByEventRoute() {
+        EventRouteCounter eventRouteCounter = EventRouteCounter.builder()
+                .performedTimes(1l)
+                .eventRoute(route)
+                .build();
+        eventRouteCounterService.save(tenant, application, eventRouteCounter);
+
+        ServiceResponse<EventRouteCounter> response = eventRouteCounterService.getByEventRoute(
+                tenant,
+                application,
+                route);
+
+        assertThat(response, isResponseOk());
+        assertThat(response.getResult().getId(), notNullValue());
+        assertThat(response.getResult().getCreationDate(), notNullValue());
+        assertThat(response.getResult().getGuid(), notNullValue());
+        assertThat(response.getResult().getEventRoute(), notNullValue());
+        assertThat(response.getResult().getApplication(), notNullValue());
+        assertThat(response.getResult().getTenant(), notNullValue());
     }
 
 }

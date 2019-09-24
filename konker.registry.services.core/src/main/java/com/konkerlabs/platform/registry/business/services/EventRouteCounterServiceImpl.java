@@ -19,7 +19,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
+import java.time.*;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -57,16 +57,39 @@ public class EventRouteCounterServiceImpl implements EventRouteCounterService {
     }
 
     @Override
-    public ServiceResponse<EventRouteCounter> getByEventRouteAndCreationDate(Tenant tenant,
-                                                                             Application application,
-                                                                             EventRoute eventRoute,
-                                                                             Instant creationDate) {
+    public ServiceResponse<EventRouteCounter> getByEventRoute(Tenant tenant,
+                                                              Application application,
+                                                              EventRoute eventRoute) {
         ServiceResponse<EventRouteCounter> validationResponse = validate(tenant, application);
         if (!validationResponse.isOk()) {
             return validationResponse;
         }
 
-        return null;
+        if (!Optional.ofNullable(eventRoute).isPresent()) {
+            return ServiceResponseBuilder.<EventRouteCounter>error()
+                    .withMessage(Validations.EVENT_ROUTE_NULL.getCode())
+                    .build();
+        }
+
+        YearMonth ym = YearMonth.now();
+        LocalDate firstDate = ym.atDay(1);
+        LocalDate lastDate = ym.atEndOfMonth();
+
+        LocalDateTime firstDateTime = firstDate.atStartOfDay();
+        LocalDateTime lastDateTime = lastDate.atTime(23, 59, 59);
+
+        Instant start = firstDateTime.toInstant(ZoneOffset.UTC);
+        Instant end = lastDateTime.toInstant(ZoneOffset.UTC);
+
+        EventRouteCounter eventRouteCounter = eventRouteCounterRepository.getByEventRouteAndCreationDate(tenant.getId(),
+                application.getName(),
+                eventRoute.getId(),
+                start,
+                end);
+
+        return ServiceResponseBuilder.<EventRouteCounter>ok()
+                .withResult(eventRouteCounter)
+                .build();
     }
 
 
@@ -111,6 +134,5 @@ public class EventRouteCounterServiceImpl implements EventRouteCounterService {
         }
 
         return ServiceResponseBuilder.<T>ok().build();
-
     }
 }

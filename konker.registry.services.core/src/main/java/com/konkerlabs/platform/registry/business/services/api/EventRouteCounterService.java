@@ -25,6 +25,6 @@ public interface EventRouteCounterService {
     }
 
     ServiceResponse<EventRouteCounter> save(Tenant tenant, Application application, EventRouteCounter eventRouteCounter);
-    ServiceResponse<EventRouteCounter> getByEventRouteAndCreationDate(Tenant tenant, Application application, EventRoute eventRoute, Instant creationDate);
+    ServiceResponse<EventRouteCounter> getByEventRoute(Tenant tenant, Application application, EventRoute eventRoute);
 
 }
