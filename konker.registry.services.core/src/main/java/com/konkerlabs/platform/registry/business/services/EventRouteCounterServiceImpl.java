@@ -71,12 +71,8 @@ public class EventRouteCounterServiceImpl implements EventRouteCounterService {
                     .build();
         }
 
-        YearMonth ym = YearMonth.now();
-        LocalDate firstDate = ym.atDay(1);
-        LocalDate lastDate = ym.atEndOfMonth();
-
-        LocalDateTime firstDateTime = firstDate.atStartOfDay();
-        LocalDateTime lastDateTime = lastDate.atTime(23, 59, 59);
+        LocalDateTime firstDateTime = LocalDate.now().atTime(0, 0, 0);
+        LocalDateTime lastDateTime = LocalDate.now().atTime(23, 59, 59);
 
         Instant start = firstDateTime.toInstant(ZoneOffset.UTC);
         Instant end = lastDateTime.toInstant(ZoneOffset.UTC);
