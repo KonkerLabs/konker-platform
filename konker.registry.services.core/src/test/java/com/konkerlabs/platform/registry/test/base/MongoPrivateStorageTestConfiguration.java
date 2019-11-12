@@ -1,7 +1,6 @@
 package com.konkerlabs.platform.registry.test.base;
 
 import com.github.fakemongo.Fongo;
-import com.konkerlabs.platform.registry.config.MongoAuditConfig;
 import com.konkerlabs.platform.registry.config.MongoPrivateStorageConfig;
 import com.mongodb.Mongo;
 import org.springframework.context.annotation.Bean;

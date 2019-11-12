@@ -4,6 +4,7 @@ set -e
 
 ## Force default ports
 REDIS_PORT=6379
+RABBITMQ_API_PORT=15672
 CASSANDRA_PORT=9042
 MONGODB_PORT=27017
 MONGODB_AUDIT_PORT=27017
@@ -21,6 +22,7 @@ INTEGRATION_TIMEOUT_SMS=3000
 EMAIL_PORT=587
 AMAZON_KINESIS_ENABLED=true
 EMAIL_ENABLED=true
+SWAGGER_PORT=443
 
 echo ""
 echo ""
@@ -138,6 +140,10 @@ java -Dconfig.file=/var/lib/konker/application.conf \
     -Drabbitmq.username=$RABBITMQ_USERNAME \
     -Drabbitmq.password=$RABBITMQ_PASSWORD \
     -Drabbitmq.virtualHost=$RABBITMQ_VHOST \
+    -Drabbitmq.apiHost=$RABBITMQ_API_USERNAME \
+    -Drabbitmq.apiPort=$RABBITMQ_API_PASSWORD \
+    -Drabbitmq.apiUsername=$RABBITMQ_USERNAME \
+    -Drabbitmq.apiPassword=$RABBITMQ_PASSWORD \
     -DpubServer.httpHostname=$PUB_SERVER_HOSTNAME \
     -DpubServer.httpPort=$PUB_SERVER_HTTP_PORT \
     -DpubServer.httpsPort=$PUB_SERVER_HTTPS_PORT \
