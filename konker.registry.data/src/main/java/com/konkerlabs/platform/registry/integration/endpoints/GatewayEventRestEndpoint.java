@@ -175,10 +175,6 @@ public class GatewayEventRestEndpoint {
             return new ResponseEntity<EventResponse>(buildResponse(Messages.INVALID_HEADER_DEVICE_ID_FIELD.getCode(),locale), HttpStatus.BAD_REQUEST);
         }
 
-        if (deviceChannelFieldName == null) {
-            return new ResponseEntity<EventResponse>(buildResponse(Messages.INVALID_HEADER_DEVICE_CHANNEL_FIELD.getCode(),locale), HttpStatus.BAD_REQUEST);
-        }
-
         ResponseEntity<String> exchange = getHealthCheckRabbit();
 
         if (exchange.getStatusCode().equals(HttpStatus.OK)) {

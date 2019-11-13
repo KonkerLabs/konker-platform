@@ -152,9 +152,16 @@ public class GatewayEventProcessor {
 
                     Instant ingestedTimestamp = Instant.now();
 
+                    String channel = null;
+                    if (Optional.ofNullable(deviceChannelFieldName).isPresent()) {
+                        channel = payloadDevice.get(deviceChannelFieldName).toString();
+                    } else {
+                        channel = "data";
+                    }
+
                     byte[] payloadBytes = converterHelper.getJsonPayload(device, jsonParsingService.toJsonString(payloadDevice)).getResult();
                     rabbitGateway.queueEventDataPub(device.getApiKey(),
-                            payloadDevice.get(deviceChannelFieldName).toString(),
+                            channel,
                             ingestedTimestamp.toEpochMilli(),
                             payloadBytes);
                 } else {
