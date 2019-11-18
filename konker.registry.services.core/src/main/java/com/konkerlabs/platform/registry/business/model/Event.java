@@ -44,6 +44,7 @@ public class Event implements Serializable {
         private String tenantDomain;
         private String applicationName;
         private String deviceGuid;
+        private String locationGuid;
 
         @JsonView(EventJsonView.class)
         private String deviceId;

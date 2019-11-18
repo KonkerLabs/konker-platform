@@ -102,6 +102,7 @@ public class DeviceEventProcessorTest {
                                 .deviceId("device_id")
                                 .tenantDomain("tenantDomain")
                                 .applicationName("applicationName")
+                                .locationGuid("84399b2e-d99e-11e5-86bc-34238775abcd")
                                 .build()
 
                 )
@@ -121,6 +122,7 @@ public class DeviceEventProcessorTest {
                                 .friendlyName("applicationName")
                                 .build()
                         )
+                .location(Location.builder().guid("84399b2e-d99e-11e5-86bc-34238775abcd").build())
                 .apiKey(sourceApiKey)
                 .id("id")
                 .guid("device_guid")

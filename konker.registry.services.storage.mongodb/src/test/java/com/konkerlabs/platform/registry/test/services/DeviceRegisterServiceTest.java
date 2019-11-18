@@ -592,9 +592,9 @@ public class DeviceRegisterServiceTest extends BusinessLayerTestSupport {
                 .findByTenantDomainNameAndDeviceGuid(currentTenant.getDomainName(), THE_OTHER_DEVICE_GUID);
 
 
-        ServiceResponse<List<Event>> incomingEvents = deviceEventService.findIncomingBy(currentTenant, konkerApplication, THE_OTHER_DEVICE_GUID,
+        ServiceResponse<List<Event>> incomingEvents = deviceEventService.findIncomingBy(currentTenant, konkerApplication, THE_OTHER_DEVICE_GUID, null,
                 INCOMING_CHANNEL, null, null, false, 100);
-        ServiceResponse<List<Event>> outgoingEvents = deviceEventService.findOutgoingBy(currentTenant, konkerApplication, THE_OTHER_DEVICE_GUID,
+        ServiceResponse<List<Event>> outgoingEvents = deviceEventService.findOutgoingBy(currentTenant, konkerApplication, THE_OTHER_DEVICE_GUID, null,
                 OUTGOING_CHANNEL, null, null, false, 100);
 
         assertThat(incomingEvents.getResult().size(), equalTo(2));

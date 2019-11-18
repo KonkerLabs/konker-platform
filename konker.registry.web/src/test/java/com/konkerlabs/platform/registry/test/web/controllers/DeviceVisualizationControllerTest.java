@@ -206,7 +206,7 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
         when(deviceRegisterService.findByTenantDomainNameAndDeviceGuid(tenant.getDomainName(), DEVICE_GUID))
                 .thenReturn(Device.builder().application(application).build());
 
-        when(deviceEventService.findIncomingBy(tenant, application, DEVICE_GUID, CHANNEL, null, null, false, 100))
+        when(deviceEventService.findIncomingBy(tenant, application, DEVICE_GUID, null, CHANNEL, null, null, false, 100))
 			.thenReturn(ServiceResponseBuilder.<List<Event>>ok()
 				.withResult(eventsList).build());
 
@@ -227,7 +227,7 @@ public class DeviceVisualizationControllerTest extends WebLayerTestContext {
         when(deviceRegisterService.findByTenantDomainNameAndDeviceGuid(tenant.getDomainName(), DEVICE_GUID))
                 .thenReturn(Device.builder().application(application).build());
 
-        when(deviceEventService.findIncomingBy(tenant, application, DEVICE_GUID, CHANNEL, startingTimestamp, endTimestamp, false, 100))
+        when(deviceEventService.findIncomingBy(tenant, application, DEVICE_GUID, null, CHANNEL, startingTimestamp, endTimestamp, false, 100))
 			.thenReturn(ServiceResponseBuilder.<List<Event>>ok()
 				.withResult(eventsList).build());
 

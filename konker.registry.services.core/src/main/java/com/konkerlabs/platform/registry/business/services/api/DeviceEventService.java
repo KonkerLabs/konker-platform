@@ -35,6 +35,7 @@ public interface DeviceEventService {
      * @param application
      * @param user
      * @param deviceGuid
+     * @param locationGuid
      * @param startingTimestamp
      * @param endTimestamp
      * @param limit
@@ -44,6 +45,7 @@ public interface DeviceEventService {
                                                 Application application,
                                                 User user,
                                                 String deviceGuid,
+                                                String locationGuid,
                                                 String channel,
                                                 Instant startingTimestamp,
                                                 Instant endTimestamp,
@@ -56,6 +58,7 @@ public interface DeviceEventService {
      * @param tenant
      * @param application
      * @param deviceGuid
+     * @param locationGuid
      * @param startingTimestamp
      * @param endTimestamp
      * @param limit
@@ -64,6 +67,7 @@ public interface DeviceEventService {
     ServiceResponse<List<Event>> findIncomingBy(Tenant tenant,
                                                 Application application,
                                                 String deviceGuid,
+                                                String locationGuid,
                                                 String channel,
                                                 Instant startingTimestamp,
                                                 Instant endTimestamp,
@@ -77,6 +81,7 @@ public interface DeviceEventService {
      * @param application
      * @param user
      * @param deviceGuid
+     * @param locationGuid
      * @param startingTimestamp
      * @param endTimestamp
      * @param limit
@@ -86,6 +91,7 @@ public interface DeviceEventService {
                                                 Application application,
                                                 User user,
                                                 String deviceGuid,
+                                                String locationGuid,
                                                 String channel,
                                                 Instant startingTimestamp,
                                                 Instant endTimestamp,
@@ -98,6 +104,7 @@ public interface DeviceEventService {
      * @param tenant
      * @param application
      * @param deviceGuid
+     * @param locationGuid
      * @param startingTimestamp
      * @param endTimestamp
      * @param limit
@@ -106,6 +113,7 @@ public interface DeviceEventService {
     ServiceResponse<List<Event>> findOutgoingBy(Tenant tenant,
                                                 Application application,
                                                 String deviceGuid,
+                                                String locationGuid,
                                                 String channel,
                                                 Instant startingTimestamp,
                                                 Instant endTimestamp,

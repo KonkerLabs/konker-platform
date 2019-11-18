@@ -76,11 +76,12 @@ public class OutgoingEventsRestController extends AbstractRestController impleme
         EventsFilter filter = new EventsFilter();
         filter.parse(query);
         String deviceGuid = filter.getDeviceGuid();
+        String locationGuid = filter.getLocationGuid();
         String channel = filter.getChannel();
         Instant startingTimestamp = filter.getStartingTimestamp();
         Instant endTimestamp = filter.getEndTimestamp();
 
-        ServiceResponse<List<Event>> restDestinationResponse = deviceEventService.findOutgoingBy(tenant, application, user.getParentUser(), deviceGuid, channel, startingTimestamp, endTimestamp, ascending, limit);
+        ServiceResponse<List<Event>> restDestinationResponse = deviceEventService.findOutgoingBy(tenant, application, user.getParentUser(), deviceGuid, locationGuid, channel, startingTimestamp, endTimestamp, ascending, limit);
 
         if (!restDestinationResponse.isOk()) {
             throw new BadServiceResponseException( restDestinationResponse, validationsCode);

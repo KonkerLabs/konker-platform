@@ -74,7 +74,7 @@ public class EventsMongoToCassandraService {
 
         LOGGER.info("Tenant {} Application {}", tenant.getName(), application.getName());
 
-        List<Event> incomingEvents = mongoEventsRepository.findIncomingBy(tenant, application, deviceGuid, channel, startInstant, endInstant, ascending, limit);
+        List<Event> incomingEvents = mongoEventsRepository.findIncomingBy(tenant, application, deviceGuid, null, channel, startInstant, endInstant, ascending, limit);
 
         int count = 0;
         while (!incomingEvents.isEmpty()) {
@@ -84,11 +84,11 @@ public class EventsMongoToCassandraService {
                 cassandraEventsRepository.saveIncoming(tenant, application, event);
             }
             Event lastEvent = incomingEvents.get(incomingEvents.size() - 1);
-            incomingEvents = mongoEventsRepository.findIncomingBy(tenant, application, deviceGuid, channel, lastEvent.getCreationTimestamp(), endInstant, ascending, limit);
+            incomingEvents = mongoEventsRepository.findIncomingBy(tenant, application, deviceGuid, null, channel, lastEvent.getCreationTimestamp(), endInstant, ascending, limit);
         }
         LOGGER.info("\tTotal Incoming: {}", count);
 
-        List<Event> outgoingEvents = mongoEventsRepository.findOutgoingBy(tenant, application, deviceGuid, channel, startInstant, endInstant, ascending, limit);
+        List<Event> outgoingEvents = mongoEventsRepository.findOutgoingBy(tenant, application, deviceGuid, null, channel, startInstant, endInstant, ascending, limit);
 
         count = 0;
         while (!outgoingEvents.isEmpty()) {
@@ -98,7 +98,7 @@ public class EventsMongoToCassandraService {
                 cassandraEventsRepository.saveOutgoing(tenant, application, event);
             }
             Event lastEvent = outgoingEvents.get(outgoingEvents.size() - 1);
-            outgoingEvents = mongoEventsRepository.findOutgoingBy(tenant, application, deviceGuid, channel, lastEvent.getCreationTimestamp(), endInstant, ascending, limit);
+            outgoingEvents = mongoEventsRepository.findOutgoingBy(tenant, application, deviceGuid, null, channel, lastEvent.getCreationTimestamp(), endInstant, ascending, limit);
         }
         LOGGER.info("\tTotal Outgoing: {}", count);
 

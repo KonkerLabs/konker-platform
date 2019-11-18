@@ -659,7 +659,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
         when(applicationService.getByApplicationName(tenant, application.getName()))
                 .thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
 
-        when(deviceEventService.findIncomingBy(tenant, application, device1.getGuid(), null, null, null, false, 1))
+        when(deviceEventService.findIncomingBy(tenant, application, device1.getGuid(), null, null, null, null, false, 1))
                 .thenReturn(ServiceResponseBuilder.<List<Event>>ok().withResult(events).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}/stats", application.getName(), BASEPATH, device1.getGuid()))
@@ -705,7 +705,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
         when(applicationService.getByApplicationName(tenant, application.getName()))
                 .thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
 
-        when(deviceEventService.findIncomingBy(tenant, application, device1.getGuid(), null, null, null, false, 1))
+        when(deviceEventService.findIncomingBy(tenant, application, device1.getGuid(), null, null, null, null, false, 1))
                 .thenReturn(ServiceResponseBuilder.<List<Event>>ok().withResult(events).build());
 
         getMockMvc().perform(MockMvcRequestBuilders.get(MessageFormat.format("/{0}/{1}/{2}/stats", application.getName(), BASEPATH, device1.getGuid()))

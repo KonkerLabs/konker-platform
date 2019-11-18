@@ -25,6 +25,7 @@ public class EventsFilter {
     private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
     private String deviceGuid;
+    private String locationGuid;
     private String channel;
     private Instant startingTimestamp;
     private Instant endTimestamp;
@@ -32,6 +33,7 @@ public class EventsFilter {
     public void parse(String query) throws BadRequestResponseException {
 
         this.deviceGuid = null;
+        this.locationGuid = null;
         this.channel = null;
         this.startingTimestamp = null;
         this.endTimestamp = null;
@@ -58,6 +60,8 @@ public class EventsFilter {
 
         if (tokens[0].equalsIgnoreCase("device")) {
             this.deviceGuid = tokens[1];
+        } else if (tokens[0].equalsIgnoreCase("location")) {
+            this.locationGuid = tokens[1];
         } else if (tokens[0].equalsIgnoreCase("channel")) {
             this.channel = tokens[1];
         } else if (tokens[0].equalsIgnoreCase("timestamp")) {

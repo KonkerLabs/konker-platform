@@ -243,6 +243,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
     protected List<Event> doFindBy(Tenant tenant,
                                    Application application,
                                    String deviceGuid,
+                                   String locationGuid,
                                    String channel,
                                    Instant startInstant,
                                    Instant endInstant,
@@ -424,7 +425,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
     @Override
     protected void doRemoveBy(Tenant tenant, Application application, String deviceGuid, Type type) throws Exception {
 
-        List<Event> keys = doFindBy(tenant, application, deviceGuid, null, null, null, false, null, type, false);
+        List<Event> keys = doFindBy(tenant, application, deviceGuid, null, null, null, null, false, null, type, false);
 
         Set<String> channels = new HashSet<>();
 

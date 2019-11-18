@@ -121,12 +121,12 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
                 null,
                 null,
                 device.getId(),
+                null,
                 channel,
                 firstEventTimestamp,
                 null,
                 false,
-                null
-        );
+                null);
 
         assertThat(serviceResponse, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
     }
@@ -139,12 +139,12 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
                 tenant,
                 application,
                 device.getId(),
+                null,
                 channel,
                 null,
                 null,
                 false,
-                null
-        );
+                null);
 
         assertThat(serviceResponse, hasErrorMessage(DeviceEventService.Validations.LIMIT_NULL.getCode()));
     }
@@ -156,12 +156,12 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
                 tenant,
                 application,
                 device.getGuid(),
+                null,
                 "command",
                 firstEventTimestamp,
                 null,
                 false,
-                null
-        );
+                null);
 
         assertThat(serviceResponse.getResult(),notNullValue());
         assertThat(serviceResponse.getResult(),hasSize(3));
@@ -179,12 +179,12 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
                 null,
                 user,
                 device.getId(),
+                null,
                 channel,
                 firstEventTimestamp,
                 null,
                 false,
-                null
-        );
+                null);
 
         assertThat(serviceResponse, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
     }
@@ -198,12 +198,12 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
                 application,
                 user,
                 device.getId(),
+                null,
                 channel,
                 null,
                 null,
                 false,
-                null
-        );
+                null);
 
         assertThat(serviceResponse, hasErrorMessage(DeviceEventService.Validations.LIMIT_NULL.getCode()));
     }
@@ -216,12 +216,12 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
                 application,
                 userApplication,
                 device.getGuid(),
+                null,
                 "command",
                 firstEventTimestamp,
                 null,
                 false,
-                null
-        );
+                null);
 
         assertThat(serviceResponse, hasErrorMessage(ApplicationService.Validations.APPLICATION_HAS_NO_PERMISSION.getCode()));
     }
@@ -242,9 +242,9 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
                 null,
                 null,
                 null,
+                null,
                 false,
-                10
-        );
+                10);
 
         assertThat(serviceResponse.getResult(),notNullValue());
         assertThat(serviceResponse.getResult(),hasSize(2));
@@ -267,9 +267,9 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
                 null,
                 null,
                 null,
+                null,
                 false,
-                10
-        );
+                10);
 
         assertThat(serviceResponse.getResult(),notNullValue());
         assertThat(serviceResponse.getResult(),hasSize(1));
@@ -283,12 +283,12 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
                 application,
                 user,
                 device.getGuid(),
+                null,
                 "command",
                 firstEventTimestamp,
                 null,
                 false,
-                null
-        );
+                null);
 
         assertThat(serviceResponse.getResult(),notNullValue());
         assertThat(serviceResponse.getResult(),hasSize(3));
@@ -304,12 +304,12 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
                 null,
                 null,
                 device.getId(),
+                null,
                 channel,
                 firstEventTimestamp,
                 null,
                 false,
-                null
-        );
+                null);
 
         assertThat(serviceResponse, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
     }
@@ -322,12 +322,12 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
                 tenant,
                 application,
                 device.getId(),
+                null,
                 channel,
                 null,
                 null,
                 false,
-                null
-        );
+                null);
 
         assertThat(serviceResponse, hasErrorMessage(DeviceEventService.Validations.LIMIT_NULL.getCode()));
     }
@@ -343,12 +343,12 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
                 tenant,
                 application,
                 device.getGuid(),
+                null,
                 "e4399b2ed998.testchannel",
                 null,
                 null,
                 false,
-                10
-        );
+                10);
 
         assertThat(serviceResponse.getResult(),notNullValue());
         assertThat(serviceResponse.getResult(),hasSize(2));
@@ -367,12 +367,12 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
                 null,
                 user,
                 device.getId(),
+                null,
                 channel,
                 firstEventTimestamp,
                 null,
                 false,
-                null
-        );
+                null);
 
         assertThat(serviceResponse, hasErrorMessage(CommonValidations.TENANT_NULL.getCode()));
     }
@@ -390,12 +390,12 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
                 application,
                 user,
                 device.getId(),
+                null,
                 channel,
                 null,
                 null,
                 false,
-                null
-        );
+                null);
 
         assertThat(serviceResponse, hasErrorMessage(DeviceEventService.Validations.LIMIT_NULL.getCode()));
     }
@@ -412,12 +412,12 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
                 application,
                 userApplication,
                 device.getGuid(),
+                null,
                 "command",
                 firstEventTimestamp,
                 null,
                 false,
-                null
-        );
+                null);
 
         assertThat(serviceResponse, hasErrorMessage(ApplicationService.Validations.APPLICATION_HAS_NO_PERMISSION.getCode()));
     }
@@ -438,9 +438,9 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
                 null,
                 null,
                 null,
+                null,
                 false,
-                10
-        );
+                10);
 
         assertThat(serviceResponse.getResult(),notNullValue());
         assertThat(serviceResponse.getResult(),hasSize(2));
@@ -463,9 +463,9 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
                 null,
                 null,
                 null,
+                null,
                 false,
-                10
-        );
+                10);
 
         assertThat(serviceResponse.getResult(),notNullValue());
         assertThat(serviceResponse.getResult(),hasSize(1));
@@ -485,12 +485,12 @@ public class DeviceEventServiceTest extends BusinessLayerTestSupport {
                 application,
                 user,
                 device.getGuid(),
+                null,
                 "e4399b2ed998.testchannel",
                 null,
                 null,
                 false,
-                10
-        );
+                10);
 
         assertThat(serviceResponse.getResult(),notNullValue());
         assertThat(serviceResponse.getResult(),hasSize(2));
