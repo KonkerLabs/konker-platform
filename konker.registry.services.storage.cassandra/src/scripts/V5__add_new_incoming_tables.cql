@@ -49,7 +49,7 @@ CREATE TABLE incoming_events_location_guid_channel (
     PRIMARY KEY ((tenant_domain, application_name, location_guid, channel), timestamp)
 ) WITH CLUSTERING ORDER BY (timestamp DESC);
 
-CREATE TABLE incoming_events_location_guid_device_guid_channel (
+CREATE TABLE incoming_events_location_guid_deviceguid_channel (
     tenant_domain text,
     application_name text,
     timestamp bigint,

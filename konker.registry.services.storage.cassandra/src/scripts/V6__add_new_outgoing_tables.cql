@@ -7,6 +7,9 @@ CREATE TABLE outgoing_events_location_guid (
     device_id text,
     payload text,
     location_guid text,
+    incoming_channel text,
+    incoming_device_guid text,
+    incoming_device_id text,
     geo_lat double,
     geo_lon double,
     geo_hdop bigint,
@@ -24,6 +27,9 @@ CREATE TABLE outgoing_events_location_guid_device_guid (
     device_id text,
     payload text,
     location_guid text,
+    incoming_channel text,
+    incoming_device_guid text,
+    incoming_device_id text,
     geo_lat double,
     geo_lon double,
     geo_hdop bigint,
@@ -41,6 +47,9 @@ CREATE TABLE outgoing_events_location_guid_channel (
     device_id text,
     payload text,
     location_guid text,
+    incoming_channel text,
+    incoming_device_guid text,
+    incoming_device_id text,
     geo_lat double,
     geo_lon double,
     geo_hdop bigint,
@@ -49,7 +58,7 @@ CREATE TABLE outgoing_events_location_guid_channel (
     PRIMARY KEY ((tenant_domain, application_name, location_guid, channel), timestamp)
 ) WITH CLUSTERING ORDER BY (timestamp DESC);
 
-CREATE TABLE outgoing_events_location_guid_device_guid_channel (
+CREATE TABLE outgoing_events_location_guid_deviceguid_channel (
     tenant_domain text,
     application_name text,
     timestamp bigint,
@@ -58,6 +67,9 @@ CREATE TABLE outgoing_events_location_guid_device_guid_channel (
     device_id text,
     payload text,
     location_guid text,
+    incoming_channel text,
+    incoming_device_guid text,
+    incoming_device_id text,
     geo_lat double,
     geo_lon double,
     geo_hdop bigint,
