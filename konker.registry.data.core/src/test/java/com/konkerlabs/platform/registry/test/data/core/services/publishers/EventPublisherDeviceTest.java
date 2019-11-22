@@ -66,7 +66,7 @@ import static org.mockito.Mockito.*;
         EmailConfig.class,
         EventPublisherDeviceTest.EventPublisherDeviceTestConfig.class
 })
-@UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json", "/fixtures/applications.json"})
+@UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json", "/fixtures/applications.json", "/fixtures/locations.json"})
 public class EventPublisherDeviceTest extends BusinessLayerTestSupport{
 
     private static final String THE_DEVICE_GUID = "7d51c242-81db-11e6-a8c2-0746f010e945";

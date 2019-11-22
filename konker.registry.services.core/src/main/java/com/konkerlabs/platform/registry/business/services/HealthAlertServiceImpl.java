@@ -502,7 +502,7 @@ public class HealthAlertServiceImpl implements HealthAlertService {
 					.build();
 		}
 
-		ServiceResponse<List<Event>> incomingResponse = deviceEventService.findIncomingBy(tenant, application, deviceGuid, null, null, null, false, 1);
+		ServiceResponse<List<Event>> incomingResponse = deviceEventService.findIncomingBy(tenant, application, deviceGuid, null, null, null, null, false, 1);
 		if (incomingResponse.isOk() && incomingResponse.getResult().isEmpty()) {
 			return ServiceResponseBuilder.<HealthAlert>ok()
 					.withResult(HealthAlert.builder().severity(HealthAlertSeverity.NODATA).build())

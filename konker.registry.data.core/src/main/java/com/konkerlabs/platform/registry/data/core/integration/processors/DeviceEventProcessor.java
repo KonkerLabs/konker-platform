@@ -137,6 +137,7 @@ public class DeviceEventProcessor {
                                         ? device.getTenant().getDomainName() : null)
                                 .applicationName(Optional.ofNullable(device.getApplication()).isPresent()
                                         ? device.getApplication().getName(): null)
+                                .locationGuid(device.getLocation().getGuid())
                                 .build()
                 )
                 .creationTimestamp(creationTimestamp)

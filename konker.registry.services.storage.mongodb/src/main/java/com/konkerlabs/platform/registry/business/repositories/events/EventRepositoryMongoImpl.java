@@ -78,6 +78,7 @@ public class EventRepositoryMongoImpl extends BaseEventRepositoryImpl {
         incoming.put("applicationName",event.getIncoming().getApplicationName());
         incoming.put("channel",event.getIncoming().getChannel());
         incoming.put("deviceId", event.getIncoming().getDeviceId());
+        incoming.put("locationGuid", event.getIncoming().getLocationGuid());
         
         DBObject toSave = new BasicDBObject();
 
@@ -104,6 +105,7 @@ public class EventRepositoryMongoImpl extends BaseEventRepositoryImpl {
             outgoing.put("applicationName",event.getOutgoing().getApplicationName());
             outgoing.put("channel",event.getOutgoing().getChannel());
             outgoing.put("deviceId", event.getOutgoing().getDeviceId());
+            outgoing.put("locationGuid", event.getOutgoing().getLocationGuid());
 
             toSave.put(Type.OUTGOING.getActorFieldName(), outgoing);
         }
@@ -114,19 +116,21 @@ public class EventRepositoryMongoImpl extends BaseEventRepositoryImpl {
     }
 
     protected List<Event> doFindBy(Tenant tenant,
-                                 Application application,
-                                 String deviceGuid,
-                                 String channel,
-                                 Instant startInstant,
-                                 Instant endInstant,
-                                 boolean ascending,
-                                 Integer limit,
-                                 Type type,
-                                 boolean isDeleted) throws BusinessException {
+                                   Application application,
+                                   String deviceGuid,
+                                   String locationGuid,
+                                   String channel,
+                                   Instant startInstant,
+                                   Instant endInstant,
+                                   boolean ascending,
+                                   Integer limit,
+                                   Type type,
+                                   boolean isDeleted) throws BusinessException {
 
         List<Criteria> criterias = new ArrayList<>();
 
         Optional.ofNullable(deviceGuid).ifPresent(instant -> criterias.add(Criteria.where(MessageFormat.format("{0}.{1}", type.getActorFieldName(),"deviceGuid")).is(deviceGuid)));
+        Optional.ofNullable(locationGuid).ifPresent(instant -> criterias.add(Criteria.where(MessageFormat.format("{0}.{1}", type.getActorFieldName(), "locationGuid")).is(locationGuid)));
         Optional.ofNullable(startInstant).ifPresent(instant -> criterias.add(Criteria.where("ts").gt(instant.toEpochMilli())));
         Optional.ofNullable(endInstant).ifPresent(instant -> criterias.add(Criteria.where("ts").lte(instant.toEpochMilli())));
         Optional.ofNullable(isDeleted)
@@ -165,6 +169,7 @@ public class EventRepositoryMongoImpl extends BaseEventRepositoryImpl {
                                     .map(dbObject1 -> {
                                         return Event.EventActor.builder()
                                                 .deviceGuid(Optional.ofNullable(dbObject1.get("deviceGuid")).isPresent() ? dbObject1.get("deviceGuid").toString() : null)
+                                                .locationGuid(Optional.ofNullable(dbObject1.get("locationGuid")).isPresent() ? dbObject1.get("locationGuid").toString() : null)
                                                 .tenantDomain(Optional.ofNullable(dbObject1.get("tenantDomain")).isPresent() ? dbObject1.get("tenantDomain").toString() : null)
                                                 .applicationName(Optional.ofNullable(dbObject1.get("applicationName")).isPresent() ? dbObject1.get("applicationName").toString() : null)
                                                 .channel(Optional.ofNullable(dbObject1.get("channel")).isPresent() ? dbObject1.get("channel").toString() : null)
@@ -179,6 +184,7 @@ public class EventRepositoryMongoImpl extends BaseEventRepositoryImpl {
                             .map(dbObject1 -> {
                                 return Event.EventActor.builder()
                                         .deviceGuid(Optional.ofNullable(dbObject1.get("deviceGuid")).isPresent() ? dbObject1.get("deviceGuid").toString() : null)
+                                        .locationGuid(Optional.ofNullable(dbObject1.get("locationGuid")).isPresent() ? dbObject1.get("locationGuid").toString() : null)
                                         .tenantDomain(Optional.ofNullable(dbObject1.get("tenantDomain")).isPresent() ? dbObject1.get("tenantDomain").toString() : null)
                                         .applicationName(Optional.ofNullable(dbObject1.get("applicationName")).isPresent() ? dbObject1.get("applicationName").toString() : null)
                                         .channel(Optional.ofNullable(dbObject1.get("channel")).isPresent() ? dbObject1.get("channel").toString() : null)

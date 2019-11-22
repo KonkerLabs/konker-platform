@@ -821,7 +821,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     @Test
     public void shouldReturnDeviceNoDataGetCurrentHealth() {
         List<Event> events = Collections.emptyList();
-        when(deviceEventService.findIncomingBy(currentTenant, application, healthAlert.getDevice().getGuid(), null, null, null, false, 1))
+        when(deviceEventService.findIncomingBy(currentTenant, application, healthAlert.getDevice().getGuid(), null, null, null, null, false, 1))
                 .thenReturn(ServiceResponseBuilder.<List<Event>>ok().withResult(events).build());
 
         ServiceResponse<HealthAlert> response = healthAlertService.getCurrentHealthByGuid(
@@ -838,7 +838,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
         List<Event> events = new LinkedList<>();
         events.add(Event.builder().build());
 
-        when(deviceEventService.findIncomingBy(currentTenant, application, healthAlert.getDevice().getGuid(), null, null, null, false, 1))
+        when(deviceEventService.findIncomingBy(currentTenant, application, healthAlert.getDevice().getGuid(), null, null, null, null, false, 1))
                 .thenReturn(ServiceResponseBuilder.<List<Event>>ok().withResult(events).build());
 
         ServiceResponse<HealthAlert> response = healthAlertService.getCurrentHealthByGuid(

@@ -3,6 +3,7 @@ package com.konkerlabs.platform.registry.api.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -22,12 +23,16 @@ import lombok.NoArgsConstructor;
 @ApiModel(value = "Location", discriminator = "com.konkerlabs.platform.registry.api.model")
 public class LocationVO extends LocationInputVO implements SerializableVO<Location, LocationVO> {
 
+    @ApiModelProperty(value = "the location guid", position = 6, example = "818599ad-3502-4e70-a852-fc7af8e0a9f3")
+    protected String guid;
+
     public LocationVO(Location location) {
         this.parentName = getParentName(location.getParent());
         this.name = location.getName();
         this.description = location.getDescription();
         this.defaultLocation = location.isDefaultLocation();
         this.sublocations = getSublocations(location.getChildren());
+        this.guid = location.getGuid();
     }
 
     @Override
@@ -43,6 +48,7 @@ public class LocationVO extends LocationInputVO implements SerializableVO<Locati
         model.setName(this.getName());
         model.setDescription(this.getDescription());
         model.setDefaultLocation(this.isDefaultLocation());
+        model.setGuid(this.getGuid());
         return model;
     }
 

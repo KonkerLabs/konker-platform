@@ -121,7 +121,7 @@ public class DeviceStatusRestController extends AbstractRestController implement
         Application application = getApplication(applicationId);
 
         ServiceResponse<Device> deviceResponse = deviceRegisterService.getByDeviceGuid(tenant, application, deviceGuid);
-        ServiceResponse<List<Event>> incomingResponse = deviceEventService.findIncomingBy(tenant, application, deviceGuid, null, null, null, false, 1);
+        ServiceResponse<List<Event>> incomingResponse = deviceEventService.findIncomingBy(tenant, application, deviceGuid, null, null, null, null, false, 1);
 
         if (!deviceResponse.isOk()) {
             throw new NotFoundResponseException(deviceResponse);

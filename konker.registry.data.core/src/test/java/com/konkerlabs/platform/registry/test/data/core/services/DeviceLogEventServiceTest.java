@@ -227,7 +227,7 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
 
         deviceEventService.logIncomingEvent(device, event);
 
-        Event last = eventRepository.findIncomingBy(tenant,application,device.getGuid(),channel,event.getCreationTimestamp().minusSeconds(1L), null, false, 1).get(0);
+        Event last = eventRepository.findIncomingBy(tenant,application,device.getGuid(), null, channel, event.getCreationTimestamp().minusSeconds(1L), null, false, 1).get(0);
 
         assertThat(last, notNullValue());
 
@@ -243,7 +243,7 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
     	
         doNothing().when(jedisTaskService).registerLastEventTimestamp(event);
         deviceEventService.logIncomingEvent(device, event);
-        Event last = eventRepository.findIncomingBy(tenant,application,device.getGuid(),channel,event.getCreationTimestamp().minusSeconds(1L), null, false, 1).get(0);
+        Event last = eventRepository.findIncomingBy(tenant,application,device.getGuid(), null, channel, event.getCreationTimestamp().minusSeconds(1L), null, false, 1).get(0);
 
         assertThat(last, notNullValue());
         assertThat(last.getGeolocation(), nullValue());
@@ -259,7 +259,7 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
     	
         doNothing().when(jedisTaskService).registerLastEventTimestamp(event);
         deviceEventService.logIncomingEvent(device, event);
-        Event last = eventRepository.findIncomingBy(tenant,application,device.getGuid(),channel,event.getCreationTimestamp().minusSeconds(1L), null, false, 1).get(0);
+        Event last = eventRepository.findIncomingBy(tenant,application,device.getGuid(), null, channel, event.getCreationTimestamp().minusSeconds(1L), null, false, 1).get(0);
 
         assertThat(last, notNullValue());
         assertThat(last.getGeolocation().getHdop(), nullValue());
@@ -275,7 +275,7 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
     	
         doNothing().when(jedisTaskService).registerLastEventTimestamp(event);
         deviceEventService.logIncomingEvent(device, event);
-        Event last = eventRepository.findIncomingBy(tenant,application,device.getGuid(),channel,event.getCreationTimestamp().minusSeconds(1L), null, false, 1).get(0);
+        Event last = eventRepository.findIncomingBy(tenant,application,device.getGuid(), null, channel, event.getCreationTimestamp().minusSeconds(1L), null, false, 1).get(0);
 
         assertThat(last, notNullValue());
         assertThat(last.getGeolocation().getElev(), nullValue());
@@ -291,7 +291,7 @@ public class DeviceLogEventServiceTest extends BusinessLayerTestSupport {
     	
         doNothing().when(jedisTaskService).registerLastEventTimestamp(event);
         deviceEventService.logIncomingEvent(device, event);
-        Event last = eventRepository.findIncomingBy(tenant,application,device.getGuid(),channel,event.getCreationTimestamp().minusSeconds(1L), null, false, 1).get(0);
+        Event last = eventRepository.findIncomingBy(tenant,application,device.getGuid(), null, channel, event.getCreationTimestamp().minusSeconds(1L), null, false, 1).get(0);
 
         assertThat(last, notNullValue());
         assertThat(last.getGeolocation(), notNullValue());

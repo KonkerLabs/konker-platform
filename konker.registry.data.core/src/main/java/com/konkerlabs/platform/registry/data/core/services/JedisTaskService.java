@@ -49,8 +49,8 @@ public class JedisTaskService {
 				String deviceChannel = channel.contains(".") ? channel.substring(channel.indexOf('.') + 1) : null;
 
 				Device device = deviceRegisterService.findByApiKey(deviceApiKey);
-				response = deviceEventService.findOutgoingBy(device.getTenant(), device.getApplication(), device.getGuid(),
-						deviceChannel, startTimestamp, null, asc, limit);
+				response = deviceEventService.findOutgoingBy(device.getTenant(), device.getApplication(), device.getGuid(), null,
+                        deviceChannel, startTimestamp, null, asc, limit);
 				this.unsubscribe(channel);
 			}
 		};

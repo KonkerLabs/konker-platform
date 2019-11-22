@@ -243,8 +243,8 @@ public class DeviceController implements ApplicationContextAware {
 
         ModelAndView mv = new ModelAndView("devices/events");
 
-        List<Event> incomingEvents = deviceEventService.findIncomingBy(tenant, application, device.getGuid(), null, null, null, false, 50).getResult();
-        List<Event> outgoingEvents = deviceEventService.findOutgoingBy(tenant, application, device.getGuid(), null, null, null, false, 50).getResult();
+        List<Event> incomingEvents = deviceEventService.findIncomingBy(tenant, application, device.getGuid(), null, null, null, null, false, 50).getResult();
+        List<Event> outgoingEvents = deviceEventService.findOutgoingBy(tenant, application, device.getGuid(), null, null, null, null, false, 50).getResult();
 
         boolean hasAnyEvent = !incomingEvents.isEmpty() || !outgoingEvents.isEmpty();
         
@@ -297,7 +297,7 @@ public class DeviceController implements ApplicationContextAware {
         Instant instantEnd = StringUtils.isNotEmpty(dateEnd) ? ZonedDateTime.of(LocalDateTime.parse(dateEnd, dtf), ZoneId.of(user.getZoneId().getId())).toInstant() : null;
 
         ModelAndView mv = new ModelAndView("devices/events-incoming", "recentIncomingEvents",
-                deviceEventService.findIncomingBy(tenant, application, deviceGuid, null, instantStart, instantEnd, false, 50).getResult());
+                deviceEventService.findIncomingBy(tenant, application, deviceGuid, null, null, instantStart, instantEnd, false, 50).getResult());
 
         return mv;
     }
@@ -315,7 +315,7 @@ public class DeviceController implements ApplicationContextAware {
         Instant instantEnd = StringUtils.isNotEmpty(dateEnd) ? ZonedDateTime.of(LocalDateTime.parse(dateEnd, dtf), ZoneId.of(user.getZoneId().getId())).toInstant() : null;
 
         ModelAndView mv = new ModelAndView("devices/events-outgoing", "recentOutgoingEvents",
-                deviceEventService.findOutgoingBy(tenant, application, deviceGuid, null, instantStart, instantEnd, false, 50).getResult());
+                deviceEventService.findOutgoingBy(tenant, application, deviceGuid, null, null, instantStart, instantEnd, false, 50).getResult());
 
         return mv;
     }

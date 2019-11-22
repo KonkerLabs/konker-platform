@@ -70,7 +70,7 @@ public abstract class BaseEventRepositoryImpl implements EventRepository {
         Instant endInstant = ZonedDateTime.now().plusYears(100L).toInstant();
 
         // incoming
-        List<Event> incomingEvents = findIncomingBy(tenant, originDevice.getApplication(), originDevice.getGuid(), null, startInstant, endInstant, false, null);
+        List<Event> incomingEvents = findIncomingBy(tenant, originDevice.getApplication(), originDevice.getGuid(), null, null, startInstant, endInstant, false, null);
         for (Event event : incomingEvents) {
             event.getIncoming().setApplicationName(destDevice.getApplication().getName());
             event.getIncoming().setDeviceGuid(destDevice.getGuid());
@@ -80,7 +80,7 @@ public abstract class BaseEventRepositoryImpl implements EventRepository {
         }
 
         // outgoing
-        List<Event> outgoingEvents = findOutgoingBy(tenant, originDevice.getApplication(), originDevice.getGuid(), null, startInstant, endInstant, false, null);
+        List<Event> outgoingEvents = findOutgoingBy(tenant, originDevice.getApplication(), originDevice.getGuid(), null, null, startInstant, endInstant, false, null);
         for (Event event : outgoingEvents) {
             event.getOutgoing().setApplicationName(destDevice.getApplication().getName());
             event.getOutgoing().setDeviceGuid(destDevice.getGuid());
@@ -94,26 +94,28 @@ public abstract class BaseEventRepositoryImpl implements EventRepository {
     public List<Event> findIncomingBy(Tenant tenant,
                                       Application application,
                                       String deviceGuid,
+                                      String locationGuid,
                                       String channel,
                                       Instant startInstant,
                                       Instant endInstant,
                                       boolean ascending,
                                       Integer limit) throws BusinessException {
-        return doFindByCommon(tenant, application, deviceGuid, channel, startInstant, endInstant, ascending, limit,
-                Type.INCOMING, false);
+        return doFindByCommon(tenant, application, deviceGuid, locationGuid, channel, startInstant, endInstant, ascending,
+                limit, Type.INCOMING, false);
     }
 
     @Override
     public List<Event> findOutgoingBy(Tenant tenant,
                                       Application application,
                                       String deviceGuid,
+                                      String locationGuid,
                                       String channel,
                                       Instant startInstant,
                                       Instant endInstant,
                                       boolean ascending,
                                       Integer limit) throws BusinessException {
-        return doFindByCommon(tenant, application, deviceGuid, channel, startInstant, endInstant, ascending, limit,
-                Type.OUTGOING, false);
+        return doFindByCommon(tenant, application, deviceGuid, locationGuid, channel, startInstant, endInstant, ascending,
+                limit, Type.OUTGOING, false);
     }
 
 
@@ -133,9 +135,9 @@ public abstract class BaseEventRepositoryImpl implements EventRepository {
     
     protected abstract void doRemoveBy(Tenant tenant, Application application, String deviceGuid, List<Event> events, Type incoming) throws Exception;
 
-    protected abstract List<Event> doFindBy(Tenant tenant, Application application, String deviceGuid, String channel,
-            Instant startInstant, Instant endInstant, boolean ascending,
-            Integer limit, Type incoming, boolean b) throws BusinessException;
+    protected abstract List<Event> doFindBy(Tenant tenant, Application application, String deviceGuid, String locationGuid, String channel,
+                                            Instant startInstant, Instant endInstant, boolean ascending,
+                                            Integer limit, Type incoming, boolean b) throws BusinessException;
 
     private Event doSaveCommon(Tenant tenant, Application application, Event event, Type incoming) throws BusinessException {
 
@@ -179,9 +181,9 @@ public abstract class BaseEventRepositoryImpl implements EventRepository {
 
     }
 
-    private List<Event> doFindByCommon(Tenant tenant, Application application, String deviceGuid, String channel,
-            Instant startInstant, Instant endInstant, boolean ascending,
-            Integer limit, Type incoming, boolean isDeleted) throws BusinessException {
+    private List<Event> doFindByCommon(Tenant tenant, Application application, String deviceGuid, String locationGuid, String channel,
+                                       Instant startInstant, Instant endInstant, boolean ascending,
+                                       Integer limit, Type incoming, boolean isDeleted) throws BusinessException {
 
         Optional.ofNullable(tenant)
                 .filter(tenant1 -> Optional.ofNullable(tenant1.getDomainName()).filter(s -> !s.isEmpty()).isPresent())
@@ -191,9 +193,9 @@ public abstract class BaseEventRepositoryImpl implements EventRepository {
                 !Optional.ofNullable(limit).isPresent())
             throw new IllegalArgumentException("Limit cannot be null when start instant isn't provided");
 
-        return doFindBy(tenant, application, deviceGuid, channel,
-                startInstant, endInstant, ascending,
-                limit, incoming, isDeleted);
+        return doFindBy(tenant, application, deviceGuid,
+                locationGuid, channel, startInstant, endInstant,
+                ascending, limit, incoming, isDeleted);
 
     }
 

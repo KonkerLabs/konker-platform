@@ -130,6 +130,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         persisted.put("incoming", ((Supplier<DBObject>) () -> {
             DBObject incoming = new BasicDBObject();
             incoming.put("deviceGuid",incomingEvent.getIncoming().getDeviceGuid());
+            incoming.put("locationGuid",incomingEvent.getIncoming().getLocationGuid());
             incoming.put("deviceId", incomingEvent.getIncoming().getDeviceId());
             incoming.put("tenantDomain",incomingEvent.getIncoming().getTenantDomain());
             incoming.put("applicationName",incomingEvent.getIncoming().getApplicationName());
@@ -268,9 +269,9 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json","/fixtures/applications.json"})
     public void shouldRetrieveLastTwoEventsByTenantAndDeviceWhenFindingIncomingBy() throws Exception {
-        List<Event> events = eventRepository.findIncomingBy(tenant, application, deviceGuid, "command",
-                firstEventTimestamp.plus(1,ChronoUnit.SECONDS),
-                null,false,2);
+        List<Event> events = eventRepository.findIncomingBy(tenant, application, deviceGuid, null,
+                "command",
+                firstEventTimestamp.plus(1,ChronoUnit.SECONDS), null, false, 2);
 
         assertThat(events,notNullValue());
         assertThat(events,hasSize(2));
@@ -282,18 +283,18 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json","/fixtures/applications.json"})
     public void shouldRemoveEvents() throws Exception {
-        List<Event> events = eventRepository.findIncomingBy(tenant, application, deviceGuid, "command",
-                firstEventTimestamp.plus(1,ChronoUnit.SECONDS),
-                null,false,2);
+        List<Event> events = eventRepository.findIncomingBy(tenant, application, deviceGuid, null,
+                "command",
+                firstEventTimestamp.plus(1,ChronoUnit.SECONDS), null, false, 2);
 
         assertThat(events,notNullValue());
         assertThat(events,hasSize(2));
 
         eventRepository.removeBy(tenant, application, deviceGuid);
 
-        events = eventRepository.findIncomingBy(tenant, application, deviceGuid, "command",
-                firstEventTimestamp.plus(1,ChronoUnit.SECONDS),
-                null,false,2);
+        events = eventRepository.findIncomingBy(tenant, application, deviceGuid, null,
+                "command",
+                firstEventTimestamp.plus(1,ChronoUnit.SECONDS), null, false, 2);
 
         assertThat(events,notNullValue());
         assertThat(events,hasSize(0));
@@ -304,9 +305,9 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
     public void shouldCopyEvents() throws Exception {
         String destinationGuid = "8363c556-84ea-11e6-92a2-4b01fea7e243";
 
-        List<Event> events = eventRepository.findIncomingBy(tenant, application, destinationGuid, "command",
-                firstEventTimestamp.plus(1,ChronoUnit.SECONDS),
-                null,false,2);
+        List<Event> events = eventRepository.findIncomingBy(tenant, application, destinationGuid, null,
+                "command",
+                firstEventTimestamp.plus(1,ChronoUnit.SECONDS), null, false, 2);
 
         assertThat(events,notNullValue());
         assertThat(events,hasSize(0));
@@ -317,11 +318,11 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         eventRepository.copy(tenant, originDevice, destDevice);
 
         // checks if events were copied
-        events = eventRepository.findIncomingBy(tenant, applicationSmartff, destinationGuid, "e4399b2ed998.testchannel",
+        events = eventRepository.findIncomingBy(tenant, applicationSmartff, destinationGuid, null,
+                "e4399b2ed998.testchannel",
                 null,
                 null,
-                false,
-                2);
+                false, 2);
 
         assertThat(events,notNullValue());
         assertThat(events,hasSize(2));
@@ -333,7 +334,7 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Tenant cannot be null");
 
-        eventRepository.findIncomingBy(null,null,deviceGuid,null,firstEventTimestamp,null,false,null);
+        eventRepository.findIncomingBy(null,null,deviceGuid, null, null, firstEventTimestamp, null, false, null);
     }
 
     @Test
@@ -342,17 +343,17 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
         thrown.expectMessage("Limit cannot be null when start instant isn't provided");
 
 
-        eventRepository.findIncomingBy(tenant,application,deviceGuid,null,null,null,false,null);
+        eventRepository.findIncomingBy(tenant,application,deviceGuid, null, null, null, null, false, null);
     }
 
     @Test
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json","/fixtures/applications.json"})
     public void shouldRetrieveTheOnlyFirstEventByTenantAndDeviceWhenFindingIncomingBy() throws Exception {
         List<Event> events = eventRepository.findIncomingBy(tenant, application,
-                deviceGuid,"command",
-                firstEventTimestamp,
-                secondEventTimestamp.minus(1, ChronoUnit.SECONDS),true,
-                1);
+                deviceGuid, null,
+                "command",
+                firstEventTimestamp, secondEventTimestamp.minus(1, ChronoUnit.SECONDS),
+                true, 1);
 
         assertThat(events,notNullValue());
         assertThat(events,hasSize(1));
@@ -364,10 +365,10 @@ public class EventRepositoryMongoTest extends BusinessLayerTestSupport {
     @UsingDataSet(locations = {"/fixtures/tenants.json","/fixtures/devices.json","/fixtures/deviceEvents.json","/fixtures/applications.json"})
     public void shouldLimitResultsAccordingToLimitParameterWhenFindingIncomingBy() throws Exception {
         List<Event> events = eventRepository.findIncomingBy(tenant, application,
-                deviceGuid,"command",
-                firstEventTimestamp,
-                thirdEventTimestamp,false,
-                1);
+                deviceGuid, null,
+                "command",
+                firstEventTimestamp, thirdEventTimestamp,
+                false, 1);
 
         assertThat(events,notNullValue());
         assertThat(events,hasSize(1));

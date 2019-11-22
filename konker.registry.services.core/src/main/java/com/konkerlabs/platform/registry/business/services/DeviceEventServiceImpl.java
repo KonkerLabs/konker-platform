@@ -19,7 +19,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -58,6 +57,7 @@ public class DeviceEventServiceImpl implements DeviceEventService {
                                                        Application application,
                                                        User user,
                                                        String deviceGuid,
+                                                       String locationGuid,
                                                        String channel,
                                                        Instant startingTimestamp,
                                                        Instant endTimestamp,
@@ -71,7 +71,7 @@ public class DeviceEventServiceImpl implements DeviceEventService {
                     .build();
         }
 
-        ServiceResponse<List<Event>> serviceResponse = findIncomingBy(tenant, application, deviceGuid, channel, startingTimestamp, endTimestamp, ascending, limit);
+        ServiceResponse<List<Event>> serviceResponse = findIncomingBy(tenant, application, deviceGuid, locationGuid, channel, startingTimestamp, endTimestamp, ascending, limit);
 
         if (serviceResponse.isOk() &&
                 Optional.ofNullable(user.getLocation()).isPresent()) {
@@ -92,6 +92,7 @@ public class DeviceEventServiceImpl implements DeviceEventService {
     public ServiceResponse<List<Event>> findIncomingBy(Tenant tenant,
                                                        Application application,
                                                        String deviceGuid,
+                                                       String locationGuid,
                                                        String channel,
                                                        Instant startTimestamp,
                                                        Instant endTimestamp,
@@ -119,11 +120,11 @@ public class DeviceEventServiceImpl implements DeviceEventService {
                     .withResult(eventRepository.findIncomingBy(tenant,
                             application,
                             deviceGuid,
+                            locationGuid,
                             channel,
                             startTimestamp,
                             endTimestamp,
-                            ascending,
-                            limit)).build();
+                            ascending, limit)).build();
         } catch (BusinessException e) {
             return ServiceResponseBuilder.<List<Event>>error()
                     .withMessage(e.getMessage())
@@ -136,6 +137,7 @@ public class DeviceEventServiceImpl implements DeviceEventService {
                                                        Application application,
                                                        User user,
                                                        String deviceGuid,
+                                                       String locationGuid,
                                                        String channel,
                                                        Instant startingTimestamp,
                                                        Instant endTimestamp,
@@ -149,7 +151,7 @@ public class DeviceEventServiceImpl implements DeviceEventService {
                     .build();
         }
 
-        ServiceResponse<List<Event>> serviceResponse = findOutgoingBy(tenant, application, deviceGuid, channel, startingTimestamp, endTimestamp, ascending, limit);
+        ServiceResponse<List<Event>> serviceResponse = findOutgoingBy(tenant, application, deviceGuid, locationGuid, channel, startingTimestamp, endTimestamp, ascending, limit);
 
         if (serviceResponse.isOk() &&
                 Optional.ofNullable(user.getLocation()).isPresent()) {
@@ -170,6 +172,7 @@ public class DeviceEventServiceImpl implements DeviceEventService {
     public ServiceResponse<List<Event>> findOutgoingBy(Tenant tenant,
                                                        Application application,
                                                        String deviceGuid,
+                                                       String locationGuid,
                                                        String channel,
                                                        Instant startingTimestamp,
                                                        Instant endTimestamp,
@@ -201,11 +204,11 @@ public class DeviceEventServiceImpl implements DeviceEventService {
                     .withResult(eventRepository.findOutgoingBy(tenant,
                             application,
                             deviceGuid,
+                            locationGuid,
                             channel,
                             startingTimestamp,
                             endTimestamp,
-                            ascending,
-                            limit)).build();
+                            ascending, limit)).build();
         } catch (BusinessException e) {
             return ServiceResponseBuilder.<List<Event>>error()
                     .withMessage(Validations.LIMIT_NULL.getCode())

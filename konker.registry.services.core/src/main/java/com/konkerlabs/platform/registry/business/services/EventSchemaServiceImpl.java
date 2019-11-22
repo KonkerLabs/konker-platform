@@ -1,8 +1,6 @@
 package com.konkerlabs.platform.registry.business.services;
 
 import java.io.IOException;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -18,8 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -349,8 +345,8 @@ public class EventSchemaServiceImpl implements EventSchemaService {
 
 		try {
 			// List all last events
-			List<Event> lastEvents = eventRepository.findIncomingBy(tenant, application, deviceGuid, null, null, null, false,
-                    limit);
+			List<Event> lastEvents = eventRepository.findIncomingBy(tenant, application, deviceGuid, null, null, null, null,
+                    false, limit);
 
 			ObjectMapper mapper = new ObjectMapper();
             Device device = deviceRepository.findByTenantAndGuid(tenant.getId(), deviceGuid);

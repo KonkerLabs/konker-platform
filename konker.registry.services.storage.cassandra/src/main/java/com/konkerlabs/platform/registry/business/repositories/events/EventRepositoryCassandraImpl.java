@@ -37,12 +37,20 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
     private static final String INCOMING_EVENTS_CHANNEL = "incoming_events_channel";
     private static final String INCOMING_EVENTS_DEVICE_GUID = "incoming_events_device_guid";
     private static final String INCOMING_EVENTS_DEVICE_GUID_CHANNEL = "incoming_events_device_guid_channel";
+    private static final String INCOMING_EVENTS_LOCATION_GUID = "incoming_events_location_guid";
+    private static final String INCOMING_EVENTS_LOCATION_GUID_CHANNEL = "incoming_events_location_guid_channel";
+    private static final String INCOMING_EVENTS_LOCATION_GUID_DEVICE_GUID = "incoming_events_location_guid_device_guid";
+    private static final String INCOMING_EVENTS_LOCATION_GUID_DEVICE_GUID_CHANNEL = "incoming_events_location_guid_deviceguid_channel";
     private static final String INCOMING_EVENTS_DELETED = "incoming_events_deleted";
 
     private static final String OUTGOING_EVENTS = "outgoing_events";
     private static final String OUTGOING_EVENTS_CHANNEL = "outgoing_events_channel";
     private static final String OUTGOING_EVENTS_DEVICE_GUID = "outgoing_events_device_guid";
     private static final String OUTGOING_EVENTS_DEVICE_GUID_CHANNEL = "outgoing_events_device_guid_channel";
+    private static final String OUTGOING_EVENTS_LOCATION_GUID = "outgoing_events_location_guid";
+    private static final String OUTGOING_EVENTS_LOCATION_GUID_CHANNEL = "outgoing_events_location_guid_channel";
+    private static final String OUTGOING_EVENTS_LOCATION_GUID_DEVICE_GUID = "outgoing_events_location_guid_device_guid";
+    private static final String OUTGOING_EVENTS_LOCATION_GUID_DEVICE_GUID_CHANNEL = "outgoing_events_location_guid_deviceguid_channel";
     private static final String OUTGOING_EVENTS_DELETED = "outgoing_events_deleted";
 
     @Autowired
@@ -72,11 +80,19 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
             saveEvent(tenant, application, event, type, INCOMING_EVENTS_DEVICE_GUID, false);
             saveEvent(tenant, application, event, type, INCOMING_EVENTS_DEVICE_GUID_CHANNEL, false);
             saveEvent(tenant, application, event, type, INCOMING_EVENTS_CHANNEL, false);
+            saveEvent(tenant, application, event, type, INCOMING_EVENTS_LOCATION_GUID, false);
+            saveEvent(tenant, application, event, type, INCOMING_EVENTS_LOCATION_GUID_CHANNEL, false);
+            saveEvent(tenant, application, event, type, INCOMING_EVENTS_LOCATION_GUID_DEVICE_GUID, false);
+            saveEvent(tenant, application, event, type, INCOMING_EVENTS_LOCATION_GUID_DEVICE_GUID_CHANNEL, false);
         } else if (type == Type.OUTGOING) {
             saveEvent(tenant, application, event, type, OUTGOING_EVENTS, true);
             saveEvent(tenant, application, event, type, OUTGOING_EVENTS_DEVICE_GUID, false);
             saveEvent(tenant, application, event, type, OUTGOING_EVENTS_DEVICE_GUID_CHANNEL, false);
             saveEvent(tenant, application, event, type, OUTGOING_EVENTS_CHANNEL, false);
+            saveEvent(tenant, application, event, type, OUTGOING_EVENTS_LOCATION_GUID, false);
+            saveEvent(tenant, application, event, type, OUTGOING_EVENTS_LOCATION_GUID_CHANNEL, false);
+            saveEvent(tenant, application, event, type, OUTGOING_EVENTS_LOCATION_GUID_DEVICE_GUID, false);
+            saveEvent(tenant, application, event, type, OUTGOING_EVENTS_LOCATION_GUID_DEVICE_GUID_CHANNEL, false);
         }
 
         return event;
@@ -95,6 +111,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
                                                event.getIncoming().getChannel(),
                                                event.getIncoming().getDeviceGuid(),
                                                event.getIncoming().getDeviceId(),
+                                               event.getIncoming().getLocationGuid(),
                                                Optional.ofNullable(event.getGeolocation()).isPresent() ? event.getGeolocation().getElev() : null,
                                                Optional.ofNullable(event.getGeolocation()).isPresent() ? event.getGeolocation().getHdop() : null,
                                                Optional.ofNullable(event.getGeolocation()).isPresent() ? event.getGeolocation().getLat() : null,
@@ -116,6 +133,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
                                                event.getOutgoing().getChannel(),
                                                event.getOutgoing().getDeviceGuid(),
                                                event.getOutgoing().getDeviceId(),
+                                               event.getOutgoing().getLocationGuid(),
                                                Optional.ofNullable(event.getGeolocation()).isPresent() ? event.getGeolocation().getElev() : null,
                                                Optional.ofNullable(event.getGeolocation()).isPresent() ? event.getGeolocation().getHdop() : null,
                                                Optional.ofNullable(event.getGeolocation()).isPresent() ? event.getGeolocation().getLat() : null,
@@ -152,6 +170,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
             query.append("channel, ");
             query.append("device_guid, ");
             query.append("device_id, ");
+            query.append("location_guid, ");
 
             query.append("geo_elev, ");
             query.append("geo_hdop, ");
@@ -165,6 +184,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
 
             query.append("payload");
             query.append(") VALUES (");
+            query.append("?, ");
             query.append("?, ");
             query.append("?, ");
             query.append("?, ");
@@ -209,6 +229,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
             query.append("channel, ");
             query.append("device_guid, ");
             query.append("device_id, ");
+            query.append("location_guid, ");
             query.append("geo_elev, ");
             query.append("geo_hdop, ");
             query.append("geo_lat, ");
@@ -216,6 +237,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
             query.append("ingested_timestamp, ");
             query.append("payload");
             query.append(") VALUES (");
+            query.append("?, ");
             query.append("?, ");
             query.append("?, ");
             query.append("?, ");
@@ -243,6 +265,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
     protected List<Event> doFindBy(Tenant tenant,
                                    Application application,
                                    String deviceGuid,
+                                   String locationGuid,
                                    String channel,
                                    Instant startInstant,
                                    Instant endInstant,
@@ -255,6 +278,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
 
         String query = getQuery(tenant,
                                 application,
+                                locationGuid,
                                 deviceGuid,
                                 channel,
                                 startInstant,
@@ -342,7 +366,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
 
     }
 
-    private String getQuery(Tenant tenant, Application application, String deviceGuid, String channel,
+    private String getQuery(Tenant tenant, Application application, String locationGuid, String deviceGuid, String channel,
             Instant startInstant, Instant endInstant, boolean ascending, Integer limit, Type type,
             List<Object> filters) {
 
@@ -350,26 +374,42 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
         StringBuilder query = new StringBuilder();
 
         if (type == Type.INCOMING) {
-            query.append("SELECT tenant_domain, application_name, timestamp, channel, device_guid, device_id, geo_elev, geo_hdop, geo_lat, geo_lon, ingested_timestamp, payload FROM ");
+            query.append("SELECT tenant_domain, application_name, timestamp, channel, device_guid, device_id, location_guid, geo_elev, geo_hdop, geo_lat, geo_lon, ingested_timestamp, payload FROM ");
 
-            if (deviceGuid != null && channel != null) {
+            if (locationGuid != null && deviceGuid != null && channel != null) {
+                table = INCOMING_EVENTS_LOCATION_GUID_DEVICE_GUID_CHANNEL;
+            } else if (locationGuid != null && channel != null) {
+                table = INCOMING_EVENTS_LOCATION_GUID_CHANNEL;
+            } else if (locationGuid != null && deviceGuid != null) {
+                table = INCOMING_EVENTS_LOCATION_GUID_DEVICE_GUID;
+            } else if (deviceGuid != null && channel != null) {
                 table = INCOMING_EVENTS_DEVICE_GUID_CHANNEL;
             } else if (deviceGuid != null) {
                 table = INCOMING_EVENTS_DEVICE_GUID;
             } else if (channel != null) {
                 table = INCOMING_EVENTS_CHANNEL;
+            } else if (locationGuid != null) {
+                table = INCOMING_EVENTS_LOCATION_GUID;
             } else if (deviceGuid == null && channel == null) {
                 table = INCOMING_EVENTS;
             }
         } else if (type == Type.OUTGOING) {
-            query.append("SELECT tenant_domain, application_name, timestamp, channel, device_guid, device_id, geo_elev, geo_hdop, geo_lat, geo_lon, incoming_channel, incoming_device_guid, incoming_device_id, ingested_timestamp, payload FROM ");
+            query.append("SELECT tenant_domain, application_name, timestamp, channel, device_guid, device_id, location_guid, geo_elev, geo_hdop, geo_lat, geo_lon, incoming_channel, incoming_device_guid, incoming_device_id, ingested_timestamp, payload FROM ");
 
-            if (deviceGuid != null && channel != null) {
+            if (locationGuid != null && deviceGuid != null && channel != null) {
+                table = OUTGOING_EVENTS_LOCATION_GUID_DEVICE_GUID_CHANNEL;
+            } else if (locationGuid != null && channel != null) {
+                table = OUTGOING_EVENTS_LOCATION_GUID_CHANNEL;
+            } else if (locationGuid != null && deviceGuid != null) {
+                table = OUTGOING_EVENTS_LOCATION_GUID_DEVICE_GUID;
+            } else if (deviceGuid != null && channel != null) {
                 table = OUTGOING_EVENTS_DEVICE_GUID_CHANNEL;
             } else if (deviceGuid != null) {
                 table = OUTGOING_EVENTS_DEVICE_GUID;
             } else if (channel != null) {
                 table = OUTGOING_EVENTS_CHANNEL;
+            } else if (locationGuid != null) {
+                table = OUTGOING_EVENTS_LOCATION_GUID;
             } else if (deviceGuid == null && channel == null) {
                 table = OUTGOING_EVENTS;
             }
@@ -385,6 +425,11 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
 
         query.append(" AND application_name = ?");
         filters.add(application.getName());
+
+        if (locationGuid != null) {
+            query.append(" AND location_guid = ?");
+            filters.add(locationGuid);
+        }
 
         if (deviceGuid != null) {
             query.append(" AND device_guid = ?");
@@ -424,7 +469,7 @@ public class EventRepositoryCassandraImpl extends BaseEventRepositoryImpl implem
     @Override
     protected void doRemoveBy(Tenant tenant, Application application, String deviceGuid, Type type) throws Exception {
 
-        List<Event> keys = doFindBy(tenant, application, deviceGuid, null, null, null, false, null, type, false);
+        List<Event> keys = doFindBy(tenant, application, deviceGuid, null, null, null, null, false, null, type, false);
 
         Set<String> channels = new HashSet<>();
 

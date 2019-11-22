@@ -30,7 +30,7 @@ public class EventRepositoryTestConfiguration extends MongoConfig {
         }
 
         @Override
-        protected List<Event> doFindBy(Tenant tenant, Application application, String deviceGuid, String channel, Instant startInstant, Instant endInstant, boolean ascending, Integer limit, Type incoming, boolean b) throws BusinessException {
+        protected List<Event> doFindBy(Tenant tenant, Application application, String deviceGuid, String locationGuid, String channel, Instant startInstant, Instant endInstant, boolean ascending, Integer limit, Type incoming, boolean b) throws BusinessException {
             return null;
         }
 

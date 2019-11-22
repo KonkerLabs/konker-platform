@@ -50,6 +50,10 @@
       	"$id" : "smartffkonker",
       	"$ref" : "applications"
       },
+      "location" : {
+        "$id" : "j854dz2dayzm8dgna678",
+        "$ref" : "locations"
+      },
       "deviceId" : "SN1234567890",
       "apiKey" : "e4399b2ed998",
       "name" : "Test name",

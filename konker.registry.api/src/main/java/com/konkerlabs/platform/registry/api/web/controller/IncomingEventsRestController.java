@@ -41,6 +41,7 @@ public class IncomingEventsRestController extends AbstractRestController impleme
     public static final String SEARCH_NOTES =
         "### Query Search Terms\n\n" +
         "* `device`\n\n" +
+        "* `location`\n\n" +
         "* `channel`\n\n" +
         "* `timestamp`: ISO 8601 format\n\n" +
         "\n\n" +
@@ -50,8 +51,9 @@ public class IncomingEventsRestController extends AbstractRestController impleme
         "\n\n" +
         "### Query Examples\n\n" +
         "* device:818599ad-0000-0000-0000-000000000000\n\n" +
-        "* channel:temperature device:818599ad-0000-0000-0000-000000000000\n\n" +
+        "* channel:temperature device:818599ad-0000-0000-0000-000000000000 location:818599ad-0000-0000-0000-000000000011\n\n" +
         "* channel:temperature\n\n" +
+        "* location:818599ad-0000-0000-0000-000000000011\n\n" +
         "* timestamp:&gt;2017-04-05T14:50:00+01:00\n\n" +
         "* timestamp:&lt;2017-04-05T14:55:00-01:00\n\n" +
         "* timestamp:&gt;2017-04-05T13:54:30.891Z timestamp:&lt;2017-04-05T13:56:30.891Z\n\n";
@@ -92,6 +94,7 @@ public class IncomingEventsRestController extends AbstractRestController impleme
         EventsFilter filter = new EventsFilter();
         filter.parse(query);
         String deviceGuid = filter.getDeviceGuid();
+        String locationGuid = filter.getLocationGuid();
         String channel = filter.getChannel();
         Instant startingTimestamp = filter.getStartingTimestamp();
         Instant endTimestamp = filter.getEndTimestamp();
@@ -101,11 +104,11 @@ public class IncomingEventsRestController extends AbstractRestController impleme
                 application,
                 loggedUser,
                 deviceGuid,
+                locationGuid,
                 channel,
                 startingTimestamp,
                 endTimestamp,
-                ascending,
-                limit);
+                ascending, limit);
 
         if (!restDestinationResponse.isOk()) {
             throw new BadServiceResponseException( restDestinationResponse, validationsCode);

@@ -100,6 +100,7 @@ public class EventPublisherDevice implements EventPublisher {
                                 .tenantDomain(outgoingDevice.getTenant().getDomainName())
                                 .applicationName(outgoingDevice.getApplication().getName())
                                 .deviceId(outgoingDevice.getDeviceId())
+                                .locationGuid(outgoingDevice.getLocation().getGuid())
                                 .build()
                         );
 
