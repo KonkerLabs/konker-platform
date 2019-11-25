@@ -91,10 +91,10 @@ public class EventRouteExecutorImpl implements EventRouteExecutor {
 
     private void processEventRoute(Event event, List<Event> outEvents, EventRoute eventRoute) throws Exception {
 
-        String incomingPayload = event.getPayload();
-
         if (!eventRoute.isActive())
             return;
+
+        String incomingPayload = event.getPayload();
 
         if (!eventRoute.getIncoming().isApplication()
                 && !eventRoute.getIncoming().getData().get(DEVICE_MQTT_CHANNEL).equals(event.getIncoming().getChannel())
