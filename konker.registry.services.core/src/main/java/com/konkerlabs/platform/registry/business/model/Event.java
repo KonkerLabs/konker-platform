@@ -43,8 +43,6 @@ public class Event implements Serializable {
     @AllArgsConstructor
     public static class EventActor implements URIDealer, Serializable {
 
-        private static final long serialVersionUID = -4483775394429692904L;
-
         private String tenantDomain;
         private String applicationName;
         private String deviceGuid;
