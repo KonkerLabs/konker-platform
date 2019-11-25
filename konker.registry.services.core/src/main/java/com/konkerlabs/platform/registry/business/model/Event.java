@@ -17,6 +17,8 @@ import java.time.ZonedDateTime;
 @Builder
 public class Event implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     private Long epochTime;
 
     private Instant creationTimestamp;
@@ -40,6 +42,8 @@ public class Event implements Serializable {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class EventActor implements URIDealer, Serializable {
+
+        private static final long serialVersionUID = 1L;
 
         private String tenantDomain;
         private String applicationName;
