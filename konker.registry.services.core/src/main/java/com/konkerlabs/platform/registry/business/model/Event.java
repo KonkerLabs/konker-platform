@@ -17,7 +17,7 @@ import java.time.ZonedDateTime;
 @Builder
 public class Event implements Serializable {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = -4483775394429692904L;
 
     private Long epochTime;
 
