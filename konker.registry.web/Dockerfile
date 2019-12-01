@@ -1,4 +1,5 @@
-FROM openjdk:8-jre-alpine
+FROM adoptopenjdk/openjdk8:jre8u232-b09-alpine
+
 
 MAINTAINER Andre Rocha <andre@konkerlabs.com>
 
