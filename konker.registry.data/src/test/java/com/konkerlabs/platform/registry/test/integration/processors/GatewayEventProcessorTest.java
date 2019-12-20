@@ -362,7 +362,7 @@ public class GatewayEventProcessorTest {
         when(deviceLogEventService.logIncomingEvent(eq(device), any()))
                 .thenReturn(ServiceResponseBuilder.<Event>ok().withResult(event).build());
 
-        subject.process(gateway, listDataJson, "imei", "canal");
+        subject.process(gateway, listDataJson, "imei", "name", "canal");
 
         verify(eventRouteExecutor, times(0)).execute(any(Event.class), any(Device.class));
         verify(deviceLogEventService, times(0)).logIncomingEvent(any(Device.class), any(Event.class));
@@ -400,7 +400,7 @@ public class GatewayEventProcessorTest {
         when(deviceLogEventService.logIncomingEvent(eq(device), any()))
                 .thenReturn(ServiceResponseBuilder.<Event>ok().withResult(event).build());
 
-        subject.process(gateway, listDataJson, "imei", "canal");
+        subject.process(gateway, listDataJson, "imei", "name", "canal");
 
         verify(eventRouteExecutor, times(0)).execute(any(Event.class), any(Device.class));
         verify(deviceLogEventService, times(0)).logIncomingEvent(any(Device.class), any(Event.class));
@@ -435,7 +435,7 @@ public class GatewayEventProcessorTest {
         when(deviceLogEventService.logIncomingEvent(eq(device), any()))
                 .thenReturn(ServiceResponseBuilder.<Event>ok().withResult(event).build());
 
-        subject.process(gateway, listDataJson, "imei", "canal");
+        subject.process(gateway, listDataJson, "imei", "name", "canal");
 
         verify(rabbitGateway, times(2)).queueEventDataPub(anyString(), anyString(), any(Long.class), any());
     }

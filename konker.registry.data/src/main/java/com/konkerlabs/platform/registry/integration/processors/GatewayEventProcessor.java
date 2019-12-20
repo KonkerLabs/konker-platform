@@ -117,7 +117,11 @@ public class GatewayEventProcessor {
 
     }
 
-    public void process(Gateway gateway, String payloadList, String deviceIdFieldName, String deviceChannelFieldName) throws BusinessException, JsonProcessingException {
+    public void process(Gateway gateway,
+                        String payloadList,
+                        String deviceIdFieldName,
+                        String deviceNameFieldName,
+                        String deviceChannelFieldName) throws BusinessException, JsonProcessingException {
         List<Map<String, Object>> payloadsGateway = jsonParsingService.toListMap(payloadList);
 
         for (Map<String, Object> payloadDevice : payloadsGateway) {
@@ -127,12 +131,16 @@ public class GatewayEventProcessor {
                     payloadDevice.get(deviceIdFieldName).toString());
 
             if (!result.isOk()) {
+                String deviceName = payloadDevice.get(deviceNameFieldName) != null
+                        ? payloadDevice.get(deviceNameFieldName).toString()
+                        : payloadDevice.get(deviceIdFieldName).toString();
+
                 result = deviceRegisterService.register(
                         gateway.getTenant(),
                         gateway.getApplication(),
                         Device.builder()
                                 .deviceId(payloadDevice.get(deviceIdFieldName).toString())
-                                .name(payloadDevice.get(deviceIdFieldName).toString())
+                                .name(deviceName)
                                 .location(gateway.getLocation())
                                 .active(true)
                                 .build());

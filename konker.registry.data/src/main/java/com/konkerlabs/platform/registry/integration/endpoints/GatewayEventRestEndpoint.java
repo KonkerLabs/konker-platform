@@ -163,6 +163,7 @@ public class GatewayEventRestEndpoint {
         OauthClientDetails clientDetails = oAuthClientDetailsService.loadClientByIdAsRoot(principal).getResult();
         Gateway gateway = clientDetails.getParentGateway();
         String deviceIdFieldName = servletRequest.getHeader("X-Konker-DeviceIdField");
+        String deviceNameFieldName = servletRequest.getHeader("X-Konker-DeviceNameField");
         String deviceChannelFieldName = servletRequest.getHeader("X-Konker-DeviceChannelField");
 
         if (!jsonParsingService.isValid(body))
@@ -180,7 +181,7 @@ public class GatewayEventRestEndpoint {
         if (exchange.getStatusCode().equals(HttpStatus.OK)) {
             CompletableFuture.supplyAsync(() -> {
                 try {
-                    gatewayEventProcessor.process(gateway, body, deviceIdFieldName, deviceChannelFieldName);
+                    gatewayEventProcessor.process(gateway, body, deviceIdFieldName, deviceNameFieldName, deviceChannelFieldName);
                 } catch (BusinessException | JsonProcessingException e) {
                     LOGGER.error("Error for processing Gateway data", e);
                 }
