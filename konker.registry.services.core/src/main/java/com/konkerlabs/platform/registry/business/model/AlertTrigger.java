@@ -1,6 +1,7 @@
 package com.konkerlabs.platform.registry.business.model;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -79,7 +80,7 @@ public class AlertTrigger implements URIDealer {
     protected AlertTriggerType type;
 
     @Transient
-    private Set<Location> mappedLocations;
+    private Set<Location> mappedLocations = new HashSet<>();
 
     @Override
     public String getUriScheme() {

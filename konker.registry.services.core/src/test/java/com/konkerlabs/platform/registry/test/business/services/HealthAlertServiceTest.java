@@ -27,6 +27,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.time.Instant;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -148,6 +149,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
         trigger.setTenant(currentTenant);
         trigger.setMinutes(1);
         trigger.setType(AlertTrigger.AlertTriggerType.SILENCE);
+        trigger.setMappedLocations(new HashSet<>());
         trigger = alertTriggerRepository.save(trigger);
 
         triggerNoExists = AlertTrigger
