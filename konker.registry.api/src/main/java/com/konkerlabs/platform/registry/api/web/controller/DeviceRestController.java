@@ -70,6 +70,11 @@ public class DeviceRestController extends AbstractRestController implements Init
                         .location(user.getParentGateway() != null ? user.getParentGateway().getLocation() : Location.builder().build())
                         .build());
 
+        Location location = getLocation(tenant,
+                application,
+                user.getParentUser() != null ? user.getParentUser().getLocation().getName() : user.getParentGateway().getLocation().getName());
+        userLogged.setLocation(location);
+
         ServiceResponse<Page<Device>> deviceResponse = deviceRegisterService.search(tenant,
                 application,
                 userLogged,

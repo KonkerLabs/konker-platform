@@ -53,7 +53,7 @@ public abstract class AbstractRestController {
             return null;
         }
 
-        ServiceResponse<Location> applicationResponse = locationSearchService.findByName(tenant, application, locationName, false);
+        ServiceResponse<Location> applicationResponse = locationSearchService.findByName(tenant, application, locationName, true);
         if (!applicationResponse.isOk()) {
             if (applicationResponse.getResponseMessages().containsKey(LocationService.Messages.LOCATION_NOT_FOUND.getCode())) {
                 throw new NotFoundResponseException(applicationResponse);
