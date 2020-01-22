@@ -97,7 +97,7 @@ public class DeviceByGatewayRestControllerTest extends WebLayerTestContext {
                 .tags(tags)
                 .build();
 
-        when(locationSearchService.findByName(tenant, application, "br", false))
+        when(locationSearchService.findByName(tenant, application, "br", true))
                 .thenReturn(ServiceResponseBuilder.<Location>ok().withResult(locationBR).build());
 
     }

@@ -26,12 +26,20 @@ public class WebTestConfiguration {
     }
 
     @Bean
+    public Location location() {
+        return Location.builder()
+                .name("br")
+                .build();
+    }
+
+    @Bean
     public OauthClientDetails user() {
         User user = User.builder()
                 .email("user@domain.com")
                 .zoneId(TimeZone.AMERICA_SAO_PAULO)
                 .language(Language.EN)
                 .avatar("default.jpg")
+                .location(location())
                 .dateFormat(DateFormat.YYYYMMDD)
                 .tenant(tenant()).build();
 

@@ -153,7 +153,7 @@ public class GatewayRestControllerTest extends WebLayerTestContext {
         when(applicationService.getByApplicationName(tenant, application.getName()))
             .thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
 
-        when(locationSearchService.findByName(tenant, application, location.getName(), false))
+        when(locationSearchService.findByName(tenant, application, location.getName(), true))
             .thenReturn(ServiceResponseBuilder.<Location> ok().withResult(location).build());
 
         when(gatewayService.getByGUID(tenant, application, gateway.getGuid()))
@@ -172,6 +172,10 @@ public class GatewayRestControllerTest extends WebLayerTestContext {
 
     @Test
     public void shouldListGateways() throws Exception {
+        Location br = Location.builder()
+                .name("br")
+                .build();
+        user.setLocation(br);
 
         List<Gateway> gateways = new ArrayList<>();
         gateways.add(gateway);

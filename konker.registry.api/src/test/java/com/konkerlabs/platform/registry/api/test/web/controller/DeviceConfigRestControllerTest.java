@@ -119,7 +119,7 @@ public class DeviceConfigRestControllerTest extends WebLayerTestContext {
         when(deviceModelService.getByTenantApplicationAndName(tenant, application, deviceModel.getName()))
             .thenReturn(ServiceResponseBuilder.<DeviceModel> ok().withResult(deviceModel).build());
 
-        when(locationSearchService.findByName(tenant, application, location.getName(), false))
+        when(locationSearchService.findByName(tenant, application, location.getName(), true))
             .thenReturn(ServiceResponseBuilder.<Location> ok().withResult(location).build());
 
     }
@@ -231,7 +231,7 @@ public class DeviceConfigRestControllerTest extends WebLayerTestContext {
     @Test
     public void shouldReadWithWrongLocation() throws Exception {
 
-        when(locationSearchService.findByName(tenant, application, NONEXIST_APPLICATION_NAME, false))
+        when(locationSearchService.findByName(tenant, application, NONEXIST_APPLICATION_NAME, true))
             .thenReturn(ServiceResponseBuilder.<Location> error()
                     .withMessage(LocationService.Messages.LOCATION_NOT_FOUND.getCode(), new Object[] {"mg"})
                     .withResult(location)

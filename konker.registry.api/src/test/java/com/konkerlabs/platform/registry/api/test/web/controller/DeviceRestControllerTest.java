@@ -81,6 +81,9 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
     private Application application;
 
     @Autowired
+    private Location location;
+
+    @Autowired
     private Gateway gateway;
 
     @Autowired
@@ -167,6 +170,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
                 .zoneId(TimeZone.AMERICA_SAO_PAULO)
                 .language(Language.EN)
                 .avatar("default.jpg")
+                .location(locationBR)
                 .dateFormat(DateFormat.YYYYMMDD)
                 .tenant(tenant).build();
 
@@ -174,7 +178,7 @@ public class DeviceRestControllerTest extends WebLayerTestContext {
         paramPageable.add("page", "1");
         paramPageable.add("size", "10");
 
-        when(locationSearchService.findByName(tenant, application, "br", false))
+        when(locationSearchService.findByName(tenant, application, "br", true))
                 .thenReturn(ServiceResponseBuilder.<Location>ok().withResult(locationBR).build());
 
     }
