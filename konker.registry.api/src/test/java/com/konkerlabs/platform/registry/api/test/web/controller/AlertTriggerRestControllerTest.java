@@ -112,7 +112,7 @@ public class AlertTriggerRestControllerTest extends WebLayerTestContext {
         when(deviceModelService.getByTenantApplicationAndName(tenant, application, deviceModel.getName()))
             .thenReturn(ServiceResponseBuilder.<DeviceModel> ok().withResult(deviceModel).build());
 
-        when(locationSearchService.findByName(tenant, application, location.getName(), false))
+        when(locationSearchService.findByName(tenant, application, location.getName(), true))
             .thenReturn(ServiceResponseBuilder.<Location> ok().withResult(location).build());
 
         when(alertTriggerService.findByTenantAndApplicationAndName(tenant, application, silenceAlertTrigger.getName()))
