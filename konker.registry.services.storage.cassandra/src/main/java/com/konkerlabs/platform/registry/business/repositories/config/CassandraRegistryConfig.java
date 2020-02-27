@@ -28,6 +28,7 @@ public class CassandraRegistryConfig {
     private String password;
     private int seedPort;
     private String datacenter;
+    private int nodeToUseFromRemote;
 
     @Bean
     public Cluster cluster() {
@@ -37,6 +38,7 @@ public class CassandraRegistryConfig {
         defaultMap.put("cassandra.hostname", "localhost");
         defaultMap.put("cassandra.port", 9042);
         defaultMap.put("cassandra.datacenter", "DC1");
+        defaultMap.put("cassandra.nodeToUseFromRemote", 0);
 
         Config defaultConf = ConfigFactory.parseMap(defaultMap);
         try {
@@ -47,14 +49,16 @@ public class CassandraRegistryConfig {
             setUsername(config.getString("cassandra.username"));
             setPassword(config.getString("cassandra.password"));
             setDatacenter(config.getString("cassandra.datacenter"));
+            setNodeToUseFromRemote(config.getInt("cassandra.nodeToUseFromRemote"));
 
         } catch (Exception e) {
             LOGGER.warn(String.format("Cassandra is not configured, using default cassandra config\n" +
                             "cassandra.keyspace: {}\n" +
                             "cassandra.hostname: {}\n" +
                             "cassandra.port: {}\n" +
-                            "cassandra.datacenter {}\n",
-                    getKeyspace(), getSeedHosts(), getSeedPort(), getDatacenter())
+                            "cassandra.datacenter {}\n"
+                            "cassandra.nodeToUseFromRemote {}\n",
+                    getKeyspace(), getSeedHosts(), getSeedPort(), getDatacenter(), getNodeToUseFromRemote())
             );
         }
 
@@ -73,7 +77,7 @@ public class CassandraRegistryConfig {
                             .withLoadBalancingPolicy(
                                     DCAwareRoundRobinPolicy.builder()
                                         .withLocalDc(getDatacenter())
-                                        .withUsedHostsPerRemoteDc(0)
+                                        .withUsedHostsPerRemoteDc(getNodeToUseFromRemote())
                                         .allowRemoteDCsForLocalConsistencyLevel()
                                         .build()
                             )
@@ -155,5 +159,13 @@ public class CassandraRegistryConfig {
 
     public void setDatacenter(String datacenter) {
         this.datacenter = datacenter;
+    }
+
+    public int getNodeToUseFromRemote() {
+        return nodeToUseFromRemote;
+    }
+
+    public void setNodeToUseFromRemote(int nodeToUseFromRemote) {
+        this.nodeToUseFromRemote = nodeToUseFromRemote;
     }
 }
