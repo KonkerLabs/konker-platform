@@ -56,7 +56,7 @@ public class CassandraRegistryConfig {
                             "cassandra.keyspace: {}\n" +
                             "cassandra.hostname: {}\n" +
                             "cassandra.port: {}\n" +
-                            "cassandra.datacenter {}\n"
+                            "cassandra.datacenter {}\n" +
                             "cassandra.nodeToUseFromRemote {}\n",
                     getKeyspace(), getSeedHosts(), getSeedPort(), getDatacenter(), getNodeToUseFromRemote())
             );
@@ -80,8 +80,7 @@ public class CassandraRegistryConfig {
                                         .withUsedHostsPerRemoteDc(getNodeToUseFromRemote())
                                         .allowRemoteDCsForLocalConsistencyLevel()
                                         .build()
-                            )
-                    .build();
+                            ).build();
         }
 
         return cluster;
