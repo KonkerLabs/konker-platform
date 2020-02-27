@@ -3,6 +3,8 @@ package com.konkerlabs.platform.registry.business.repositories.config;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.datastax.driver.core.policies.DCAwareRoundRobinPolicy;
+import com.datastax.driver.core.policies.LoadBalancingPolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -25,6 +27,7 @@ public class CassandraRegistryConfig {
     private String username;
     private String password;
     private int seedPort;
+    private String datacenter;
 
     @Bean
     public Cluster cluster() {
@@ -33,6 +36,8 @@ public class CassandraRegistryConfig {
         defaultMap.put("cassandra.keyspace", "registrykeyspace");
         defaultMap.put("cassandra.hostname", "localhost");
         defaultMap.put("cassandra.port", 9042);
+        defaultMap.put("cassandra.datacenter", "DC1");
+
         Config defaultConf = ConfigFactory.parseMap(defaultMap);
         try {
             Config config = ConfigFactory.load().withFallback(defaultConf);
@@ -41,12 +46,15 @@ public class CassandraRegistryConfig {
             setSeedPort(config.getInt("cassandra.port"));
             setUsername(config.getString("cassandra.username"));
             setPassword(config.getString("cassandra.password"));
+            setDatacenter(config.getString("cassandra.datacenter"));
+
         } catch (Exception e) {
             LOGGER.warn(String.format("Cassandra is not configured, using default cassandra config\n" +
                             "cassandra.keyspace: {}\n" +
                             "cassandra.hostname: {}\n" +
-                            "cassandra.port: {}\n",
-                    getKeyspace(), getSeedHosts(), getSeedPort())
+                            "cassandra.port: {}\n" +
+                            "cassandra.datacenter {}\n",
+                    getKeyspace(), getSeedHosts(), getSeedPort(), getDatacenter())
             );
         }
 
@@ -62,7 +70,14 @@ public class CassandraRegistryConfig {
             cluster = Cluster.builder()
                             .addContactPoints(getSeedHosts())
                             .withPort(getSeedPort())
-                            .build();
+                            .withLoadBalancingPolicy(
+                                    DCAwareRoundRobinPolicy.builder()
+                                        .withLocalDc(getDatacenter())
+                                        .withUsedHostsPerRemoteDc(0)
+                                        .allowRemoteDCsForLocalConsistencyLevel()
+                                        .build()
+                            )
+                    .build();
         }
 
         return cluster;
@@ -134,4 +149,11 @@ public class CassandraRegistryConfig {
         this.password = password;
     }
 
+    public String getDatacenter() {
+        return datacenter;
+    }
+
+    public void setDatacenter(String datacenter) {
+        this.datacenter = datacenter;
+    }
 }
