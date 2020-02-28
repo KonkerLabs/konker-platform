@@ -66,10 +66,16 @@ public class CassandraRegistryConfig {
 
         if (StringUtils.hasText(getUsername())) {
             cluster = Cluster.builder()
-                             .addContactPoints(getSeedHosts())
-                             .withPort(getSeedPort())
-                             .withCredentials(getUsername(), getPassword())
-                             .build();
+                         .addContactPoints(getSeedHosts())
+                         .withPort(getSeedPort())
+                        .withLoadBalancingPolicy(
+                            DCAwareRoundRobinPolicy.builder()
+                                    .withLocalDc(getDatacenter())
+                                    .withUsedHostsPerRemoteDc(getNodeToUseFromRemote())
+                                    .allowRemoteDCsForLocalConsistencyLevel()
+                                    .build()
+                        ).withCredentials(getUsername(), getPassword()).build();
+
         } else {
             cluster = Cluster.builder()
                             .addContactPoints(getSeedHosts())
