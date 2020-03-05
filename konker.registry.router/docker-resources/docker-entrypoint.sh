@@ -66,6 +66,7 @@ echo "####user: ******"
 echo "#### password: *****"
 echo "## EventStorage: $EVENT_STORAGE_BEAN"
 echo "## Cassandra"
+echo "#### Datacenter: $CASSANDRA_DATACENTER"
 echo "#### clustername: $CASSANDRA_CLUSTERNAME"
 echo "#### host: $CASSANDRA_HOSTNAME"
 echo "#### port: $CASSANDRA_PORT"
@@ -150,6 +151,7 @@ java -Dconfig.file=/var/lib/konker/application.conf \
     -Dcassandra.port=$CASSANDRA_PORT \
     -Dcassandra.username=$CASSANDRA_USERNAME \
     -Dcassandra.password=$CASSANDRA_PASSWORD \
+    -Dcassandra.datacenter=$CASSANDRA_DATACENTER \
     -Dredis.master.host=$REDIS_HOSTNAME \
     -Dredis.master.port=$REDIS_PORT \
     -Drabbitmq.hostname=$RABBITMQ_HOSTNAME \
