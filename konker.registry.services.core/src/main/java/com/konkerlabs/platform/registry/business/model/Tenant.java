@@ -22,6 +22,8 @@ public class Tenant implements URIDealer, Serializable {
     private LogLevel logLevel = LogLevel.WARNING;
     private Long devicesLimit;
     private Long privateStorageSize;
+    private Boolean chargeable;
+    private PlanEnum plan;
 
     public static final String URI_SCHEME = "tenant";
 
@@ -43,5 +45,22 @@ public class Tenant implements URIDealer, Serializable {
 	public LogLevel getLogLevel() {
 		return Optional.ofNullable(logLevel).orElse(LogLevel.WARNING);
 	}
+
+    public enum PlanEnum {
+        STARTER("users.form.plan.starter"),
+        STANDARD("users.form.plan.standard"),
+        CORPORATE("users.form.plan.corporate"),
+        ENTERPRISE("users.form.plan.enterprise");
+
+        public String getValue() {
+            return value;
+        }
+
+        private String value;
+
+        PlanEnum(String value) {
+            this.value = value;
+        }
+    }
 
 }

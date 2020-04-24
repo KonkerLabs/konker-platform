@@ -47,7 +47,7 @@
                          data-th-if="*{avatarUploadEnabled}"
                          class="avataraccount img-responsive">
                 </div>
-                <div class="col-md-7 col-sm-5 pull-left panel-view-user"
+                <div class="col-md-2 col-sm-5 pull-left panel-view-user"
                     data-th-if="${#lists.contains(@environment.getActiveProfiles(), 'cdn')}">
                     <div>
                         <h2 data-th-text="#{users.form.photo.yourphoto}">Sua foto</h2>
@@ -82,6 +82,29 @@
                     <div class="row">
                         <button type="submit" class="btn btn-theme"  data-th-text="#{nav.save}">Salvar alterações</button>
                         <button type="button" class="btn btn-default btn-cancel-edit-user" data-th-text="#{nav.cancel}">Cancelar</button>
+                    </div>
+                    <br />
+                </div>
+                <div class="col-md-4 col-sm-5 pull-left section-dvision-left panel-change-plan"
+                     data-th-if="${tenantPlan == null || tenantPlan == ''}">
+                    <div>
+                        <h2 data-th-text="#{users.form.plan.free}">Plano Gratuito</h2>
+                    </div>
+                    <div class="row paddingrow">
+                        <a data-th-href="@{/me/changePlan}"
+                           class="btn btn-theme btn-act">
+                            <span data-th-text="#{users.form.plan.change}">Alterar para Plano Starter</span>
+                        </a>
+                    </div>
+                    <br />
+                </div>
+                <div class="col-md-4 col-sm-5 pull-left section-dvision-left panel-plan-user"
+                     data-th-if="${tenantPlan}">
+                    <div>
+                        <h2 data-th-text="#{${tenantPlan.value}}">Plano Standard</h2>
+                    </div>
+                    <div class="row paddingrow">
+
                     </div>
                     <br />
                 </div>

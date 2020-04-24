@@ -47,7 +47,8 @@ public class RegistryAppInitializer
             com.konkerlabs.platform.registry.config.OAuth2Config.class,
             com.konkerlabs.platform.registry.config.RabbitMQConfig.class,
             com.konkerlabs.platform.registry.config.MessageSourceConfig.class,
-            com.konkerlabs.platform.registry.config.RedisCacheConfig.class
+            com.konkerlabs.platform.registry.config.RedisCacheConfig.class,
+            com.konkerlabs.platform.registry.config.RestTemplateConfig.class
 
         };
     }

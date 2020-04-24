@@ -39,6 +39,7 @@ $(".btn-edit-user").click(function() {
 	oldValues = $($(panel).find(".panel-edit-user")).clone(true, true);
 
 	$(panel).find(".panel-view-user").hide();
+    $(panel).find(".panel-change-plan").hide();
 	$(panel).find(".panel-edit-user").show();
 	$(".btn-edit-user").hide();
 
@@ -51,6 +52,7 @@ $(".btn-cancel-edit-user").click(function() {
 	$(panel).find(".panel-edit-user").replaceWith(oldValues);
 
 	$(panel).find(".panel-view-user").show();
+    $(panel).find(".panel-change-plan").show();
 	$(panel).find(".panel-edit-user").hide();
 	$(".btn-edit-user").show();
 
