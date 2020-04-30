@@ -17,6 +17,7 @@ public class IuguCustomerForm implements ModelBuilder<IuguCustomer, IuguCustomer
     private String country;
     private String cardToken;
     private String plan;
+    private boolean kit;
 
     public IuguCustomerForm() {
 

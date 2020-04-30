@@ -9,18 +9,6 @@ $('#formData').submit(function(evt) {
         } else {
             $("#cardToken").val( data.id );
             form.get(0).submit();
-            // var url = urlTo('/me/changePlan');
-            // $.ajax({
-            //     context : this,
-            //     type : "POST",
-            //     url : url,
-            //     dataType: "html",
-            //     timeout : 100000,
-            //     data: $(form).serialize(),
-            //     success : function(data) {
-            //         console.log(data);
-            //     }
-            // });
         }
     }
 
@@ -28,15 +16,8 @@ $('#formData').submit(function(evt) {
     return false;
 });
 
-$('.btn-upgrade-now').click(function() {
-    var selectedPlan = $(this).closest("div").find("input").val();
-    $('#plan').val(selectedPlan);
-    $('.planSelected').html(selectedPlan);
-});
-
-$(".btn-upgrade-now").click(function() {
-	$(".panel-plans").hide();
-    $(".panel-payment-way").show();
+$(".btn-cancel").click(function() {
+    $('#formCancel').submit();
 
 });
 

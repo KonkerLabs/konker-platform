@@ -14,6 +14,10 @@
         .panel-edit-user {
             display: none;
         }
+
+        .panel-plan-user h4, .panel-change-plan h4 {
+            font-weight: bold;
+        }
 	</style>
 </head>
 <body>
@@ -88,23 +92,42 @@
                 <div class="col-md-4 col-sm-5 pull-left section-dvision-left panel-change-plan"
                      data-th-if="${tenantPlan == null || tenantPlan == ''}">
                     <div>
-                        <h2 data-th-text="#{users.form.plan.free}">Plano Gratuito</h2>
+                        <h4 data-th-text="#{users.form.plan}">Plan</h4>
+                        <h4 data-th-text="#{users.form.plan.free}">Free</h4>
                     </div>
                     <div class="row paddingrow">
-                        <a data-th-href="@{/me/changePlan}"
+                        <a data-th-href="@{/me/plans}"
                            class="btn btn-theme btn-act">
-                            <span data-th-text="#{users.form.plan.change}">Alterar para Plano Starter</span>
+                            <span data-th-text="#{users.form.plan.change}">Change Plan</span>
                         </a>
                     </div>
                     <br />
                 </div>
-                <div class="col-md-4 col-sm-5 pull-left section-dvision-left panel-plan-user"
+                <div class="col-md-10 col-sm-5 pull-left section-dvision-left panel-plan-user"
                      data-th-if="${tenantPlan}">
                     <div>
-                        <h2 data-th-text="#{${tenantPlan.value}}">Plano Standard</h2>
+                        <h4 data-th-text="#{users.form.plan}">Plan</h4>
+                        <h4 data-th-text="${tenantPlan}">Standard</h4>
                     </div>
                     <div class="row paddingrow">
-
+                        <div class="col-md-4">
+                            <label>
+                                <span data-th-text="#{users.form.plan.next.charge}">Próxima Cobrança</span>
+                            </label>
+                            <p>1 de Maio de 2020</p>
+                        </div>
+                        <div class="col-md-4">
+                            <label>
+                                <span data-th-text="#{users.form.plan.charge.value}">Valor Aproximado</span>
+                            </label>
+                            <p>R$ 58,00</p>
+                        </div>
+                        <div class="col-md-4">
+                            <label>
+                                <span data-th-text="#{users.form.plan.credit.card}">Cartão de crédito</span>
+                            </label>
+                            <p>xxxx xxxx xxxx 0123</p>
+                        </div>
                     </div>
                     <br />
                 </div>

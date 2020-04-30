@@ -2,6 +2,7 @@ package com.konkerlabs.platform.registry.business.services;
 
 import com.konkerlabs.platform.registry.business.model.IuguCustomer;
 import com.konkerlabs.platform.registry.business.model.IuguPaymentWay;
+import com.konkerlabs.platform.registry.business.model.IuguSubscription;
 import com.konkerlabs.platform.registry.business.model.KonkerIuguPlan;
 import com.konkerlabs.platform.registry.business.services.api.IuguService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
@@ -19,6 +20,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Optional;
 
 import static java.text.MessageFormat.format;
@@ -167,7 +171,61 @@ public class IuguServiceImpl implements IuguService {
 					.build();
 		} else {
 			return ServiceResponseBuilder.<KonkerIuguPlan>error()
-					.withMessage(Validations.IUGU_PAYMENT_WAY_CREATION_ERROR.getCode())
+					.withMessage(Validations.IUGU_KONKER_PLAN_CREATION_ERROR.getCode())
+					.build();
+		}
+	}
+
+	@Override
+	public ServiceResponse<IuguSubscription> payForKit(KonkerIuguPlan konkerIuguPlan) {
+		if (!Optional.ofNullable(konkerIuguPlan).isPresent()) {
+			return ServiceResponseBuilder.<IuguSubscription>error()
+					.withMessage(Validations.IUGU_KONKER_PLAN_NULL.getCode())
+					.build();
+		}
+
+		if (!Optional.ofNullable(konkerIuguPlan.getIuguCustomerId()).isPresent()) {
+			return ServiceResponseBuilder.<IuguSubscription>error()
+					.withMessage(Validations.IUGU_KONKER_PLAN_CUSTOMER_ID_NULL.getCode())
+					.build();
+		}
+
+		IuguSubscription iuguSubscription = IuguSubscription.builder()
+				.planIdentifier("KIT_BASICO_DESENVOLVIMENTO")
+				.customerId(konkerIuguPlan.getIuguCustomerId())
+				.expiresAt(LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")))
+				.onlyOnChargeSuccess(true)
+				.ignoreDueEmail(false)
+				.payableWith("credit_card")
+				.creditsBased(false)
+				.twoStep(false)
+				.suspendOnInvoiceExpired(false)
+				.subItems(Arrays.asList(
+						IuguSubscription.Item.builder().description("NodeMCU (placa de desenvolvimento contendo um ESP8266)").priceCents(0l).quantity(1l).recurrent(true).build(),
+						IuguSubscription.Item.builder().description("Protoboards de 170 pontos").priceCents(0l).quantity(2l).recurrent(true).build(),
+						IuguSubscription.Item.builder().description("Termistor de 1k Ohm").priceCents(0l).quantity(1l).recurrent(true).build(),
+						IuguSubscription.Item.builder().description("Resistores de 470 Ohms").priceCents(0l).quantity(4l).recurrent(true).build()
+				))
+				.build();
+
+		HttpHeaders headers = getHttpHeaders();
+		HttpEntity<IuguSubscription> entity = new HttpEntity<>(iuguSubscription, headers);
+
+		ResponseEntity<IuguSubscription> response = restTemplate.exchange(
+				format("{0}/subscriptions?api_token={1}",
+						iuguConfig.getApiURL(),
+						iuguConfig.getApiToken()),
+				HttpMethod.POST,
+				entity,
+				IuguSubscription.class);
+
+		if (response.getStatusCode().is2xxSuccessful()) {
+			return ServiceResponseBuilder.<IuguSubscription>ok()
+					.withResult(response.getBody())
+					.build();
+		} else {
+			return ServiceResponseBuilder.<IuguSubscription>error()
+					.withMessage(Validations.IUGU_KONKER_PLAN_PAY_KIT_ERROR.getCode())
 					.build();
 		}
 	}

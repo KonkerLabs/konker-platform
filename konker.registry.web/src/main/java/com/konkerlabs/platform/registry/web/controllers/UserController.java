@@ -1,10 +1,7 @@
 package com.konkerlabs.platform.registry.web.controllers;
 
 import com.konkerlabs.platform.registry.billing.model.TenantDailyUsage;
-import com.konkerlabs.platform.registry.business.model.IuguCustomer;
-import com.konkerlabs.platform.registry.business.model.IuguPaymentWay;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.User;
+import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
 import com.konkerlabs.platform.registry.business.model.enumerations.Language;
 import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
@@ -87,7 +84,7 @@ public class UserController implements ApplicationContextAware {
 
         ModelAndView mv = new ModelAndView("users/form")
                 .addObject("user", new UserForm().fillFrom(user))
-                .addObject("tenantPlan", user.getTenant().getPlan())
+                .addObject("tenantPlan", user.getTenant().getPlan() != null ? user.getTenant().getPlan().getValue() : null)
                 .addObject("action", "/me")
                 .addObject("dateformats", DateFormat.values())
                 .addObject("languages", Language.values())
@@ -136,25 +133,34 @@ public class UserController implements ApplicationContextAware {
 		return new ModelAndView("redirect:/me");
 	}
 
-	@RequestMapping(value = "/changePlan", method = RequestMethod.GET)
-	public ModelAndView changePlan() {
-    	ModelAndView mv = new ModelAndView("users/changeplan");
+	@RequestMapping(value = "/plans", method = RequestMethod.GET)
+	public ModelAndView plans() {
+    	ModelAndView mv = new ModelAndView("payment/plans");
     	mv.addObject("user", user);
-        mv.addObject("iuguAccountId", iuguConfig.getAccountId());
-        mv.addObject("iuguTestMode", iuguConfig.isTestMode());
+    	mv.addObject("action", "/me/plans/checkout");
+        mv.addObject("plans", Tenant.PlanEnum.values());
 
         return mv;
 	}
 
-	@RequestMapping(value = "/changePlan", method = RequestMethod.POST)
-	public ModelAndView savePlan(@ModelAttribute("iuguCustomerForm")IuguCustomerForm iuguForm,
+	@RequestMapping(value = "/plans/checkout", method = RequestMethod.GET)
+	public ModelAndView checkoutView(@ModelAttribute("iuguCustomerForm")IuguCustomerForm iuguForm,
+									 RedirectAttributes redirectAttributes,
+									 Locale locale) {
+		ModelAndView mv = getModelAndViewCheckout(iuguForm);
+
+		return mv;
+	}
+
+	@RequestMapping(value = "/plans/checkout", method = RequestMethod.POST)
+	public ModelAndView checkout(@ModelAttribute("iuguCustomerForm")IuguCustomerForm iuguForm,
 								 RedirectAttributes redirectAttributes,
 								 Locale locale) {
     	iuguForm.setEmail(user.getEmail());
 
 		ServiceResponse<IuguCustomer> serviceIuguCustomer = iuguService.createIuguCustomer(iuguForm.toModel());
 		if (!serviceIuguCustomer.getStatus().equals(ServiceResponse.Status.OK)) {
-			return redirectErrorPaymentWayMessage(redirectAttributes,
+			return errorCheckoutMessage(iuguForm,
 					locale,
 					serviceIuguCustomer.getResponseMessages());
 		}
@@ -169,14 +175,37 @@ public class UserController implements ApplicationContextAware {
 
 		ServiceResponse<IuguPaymentWay> servicePaymentWay = iuguService.createPaymentWay(iuguPaymentWay);
 		if (!servicePaymentWay.getStatus().equals(ServiceResponse.Status.OK)) {
-			return redirectErrorPaymentWayMessage(redirectAttributes,
+			return errorCheckoutMessage(iuguForm,
 					locale,
 					servicePaymentWay.getResponseMessages());
 		}
 
-		iuguService.createKonkerIuguPlan();
+        Tenant.PlanEnum konkerPlanEnum = Tenant.PlanEnum.valueOf(iuguForm.getPlan().toUpperCase());
+        KonkerIuguPlan konkerIuguPlan = KonkerIuguPlan.builder()
+                .tenantName(user.getTenant().getName())
+                .tenantDomain(user.getTenant().getDomainName())
+                .iuguCustomerId(iuguCustomer.getId())
+                .iuguPlanIdentifier(konkerPlanEnum.name())
+                .build();
+		iuguService.createKonkerIuguPlan(konkerIuguPlan);
 
-		return new ModelAndView("redirect:/me");
+		user.getTenant().setChargeable(false);
+		user.getTenant().setPlan(konkerPlanEnum);
+		tenantService.save(user.getTenant());
+
+		if (iuguForm.isKit()) {
+			iuguService.payForKit(konkerIuguPlan);
+		}
+
+		return new ModelAndView("redirect:/me/plans/checkout/success");
+	}
+
+	@RequestMapping(value = "/plans/checkout/success", method = RequestMethod.GET)
+	public ModelAndView checkoutSuccess() {
+		ModelAndView mv = new ModelAndView("payment/checkout-success");
+		mv.addObject("action", "/me");
+
+		return mv;
 	}
 
 	private String formatSize(Integer size) {
@@ -189,13 +218,26 @@ public class UserController implements ApplicationContextAware {
 		return new DecimalFormat("#,##0.#").format(size/Math.pow(1024, digitGroups)) + " " + units[digitGroups];
 	}
 
-	private ModelAndView redirectErrorPaymentWayMessage(RedirectAttributes redirectAttributes, Locale locale, Map<String, Object[]> responseMessages) {
+	private ModelAndView errorCheckoutMessage(IuguCustomerForm iuguForm, Locale locale, Map<String, Object[]> responseMessages) {
 		List<String> messages = responseMessages.entrySet().stream()
 				.map(message -> applicationContext.getMessage(message.getKey(), message.getValue(), locale))
 				.collect(Collectors.toList());
-		redirectAttributes.addFlashAttribute("errors", messages);
 
-		return new ModelAndView("redirect:/changePlan");
+		ModelAndView mv = getModelAndViewCheckout(iuguForm);
+		mv.addObject("errors", messages);
+
+        return mv;
+	}
+
+	private ModelAndView getModelAndViewCheckout(IuguCustomerForm iuguForm) {
+		ModelAndView mv = new ModelAndView("payment/checkout");
+		mv.addObject("user", user);
+		mv.addObject("action", "/me/plans/checkout");
+		mv.addObject("plan", Tenant.PlanEnum.valueOf(iuguForm.getPlan().toUpperCase()));
+		mv.addObject("kit", iuguForm.isKit());
+		mv.addObject("iuguAccountId", iuguConfig.getAccountId());
+		mv.addObject("iuguTestMode", iuguConfig.isTestMode());
+		return mv;
 	}
 
 	private ModelAndView redirectErrorMessages(RedirectAttributes redirectAttributes, Locale locale,

@@ -2,6 +2,7 @@ package com.konkerlabs.platform.registry.test.business.services;
 
 import com.konkerlabs.platform.registry.business.model.IuguCustomer;
 import com.konkerlabs.platform.registry.business.model.IuguPaymentWay;
+import com.konkerlabs.platform.registry.business.model.IuguSubscription;
 import com.konkerlabs.platform.registry.business.model.KonkerIuguPlan;
 import com.konkerlabs.platform.registry.business.services.api.IuguService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
@@ -24,6 +25,10 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+
 import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
 import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.isResponseOk;
 import static org.mockito.Mockito.when;
@@ -40,7 +45,7 @@ public class IuguServiceTest extends BusinessLayerTestSupport {
     public ExpectedException thrown = ExpectedException.none();
 
     @Autowired
-    private IuguService paymentWayService;
+    private IuguService iuguService;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -60,14 +65,14 @@ public class IuguServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldReturnErrorCustomerNull() {
-        ServiceResponse<IuguCustomer> response = paymentWayService.createIuguCustomer(null);
+        ServiceResponse<IuguCustomer> response = iuguService.createIuguCustomer(null);
 
         Assert.assertThat(response, hasErrorMessage(IuguService.Validations.IUGU_CUSTOMER_NULL.getCode()));
     }
 
     @Test
     public void shouldReturnErrorCustomerEmailNull() {
-        ServiceResponse<IuguCustomer> response = paymentWayService.createIuguCustomer(IuguCustomer.builder()
+        ServiceResponse<IuguCustomer> response = iuguService.createIuguCustomer(IuguCustomer.builder()
                 .build());
 
         Assert.assertThat(response, hasErrorMessage(IuguService.Validations.IUGU_CUSTOMER_EMAIL_NULL.getCode()));
@@ -75,7 +80,7 @@ public class IuguServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldReturnErrorCustomerNameNull() {
-        ServiceResponse<IuguCustomer> response = paymentWayService.createIuguCustomer(IuguCustomer.builder()
+        ServiceResponse<IuguCustomer> response = iuguService.createIuguCustomer(IuguCustomer.builder()
                 .email("email@teste.com")
                 .build());
 
@@ -100,7 +105,7 @@ public class IuguServiceTest extends BusinessLayerTestSupport {
                 IuguCustomer.class))
                 .thenReturn(ResponseEntity.ok(IuguCustomer.builder().id("77C2565F6F064A26ABED4255894224F0").build()));
 
-        ServiceResponse<IuguCustomer> response = paymentWayService.createIuguCustomer(iuguCustomer);
+        ServiceResponse<IuguCustomer> response = iuguService.createIuguCustomer(iuguCustomer);
 
         Assert.assertThat(response, isResponseOk());
         Assert.assertNotNull(response.getResult());
@@ -126,28 +131,28 @@ public class IuguServiceTest extends BusinessLayerTestSupport {
                 IuguCustomer.class))
                 .thenReturn(responseEntity);
 
-        ServiceResponse<IuguCustomer> response = paymentWayService.createIuguCustomer(iuguCustomer);
+        ServiceResponse<IuguCustomer> response = iuguService.createIuguCustomer(iuguCustomer);
 
         Assert.assertThat(response, hasErrorMessage(IuguService.Validations.IUGU_CUSTOMER_CREATION_ERROR.getCode()));
     }
 
     @Test
     public void shouldReturnErrorPaymentWayNull() {
-        ServiceResponse<IuguPaymentWay> response = paymentWayService.createPaymentWay(null);
+        ServiceResponse<IuguPaymentWay> response = iuguService.createPaymentWay(null);
 
         Assert.assertThat(response, hasErrorMessage(IuguService.Validations.IUGU_PAYMENT_WAY_NULL.getCode()));
     }
 
     @Test
     public void shouldReturnErrorPaymentWayCustomerIdNull() {
-        ServiceResponse<IuguPaymentWay> response = paymentWayService.createPaymentWay(IuguPaymentWay.builder().build());
+        ServiceResponse<IuguPaymentWay> response = iuguService.createPaymentWay(IuguPaymentWay.builder().build());
 
         Assert.assertThat(response, hasErrorMessage(IuguService.Validations.IUGU_PAYMENT_WAY_CUSTOMER_ID_NULL.getCode()));
     }
 
     @Test
     public void shouldReturnErrorPaymentWayTokenNull() {
-        ServiceResponse<IuguPaymentWay> response = paymentWayService.createPaymentWay(IuguPaymentWay.builder()
+        ServiceResponse<IuguPaymentWay> response = iuguService.createPaymentWay(IuguPaymentWay.builder()
                 .customerId("9B41FB19CBA44913B1EF990A10382E7E")
                 .build());
 
@@ -171,7 +176,7 @@ public class IuguServiceTest extends BusinessLayerTestSupport {
                 IuguPaymentWay.class))
                 .thenReturn(ResponseEntity.ok(IuguPaymentWay.builder().id("77C2565F6F064A26ABED4255894224F0").build()));
 
-        ServiceResponse<IuguPaymentWay> response = paymentWayService.createPaymentWay(iuguPaymentWay);
+        ServiceResponse<IuguPaymentWay> response = iuguService.createPaymentWay(iuguPaymentWay);
 
         Assert.assertThat(response, isResponseOk());
         Assert.assertNotNull(response.getResult());
@@ -196,28 +201,28 @@ public class IuguServiceTest extends BusinessLayerTestSupport {
                 IuguPaymentWay.class))
                 .thenReturn(responseEntity);
 
-        ServiceResponse<IuguPaymentWay> response = paymentWayService.createPaymentWay(iuguPaymentWay);
+        ServiceResponse<IuguPaymentWay> response = iuguService.createPaymentWay(iuguPaymentWay);
 
         Assert.assertThat(response, hasErrorMessage(IuguService.Validations.IUGU_PAYMENT_WAY_CREATION_ERROR.getCode()));
     }
 
     @Test
     public void shouldReturnErrorKonkerIuguPlanNull() {
-        ServiceResponse<KonkerIuguPlan> response = paymentWayService.createKonkerIuguPlan(null);
+        ServiceResponse<KonkerIuguPlan> response = iuguService.createKonkerIuguPlan(null);
 
         Assert.assertThat(response, hasErrorMessage(IuguService.Validations.IUGU_KONKER_PLAN_NULL.getCode()));
     }
 
     @Test
     public void shouldReturnErrorKonkerIuguPlanTenantDomainNull() {
-        ServiceResponse<KonkerIuguPlan> response = paymentWayService.createKonkerIuguPlan(KonkerIuguPlan.builder().build());
+        ServiceResponse<KonkerIuguPlan> response = iuguService.createKonkerIuguPlan(KonkerIuguPlan.builder().build());
 
         Assert.assertThat(response, hasErrorMessage(IuguService.Validations.IUGU_KONKER_PLAN_TENANT_DOMAIN_NULL.getCode()));
     }
 
     @Test
     public void shouldReturnErrorKonkerIuguPlanTenantNameNull() {
-        ServiceResponse<KonkerIuguPlan> response = paymentWayService.createKonkerIuguPlan(KonkerIuguPlan.builder()
+        ServiceResponse<KonkerIuguPlan> response = iuguService.createKonkerIuguPlan(KonkerIuguPlan.builder()
                 .tenantDomain("xpto99")
                 .build());
 
@@ -226,7 +231,7 @@ public class IuguServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldReturnErrorKonkerIuguPlanCutomerIdNull() {
-        ServiceResponse<KonkerIuguPlan> response = paymentWayService.createKonkerIuguPlan(KonkerIuguPlan.builder()
+        ServiceResponse<KonkerIuguPlan> response = iuguService.createKonkerIuguPlan(KonkerIuguPlan.builder()
                 .tenantDomain("xpto99")
                 .tenantName("XPTO")
                 .build());
@@ -236,7 +241,7 @@ public class IuguServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldReturnErrorKonkerIuguPlanIdentifierNull() {
-        ServiceResponse<KonkerIuguPlan> response = paymentWayService.createKonkerIuguPlan(KonkerIuguPlan.builder()
+        ServiceResponse<KonkerIuguPlan> response = iuguService.createKonkerIuguPlan(KonkerIuguPlan.builder()
                 .tenantDomain("xpto99")
                 .tenantName("XPTO")
                 .iuguCustomerId("77C2565F6F064A26ABED4255894224F0")
@@ -264,10 +269,131 @@ public class IuguServiceTest extends BusinessLayerTestSupport {
                 KonkerIuguPlan.class))
                 .thenReturn(responseEntity);
 
-        ServiceResponse<KonkerIuguPlan> response = paymentWayService.createKonkerIuguPlan(konkerIuguPlan);
+        ServiceResponse<KonkerIuguPlan> response = iuguService.createKonkerIuguPlan(konkerIuguPlan);
 
         Assert.assertThat(response, isResponseOk());
         Assert.assertNotNull(response.getResult());
+    }
+
+    @Test
+    public void shouldReturnErrorCreateKonkerIuguPlan() {
+        KonkerIuguPlan konkerIuguPlan = KonkerIuguPlan.builder()
+                .tenantDomain("xpto99")
+                .tenantName("XPTO")
+                .iuguCustomerId("77C2565F6F064A26ABED4255894224F0")
+                .iuguPlanIdentifier("STARTER")
+                .build();
+
+        HttpHeaders headers = getHttpHeaders();
+        HttpEntity<KonkerIuguPlan> request = new HttpEntity<>(konkerIuguPlan, headers);
+        ResponseEntity<KonkerIuguPlan> responseEntity = ResponseEntity.badRequest().body(null);
+        when(restTemplate.exchange(
+                "http://localhost:8000/tenantPlan",
+                HttpMethod.POST,
+                request,
+                KonkerIuguPlan.class))
+                .thenReturn(responseEntity);
+
+        ServiceResponse<KonkerIuguPlan> response = iuguService.createKonkerIuguPlan(konkerIuguPlan);
+
+        Assert.assertThat(response, hasErrorMessage(IuguService.Validations.IUGU_KONKER_PLAN_CREATION_ERROR.getCode()));
+    }
+
+    @Test
+    public void shouldReturnErrorPayKitNull() {
+        ServiceResponse<IuguSubscription> response = iuguService.payForKit(null);
+
+        Assert.assertThat(response, hasErrorMessage(IuguService.Validations.IUGU_KONKER_PLAN_NULL.getCode()));
+    }
+
+    @Test
+    public void shouldReturnErrorPayKitCustomerIdNull() {
+        ServiceResponse<IuguSubscription> response = iuguService.payForKit(KonkerIuguPlan.builder().build());
+
+        Assert.assertThat(response, hasErrorMessage(IuguService.Validations.IUGU_KONKER_PLAN_CUSTOMER_ID_NULL.getCode()));
+    }
+
+    @Test
+    public void shouldPayKit() {
+        KonkerIuguPlan konkerIuguPlan = KonkerIuguPlan.builder()
+                .tenantDomain("xpto99")
+                .tenantName("XPTO")
+                .iuguCustomerId("77C2565F6F064A26ABED4255894224F0")
+                .iuguPlanIdentifier("STARTER")
+                .build();
+
+        IuguSubscription iuguSubscription = IuguSubscription.builder()
+                .planIdentifier("KIT_BASICO_DESENVOLVIMENTO")
+                .customerId(konkerIuguPlan.getIuguCustomerId())
+                .expiresAt(LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")))
+                .onlyOnChargeSuccess(true)
+                .ignoreDueEmail(false)
+                .payableWith("credit_card")
+                .creditsBased(false)
+                .twoStep(false)
+                .suspendOnInvoiceExpired(false)
+                .subItems(Arrays.asList(
+                        IuguSubscription.Item.builder().description("NodeMCU (placa de desenvolvimento contendo um ESP8266)").priceCents(0l).quantity(1l).recurrent(true).build(),
+                        IuguSubscription.Item.builder().description("Protoboards de 170 pontos").priceCents(0l).quantity(2l).recurrent(true).build(),
+                        IuguSubscription.Item.builder().description("Termistor de 1k Ohm").priceCents(0l).quantity(1l).recurrent(true).build(),
+                        IuguSubscription.Item.builder().description("Resistores de 470 Ohms").priceCents(0l).quantity(4l).recurrent(true).build()
+                ))
+                .build();
+
+        HttpHeaders headers = getHttpHeaders();
+        HttpEntity<IuguSubscription> request = new HttpEntity<>(iuguSubscription, headers);
+        when(restTemplate.exchange("https://api.iugu.com/v1/subscriptions?api_token=b17421313f9a8db907afa7b7047fbcd8",
+                HttpMethod.POST,
+                request,
+                IuguSubscription.class))
+                .thenReturn(ResponseEntity.ok(IuguSubscription.builder().id("77C2565F6F064A26ABED4255894224FF").build()));
+
+        ServiceResponse<IuguSubscription> response = iuguService.payForKit(konkerIuguPlan);
+
+        Assert.assertThat(response, isResponseOk());
+        Assert.assertNotNull(response.getResult());
+        Assert.assertNotNull(response.getResult().getId());
+    }
+
+    @Test
+    public void shouldPayKitErrorToPay() {
+        KonkerIuguPlan konkerIuguPlan = KonkerIuguPlan.builder()
+                .tenantDomain("xpto99")
+                .tenantName("XPTO")
+                .iuguCustomerId("77C2565F6F064A26ABED4255894224F0")
+                .iuguPlanIdentifier("STARTER")
+                .build();
+
+        IuguSubscription iuguSubscription = IuguSubscription.builder()
+                .planIdentifier("KIT_BASICO_DESENVOLVIMENTO")
+                .customerId(konkerIuguPlan.getIuguCustomerId())
+                .expiresAt(LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")))
+                .onlyOnChargeSuccess(true)
+                .ignoreDueEmail(false)
+                .payableWith("credit_card")
+                .creditsBased(false)
+                .twoStep(false)
+                .suspendOnInvoiceExpired(false)
+                .subItems(Arrays.asList(
+                        IuguSubscription.Item.builder().description("NodeMCU (placa de desenvolvimento contendo um ESP8266)").priceCents(0l).quantity(1l).recurrent(true).build(),
+                        IuguSubscription.Item.builder().description("Protoboards de 170 pontos").priceCents(0l).quantity(2l).recurrent(true).build(),
+                        IuguSubscription.Item.builder().description("Termistor de 1k Ohm").priceCents(0l).quantity(1l).recurrent(true).build(),
+                        IuguSubscription.Item.builder().description("Resistores de 470 Ohms").priceCents(0l).quantity(4l).recurrent(true).build()
+                ))
+                .build();
+
+        HttpHeaders headers = getHttpHeaders();
+        HttpEntity<IuguSubscription> request = new HttpEntity<>(iuguSubscription, headers);
+        ResponseEntity<IuguSubscription> responseEntity = ResponseEntity.badRequest().body(null);
+        when(restTemplate.exchange("https://api.iugu.com/v1/subscriptions?api_token=b17421313f9a8db907afa7b7047fbcd8",
+                HttpMethod.POST,
+                request,
+                IuguSubscription.class))
+                .thenReturn(responseEntity);
+
+        ServiceResponse<IuguSubscription> response = iuguService.payForKit(konkerIuguPlan);
+
+        Assert.assertThat(response, hasErrorMessage(IuguService.Validations.IUGU_KONKER_PLAN_PAY_KIT_ERROR.getCode()));
     }
 
 

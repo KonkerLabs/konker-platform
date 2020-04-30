@@ -10,6 +10,7 @@ import java.util.List;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
 
+import com.konkerlabs.platform.registry.business.services.api.*;
 import org.mockito.Matchers;
 import org.junit.After;
 import org.junit.Assert;
@@ -31,10 +32,6 @@ import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
-import com.konkerlabs.platform.registry.business.services.api.TenantService;
-import com.konkerlabs.platform.registry.business.services.api.UserService;
 import com.konkerlabs.platform.registry.config.CdnConfig;
 import com.konkerlabs.platform.registry.config.EmailConfig;
 import com.konkerlabs.platform.registry.config.MessageSourceConfig;
@@ -168,6 +165,11 @@ public class UserControllerTest extends WebLayerTestContext {
 		@Bean
 		public ConverterUtils converterUtils() {
 			return Mockito.mock(ConverterUtils.class);
+		}
+
+		@Bean
+		public IuguService iuguService() {
+			return Mockito.mock(IuguService.class);
 		}
 
 	}

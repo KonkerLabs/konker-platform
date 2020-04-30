@@ -14,8 +14,8 @@
 
         .card-chosen-plan {
             min-height: 50px;
-            max-height: 250px;
-            height: 200px;
+            max-height: 300px;
+            height: 300px;
         }
 
         .card-payment-way {
@@ -37,20 +37,18 @@
             color: #b40f0f;
             font-size: 20px;
             font-weight: bold;
-            margin-bottom: 3em;
+            margin-bottom: 1em;
         }
 
-        .card a.condition {
+        .card li, #conditionPlan li {
             color: #96968d;
-            text-decoration: underline;
+            text-align: justify;
+            list-style-type: none;
+            padding-bottom: 5px;
         }
 
         .card .div-button {
-            margin-top: 6em;
-        }
-        
-        .panel-payment-way {
-            display: none;
+            margin-top: 3em;
         }
 
         .cvv-margin {
@@ -91,147 +89,6 @@
 
         <input type="hidden" name="_method" data-th-value="${method}" data-th-if="${method != null}"/>
 
-        <div class="panel-plans">
-            <h1 class="page-title" data-th-text="#{users.plan.title}"></h1>
-
-            <div class="row">
-                <div class="col-md-12 row-card">
-                    <div class="col-md-4 col-sm-6 col-xs-11 card-col">
-                        <div class="card card-plan">
-                            <p class="title" data-th-text="#{users.form.plan.education}"></p>
-
-                            <a href="#" class="condition">
-                                <span data-th-text="#{users.plan.conditions}">Condições</span>
-                            </a>
-
-                            <div class="div-button">
-                                <button type="button"
-                                        class="btn btn-theme btn-upgrade-now"
-                                        data-th-text="#{users.plan.btn.upgrade}">
-                                    Atualizar Agora
-                                </button>
-                                <input type="hidden" value="Education"/>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-4 col-sm-6 col-xs-11 card-col">
-                        <div class="card card-plan">
-                            <p class="title" data-th-text="#{users.form.plan.startup}"></p>
-
-                            <a href="#" class="condition">
-                                <span data-th-text="#{users.plan.conditions}">Condições</span>
-                            </a>
-
-                            <div class="div-button">
-                                <button type="button"
-                                        class="btn btn-theme btn-upgrade-now"
-                                        data-th-text="#{users.plan.btn.upgrade}">
-                                    Atualizar Agora
-                                </button>
-                                <input type="hidden" value="Startup"/>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-4 col-sm-6 col-xs-11 card-col">
-                        <div class="card card-plan">
-                            <p class="title" data-th-text="#{users.form.plan.growth}"></p>
-
-                            <a href="#" class="condition">
-                                <span data-th-text="#{users.plan.conditions}">Condições</span>
-                            </a>
-
-                            <div class="div-button">
-                                <button type="button"
-                                        class="btn btn-theme btn-upgrade-now"
-                                        data-th-text="#{users.plan.btn.upgrade}">
-                                    Atualizar Agora
-                                </button>
-                                <input type="hidden" value="Growth"/>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-4 col-sm-6 col-xs-11 card-col">
-                        <div class="card card-plan">
-                            <p class="title" data-th-text="#{users.form.plan.starter}"></p>
-
-                            <a href="#" class="condition">
-                                <span data-th-text="#{users.plan.conditions}">Condições</span>
-                            </a>
-
-                            <div class="div-button">
-                                <button type="button"
-                                        class="btn btn-theme btn-upgrade-now"
-                                        data-th-text="#{users.plan.btn.upgrade}">
-                                    Atualizar Agora
-                                </button>
-                                <input type="hidden" value="Starter"/>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-4 col-sm-6 col-xs-11 card-col">
-                        <div class="card card-plan">
-                            <p class="title" data-th-text="#{users.form.plan.standard}"></p>
-
-                            <a href="#" class="condition">
-                                <span data-th-text="#{users.plan.conditions}">Condições</span>
-                            </a>
-
-                            <div class="div-button">
-                                <button type="button"
-                                        class="btn btn-theme btn-upgrade-now"
-                                        data-th-text="#{users.plan.btn.upgrade}">
-                                    Atualizar Agora
-                                </button>
-                                <input type="hidden" value="Standard"/>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-4 col-sm-6 col-xs-11 card-col">
-                        <div class="card card-plan">
-                            <p class="title" data-th-text="#{users.form.plan.corporate}"></p>
-
-                            <a href="#" class="condition">
-                                <span data-th-text="#{users.plan.conditions}">Condições</span>
-                            </a>
-
-                            <div class="div-button">
-                                <button type="button"
-                                        class="btn btn-theme btn-upgrade-now"
-                                        data-th-text="#{users.plan.btn.upgrade}">
-                                    Atualizar Agora
-                                </button>
-                                <input type="hidden" value="Corporate"/>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-4 col-sm-6 col-xs-11 card-col">
-                        <div class="card card-plan">
-                            <p class="title" data-th-text="#{users.form.plan.enterprise}"></p>
-
-                            <a href="#" class="condition">
-                                <span data-th-text="#{users.plan.conditions}">Condições</span>
-                            </a>
-
-                            <div class="div-button">
-                                <button type="button"
-                                        class="btn btn-theme btn-upgrade-now"
-                                        data-th-text="#{users.plan.btn.upgrade}">
-                                    Atualizar Agora
-                                </button>
-                                <input type="hidden" value="Enterprise"/>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <div class="panel-payment-way">
             <input type="hidden"
                    id="iuguAccountId"
@@ -249,7 +106,13 @@
 
             <input type="hidden"
                    id="plan"
-                   name="plan" />
+                   name="plan"
+                   data-th-value="${plan.value}"/>
+
+            <input type="hidden"
+                   id="kit"
+                   name="kit"
+                   data-th-value="${kit}"/>
 
             <h1 class="page-title" data-th-text="#{users.payment.way.title}"></h1>
 
@@ -367,7 +230,7 @@
 
                     <div class="row col-md-6 pull-left">
                         <button type="button"
-                                class="btn btn-theme"
+                                class="btn btn-theme btn-cancel"
                                 data-th-text="#{users.payment.way.btn_cancel}">
                             Cancelar
                         </button>
@@ -381,7 +244,23 @@
                                    data-th-text="#{users.payment.way.chosen_plan}"></label>
                         </div>
                         <div class="col-md-12">
-                            <p class="title pull-left planSelected">Starter</p>
+                            <p class="title pull-left planSelected" data-th-text="${plan.value}">Starter</p>
+                        </div>
+                        <div class="col-md-12">
+                            <ul id="conditionPlan">
+                                <li data-th-each="condition : ${plan.conditions}" data-th-text="${condition}"></li>
+                            </ul>
+                        </div>
+
+                        <div data-th-if="${kit}">
+                            <div class="col-md-8">
+                                <label class="control-label pull-left"
+                                       data-th-text="#{users.payment.way.kit}"></label>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="control-label pull-right"
+                                       data-th-text="#{users.payment.way.kit.price}"></label>
+                            </div>
                         </div>
                     </div>
 
@@ -405,12 +284,16 @@
             </div>
         </div>
     </form>
-    
+    <form action="/registry/me"
+          method="get"
+          class="form-horizontal"
+          id="formCancel">
+    </form>
 </div>
 <div data-layout-fragment="script">
     <script data-th-attr="src=@{/resources/konker/scripts/jquery.mask.min.js}"></script>
     <script data-th-attr="src=@{/resources/konker/scripts/iugu.js}"></script>
-    <script data-th-attr="src=@{/resources/js/users/changeplan.js(v2)}"></script>
+    <script data-th-attr="src=@{/resources/js/payment/checkout.js(v2)}"></script>
 
     <script type="text/javascript">
 
