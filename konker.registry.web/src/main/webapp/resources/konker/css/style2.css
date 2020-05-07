@@ -622,6 +622,10 @@ ul.user-info {
     width: 30%;
 }
 
+card-plan {
+    background-color: #e2e2e2;
+}
+
 .btn-inline-card {
     background-color: transparent !important;
     color: #e9e9e9 !important;
@@ -1135,6 +1139,12 @@ ul.top-menu > li > a:hover, ul.top-menu > li > a:focus {
     padding-left: 15px;
 	height: 100%;
     
+}
+
+.section-dvision-left {
+    border-left: solid 1px #ddd;
+    padding-left: 15px;
+    height: 100%;
 }
 
 

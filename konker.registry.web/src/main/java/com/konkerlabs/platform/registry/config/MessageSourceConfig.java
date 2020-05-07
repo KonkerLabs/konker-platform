@@ -42,6 +42,7 @@ public class MessageSourceConfig {
                 "classpath:/messages/device-model",
                 "classpath:/messages/health-alert",
                 "classpath:/messages/routes-counter",
+                "classpath:/messages/iugu",
                 "classpath:/mail/MailMessages");
         messageSource.setDefaultEncoding("UTF-8");
         return messageSource;

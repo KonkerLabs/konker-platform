@@ -106,7 +106,10 @@ public class TenantServiceImpl implements TenantService {
 		}
 
 		tenant.setDevicesLimit(5L);
-		tenant.setDomainName(generateDomainName());
+
+		if (!Optional.ofNullable(tenant.getDomainName()).isPresent()) {
+			tenant.setDomainName(generateDomainName());
+		}
 
 		Tenant fromStorage = tenantRepository.save(tenant);
 		

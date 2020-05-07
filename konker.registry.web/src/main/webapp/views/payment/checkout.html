@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html data-layout-decorate="layouts/default" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<style>
+		a, a:hover, a:focus {
+		    color: #4aaf51;
+		    text-decoration: none;
+		    -o-transition: all .3s;
+		    -moz-transition: all .3s;
+		    -webkit-transition: all .3s;
+		    -ms-transition: all .3s;
+		    transition: all .3s;
+		}
+
+        .card-chosen-plan {
+            min-height: 50px;
+            max-height: 300px;
+            height: 300px;
+        }
+
+        .card-payment-way {
+            min-height: 50px;
+            max-height: 250px;
+            height: 80px;
+        }
+
+        .card-payment-way label, .card-chosen-plan label{
+            color: #797979;
+            font-weight: bold;
+        }
+
+        .card-payment-way img {
+            width: 75%;
+        }
+
+        .card p.title {
+            color: #b40f0f;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 1em;
+        }
+
+        .card li, #conditionPlan li {
+            color: #96968d;
+            text-align: justify;
+            list-style-type: none;
+            padding-bottom: 5px;
+        }
+
+        .card .div-button {
+            margin-top: 3em;
+        }
+
+        .cvv-margin {
+            margin-top: 1em;
+            text-decoration: underline;
+        }
+
+        .panel-payment-way button {
+            width: 95%;
+            margin-top: 2em;
+        }
+
+	</style>
+</head>
+<body>
+<div data-layout-fragment="content" class="col-md-offset-1">
+    <div>
+        <div class="alert alert-danger" role="alert" data-th-if="${errors != null and !errors.empty}">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <ul>
+            <li data-th-each="error : ${errors}" data-th-text="${error}"></li>
+            </ul>
+        </div>
+        <div class="alert alert-success" role="alert" data-th-if="${message != null}">
+            <span data-th-text="${message}"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    </div>
+    <form data-th-action="@{__${action}__}"
+          data-th-object="${user}"
+          method="post"
+          class="form-horizontal"
+          id="formData">
+
+        <input type="hidden" name="_method" data-th-value="${method}" data-th-if="${method != null}"/>
+
+        <div class="panel-payment-way">
+            <input type="hidden"
+                   id="iuguAccountId"
+                   name="iuguAccountId"
+                   data-th-value="${iuguAccountId}" />
+
+            <input type="hidden"
+                   id="iuguTestMode"
+                   name="iuguTestMode"
+                   data-th-value="${iuguTestMode}" />
+
+            <input type="hidden"
+                   id="cardToken"
+                   name="cardToken" />
+
+            <input type="hidden"
+                   id="plan"
+                   name="plan"
+                   data-th-value="${plan.value}"/>
+
+            <input type="hidden"
+                   id="kit"
+                   name="kit"
+                   data-th-value="${kit}"/>
+
+            <h1 class="page-title" data-th-text="#{users.payment.way.title}"></h1>
+
+            <div class="row">
+                <div class="col-md-5 row-card">
+                    <div class="row col-md-12 pull-left">
+                        <label class="control-label"
+                                   data-th-text="#{users.payment.way.card_number}"
+                                   for="card-number"></label>
+                        <input class="form-control"
+                               type="text"
+                               id="card-number"
+                               name="card-number"
+                               data-iugu="number"
+                               placeholder="XXXX-XXXX-XXXX-XXXX"/>
+                    </div>
+
+                    <div class="row col-md-12 pull-left">
+                        <label class="control-label"
+                               data-th-text="#{users.payment.way.name_in_card}"
+                               for="card-name"></label>
+                        <input class="form-control"
+                               type="text"
+                               id="card-name"
+                               data-iugu="full_name"
+                               name="name"/>
+                    </div>
+
+                    <div class="row col-md-4 pull-left">
+                        <label class="control-label"
+                               data-th-text="#{users.payment.way.card_expiration}"
+                               for="card-expiration"></label>
+                        <input class="form-control"
+                               type="text"
+                               id="card-expiration"
+                               name="card-expiration"
+                               data-iugu="expiration"
+                               placeholder="MM/AA"
+                               pattern="[0-9]{2}/[0-9]{2}"/>
+                    </div>
+                    <div class="col-md-4 pull-left">
+                        <label class="control-label"
+                               data-th-text="#{users.payment.way.card_cvv}"
+                               for="card-cvv"></label>
+                        <input class="form-control"
+                               type="number"
+                               id="card-cvv"
+                               data-iugu="verification_value"
+                               name="card-cvv"/>
+                    </div>
+                    <div class="col-md-4 pull-left">
+                        <label class="control-label cvv-margin"
+                               data-th-text="#{users.payment.way.cvv_legend}"></label>
+                    </div>
+
+                    <div class="row col-md-12 pull-left">
+                        <label class="control-label"
+                               data-th-text="#{users.payment.way.billing_address}"
+                               for="billing-address"></label>
+                        <input class="form-control"
+                               type="text"
+                               id="billing-address"
+                               name="street"/>
+                    </div>
+
+                    <div class="row col-md-12 pull-left">
+                        <label class="control-label"
+                               data-th-text="#{users.payment.way.billing_city}"
+                               for="billing-city"></label>
+                        <input class="form-control"
+                               type="text"
+                               id="billing-city"
+                               name="city"/>
+                    </div>
+
+                    <div class="row col-md-12 pull-left">
+                        <label class="control-label"
+                               data-th-text="#{users.payment.way.billing_state}"
+                               for="billing-state"></label>
+                        <input class="form-control"
+                               type="text"
+                               id="billing-state"
+                               name="state"/>
+                    </div>
+
+                    <div class="row col-md-12 pull-left">
+                        <label class="control-label"
+                               data-th-text="#{users.payment.way.billing_cep}"
+                               for="billing-cep"></label>
+                        <input class="form-control"
+                               type="text"
+                               id="billing-cep"
+                               name="zipCode"
+                               placeholder="00000-000"/>
+                    </div>
+
+                    <div class="row col-md-12 pull-left">
+                        <label class="control-label"
+                               data-th-text="#{users.payment.way.billing_country}"
+                               for="billing-country"></label>
+                        <input class="form-control"
+                               type="text"
+                               id="billing-country"
+                               name="country"/>
+                    </div>
+
+                    <div class="row col-md-6 pull-left">
+                        <button type="submit"
+                                class="btn btn-theme"
+                                id="btn-save"
+                                data-th-text="#{users.payment.way.btn_save}">
+                            Salvar
+                        </button>
+                    </div>
+
+                    <div class="row col-md-6 pull-left">
+                        <button type="button"
+                                class="btn btn-theme btn-cancel"
+                                data-th-text="#{users.payment.way.btn_cancel}">
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="col-md-6 row-card">
+                    <div class="card card-chosen-plan">
+                        <div class="col-md-12">
+                            <label class="control-label pull-left"
+                                   data-th-text="#{users.payment.way.chosen_plan}"></label>
+                        </div>
+                        <div class="col-md-12">
+                            <p class="title pull-left planSelected" data-th-text="${plan.value}">Starter</p>
+                        </div>
+                        <div class="col-md-12">
+                            <ul id="conditionPlan">
+                                <li data-th-each="condition : ${plan.conditions}" data-th-text="${condition}"></li>
+                            </ul>
+                        </div>
+
+                        <div data-th-if="${kit}">
+                            <div class="col-md-8">
+                                <label class="control-label pull-left"
+                                       data-th-text="#{users.payment.way.kit}"></label>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="control-label pull-right"
+                                       data-th-text="#{users.payment.way.kit.price}"></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card card-payment-way">
+                        <div class="col-md-12">
+                            <label class="control-label pull-left"
+                                   data-th-text="#{users.payment.way.payments_way}"></label>
+                        </div>
+                        <div class="col-md-6">
+                            <img data-th-src="@{/resources/konker/images/card-flags.png }"
+                                 alt="Logo: Cartões"
+                                 class="pull-left">
+                        </div>
+                        <div class="col-md-6">
+                            <img data-th-src="@{/resources/konker/images/iugu-logo.png}"
+                                 alt="Logo: Iugu"
+                                 class="pull-left">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+    <form action="/registry/me"
+          method="get"
+          class="form-horizontal"
+          id="formCancel">
+    </form>
+</div>
+<div data-layout-fragment="script">
+    <script data-th-attr="src=@{/resources/konker/scripts/jquery.mask.min.js}"></script>
+    <script data-th-attr="src=@{/resources/konker/scripts/iugu.js}"></script>
+    <script data-th-attr="src=@{/resources/js/payment/checkout.js(v2)}"></script>
+
+    <script type="text/javascript">
+
+    </script>
+</div>
+</body>
+</html>

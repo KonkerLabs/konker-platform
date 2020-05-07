@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html data-layout-decorate="layouts/default" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<style>
+		a, a:hover, a:focus {
+		    color: #4aaf51;
+		    text-decoration: none;
+		    -o-transition: all .3s;
+		    -moz-transition: all .3s;
+		    -webkit-transition: all .3s;
+		    -ms-transition: all .3s;
+		    transition: all .3s;
+		}
+
+        .card-payment-way label, .card-chosen-plan label{
+            color: #797979;
+            font-weight: bold;
+        }
+
+        .card-payment-way img {
+            width: 75%;
+        }
+
+        .card p.title {
+            color: #b40f0f;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 1em;
+        }
+
+        .card li, #conditionPlan li, .modal-content li {
+            color: #96968d;
+            text-align: justify;
+            list-style-type: none;
+            padding-bottom: 5px;
+        }
+
+        .card .div-button, .div-text-footer {
+            margin-top: 3em;
+        }
+
+        .panel-payment-way button {
+            width: 95%;
+            margin-top: 2em;
+        }
+
+        .body-center {
+            margin-left: 10em;
+            width: 60%;
+        }
+
+        .color-red {
+            color: #b40f0f;
+        }
+
+	</style>
+</head>
+<body>
+<div data-layout-fragment="content" class="col-md-offset-1">
+    <div>
+        <div class="alert alert-danger" role="alert" data-th-if="${errors != null and !errors.empty}">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <ul>
+            <li data-th-each="error : ${errors}" data-th-text="${error}"></li>
+            </ul>
+        </div>
+        <div class="alert alert-success" role="alert" data-th-if="${message != null}">
+            <span data-th-text="${message}"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    </div>
+    <form data-th-action="@{__${action}__}"
+          data-th-object="${user}"
+          method="get"
+          class="form-horizontal"
+          id="formData">
+
+        <input type="hidden" name="_method" data-th-value="${method}" data-th-if="${method != null}"/>
+
+        <input type="hidden"
+               id="plan"
+               name="plan" />
+
+        <input type="hidden"
+               id="kit"
+               name="kit" />
+
+        <div class="panel-plans">
+            <h1 class="page-title" data-th-text="#{users.plan.title}"></h1>
+
+            <div class="row">
+                <div class="col-md-12 row-card">
+                    <div class="col-md-4 col-sm-6 col-xs-11 card-col"
+                         data-th-each="plan : ${plans}">
+                        <div class="card card-plan">
+                            <p class="title" data-th-text="${plan.value}"></p>
+
+                            <ul id="conditionList">
+                                <li data-th-each="condition : ${plan.conditions}" data-th-text="${condition}"></li>
+                            </ul>
+
+                            <div class="div-button">
+                                <button type="button"
+                                        class="btn btn-theme btn-upgrade-now"
+                                        data-th-text="#{users.plan.btn.upgrade}">
+                                    Atualizar Agora
+                                </button>
+                                <input type="hidden" data-th-value="${plan.value}"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal" id="kitModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+            <div class="modal-alignment-helper">
+                <div class="modal-dialog modal-align-center">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3 class="modal-title" data-th-text="#{users.plan.modal.header}">Title</h3>
+                        </div>
+                        <div class="modal-body body-center">
+                            <h3 class="text-center color-red" data-th-text="#{users.plan.modal.question}">Question?</h3>
+                            <h3 class="text-center" data-th-text="#{users.plan.modal.price}">Price</h3>
+                            <p class="text-center" data-th-text="#{users.plan.modal.explanation}">Explanation.</p>
+                            <p class="text-center" data-th-text="#{users.plan.modal.content.label}">Kit Content</p>
+                            <ul>
+                                <li data-th-text="#{users.plan.modal.content.item1}">Item 1</li>
+                                <li data-th-text="#{users.plan.modal.content.item2}">Item 2</li>
+                                <li data-th-text="#{users.plan.modal.content.item3}">Item 3</li>
+                                <li data-th-text="#{users.plan.modal.content.item4}">Item 4</li>
+                            </ul>
+                        </div>
+                        <div class="modal-footer">
+                            <div class="col-md-6">
+                                <button type="button" id="buyKit" class="btn btn-primary" data-th-text="#{users.plan.modal.btn_buy}">Buy kit</button>
+                            </div>
+                            <div class="col-md-6">
+                                <button type="button" id="noKit" data-dismiss="modal" aria-hidden="true" class="btn btn-primary pull-left" data-th-text=#{users.plan.modal.btn_not_buy}>Without kit</button>
+                            </div>
+                            <div class="col-md12 div-text-footer">
+                                <p class="text-center" data-th-text="#{users.plan.modal.footer}">Text footer</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+    
+</div>
+<div data-layout-fragment="script">
+    <script data-th-attr="src=@{/resources/konker/scripts/jquery.mask.min.js}"></script>
+    <script data-th-attr="src=@{/resources/konker/scripts/iugu.js}"></script>
+    <script data-th-attr="src=@{/resources/js/payment/plans.js(v2)}"></script>
+
+    <script type="text/javascript">
+
+    </script>
+</div>
+</body>
+</html>
