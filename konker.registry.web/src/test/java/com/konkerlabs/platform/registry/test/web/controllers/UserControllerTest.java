@@ -1,5 +1,6 @@
 package com.konkerlabs.platform.registry.test.web.controllers;
 
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -10,6 +11,7 @@ import java.util.List;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
 
+import com.konkerlabs.platform.registry.business.model.KonkerIuguCharge;
 import com.konkerlabs.platform.registry.business.services.api.*;
 import org.mockito.Matchers;
 import org.junit.After;
@@ -58,6 +60,9 @@ public class UserControllerTest extends WebLayerTestContext {
 	private TenantService tenantService;
 
 	@Autowired
+	private IuguService iuguService;
+
+	@Autowired
 	private AvatarService avatarService;
 
 	@Autowired
@@ -72,6 +77,7 @@ public class UserControllerTest extends WebLayerTestContext {
 		Mockito.reset(userService);
 		Mockito.reset(tenantService);
 		Mockito.reset(avatarService);
+		Mockito.reset(iuguService);
 	}
 
 	@Test
@@ -86,6 +92,15 @@ public class UserControllerTest extends WebLayerTestContext {
 								.outgoingPayloadSize(128)
 								.build()))
 					.build());
+
+		when(iuguService.findNextCharge(anyObject()))
+				.thenReturn(ServiceResponseBuilder.<KonkerIuguCharge> ok()
+						.withResult(KonkerIuguCharge.builder()
+										.maskedCardNumber("xxxx xxxx xxxx 1111")
+										.nextCharge("01 Jun, 2020")
+										.nextChargeValue("R$ 1,99")
+										.build())
+						.build());
 		
 		ResultActions result = getMockMvc().perform(get("/me"));
 
