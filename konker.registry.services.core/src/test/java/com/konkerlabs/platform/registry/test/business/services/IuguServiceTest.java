@@ -1,11 +1,9 @@
 package com.konkerlabs.platform.registry.test.business.services;
 
-import com.konkerlabs.platform.registry.business.model.IuguCustomer;
-import com.konkerlabs.platform.registry.business.model.IuguPaymentWay;
-import com.konkerlabs.platform.registry.business.model.IuguSubscription;
-import com.konkerlabs.platform.registry.business.model.KonkerIuguPlan;
+import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.services.api.IuguService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
+import com.konkerlabs.platform.registry.business.services.api.TenantService;
 import com.konkerlabs.platform.registry.config.KonkerInvoiceApiConfig;
 import com.konkerlabs.platform.registry.test.base.BusinessLayerTestSupport;
 import com.konkerlabs.platform.registry.test.base.BusinessTestConfiguration;
@@ -25,6 +23,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.client.RestTemplate;
 
+import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
@@ -263,7 +262,7 @@ public class IuguServiceTest extends BusinessLayerTestSupport {
         HttpEntity<KonkerIuguPlan> request = new HttpEntity<>(konkerIuguPlan, headers);
         ResponseEntity<KonkerIuguPlan> responseEntity = ResponseEntity.ok().body(KonkerIuguPlan.builder().build());
         when(restTemplate.exchange(
-                "http://localhost:8000/tenantPlan",
+                "http://localhost:8000/tenant/plan",
                 HttpMethod.POST,
                 request,
                 KonkerIuguPlan.class))
@@ -288,7 +287,7 @@ public class IuguServiceTest extends BusinessLayerTestSupport {
         HttpEntity<KonkerIuguPlan> request = new HttpEntity<>(konkerIuguPlan, headers);
         ResponseEntity<KonkerIuguPlan> responseEntity = ResponseEntity.badRequest().body(null);
         when(restTemplate.exchange(
-                "http://localhost:8000/tenantPlan",
+                "http://localhost:8000/tenant/plan",
                 HttpMethod.POST,
                 request,
                 KonkerIuguPlan.class))
@@ -396,6 +395,74 @@ public class IuguServiceTest extends BusinessLayerTestSupport {
         Assert.assertThat(response, hasErrorMessage(IuguService.Validations.IUGU_KONKER_PLAN_PAY_KIT_ERROR.getCode()));
     }
 
+    @Test
+    public void shouldReturnErrorNextChargeTenantNull() {
+        ServiceResponse<KonkerIuguCharge> response = iuguService.findNextCharge(null);
+
+        Assert.assertThat(response, hasErrorMessage(TenantService.Validations.TENANT_NULL.getCode()));
+    }
+
+    @Test
+    public void shouldReturnErrorNextChargeTenantDomainNull() {
+        ServiceResponse<KonkerIuguCharge> response = iuguService.findNextCharge(Tenant.builder().build());
+
+        Assert.assertThat(response, hasErrorMessage(TenantService.Validations.TENANT_DOMAIN_NULL.getCode()));
+    }
+
+    @Test
+    public void shouldFindNextCharge() {
+        KonkerIuguCharge konkerIuguCharge = KonkerIuguCharge.builder()
+                .nextCharge("01 Jun, 2020")
+                .nextChargeValue("R$ 1,99")
+                .maskedCardNumber("xxxx xxxx xxxx 4242")
+                .build();
+
+        Tenant tenant = Tenant.builder()
+                .domainName("xpto99xx")
+                .build();
+
+        HttpHeaders headers = getHttpHeaders();
+        HttpEntity<KonkerIuguCharge> request = new HttpEntity<>(headers);
+        ResponseEntity<KonkerIuguCharge> responseEntity = ResponseEntity.ok().body(konkerIuguCharge);
+        when(restTemplate.exchange(
+                MessageFormat.format("http://localhost:8000/tenant/{0}/charges/next", tenant.getDomainName()),
+                HttpMethod.GET,
+                request,
+                KonkerIuguCharge.class))
+                .thenReturn(responseEntity);
+
+        ServiceResponse<KonkerIuguCharge> response = iuguService.findNextCharge(tenant);
+
+        Assert.assertThat(response, isResponseOk());
+        Assert.assertNotNull(response.getResult());
+    }
+
+    @Test
+    public void shouldFindNextChargeNotFound() {
+        KonkerIuguCharge konkerIuguCharge = KonkerIuguCharge.builder()
+                .nextCharge("01 Jun, 2020")
+                .nextChargeValue("R$ 1,99")
+                .maskedCardNumber("xxxx xxxx xxxx 4242")
+                .build();
+
+        Tenant tenant = Tenant.builder()
+                .domainName("xpto99xx")
+                .build();
+
+        HttpHeaders headers = getHttpHeaders();
+        HttpEntity<KonkerIuguCharge> request = new HttpEntity<>(headers);
+        ResponseEntity<KonkerIuguCharge> responseEntity = ResponseEntity.badRequest().body(null);
+        when(restTemplate.exchange(
+                MessageFormat.format("http://localhost:8000/tenant/{0}/charges/next", tenant.getDomainName()),
+                HttpMethod.GET,
+                request,
+                KonkerIuguCharge.class))
+                .thenReturn(responseEntity);
+
+        ServiceResponse<KonkerIuguCharge> response = iuguService.findNextCharge(tenant);
+
+        Assert.assertThat(response, hasErrorMessage(IuguService.Validations.IUGU_KONKER_CHARGE_NOT_FOUND.getCode()));
+    }
 
     private HttpHeaders getHttpHeaders() {
         byte[] base64Cred = Base64.encodeBase64(konkerInvoiceApiConfig.getUsername()

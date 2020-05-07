@@ -1,12 +1,10 @@
 package com.konkerlabs.platform.registry.business.services;
 
-import com.konkerlabs.platform.registry.business.model.IuguCustomer;
-import com.konkerlabs.platform.registry.business.model.IuguPaymentWay;
-import com.konkerlabs.platform.registry.business.model.IuguSubscription;
-import com.konkerlabs.platform.registry.business.model.KonkerIuguPlan;
+import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.services.api.IuguService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.business.services.api.TenantService;
 import com.konkerlabs.platform.registry.config.IuguConfig;
 import com.konkerlabs.platform.registry.config.KonkerInvoiceApiConfig;
 import org.apache.commons.codec.binary.Base64;
@@ -159,7 +157,7 @@ public class IuguServiceImpl implements IuguService {
 		HttpEntity<KonkerIuguPlan> entity = new HttpEntity<>(konkerIuguPlan, headers);
 
 		ResponseEntity<KonkerIuguPlan> response = restTemplate.exchange(
-				format("{0}/tenantPlan",
+				format("{0}/tenant/plan",
 						konkerInvoiceApiConfig.getUrl()),
 				HttpMethod.POST,
 				entity,
@@ -230,7 +228,43 @@ public class IuguServiceImpl implements IuguService {
 		}
 	}
 
-	private HttpHeaders getHttpHeaders() {
+    @Override
+    public ServiceResponse<KonkerIuguCharge> findNextCharge(Tenant tenant) {
+        if (!Optional.ofNullable(tenant).isPresent()) {
+            return ServiceResponseBuilder.<KonkerIuguCharge>error()
+                    .withMessage(TenantService.Validations.TENANT_NULL.getCode())
+                    .build();
+        }
+
+        if (!Optional.ofNullable(tenant.getDomainName()).isPresent()) {
+            return ServiceResponseBuilder.<KonkerIuguCharge>error()
+                    .withMessage(TenantService.Validations.TENANT_DOMAIN_NULL.getCode())
+                    .build();
+        }
+
+        HttpHeaders headers = getHttpHeaders();
+        HttpEntity<KonkerIuguCharge> entity = new HttpEntity<>(headers);
+
+        ResponseEntity<KonkerIuguCharge> response = restTemplate.exchange(
+                format("{0}/tenant/{1}/charges/next",
+                        konkerInvoiceApiConfig.getUrl(),
+                        tenant.getDomainName()),
+                HttpMethod.GET,
+                entity,
+                KonkerIuguCharge.class);
+
+        if (response.getStatusCode().is2xxSuccessful()) {
+            return ServiceResponseBuilder.<KonkerIuguCharge>ok()
+                    .withResult(response.getBody())
+                    .build();
+        } else {
+            return ServiceResponseBuilder.<KonkerIuguCharge>error()
+                    .withMessage(Validations.IUGU_KONKER_CHARGE_NOT_FOUND.getCode())
+                    .build();
+        }
+    }
+
+    private HttpHeaders getHttpHeaders() {
 		byte[] base64Cred = Base64.encodeBase64(konkerInvoiceApiConfig.getUsername()
 				.concat(":")
 				.concat(konkerInvoiceApiConfig.getPassword()).getBytes());

@@ -92,6 +92,11 @@ public class UserController implements ApplicationContextAware {
                 .addObject("loglevels", LogLevel.values())
                 .addObject("usedSpace", formatSize(usages.stream().mapToInt(u -> u.getIncomingPayloadSize() + u.getOutgoingPayloadSize()).sum()));
 
+        ServiceResponse<KonkerIuguCharge> chargeServiceResponse = iuguService.findNextCharge(user.getTenant());
+        if(chargeServiceResponse.isOk()) {
+            mv.addObject("nextCharge", chargeServiceResponse.getResult());
+        }
+
         return mv;
     }
 

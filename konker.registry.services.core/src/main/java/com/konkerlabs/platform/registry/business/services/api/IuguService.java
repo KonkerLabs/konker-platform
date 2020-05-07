@@ -1,12 +1,8 @@
 package com.konkerlabs.platform.registry.business.services.api;
 
-import com.konkerlabs.platform.registry.business.model.IuguCustomer;
-import com.konkerlabs.platform.registry.business.model.IuguPaymentWay;
-import com.konkerlabs.platform.registry.business.model.IuguSubscription;
-import com.konkerlabs.platform.registry.business.model.KonkerIuguPlan;
+import com.konkerlabs.platform.registry.business.model.*;
 
 public interface IuguService {
-
 
     enum Validations {
         IUGU_CUSTOMER_NULL("service.iugu.customer.null"),
@@ -23,7 +19,8 @@ public interface IuguService {
         IUGU_KONKER_PLAN_IDENTIFIER_NULL("service.iugu.konker.plan.plan_identifier.null"),
         IUGU_KONKER_PLAN_CUSTOMER_ID_NULL("service.iugu.konker.plan.customer_id.null"),
         IUGU_KONKER_PLAN_CREATION_ERROR("service.iugu.konker.plan.creation.error"),
-        IUGU_KONKER_PLAN_PAY_KIT_ERROR("service.iugu.konker.plan.pay.kit.error");
+        IUGU_KONKER_PLAN_PAY_KIT_ERROR("service.iugu.konker.plan.pay.kit.error"),
+        IUGU_KONKER_CHARGE_NOT_FOUND("service.iugu.konker.charge.not.found");
 
         private String code;
 
@@ -57,5 +54,7 @@ public interface IuguService {
     ServiceResponse<KonkerIuguPlan> createKonkerIuguPlan(KonkerIuguPlan konkerIuguPlan);
 
     ServiceResponse<IuguSubscription> payForKit(KonkerIuguPlan konkerIuguPlan);
+
+    ServiceResponse<KonkerIuguCharge> findNextCharge(Tenant tenant);
 
 }

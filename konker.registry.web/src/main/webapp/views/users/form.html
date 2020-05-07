@@ -114,19 +114,19 @@
                             <label>
                                 <span data-th-text="#{users.form.plan.next.charge}">Próxima Cobrança</span>
                             </label>
-                            <p>1 de Maio de 2020</p>
+                            <p data-th-text="${nextCharge.nextCharge}">1 de Maio de 2020</p>
                         </div>
                         <div class="col-md-4">
                             <label>
                                 <span data-th-text="#{users.form.plan.charge.value}">Valor Aproximado</span>
                             </label>
-                            <p>R$ 58,00</p>
+                            <p data-th-text="${nextCharge.nextChargeValue}">R$ 58,00</p>
                         </div>
                         <div class="col-md-4">
                             <label>
                                 <span data-th-text="#{users.form.plan.credit.card}">Cartão de crédito</span>
                             </label>
-                            <p>xxxx xxxx xxxx 0123</p>
+                            <p data-th-text="${nextCharge.maskedCardNumber}">xxxx xxxx xxxx 0123</p>
                         </div>
                     </div>
                     <br />
