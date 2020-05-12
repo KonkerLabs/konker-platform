@@ -21,6 +21,8 @@ import java.util.Optional;
 @NoArgsConstructor
 public class Tenant implements URIDealer, Serializable {
 
+    private static final long serialVersionUID = 6529685098267757690L;
+
     @Id
     private String id;
     private String name;
