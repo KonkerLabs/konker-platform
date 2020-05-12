@@ -325,12 +325,12 @@ public class IuguServiceTest extends BusinessLayerTestSupport {
                 .planIdentifier("KIT_BASICO_DESENVOLVIMENTO")
                 .customerId(konkerIuguPlan.getIuguCustomerId())
                 .expiresAt(LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")))
-                .onlyOnChargeSuccess(true)
-                .ignoreDueEmail(false)
+                .onlyOnChargeSuccess("true")
+                .ignoreDueEmail("false")
                 .payableWith("credit_card")
-                .creditsBased(false)
-                .twoStep(false)
-                .suspendOnInvoiceExpired(false)
+                .creditsBased("false")
+                .twoStep("false")
+                .suspendOnInvoiceExpired("false")
                 .subItems(Arrays.asList(
                         IuguSubscription.Item.builder().description("NodeMCU (placa de desenvolvimento contendo um ESP8266)").priceCents(0l).quantity(1l).recurrent(true).build(),
                         IuguSubscription.Item.builder().description("Protoboards de 170 pontos").priceCents(0l).quantity(2l).recurrent(true).build(),
@@ -367,12 +367,12 @@ public class IuguServiceTest extends BusinessLayerTestSupport {
                 .planIdentifier("KIT_BASICO_DESENVOLVIMENTO")
                 .customerId(konkerIuguPlan.getIuguCustomerId())
                 .expiresAt(LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")))
-                .onlyOnChargeSuccess(true)
-                .ignoreDueEmail(false)
+                .onlyOnChargeSuccess("true")
+                .ignoreDueEmail("false")
                 .payableWith("credit_card")
-                .creditsBased(false)
-                .twoStep(false)
-                .suspendOnInvoiceExpired(false)
+                .creditsBased("false")
+                .twoStep("false")
+                .suspendOnInvoiceExpired("false")
                 .subItems(Arrays.asList(
                         IuguSubscription.Item.builder().description("NodeMCU (placa de desenvolvimento contendo um ESP8266)").priceCents(0l).quantity(1l).recurrent(true).build(),
                         IuguSubscription.Item.builder().description("Protoboards de 170 pontos").priceCents(0l).quantity(2l).recurrent(true).build(),
@@ -462,6 +462,86 @@ public class IuguServiceTest extends BusinessLayerTestSupport {
         ServiceResponse<KonkerIuguCharge> response = iuguService.findNextCharge(tenant);
 
         Assert.assertThat(response, hasErrorMessage(IuguService.Validations.IUGU_KONKER_CHARGE_NOT_FOUND.getCode()));
+    }
+
+    @Test
+    public void shouldReturnErrorIuguSubscriptionNull() {
+        ServiceResponse<IuguSubscription> response = iuguService.createSubscription(null);
+
+        Assert.assertThat(response, hasErrorMessage(IuguService.Validations.IUGU_SUBSCRIPTION_NULL.getCode()));
+    }
+
+    @Test
+    public void shouldReturnErrorIuguSubscriptionCustomerIdNull() {
+        ServiceResponse<IuguSubscription> response = iuguService.createSubscription(IuguSubscription.builder().build());
+
+        Assert.assertThat(response, hasErrorMessage(IuguService.Validations.IUGU_SUBSCRIPTION_CUSTOMER_ID_NULL.getCode()));
+    }
+
+    @Test
+    public void shouldReturnErrorIuguSubscriptionPlanIdentifierNull() {
+        ServiceResponse<IuguSubscription> response = iuguService.createSubscription(IuguSubscription.builder()
+                .customerId("77C2565F6F064A26ABED4255894224F0")
+                .build());
+
+        Assert.assertThat(response, hasErrorMessage(IuguService.Validations.IUGU_SUBSCRIPTION_PLAN_IDENTIFIER_NULL.getCode()));
+    }
+
+    @Test
+    public void shouldCreateIuguSubscription() {
+        IuguSubscription iuguSubscription = IuguSubscription.builder()
+                .planIdentifier("STARTER")
+                .customerId("77C2565F6F064A26ABED4255894224F0")
+                .expiresAt(LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")))
+                .onlyOnChargeSuccess("true")
+                .ignoreDueEmail("false")
+                .payableWith("credit_card")
+                .creditsBased("false")
+                .twoStep("false")
+                .suspendOnInvoiceExpired("false")
+                .build();
+
+        HttpHeaders headers = getHttpHeaders();
+        HttpEntity<IuguSubscription> request = new HttpEntity<>(iuguSubscription, headers);
+        when(restTemplate.exchange("https://api.iugu.com/v1/subscriptions?api_token=b17421313f9a8db907afa7b7047fbcd8",
+                HttpMethod.POST,
+                request,
+                IuguSubscription.class))
+                .thenReturn(ResponseEntity.ok(IuguSubscription.builder().id("77C2565F6F064A26ABED4255894224FF").build()));
+
+        ServiceResponse<IuguSubscription> response = iuguService.createSubscription(iuguSubscription);
+
+        Assert.assertThat(response, isResponseOk());
+        Assert.assertNotNull(response.getResult());
+        Assert.assertNotNull(response.getResult().getId());
+    }
+
+    @Test
+    public void shouldCreateIuguSubscriptionError() {
+        IuguSubscription iuguSubscription = IuguSubscription.builder()
+                .planIdentifier("STARTER")
+                .customerId("77C2565F6F064A26ABED4255894224F0")
+                .expiresAt(LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")))
+                .onlyOnChargeSuccess("true")
+                .ignoreDueEmail("false")
+                .payableWith("credit_card")
+                .creditsBased("false")
+                .twoStep("false")
+                .suspendOnInvoiceExpired("false")
+                .build();
+
+        HttpHeaders headers = getHttpHeaders();
+        HttpEntity<IuguSubscription> request = new HttpEntity<>(iuguSubscription, headers);
+        ResponseEntity<IuguSubscription> responseEntity = ResponseEntity.badRequest().body(null);
+        when(restTemplate.exchange("https://api.iugu.com/v1/subscriptions?api_token=b17421313f9a8db907afa7b7047fbcd8",
+                HttpMethod.POST,
+                request,
+                IuguSubscription.class))
+                .thenReturn(responseEntity);
+
+        ServiceResponse<IuguSubscription> response = iuguService.createSubscription(iuguSubscription);
+
+        Assert.assertThat(response, hasErrorMessage(IuguService.Validations.IUGU_SUBSCRIPTION_ERROR.getCode()));
     }
 
     private HttpHeaders getHttpHeaders() {

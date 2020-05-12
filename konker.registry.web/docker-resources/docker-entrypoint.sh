@@ -29,6 +29,7 @@ CDN_MAX_SIZE=500000
 CDN_ENABLED=true
 RECAPTCHA_ENABLED=true
 EMAIL_ENABLED=true
+IUGU_TEST_MODE=false
 
 
 echo ""
@@ -150,6 +151,15 @@ echo "#### enabled: $AMAZON_KINESIS_ENABLED"
 echo "## Google Maps"
 echo "#### apiKey: $MAP_APIKEY"
 echo "#### enabled: $MAP_ENABLED"
+echo "## Iugu"
+echo "#### accountId: $IUGU_ACCOUNT_ID"
+echo "#### accountId: $IUGU_API_URL"
+echo "#### accountId: $IUGU_API_TOKEN"
+echo "#### accountId: $IUGU_TEST_MODE"
+echo "## Konker Invoice API"
+echo "#### url: $KONKER_INVOICE_API_URL"
+echo "#### username: $KONER_INVOICE_API_USERNAME"
+echo "#### password: *******"
 
 /usr/local/sbin/nginx &
 java -Dconfig.file=/var/lib/jetty/resources/application.conf \
@@ -225,5 +235,12 @@ java -Dconfig.file=/var/lib/jetty/resources/application.conf \
     -Damazon.kinesisRouteEnabled=$AMAZON_KINESIS_ENABLED \
     -Dmap.apiKey=$MAP_APIKEY \
     -Dmap.enabled=$MAP_ENABLED \
+    -Diugu.accountId=$IUGU_ACCOUNT_ID \
+    -Diugu.apiURL=$IUGU_API_URL \
+    -Diugu.apiToken=$IUGU_API_TOKEN \
+    -Diugu.testMode=$IUGU_TEST_MODE \
+    -DkonkerInvoiceApi.url=$KONKER_INVOICE_API_URL \
+    -DkonkerInvoiceApi.username=$KONER_INVOICE_API_USERNAME \
+    -DkonkerInvoiceApi.password=$KONER_INVOICE_API_PASSWORD \
     -jar /usr/local/jetty/start.jar
 exec "$@"

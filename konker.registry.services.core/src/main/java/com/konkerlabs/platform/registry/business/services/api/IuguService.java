@@ -20,7 +20,11 @@ public interface IuguService {
         IUGU_KONKER_PLAN_CUSTOMER_ID_NULL("service.iugu.konker.plan.customer_id.null"),
         IUGU_KONKER_PLAN_CREATION_ERROR("service.iugu.konker.plan.creation.error"),
         IUGU_KONKER_PLAN_PAY_KIT_ERROR("service.iugu.konker.plan.pay.kit.error"),
-        IUGU_KONKER_CHARGE_NOT_FOUND("service.iugu.konker.charge.not.found");
+        IUGU_KONKER_CHARGE_NOT_FOUND("service.iugu.konker.charge.not.found"),
+        IUGU_SUBSCRIPTION_NULL("service.iugu.subscription.null"),
+        IUGU_SUBSCRIPTION_CUSTOMER_ID_NULL("service.iugu.subscription.customer_id_null"),
+        IUGU_SUBSCRIPTION_PLAN_IDENTIFIER_NULL("service.iugu.subscription.plan_identifier_null"),
+        IUGU_SUBSCRIPTION_ERROR("service.iugu.subscription.error");
 
         private String code;
 
@@ -56,5 +60,7 @@ public interface IuguService {
     ServiceResponse<IuguSubscription> payForKit(KonkerIuguPlan konkerIuguPlan);
 
     ServiceResponse<KonkerIuguCharge> findNextCharge(Tenant tenant);
+
+    ServiceResponse<IuguSubscription> createSubscription(IuguSubscription iuguSubscription);
 
 }

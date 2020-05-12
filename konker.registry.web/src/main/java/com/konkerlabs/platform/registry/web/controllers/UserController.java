@@ -29,6 +29,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.text.DecimalFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -92,10 +94,13 @@ public class UserController implements ApplicationContextAware {
                 .addObject("loglevels", LogLevel.values())
                 .addObject("usedSpace", formatSize(usages.stream().mapToInt(u -> u.getIncomingPayloadSize() + u.getOutgoingPayloadSize()).sum()));
 
-        ServiceResponse<KonkerIuguCharge> chargeServiceResponse = iuguService.findNextCharge(user.getTenant());
-        if(chargeServiceResponse.isOk()) {
-            mv.addObject("nextCharge", chargeServiceResponse.getResult());
-        }
+		if(user.getTenant().isChargeable()) {
+			ServiceResponse<KonkerIuguCharge> chargeServiceResponse = iuguService.findNextCharge(user.getTenant());
+
+			if(chargeServiceResponse.isOk()) {
+				mv.addObject("nextCharge", chargeServiceResponse.getResult());
+			}
+		}
 
         return mv;
     }
@@ -186,11 +191,32 @@ public class UserController implements ApplicationContextAware {
 		}
 
         Tenant.PlanEnum konkerPlanEnum = Tenant.PlanEnum.valueOf(iuguForm.getPlan().toUpperCase());
+		LocalDate now = LocalDate.now();
+		LocalDate expiresAt = LocalDate.of(now.getYear(), now.getMonthValue() + 1, 5);
+		IuguSubscription iuguSubscription = IuguSubscription.builder()
+				.customerId(iuguCustomer.getId())
+				.planIdentifier(konkerPlanEnum.name())
+				.expiresAt(expiresAt.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")))
+				.onlyOnChargeSuccess("false")
+				.ignoreDueEmail("false")
+				.payableWith("credit_card")
+				.creditsBased("false")
+				.twoStep("false")
+				.suspendOnInvoiceExpired("false")
+				.build();
+		ServiceResponse<IuguSubscription> subscriptionResponse = iuguService.createSubscription(iuguSubscription);
+		if (!subscriptionResponse.getStatus().equals(ServiceResponse.Status.OK)) {
+			return errorCheckoutMessage(iuguForm,
+					locale,
+					subscriptionResponse.getResponseMessages());
+		}
+
         KonkerIuguPlan konkerIuguPlan = KonkerIuguPlan.builder()
                 .tenantName(user.getTenant().getName())
                 .tenantDomain(user.getTenant().getDomainName())
                 .iuguCustomerId(iuguCustomer.getId())
                 .iuguPlanIdentifier(konkerPlanEnum.name())
+				.iuguSubscriptionId(subscriptionResponse.getResult().getId())
                 .build();
 		iuguService.createKonkerIuguPlan(konkerIuguPlan);
 

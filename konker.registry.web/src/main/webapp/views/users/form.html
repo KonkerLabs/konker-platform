@@ -109,7 +109,8 @@
                         <h4 data-th-text="#{users.form.plan}">Plan</h4>
                         <h4 data-th-text="${tenantPlan}">Standard</h4>
                     </div>
-                    <div class="row paddingrow">
+                    <div class="row paddingrow"
+                        data-th-if="${nextCharge}">
                         <div class="col-md-4">
                             <label>
                                 <span data-th-text="#{users.form.plan.next.charge}">Próxima Cobrança</span>

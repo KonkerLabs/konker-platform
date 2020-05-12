@@ -2,8 +2,10 @@ package com.konkerlabs.platform.registry.business.model;
 
 import com.konkerlabs.platform.registry.business.model.behaviors.URIDealer;
 import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -15,6 +17,8 @@ import java.util.Optional;
 @Document(collection = "tenants")
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Tenant implements URIDealer, Serializable {
 
     @Id
@@ -24,7 +28,7 @@ public class Tenant implements URIDealer, Serializable {
     private LogLevel logLevel = LogLevel.WARNING;
     private Long devicesLimit;
     private Long privateStorageSize;
-    private Boolean chargeable;
+    private boolean chargeable;
     private PlanEnum plan;
 
     public static final String URI_SCHEME = "tenant";
