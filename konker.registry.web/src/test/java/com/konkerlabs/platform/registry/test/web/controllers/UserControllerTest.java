@@ -101,7 +101,7 @@ public class UserControllerTest extends WebLayerTestContext {
 										.nextChargeValue("R$ 1,99")
 										.build())
 						.build());
-		
+
 		ResultActions result = getMockMvc().perform(get("/me"));
 
 		result.andExpect(model().attribute("loglevels", org.hamcrest.Matchers.notNullValue()));

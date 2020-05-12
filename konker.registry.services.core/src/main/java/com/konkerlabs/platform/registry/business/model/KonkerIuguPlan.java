@@ -15,5 +15,6 @@ public class KonkerIuguPlan {
 	private String tenantName;
 	private String iuguPlanIdentifier;
 	private String iuguCustomerId;
+	private String iuguSubscriptionId;
 
 }

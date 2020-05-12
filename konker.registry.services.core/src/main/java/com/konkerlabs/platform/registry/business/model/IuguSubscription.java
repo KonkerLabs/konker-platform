@@ -27,16 +27,16 @@ public class IuguSubscription {
 	private String expiresAt;
 
 	@JsonProperty("only_on_charge_success")
-	private boolean onlyOnChargeSuccess;
+	private String onlyOnChargeSuccess;
 
 	@JsonProperty("ignore_due_email")
-	private boolean ignoreDueEmail;
+	private String ignoreDueEmail;
 
 	@JsonProperty("payable_with")
 	private String payableWith;
 
 	@JsonProperty("credits_based")
-	private boolean creditsBased;
+	private String creditsBased;
 
 	@JsonProperty("price_cents")
 	private Long priceCents;
@@ -51,10 +51,10 @@ public class IuguSubscription {
 	private List<Item> subItems;
 
 	@JsonProperty("two_step")
-	private boolean twoStep;
+	private String twoStep;
 
 	@JsonProperty("suspend_on_invoice_expired")
-	private boolean suspendOnInvoiceExpired;
+	private String suspendOnInvoiceExpired;
 
 
 	@Data
