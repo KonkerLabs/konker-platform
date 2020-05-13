@@ -61,6 +61,14 @@
             margin-top: 2em;
         }
 
+        .modal-dialog {
+            width: 350px !important;
+        }
+
+        .modal-header {
+            background: #ff686d !important;
+        }
+
 	</style>
 </head>
 <body>
@@ -278,6 +286,25 @@
                             <img data-th-src="@{/resources/konker/images/iugu-logo.png}"
                                  alt="Logo: Iugu"
                                  class="pull-left">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal" id="modalError" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+            <div class="modal-alignment-helper">
+                <div class="modal-dialog modal-align-center">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3 class="modal-title" data-th-text="#{users.payment.modal.error.title}">Title</h3>
+                        </div>
+                        <div class="modal-body body-center">
+                            <p class="text-center" id="errorMessage"></p>
+                        </div>
+                        <div class="modal-footer">
+                            <div class="col-md-6 pull-right">
+                                <button type="button" id="btn-close" class="btn btn-primary" data-th-text="#{users.payment.modal.error.btn_fechar}">Fechar</button>
+                            </div>
                         </div>
                     </div>
                 </div>

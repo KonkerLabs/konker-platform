@@ -6,6 +6,22 @@ $('#formData').submit(function(evt) {
     var cardTokenResponse = function(data) {
         if (data.errors) {
             console.log("Erro ao salvar cartão: " + JSON.stringify(data.errors));
+            if (data.errors.hasOwnProperty('number') || data.errors.hasOwnProperty('record_invalid')) {
+                $("#errorMessage").html("Numero do cartão inválido");
+
+            } else if (data.errors.hasOwnProperty('last_name')) {
+                $("#errorMessage").html("Nome inválido");
+
+            } else if (data.errors.hasOwnProperty('expiration')) {
+                $("#errorMessage").html("Data de expiração inválida");
+
+            } else if (data.errors.hasOwnProperty('verification_value')) {
+                $("#errorMessage").html("CVV inválido");
+
+            }  else {
+                $("#errorMessage").html("Erro ao finalizar o pagamento! Tente novamente mais tarde.");
+            }
+            $("#modalError").show();
         } else {
             $("#cardToken").val( data.id );
             form.get(0).submit();
@@ -31,4 +47,8 @@ $("#card-expiration").blur(function() {
 
 $("#billing-cep").blur(function() {
     $(this).mask("00000-000")
+});
+
+$("#btn-close").click(function() {
+    $("#modalError").hide();
 });
