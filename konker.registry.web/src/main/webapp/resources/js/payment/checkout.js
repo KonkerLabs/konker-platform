@@ -1,5 +1,5 @@
 Iugu.setAccountID($('#iuguAccountId').val());
-Iugu.setTestMode($('#iuguTestMode').val());
+Iugu.setTestMode($('#iuguTestMode').val() == 'true');
 
 $('#formData').submit(function(evt) {
     var form = $(this);
