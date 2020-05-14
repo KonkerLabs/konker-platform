@@ -217,6 +217,13 @@ public class UserController implements ApplicationContextAware {
                 .iuguCustomerId(iuguCustomer.getId())
                 .iuguPlanIdentifier(konkerPlanEnum.name())
 				.iuguSubscriptionId(subscriptionResponse.getResult().getId())
+				.name(user.getName())
+				.email(user.getEmail())
+				.zipCode(iuguForm.getZipCode())
+				.street(iuguForm.getStreet())
+				.city(iuguForm.getCity())
+				.state(iuguForm.getState())
+				.country(iuguForm.getCountry())
                 .build();
 		iuguService.createKonkerIuguPlan(konkerIuguPlan);
 
