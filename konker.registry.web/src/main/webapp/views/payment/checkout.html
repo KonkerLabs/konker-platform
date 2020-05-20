@@ -14,8 +14,8 @@
 
         .card-chosen-plan {
             min-height: 50px;
-            max-height: 300px;
-            height: 300px;
+            max-height: 350px;
+            height: 320px;
         }
 
         .card-payment-way {
@@ -37,7 +37,6 @@
             color: #b40f0f;
             font-size: 20px;
             font-weight: bold;
-            margin-bottom: 1em;
         }
 
         .card li, #conditionPlan li {
@@ -67,6 +66,16 @@
 
         .modal-header {
             background: #ff686d !important;
+        }
+
+        .price {
+            color: #12316c !important;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .price:nth-of-type(2) {
+            margin-bottom: 1em;
         }
 
 	</style>
@@ -265,7 +274,9 @@
                         </div>
                         <div class="col-md-12">
                             <ul id="conditionPlan">
-                                <li data-th-each="condition : ${plan.conditions}" data-th-text="${condition}"></li>
+                                <li data-th-each="condition : ${plan.conditions}"
+                                    data-th-text="${condition}"
+                                    th:class="${#strings.contains(condition, 'R$')} ? price : ''"></li>
                             </ul>
                         </div>
 
