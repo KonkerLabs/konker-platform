@@ -46,7 +46,7 @@ echo "hhhhhhhdddddddhyhhhhy+.      :o+  :o+-./oooo/. .oo'  .oo'/o: '/o+.-+oooo+ 
 echo "hhhhhdddddddddddhhhhhhy/'"
 echo "hhhhddddddddddddddhhhhhhs-"
 echo "hhdddddddddddddddddhhhhhhyo."
-echo "dddddddddddddddddddddhhhhhhy/'                                                  "
+echo "dddddddddddddddddddddhhhhhhy/'                                                   "
 echo ""
 echo ""
 echo "Loaded env parameters:"
