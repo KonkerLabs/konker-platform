@@ -46,7 +46,7 @@ echo "hhhhhhhdddddddhyhhhhy+.      :o+  :o+-./oooo/. .oo'  .oo'/o: '/o+.-+oooo+ 
 echo "hhhhhdddddddddddhhhhhhy/'"
 echo "hhhhddddddddddddddhhhhhhs-"
 echo "hhdddddddddddddddddhhhhhhyo."
-echo "dddddddddddddddddddddhhhhhhy/'                                                   "
+echo "dddddddddddddddddddddhhhhhhy/'                                                  "
 echo ""
 echo ""
 echo "Loaded env parameters:"
@@ -167,5 +167,5 @@ java -Dconfig.file=/var/lib/konker/application.conf \
     -Dswagger.protocol=$SWAGGER_PROTOCOL \
     -DpubServerInternal.url=$PUB_SERVER_INTERNAL_URL \
     -Dspringfox.documentation.swagger.v2.host=$SWAGGER_HOSTNAME:443 \
-    -jar /var/lib/konker/registry-api.jar
+    -jar /var/lib/konker/registry-api.jar 2>1
 exec "$@"
