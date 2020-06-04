@@ -142,8 +142,8 @@ java -Dconfig.file=/var/lib/konker/application.conf \
     -Drabbitmq.username=$RABBITMQ_USERNAME \
     -Drabbitmq.password=$RABBITMQ_PASSWORD \
     -Drabbitmq.virtualHost=$RABBITMQ_VHOST \
-    -Drabbitmq.apiHost=$RABBITMQ_API_USERNAME \
-    -Drabbitmq.apiPort=$RABBITMQ_API_PASSWORD \
+    -Drabbitmq.apiHost=$RABBITMQ_API_HOST \
+    -Drabbitmq.apiPort=$RABBITMQ_API_PORT \
     -Drabbitmq.apiUsername=$RABBITMQ_USERNAME \
     -Drabbitmq.apiPassword=$RABBITMQ_PASSWORD \
     -DpubServer.httpHostname=$PUB_SERVER_HOSTNAME \
@@ -167,5 +167,5 @@ java -Dconfig.file=/var/lib/konker/application.conf \
     -Dswagger.protocol=$SWAGGER_PROTOCOL \
     -DpubServerInternal.url=$PUB_SERVER_INTERNAL_URL \
     -Dspringfox.documentation.swagger.v2.host=$SWAGGER_HOSTNAME:443 \
-    -jar /var/lib/konker/registry-api.jar
+    -jar /var/lib/konker/registry-api.jar 2>&1
 exec "$@"
