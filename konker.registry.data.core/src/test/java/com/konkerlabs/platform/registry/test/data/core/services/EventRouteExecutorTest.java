@@ -114,7 +114,13 @@ public class EventRouteExecutorTest extends BusinessLayerTestSupport {
                         Event.EventActor.builder()
                                 .channel("data")
                                 .deviceGuid(matchingRouteDeviceGuid).build()
-                ).creationTimestamp(Instant.now()).payload(payload).build());
+                )
+                .outgoing(
+                        Event.EventActor.builder()
+                            .channel("in")
+                            .deviceGuid("7d51c242-81db-11e6-a8c2-0746f010e945").build()
+                )
+                .creationTimestamp(Instant.now()).payload(payload).build());
 
         tenant = tenantRepository.findByDomainName(REGISTERED_TENANT_DOMAIN);
         application = applicationRepository.findByTenantAndName(tenant.getId(), "konker");
