@@ -28,4 +28,7 @@ public class KonkerIuguPlan {
 	private String state;
 	private String country;
 
+	@JsonProperty("bought_kit")
+	private Boolean boughtKit;
+
 }

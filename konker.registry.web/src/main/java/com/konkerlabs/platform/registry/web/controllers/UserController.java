@@ -224,6 +224,7 @@ public class UserController implements ApplicationContextAware {
 				.city(iuguForm.getCity())
 				.state(iuguForm.getState())
 				.country(iuguForm.getCountry())
+				.boughtKit(iuguForm.isKit())
                 .build();
 		iuguService.createKonkerIuguPlan(konkerIuguPlan);
 
