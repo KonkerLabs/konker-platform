@@ -146,6 +146,13 @@ public class DeviceEventProcessor {
                 .build();
 
         if (device.isActive()) {
+            LOGGER.info(MessageFormat.format("Input tenant: {0} app: {1} channel: {2} device: {3} ts: {4} size: {5}",
+                    device.getTenant().getDomainName(),
+                    device.getApplication().getName(),
+                    channel,
+                    device.getDeviceId(),
+                    event.getCreationTimestamp(),
+                    jsonPayload.getBytes().length));
 
             ServiceResponse<Event> logResponse = deviceLogEventService.logIncomingEvent(device, event);
             if (logResponse.isOk()) {

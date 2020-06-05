@@ -360,7 +360,7 @@ public class DeviceEventProcessorTest {
         byte[] messagePackBytes = {(byte) -109, (byte) 1, (byte) 2, (byte) 3};
 
         when(deviceRegisterService.findByApiKey(sourceApiKey)).thenReturn(device);
-        when(messagePackJsonConverter.toJson(messagePackBytes)).thenReturn(ServiceResponseBuilder.<String>ok().build());
+        when(messagePackJsonConverter.toJson(messagePackBytes)).thenReturn(ServiceResponseBuilder.<String>ok().withResult("123").build());
         when(deviceLogEventService.logIncomingEvent(eq(device), any()))
                 .thenReturn(ServiceResponseBuilder.<Event>ok().withResult(event).build());
 
@@ -384,7 +384,7 @@ public class DeviceEventProcessorTest {
         byte[] messagePackBytes = "[1,2]".getBytes();
 
         when(deviceRegisterService.findByApiKey(sourceApiKey)).thenReturn(device);
-        when(defaultJsonConverter.toJson(messagePackBytes)).thenReturn(ServiceResponseBuilder.<String>ok().build());
+        when(defaultJsonConverter.toJson(messagePackBytes)).thenReturn(ServiceResponseBuilder.<String>ok().withResult("[1,2]").build());
         when(deviceLogEventService.logIncomingEvent(eq(device), any()))
                 .thenReturn(ServiceResponseBuilder.<Event>ok().withResult(event).build());
 

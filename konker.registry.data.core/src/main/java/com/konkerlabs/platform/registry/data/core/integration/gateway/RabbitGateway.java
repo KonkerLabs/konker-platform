@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
+import java.text.MessageFormat;
 
 @Service
 public class RabbitGateway {
@@ -62,6 +63,17 @@ public class RabbitGateway {
 
             Message message = new Message(toByteArray(event), properties);
             rabbitTemplate.convertAndSend("routed.events", message);
+
+            if (!event.getIncoming().getChannel().equals("_echo")) {
+                LOGGER.info(MessageFormat.format("Output tenant: {0} app: {1} channel: {2} device: {3} ts: {4} size: {5}",
+                        device.getTenant().getDomainName(),
+                        device.getApplication().getName(),
+                        eventRoute.getOutgoing().getData().get("channel"),
+                        eventRoute.getOutgoing().getDisplayName(),
+                        event.getCreationTimestamp(),
+                        event.getPayload().getBytes().length));
+
+            }
 
         } catch (AmqpException ex) {
             LOGGER.error("AmqpException while sending message to RabbitMQ...", ex);
