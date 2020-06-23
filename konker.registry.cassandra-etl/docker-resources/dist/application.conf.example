@@ -1,0 +1,42 @@
+mongo {
+  hostname = "CHANGE_ME"
+  port = 27017
+  username = "CHANGE_ME"
+  password = "CHANGE_ME"
+}
+
+mongoAudit {
+  hostname = "CHANGE_ME"
+  port = 27017
+  username = "CHANGE_ME"
+  password = "CHANGE_ME"
+}
+
+integration {
+    timeout: [
+        {
+            default = 3000
+            enrichment = 3000
+            sms = 3000
+        }
+    ]
+}
+
+password.user {
+  hash.algorithm = "SHA256"
+  salt.size = 16
+  iterations = 10000
+}
+
+eventstorage {
+    bean="cassandraEvents"
+}
+
+cassandra {
+    clustername = "konker"
+    keyspace = "registrykeyspace"
+    hostname = "CHANGE_ME"
+    username = "CHANGE_ME"
+    password = "CHANGE_ME"    
+    port=9042
+}
