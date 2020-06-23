@@ -2,6 +2,7 @@ package org.konker.registry.cassandraetl;
 
 import java.time.Instant;
 
+import org.konker.registry.cassandraetl.services.EqualizeCassandraTablesService;
 import org.konker.registry.cassandraetl.services.EventsCassandraToMongoService;
 import org.konker.registry.cassandraetl.services.EventsMongoToCassandraService;
 import org.slf4j.Logger;
@@ -19,6 +20,8 @@ public class EventsMigrationApplication implements CommandLineRunner {
 
     private static final String M2C = "m2c";
 
+    private static final String EC = "ec";
+
     private Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
@@ -29,6 +32,9 @@ public class EventsMigrationApplication implements CommandLineRunner {
 
     @Autowired
     private EventsCassandraToMongoService eventsCassandraToMongoService;
+
+    @Autowired
+    private EqualizeCassandraTablesService equilizeCassandraTablesService;
 
     public static void main(String[] args) {
         SpringApplication.run(EventsMigrationApplication.class, args);
@@ -58,6 +64,9 @@ public class EventsMigrationApplication implements CommandLineRunner {
             if (args[i].equals("--cassandra2mongo") || args[i].equals("-c2m")) {
                 direction = C2M;
             }
+            if (args[i].equals("--equilizeCassandra") || args[i].equals("-ec")) {
+                direction = EC;
+            }
         }
 
         LOGGER.info("Filter events created after " + startInstant);
@@ -69,8 +78,10 @@ public class EventsMigrationApplication implements CommandLineRunner {
             eventsMongoToCassandraService.migrate(tenantDomainFilter, startInstant, endInstant);
         } else if (C2M.equals(direction)) {
             eventsCassandraToMongoService.migrate(tenantDomainFilter, startInstant, endInstant);
+        } else if (EC.equals(direction)) {
+            equilizeCassandraTablesService.equilize();
         } else {
-            LOGGER.info("Migration direction (m2c, c2m) not setted.");
+            LOGGER.info("Migration direction (m2c, c2m, ec) not setted.");
         }
 
         configurableApplicationContext.close();
