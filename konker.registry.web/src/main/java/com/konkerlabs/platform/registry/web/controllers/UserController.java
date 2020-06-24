@@ -225,6 +225,7 @@ public class UserController implements ApplicationContextAware {
 				.state(iuguForm.getState())
 				.country(iuguForm.getCountry())
 				.boughtKit(iuguForm.isKit())
+				.quantityKit(iuguForm.getQuantityKit())
                 .build();
 		iuguService.createKonkerIuguPlan(konkerIuguPlan);
 
@@ -274,6 +275,7 @@ public class UserController implements ApplicationContextAware {
 		mv.addObject("action", "/me/plans/checkout");
 		mv.addObject("plan", Tenant.PlanEnum.valueOf(iuguForm.getPlan().toUpperCase()));
 		mv.addObject("kit", iuguForm.isKit());
+		mv.addObject("quantityKit", iuguForm.getQuantityKit());
 		mv.addObject("iuguAccountId", iuguConfig.getAccountId());
 		mv.addObject("iuguTestMode", iuguConfig.isTestMode());
 		return mv;

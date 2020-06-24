@@ -15,7 +15,7 @@
         .card-chosen-plan {
             min-height: 50px;
             max-height: 350px;
-            height: 320px;
+            height: 340px;
         }
 
         .card-payment-way {
@@ -76,6 +76,10 @@
 
         .price:nth-of-type(2) {
             margin-bottom: 1em;
+        }
+
+        .input-price {
+            text-align: right;
         }
 
 	</style>
@@ -281,13 +285,33 @@
                         </div>
 
                         <div data-th-if="${kit}">
-                            <div class="col-md-8">
+                            <div class="col-md-12">
+                                <label class="control-label pull-right"
+                                       data-th-text="#{users.payment.way.kit.total}"></label>
+                            </div>
+                            <div class="col-md-6">
                                 <label class="control-label pull-left"
                                        data-th-text="#{users.payment.way.kit}"></label>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-2">
                                 <label class="control-label pull-right"
                                        data-th-text="#{users.payment.way.kit.price}"></label>
+                            </div>
+                            <div class="col-md-2">
+                                <input class="form-control input-price"
+                                       type="number"
+                                       id="quantityKit"
+                                       name="quantityKit"
+                                       min="0"
+                                       data-th-value="${quantityKit}"/>
+                            </div>
+                            <div class="col-md-2">
+                                <input class="form-control input-price"
+                                       type="text"
+                                       id="total"
+                                       name="total"
+                                       disabled
+                                       data-th-value="${quantityKit * 50}"/>
                             </div>
                         </div>
                     </div>

@@ -52,3 +52,15 @@ $("#billing-cep").blur(function() {
 $("#btn-close").click(function() {
     $("#modalError").hide();
 });
+
+$("#quantityKit").change(function() {
+   var quantity = $(this).val();
+
+   if (quantity == 0) {
+       $("#total").val(quantity * 50)
+       $("#kit").val(false)
+   } else {
+       $("#total").val(quantity * 50)
+       $("#kit").val(true)
+   }
+});

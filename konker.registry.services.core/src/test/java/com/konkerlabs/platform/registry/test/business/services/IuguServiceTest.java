@@ -262,7 +262,7 @@ public class IuguServiceTest extends BusinessLayerTestSupport {
         HttpEntity<KonkerIuguPlan> request = new HttpEntity<>(konkerIuguPlan, headers);
         ResponseEntity<KonkerIuguPlan> responseEntity = ResponseEntity.ok().body(KonkerIuguPlan.builder().build());
         when(restTemplate.exchange(
-                "http://localhost:8000/tenant/plan",
+                "http://localhost:80/tenant/plan",
                 HttpMethod.POST,
                 request,
                 KonkerIuguPlan.class))
@@ -287,7 +287,7 @@ public class IuguServiceTest extends BusinessLayerTestSupport {
         HttpEntity<KonkerIuguPlan> request = new HttpEntity<>(konkerIuguPlan, headers);
         ResponseEntity<KonkerIuguPlan> responseEntity = ResponseEntity.badRequest().body(null);
         when(restTemplate.exchange(
-                "http://localhost:8000/tenant/plan",
+                "http://localhost:80/tenant/plan",
                 HttpMethod.POST,
                 request,
                 KonkerIuguPlan.class))
@@ -319,6 +319,7 @@ public class IuguServiceTest extends BusinessLayerTestSupport {
                 .tenantName("XPTO")
                 .iuguCustomerId("77C2565F6F064A26ABED4255894224F0")
                 .iuguPlanIdentifier("STARTER")
+                .quantityKit(2l)
                 .build();
 
         IuguSubscription iuguSubscription = IuguSubscription.builder()
@@ -332,10 +333,11 @@ public class IuguServiceTest extends BusinessLayerTestSupport {
                 .twoStep("false")
                 .suspendOnInvoiceExpired("false")
                 .subItems(Arrays.asList(
-                        IuguSubscription.Item.builder().description("NodeMCU (placa de desenvolvimento contendo um ESP8266)").priceCents(0l).quantity(1l).recurrent(true).build(),
-                        IuguSubscription.Item.builder().description("Protoboards de 170 pontos").priceCents(0l).quantity(2l).recurrent(true).build(),
-                        IuguSubscription.Item.builder().description("Termistor de 1k Ohm").priceCents(0l).quantity(1l).recurrent(true).build(),
-                        IuguSubscription.Item.builder().description("Resistores de 470 Ohms").priceCents(0l).quantity(4l).recurrent(true).build()
+                        IuguSubscription.Item.builder().description("NodeMCU (placa de desenvolvimento contendo um ESP8266)").priceCents(0l).quantity(konkerIuguPlan.getQuantityKit() * 1l).recurrent(true).build(),
+                        IuguSubscription.Item.builder().description("Protoboards de 170 pontos").priceCents(0l).quantity(konkerIuguPlan.getQuantityKit() * 2l).recurrent(true).build(),
+                        IuguSubscription.Item.builder().description("Termistor de 1k Ohm").priceCents(0l).quantity(konkerIuguPlan.getQuantityKit() * 1l).recurrent(true).build(),
+                        IuguSubscription.Item.builder().description("Resistores de 470 Ohms").priceCents(0l).quantity(konkerIuguPlan.getQuantityKit() * 4l).recurrent(true).build(),
+                        IuguSubscription.Item.builder().description("Kit").priceCents(5000l).quantity(2l).recurrent(true).build()
                 ))
                 .build();
 
@@ -361,6 +363,7 @@ public class IuguServiceTest extends BusinessLayerTestSupport {
                 .tenantName("XPTO")
                 .iuguCustomerId("77C2565F6F064A26ABED4255894224F0")
                 .iuguPlanIdentifier("STARTER")
+                .quantityKit(2l)
                 .build();
 
         IuguSubscription iuguSubscription = IuguSubscription.builder()
@@ -374,10 +377,11 @@ public class IuguServiceTest extends BusinessLayerTestSupport {
                 .twoStep("false")
                 .suspendOnInvoiceExpired("false")
                 .subItems(Arrays.asList(
-                        IuguSubscription.Item.builder().description("NodeMCU (placa de desenvolvimento contendo um ESP8266)").priceCents(0l).quantity(1l).recurrent(true).build(),
-                        IuguSubscription.Item.builder().description("Protoboards de 170 pontos").priceCents(0l).quantity(2l).recurrent(true).build(),
-                        IuguSubscription.Item.builder().description("Termistor de 1k Ohm").priceCents(0l).quantity(1l).recurrent(true).build(),
-                        IuguSubscription.Item.builder().description("Resistores de 470 Ohms").priceCents(0l).quantity(4l).recurrent(true).build()
+                        IuguSubscription.Item.builder().description("NodeMCU (placa de desenvolvimento contendo um ESP8266)").priceCents(0l).quantity(konkerIuguPlan.getQuantityKit() * 1l).recurrent(true).build(),
+                        IuguSubscription.Item.builder().description("Protoboards de 170 pontos").priceCents(0l).quantity(konkerIuguPlan.getQuantityKit() * 2l).recurrent(true).build(),
+                        IuguSubscription.Item.builder().description("Termistor de 1k Ohm").priceCents(0l).quantity(konkerIuguPlan.getQuantityKit() * 1l).recurrent(true).build(),
+                        IuguSubscription.Item.builder().description("Resistores de 470 Ohms").priceCents(0l).quantity(konkerIuguPlan.getQuantityKit() * 4l).recurrent(true).build(),
+                        IuguSubscription.Item.builder().description("Kit").priceCents(5000l).quantity(2l).recurrent(true).build()
                 ))
                 .build();
 
@@ -425,7 +429,7 @@ public class IuguServiceTest extends BusinessLayerTestSupport {
         HttpEntity<KonkerIuguCharge> request = new HttpEntity<>(headers);
         ResponseEntity<KonkerIuguCharge> responseEntity = ResponseEntity.ok().body(konkerIuguCharge);
         when(restTemplate.exchange(
-                MessageFormat.format("http://localhost:8000/tenant/{0}/charges/next", tenant.getDomainName()),
+                MessageFormat.format("http://localhost:80/tenant/{0}/charges/next", tenant.getDomainName()),
                 HttpMethod.GET,
                 request,
                 KonkerIuguCharge.class))
@@ -453,7 +457,7 @@ public class IuguServiceTest extends BusinessLayerTestSupport {
         HttpEntity<KonkerIuguCharge> request = new HttpEntity<>(headers);
         ResponseEntity<KonkerIuguCharge> responseEntity = ResponseEntity.badRequest().body(null);
         when(restTemplate.exchange(
-                MessageFormat.format("http://localhost:8000/tenant/{0}/charges/next", tenant.getDomainName()),
+                MessageFormat.format("http://localhost:80/tenant/{0}/charges/next", tenant.getDomainName()),
                 HttpMethod.GET,
                 request,
                 KonkerIuguCharge.class))

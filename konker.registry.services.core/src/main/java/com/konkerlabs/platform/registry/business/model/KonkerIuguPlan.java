@@ -31,4 +31,7 @@ public class KonkerIuguPlan {
 	@JsonProperty("bought_kit")
 	private Boolean boughtKit;
 
+	@JsonProperty("quantity_kit")
+	private Long quantityKit;
+
 }
