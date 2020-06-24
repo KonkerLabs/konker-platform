@@ -63,6 +63,14 @@
             margin-bottom: 1em;
         }
 
+        .btn-top {
+            margin-top: 23px;
+        }
+
+        .input-price {
+            text-align: right;
+        }
+
 	</style>
 </head>
 <body>
@@ -149,13 +157,24 @@
                             </ul>
                         </div>
                         <div class="modal-footer">
-                            <div class="col-md-6">
-                                <button type="button" id="buyKit" class="btn btn-primary" data-th-text="#{users.plan.modal.btn_buy}">Buy kit</button>
+                            <div class="col-md-3">
+                                <label class="control-label"
+                                       data-th-text="#{users.plan.modal.quantity_kit}"
+                                       for="quantityKit"></label>
+                                <input class="form-control input-price"
+                                       type="number"
+                                       id="quantityKit"
+                                       name="quantityKit"
+                                       min="1"
+                                       value="1"/>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="button" id="buyKit" class="btn btn-primary btn-top" data-th-text="#{users.plan.modal.btn_buy}">Buy kit</button>
                             </div>
                             <div class="col-md-6">
-                                <button type="button" id="noKit" data-dismiss="modal" aria-hidden="true" class="btn btn-primary pull-left" data-th-text=#{users.plan.modal.btn_not_buy}>Without kit</button>
+                                <button type="button" id="noKit" data-dismiss="modal" aria-hidden="true" class="btn btn-primary pull-left btn-top" data-th-text=#{users.plan.modal.btn_not_buy}>Without kit</button>
                             </div>
-                            <div class="col-md12 div-text-footer">
+                            <div class="col-md-12 div-text-footer">
                                 <p class="text-center" data-th-text="#{users.plan.modal.footer}">Text footer</p>
                             </div>
                         </div>

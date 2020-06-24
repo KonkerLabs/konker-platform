@@ -18,7 +18,7 @@ public class KonkerInvoiceApiConfig {
 
 	public KonkerInvoiceApiConfig() {
 		Map<String, Object> defaultMap = new HashMap<>();
-		defaultMap.put("konkerInvoiceApi.url", "http://localhost:8000");
+		defaultMap.put("konkerInvoiceApi.url", "http://localhost:80");
 		defaultMap.put("konkerInvoiceApi.username", "konker-console");
 		defaultMap.put("konkerInvoiceApi.password", "goKonk4rGo");
 		Config defaultConf = ConfigFactory.parseMap(defaultMap);

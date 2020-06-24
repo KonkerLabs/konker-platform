@@ -199,10 +199,11 @@ public class IuguServiceImpl implements IuguService {
 				.twoStep("false")
 				.suspendOnInvoiceExpired("false")
 				.subItems(Arrays.asList(
-						IuguSubscription.Item.builder().description("NodeMCU (placa de desenvolvimento contendo um ESP8266)").priceCents(0l).quantity(1l).recurrent(true).build(),
-						IuguSubscription.Item.builder().description("Protoboards de 170 pontos").priceCents(0l).quantity(2l).recurrent(true).build(),
-						IuguSubscription.Item.builder().description("Termistor de 1k Ohm").priceCents(0l).quantity(1l).recurrent(true).build(),
-						IuguSubscription.Item.builder().description("Resistores de 470 Ohms").priceCents(0l).quantity(4l).recurrent(true).build()
+						IuguSubscription.Item.builder().description("NodeMCU (placa de desenvolvimento contendo um ESP8266)").priceCents(0l).quantity(konkerIuguPlan.getQuantityKit() * 1l).recurrent(true).build(),
+						IuguSubscription.Item.builder().description("Protoboards de 170 pontos").priceCents(0l).quantity(konkerIuguPlan.getQuantityKit() * 2l).recurrent(true).build(),
+						IuguSubscription.Item.builder().description("Termistor de 1k Ohm").priceCents(0l).quantity(konkerIuguPlan.getQuantityKit() * 1l).recurrent(true).build(),
+						IuguSubscription.Item.builder().description("Resistores de 470 Ohms").priceCents(0l).quantity(konkerIuguPlan.getQuantityKit() * 4l).recurrent(true).build(),
+						IuguSubscription.Item.builder().description("Kit").priceCents(5000l).quantity(konkerIuguPlan.getQuantityKit()).recurrent(true).build()
 				))
 				.build();
 
