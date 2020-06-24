@@ -260,7 +260,7 @@ public class JsonParsingServiceTest {
 
         @Test
         public void shouldReturnFalseIfJsonStringIsEmpty() throws Exception {
-            assertThat(service.isValid(""),equalTo(false));
+            assertThat(service.isValid(""),equalTo(true));
         }
 
         @Test
