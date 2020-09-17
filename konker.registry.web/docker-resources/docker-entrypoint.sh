@@ -236,11 +236,8 @@ java -Dconfig.file=/var/lib/jetty/resources/application.conf \
     -Dmap.apiKey=$MAP_APIKEY \
     -Dmap.enabled=$MAP_ENABLED \
     -Diugu.accountId=$IUGU_ACCOUNT_ID \
-    -Diugu.apiURL=$IUGU_API_URL \
-    -Diugu.apiToken=$IUGU_API_TOKEN \
     -Diugu.testMode=$IUGU_TEST_MODE \
-    -DkonkerInvoiceApi.url=$KONKER_INVOICE_API_URL \
-    -DkonkerInvoiceApi.username=$KONER_INVOICE_API_USERNAME \
-    -DkonkerInvoiceApi.password=$KONER_INVOICE_API_PASSWORD \
+    -DkonkerPayment.url=$KONKER_PAYMENT_URL \
+    -DkonkerPayment.apiToken=$KONKER_PAYMENT_API_TOKEN \
     -jar /usr/local/jetty/start.jar
 exec "$@"

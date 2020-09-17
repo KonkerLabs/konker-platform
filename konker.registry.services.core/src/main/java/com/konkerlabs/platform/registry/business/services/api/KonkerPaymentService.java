@@ -2,7 +2,7 @@ package com.konkerlabs.platform.registry.business.services.api;
 
 import com.konkerlabs.platform.registry.business.model.*;
 
-public interface IuguService {
+public interface KonkerPaymentService {
 
     enum Validations {
         IUGU_CUSTOMER_NULL("service.iugu.customer.null"),
@@ -50,17 +50,11 @@ public interface IuguService {
             this.code = code;
         }
     }
-    
-    ServiceResponse<IuguCustomer> createIuguCustomer(IuguCustomer iuguCustomer);
 
-    ServiceResponse<IuguPaymentWay> createPaymentWay(IuguPaymentWay iuguPaymentWay);
+    ServiceResponse<KonkerPaymentCustomer> createCustomer(KonkerPaymentCustomer konkerPaymentCustomer);
 
-    ServiceResponse<KonkerIuguPlan> createKonkerIuguPlan(KonkerIuguPlan konkerIuguPlan);
-
-    ServiceResponse<IuguSubscription> payForKit(KonkerIuguPlan konkerIuguPlan);
+    ServiceResponse<KonkerKit> payForKit(User user, KonkerKit konkerKit);
 
     ServiceResponse<KonkerIuguCharge> findNextCharge(Tenant tenant);
-
-    ServiceResponse<IuguSubscription> createSubscription(IuguSubscription iuguSubscription);
 
 }

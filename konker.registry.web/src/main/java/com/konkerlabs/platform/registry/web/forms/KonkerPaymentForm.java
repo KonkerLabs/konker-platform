@@ -1,11 +1,14 @@
 package com.konkerlabs.platform.registry.web.forms;
 
-import com.konkerlabs.platform.registry.business.model.IuguCustomer;
+import com.konkerlabs.platform.registry.business.model.KonkerPaymentCustomer;
 import com.konkerlabs.platform.registry.web.forms.api.ModelBuilder;
 import lombok.Data;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 @Data
-public class IuguCustomerForm implements ModelBuilder<IuguCustomer, IuguCustomerForm,Void> {
+public class KonkerPaymentForm implements ModelBuilder<KonkerPaymentCustomer, KonkerPaymentForm,Void> {
 
     private String id;
     private String email;
@@ -20,16 +23,20 @@ public class IuguCustomerForm implements ModelBuilder<IuguCustomer, IuguCustomer
     private boolean kit;
     private Long quantityKit;
 
-    public IuguCustomerForm() {
+    public KonkerPaymentForm() {
 
 	}
 
     @Override
-    public IuguCustomer toModel() {
-        return IuguCustomer.builder()
-                .id(getId())
+    public KonkerPaymentCustomer toModel() {
+        LocalDate now = LocalDate.now();
+		LocalDate expiresAt = LocalDate.of(now.getYear(), now.getMonthValue() + 1, 5);
+        return KonkerPaymentCustomer.builder()
+                .tokenCard(getCardToken())
+                .planName(getPlan().toUpperCase())
+                .dateFirstPayment(expiresAt.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")))
+                .customerName(getName())
                 .email(getEmail())
-                .name(getName())
                 .zipCode(getZipCode())
                 .street(getStreet())
                 .city(getCity())
@@ -39,10 +46,11 @@ public class IuguCustomerForm implements ModelBuilder<IuguCustomer, IuguCustomer
     }
 
     @Override
-    public IuguCustomerForm fillFrom(IuguCustomer model) {
-        this.setId(model.getId());
+    public KonkerPaymentForm fillFrom(KonkerPaymentCustomer model) {
+        this.setCardToken(model.getTokenCard());
+        this.setPlan(model.getPlanName());
+        this.setName(model.getCustomerName());
         this.setEmail(model.getEmail());
-        this.setName(model.getName());
         this.setZipCode(model.getZipCode());
         this.setStreet(model.getStreet());
         this.setCity(model.getCity());
