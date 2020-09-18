@@ -60,7 +60,7 @@ public class UserControllerTest extends WebLayerTestContext {
 	private TenantService tenantService;
 
 	@Autowired
-	private IuguService iuguService;
+	private KonkerPaymentService konkerPaymentService;
 
 	@Autowired
 	private AvatarService avatarService;
@@ -77,7 +77,7 @@ public class UserControllerTest extends WebLayerTestContext {
 		Mockito.reset(userService);
 		Mockito.reset(tenantService);
 		Mockito.reset(avatarService);
-		Mockito.reset(iuguService);
+		Mockito.reset(konkerPaymentService);
 	}
 
 	@Test
@@ -93,7 +93,7 @@ public class UserControllerTest extends WebLayerTestContext {
 								.build()))
 					.build());
 
-		when(iuguService.findNextCharge(anyObject()))
+		when(konkerPaymentService.findNextCharge(anyObject()))
 				.thenReturn(ServiceResponseBuilder.<KonkerIuguCharge> ok()
 						.withResult(KonkerIuguCharge.builder()
 										.maskedCardNumber("xxxx xxxx xxxx 1111")
@@ -153,7 +153,7 @@ public class UserControllerTest extends WebLayerTestContext {
 		Assert.assertEquals(LogLevel.ALL, user.getTenant().getLogLevel());
 
 	}
-	
+
 	@Configuration
 	static class UserControllerTestContextConfig {
 
@@ -183,8 +183,8 @@ public class UserControllerTest extends WebLayerTestContext {
 		}
 
 		@Bean
-		public IuguService iuguService() {
-			return Mockito.mock(IuguService.class);
+		public KonkerPaymentService iuguService() {
+			return Mockito.mock(KonkerPaymentService.class);
 		}
 
 	}

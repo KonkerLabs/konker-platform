@@ -6,12 +6,12 @@ import com.konkerlabs.platform.registry.business.model.enumerations.DateFormat;
 import com.konkerlabs.platform.registry.business.model.enumerations.Language;
 import com.konkerlabs.platform.registry.business.model.enumerations.LogLevel;
 import com.konkerlabs.platform.registry.business.model.enumerations.TimeZone;
-import com.konkerlabs.platform.registry.business.services.api.IuguService;
+import com.konkerlabs.platform.registry.business.services.api.KonkerPaymentService;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.business.services.api.TenantService;
 import com.konkerlabs.platform.registry.business.services.api.UserService;
 import com.konkerlabs.platform.registry.config.IuguConfig;
-import com.konkerlabs.platform.registry.web.forms.IuguCustomerForm;
+import com.konkerlabs.platform.registry.web.forms.KonkerPaymentForm;
 import com.konkerlabs.platform.registry.web.forms.UserForm;
 import com.konkerlabs.platform.registry.web.services.api.AvatarService;
 import org.springframework.beans.BeansException;
@@ -29,8 +29,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.text.DecimalFormat;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -49,7 +47,7 @@ public class UserController implements ApplicationContextAware {
     @Autowired
     private TenantService tenantService;
     @Autowired
-	private IuguService iuguService;
+	private KonkerPaymentService konkerPaymentService;
 
     private User user;
     private IuguConfig iuguConfig = new IuguConfig();
@@ -78,7 +76,7 @@ public class UserController implements ApplicationContextAware {
     public UserController(UserService userService, User user) {
         this.user = user;
     }
-    
+
     @RequestMapping(value = "", method = RequestMethod.GET)
     public ModelAndView userPage(HttpServletRequest request, HttpServletResponse response, Locale locale) {
         ServiceResponse<List<TenantDailyUsage>> serviceResponse = tenantService.findTenantDailyUsage(user.getTenant());
@@ -95,7 +93,7 @@ public class UserController implements ApplicationContextAware {
                 .addObject("usedSpace", formatSize(usages.stream().mapToInt(u -> u.getIncomingPayloadSize() + u.getOutgoingPayloadSize()).sum()));
 
 		if(user.getTenant().isChargeable()) {
-			ServiceResponse<KonkerIuguCharge> chargeServiceResponse = iuguService.findNextCharge(user.getTenant());
+			ServiceResponse<KonkerIuguCharge> chargeServiceResponse = konkerPaymentService.findNextCharge(user.getTenant());
 
 			if(chargeServiceResponse.isOk()) {
 				mv.addObject("nextCharge", chargeServiceResponse.getResult());
@@ -110,13 +108,13 @@ public class UserController implements ApplicationContextAware {
 
 		User fromForm = userForm.toModel();
 		fromForm.setEmail(this.user.getEmail());
-		
+
 		// update avatar
 		ServiceResponse<User> avatarServiceResponse = avatarService.updateAvatar(fromForm);
 		if (!avatarServiceResponse.isOk()) {
 			return redirectErrorMessages(redirectAttributes, locale, avatarServiceResponse);
 		}
-		
+
 		// update user
 		ServiceResponse<User> serviceResponse = userService.save(fromForm, userForm.getOldPassword(),
 				userForm.getNewPassword(), userForm.getNewPasswordConfirmation());
@@ -154,7 +152,7 @@ public class UserController implements ApplicationContextAware {
 	}
 
 	@RequestMapping(value = "/plans/checkout", method = RequestMethod.GET)
-	public ModelAndView checkoutView(@ModelAttribute("iuguCustomerForm")IuguCustomerForm iuguForm,
+	public ModelAndView checkoutView(@ModelAttribute("iuguCustomerForm") KonkerPaymentForm iuguForm,
 									 RedirectAttributes redirectAttributes,
 									 Locale locale) {
 		ModelAndView mv = getModelAndViewCheckout(iuguForm);
@@ -163,78 +161,33 @@ public class UserController implements ApplicationContextAware {
 	}
 
 	@RequestMapping(value = "/plans/checkout", method = RequestMethod.POST)
-	public ModelAndView checkout(@ModelAttribute("iuguCustomerForm")IuguCustomerForm iuguForm,
+	public ModelAndView checkout(@ModelAttribute("iuguCustomerForm") KonkerPaymentForm iuguForm,
 								 RedirectAttributes redirectAttributes,
 								 Locale locale) {
     	iuguForm.setEmail(user.getEmail());
+    	KonkerPaymentCustomer model = iuguForm.toModel();
+    	model.setTenantDomain(user.getTenant().getDomainName());
+    	model.setTenantName(user.getTenant().getName());
 
-		ServiceResponse<IuguCustomer> serviceIuguCustomer = iuguService.createIuguCustomer(iuguForm.toModel());
+		ServiceResponse<KonkerPaymentCustomer> serviceIuguCustomer = konkerPaymentService.createCustomer(model);
 		if (!serviceIuguCustomer.getStatus().equals(ServiceResponse.Status.OK)) {
 			return errorCheckoutMessage(iuguForm,
 					locale,
 					serviceIuguCustomer.getResponseMessages());
 		}
 
-		IuguCustomer iuguCustomer = serviceIuguCustomer.getResult();
-		IuguPaymentWay iuguPaymentWay = IuguPaymentWay.builder()
-				.customerId(iuguCustomer.getId())
-				.description("Konker Payment Way")
-				.token(iuguForm.getCardToken())
-				.setAsDefault(true)
-				.build();
-
-		ServiceResponse<IuguPaymentWay> servicePaymentWay = iuguService.createPaymentWay(iuguPaymentWay);
-		if (!servicePaymentWay.getStatus().equals(ServiceResponse.Status.OK)) {
-			return errorCheckoutMessage(iuguForm,
-					locale,
-					servicePaymentWay.getResponseMessages());
-		}
-
         Tenant.PlanEnum konkerPlanEnum = Tenant.PlanEnum.valueOf(iuguForm.getPlan().toUpperCase());
-		LocalDate now = LocalDate.now();
-		LocalDate expiresAt = LocalDate.of(now.getYear(), now.getMonthValue() + 1, 5);
-		IuguSubscription iuguSubscription = IuguSubscription.builder()
-				.customerId(iuguCustomer.getId())
-				.planIdentifier(konkerPlanEnum.name())
-				.expiresAt(expiresAt.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")))
-				.onlyOnChargeSuccess("false")
-				.ignoreDueEmail("false")
-				.payableWith("credit_card")
-				.creditsBased("false")
-				.twoStep("false")
-				.suspendOnInvoiceExpired("false")
-				.build();
-		ServiceResponse<IuguSubscription> subscriptionResponse = iuguService.createSubscription(iuguSubscription);
-		if (!subscriptionResponse.getStatus().equals(ServiceResponse.Status.OK)) {
-			return errorCheckoutMessage(iuguForm,
-					locale,
-					subscriptionResponse.getResponseMessages());
-		}
 
-        KonkerIuguPlan konkerIuguPlan = KonkerIuguPlan.builder()
-                .tenantName(user.getTenant().getName())
-                .tenantDomain(user.getTenant().getDomainName())
-                .iuguCustomerId(iuguCustomer.getId())
-                .iuguPlanIdentifier(konkerPlanEnum.name())
-				.iuguSubscriptionId(subscriptionResponse.getResult().getId())
-				.name(user.getName())
-				.email(user.getEmail())
-				.zipCode(iuguForm.getZipCode())
-				.street(iuguForm.getStreet())
-				.city(iuguForm.getCity())
-				.state(iuguForm.getState())
-				.country(iuguForm.getCountry())
-				.boughtKit(iuguForm.isKit())
-				.quantityKit(iuguForm.getQuantityKit())
+        KonkerKit konkerKit = KonkerKit.builder()
+				.amount(iuguForm.getQuantityKit())
                 .build();
-		iuguService.createKonkerIuguPlan(konkerIuguPlan);
 
 		user.getTenant().setChargeable(false);
 		user.getTenant().setPlan(konkerPlanEnum);
 		tenantService.save(user.getTenant());
 
 		if (iuguForm.isKit()) {
-			iuguService.payForKit(konkerIuguPlan);
+			konkerPaymentService.payForKit(user, konkerKit);
 		}
 
 		return new ModelAndView("redirect:/me/plans/checkout/success");
@@ -251,14 +204,14 @@ public class UserController implements ApplicationContextAware {
 	private String formatSize(Integer size) {
 		if (size.equals(0))
 			return "0 B";
-		
+
 		final String[] units = new String[] { "B", "kB", "MB", "GB", "TB" };
-		
+
 		int digitGroups = (int) (Math.log10(size)/Math.log10(1024));
 		return new DecimalFormat("#,##0.#").format(size/Math.pow(1024, digitGroups)) + " " + units[digitGroups];
 	}
 
-	private ModelAndView errorCheckoutMessage(IuguCustomerForm iuguForm, Locale locale, Map<String, Object[]> responseMessages) {
+	private ModelAndView errorCheckoutMessage(KonkerPaymentForm iuguForm, Locale locale, Map<String, Object[]> responseMessages) {
 		List<String> messages = responseMessages.entrySet().stream()
 				.map(message -> applicationContext.getMessage(message.getKey(), message.getValue(), locale))
 				.collect(Collectors.toList());
@@ -269,7 +222,7 @@ public class UserController implements ApplicationContextAware {
         return mv;
 	}
 
-	private ModelAndView getModelAndViewCheckout(IuguCustomerForm iuguForm) {
+	private ModelAndView getModelAndViewCheckout(KonkerPaymentForm iuguForm) {
 		ModelAndView mv = new ModelAndView("payment/checkout");
 		mv.addObject("user", user);
 		mv.addObject("action", "/me/plans/checkout");

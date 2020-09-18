@@ -10,22 +10,20 @@ import java.util.Map;
 
 @Configuration
 @Data
-public class IuguConfig {
+public class KonkerPaymentConfig {
 
-	private String accountId;
-	private String apiURL;
+	private String url;
 	private String apiToken;
-	private boolean testMode;
 
-	public IuguConfig() {
+	public KonkerPaymentConfig() {
 		Map<String, Object> defaultMap = new HashMap<>();
-		defaultMap.put("iugu.accountId", "D30857E6ABF2462098298A5740C6B3A9");
-		defaultMap.put("iugu.testMode", "true");
+		defaultMap.put("konkerPayment.url", "http://localhost:80");
+		defaultMap.put("konkerPayment.apiToken", "b17421313f9a8db907afa7b7047fbcd8");
 		Config defaultConf = ConfigFactory.parseMap(defaultMap);
 
 		Config config = ConfigFactory.load().withFallback(defaultConf);
-		setAccountId(config.getString("iugu.accountId"));
-		setTestMode(config.getBoolean("iugu.testMode"));
+		setUrl(config.getString("konkerPayment.url"));
+		setApiToken(config.getString("konkerPayment.apiToken"));
 	}
 
 }

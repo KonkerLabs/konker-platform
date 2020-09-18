@@ -10,17 +10,15 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class KonkerIuguPlan {
+public class KonkerPaymentCustomer {
 
+	private String tokenCard;
+	private String planName;
+	private String dateFirstPayment;
+	private String customerName;
+	private String email;
 	private String tenantDomain;
 	private String tenantName;
-	private String iuguPlanIdentifier;
-	private String iuguCustomerId;
-	private String iuguSubscriptionId;
-
-	private String email;
-	private String name;
-
 	@JsonProperty("zipcode")
 	private String zipCode;
 	private String street;
@@ -28,10 +26,5 @@ public class KonkerIuguPlan {
 	private String state;
 	private String country;
 
-	@JsonProperty("bought_kit")
-	private Boolean boughtKit;
-
-	@JsonProperty("quantity_kit")
-	private Long quantityKit;
 
 }
