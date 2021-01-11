@@ -5,10 +5,7 @@ import com.konkerlabs.platform.registry.business.model.*;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.events.api.EventRepository;
-import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
-import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
-import com.konkerlabs.platform.registry.business.services.api.ServiceResponseBuilder;
+import com.konkerlabs.platform.registry.business.services.api.*;
 import com.konkerlabs.platform.registry.config.EventStorageConfig;
 import com.konkerlabs.platform.registry.type.EventStorageConfigType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +32,9 @@ public class DeviceEventServiceImpl implements DeviceEventService {
     private DeviceRepository deviceRepository;
 
     private EventRepository eventRepository;
+
+    @Autowired
+    private LocationSearchService locationSearchService;
 
     @PostConstruct
     public void init() {
@@ -73,11 +73,20 @@ public class DeviceEventServiceImpl implements DeviceEventService {
 
         ServiceResponse<List<Event>> serviceResponse = findIncomingBy(tenant, application, deviceGuid, locationGuid, channel, startingTimestamp, endTimestamp, ascending, limit);
 
+        if (Optional.ofNullable(user.getLocation()).isPresent()) {
+            Location loadedTreeLocation = locationSearchService.findByName(tenant,
+                    application,
+                    user.getLocation().getName(),
+                    true).getResult();
+            user.setLocation(loadedTreeLocation);
+        }
+
         if (serviceResponse.isOk() &&
                 Optional.ofNullable(user.getLocation()).isPresent()) {
             List<Event> eventList = serviceResponse.getResult();
             List<Event> eventsFiltered = eventList.stream()
-                .filter(event -> user.getLocation().equals(
+                .filter(event -> LocationTreeUtils.isSublocationOf(
+                        user.getLocation(),
                         deviceRepository.findByTenantAndGuid(
                                 tenant.getId(),
                                 event.getIncoming().getDeviceGuid()).getLocation()))

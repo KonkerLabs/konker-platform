@@ -16,6 +16,7 @@ public interface LocationService {
 		LOCATION_PARENT_NOT_FOUND("service.location.parent_not_found"),
 		LOCATION_PARENT_INVALID("service.location.parent_invalid"),
 		LOCATION_HAVE_DEVICES("service.location.have_devices"),
+		LOCATION_HAVE_USERS("service.location.have_users"),
 		LOCATION_IS_ROOT("service.location.is_root"),
 		LOCATION_HAVE_DEVICE_CONFIGS("service.location.have_device_configs"),
 		LOCATION_MULTIPLE_DEFAULTS("service.location.multiple_defaults"),
