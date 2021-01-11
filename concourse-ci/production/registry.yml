@@ -7,7 +7,6 @@ groups:
   - docker-data-prod
   - docker-data-processor-prod
   - docker-router-prod
-  - k8s-api-prod
 resources:
 - name: registry-data-s3-prod
   type: s3
@@ -39,13 +38,6 @@ resources:
     branch: master
     password: (( grab params.bitbucket.passwd ))
     uri: https://bitbucket.org/konkerlabs/konker-platform-env-confs
-    username: (( grab params.bitbucket.user ))
-- name: values-k8s-repo-prod
-  type: git
-  source:
-    branch: develop
-    password: (( grab params.bitbucket.passwd ))
-    uri: https://bitbucket.org/konkerlabs/konker-devops-k8s
     username: (( grab params.bitbucket.user ))
 - name: docker-image-web-prod
   type: docker-image
@@ -115,12 +107,6 @@ resources:
     branch: master
     tag_filter: v*
     uri: https://github.com/KonkerLabs/konker-platform.git
-- name: registry-api-helm-prod
-  type: helm
-  source:
-    cluster_url: (( grab params.k8s.cluster_url ))
-    cluster_ca: (( grab params.k8s.cluster_ca ))
-    token: (( grab params.k8s.token ))
 resource_types:
 - name: slack-notification
   type: docker-image
@@ -411,20 +397,3 @@ jobs:
       build: docker-artifacts
       tag: registry-web-s3-prod/version
       tag_prefix: demo-
-- name: k8s-api-prod
-  build_logs_to_retain: 1
-  plan:
-  - get: version-prod
-  - get: github-repo-prod
-    passed:
-    - docker-api-prod
-    trigger: true
-  - get: values-k8s-repo-prod
-  - put: registry-api-helm-prod
-    params:
-      chart: github-repo-prod/konker.registry.api/devops/k8s/konker-registry-api-helm.tgz
-      values: values-k8s-repo-prod/konker-registry-values/konker.registry.api/values-production.yaml
-      orverride_values:
-      - key: image.tag
-        path: demo-api-$(cat version-prod/version)
-        type: string

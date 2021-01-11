@@ -9,6 +9,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import com.konkerlabs.platform.registry.business.model.*;
+import com.konkerlabs.platform.registry.business.repositories.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,11 +22,6 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.Device;
-import com.konkerlabs.platform.registry.business.model.DeviceConfig;
-import com.konkerlabs.platform.registry.business.model.Location;
-import com.konkerlabs.platform.registry.business.model.Tenant;
 import com.konkerlabs.platform.registry.business.model.validation.CommonValidations;
 import com.konkerlabs.platform.registry.business.repositories.DeviceRepository;
 import com.konkerlabs.platform.registry.business.repositories.LocationRepository;
@@ -48,6 +45,9 @@ public class LocationServiceImpl implements LocationService {
 
     @Autowired
     private DeviceRepository deviceRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private MongoTemplate mongoTemplate;
@@ -87,7 +87,7 @@ public class LocationServiceImpl implements LocationService {
         if (location.isDefaultLocation()) {
             setFalseDefaultToAllLocations(tenant, application);
         }
-        
+
         if (!Optional.ofNullable(location.getParent()).isPresent()) {
         	location.setDefaultLocation(true);
         }
@@ -212,7 +212,7 @@ public class LocationServiceImpl implements LocationService {
                     .withMessage(Validations.LOCATION_GUID_DOES_NOT_EXIST.getCode())
                     .build();
         }
-        
+
         if (location.isDefaultLocation()) {
         	return ServiceResponseBuilder.<Location>error()
                     .withMessage(Validations.LOCATION_NOT_REMOVED_IS_DEFAULT.getCode())
@@ -339,6 +339,16 @@ public class LocationServiceImpl implements LocationService {
             if (childValidations != null && !childValidations.isEmpty()) {
                 messages.putAll(childValidations);
             }
+        }
+
+        // dependencies: users
+        List<User> users = userRepository.findAllByTenantIdApplicationNameLocationId(
+                tenant.getId(),
+                application.getName(),
+                location.getId());
+
+        if(!users.isEmpty()) {
+            messages.put(Validations.LOCATION_HAVE_USERS.getCode(), new Object[] {location.getName()});
         }
 
         return messages;
