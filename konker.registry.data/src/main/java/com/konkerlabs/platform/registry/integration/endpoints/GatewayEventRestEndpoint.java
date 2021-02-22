@@ -1,14 +1,22 @@
 package com.konkerlabs.platform.registry.integration.endpoints;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.konkerlabs.platform.registry.business.exceptions.BusinessException;
+import com.konkerlabs.platform.registry.business.model.Device;
 import com.konkerlabs.platform.registry.business.model.Gateway;
 import com.konkerlabs.platform.registry.business.model.OauthClientDetails;
+import com.konkerlabs.platform.registry.business.services.LocationTreeUtils;
+import com.konkerlabs.platform.registry.business.services.api.DeviceEventService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
+import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.config.RabbitMQConfig;
+import com.konkerlabs.platform.registry.data.core.services.JedisTaskService;
 import com.konkerlabs.platform.registry.idm.services.OAuthClientDetailsService;
 import com.konkerlabs.platform.registry.data.core.integration.gateway.HttpGateway;
 import com.konkerlabs.platform.registry.integration.processors.GatewayEventProcessor;
+import com.konkerlabs.platform.registry.integration.serializers.EventJsonView;
+import com.konkerlabs.platform.registry.integration.serializers.EventVO;
 import com.konkerlabs.platform.utilities.parsers.json.JsonParsingService;
 import lombok.Builder;
 import lombok.Data;
@@ -20,20 +28,23 @@ import org.springframework.http.*;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.util.Base64Utils;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.request.async.DeferredResult;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 import static java.text.MessageFormat.format;
 
 @RestController
-public class GatewayEventRestEndpoint {
+public class GatewayEventRestEndpoint extends AbstractEventRestEndpoint {
 
     private Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
@@ -58,7 +69,6 @@ public class GatewayEventRestEndpoint {
         }
     }
 
-    private ApplicationContext applicationContext;
     private GatewayEventProcessor gatewayEventProcessor;
     private JsonParsingService jsonParsingService;
     private DeviceRegisterService deviceRegisterService;
@@ -73,8 +83,13 @@ public class GatewayEventRestEndpoint {
                                     DeviceRegisterService deviceRegisterService,
                                     OAuthClientDetailsService oAuthClientDetailsService,
                                     RestTemplate restTemplate,
-                                    RabbitMQConfig rabbitMQConfig) {
-        this.applicationContext = applicationContext;
+                                    RabbitMQConfig rabbitMQConfig,
+                                    DeviceEventService deviceEventService,
+                                    JedisTaskService jedisTaskService,
+                                    Executor executor) {
+
+        super(applicationContext, deviceEventService, jedisTaskService, executor);
+
         this.gatewayEventProcessor = gatewayEventProcessor;
         this.jsonParsingService = jsonParsingService;
         this.deviceRegisterService = deviceRegisterService;
@@ -97,7 +112,7 @@ public class GatewayEventRestEndpoint {
     	String principal = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     	OauthClientDetails clientDetails = oAuthClientDetailsService.loadClientByIdAsRoot(principal).getResult();
         Gateway gateway = clientDetails.getParentGateway();
-        
+
         if (!jsonParsingService.isValid(body))
             return new ResponseEntity<EventResponse>(buildResponse(Messages.INVALID_REQUEST_BODY.getCode(),locale), HttpStatus.BAD_REQUEST);
 
@@ -199,6 +214,60 @@ public class GatewayEventRestEndpoint {
                             .message(HttpStatus.SERVICE_UNAVAILABLE.name()).build(),
                     HttpStatus.SERVICE_UNAVAILABLE);
         }
+    }
+
+    @RequestMapping(value = "gateway/data/sub/{deviceId}/{channel}",
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    @JsonView(EventJsonView.class)
+    public DeferredResult<List<EventVO>> subDataEvent(HttpServletRequest servletRequest,
+                                                      HttpServletResponse httpResponse,
+                                                      OAuth2Authentication oAuth2Authentication,
+                                                      @PathVariable("deviceId") String deviceId,
+                                                      @PathVariable(name="channel", required=false) String channel,
+                                                      @RequestParam(name = "offset", required = false) Optional<Long> offset,
+                                                      @RequestParam(name = "waitTime", required = false) Optional<Long> waitTime,
+                                                      Locale locale) {
+        String principal = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        OauthClientDetails clientDetails = oAuthClientDetailsService.loadClientByIdAsRoot(principal).getResult();
+        Gateway gateway = clientDetails.getParentGateway();
+        DeferredResult<List<EventVO>> deferredResult = new DeferredResult<>(waitTime.orElse(new Long("0")), Collections.emptyList());
+
+        ServiceResponse<Device> response = deviceRegisterService.findByDeviceId(gateway.getTenant(),
+                gateway.getApplication(),
+                deviceId);
+
+        if (!response.isOk()) {
+            deferredResult.setErrorResult(
+                    applicationContext.getMessage(
+                            DeviceRegisterService.Validations.DEVICE_ID_DOES_NOT_EXIST.getCode(),
+                            null,
+                            locale));
+            httpResponse.setStatus(HttpStatus.UNPROCESSABLE_ENTITY.value());
+            return deferredResult;
+        }
+
+        Device device = response.getResult();
+
+        if (!LocationTreeUtils.isSublocationOf(gateway.getLocation(), device.getLocation())) {
+            deferredResult.setErrorResult(
+                    applicationContext.getMessage(
+                            DeviceRegisterService.Validations.DEVICE_LOCATION_IS_NOT_CHILD.getCode(),
+                            null,
+                            locale));
+            httpResponse.setStatus(HttpStatus.UNPROCESSABLE_ENTITY.value());
+            return deferredResult;
+        }
+
+        return subscribeForEvents(httpResponse,
+                deferredResult,
+                device,
+                channel,
+                waitTime,
+                offset,
+                locale,
+                true);
     }
 
     @Data

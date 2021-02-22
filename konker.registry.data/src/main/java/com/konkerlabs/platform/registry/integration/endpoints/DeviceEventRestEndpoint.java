@@ -52,7 +52,7 @@ import java.util.concurrent.Executor;
 import java.util.regex.Pattern;
 
 @RestController
-public class DeviceEventRestEndpoint {
+public class DeviceEventRestEndpoint extends AbstractEventRestEndpoint {
 
     private Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
@@ -76,13 +76,9 @@ public class DeviceEventRestEndpoint {
         }
     }
 
-    private final ApplicationContext applicationContext;
     private final DeviceEventProcessor deviceEventProcessor;
     private final JsonParsingService jsonParsingService;
-    private final DeviceEventService deviceEventService;
     private final DeviceRegisterService deviceRegisterService;
-    private final Executor executor;
-    private final JedisTaskService jedisTaskService;
     private final DeviceConfigSetupService deviceConfigSetupService;
     private final DeviceFirmwareUpdateService deviceFirmwareUpdateService;
 
@@ -96,14 +92,12 @@ public class DeviceEventRestEndpoint {
                                    Executor executor,
                                    JedisTaskService jedisTaskService,
                                    DeviceConfigSetupService deviceConfigSetupService) {
-        this.applicationContext = applicationContext;
+        super(applicationContext, deviceEventService, jedisTaskService, executor);
+
         this.deviceEventProcessor = deviceEventProcessor;
         this.jsonParsingService = jsonParsingService;
-        this.deviceEventService = deviceEventService;
         this.deviceRegisterService = deviceRegisterService;
         this.deviceFirmwareUpdateService = deviceFirmwareUpdateService;
-        this.executor = executor;
-        this.jedisTaskService = jedisTaskService;
         this.deviceConfigSetupService = deviceConfigSetupService;
     }
 
@@ -126,50 +120,26 @@ public class DeviceEventRestEndpoint {
 
     	Device device = deviceRegisterService.findByApiKey(apiKey);
 
+        if (!Optional.of(device).isPresent()) {
+            deferredResult.setErrorResult(applicationContext.getMessage(Messages.DEVICE_NOT_FOUND.getCode(), null, locale));
+            httpResponse.setStatus(HttpStatus.BAD_REQUEST.value());
+            return deferredResult;
+        }
+
     	if (!principal.getApiKey().equals(apiKey)) {
     		deferredResult.setErrorResult(applicationContext.getMessage(Messages.INVALID_RESOURCE.getCode(), null, locale));
             httpResponse.setStatus(HttpStatus.BAD_REQUEST.value());
             return deferredResult;
     	}
 
-    	if (waitTime.isPresent() && waitTime.get().compareTo(new Long("30000")) > 0) {
-            deferredResult.setErrorResult(applicationContext.getMessage(Messages.INVALID_WAITTIME.getCode(), null, locale));
-            httpResponse.setStatus(HttpStatus.BAD_REQUEST.value());
-            return deferredResult;
-    	}
-
-    	if(Optional.ofNullable(channel).isPresent() &&
-    			(channel.length() > 36 || Pattern.compile("[^A-Za-z0-9_-]").matcher(channel).find())){
-            deferredResult.setErrorResult(applicationContext.getMessage(Messages.INVALID_CHANNEL_PATTERN.getCode(), null, locale));
-            httpResponse.setStatus(HttpStatus.BAD_REQUEST.value());
-            return deferredResult;
-        }
-
-    	if (!Optional.of(device).isPresent()) {
-    		deferredResult.setErrorResult(applicationContext.getMessage(Messages.DEVICE_NOT_FOUND.getCode(), null, locale));
-            httpResponse.setStatus(HttpStatus.BAD_REQUEST.value());
-    		return deferredResult;
-    	}
-
-    	Instant startTimestamp = offset.isPresent() ? Instant.ofEpochMilli(offset.get()) : null;
-    	boolean asc = offset.isPresent();
-    	Integer limit = offset.isPresent() ? 50 : 1;
-
-    	ServiceResponse<List<Event>> response = deviceEventService.findOutgoingBy(device.getTenant(), device.getApplication(), device.getGuid(),
-                null, channel, startTimestamp, null, asc, limit);
-
-    	if (!response.getResult().isEmpty() || !waitTime.isPresent() || (waitTime.isPresent() && waitTime.get().equals(new Long("0")))) {
-            deferredResult.setResult(EventVO.from(response.getResult()));
-
-    	} else {
-    		CompletableFuture.supplyAsync(() -> {
-    			String subChannel = Optional.ofNullable(channel).isPresent() ? apiKey+ '.' +channel : apiKey;
-    			return jedisTaskService.subscribeToChannel(subChannel, startTimestamp, asc, limit);
-    		}, executor)
-    		.whenCompleteAsync((result, throwable) -> deferredResult.setResult(EventVO.from(result)), executor);
-    	}
-
-    	return deferredResult;
+    	return subscribeForEvents(httpResponse,
+                deferredResult,
+                device,
+                channel,
+                waitTime,
+                offset,
+                locale,
+                false);
     }
 
     private EventResponse buildResponse(String message, Locale locale) {

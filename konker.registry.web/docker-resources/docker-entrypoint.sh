@@ -30,6 +30,7 @@ CDN_ENABLED=true
 RECAPTCHA_ENABLED=true
 EMAIL_ENABLED=true
 IUGU_TEST_MODE=false
+UTRACE_ENABLED=true
 
 
 echo ""
@@ -160,6 +161,9 @@ echo "## Konker Invoice API"
 echo "#### url: $KONKER_INVOICE_API_URL"
 echo "#### username: $KONER_INVOICE_API_USERNAME"
 echo "#### password: *******"
+echo "## UTrace"
+echo "#### enabled: $UTRACE_ENABLED"
+echo "#### id: $UTRACE_ID"
 
 /usr/local/sbin/nginx &
 java -Dconfig.file=/var/lib/jetty/resources/application.conf \
@@ -239,5 +243,7 @@ java -Dconfig.file=/var/lib/jetty/resources/application.conf \
     -Diugu.testMode=$IUGU_TEST_MODE \
     -DkonkerPayment.url=$KONKER_PAYMENT_URL \
     -DkonkerPayment.apiToken=$KONKER_PAYMENT_API_TOKEN \
+    -DuTrace.enable=$UTRACE_ENABLED \
+    -DuTrace.id=$UTRACE_ID \
     -jar /usr/local/jetty/start.jar
 exec "$@"
