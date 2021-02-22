@@ -24,6 +24,17 @@
           /*]]>*/
     </script>
 
+    <script data-th-if="${uTraceEnable}" data-th-inline="javascript" >
+        /*<![CDATA[*/
+        var ss=document.createElement("script"); ss.type="text/javascript";
+        ss.src="https://cdn.utrace.io/utracev2.js";
+        ss.onload=function(){
+            window.utrace=initUtrace({host:"https://ingest.utrace.io",code:[[${uTraceId}]]});
+        };
+        var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(ss,s);
+        /*]]>*/
+    </script>
+
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
@@ -34,7 +45,7 @@
 
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" type="text/css" data-th-href="@{/resources/bootstrap/css/bootstrap.min.css}" />
- 
+
     <!-- Custom styles for this template -->
     <link rel="stylesheet" type="text/css" data-th-href="@{/resources/font-awesome/css/font-awesome.min.css}">
     <link rel="stylesheet" type="text/css" data-th-href="@{/resources/konker/css/opensans.css}">
@@ -44,7 +55,7 @@
     <!-- Favicon -->
     <link rel="icon" data-th-href="@{/resources/konker/images/favicon.png}" sizes="16x16 32x32 48x48 56x56"
           type="image/vnd.microsoft.icon" />
-          
+
     <link data-th-href="@{/resources/konker/css/toggle-switch.css}" rel="stylesheet" />
 
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -62,7 +73,7 @@
       *********************************************************************************************************************************************************** -->
       <!--header start-->
       <header class="header black-bg">
-            <!-- 
+            <!--
             <div class="sidebar-toggle-box">
               <div class="fa fa-bars tooltips" data-placement="right" data-original-title="Toggle Navigation"></div>
             </div>
@@ -74,7 +85,7 @@
 
                 <!-- User alerts -->
     			<ul class="user-info user-alert-info pull-right">
-    
+
     			  <!-- Notifications -->
     			  <li>
     				<a data-th-href="@{/notifications}">
@@ -83,36 +94,36 @@
                     </a>
     			  </li>
     			  <!-- /notifications -->
-    
+
     			</ul>
     			<!-- /user alerts -->
-                
+
                 <!-- User info -->
-    			<ul class="user-info pull-right">          
+    			<ul class="user-info pull-right">
     			  <li class="profile-info dropdown">
-    			  	<a data-toggle="dropdown" class="dropdown-toggle" href="#" aria-expanded="false"> 
+    			  	<a data-toggle="dropdown" class="dropdown-toggle" href="#" aria-expanded="false">
     				  	<img width="44" class="img-circle avatar" alt=""
     				  		data-th-attr="src=${@userAvatarPath.absolutePath}">
        				  	<span data-th-text="${@user.name}"  data-th-if="${not #strings.isEmpty(@user.name)}"></span>
        				  	<span data-th-text="${@user.email}" data-th-if="${#strings.isEmpty(@user.name)}"></span>
        				  	<span class="caret"></span>
     				</a>
-    
+
     				<!-- User action menu -->
     				<ul class="dropdown-menu">
                       <li><a data-th-href="@{/me}"><i class="icon-cog"></i><span data-th-text="#{nav.user.account_profile}">Conta e Perfil</span></a></li>
                       <li><a data-th-href="@{/logout}"><i class="icon-cog"></i><span class="glyphicon glyphicon-log-out"></span><span>&nbsp;</span><span data-th-text="#{nav.user.logout}">Logout</span></a></li>
     				</ul>
     				<!-- /user action menu -->
-    
+
     			  </li>
     			</ul>
     			<!-- /user info -->
 
-            </div>            
+            </div>
         </header>
       <!--header end-->
-      
+
       <!-- **********************************************************************************************************************************************************
       MAIN SIDEBAR MENU
       *********************************************************************************************************************************************************** -->
@@ -120,7 +131,7 @@
       <aside>
           <div id="sidebar"  class="nav-collapse ">
               <!-- sidebar menu start-->
-              <ul class="sidebar-menu" id="nav-accordion">              
+              <ul class="sidebar-menu" id="nav-accordion">
 
                   <li class="mt">
                           <span class="titlemenu">IOT</span>
@@ -130,21 +141,21 @@
                       <a data-th-href="@{/devices}">
                           <img data-th-attr="src=@{/resources/konker/images/icons-menu/icon-device2.svg}" class="icon-menu" />
                           <span data-th-text="#{nav.menu.devices}">Dispositivos</span>
-                      </a>                      
+                      </a>
                   </li>
 
                   <li class="sub-menu" th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'', ''ROLE_IOT_READ_ONLY'')')}">
                       <a data-th-href="@{/routes}">
                           <img data-th-attr="src=@{/resources/konker/images/icons-menu/icon-route.svg}" class="icon-menu" />
                           <span data-th-text="#{nav.menu.routes}">Roteador de eventos</span>
-                      </a>                      
+                      </a>
                   </li>
 
                   <li class="sub-menu" th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'', ''ROLE_IOT_READ_ONLY'')')}">
                       <a data-th-href="@{/transformation}">
                           <img data-th-attr="src=@{/resources/konker/images/icons-menu/icon-transform.svg}" class="icon-menu" />
                           <span data-th-text="#{nav.menu.transformations}">Transformações</span>
-                      </a>                     
+                      </a>
                   </li>
 
                   <li class="sub-menu" th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'', ''ROLE_IOT_READ_ONLY'')')}">
@@ -158,7 +169,7 @@
                       <a data-th-href="@{/tenants/log}">
                           <img data-th-attr="src=@{/resources/konker/images/icons-menu/icon-debug4.svg}" class="icon-menu" />
                           <span data-th-text="#{nav.menu.debug_messages}">Debug</span>
-                      </a>                      
+                      </a>
                   </li>
 
                   <li class="sub-menu" th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_IOT_USER'', ''ROLE_IOT_READ_ONLY'')')}">
@@ -171,7 +182,7 @@
               </ul>
 
               <ul class="sidebar-menu subtitle" id="nav-accordion"
-                 th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_ANALYTICS_USER'')')}">              
+                 th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_ANALYTICS_USER'')')}">
 
                   <li class="sub-menu">
                       <span class="titlemenu" data-th-text="#{nav.menu.analytics}"></span>
@@ -181,20 +192,20 @@
                       <a data-th-href="@{/dashboards}">
                           <img data-th-attr="src=@{/resources/konker/images/icons-menu/icon-dashboard.svg}" class="icon-menu" />
                           <span data-th-text="#{nav.menu.dashboards}">Dashboards</span>
-                      </a>                      
+                      </a>
                   </li>
 
                   <li class="sub-menu" th:if="${#authorization.expression('hasAnyRole(''ROLE_SUPER_USER'', ''ROLE_ANALYTICS_USER'')')}">
                       <a data-th-href="@{/notebooks}">
                           <img data-th-attr="src=@{/resources/konker/images/icons-menu/icon-notebook.svg}" class="icon-menu" />
                           <span data-th-text="#{nav.menu.notebooks}">Notebooks</span>
-                      </a>                      
+                      </a>
                   </li>
-                  
+
               </ul>
-              
+
               <ul class="sidebar-menu subtitle" id="nav-accordion">
-              
+
                   <li class="sub-menu">
                       <a target="_blank" href="https://konker.atlassian.net/wiki/display/DEV/Guia+de+Uso+da+Plataforma+Konker">
                           <img data-th-attr="src=@{/resources/konker/images/icons-menu/icon-help.svg}" class="icon-menu" />
@@ -206,16 +217,16 @@
                       <a href="http://www.konkerlabs.com/#contact" target="_blank" >
                           <img data-th-attr="src=@{/resources/konker/images/icons-menu/icon-msg.svg}" class="icon-menu" />
                           <span data-th-text="#{nav.menu.contact_us}">Fale com a gente</span>
-                      </a>                      
+                      </a>
                   </li>
-                  
+
               </ul>
-              
+
               <!-- sidebar menu end-->
           </div>
       </aside>
       <!--sidebar end-->
-      
+
       <!-- **********************************************************************************************************************************************************
       MAIN CONTENT
       *********************************************************************************************************************************************************** -->
@@ -226,7 +237,7 @@
             <div id="wrap">
                 <div data-layout-fragment="content">
                 </div>
-            </div> 
+            </div>
           </section>
       </section>
 

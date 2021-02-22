@@ -79,7 +79,7 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
 
     @Autowired
     private DeviceRegisterService deviceRegisterService;
-    
+
     @Autowired
     private DeviceConfigSetupService deviceConfigSetupService;
 
@@ -94,7 +94,7 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
 
     private final String DEVICE_USER = "tug6g6essh4m";
     private final String VALID_CHANNEL = "data";
-    private final String INVALID_CHANNEL_SIZE = "abcabcabcabcabcabcabcabcabcabcabc";
+    private final String INVALID_CHANNEL_SIZE = "abcabcabcabcabcabcabcabcabcabcabcabcabc";
     private final String INVALID_CHANNEL_CHAR = "dataç";
     private final Long OFFSET = 1475765814662L;
     private final Long waitTime = 30000L;
@@ -127,14 +127,16 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
 
     @Test
     public void shouldReturnErrorOnSubscriptionWithInvalidChannel() throws Exception {
-        Device device = Device.builder().deviceId("tug6g6essh4m")
+        Device device = Device.builder()
                 .active(true)
-                .apiKey("e4399b2ed998")
+                .apiKey("tug6g6essh4m")
+                .deviceId("device01")
                 .guid("7d51c242-81db-11e6-a8c2-0746f010e945")
                 .description("test")
-                .tags(tags)
-                .deviceId("device_id")
-                .guid("67014de6-81db-11e6-a5bc-3f99b38315c6").build();
+                .tags(tags).build();
+
+        when(deviceRegisterService.findByApiKey(device.getApiKey()))
+                .thenReturn(device);
 
         SecurityContext context = SecurityContextHolder.getContext();
         Authentication auth = new UsernamePasswordAuthenticationToken(device, null);
@@ -186,7 +188,7 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
                 	.andExpect(content().string(org.hamcrest.Matchers.containsString("origin")));
 
     }
-    
+
     @Test
     public void shouldReturnBadRequestInvalidResource() throws Exception {
         Device device = Device.builder().deviceId("tug6g6essh4m")
@@ -208,9 +210,9 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
                         .param("offset", String.valueOf(OFFSET))
                         .param("waitTime", String.valueOf(waitTime)))
                 .andExpect(status().isBadRequest());
-   
+
     }
-    
+
     @Test
     public void shouldReturnBadRequestDeviceNotFound() throws Exception {
         Device device = Device.builder().deviceId("tug6g6essh4m")
@@ -232,9 +234,9 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
                         .param("offset", String.valueOf(OFFSET))
                         .param("waitTime", String.valueOf(waitTime)))
                 .andExpect(status().isBadRequest());
-   
+
     }
-    
+
     @Test
     public void shouldReturnDeviceConfigNotFound() throws Exception {
         Device device = Device.builder().deviceId("tug6g6essh4m")
@@ -250,7 +252,7 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
                 .deviceModel(DeviceModel.builder().name("SensorTemp").build())
                 .location(Location.builder().name("sp_br").build())
                 .build();
-        
+
         when(deviceRegisterService.findByApiKey(device.getApiKey()))
         	.thenReturn(device);
         when(deviceConfigSetupService.findByModelAndLocation(device.getTenant(), device.getApplication(), device.getDeviceModel(), device.getLocation()))
@@ -267,9 +269,9 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
                         .param("offset", String.valueOf(OFFSET))
                         .param("waitTime", String.valueOf(waitTime)))
                 .andExpect(status().isNotFound());
-   
+
     }
-    
+
     @Test
     public void shouldReturnConfig() throws Exception {
         Device device = Device.builder().deviceId("tug6g6essh4m")
@@ -285,7 +287,7 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
                 .deviceModel(DeviceModel.builder().name("SensorTemp").build())
                 .location(Location.builder().name("sp_br").build())
                 .build();
-        
+
         when(deviceRegisterService.findByApiKey(device.getApiKey()))
         	.thenReturn(device);
         when(deviceConfigSetupService.findByModelAndLocation(device.getTenant(), device.getApplication(), device.getDeviceModel(), device.getLocation()))
@@ -303,7 +305,7 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
                         .param("offset", String.valueOf(OFFSET))
                         .param("waitTime", String.valueOf(waitTime)))
                 .andExpect(status().isOk());
-   
+
     }
 
     @Test
@@ -508,7 +510,7 @@ public class DeviceEventRestEndpointTest extends WebLayerTestContext {
         public Executor executor() {
             return Mockito.mock(Executor.class);
         }
-        
+
         @Bean
         public DeviceConfigSetupService deviceConfigSetupService() {
         	return Mockito.mock(DeviceConfigSetupService.class);

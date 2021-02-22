@@ -2,6 +2,7 @@ package com.konkerlabs.platform.registry.web.controllers;
 
 import com.konkerlabs.platform.registry.config.GoogleAnalyticsConfig;
 import com.konkerlabs.platform.registry.config.HotjarConfig;
+import com.konkerlabs.platform.registry.config.UTraceConfig;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -13,6 +14,8 @@ public class WebPluginsController {
 
 	private GoogleAnalyticsConfig googleAnalyticsConfig = new GoogleAnalyticsConfig();
 
+	private UTraceConfig uTraceConfig = new UTraceConfig();
+
 	@ModelAttribute
 	public void setupConfig(Model model) {
 		model.addAttribute("hotjarEnable", hotjarConfig.isEnable());
@@ -20,6 +23,9 @@ public class WebPluginsController {
 
 		model.addAttribute("googleAnalyticsEnable", googleAnalyticsConfig.isEnable());
 		model.addAttribute("googleAnalyticsId", googleAnalyticsConfig.getId());
+
+		model.addAttribute("uTraceEnable", uTraceConfig.isEnable());
+		model.addAttribute("uTraceId", uTraceConfig.getId());
 	}
 
 }
