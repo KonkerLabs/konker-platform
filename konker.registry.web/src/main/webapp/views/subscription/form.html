@@ -127,6 +127,17 @@
                                data-th-placeholder="#{users.form.subscription.placeholder.phone}"
                                required>
                     </div>
+                    <div class="form-group">
+                        <input type="checkbox" data-th-field="*{acceptedTerms}"
+                               id="acceptedTerms"
+                               name="acceptedTerms"
+                               required/>
+                        <a class="btn btn-default"
+                           href="http://www.konkerlabs.com/policy.html"
+                           target="_blank">
+                            <span data-th-text="#{users.form.subscription.acceptedTerms}"></span>
+                        </a>
+                    </div>
                     <button type="submit" class="btn btn-common" data-th-text="#{users.form.subscription.create_account_button}"></button>
                 </form>
 

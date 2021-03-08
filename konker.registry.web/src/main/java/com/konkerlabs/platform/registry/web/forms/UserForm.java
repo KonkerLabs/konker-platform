@@ -36,6 +36,7 @@ public class UserForm implements ModelBuilder<User,UserForm,Void> {
     private String tenantName;
     private Boolean avatarUploadEnabled = Boolean.FALSE;
     private boolean notificationViaEmail;
+    private boolean acceptedTerms;
     private JobEnum job;
 
 
@@ -55,6 +56,7 @@ public class UserForm implements ModelBuilder<User,UserForm,Void> {
                 .phone(getPhone())
                 .tenant(getTenant())
                 .notificationViaEmail(isNotificationViaEmail())
+                .acceptedTerms(isAcceptedTerms())
                 .job(job)
                 .build();
     }
