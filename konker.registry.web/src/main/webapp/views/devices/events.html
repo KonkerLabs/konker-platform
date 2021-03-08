@@ -37,7 +37,7 @@
             <div>
                 <h1 class="page-title" data-th-text="#{devices.events.legend}"></h1>
             </div>
-            
+
             <div class="alert alert-danger hide" role="alert">
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
@@ -64,7 +64,7 @@
             </div>
 
         </fieldset>
-		
+
         <fieldset class="form-horizontal"
             data-th-if="${hasAnyEvent}">
 
@@ -76,7 +76,7 @@
                 <input type="hidden" id="applicationName" name="applicationName" data-th-value="${device.application.name}" />
                 <input type="hidden" id="dataResult">
                 <input type="hidden" id="eventsJson" data-th-value="${eventsJson}" >
-	
+
                 <div id="filter">
 
                     <div class="row form-group">
@@ -123,7 +123,7 @@
                             </div>
                         </div>
                     </div>
-    
+
     	            <div class="row form-group">
     	                <label class="col-sm-2 control-label"
     	                       data-th-text="#{visualization.index.metric}"></label>
@@ -137,7 +137,7 @@
                 <div class="row form-group hide col-sm-10" id="onlineRow">
                     <label class="col-sm-1 control-label"
                         data-th-text="#{visualization.index.online}"></label>
-                    <label class="switch col-sm-1" style="margin-top: 4px;"> 
+                    <label class="switch col-sm-1" style="margin-top: 4px;">
                         <input type="checkbox" id="online" name="online" checked="checked" />
                         <div class="slider round"></div>
                     </label>
@@ -151,7 +151,7 @@
                         <span data-th-text="#{visualization.index.btn.apply}"></span>
                     </button>
                 </div>
-                
+
                 <div id="panelTabs">
 	                <ul class="nav nav-tabs nav-justified col-sm-12" >
 						<li class="active">
@@ -184,8 +184,9 @@
                         <div class="slider round"></div>
                     </label>
                 </div>
-                
+
                 <a id="exportCsv" class="btn btn-primary pull-right hide"
+                   target="_blank"
                    style="margin-right: 5px;">
                     <img data-th-src="@{/resources/konker/images/icons-bt/download-icon-bt-01.svg}"
                          class="bt-icon" />
@@ -193,7 +194,7 @@
                 </a>
 		        <a id="bufferCsv" class="hide"></a>
             </div>
-            
+
             <ul class="nav nav-tabs nav-justified col-sm-12" >
 				<li class="active"><a data-toggle="tab" href="#incoming"
 					data-th-text="#{devices.events.incoming.events}"></a></li>
@@ -210,15 +211,15 @@
 			</div>
 
             <div class="ajax-loading"></div>
-        
+
 		</fieldset>
 
         <fieldset class="form-horizontal"
             data-th-if="${not hasAnyEvent}">
-    
+
             <span data-th-text="#{devices.events.empty_message}"></span>
             <p />
-   
+
         </fieldset>
 
 	    <div class="form-group col-sm-12">
@@ -230,14 +231,14 @@
 	    </div>
 
 	</div>
-    
+
     <div data-layout-fragment="script">
     	<script>
 			var titleMapDetail = "[[${titleMapDetail}]]";
 			var lastIngestedTimeLabel = "[[${lastIngestedTimeLabel}]]";
 			var lastDataLabel = "[[${lastDataLabel}]]";
 		</script>
-	    
+
         <script data-th-attr="src=@{/resources/konker/scripts/underscore-min.js}" type="text/javascript"></script>
         <script data-th-attr="src=@{/resources/konker/scripts/backbone-min.js}" type="text/javascript"></script>
         <script data-th-attr="src=@{/resources/konker/scripts/pretty-json-min.js}" type="text/javascript"></script>
@@ -257,10 +258,10 @@
         </script>
         <!-- Google Maps -->
         <script
-        	data-th-if="${!#strings.isEmpty(eventsJson)}" 
+        	data-th-if="${!#strings.isEmpty(eventsJson)}"
         	src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js">
     	</script>
-        <script async defer 
+        <script async defer
         	data-th-if="${!#strings.isEmpty(eventsJson)}"
         	data-th-attr="src=@{${'https://maps.googleapis.com/maps/api/js?key=' + mapApiKey + '&callback=initMap'}}" >
 	    </script>

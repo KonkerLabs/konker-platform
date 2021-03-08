@@ -1,18 +1,19 @@
 package com.konkerlabs.platform.registry.web.controllers;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
+import com.konkerlabs.platform.registry.business.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.codec.Hex;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.konkerlabs.platform.registry.business.model.Application;
-import com.konkerlabs.platform.registry.business.model.EventRoute;
-import com.konkerlabs.platform.registry.business.model.RestDestination;
-import com.konkerlabs.platform.registry.business.model.Tenant;
-import com.konkerlabs.platform.registry.business.model.Transformation;
 import com.konkerlabs.platform.registry.business.services.api.ApplicationService;
 import com.konkerlabs.platform.registry.business.services.api.DeviceRegisterService;
 import com.konkerlabs.platform.registry.business.services.api.EventRouteService;
@@ -44,7 +45,7 @@ public class ControlPanelController {
 	private RestDestinationService restDestinationService;
 
 	@RequestMapping
-	public ModelAndView panelPage() {
+	public ModelAndView panelPage() throws NoSuchAlgorithmException {
 		ModelAndView mv = new ModelAndView("panel/index");
 
 		int devicesCount = 0;
@@ -76,11 +77,15 @@ public class ControlPanelController {
 			}
 		}
 
+		User principal = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		MessageDigest digest = MessageDigest.getInstance("SHA-256");
+		byte[] hash = digest.digest(principal.getEmail().getBytes(StandardCharsets.UTF_8));
 
 		mv.addObject("devicesCount", devicesCount);
 		mv.addObject("routesCount", routesCount);
 		mv.addObject("transformationsCount", transformationsCount);
 		mv.addObject("restDestinationsCount", restDestinationsCount);
+		mv.addObject("hashUser", new String(Hex.encode(hash)));
 
 		return mv;
 	}

@@ -13,6 +13,11 @@
 
       <h1 class="page-title"><span data-th-text="#{nav.panel.hello}"></span>, <span data-th-text="${@user.firstName}"></span>!</h1>
       <p data-th-text="#{nav.panel.to_do_ask}">O que deseja fazer?</p>
+      <input id="hashUser"
+             name="hashUser"
+             type="hidden"
+             data-th-value="${hashUser}" />
+
       <div class="row">
           <div class="col-md-12 row-card">
 
@@ -92,6 +97,10 @@
           </div>
       </div>
 
+    </div>
+
+    <div data-layout-fragment="script">
+        <script data-th-attr="src=@{/resources/js/panel/index.js(v2)}" ></script>
     </div>
 </body>
 </html>
