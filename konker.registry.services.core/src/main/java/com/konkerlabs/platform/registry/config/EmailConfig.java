@@ -13,7 +13,7 @@ import lombok.Data;
 @Configuration
 @Data
 public class EmailConfig {
-	
+
 	private String host;
 	private String port;
 	private String protocol;
@@ -22,7 +22,7 @@ public class EmailConfig {
 	private String baseurl;
 	private String sender;
 	private boolean enabled;
-	
+
 	public EmailConfig() {
 		Map<String, Object> defaultMap = new HashMap<>();
 		defaultMap.put("email.host", "email-smtp.us-east-1.amazonaws.com");

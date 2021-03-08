@@ -21,7 +21,7 @@ HOTJAR_ENABLE=false
 INTEGRATION_TIMEOUT_DEFAULT=3000
 INTEGRATION_TIMEOUT_ENRICHMENT=3000
 INTEGRATION_TIMEOUT_SMS=3000
-ANALYTICS_ENABLED=false
+ANALYTICS_ENABLED=true
 EMAIL_PORT=587
 AMAZON_KINESIS_ENABLED=true
 MAP_ENABLED=true
@@ -123,6 +123,7 @@ echo "#### timeout default: $INTEGRATION_TIMEOUT_DEFAULT"
 echo "#### timeout enrichment: $INTEGRATION_TIMEOUT_ENRICHMENT"
 echo "#### timeout sms: $INTEGRATION_TIMEOUT_SMS"
 echo "## Analytics"
+echo "#### id: $ANALYTICS_ID"
 echo "#### enabled: $ANALYTICS_ENABLED"
 echo "## CDN"
 echo "#### name: $CDN_NAME"
@@ -213,9 +214,8 @@ java -Dconfig.file=/var/lib/jetty/resources/application.conf \
     -DpubServer.sslEnabled=$PUB_SERVER_SSL_ENABLED \
     -Dsecurity.loginPage=$SECURITY_LOGIN_PAGE \
     -Dsecurity.successLoginUrl=$SECURITY_SUCCESS_LOGIN_URL \
-    -Dhotjar.id=$HOTJAR_ID \
-    -Dhotjar.enable=$HOTJAR_ENABLE \
-    -DkonkerAnalytics.enabled=$ANALYTICS_ENABLED \
+    -DgoogleAnalytics.id=$ANALYTICS_ID \
+    -DgoogleAnalytics.enabled=$ANALYTICS_ENABLED \
     -Dcdn.name=$CDN_NAME \
     -Dcdn.prefix=$CDN_PREFIX \
     -Dcdn.key=$CDN_KEY \

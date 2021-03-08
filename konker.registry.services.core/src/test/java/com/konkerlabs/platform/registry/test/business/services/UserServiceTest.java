@@ -28,6 +28,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 import static com.konkerlabs.platform.registry.test.base.matchers.ServiceResponseMatchers.hasErrorMessage;
@@ -334,109 +336,109 @@ public class UserServiceTest extends BusinessLayerTestSupport {
         User updated = userRepository.findOne(user.getEmail());
         assertThat(updated.getName(), !equals(user.getName()));
     }
-    
+
     @Test
     public void shouldRaiseAnExceptionIfEmailNull() {
         ServiceResponse<User> serviceResponse = userService.findByEmail(null);
-        
+
         Assert.assertNotNull(serviceResponse);
         assertThat(serviceResponse, hasErrorMessage(UserService.Validations.NO_EXIST_USER.getCode()));
 
     }
-    
+
     @Test
     public void shouldReturnUser() {
         ServiceResponse<User> serviceResponse = userService.findByEmail("admin@konkerlabs.com");
-        
+
         Assert.assertNotNull(serviceResponse);
         assertThat(serviceResponse, isResponseOk());
         Assert.assertEquals(user, serviceResponse.getResult());
     }
-    
+
     @Test
     public void shouldReturnAllUsers() {
         ServiceResponse<List<User>> serviceResponse = userService.findAll(user.getTenant());
-        
+
         Assert.assertNotNull(serviceResponse);
         assertThat(serviceResponse, isResponseOk());
         Assert.assertEquals(users, serviceResponse.getResult());
     }
-    
+
     @Test
     public void shouldReturnAllUsersByTenantAndEmail() {
     	ServiceResponse<User> serviceResponse = userService.findByTenantAndEmail(user.getTenant(), user.getEmail());
-    	
+
     	Assert.assertNotNull(serviceResponse);
     	assertThat(serviceResponse, isResponseOk());
     	Assert.assertEquals(user, serviceResponse.getResult());
     }
-    
+
     @Test
     public void shouldReturnErrorForInvalidEmailFormat() {
     	user.setEmail("emailWithoutATdomain.com");
     	ServiceResponse<User> serviceResponse = userService.createAccount(user, newPassword, newPassword);
-    	
+
     	Assert.assertNotNull(serviceResponse);
         assertThat(
                 serviceResponse,
                 hasErrorMessage(UserService.Validations.INVALID_USER_EMAIL.getCode()));
     }
-    
+
     @Test
     public void shouldReturnErrorForUserExists() {
     	ServiceResponse<User> serviceResponse = userService.createAccount(user, newPassword, newPassword);
-    	
+
     	Assert.assertNotNull(serviceResponse);
     	assertThat(serviceResponse, isResponseOk());
     }
-    
+
     @Test
     public void shouldReturnErrorForCreationLimit() {
     	for (int i = 0; i <= 250; i++) {
     		user.setEmail("new.user" +i+ "@domain.com.br");
-    		user.setRegistrationDate(Instant.now());
+    		user.setRegistrationDate(LocalDateTime.now().toInstant(ZoneOffset.UTC));
     		userRepository.save(user);
         	//userService.createAccount(user, newPassword, newPassword);
     	}
-    	
+
     	user.setEmail("new.user@domain.com.br");
     	ServiceResponse<User> serviceResponse = userService.createAccount(user, newPassword, newPassword);
-    	
+
     	Assert.assertNotNull(serviceResponse);
         assertThat(
                 serviceResponse,
                 hasErrorMessage(UserService.Validations.INVALID_USER_LIMIT_CREATION.getCode()));
     }
-    
+
     @Test
     public void shouldReturnErrorForUserName() {
     	user.setName("");
     	user.setEmail("another@email.com");
     	ServiceResponse<User> serviceResponse = userService.createAccount(user, newPassword, newPassword);
-    	
+
     	Assert.assertNotNull(serviceResponse);
         assertThat(
                 serviceResponse,
                 hasErrorMessage(UserService.Validations.INVALID_USER_NAME.getCode()));
     }
-    
+
     @Test
     public void shouldCreateAccountTenantNoName() {
     	user.setEmail("new.user@domain.com.br");
     	user.setTenant(Tenant.builder().build());
     	ServiceResponse<User> serviceResponse = userService.createAccount(user, newPassword, newPassword);
-    	
+
     	Assert.assertNotNull(serviceResponse);
         assertThat(serviceResponse, isResponseOk());
         Assert.assertEquals(serviceResponse.getResult().getName(), serviceResponse.getResult().getTenant().getName());
     }
-    
+
     @Test
     public void shouldCreateAccount() {
     	user.setEmail("new.user@domain.com.br");
     	user.setTenant(Tenant.builder().name("New Org").build());
     	ServiceResponse<User> serviceResponse = userService.createAccount(user, newPassword, newPassword);
-    	
+
     	Assert.assertNotNull(serviceResponse);
         assertThat(serviceResponse, isResponseOk());
     }

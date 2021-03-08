@@ -96,12 +96,12 @@ h3 {
     -webkit-align-items: center;
     align-items: center;
     justify-content: center;
-    padding: 0 5rem; 
+    padding: 0 5rem;
 }
 
 .create {
     padding: 2rem ;
-    
+
 }
 
 .form-pass {
@@ -175,11 +175,17 @@ h3 {
     color: red;
 }
 
+#acceptedTerms {
+    position: absolute;
+    margin-top: 22px;
+    transform: scale(1.5);
+}
+
 /*MODAL */
 .modal-title {
     font-size: 22px;
     text-align: left;
-    color: #062c61;  
+    color: #062c61;
 }
 
 /*main */

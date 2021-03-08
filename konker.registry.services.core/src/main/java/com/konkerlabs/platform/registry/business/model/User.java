@@ -46,6 +46,7 @@ public class User implements URIDealer, UserDetails {
     private Instant registrationDate;
     private JobEnum job;
     private boolean active;
+    private boolean acceptedTerms;
 
     @Tolerate
     public User() {
