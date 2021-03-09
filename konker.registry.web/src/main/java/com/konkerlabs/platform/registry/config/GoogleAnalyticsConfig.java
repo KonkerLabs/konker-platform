@@ -13,17 +13,17 @@ import java.util.Map;
 public class GoogleAnalyticsConfig {
 
 	private String id;
-	private boolean enable;
+	private boolean enabled;
 
 	public GoogleAnalyticsConfig() {
 		Map<String, Object> defaultMap = new HashMap<>();
 		defaultMap.put("googleAnalytics.id", "ID");
-		defaultMap.put("googleAnalytics.enable", false);
+		defaultMap.put("googleAnalytics.enabled", false);
 		Config defaultConf = ConfigFactory.parseMap(defaultMap);
 
 		Config config = ConfigFactory.load().withFallback(defaultConf);
 		setId(config.getString("googleAnalytics.id"));
-		setEnable(config.getBoolean("googleAnalytics.enable"));
+		setEnabled(config.getBoolean("googleAnalytics.enabled"));
 	}
 
 }

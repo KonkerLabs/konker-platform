@@ -243,7 +243,7 @@ java -Dconfig.file=/var/lib/jetty/resources/application.conf \
     -Diugu.testMode=$IUGU_TEST_MODE \
     -DkonkerPayment.url=$KONKER_PAYMENT_URL \
     -DkonkerPayment.apiToken=$KONKER_PAYMENT_API_TOKEN \
-    -DuTrace.enable=$UTRACE_ENABLED \
+    -DuTrace.enabled=$UTRACE_ENABLED \
     -DuTrace.id=$UTRACE_ID \
     -jar /usr/local/jetty/start.jar
 exec "$@"
