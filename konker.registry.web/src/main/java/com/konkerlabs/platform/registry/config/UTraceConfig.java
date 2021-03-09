@@ -13,17 +13,17 @@ import java.util.Map;
 public class UTraceConfig {
 
 	private String id;
-	private boolean enable;
+	private boolean enabled;
 
 	public UTraceConfig() {
 		Map<String, Object> defaultMap = new HashMap<>();
 		defaultMap.put("uTrace.id", "ID");
-		defaultMap.put("uTrace.enable", false);
+		defaultMap.put("uTrace.enabled", false);
 		Config defaultConf = ConfigFactory.parseMap(defaultMap);
 
 		Config config = ConfigFactory.load().withFallback(defaultConf);
 		setId(config.getString("uTrace.id"));
-		setEnable(config.getBoolean("uTrace.enable"));
+		setEnabled(config.getBoolean("uTrace.enabled"));
 	}
 
 }
