@@ -14,12 +14,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -63,6 +65,9 @@ public class ControlPanelControllerTest extends WebLayerTestContext {
 	@Autowired
 	private ApplicationService applicationService;
 
+	@Autowired
+	private User user;
+
 	@After
 	public void tearDown() {
 		Mockito.reset(deviceRegisterService);
@@ -73,7 +78,6 @@ public class ControlPanelControllerTest extends WebLayerTestContext {
 	}
 
 	@Test
-	@WithMockUser(authorities = { "ROLE_SUPER_USER", "ROLE_IOT_USER", "ROLE_ANALYTICS_USER" })
 	public void shouldShowControlPanelHome() throws Exception {
 
 		List<Device> devices = new ArrayList<>();
@@ -104,6 +108,28 @@ public class ControlPanelControllerTest extends WebLayerTestContext {
 				.thenReturn(ServiceResponseBuilder.<List<RestDestination>>ok().withResult(destinations).build());
 		when(applicationService.findAll(tenant))
 				.thenReturn(ServiceResponseBuilder.<List<Application>> ok().withResult(Collections.singletonList(application)).build());
+
+		user.setRoles(Arrays.asList(
+				Role.builder()
+						.id("ROLE_SUPER_USER")
+						.name("ROLE_SUPER_USER")
+						.privileges(Arrays.asList(Privilege.builder().name("SAVE_USER").build()))
+						.build(),
+				Role.builder()
+						.id("ROLE_IOT_USER")
+						.name("ROLE_IOT_USER")
+						.privileges(Arrays.asList(Privilege.builder().name("SAVE_USER").build()))
+						.build(),
+				Role.builder()
+						.id("ROLE_ANALYTICS_USER")
+						.name("ROLE_ANALYTICS_USER")
+						.privileges(Arrays.asList(Privilege.builder().name("SAVE_USER").build()))
+						.build()));
+
+		UsernamePasswordAuthenticationToken principal = new UsernamePasswordAuthenticationToken(user,
+				user.getPassword(),
+				user.getAuthorities());
+		SecurityContextHolder.getContext().setAuthentication(principal);
 
 		getMockMvc().perform(get("/"))
 			.andExpect(view().name("panel/index"))
