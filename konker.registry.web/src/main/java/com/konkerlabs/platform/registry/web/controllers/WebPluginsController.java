@@ -21,10 +21,10 @@ public class WebPluginsController {
 		model.addAttribute("hotjarEnable", hotjarConfig.isEnable());
 		model.addAttribute("hotjarId", hotjarConfig.getId());
 
-		model.addAttribute("googleAnalyticsEnable", googleAnalyticsConfig.isEnable());
+		model.addAttribute("googleAnalyticsEnable", googleAnalyticsConfig.isEnabled());
 		model.addAttribute("googleAnalyticsId", googleAnalyticsConfig.getId());
 
-		model.addAttribute("uTraceEnable", uTraceConfig.isEnable());
+		model.addAttribute("uTraceEnable", uTraceConfig.isEnabled());
 		model.addAttribute("uTraceId", uTraceConfig.getId());
 	}
 
