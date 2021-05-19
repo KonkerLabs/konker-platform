@@ -14,6 +14,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.util.ClassUtils;
 
 import java.time.Instant;
 import java.util.*;
@@ -151,4 +152,18 @@ public class User implements URIDealer, UserDetails {
 		}
 	}
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+
+        if (o == null || getClass() != ClassUtils.getUserClass(o.getClass())) return false;
+
+        User user = (User) o;
+        return email.equals(user.getEmail());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(email);
+    }
 }

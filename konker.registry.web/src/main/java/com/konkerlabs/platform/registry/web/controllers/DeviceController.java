@@ -1,10 +1,7 @@
 package com.konkerlabs.platform.registry.web.controllers;
 
 import java.text.MessageFormat;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Supplier;
@@ -180,12 +177,15 @@ public class DeviceController implements ApplicationContextAware {
     @RequestMapping
     @PreAuthorize("hasAuthority('LIST_DEVICES')")
     public ModelAndView index() {
+        Instant init = Instant.now();
     	List<Application> applications = applicationService.findAll(tenant).getResult();
     	List<Device> all = new ArrayList<>();
 
     	applications.forEach(
     			app -> all.addAll(deviceRegisterService.findAll(tenant, app).getResult()));
 
+        Instant end = Instant.now();
+        System.out.println("TIMING: " + Duration.between(init, end).getSeconds());
         return new ModelAndView("devices/index", "devices", all);
     }
 
@@ -247,12 +247,12 @@ public class DeviceController implements ApplicationContextAware {
         List<Event> outgoingEvents = deviceEventService.findOutgoingBy(tenant, application, device.getGuid(), null, null, null, null, false, 50).getResult();
 
         boolean hasAnyEvent = !incomingEvents.isEmpty() || !outgoingEvents.isEmpty();
-        
+
         mv.addObject("userDateFormat", user.getDateFormat().name())
                 .addObject("recentIncomingEvents", incomingEvents)
                 .addObject("recentOutgoingEvents", outgoingEvents)
                 .addObject("hasAnyEvent", hasAnyEvent);
-        
+
         if (mapGeolocationConfig.isEnabled()) {
         	String eventsJson = parseToJson(incomingEvents);
         	mv.addObject("eventsJson", eventsJson)
@@ -261,7 +261,7 @@ public class DeviceController implements ApplicationContextAware {
         		.addObject("lastDataLabel", applicationContext.getMessage(DeviceRegisterService.Messages.DEVICE_LAST_DATA_LABEL.getCode(), null, user.getLanguage().getLocale()))
         		.addObject("lastIngestedTimeLabel", applicationContext.getMessage(DeviceRegisterService.Messages.DEVICE_LAST_INGESTED_TIME_LABEL.getCode(), null, user.getLanguage().getLocale()));
         }
-        
+
         addChartObjects(device, mv);
 
         return mv;
@@ -274,7 +274,7 @@ public class DeviceController implements ApplicationContextAware {
 					.stream()
 					.filter(event -> Optional.ofNullable(event.getGeolocation()).isPresent())
 					.findFirst();
-			
+
 			if (lastEventGeotagged.isPresent()) {
 				json = jsonParsing.toJsonString(Collections.singletonMap("events", Collections.singletonList(lastEventGeotagged.get())));
 			}

@@ -85,6 +85,7 @@ public class TransformationRestControllerTest extends WebLayerTestContext {
     public void setUp() {
         application = Application.builder()
                 .name(tenant.getDomainName())
+                .friendlyName("Friendly Name")
                 .build();
 
         applicationOwnerIsSomeOther = Application.builder()

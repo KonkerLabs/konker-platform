@@ -133,6 +133,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
                     .location(location)
 					.guid("1fbbecc7-8566-40c4-8f7b-830287535970")
 					.deviceId("1fbbecc7")
+                    .name("1fbbecc7")
                     .active(true)
 					.build();
         device = deviceRepository.save(device);
@@ -595,9 +596,11 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     			application,
     			healthAlert.getGuid());
 
+        assertThat(response, isResponseOk());
         healthAlert.getDevice().setLocation(null);
-    	assertThat(response, isResponseOk());
-    	assertThat(response.getResult(), equalTo(healthAlert));
+        HealthAlert result = response.getResult();
+        result.getDevice().setLocation(null);
+        assertThat(result, equalTo(healthAlert));
     }
 
     ////////////////// removeAlertsFromTrigger //////////////////
@@ -638,6 +641,8 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
         List<HealthAlert> healthAlerts = healthAlertService.findAllByTenantAndApplication(currentTenant, application).getResult();
         assertThat(healthAlerts.size(), equalTo(3));
         device.setLocation(null);
+        healthAlerts.get(1).getDevice().setLocation(null);
+        healthAlerts.get(2).getDevice().setLocation(null);
         assertThat(healthAlerts.get(1).getDevice(), equalTo(device));
         assertThat(healthAlerts.get(2).getDevice(), equalTo(device));
 
@@ -686,9 +691,11 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
     			currentTenant,
     			application,
     			healthAlert.getDevice().getGuid());
+        assertThat(response, isResponseOk());
         tempHealthAlert.getDevice().setLocation(null);
-    	assertThat(response, isResponseOk());
-    	assertThat(response.getResult(), equalTo(tempHealthAlert));
+        HealthAlert result = response.getResult();
+        result.getDevice().setLocation(null);
+        assertThat(result, equalTo(tempHealthAlert));
     }
 
     /****************** findAllByTenantApplicationAndTrigger ******************/
@@ -703,6 +710,7 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
         healthAlert.getDevice().setLocation(null);
 		assertThat(response, isResponseOk());
         assertThat(response.getResult().size(), is(2));
+        response.getResult().get(0).getDevice().setLocation(null);
 		assertThat(response.getResult().get(0), equalTo(healthAlert));
 	}
 
@@ -748,9 +756,11 @@ public class HealthAlertServiceTest extends BusinessLayerTestSupport {
                 trigger,
                 healthAlert.getAlertId());
 
-        healthAlert.getDevice().setLocation(null);
         assertThat(response, isResponseOk());
-        assertThat(response.getResult(), equalTo(healthAlert));
+        healthAlert.getDevice().setLocation(null);
+        HealthAlert result = response.getResult();
+        result.getDevice().setLocation(null);
+        assertThat(result, equalTo(healthAlert));
     }
 
     @Test

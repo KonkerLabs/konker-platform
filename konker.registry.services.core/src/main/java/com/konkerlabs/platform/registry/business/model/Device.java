@@ -2,13 +2,7 @@ package com.konkerlabs.platform.registry.business.model;
 
 import java.math.BigInteger;
 import java.time.Instant;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -24,6 +18,7 @@ import com.konkerlabs.platform.utilities.validations.api.Validatable;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Tolerate;
+import org.springframework.util.ClassUtils;
 
 @Data
 @Builder
@@ -67,9 +62,9 @@ public class Device implements URIDealer, Validatable, UserDetails {
 	}
 
 	private String id;
-	@DBRef
+	@DBRef(lazy = true)
 	private Tenant tenant;
-	@DBRef
+	@DBRef(lazy = true)
 	private Application application;
 	private String deviceId;
     private String apiKey;
@@ -81,9 +76,9 @@ public class Device implements URIDealer, Validatable, UserDetails {
 	private Instant registrationDate;
 	private Instant lastModificationDate;
     private LogLevel logLevel;
-    @DBRef
+    @DBRef(lazy = true)
     private DeviceModel deviceModel;
-    @DBRef
+    @DBRef(lazy = true)
     private Location location;
 	private boolean active;
 	private boolean debug;
@@ -157,5 +152,21 @@ public class Device implements URIDealer, Validatable, UserDetails {
 	public boolean isEnabled() {
 		return true;
 	}
-	
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+
+		if (o == null || getClass() != ClassUtils.getUserClass(o.getClass())) return false;
+
+		Device device = (Device) o;
+		return deviceId.equals(device.getDeviceId())
+				&& name.equals(device.getName())
+				&& guid.equals(device.getGuid());
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(deviceId, name, guid);
+	}
 }

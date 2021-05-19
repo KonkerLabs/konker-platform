@@ -93,7 +93,10 @@ public class DeviceControllerTest extends WebLayerTestContext {
 
 	@Before
 	public void setUp() {
-		application = Application.builder().name(tenant.getDomainName()).build();
+		application = Application.builder()
+				.name(tenant.getDomainName())
+				.friendlyName("Friendly Name")
+				.build();
 
 		registeredDevices = new ArrayList<>();
 		registeredDevices.add(Device.builder().application(application).build());
@@ -207,6 +210,9 @@ public class DeviceControllerTest extends WebLayerTestContext {
 	@WithMockUser(authorities={"SHOW_DEVICE"})
 	public void shouldShowDeviceStatus() throws Exception {
         HealthAlert alert = HealthAlert.builder().severity(HealthAlert.HealthAlertSeverity.DISABLED).build();
+
+		when(applicationService.getByApplicationName(tenant, application.getName()))
+				.thenReturn(ServiceResponseBuilder.<Application>ok().withResult(application).build());
 
 		when(healthAlertService.getCurrentHealthByGuid(tenant, application, savedDevice.getGuid()))
 				.thenReturn(ServiceResponseBuilder.<HealthAlert>ok().withResult(alert).build());

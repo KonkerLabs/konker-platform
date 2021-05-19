@@ -19,11 +19,13 @@ public class DeviceRegistrationFormTest {
 
         form.setDeviceId("device_id");
         form.setName("device_name");
+        form.setGuid("device_guid");
         form.setDescription("device_description");
 
         model = Device.builder()
                 .deviceId(form.getDeviceId())
                 .name(form.getName())
+                .guid(form.getGuid())
                 .description(form.getDescription()).active(true).build();
     }
 

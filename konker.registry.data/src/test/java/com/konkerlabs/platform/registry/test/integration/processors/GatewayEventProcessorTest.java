@@ -151,11 +151,11 @@ public class GatewayEventProcessorTest {
     			" \"deviceId\": \"CurrentSensor\", "+
     			" \"channel\": \"in\", "+
     			" \"payload\": { "+
-    			" 	\"_lon\": -46.6910183, "+ 
+    			" 	\"_lon\": -46.6910183, "+
     			"	\"_lat\": -23.5746571,  "+
     			"	\"_hdop\": 10,  "+
     			"	\"_elev\": 3.66,  "+
-    			"	\"_ts\": \"1510847419000\", "+ 
+    			"	\"_ts\": \"1510847419000\", "+
     			"	\"volts\": 12  "+
     			"	} "+
                 '}' +
@@ -163,11 +163,11 @@ public class GatewayEventProcessorTest {
     			" \"deviceId\": \"TempSensor\", "+
     			" \"channel\": \"temp\", "+
     			" \"payload\": { "+
-    			"	\"_lon\": -46.6910183, "+ 
+    			"	\"_lon\": -46.6910183, "+
     			"	\"_lat\": -23.5746571,  "+
     			"	\"_hdop\": 10,  "+
     			"	\"_elev\": 3.66,  "+
-    			"	\"_ts\": \"1510847419000\", "+ 
+    			"	\"_ts\": \"1510847419000\", "+
     			"	\"temperature\": 27  "+
     			"	} "+
     			"} "+
@@ -245,7 +245,7 @@ public class GatewayEventProcessorTest {
         map4.put("temperature", 27);
         devicesDataEvent.add(map3);
         devicesDataEvent.add(map4);
-        
+
         gateway = Gateway.builder()
         		.active(true)
         		.application(Application.builder().name("default").build())
@@ -300,22 +300,22 @@ public class GatewayEventProcessorTest {
 	@Test
     public void shouldProcessGatewayEvent() throws Exception {
     	device.setLocation(gateway.getLocation());
-    	
+
     	when(jsonParsingService.toListMap(listJson)).thenReturn(devicesEvent);
     	when(jsonParsingService.toJsonString((Map<String, Object>) devicesEvent.get(0).get("payload"))).thenReturn("{ "+
-    			" 	\"_lon\": -46.6910183, "+ 
+    			" 	\"_lon\": -46.6910183, "+
     			"	\"_lat\": -23.5746571,  "+
     			"	\"_hdop\": 10,  "+
     			"	\"_elev\": 3.66,  "+
-    			"	\"_ts\": \"1510847419000\", "+ 
+    			"	\"_ts\": \"1510847419000\", "+
     			"	\"volts\": 12  "+
     			"	}");
     	when(jsonParsingService.toJsonString((Map<String, Object>) devicesEvent.get(1).get("payload"))).thenReturn(" { "+
-    			"	\"_lon\": -46.6910183, "+ 
+    			"	\"_lon\": -46.6910183, "+
     			"	\"_lat\": -23.5746571,  "+
     			"	\"_hdop\": 10,  "+
     			"	\"_elev\": 3.66,  "+
-    			"	\"_ts\": \"1510847419000\", "+ 
+    			"	\"_ts\": \"1510847419000\", "+
     			"	\"temperature\": 27  "+
     			"	}");
     	when(deviceRegisterService.findByDeviceId(gateway.getTenant(), gateway.getApplication(), "CurrentSensor"))
@@ -324,7 +324,7 @@ public class GatewayEventProcessorTest {
 			.thenReturn(ServiceResponseBuilder.<Device>ok().withResult(device).build());
     	when(deviceLogEventService.logIncomingEvent(eq(device), any()))
     		.thenReturn(ServiceResponseBuilder.<Event>ok().withResult(event).build());
-    	
+
     	subject.process(gateway, listJson);
 
         verify(rabbitGateway, times(2)).queueEventDataPub(anyString(), anyString(), any(Long.class), any());
@@ -350,14 +350,9 @@ public class GatewayEventProcessorTest {
                 .thenReturn(ServiceResponseBuilder.<Device>error().build());
         when(deviceRegisterService
                 .register(
-                        gateway.getTenant(),
-                        gateway.getApplication(),
-                        Device.builder()
-                                .deviceId("TempSensor")
-                                .name("TempSensor")
-                                .location(gateway.getLocation())
-                                .active(true)
-                                .build()))
+                        any(Tenant.class),
+                        any(Application.class),
+                        any(Device.class)))
                 .thenReturn(ServiceResponseBuilder.<Device>error().build());
         when(deviceLogEventService.logIncomingEvent(eq(device), any()))
                 .thenReturn(ServiceResponseBuilder.<Event>ok().withResult(event).build());
@@ -388,14 +383,9 @@ public class GatewayEventProcessorTest {
                 .thenReturn(ServiceResponseBuilder.<Device>error().build());
         when(deviceRegisterService
                 .register(
-                        gateway.getTenant(),
-                        gateway.getApplication(),
-                        Device.builder()
-                                .deviceId("TempSensor")
-                                .name("TempSensor")
-                                .location(gateway.getLocation())
-                                .active(true)
-                                .build()))
+                        any(Tenant.class),
+                        any(Application.class),
+                        any(Device.class)))
                 .thenReturn(ServiceResponseBuilder.<Device>error().build());
         when(deviceLogEventService.logIncomingEvent(eq(device), any()))
                 .thenReturn(ServiceResponseBuilder.<Event>ok().withResult(event).build());
@@ -461,7 +451,7 @@ public class GatewayEventProcessorTest {
         public DeviceLogEventService deviceLogEventService() {
             return mock(DeviceLogEventService.class);
         }
-        
+
         @Bean
         public JsonParsingService jsonParsingService() {
             return mock(JsonParsingService.class);

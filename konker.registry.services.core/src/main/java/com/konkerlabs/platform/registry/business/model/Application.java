@@ -9,11 +9,13 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.util.ClassUtils;
 
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -22,7 +24,6 @@ import java.util.regex.Pattern;
 @Document(collection="applications")
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode(of = {"name", "qualifier"})
 public class Application implements URIDealer, Serializable {
 
 	@Id
@@ -87,4 +88,18 @@ public class Application implements URIDealer, Serializable {
 		return Optional.of(validations).filter(map -> !map.isEmpty());
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+
+		if (o == null || getClass() != ClassUtils.getUserClass(o.getClass())) return false;
+
+		Application that = (Application) o;
+		return name.equals(that.getName());
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(name, friendlyName);
+	}
 }

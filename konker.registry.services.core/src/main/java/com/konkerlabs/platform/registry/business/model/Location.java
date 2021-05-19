@@ -1,10 +1,7 @@
 package com.konkerlabs.platform.registry.business.model;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import org.springframework.data.annotation.Id;
@@ -20,11 +17,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Tolerate;
+import org.springframework.util.ClassUtils;
 
 @Data
 @Builder
 @Document(collection = "locations")
-@EqualsAndHashCode(of = {"guid", "name"})
 public class Location implements URIDealer, Validatable, Serializable {
 
     public static final String URI_SCHEME = "location";
@@ -105,4 +102,18 @@ public class Location implements URIDealer, Validatable, Serializable {
         this.guid = guid;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+
+        if (o == null || getClass() != ClassUtils.getUserClass(o.getClass())) return false;
+
+        Location location = (Location) o;
+        return name.equals(location.getName()) && guid.equals(location.getGuid());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, guid);
+    }
 }

@@ -8,10 +8,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.util.ClassUtils;
 
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Document(collection = "tenants")
@@ -26,6 +28,7 @@ public class Tenant implements URIDealer, Serializable {
     @Id
     private String id;
     private String name;
+
     private String domainName;
     private LogLevel logLevel = LogLevel.WARNING;
     private Long devicesLimit;
@@ -54,7 +57,22 @@ public class Tenant implements URIDealer, Serializable {
 		return Optional.ofNullable(logLevel).orElse(LogLevel.WARNING);
 	}
 
-    public enum PlanEnum {
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+
+        if (o == null || getClass() != ClassUtils.getUserClass(o.getClass())) return false;
+
+        Tenant tenant = (Tenant) o;
+        return name.equals(tenant.getName()) && domainName.equals(tenant.getDomainName());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, domainName);
+    }
+
+	public enum PlanEnum {
         EDUCATION("Education",
                 Arrays.asList("R$ 1,00/dia",
                         "R$ 30,00/mês",

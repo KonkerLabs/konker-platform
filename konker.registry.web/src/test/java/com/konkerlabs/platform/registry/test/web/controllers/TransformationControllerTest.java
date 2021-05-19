@@ -93,6 +93,7 @@ public class TransformationControllerTest extends WebLayerTestContext {
     public void setUp() {
         application = Application.builder()
                 .name(tenant.getDomainName())
+                .friendlyName("Friendly Name")
                 .build();
 
         transformations = new ArrayList<>();
@@ -126,6 +127,7 @@ public class TransformationControllerTest extends WebLayerTestContext {
         transformationData.add("steps[0].username", username);
         transformationData.add("steps[0].password", password);
         transformationData.add("application.name", application.getName());
+        transformationData.add("application.friendlyName", application.getFriendlyName());
 
         serviceResponse = ServiceResponseBuilder.<Transformation> ok().withResult(transformation)
                 .<Transformation> build();
@@ -144,7 +146,7 @@ public class TransformationControllerTest extends WebLayerTestContext {
     public void shouldReturnAllRegisteredTransformations() throws Exception {
         when(transformationService.getAll(tenant, application))
                 .thenReturn(ServiceResponseBuilder.<List<Transformation>> ok().withResult(transformations).build());
-        
+
         when(applicationService.findAll(tenant))
         	.thenReturn(ServiceResponseBuilder.<List<Application>> ok().withResult(Collections.singletonList(application)).build());
 
@@ -166,7 +168,7 @@ public class TransformationControllerTest extends WebLayerTestContext {
     public void shouldBindAnErrorMessageOnSaveTransformationError() throws Exception {
         when(transformationService.register(eq(tenant), eq(application), any(Transformation.class))).thenReturn(ServiceResponseBuilder
                 .<Transformation> error().withMessage(CommonValidations.RECORD_NULL.getCode()).build());
-        
+
         when(applicationService.getByApplicationName(tenant, application.getName()))
     		.thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
 
@@ -282,24 +284,24 @@ public class TransformationControllerTest extends WebLayerTestContext {
             return Mockito.mock(ApplicationService.class);
         }
     }
-    
+
     @Test
     @WithMockUser(authorities={"REMOVE_TRANSFORMATION"})
     public void shouldRedirectToTransformationIndexAfterRemoval() throws Exception {
     	transformation.setId("123");
     	spy(serviceResponse);
     	spy(listServiceResponse);
-    	
+
     	when(transformationService.remove(tenant, application, transformation.getId())).thenReturn(serviceResponse);
     	when(transformationService.getAll(tenant, application)).thenReturn(listServiceResponse);
     	when(applicationService.getByApplicationName(tenant, application.getName()))
     		.thenReturn(ServiceResponseBuilder.<Application> ok().withResult(application).build());
-    	
+
     	getMockMvc().perform(delete("/transformation/{0}/{1}", application.getName(), transformation.getId()))
-    		.andExpect(flash().attribute("message", 
+    		.andExpect(flash().attribute("message",
     				applicationContext.getMessage(TransformationController.Messages.TRANSFORMATION_REMOVED_SUCCESSFULLY.getCode(), null, Locale.ENGLISH)))
     		.andExpect(redirectedUrl("/transformation"));
-    	
+
     	verify(transformationService).remove(tenant, application, transformation.getId());
     }
 }
