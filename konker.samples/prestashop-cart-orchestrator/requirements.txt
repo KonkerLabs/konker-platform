@@ -6,7 +6,7 @@ gunicorn==19.9.0
 httmock==1.2.5
 idna==2.8
 itsdangerous==0.24
-Jinja2==2.10.1
+Jinja2==2.11.3
 MarkupSafe==0.23
 meld3==1.0.2
 requests==2.21.0
