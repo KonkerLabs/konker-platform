@@ -11,7 +11,17 @@ The Platform allows easy connection and management of devices using HTTP or MQTT
 ## Pre-requisites
 Konker Platform runs and compiles on Java 8.
 
-It has a compile-time dependency on Lombok (see below) and runtime dependencies on Eclipse Jetty, MongoDB, Redis and Mosquitto.
+It has a compile-time dependency on Lombok (see below) and r
+untime dependencies on Eclipse Jetty, MongoDB, Redis and Mosquitto.
+
+## Minimal Hardware requisites
+### To run with maven
+- Quadcore CPU
+- 8 GB of memory
+
+### To run as container with Kubernetes
+- 10 Vcore
+- 8GB of memory
 
 ### Dependencies
 #### Lombok
