@@ -123,16 +123,12 @@ public class GatewayRestController extends AbstractRestController implements Ini
     public List<DeviceRegisterGatewayVO> createDevices(@PathVariable("application") String applicationId,
                                                            @PathVariable("gatewayGuid") String gatewayGuid,
                                                            @ApiParam(name = "body", required = true)
-                                                           @RequestBody List<DeviceInputVO> devices)
-            throws BadServiceResponseException, BadRequestResponseException, NotFoundResponseException {
+                                                           @RequestBody List<DeviceInputVO> devices) throws BadServiceResponseException, NotFoundResponseException {
 
         Tenant tenant = user.getTenant();
         Application application = getApplication(applicationId);
         Gateway gateway = gatewayService.getByGUID(tenant, application, gatewayGuid).getResult();
-        List<DeviceRegisterGatewayVO> credentialsVOS = new ArrayList<>();
-
-
-        devices.stream().map(deviceInputVO ->
+        return devices.stream().map(deviceInputVO ->
             deviceRegisterService.register(
                     tenant,
                     application,
@@ -143,17 +139,23 @@ public class GatewayRestController extends AbstractRestController implements Ini
                             .location(gateway.getLocation())
                             .active(true)
                             .build())
-        ).filter(deviceRegisterServiceResponse -> deviceRegisterServiceResponse.isOk()).map(response ->
+        ).filter(deviceRegisterServiceResponse -> deviceRegisterServiceResponse.isOk()
+        ).map(response ->
             deviceRegisterService.generateSecurityPassword(
                     tenant,
                     application,
                     response.getResult().getGuid())
         ).map(responseCredential ->
-            deviceRegisterService
-                    .getDeviceDataURLs(tenant, application, responseCredential.getResult().getDevice(), user.getLanguage().getLocale())
-        ).collect(Collectors.toList());
+            new DeviceRegisterGatewayVO(
+                    responseCredential.getResult(),
+                    deviceRegisterService.getDeviceDataURLs(
+                            tenant,
+                            application,
+                            responseCredential.getResult().getDevice(),
+                            user.getLanguage().getLocale()).getResult()
+                    )
 
-        return credentialsVOS;
+        ).collect(Collectors.toList());
     }
 
     @PostMapping
