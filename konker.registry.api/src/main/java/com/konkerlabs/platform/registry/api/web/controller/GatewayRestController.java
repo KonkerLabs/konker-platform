@@ -125,9 +125,9 @@ public class GatewayRestController extends AbstractRestController implements Ini
                                                            @ApiParam(name = "body", required = true)
                                                            @RequestBody List<DeviceInputVO> devices) throws BadServiceResponseException, NotFoundResponseException {
 
-        Tenant tenant = user.getTenant();
-        Application application = getApplication(applicationId);
-        Gateway gateway = gatewayService.getByGUID(tenant, application, gatewayGuid).getResult();
+        final Tenant tenant = user.getTenant();
+        final Application application = getApplication(applicationId);
+        final Gateway gateway = gatewayService.getByGUID(tenant, application, gatewayGuid).getResult();
         return devices.stream().map(deviceInputVO ->
             deviceRegisterService.register(
                     tenant,
