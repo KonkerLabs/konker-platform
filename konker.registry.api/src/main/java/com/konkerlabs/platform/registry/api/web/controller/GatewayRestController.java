@@ -152,9 +152,9 @@ public class GatewayRestController extends AbstractRestController implements Ini
                             tenant,
                             application,
                             responseCredential.getResult().getDevice(),
-                            user.getLanguage().getLocale()).getResult()
-                    )
-
+                            user.getLanguage().getLocale()
+                    ).getResult()
+            )
         ).collect(Collectors.toList());
     }
 
