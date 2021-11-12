@@ -35,17 +35,17 @@ jobs:
       - name: Caching DATA PROCESSOR artifacts
         uses: actions/cache@v2.1.6
         with:
-          path: /home/runner/work/konker-platform/konker-platform/konker.registry.data/target/registry-data-processor.jar
+          path: /home/runner/work/konker-platform/konker-platform/konker.registry.data.processor/target/registry-data-processor.jar
           key: ${{ runner.os }}-build-${{ env.cache-name }}-registry-data-processor.jar
       - name: Caching ROUTER artifacts
         uses: actions/cache@v2.1.6
         with:
-          path: /home/runner/work/konker-platform/konker-platform/konker.registry.data/target/registry-router.jar
+          path: /home/runner/work/konker-platform/konker-platform/konker.registry.router/target/registry-router.jar
           key: ${{ runner.os }}-build-${{ env.cache-name }}-registry-router.jar
       - name: Caching WEB artifacts
         uses: actions/cache@v2.1.6
         with:
-          path: /home/runner/work/konker-platform/konker-platform/konker.registry.data/target/registry.war
+          path: /home/runner/work/konker-platform/konker-platform/konker.registry.web/target/registry.war
           key: ${{ runner.os }}-build-${{ env.cache-name }}-registry.war
   test:
     needs: [ compile ]
