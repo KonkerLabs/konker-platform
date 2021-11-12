@@ -19,3 +19,17 @@ jobs:
         run: mvn clean verify -DskipTests
       - name: Test
         run: mvn clean test
+  artifact:
+    name: Publish Artifact
+    runs-on: ubuntu-latest
+    needs: [ test ]
+    steps:
+      - uses: actions/checkout@v1
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Publish artifact on GitHub Packages
+         run: mvn -B clean deploy -DskipTests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
