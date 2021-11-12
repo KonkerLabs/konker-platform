@@ -52,6 +52,6 @@ jobs:
       - name: Docker Hub Sign-in
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
       - name: Preparing api build
-        run: cd konker.registry.api && mkdir -p docker-resources/dist && cp target/registry-api.jar docker-resources/dist/registry-api.jar && docker build -t $REPO:latest -t $REPO:konker.registry.api-${GITHUB_RUN_ID} .
+        run: cd konker.registry.api && mkdir -p docker-resources/dist && cp /home/runner/work/konker-platform/konker-platform/konker.registry.api/target/registry-api.jar docker-resources/dist/registry-api.jar && docker build -t $REPO:latest -t $REPO:konker.registry.api-${GITHUB_RUN_ID} .
       - name: Publish Docker Image
         run: docker push $REPO
