@@ -25,15 +25,31 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-m2-
             ${{ runner.os }}-
-      - name: Caching artifacts
+      - name: Caching API artifacts
         uses: actions/cache@v2.1.6
         with:
-          path: /home/runner/work/konker-platform/konker-platform
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-jar
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
+          path: /home/runner/work/konker-platform/konker-platform/konker.registry.api/target/registry-api.jar
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-registry-api.jar
+      - name: Caching DATA artifacts
+        uses: actions/cache@v2.1.6
+        with:
+          path: /home/runner/work/konker-platform/konker-platform/konker.registry.data/target/registry-data.jar
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-registry-data.jar
+      - name: Caching DATA PROCESSOR artifacts
+        uses: actions/cache@v2.1.6
+        with:
+          path: /home/runner/work/konker-platform/konker-platform/konker.registry.data/target/registry-data-processor.jar
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-registry-data-processor.jar
+      - name: Caching ROUTER artifacts
+        uses: actions/cache@v2.1.6
+        with:
+          path: /home/runner/work/konker-platform/konker-platform/konker.registry.data/target/registry-router.jar
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-registry-router.jar
+      - name: Caching WEB artifacts
+        uses: actions/cache@v2.1.6
+        with:
+          path: /home/runner/work/konker-platform/konker-platform/konker.registry.data/target/registry.war
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-registry.war
   test:
     needs: [ compile ]
     name: Test (JDK 8)
@@ -58,12 +74,8 @@ jobs:
       - name: Restore artifacts Cache
         uses: actions/cache@v2.1.6
         with:
-          path: /home/runner/work/konker-platform/konker-platform
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-jar
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
+          path: /home/runner/work/konker-platform/konker-platform/konker.registry.data/target/registry-api.jar
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-registry-api.jar
       - name: Docker Hub Sign-in
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
       - run: ls -la /home/runner/work/konker-platform/konker-platform/konker.registry.api/target/
@@ -83,12 +95,8 @@ jobs:
       - name: Restore artifacts Cache
         uses: actions/cache@v2.1.6
         with:
-          path: /home/runner/work/konker-platform/konker-platform
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-jar
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
+          path: /home/runner/work/konker-platform/konker-platform/konker.registry.data/target/registry-data.jar
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-registry-data.jar
       - name: Docker Hub Sign-in
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
       - name: Build Registry DATA Docker image
@@ -107,12 +115,8 @@ jobs:
       - name: Restore artifacts Cache
         uses: actions/cache@v2.1.6
         with:
-          path: /home/runner/work/konker-platform/konker-platform
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-jar
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
+          path: /home/runner/work/konker-platform/konker-platform/konker.registry.data.processor/target/registry-data-processor.jar
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-registry-data-processor.jar
       - name: Docker Hub Sign-in
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
       - name: Build Registry DATA PROCESSOR Docker image
@@ -131,12 +135,8 @@ jobs:
       - name: Restore artifacts Cache
         uses: actions/cache@v2.1.6
         with:
-          path: /home/runner/work/konker-platform/konker-platform
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-jar
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
+          path: /home/runner/work/konker-platform/konker-platform/konker.registry.router/target/registry-router.jar
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-registry-router.jar
       - name: Docker Hub Sign-in
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
       - name: Build Registry ROUTER Docker image
@@ -155,15 +155,11 @@ jobs:
       - name: Restore web server artifacts Cache
         uses: actions/cache@v2.1.6
         with:
-          path: /home/runner/work/konker-platform/konker-platform
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-jar
-          restore-keys: |
-            ${{ runner.os }}-war-${{ env.cache-name }}-
-            ${{ runner.os }}-war-
-            ${{ runner.os }}-
+          path: /home/runner/work/konker-platform/konker-platform/konker.registry.web/target/registry.war
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-registry.war
       - name: Docker Hub Sign-in
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
       - name: Build Registry WEB Docker image
-        run: cd konker.registry.web && mkdir -p docker-resources/dist && cp /home/runner/work/konker-platform/konker-platform/konker.registry.router/target/registry.war docker-resources/dist/registry.war && docker build -t $REPO:konker.registry.web-${GITHUB_RUN_ID} .
+        run: cd konker.registry.web && mkdir -p docker-resources/dist && cp /home/runner/work/konker-platform/konker-platform/konker.registry.web/target/registry.war docker-resources/dist/registry.war && docker build -t $REPO:konker.registry.web-${GITHUB_RUN_ID} .
       - name: Publish Registry Images
         run: docker push $REPO
