@@ -32,4 +32,4 @@ jobs:
       - name: Publish artifact on GitHub Packages
         run: mvn -B clean deploy -DskipTests
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.MVNDEPLOYTOKEN }}
