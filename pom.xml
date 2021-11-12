@@ -66,7 +66,15 @@
                 </executions>
             </plugin>
         </plugins>
+
     </build>
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>KonkerLabs</name>
+            <url>https://maven.pkg.github.com/KonkerLabs/space-management-system</url>
+        </repository>
+    </distributionManagement>
 
     <dependencies>
         <!-- Test scope -->
