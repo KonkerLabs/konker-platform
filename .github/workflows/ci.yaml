@@ -117,7 +117,7 @@ jobs:
       - name: Docker Hub Sign-in
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
       - name: Build Registry DATA PROCESSOR Docker image
-        run: cd konker.registry.data.processor && mkdir -p docker-resources/dist && cp /home/runner/work/konker-platform/konker-platform/konker.registry.data.processor/target/registry-data.jar docker-resources/dist/registry-data-processor.jar && docker build -t $REPO:konker.registry-data-processor-${GITHUB_RUN_ID} .
+        run: cd konker.registry.data.processor && mkdir -p docker-resources/dist && cp /home/runner/work/konker-platform/konker-platform/konker.registry.data.processor/target/registry-data-processor.jar docker-resources/dist/registry-data-processor.jar && docker build -t $REPO:konker.registry-data-processor-${GITHUB_RUN_ID} .
       - name: Publish Registry Images
         run: docker push $REPO:konker.registry.data.processor-${GITHUB_RUN_ID}
 
